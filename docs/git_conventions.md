@@ -14,7 +14,12 @@ Conventions for writing Git commit messages in this machine learning project.
 
 ### The Header
 *   **Type**: Describes the category of the change (e.g., `feat`, `fix`, `model`).
-*   **Scope**: (Optional) The specific section of the codebase affected (e.g., `preproc`, `api`, `notebooks`).
+*   **Scope**: (Optional) The specific section of the codebase affected. For this project, use:
+    *   `app`: Web application code
+    *   `notebook`: Analysis and experiments
+    *   `data`: Data handling scripts
+    *   `docs`: Documentation
+    *   `tests`: Unit tests
 *   **Subject**: A concise description of the change (50 chars or less).
 
 ### The Body
@@ -56,7 +61,9 @@ To better capture the machine learning workflow, use these additional types:
     *   ❌ `model: trained random forest classifier`
     *   ❌ `model: training random forest classifier`
 2.  **Atomic Commits**: Keep commits focused on a single task. Don't mix a bug fix with a new feature.
-3.  **Notebooks**: Since diffs in `.ipynb` files are hard to read, use the **Body** of the commit message to list key findings or changes in the notebook.
+3.  **Notebooks**: 
+    *   **Clear Outputs**: Clear notebook cells before committing to keep diffs small and readable.
+    *   **Description**: Use the **Body** of the commit message to list key findings or changes, since the raw diff will just be JSON metadata.
 4.  **No Large Files**: Never commit large datasets or model artifacts (`.pkl`, `.h5`) directly. Commit the scripts that generate them or the pointer files.
 5.  **Header Formatting**: Use all lowercase for the type, scope, and subject, unless using proper nouns or acronyms (e.g., `FastAPI`, `JSON`). Do not end the subject with a period.
 6.  **Body Grammar**: Use standard English grammar, capitalization, and punctuation for the body.
@@ -67,7 +74,7 @@ To better capture the machine learning workflow, use these additional types:
 
 ### Data Preprocessing
 ```text
-data(preproc): implement standard scaling for numerical features
+data(notebook): implement standard scaling for numerical features
 
 Added StandardScaler to the preprocessing pipeline to normalize 
 age and bmi columns before training.
@@ -75,7 +82,7 @@ age and bmi columns before training.
 
 ### Exploratory Data Analysis
 ```text
-eda: analyze correlation between smoking and charges
+eda(notebook): analyze correlation between smoking and charges
 
 - Created scatter plots for bmi vs charges
 - Calculated Pearson correlation coefficients
@@ -84,7 +91,7 @@ eda: analyze correlation between smoking and charges
 
 ### Model Training
 ```text
-model(arch): switch from LinearRegression to XGBoost
+model(notebook): switch from LinearRegression to XGBoost
 
 Linear models were underfitting the data. XGBoost provides 
 better handling of non-linear relationships.
@@ -92,7 +99,7 @@ better handling of non-linear relationships.
 
 ### Hyperparameter Tuning
 ```text
-model(hyperparams): update learning rate and max_depth
+model(notebook): update learning rate and max_depth
 
 - Increased learning rate to 0.01
 - Reduced max_depth to 5 to prevent overfitting
@@ -100,12 +107,12 @@ model(hyperparams): update learning rate and max_depth
 
 ### Evaluation
 ```text
-eval: add RMSE and MAE metrics to evaluation script
+eval(notebook): add RMSE and MAE metrics to evaluation script
 ```
 
 ### Deployment
 ```text
-deploy(api): add /predict endpoint using FastAPI
+feat(app): add /predict endpoint using FastAPI
 
 Created the main inference route that accepts JSON input 
 and returns the predicted medical cost.
