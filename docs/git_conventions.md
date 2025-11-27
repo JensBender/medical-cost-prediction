@@ -14,24 +14,22 @@ Conventional structure of a commit message with a header, body, and footer:
 
 **The Header**
 - **Type**: Describes **what** changed.
-    - **Standard Types**:
-        - `feat`: A new feature (e.g., adding a new API endpoint).
-        - `fix`: A bug fix.
-        - `docs`: Documentation only changes.
-        - `style`: Formatting, missing semi-colons, etc. (no code change).
-        - `refactor`: Refactoring production code (no new features or bug fixes).
-        - `test`: Adding or refactoring tests.
-        - `chore`: Build tasks, package manager configs, etc.
-    - **ML-Specific Types**:
-        - `data`: Changes to data loading, preprocessing, cleaning, or dataset versioning.
-        - `eda`: Exploratory data analysis.
-        - `model`: Model architecture, training logic, or hyperparameter tuning.
-        - `eval`: Model evaluation, metric calculations, feature importance or error analysis.
-        - `deploy`: Deployment scripts, Dockerfiles, or serving code.
-- **Scope** (optional): Describes **where** it changed, i.e. the specific section of the codebase. For this project, use:
+    - `feat`: A new feature (e.g., adding a new API endpoint).
+    - `fix`: A bug fix.
+    - `docs`: Documentation only changes.
+    - `style`: Formatting, missing semi-colons, etc. (no code change).
+    - `refactor`: Refactoring production code (no new features or bug fixes).
+    - `perf`: Performance improvements.
+    - `test`: Adding or refactoring tests.
+    - `chore`: Build tasks, package manager configs, etc.
+- **Scope**: Describes **where** it changed, i.e. the specific section of the codebase. For this project, use:
     - `app`: Web application code.
-    - `notebook`: Analysis and experiments.
-    - `data`: Data handling scripts.
+    - `data`: Data loading, preprocessing, cleaning, or dataset versioning.
+    - `eda`: Exploratory data analysis.
+    - `model`: Model architecture, training logic, or hyperparameter tuning.
+    - `eval`: Model evaluation, metric calculations, feature importance or error analysis.
+    - `notebook`: Jupyter Notebook.
+    - `deploy`: Deployment scripts, Dockerfiles, or serving code.
     - `docs`: Files in the `docs/` directory.
     - `tests`: Unit tests.
 - **Subject**: A concise description of the change (maximum 50 characters).
@@ -47,9 +45,9 @@ Conventional structure of a commit message with a header, body, and footer:
 
 ## 2. Best Practices
 1.  **Imperative Mood**: Write the subject line as a command.
-    - ✅ `model: train random forest classifier`
-    - ❌ `model: trained random forest classifier`
-    - ❌ `model: training random forest classifier`
+    - ✅ `feat(model): train random forest classifier`
+    - ❌ `feat(model): trained random forest classifier`
+    - ❌ `feat(model): training random forest classifier`
 2.  **Atomic Commits**: Keep commits focused on a single task. Don't mix a bug fix with a new feature.
 3.  **Jupyter Notebooks**: 
     - **Clear Outputs**: Clear cell outputs of notebooks before committing to keep diffs small and readable.
@@ -63,7 +61,7 @@ Conventional structure of a commit message with a header, body, and footer:
 
 **Data Preprocessing**
 ```text
-data(notebook): implement standard scaling for numerical features
+feat(data): implement standard scaling for numerical features
 
 Added StandardScaler to the preprocessing pipeline to normalize 
 age and bmi columns before training.
@@ -71,7 +69,7 @@ age and bmi columns before training.
 
 **Exploratory Data Analysis**
 ```text
-eda(notebook): analyze correlation between smoking and charges
+feat(eda): analyze correlation between smoking and charges
 
 - Created scatter plots for bmi vs charges
 - Calculated Pearson correlation coefficients
@@ -80,7 +78,7 @@ eda(notebook): analyze correlation between smoking and charges
 
 **Model Training**
 ```text
-model(notebook): switch from LinearRegression to XGBoost
+feat(model): switch from LinearRegression to XGBoost
 
 Linear models were underfitting the data. XGBoost provides 
 better handling of non-linear relationships.
@@ -88,7 +86,7 @@ better handling of non-linear relationships.
 
 **Hyperparameter Tuning**
 ```text
-model(notebook): update learning rate and max_depth
+chore(model): update learning rate and max_depth
 
 - Increased learning rate to 0.01
 - Reduced max_depth to 5 to prevent overfitting
@@ -96,7 +94,7 @@ model(notebook): update learning rate and max_depth
 
 **Evaluation**
 ```text
-eval(notebook): add RMSE and MAE metrics in model evaluation section
+feat(eval): add RMSE and MAE metrics in model evaluation section
 ```
 
 **Deployment**
@@ -109,7 +107,7 @@ and returns the predicted medical cost.
 
 **Breaking Change**
 ```text
-refactor(app): change input format for prediction endpoint
+feat(app): change input format for prediction endpoint
 
 The API now expects a list of dictionaries instead of a single dictionary 
 to support batch predictions.
