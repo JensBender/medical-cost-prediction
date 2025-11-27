@@ -1,0 +1,14 @@
+# Backend
+fastapi
+pydantic
+uvicorn
+
+# Frontend
+gradio
+requests
+
+# Shared (must match requirements-train.txt)
+joblib
+numpy
+pandas
+scikit-learn
