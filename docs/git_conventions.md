@@ -27,7 +27,6 @@ Conventional structure of a commit message with a header, body, and footer:
         - `eda`: Exploratory data analysis.
         - `model`: Model architecture, training logic, or hyperparameter tuning.
         - `eval`: Model evaluation, metric calculations, feature importance or error analysis.
-        - `exp`: Configuration files for specific experiments.
         - `deploy`: Deployment scripts, Dockerfiles, or serving code.
 - **Scope** (optional): Describes **where** it changed, i.e. the specific section of the codebase. For this project, use:
     - `app`: Web application code.
@@ -106,4 +105,15 @@ feat(app): add /predict endpoint using FastAPI
 
 Created the main inference route that accepts JSON input 
 and returns the predicted medical cost.
+```
+
+**Breaking Change**
+```text
+refactor(app): change input format for prediction endpoint
+
+The API now expects a list of dictionaries instead of a single dictionary 
+to support batch predictions.
+
+BREAKING CHANGE: The /predict endpoint payload structure has changed.
+Closes #42
 ```
