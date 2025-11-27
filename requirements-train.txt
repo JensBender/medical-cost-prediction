@@ -1,0 +1,14 @@
+# Jupyter Notebook
+notebook
+
+# Data Manipulation 
+numpy
+pandas
+
+# Data Visualization
+matplotlib
+seaborn
+
+# Machine Learning 
+scikit-learn
+xgboost
