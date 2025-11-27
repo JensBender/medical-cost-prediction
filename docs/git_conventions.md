@@ -2,7 +2,7 @@
 Conventions for writing Git commit messages in this machine learning project.
 
 ## 1. The Format
-Conventional structure of a commit message: Header, Body, Footer.
+Conventional structure of a commit message with a header, body, and footer:
 
 ```text
 <type>(<scope>): <subject>
@@ -23,18 +23,18 @@ Conventional structure of a commit message: Header, Body, Footer.
         - `test`: Adding or refactoring tests.
         - `chore`: Build tasks, package manager configs, etc.
     - **ML-Specific Types**:
-        - **`data`**: Changes to data loading, preprocessing, cleaning, or dataset versioning.
-        - **`eda`**: Exploratory Data Analysis notebooks or scripts.
-        - **`model`**: Changes to model architecture, training logic, or hyperparameters.
-        - **`eval`**: Evaluation scripts, metric calculations, or validation logic.
-        - **`exp`**: Configuration files for specific experiments.
-        - **`deploy`**: Deployment scripts, Dockerfiles, or serving code.
+        - `data`: Changes to data loading, preprocessing, cleaning, or dataset versioning.
+        - `eda`: Exploratory data analysis.
+        - `model`: Model architecture, training logic, or hyperparameter tuning.
+        - `eval`: Model evaluation, metric calculations, feature importance or error analysis.
+        - `exp`: Configuration files for specific experiments.
+        - `deploy`: Deployment scripts, Dockerfiles, or serving code.
 - **Scope** (optional): Describes **where** it changed, i.e. the specific section of the codebase. For this project, use:
-    - `app`: Web application code
-    - `notebook`: Analysis and experiments
-    - `data`: Data handling scripts
-    - `docs`: Documentation
-    - `tests`: Unit tests
+    - `app`: Web application code.
+    - `notebook`: Analysis and experiments.
+    - `data`: Data handling scripts.
+    - `docs`: Files in the `docs/` directory.
+    - `tests`: Unit tests.
 - **Subject**: A concise description of the change (maximum 50 characters).
 
 **The Body** (optional)
