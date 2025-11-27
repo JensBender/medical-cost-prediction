@@ -12,3 +12,6 @@ seaborn
 # Machine Learning 
 scikit-learn
 xgboost
+
+# Model Serialization
+joblib
