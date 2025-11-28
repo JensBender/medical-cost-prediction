@@ -1,3 +1,17 @@
+# Project-specific files
 data/
 models/
 figures/
+
+# Environment variables
+.env
+
+# Virtual environment
+*venv*/
+
+# IDE artifacts
+.vscode/
+**/.ipynb_checkpoints/
+
+# Python artifacts
+**/__pycache__/
