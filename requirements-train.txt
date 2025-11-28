@@ -1,17 +1,17 @@
 # Jupyter Notebook
-jupyterlab
+jupyterlab==4.5.0
 
 # Data Manipulation 
-numpy
-pandas
+numpy==2.3.5
+pandas==2.3.3
 
 # Data Visualization
-matplotlib
-seaborn
+matplotlib==3.10.7
+seaborn==0.13.2
 
 # Machine Learning 
-scikit-learn
-xgboost
+scikit-learn==1.7.2
+xgboost==3.1.2
 
 # Model Serialization
-joblib
+joblib==1.5.2
