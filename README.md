@@ -35,6 +35,15 @@
     </ul>
   </li>
   <li>
+    <a href="#-project-structure">Project Structure</a>
+  </li>
+  <li>
+    <a href="#️-getting-started">Getting Started</a>
+    <ul>
+      <li><a href="#-virtual-environments">Virtual Environments</a></li>
+    </ul>
+  </li>
+  <li>
     <a href="#️-license">License</a>
   </li>
   <li>
@@ -80,6 +89,72 @@
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### 🏆 Final Model
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+## 📂 Project Structure
+```text
+├── notebooks/               # Jupyter Notebooks 
+│   └── medical_cost_prediction.ipynb  # Preprocessing, EDA, model training, evaluation, tuning and selection
+│
+├── app/                     # Web application source code
+│   └── app.py               # Main application file
+│
+├── models/                  # Models and pipelines (ignored by Git)
+│   ├── model.joblib         # Trained final model  
+│   └── pipeline.joblib      # Pipeline with model and preprocessing
+│
+├── data/                    # Raw and processed datasets (ignored by Git)
+│   └── h251.sas7bdat        # Medical cost dataset (SAS V9 format)
+│
+├── figures/                 # Generated figures (ignored by Git)
+│   ├── eda/                 # Exploratory data analysis visualizations
+│   ├── training/            # Training curves and learning rates
+│   ├── evaluation/          # Model performance plots
+│   └── tuning/              # Hyperparameter tuning results
+│
+├── assets/                  # Images and other assets for README
+│   └── header.png           # Project header image
+│
+├── tests/                   # Software testing for web application
+│   ├── unit/                # Unit tests
+│   ├── integration/         # Integration tests
+│   └── e2e/                 # End-to-end tests
+│
+├── docs/                    # Project documentation and references
+│   └── git_conventions.md   # Conventions for Git commit messages 
+│
+├── requirements.txt         # Production dependencies 
+├── requirements-train.txt   # Training dependencies 
+├── requirements-test.txt    # Test dependencies 
+│
+├── README.md                # Project overview 
+├── LICENSE                  # MIT License
+└── .gitignore               # Files and directories excluded from version control
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+## ⚙️ Getting Started
+
+### Virtual Environments
+This project uses two isolated environments to keep application dependencies lightweight for production deployment.
+
+**Training Environment** (`.venv-train`)
+- **Requirements File:** `requirements-train.txt`
+- **Purpose:** Model development (preprocessing, EDA, training, evaluation, tuning, selection)
+- **Key Libraries:** `jupyterlab`, `pandas`, `matplotlib`, `seaborn`, `scikit-learn`
+
+**Application Environment** (`.venv-app`)
+- **Requirements Files:** 
+    - `requirements.txt`: Web application dependencies for production deployment (used by deployment platforms)
+    - `requirements-test.txt`: Inherits from `requirements.txt` and adds `pytest` for local testing
+- **Purpose:** Run and test the web application 
+- **Key Libraries:** `fastapi`, `gradio`, `scikit-learn`
+
+**Note:** Both environments use the same version of `scikit-learn` to ensure model consistency across training and deployment.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
