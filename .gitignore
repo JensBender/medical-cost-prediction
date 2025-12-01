@@ -2,6 +2,7 @@
 data/
 models/
 figures/
+notebooks/machine_learning_template.ipynb
 
 # Environment variables
 .env
