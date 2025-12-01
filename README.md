@@ -69,6 +69,79 @@
 
 
 ## 🗂️ Data
+This project uses the **Medical Expenditure Panel Survey (MEPS)** *Full-Year Consolidated Data File* for **2023** (HC-251).  
+MEPS is a nationally representative survey of U.S. households conducted by the Agency for Healthcare Research and Quality (AHRQ). It provides detailed information on demographics, health conditions, utilization of medical services, insurance coverage, and total healthcare spending.
+
+The 2023 consolidated file contains **18,919 individuals** and **1,374 variables**.  
+This machine learning project uses the total annual medical spending of a person as the target variable and a subset of the variables as features.
+
+**Target Variable**  
+`TOTEXP23`: Total Healthcare Expenditures in 2023  
+This variable represents the **total annual medical spending per person** from all sources (out-of-pocket + private insurance + public insurance).  
+
+**Features**  
+A subset of features was selected from MEPS to balance predictive power, interpretability, and data completeness. These features encompass key drivers of healthcare costs, including demographics, socioeconomic status, health conditions, chronic illnesses, healthcare utilization, and insurance coverage.
+
+**Rationale for Feature Selection:**
+- **Predictive Power:** Includes major determinants of spending such as age, chronic conditions, and utilization patterns.
+- **Data Quality:** Prioritizes variables with low missingness to minimize imputation artifacts.
+- **Interpretability:** Maintains a feature set suitable for explaining model decisions.
+- **Manageability:** Limits the scope to ~30–35 high-impact variables, ensuring a focused analysis.
+
+Demographics:
+| Variable | Description |
+|---------|-------------|
+| `AGE23X` | Age in years (2023). |
+| `SEX` | Sex (male/female). |
+| `RACEV2X` | Race/ethnicity (collapsed categories). |
+| `REGION23` | Census region. |
+| `MARRY23X` | Marital status. |
+
+Socioeconomic Status:
+| Variable | Description |
+|---------|-------------|
+| `EDUCYR` | Years of education. |
+| `POVCAT23` | Poverty category relative to federal poverty line. |
+| `INSCOV23` | Insurance coverage category. |
+| `EMPST23` | Employment status. |
+
+Health Status & Functional Limitations:
+| Variable | Description |
+|---------|-------------|
+| `RTHLTH53` | Self-reported general health. |
+| `MNHLTH53` | Self-reported mental health. |
+| `WLKLIM53` | Walking limitation. |
+| `ACTLIM53` | Activity limitation. |
+| `COGLIM53` | Cognitive limitation. |
+
+Chronic Conditions:
+| Variable | Description |
+|---------|-------------|
+| `DIABDX` | Diabetes diagnosis. |
+| `HIBPDX` | Hypertension diagnosis. |
+| `CHOLDX` | High cholesterol. |
+| `ASTHDX` | Asthma. |
+| `HRTPRD` | Heart disease. |
+| `ARTHDX` | Arthritis. |
+| `COPDDX` | Chronic obstructive pulmonary disease. |
+
+Healthcare Utilization:
+| Variable | Description |
+|---------|-------------|
+| `OBTOTV23` | Office-based medical visits. |
+| `OPTOT23` | Outpatient visits. |
+| `ERTOT23` | Emergency room visits. |
+| `IPDIS23` | Inpatient hospital stays (discharges). |
+| `RXTOT23` | Total prescription medication fills. |
+| `HHTOTD23` | Home health care days. |
+
+Insurance Details:
+| Variable | Description |
+|---------|-------------|
+| `PRVEV23` | Any private insurance during the year. |
+| `PUBEV23` | Any public insurance (Medicare/Medicaid). |
+| `UNINS23` | Any period of being uninsured. |
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
