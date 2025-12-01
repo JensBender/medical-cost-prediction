@@ -75,6 +75,9 @@ MEPS is a nationally representative survey of U.S. households conducted by the A
 The 2023 consolidated file contains **18,919 individuals** and **1,374 variables**.  
 This machine learning project uses the total annual medical spending of a person as the target variable and a subset of the variables as features.
 
+**Documentation**  
+For detailed variable definitions and survey methodology, refer to the full [documentation](docs/h251doc.pdf) and [codebook](docs/h251cb.pdf) included in this repository.
+
 **Target Variable**  
 `TOTEXP23`: Total Healthcare Expenditures in 2023  
 This variable represents the **total annual medical spending per person** from all sources (out-of-pocket + private insurance + public insurance).  
