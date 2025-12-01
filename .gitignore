@@ -3,6 +3,7 @@ data/
 models/
 figures/
 notebooks/machine_learning_template.ipynb
+notebooks/loan_default_prediction.ipynb
 
 # Environment variables
 .env
