@@ -82,68 +82,46 @@ For detailed variable definitions and survey methodology, refer to the full [doc
 `TOTEXP23`: Total Healthcare Expenditures in 2023  
 This variable represents the **total annual medical spending per person** from all sources (out-of-pocket + private insurance + public insurance).  
 
-**Features**  
-A subset of features was selected from MEPS to balance predictive power, interpretability, and data completeness. These features encompass key drivers of healthcare costs, including demographics, socioeconomic status, health conditions, chronic illnesses, healthcare utilization, and insurance coverage.
-
-**Rationale for Feature Selection:**
+**Feature Selection**  
+A subset of features was selected from MEPS to balance predictive power, interpretability, and data completeness. These features encompass key drivers of healthcare costs, including demographics, socioeconomic status, health conditions, chronic illnesses, healthcare utilization, and insurance coverage. Features were selected based on the following criteria:
 - **Predictive Power:** Includes major determinants of spending such as age, chronic conditions, and utilization patterns.
 - **Data Quality:** Prioritizes variables with low missingness to minimize imputation artifacts.
 - **Interpretability:** Maintains a feature set suitable for explaining model decisions.
 - **Manageability:** Limits the scope to ~30–35 high-impact variables, ensuring a focused analysis.
 
-Demographics:
-| Variable | Description |
-|---------|-------------|
-| `AGE23X` | Age in years (2023). |
-| `SEX` | Sex (male/female). |
-| `RACEV2X` | Race/ethnicity (collapsed categories). |
-| `REGION23` | Census region. |
-| `MARRY23X` | Marital status. |
-
-Socioeconomic Status:
-| Variable | Description |
-|---------|-------------|
-| `EDUCYR` | Years of education. |
-| `POVCAT23` | Poverty category relative to federal poverty line. |
-| `INSCOV23` | Insurance coverage category. |
-| `EMPST23` | Employment status. |
-
-Health Status & Functional Limitations:
-| Variable | Description |
-|---------|-------------|
-| `RTHLTH53` | Self-reported general health. |
-| `MNHLTH53` | Self-reported mental health. |
-| `WLKLIM53` | Walking limitation. |
-| `ACTLIM53` | Activity limitation. |
-| `COGLIM53` | Cognitive limitation. |
-
-Chronic Conditions:
-| Variable | Description |
-|---------|-------------|
-| `DIABDX` | Diabetes diagnosis. |
-| `HIBPDX` | Hypertension diagnosis. |
-| `CHOLDX` | High cholesterol. |
-| `ASTHDX` | Asthma. |
-| `HRTPRD` | Heart disease. |
-| `ARTHDX` | Arthritis. |
-| `COPDDX` | Chronic obstructive pulmonary disease. |
-
-Healthcare Utilization:
-| Variable | Description |
-|---------|-------------|
-| `OBTOTV23` | Office-based medical visits. |
-| `OPTOT23` | Outpatient visits. |
-| `ERTOT23` | Emergency room visits. |
-| `IPDIS23` | Inpatient hospital stays (discharges). |
-| `RXTOT23` | Total prescription medication fills. |
-| `HHTOTD23` | Home health care days. |
-
-Insurance Details:
-| Variable | Description |
-|---------|-------------|
-| `PRVEV23` | Any private insurance during the year. |
-| `PUBEV23` | Any public insurance (Medicare/Medicaid). |
-| `UNINS23` | Any period of being uninsured. |
+**Features**
+| Category | Variable | Description |
+| :--- | :--- | :--- |
+| **Demographics** | `AGE23X` | Age in years (2023). |
+| | `SEX` | Sex (male/female). |
+| | `RACEV2X` | Race/ethnicity (collapsed categories). |
+| | `REGION23` | Census region. |
+| | `MARRY23X` | Marital status. |
+| **Socioeconomic Status** | `EDUCYR` | Years of education. |
+| | `POVCAT23` | Poverty category relative to federal poverty line. |
+| | `INSCOV23` | Insurance coverage category. |
+| | `EMPST23` | Employment status. |
+| **Health Status &**<br>**Functional Limitations** | `RTHLTH53` | Self-reported general health. |
+| | `MNHLTH53` | Self-reported mental health. |
+| | `WLKLIM53` | Walking limitation. |
+| | `ACTLIM53` | Activity limitation. |
+| | `COGLIM53` | Cognitive limitation. |
+| **Chronic Conditions** | `DIABDX` | Diabetes diagnosis. |
+| | `HIBPDX` | Hypertension diagnosis. |
+| | `CHOLDX` | High cholesterol. |
+| | `ASTHDX` | Asthma. |
+| | `HRTPRD` | Heart disease. |
+| | `ARTHDX` | Arthritis. |
+| | `COPDDX` | Chronic obstructive pulmonary disease. |
+| **Healthcare Utilization** | `OBTOTV23` | Office-based medical visits. |
+| | `OPTOT23` | Outpatient visits. |
+| | `ERTOT23` | Emergency room visits. |
+| | `IPDIS23` | Inpatient hospital stays (discharges). |
+| | `RXTOT23` | Total prescription medication fills. |
+| | `HHTOTD23` | Home health care days. |
+| **Insurance Details** | `PRVEV23` | Any private insurance during the year. |
+| | `PUBEV23` | Any public insurance (Medicare/Medicaid). |
+| | `UNINS23` | Any period of being uninsured. |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
