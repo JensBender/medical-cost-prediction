@@ -69,18 +69,19 @@
 
 
 ## 🗂️ Data
-This project uses the **Medical Expenditure Panel Survey (MEPS)** *Full-Year Consolidated Data File* for **2023** (HC-251).  
-MEPS is a nationally representative survey of U.S. households conducted by the Agency for Healthcare Research and Quality (AHRQ). It provides detailed information on demographics, health conditions, utilization of medical services, insurance coverage, and total healthcare spending.
+The **Medical Expenditure Panel Survey (MEPS)** is the most complete source of data on the cost and use of health care and health insurance coverage in the United States. MEPS is for the U.S. civilian noninstitutionalized population conducted by the **Agency for Healthcare Research and Quality (AHRQ)**. MEPS is a set of large-scale surveys that are nationally representative for the U.S. civilian noninstitutionalized population. 
 
-The 2023 consolidated file contains **18,919 individuals** and **1,374 variables**.  
-This machine learning project uses the total annual medical spending of a person as the target variable and a subset of the variables as features.
+MEPS has three components:
+- **Household Component (MEPS-HC):** The main survey, which collects comprehensive data from families and individuals on health status, insurance coverage, and medical expenditures.
+- **Medical Provider Component (MEPS-MPC):** Provides supplementary data from medical providers.
+- **Insurance Component (MEPS-IC):** Provides supplementary data from employers.
 
-**Documentation**  
-For detailed variable definitions and survey methodology, refer to the full [documentation](docs/h251doc.pdf) and [codebook](docs/h251cb.pdf) included in this repository.
+This project uses the latest dataset from the MEPS Household Component collected for the calendar year **2023**. Specifically, the Full-Year Consolidated Data File (HC-251) published in August 2025. The 2023 data were collected across two MEPS panels: Rounds 3, 4, and 5 of Panel 27, and Rounds 1, 2, and 3 of Panel 28
+
+The MEPS-HC 2023 dataset contains **18,919 individuals** and **1,374 variables**.  
 
 **Target Variable**  
-`TOTEXP23`: Total Healthcare Expenditures in 2023  
-This variable represents the **total annual medical spending per person** from all sources (out-of-pocket + private insurance + public insurance).  
+This machine learning project uses the **total annual medical spending of a person in 2023** (`TOTEXP23`) from all sources (out-of-pocket + private insurance + public insurance) as the target variable.  
 
 **Feature Selection**  
 A subset of features was selected from MEPS to balance predictive power, interpretability, and data completeness. These features encompass key drivers of healthcare costs, including demographics, socioeconomic status, health conditions, chronic illnesses, healthcare utilization, and insurance coverage. Features were selected based on the following criteria:
@@ -122,6 +123,9 @@ A subset of features was selected from MEPS to balance predictive power, interpr
 | **Insurance Details** | `PRVEV23` | Any private insurance during the year. |
 | | `PUBEV23` | Any public insurance (Medicare/Medicaid). |
 | | `UNINS23` | Any period of being uninsured. |
+
+**Documentation**  
+For detailed variable definitions and survey methodology, refer to the full [documentation](docs/h251doc.pdf) and [codebook](docs/h251cb.pdf) included in this repository.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
