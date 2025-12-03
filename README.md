@@ -74,7 +74,7 @@ The **Medical Expenditure Panel Survey (MEPS)** is the most complete source of d
 - **Insurance Component (MEPS-IC):** Provides supplementary data from employers on health insurance plans they offer their employees.
 - **Medical Provider Component (MEPS-MPC):** Provides supplementary data from medical providers (doctors, hospitals, pharmacies, etc.).
 
-This project uses the latest dataset from the MEPS Household Component collected for the calendar year **2023**. Specifically, the Full-Year Consolidated Data File (HC-251) published in August 2025. The 2023 data were collected across two MEPS panels: Rounds 3, 4, and 5 of Panel 27, and Rounds 1, 2, and 3 of Panel 28
+This project uses the dataset from the MEPS Household Component collected for the calendar year **2023**. Specifically, the Full-Year Consolidated Data File (HC-251) published in August 2025. The data was collected across two MEPS panels: Rounds 3, 4, and 5 of Panel 27, and Rounds 1, 2, and 3 of Panel 28. The data is available in ASCII, SAS transport, SAS V9, XLSX, and Stata file formats.
 
 The MEPS-HC 2023 dataset contains **18,919 individuals** and **1,374 variables**.  
 
@@ -122,8 +122,13 @@ A subset of features was selected from MEPS to balance predictive power, interpr
 | | `PUBEV23` | Any public insurance (Medicare/Medicaid). |
 | | `UNINS23` | Any period of being uninsured. |
 
-**Documentation**  
-For detailed variable definitions and survey methodology, refer to the full [documentation](docs/h251doc.pdf) and [codebook](docs/h251cb.pdf) included in this repository.
+**MEPS Resources**
+| Resource | Description | Link |
+| :--- | :--- | :--- |
+| Data | MEPS-HC 2023 Full Year Consolidated Data File (HC-251). | [Visit Page](https://meps.ahrq.gov/mepsweb/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251) |
+| Full Documentation | Detailed technical documentation for HC-251. | [View PDF](docs/h251doc.pdf) |
+| Codebook | Variable definitions and coding schemes. | [View PDF](docs/h251cb.pdf) |
+| MEPS Overview | Background on MEPS components and survey history. | [Visit Page](https://meps.ahrq.gov/mepsweb/about_meps/survey_back.jsp) |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
