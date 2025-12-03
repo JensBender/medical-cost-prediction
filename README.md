@@ -126,9 +126,9 @@ A subset of features was selected from MEPS to balance predictive power, interpr
 | Resource | Description | Link |
 | :--- | :--- | :--- |
 | Data | MEPS-HC 2023 Full Year Consolidated Data File (HC-251). | [Visit Page](https://meps.ahrq.gov/mepsweb/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251) |
-| Full Documentation | Detailed technical documentation for HC-251. | [View PDF](docs/h251doc.pdf) |
-| Codebook | Variable definitions and coding schemes. | [View PDF](docs/h251cb.pdf) |
-| MEPS Overview | Background on MEPS components and survey history. | [Visit Page](https://meps.ahrq.gov/mepsweb/about_meps/survey_back.jsp) |
+| Full Documentation | Technical details on data collection, variable editing, and survey sampling. | [View PDF](docs/h251doc.pdf) |
+| Codebook | Variables, labels, coding schemes, and frequencies. | [View PDF](docs/h251cb.pdf) |
+| MEPS Overview | Background on MEPS components and larger survey history. | [Visit Page](https://meps.ahrq.gov/mepsweb/about_meps/survey_back.jsp) |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
