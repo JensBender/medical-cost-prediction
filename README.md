@@ -90,7 +90,7 @@ The target variable is **total annual medical expenditures** in 2023 (`TOTEXP23`
 `TOTEXP23` reflects the total money received by the health care system from all these contributors on behalf of that person throughout the calender year 2023. It is derived from both household interviews and medical provider records, even adjusting those amounts when the household initially missed the fact that insurers paid a large, negotiated discount.  
 
 **Feature Selection**  
-A subset of features was selected from MEPS to balance predictive power, interpretability, and data completeness. These features encompass key drivers of healthcare costs, including demographics, socioeconomic status, health conditions, chronic illnesses, healthcare utilization, and insurance coverage. Features were selected based on the following criteria:
+A subset of features was selected from MEPS-HC 2023 to balance predictive power, interpretability, and data completeness. These features encompass key drivers of healthcare costs, including demographics, socioeconomic status, health conditions, chronic illnesses, healthcare utilization, and insurance coverage. Features were selected based on the following criteria:
 - **Predictive Power:** Includes major determinants of spending such as age, chronic conditions, and utilization patterns.
 - **Data Quality:** Prioritizes variables with low missingness to minimize imputation artifacts.
 - **Interpretability:** Maintains a feature set suitable for explaining model decisions.
@@ -99,36 +99,37 @@ A subset of features was selected from MEPS to balance predictive power, interpr
 **Features**
 | Category | Variable | Description |
 | :--- | :--- | :--- |
-| **Demographics** | `AGE23X` | Age in years (2023). |
+| **Demographics** | `AGE23X` | Age in years. |
 | | `SEX` | Sex (male/female). |
 | | `RACEV2X` | Race/ethnicity (collapsed categories). |
 | | `REGION23` | Census region. |
 | | `MARRY23X` | Marital status. |
-| **Socioeconomic Status** | `EDUCYR` | Years of education. |
-| | `POVCAT23` | Poverty category relative to federal poverty line. |
-| | `INSCOV23` | Insurance coverage category. |
-| | `EMPST23` | Employment status. |
-| **Health Status &**<br>**Functional Limitations** | `RTHLTH53` | Self-reported general health. |
-| | `MNHLTH53` | Self-reported mental health. |
-| | `WLKLIM53` | Walking limitation. |
-| | `ACTLIM53` | Activity limitation. |
-| | `COGLIM53` | Cognitive limitation. |
-| **Chronic Conditions** | `DIABDX` | Diabetes diagnosis. |
-| | `HIBPDX` | Hypertension diagnosis. |
-| | `CHOLDX` | High cholesterol. |
-| | `ASTHDX` | Asthma. |
-| | `HRTPRD` | Heart disease. |
-| | `ARTHDX` | Arthritis. |
-| | `COPDDX` | Chronic obstructive pulmonary disease. |
-| **Healthcare Utilization** | `OBTOTV23` | Office-based medical visits. |
-| | `OPTOT23` | Outpatient visits. |
-| | `ERTOT23` | Emergency room visits. |
-| | `IPDIS23` | Inpatient hospital stays (discharges). |
-| | `RXTOT23` | Total prescription medication fills. |
-| | `HHTOTD23` | Home health care days. |
-| **Insurance Details** | `PRVEV23` | Any private insurance during the year. |
-| | `PUBEV23` | Any public insurance (Medicare/Medicaid). |
-| | `UNINS23` | Any period of being uninsured. |
+| **Socioeconomic Status** | `EDUCYR` | Years of education when first entered MEPS. |
+| | `POVCAT23` | Family income as % of poverty line (categorical). |
+| | `INSCOV23` | Health insurance coverage indicator. |
+| | `EMPST53` | Employment status (Round 5/3). |
+| **Health** | `RTHLTH53` | Perceived health status (Round 5/3). |
+| | `MNHLTH53` | Perceived mental health status (Round 5/3). |
+| | `WLKLIM31` | Limitation in physical functioning (Round 3/1). |
+| | `ACTLIM31` | Any limitation work/housework/school (Round 3/1). |
+| | `COGLIM31` | Cognitive limitations (Round 3/1). |
+| | `DIABDX_M18` | Diabetes diagnosis. |
+| | `HIBPDX` | High blood pressure diagnosis (>17). |
+| | `CHOLDX` | High cholesterol diagnosis (>17). |
+| | `ASTHDX` | Asthma diagnosis. |
+| | `CHDDX` | Coronary heart disease diagnosis (>17). |
+| | `ARTHDX` | Arthritis diagnosis (>17). |
+| | `EMPHDX` | Emphysema diagnosis (>17). |
+| **Healthcare Utilization** | `OBTOTV23` | Number of office-based provider visits 2023. |
+| | `OPDRV23` | Number of outpatient dept physician visits. |
+| | `ERTOT23` | Number of emergency room visits. |
+| | `IPDIS23` | Number of hospital discharges. |
+| | `RXTOT23` | Number of prescription meds incl refills. |
+| | `HHTOTD23` | Number of home health provider days. |
+| **Insurance Details** | `PRVEV23` | Ever have private insurance during 2023. |
+| | `MCREV23` | Ever have Medicare during 2023 (edited). |
+| | `MCDEV23` | Ever have Medicaid/SCHIP during 2023 (edited). |
+| | `UNINS23` | Uninsured all of 2023. |
 
 **MEPS Resources**
 | Resource | Description | Link |
