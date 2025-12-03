@@ -81,6 +81,8 @@ This project utilizes the MEPS Household Component Full-Year Consolidated Data F
 
 MEPS-HC 2023 data contains **18,919 individuals** and **1,374 variables**.  
 
+![MEPS Data Infographic](assets/data_infographic.jpg)
+
 **Target Variable**  
 The target variable is **total annual medical expenditures** in 2023 (`TOTEXP23`). This variable aggregates payments for healthcare services from 10 distinct sources, including:
 - Out-of-Pocket: Direct payments by individuals or families.
