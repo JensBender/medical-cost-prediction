@@ -240,6 +240,7 @@ This project uses two isolated environments to keep application dependencies lig
 ## 👏 Credits
 This project was made possible with the help of the following resources:
 - **Dataset**: The model is trained on the Medical Expenditure Panel Survey (MEPS), specifically the 2023 Full Year Consolidated Data File, provided by the [Agency for Healthcare Research and Quality (AHRQ)](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251).
+- **Data infographic**: Generated using [Gemini 3 Pro Image](https://deepmind.google/models/gemini-image/pro/) via the [Gemini app](https://gemini.google.com/app) by Google.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
