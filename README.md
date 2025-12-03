@@ -131,6 +131,9 @@ A subset of features was selected from MEPS-HC 2023 to balance predictive power,
 | | `MCDEV23` | Ever have Medicaid/SCHIP during 2023 (edited). |
 | | `UNINS23` | Uninsured all of 2023. |
 
+**Sample Weights**  
+MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to adjust for the complex survey design (stratification, clustering, oversampling) and non-response. This machine learning project utilizes these weights in model training to correct for the survey's intentional oversampling of specific subgroups (e.g., the elderly, low-income), preventing the model from being biased toward these groups and ensuring it learns relationships that are true for the general population.
+
 **MEPS Resources**
 | Resource | Description | Link |
 | :--- | :--- | :--- |
