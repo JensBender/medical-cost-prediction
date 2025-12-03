@@ -69,17 +69,27 @@
 
 
 ## 🗂️ Data
-The **Medical Expenditure Panel Survey (MEPS)** is the most complete source of data on the cost and use of health care and health insurance coverage in the United States, conducted by the **Agency for Healthcare Research and Quality (AHRQ)**. MEPS is a set of large-scale surveys that are nationally representative for the U.S. civilian noninstitutionalized population and contains three components:
-- **Household Component (MEPS-HC):** Comprehensive data from families and individuals on medical costs, demographics, health status, insurance coverage, income, and employment.
-- **Insurance Component (MEPS-IC):** Provides supplementary data from employers on health insurance plans they offer their employees.
-- **Medical Provider Component (MEPS-MPC):** Provides supplementary data from medical providers (doctors, hospitals, pharmacies, etc.).
+The **Medical Expenditure Panel Survey (MEPS)** is the most complete source of data on the cost and use of health care and health insurance coverage in the United States. MEPS is administered by the **Agency for Healthcare Research and Quality (AHRQ)** and is a set of large-scale surveys designed to produce nationally representative estimates for the U.S. civilian noninstitutionalized population.
 
-This project uses the dataset from the MEPS Household Component collected for the calendar year **2023**. Specifically, the Full-Year Consolidated Data File (HC-251) published in August 2025. The data was collected across two MEPS panels: Rounds 3, 4, and 5 of Panel 27, and Rounds 1, 2, and 3 of Panel 28. The data is available in ASCII, SAS transport, SAS V9, XLSX, and Stata file formats.
+MEPS is comprised of three components:
+- **Household Component (MEPS-HC):** Collects comprehensive data from families and individuals on medical expenditures, conditions, and events; demographics (e.g., age, ethnicity, and income); health insurance coverage; access to care; health status; and jobs held. 
+- **Medical Provider Component (MEPS-MPC):** Collects supplementary information from medical providers (doctors, hospitals, pharmacies, etc.). Primarily used as an imputation source to supplement or replace household-reported expenditure information in the HC data files.
+- **Insurance Component (MEPS-IC):** Collects data from employers on the health insurance coverage offered to their employees. This includes information on the number and types of private health insurance plans offered, benefits, annual premiums, and contributions. 
 
-The MEPS-HC 2023 dataset contains **18,919 individuals** and **1,374 variables**.  
+**Data used in this project**  
+This project utilizes the MEPS Household Component Full-Year Consolidated Data File (HC-251) for the calendar year 2023, henceforth called **MEPS-HC 2023**. The data was released in August 2025 and is available in ASCII, SAS transport, SAS V9, XLSX, and Stata file formats.
+
+The data was collected using the standard MEPS overlapping panel design, combining information from Rounds 3, 4, and 5 of Panel 27, and Rounds 1, 2, and the 2023 portion of Round 3 of Panel 28.
+
+MEPS-HC 2023 data contains **18,919 individuals** and **1,374 variables**.  
 
 **Target Variable**  
-This machine learning project uses the **total annual medical spending of a person in 2023** (`TOTEXP23`) from all sources (out-of-pocket + private insurance + public insurance) as the target variable.  
+The target variable is **total annual medical expenditures** in 2023 (`TOTEXP23`). This variable aggregates payments for healthcare services from 10 distinct sources, including:
+- Out-of-Pocket: Direct payments by individuals or families.
+- Private Insurance: Payments from private health plans.
+- Public & Other Sources: Medicare, Medicaid, TRICARE, VA, Workers’ Compensation, and other federal/state funds.
+
+`TOTEXP23` reflects the total money received by the health care system from all these contributors on behalf of that person throughout the year. It is derived from both household interviews and medical provider records, even adjusting those amounts when the household initially missed the fact that insurers paid a large, negotiated discount.  
 
 **Feature Selection**  
 A subset of features was selected from MEPS to balance predictive power, interpretability, and data completeness. These features encompass key drivers of healthcare costs, including demographics, socioeconomic status, health conditions, chronic illnesses, healthcare utilization, and insurance coverage. Features were selected based on the following criteria:
