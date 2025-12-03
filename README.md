@@ -76,10 +76,8 @@ MEPS is comprised of three components:
 - **Medical Provider Component (MEPS-MPC):** Collects supplementary information from medical providers (doctors, hospitals, pharmacies, etc.). Primarily used as an imputation source to supplement or replace household-reported expenditure information in the HC data files.
 - **Insurance Component (MEPS-IC):** Collects data from employers on the health insurance coverage offered to their employees. This includes information on the number and types of private health insurance plans offered, benefits, annual premiums, and contributions. 
 
-**Data used in this project**  
-This project utilizes the MEPS Household Component Full-Year Consolidated Data File (HC-251) for the calendar year 2023, henceforth called **MEPS-HC 2023**. The data was released in August 2025 and is available in ASCII, SAS transport, SAS V9, XLSX, and Stata file formats.
-
-The data was collected using the standard MEPS overlapping panel design, combining information from Rounds 3, 4, and 5 of Panel 27, and Rounds 1, 2, and the 2023 portion of Round 3 of Panel 28.
+**MEPS-HC 2023**  
+This project utilizes the MEPS Household Component Full-Year Consolidated Data File (HC-251) for 2023, henceforth referred to as MEPS-HC 2023. This is the main person-level file. The data was collected using the standard MEPS overlapping panel design, combining information from Rounds 3, 4, and 5 of Panel 27, and Rounds 1, 2, and the 2023 portion of Round 3 of Panel 28. Released in August 2025, the data is available in ASCII, SAS transport, SAS V9, XLSX, and Stata file formats.
 
 MEPS-HC 2023 data contains **18,919 individuals** and **1,374 variables**.  
 
@@ -89,7 +87,7 @@ The target variable is **total annual medical expenditures** in 2023 (`TOTEXP23`
 - Private Insurance: Payments from private health plans.
 - Public & Other Sources: Medicare, Medicaid, TRICARE, VA, Workers’ Compensation, and other federal/state funds.
 
-`TOTEXP23` reflects the total money received by the health care system from all these contributors on behalf of that person throughout the year. It is derived from both household interviews and medical provider records, even adjusting those amounts when the household initially missed the fact that insurers paid a large, negotiated discount.  
+`TOTEXP23` reflects the total money received by the health care system from all these contributors on behalf of that person throughout the calender year 2023. It is derived from both household interviews and medical provider records, even adjusting those amounts when the household initially missed the fact that insurers paid a large, negotiated discount.  
 
 **Feature Selection**  
 A subset of features was selected from MEPS to balance predictive power, interpretability, and data completeness. These features encompass key drivers of healthcare costs, including demographics, socioeconomic status, health conditions, chronic illnesses, healthcare utilization, and insurance coverage. Features were selected based on the following criteria:
