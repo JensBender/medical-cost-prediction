@@ -69,12 +69,10 @@
 
 
 ## 🗂️ Data
-The **Medical Expenditure Panel Survey (MEPS)** is the most complete source of data on the cost and use of health care and health insurance coverage in the United States. MEPS is for the U.S. civilian noninstitutionalized population conducted by the **Agency for Healthcare Research and Quality (AHRQ)**. MEPS is a set of large-scale surveys that are nationally representative for the U.S. civilian noninstitutionalized population. 
-
-MEPS has three components:
-- **Household Component (MEPS-HC):** The main survey, which collects comprehensive data from families and individuals on health status, insurance coverage, and medical expenditures.
-- **Medical Provider Component (MEPS-MPC):** Provides supplementary data from medical providers.
-- **Insurance Component (MEPS-IC):** Provides supplementary data from employers.
+The **Medical Expenditure Panel Survey (MEPS)** is the most complete source of data on the cost and use of health care and health insurance coverage in the United States, conducted by the **Agency for Healthcare Research and Quality (AHRQ)**. MEPS is a set of large-scale surveys that are nationally representative for the U.S. civilian noninstitutionalized population and contains three components:
+- **Household Component (MEPS-HC):** Comprehensive data from families and individuals on medical costs, demographics, health status, insurance coverage, income, and employment.
+- **Insurance Component (MEPS-IC):** Provides supplementary data from employers on health insurance plans they offer their employees.
+- **Medical Provider Component (MEPS-MPC):** Provides supplementary data from medical providers (doctors, hospitals, pharmacies, etc.).
 
 This project uses the latest dataset from the MEPS Household Component collected for the calendar year **2023**. Specifically, the Full-Year Consolidated Data File (HC-251) published in August 2025. The 2023 data were collected across two MEPS panels: Rounds 3, 4, and 5 of Panel 27, and Rounds 1, 2, and 3 of Panel 28
 
