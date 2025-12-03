@@ -180,7 +180,7 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to adjust for the compl
 │   └── pipeline.joblib      # Pipeline with model and preprocessing
 │
 ├── data/                    # Raw and processed datasets (ignored by Git)
-│   └── h251.sas7bdat        # Medical cost dataset (SAS V9 format)
+│   └── h251.sas7bdat        # MEPS-HC 2023 dataset (SAS V9 format)
 │
 ├── figures/                 # Generated figures (ignored by Git)
 │   ├── eda/                 # Exploratory data analysis visualizations
@@ -189,6 +189,7 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to adjust for the compl
 │   └── tuning/              # Hyperparameter tuning results
 │
 ├── assets/                  # Images and other assets for README
+│   ├── data_infographic.jpg # MEPS data overview infographic
 │   └── header.png           # Project header image
 │
 ├── tests/                   # Software testing for web application
@@ -197,6 +198,8 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to adjust for the compl
 │   └── e2e/                 # End-to-end tests
 │
 ├── docs/                    # Project documentation and references
+│   ├── h251doc.pdf          # MEPS-HC 2023 documentation
+│   ├── h251cb.pdf           # MEPS-HC 2023 codebook
 │   └── git_conventions.md   # Conventions for Git commit messages 
 │
 ├── requirements.txt         # Production dependencies 
