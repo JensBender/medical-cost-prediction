@@ -79,14 +79,14 @@ This project utilizes the 2023 Full-Year Consolidated Data File (HC-251).
 - **Sample Size:** 18,919 individuals.
 - **Variables:** 1,374.
 - **Data Domains:** Medical expenditures, conditions, and events, demographics (e.g., age, ethnicity, and income), health insurance coverage, access to care, health status, and jobs held.
-- **Data Format:** Available in ASCII, SAS transport, SAS V9, XLSX, and Stata file formats.
-- **Data Collection Period:** Rounds 3, 4, and 5 of Panel 27, and Rounds 1, 2, and the 2023 portion of Round 3 of Panel 28.
-- **Data Release:** August 2025.
+- **Format:** Available in ASCII, SAS transport, SAS V9, XLSX, and Stata file formats.
+- **Collection Period:** Rounds 3, 4, and 5 of Panel 27, and Rounds 1, 2, and the 2023 portion of Round 3 of Panel 28.
+- **Released:** August 2025.
 
 ![MEPS Data Infographic](assets/data_infographic.jpg)
 
 **Target Variable**  
-The target variable is **total annual medical expenditures** in 2023 (`TOTEXP23`). This variable aggregates payments from 10 distinct sources, including:
+The target variable is **total health care expenditures in 2023** (`TOTEXP23`). This variable aggregates payments from 10 distinct sources, including:
 - Out-of-Pocket: Direct payments by individuals or families.
 - Private Insurance: Payments from private health plans.
 - Public Sources: Medicare, Medicaid, TRICARE, VA, and other federal/state funds.
