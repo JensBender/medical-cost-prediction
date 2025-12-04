@@ -86,10 +86,10 @@ This project utilizes the 2023 Full-Year Consolidated Data File (HC-251).
 ![MEPS Data Infographic](assets/data_infographic.jpg)
 
 **Target Variable**  
-The target variable is **total annual medical expenditures** in 2023 (`TOTEXP23`). This variable aggregates payments for healthcare services from 10 distinct sources, including:
+The target variable is **total annual medical expenditures** in 2023 (`TOTEXP23`). This variable aggregates payments from 10 distinct sources, including:
 - Out-of-Pocket: Direct payments by individuals or families.
 - Private Insurance: Payments from private health plans.
-- Public & Other Sources: Medicare, Medicaid, TRICARE, VA, Workers’ Compensation, and other federal/state funds.
+- Public Sources: Medicare, Medicaid, TRICARE, VA, and other federal/state funds.
 
 `TOTEXP23` reflects the total money received by the health care system from all these contributors on behalf of that person throughout the calender year 2023. It is derived from both household interviews and medical provider records, adjusting those amounts when the household missed the fact that insurers paid a negotiated discount.  
 
