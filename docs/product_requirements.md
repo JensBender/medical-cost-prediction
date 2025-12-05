@@ -29,16 +29,20 @@ The **Medical Cost Prediction App** is a consumer-facing web application that us
 ## Functional Requirements
 
 ### User Input 
-The app shall present a simple form on a single page, with no more than 20 inputs. 
-*   **Age**: Numeric field (18-85).
-*   **Sex**: Dropdown list (Male/Female).
-*   **Region**: Dropdown list (Northeast, Midwest, South, West).
-*   **Income Tier**: Dropdown list (Income range Low/Middle/High).
-*   **Insurance Type**: Dropdown list (Private/Public/Uninsured).
-*   **Physical Health**: Dropdown list (Excellent to Poor).
-*   **Mental Health**: Dropdown list (Excellent to Poor).
-*   **Diabetes**: Checkbox.
-*   **High Blood Pressure**: Checkbox.
+The UI must be a simple form on a single page with no more than 10 core inputs. Inputs are mapped to MEPS variables.
+
+| ID | UI Label | Input Type | Value Range | MEPS Variable |
+| :--- | :--- | :--- | :--- | :--- |
+| **IN-01** | Age | Number | [18, 85] | `AGE23X` |
+| **IN-02** | Sex | Dropdown | ["Male", "Female"] | `SEX` |
+| **IN-03** | Region | Dropdown | ["Northeast", "Midwest", "South", "West"] | `REGION23` |
+| **IN-04** | Income | Dropdown | ["Low (<$30k)", "Middle", "High (>$100k)"] | `POVCAT23` |
+| **IN-05** | Insurance Status | Dropdown | ["Private", "Public (Medicare/Medicaid)", "Uninsured"] | `INSCOV23` |
+| **IN-06** | Physical Health | Dropdown | ["(1) Poor", "(2) Fair", "(3) Good", "(4) Very Good", "(5) Excellent"] | `RTHLTH31` |
+| **IN-07** | Mental Health | Dropdown | ["(1) Poor", "(2) Fair", "(3) Good", "(4) Very Good", "(5) Excellent"] | `MNHLTH31` |
+| **IN-08** | Diabetes | Checkbox | ["Yes", "No"] | `DIABDX_M18` |
+| **IN-09** | High Blood Pressure | Checkbox | ["Yes", "No"] | `HIBPDX` |
+| **IN-10** | Smoker | Checkbox | ["Yes", "No"] | `ADSMOK42` |
 
 ### Prediction
 *   System shall calculate the **Predicted Total Expenditure** using the pre-trained ML model.
@@ -61,6 +65,7 @@ The app shall present a simple form on a single page, with no more than 20 input
     ```
     Example: "You are projected to spend 15% less than the national average for your age group."
     ```
+
 
 ## Data & Machine Learning Specifications
 
