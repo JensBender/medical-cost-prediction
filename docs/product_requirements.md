@@ -1,17 +1,17 @@
 # Product Requirements Document (PRD)
-
 | **Project Name** | Medical Cost Prediction |
 | :--- | :--- |
 | **Status** | Project scoping |
 | **Date** | December 5, 2025 |
 | **Data Source** | Medical Expenditure Panel Survey (MEPS) |
 
----
 
-## 1. Executive Summary
-**Medical Cost Prediction** is a consumer-facing web application that utilizes machine learning trained on the Medical Expenditure Panel Survey (MEPS) 2023 data. 
+## Executive Summary
+The **Medical Cost Prediction App** is a consumer-facing web application that uses machine learning trained on the Medical Expenditure Panel Survey (MEPS) to predict annual healthcare costs.
 
-**The Goal:** To solve the "black box" of healthcare pricing. While insurance portals show prices for individual treatments, it is hard for consumers to predict total costs expected for the entire year. Our app allows users to input basic demographic and health information to receive a personalized forecast of their expected heathcare costs for the upcoming year. This aids in financial planning (HSA/FSA contributions) and risk awareness.
+**The Problem:** Healthcare pricing is a "black box." While insurance portals show *unit prices* for individual treatments (e.g., "cost of an MRI"), consumers struggle to predict their total expected costs for the entire year. Fixed calculators (e.g., "add $500 per child") are inaccurate because they ignore health status, and insurance tools require specific procedure codes that often users don't know.
+
+**Our Solution:** This tool predicts expected healthcare costs based on simple information that users know about themselves. It translates complex epidemiological data from MEPS into a simple financial planning tool, enabling users to input basic information such as age, sex, insurance status, self-rated health, and pre-existing health conditions to receive a personalized forecast for expected healthcare costs for the upcoming year. This forecast can be used for FSA/HSA contributions and emergency fund planning.
 
 ---
 
