@@ -16,10 +16,14 @@ The **Medical Cost Prediction App** is a consumer-facing web application that us
 **How it works:** The web app is powered by a machine learning model trained on the Medical Expenditure Panel Survey (MEPS)—the gold standard for U.S. healthcare cost data. MEPS captures what people with specific demographic and health profiles *actually* spent on healthcare. Our ML model learns these complex, often nonlinear patterns and makes them accessible through a simple web app, providing a free, data-driven financial planning tool for everyone.
 
 
-## Target Audience
-1.  **The Open Enrollment Planner:** Employees deciding how much to contribute to FSAs/HSAs during open enrollment.
-2.  **The Budgeter:** Individuals with tight budgets needing to anticipate potential medical shocks.
-3.  **The Newly Diagnosed:** Users recently diagnosed with a chronic condition (e.g., Diabetes) wondering how it impacts their financial bottom line.
+## User Personas
+| Persona | Description | Primary Need |
+| :--- | :--- | :--- |
+| **The Open Enrollment Planner** | Employees deciding how much to contribute to FSAs/HSAs during open enrollment. | "Should I contribute $1,000 or $3,000?" |
+| **The Budgeter** | Individuals with tight budgets needing to anticipate potential medical expenses. | "What's the worst-case scenario I should prepare for?" |
+| **The Newly Diagnosed** | Users recently diagnosed with a chronic condition (e.g., Diabetes). | "How does this diagnosis impact my financial bottom line?" |
+| **The Gig Worker** | Uninsured or underinsured individuals weighing coverage options. | "What's the financial risk of skipping coverage vs. buying a plan?" |
+| **The Caregiver** | The "sandwich generation" estimating costs for an elderly parent. | "How much should I budget for my parent's healthcare?" |
 
 
 ## Functional Requirements
