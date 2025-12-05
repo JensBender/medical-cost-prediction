@@ -4,6 +4,7 @@ models/
 figures/
 notebooks/machine_learning_template.ipynb
 notebooks/loan_default_prediction.ipynb
+docs/prd2.md
 
 # Environment variables
 .env
