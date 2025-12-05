@@ -44,10 +44,13 @@ The UI must be a simple form on a single page with no more than 10 core inputs. 
 | **IN-09** | High Blood Pressure | Checkbox | ["Yes", "No"] | `HIBPDX` |
 | **IN-10** | Smoker | Checkbox | ["Yes", "No"] | `ADSMOK42` |
 
-### Prediction
-*   System shall calculate the **Predicted Total Expenditure** using the pre-trained ML model.
-*   System shall calculate a **Prediction Interval** (e.g., 25th to 75th percentile) to communicate uncertainty.
-*   System shall handle missing optional inputs (e.g., impute based on user profile or run a reduced-feature model).
+### Prediction Engine
+| ID | Requirement | Details |
+| :--- | :--- | :--- |
+| **FR-01** | **Imputation** | If optional fields are skipped, default to the mode for categorical features and the median for numerical features. |
+| **FR-02** | **Inflation Adjustment** | Model predicts in 2023 dollars. Apply medical inflation multiplier: `Final_Prediction = Model_Output × (1 + Medical_Inflation_Rate)^(CurrentYear - 2023)` |
+| **FR-03** | **Prediction Intervals** | Generate 25th–75th percentile range to communicate uncertainty. Never output a single point estimate. |
+| **FR-04** | **Comparison Benchmark** | Compare user's prediction to the national average for their age group. Pre-compute benchmarks from MEPS data by demographic segment. |
 
 ### Output
 *   System shall display the "Likely Annual Cost" as a dollar range.  
