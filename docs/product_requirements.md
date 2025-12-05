@@ -13,24 +13,19 @@ The **Medical Cost Prediction App** is a consumer-facing web application that us
 
 **Our Solution:** This tool predicts expected healthcare costs based on simple information that users know about themselves. It translates complex epidemiological data from MEPS into a simple financial planning tool, enabling users to input basic information such as age, sex, insurance status, self-rated health, and pre-existing health conditions to receive a personalized forecast for expected healthcare costs for the upcoming year. This forecast can be used for FSA/HSA contributions and emergency fund planning.
 
----
-
-## 2. Problem Statement
+## Problem Statement
 *   **User Pain Point:** Consumers do not know how much to set aside for healthcare. Fixed calculators ("add $500 per child") are inaccurate because they ignore health status. Insurance tools require specific procedure codes (CPT) that users don't know.
 *   **The Opportunity:** MEPS data contains the ground truth of what people with specific profiles *actually* spent. By exposing this via an easy-to-use web app that is available to everyone, we can provide data-driven financial guidance without requiring complex, detailed medical records.
 
----
-
-## 3. Target Audience
+## Target Audience
 1.  **The Open Enrollment Planner:** Employees deciding how much to contribute to FSAs/HSAs during open enrollment.
 2.  **The Budgeter:** Individuals with tight budgets needing to anticipate potential medical shocks.
 3.  **The Newly Diagnosed:** Users recently diagnosed with a chronic condition (e.g., Diabetes) wondering how it impacts their financial bottom line.
 
----
 
-## 4. Functional Requirements
+## Functional Requirements
 
-### 4.1. User Input 
+### User Input 
 The app shall present a simple form on a single page, with no more than 20 inputs. 
 *   **Age**: Numeric field (18-85).
 *   **Sex**: Dropdown list (Male/Female).
@@ -42,12 +37,12 @@ The app shall present a simple form on a single page, with no more than 20 input
 *   **Diabetes**: Checkbox.
 *   **High Blood Pressure**: Checkbox.
 
-### 4.2. Prediction
+### Prediction
 *   System shall calculate the **Predicted Total Expenditure** using the pre-trained ML model.
 *   System shall calculate a **Prediction Interval** (e.g., 25th to 75th percentile) to communicate uncertainty.
 *   System shall handle missing optional inputs (e.g., impute based on user profile or run a reduced-feature model).
 
-### 4.3. Output
+### Output
 *   System shall display the "Likely Annual Cost" as a dollar range.  
     ```
     Example: "Your predicted healthcare cost for the upcoming year is between $1,200 and $2,500."
@@ -64,15 +59,13 @@ The app shall present a simple form on a single page, with no more than 20 input
     Example: "You are projected to spend 15% less than the national average for your age group."
     ```
 
----
+## Data & Machine Learning Specifications
 
-## 5. Data & Machine Learning Specifications
-
-### 5.1. Dataset
+### Dataset
 *   **Source:** MEPS-HC 2023 Full Year Consolidated Data File (H251).
 *   **Documentation:** [H251 Codebook](https://meps.ahrq.gov/data_stats/download_data_files_codebook.jsp?PUFId=H251).
 
-### 5.2. Feature Mapping (MEPS to UI)
+### Feature Mapping (MEPS to UI)
 The model will utilize the following features mapping to user inputs:
 
 | MEPS Variable | Data Type | UI Input |
@@ -88,38 +81,35 @@ The model will utilize the following features mapping to user inputs:
 | `HIBPDX` | Binary | Checkbox |
 | `ADSMOK42` | Binary | Checkbox |
 
-### 5.3. Model Architecture
+### Model Architecture
 *   **Algorithm:** Gradient Boosting Regressor (XGBoost or LightGBM).
 *   **Objective:** `TOTEXP23` (Total Health Care Expenditures).
 *   **Handling Zeros:** Use a Two-Part Model (Hurdle Model) or Tweedie Objective function to handle zero-inflated cost data.
 *   **Weighting:** Training must utilize `PERWT23F` (Person Weight) to ensure national representation.
 *   **Preprocessing:** Log-transformation of target variable `log(TOTEXP23 + 1)` recommended for training stability.
 
----
 
-## 6. Non-Functional Requirements
+## Non-Functional Requirements
 
-### 6.1. Privacy & Security
+### Privacy & Security
 *   **NFR-01: Stateless Operation.** The app must NOT store any user input in a database. Data exists only in RAM during the session (Ephemeral).
 *   **NFR-02: No PII.** No names, emails, exact addresses, or SSNs shall be requested.
 
-### 6.2. Performance
+### Performance
 *   **NFR-03: Latency.** Inference prediction must be returned in < 200ms.
 *   **NFR-04: Mobile responsive.** The UI must adapt to smartphone screens.
 
-### 6.3. Reliability
+### Reliability
 *   **NFR-05: Fallback Mode.** If the user doesn't provide an input, the app must display an informative message or impute the value.
 
----
 
-## 7. UI/UX Guidelines
+## UI/UX Guidelines
 *   **Tone:** Helpful, calm, non-judgmental. Avoid complex medical jargon (e.g. "High Blood Pressure" instead of "Hypertension").
 *   **Visuals:** Use trust-building colors (Blues/Greens).
 *   **Disclaimer:** A permanent footer stating: *"This tool is for educational purposes only. It is a statistical estimate based on 2023 national data, not a medical billing quote."*
 
----
 
-## 8. Technical Stack Recommendation
+## Technical Stack Recommendation
 *   **Model Training:** Python (Scikit-Learn, XGBoost). Model serialized as `.joblib`.
 *   **Web App:** 
     *   **Frontend**: Gradio or Streamlit (for demo).
@@ -129,16 +119,14 @@ The model will utilize the following features mapping to user inputs:
     *   **Model/Pipeline**: Hugging Face Hub.
     *   **Web App**: Hugging Face Spaces.
 
----
 
-## 9. Success Metrics
+## Success Metrics
 *   **Model Accuracy:** Mean Absolute Error (MAE) on the test set is within $500 of the baseline MEPS benchmarks for the median patient.
 *   **Completion Rate:** > 80% of users who start the questionnaire complete it.
 *   **User Satisfaction:** Positive sentiment on optional "Was this helpful?" feedback.
 
----
 
-## 10. Risk Assessment
+## Risk Assessment
 | Risk | Example | Mitigation Strategy |
 | :--- | :--- | :--- |
 | **Outlier Prediction** | Model predicts extreme costs ($100k+) for a standard user. | Consider implementing "Guardrails" in the code to cap displayed predictions at the 95th percentile with a "High Cost Risk" label instead of a raw number. |
