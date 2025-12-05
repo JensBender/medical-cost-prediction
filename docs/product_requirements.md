@@ -11,11 +11,10 @@ The **Medical Cost Prediction App** is a consumer-facing web application that us
 
 **The Problem:** Healthcare pricing is a "black box." While insurance portals show *unit prices* for individual treatments (e.g., "cost of an MRI"), consumers struggle to predict their total expected costs for the entire year. Fixed calculators (e.g., "add $500 per child") are inaccurate because they ignore health status, and insurance tools require specific procedure codes that often users don't know.
 
-**Our Solution:** This tool predicts expected healthcare costs based on simple information that users know about themselves. It translates complex epidemiological data from MEPS into a simple financial planning tool, enabling users to input basic information such as age, sex, insurance status, self-rated health, and pre-existing health conditions to receive a personalized forecast for expected healthcare costs for the upcoming year. This forecast can be used for FSA/HSA contributions and emergency fund planning.
+**Our Solution:** This tool enables users to predict their expected healthcare costs based on easily available information instead of complex medical records. Users can simply enter their age, sex, insurance status, self-rated health, and pre-existing health conditions to receive a personalized forecast for expected healthcare costs for the upcoming year. This forecast can be used for FSA/HSA contributions and emergency fund planning.
 
-## Problem Statement
-*   **User Pain Point:** Consumers do not know how much to set aside for healthcare. Fixed calculators ("add $500 per child") are inaccurate because they ignore health status. Insurance tools require specific procedure codes (CPT) that users don't know.
-*   **The Opportunity:** MEPS data contains the ground truth of what people with specific profiles *actually* spent. By exposing this via an easy-to-use web app that is available to everyone, we can provide data-driven financial guidance without requiring complex, detailed medical records.
+**How it works:** The web app is powered by a machine learning model trained on the Medical Expenditure Panel Survey (MEPS)—the gold standard for U.S. healthcare cost data. MEPS captures what people with specific demographic and health profiles *actually* spent on healthcare. Our ML model learns these complex, often nonlinear patterns and makes them accessible through a simple web app, providing a free, data-driven financial planning tool for everyone.
+
 
 ## Target Audience
 1.  **The Open Enrollment Planner:** Employees deciding how much to contribute to FSAs/HSAs during open enrollment.
