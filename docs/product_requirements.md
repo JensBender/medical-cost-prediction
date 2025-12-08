@@ -53,11 +53,11 @@ The UI must be a simple form on a single page with no more than 10 core inputs. 
 | **FR-04** | **Comparison Benchmark** | Compare user's prediction to the national average for their age group. Pre-compute benchmarks from MEPS data by demographic segment. |
 
 ### Result Display
-| ID | Component | Description | Example |
-| :--- | :--- | :--- | :--- |
-| **UI-01** | **Cost Range** | Large, prominent display of cost prediction as a range. | "Estimated Healthcare Cost for Next Year: **$1,450 – $2,100**" |
-| **UI-02** | **Cost Drivers** | Explanation of key factors and their dollar impact (SHAP). | "Key Cost Drivers: Your Diabetes Diagnosis (+$1,200), your Age (+$400), but your "Excellent" self-reported health lowered the estimate by (-$300)" |
-| **UI-03** | **Comparison Benchmark** | Bar chart comparing user vs. national average for their age group. | "You are projected to spend 15% less than the national average for your age group." |
+| ID | Component | Description | UI Element | Example |
+| :--- | :--- | :--- | :--- | :--- |
+| **UI-01** | **Cost Range** | Large, prominent display of cost prediction as a range. | `gr.Markdown` | "Estimated Healthcare Cost for Next Year: **$1,450 – $2,100**" |
+| **UI-02** | **Cost Drivers** | Explanation of key cost drivers and their dollar impact (SHAP). | `gr.Markdown` | "Your Diabetes Diagnosis (+$1,200), your Age (+$400), but your "Excellent" self-reported health lowered the estimate by (-$300)" |
+| **UI-03** | **Comparison Benchmark** | Bar chart comparing user vs. national average for their age group. | `gr.Plot` | "You are projected to spend 15% less than the national average for your age group." |
 
 
 ## Data & Machine Learning Specifications
