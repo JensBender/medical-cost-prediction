@@ -52,22 +52,12 @@ The UI must be a simple form on a single page with no more than 10 core inputs. 
 | **FR-03** | **Prediction Intervals** | Generate 25th–75th percentile range to communicate uncertainty. Never output a single point estimate. |
 | **FR-04** | **Comparison Benchmark** | Compare user's prediction to the national average for their age group. Pre-compute benchmarks from MEPS data by demographic segment. |
 
-### Output
-*   System shall display the "Likely Annual Cost" as a dollar range.  
-    ```
-    Example: "Your predicted healthcare cost for the upcoming year is between $1,200 and $2,500."
-    ```
-*   System shall display a "Key Cost Drivers" section (Explainability via SHAP values).  
-    ```
-    Example: The main cost drivers for this prediction are:
-    Your Diabetes Diagnosis (+ $1,200)
-    Your Age (+ $400)
-    But your 'Excellent' self-reported health lowered the estimate by (- $300)
-    ```
-*   System shall display a Comparison Benchmark.
-    ```
-    Example: "You are projected to spend 15% less than the national average for your age group."
-    ```
+### Result Display
+| ID | Component | Description | Example |
+| :--- | :--- | :--- | :--- |
+| **UI-01** | **Cost Range** | Large, prominent display of cost prediction as a range. | "Estimated Healthcare Cost for Next Year: **$1,450 – $2,100**" |
+| **UI-02** | **Cost Drivers** | Explanation of key factors and their dollar impact (SHAP). | "Key Cost Drivers: Your Diabetes Diagnosis (+$1,200), your Age (+$400), but your "Excellent" self-reported health lowered the estimate by (-$300)" |
+| **UI-03** | **Comparison Benchmark** | Bar chart comparing user vs. national average for their age group. | "You are projected to spend 15% less than the national average for your age group." |
 
 
 ## Data & Machine Learning Specifications
