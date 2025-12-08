@@ -58,7 +58,7 @@ The UI must be a simple form on a single page with no more than 10 core inputs. 
 | :--- | :--- | :--- | :--- | :--- |
 | **UI-01** | **Cost Range** | Large, prominent display of cost prediction as a range. | `gr.Markdown` | "Estimated Healthcare Cost for Next Year: **$1,450 – $2,100**" |
 | **UI-02** | **Cost Drivers** | Explanation of key cost drivers and their dollar impact (SHAP). | `gr.Markdown` | "Your Diabetes Diagnosis (+$1,200), your Age (+$400), but your "Excellent" self-reported health lowered the estimate by (-$300)" |
-| **UI-03** | **Comparison Benchmarks** | Bar chart comparing user vs. national average and age group average. | `gr.Plot` | "National Median: $4,800 vs. Your Age Group (45–54): $3,200" |
+| **UI-03** | **Comparison Benchmarks** | Bar chart comparing user vs. national and age group benchmarks. | `gr.Plot` | "Typical American (median): $4,800 vs. Typical for Age 45–54 (median): $3,200" |
 
 
 ## Data & Machine Learning Specifications
