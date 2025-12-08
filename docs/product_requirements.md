@@ -49,8 +49,9 @@ The UI must be a simple form on a single page with no more than 10 core inputs. 
 | :--- | :--- | :--- |
 | **FR-01** | **Imputation** | If optional fields are skipped, default to the mode for categorical features and the median for numerical features. |
 | **FR-02** | **Inflation Adjustment** | Model predicts in 2023 dollars. Apply medical inflation multiplier: `Final_Prediction = Model_Output × (1 + Medical_Inflation_Rate)^(CurrentYear - 2023)` |
-| **FR-03** | **Prediction Intervals** | Generate 25th–75th percentile range to communicate uncertainty. Never output a single point estimate. |
-| **FR-04** | **Comparison Benchmark** | Compare user's prediction to the national average for their age group. Pre-compute benchmarks from MEPS data by demographic segment. |
+| **FR-03** | **Cost Range** | Generate 25th–75th percentile range to communicate prediction uncertainty. Never output a single point estimate. |
+| **FR-04** | **Cost Drivers** | Compute SHAP values for each prediction to explain feature contributions as dollar impacts. |
+| **FR-05** | **Comparison Benchmark** | Compare user's prediction to the national average for their age group. Pre-compute benchmarks from MEPS data by demographic segment. |
 
 ### Result Display
 | ID | Component | Description | UI Element | Example |
