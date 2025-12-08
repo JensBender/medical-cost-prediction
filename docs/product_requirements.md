@@ -31,18 +31,18 @@ The **Medical Cost Prediction App** is a consumer-facing web application that us
 ### User Input 
 The UI must be a simple form on a single page with no more than 10 core inputs. Inputs are mapped to MEPS variables.
 
-| ID | UI Label | Input Type | Value Range | MEPS Variable |
+| ID | UI Label | UI Element | Value Range | MEPS Variable |
 | :--- | :--- | :--- | :--- | :--- |
-| **IN-01** | Age | Number | [18, 85] | `AGE23X` |
-| **IN-02** | Sex | Dropdown | ["Male", "Female"] | `SEX` |
-| **IN-03** | Region | Dropdown | ["Northeast", "Midwest", "South", "West"] | `REGION23` |
-| **IN-04** | Income | Dropdown | ["Low (<$30k)", "Middle", "High (>$100k)"] | `POVCAT23` |
-| **IN-05** | Insurance Status | Dropdown | ["Private", "Public (Medicare/Medicaid)", "Uninsured"] | `INSCOV23` |
-| **IN-06** | Physical Health | Dropdown | ["(1) Poor", "(2) Fair", "(3) Good", "(4) Very Good", "(5) Excellent"] | `RTHLTH31` |
-| **IN-07** | Mental Health | Dropdown | ["(1) Poor", "(2) Fair", "(3) Good", "(4) Very Good", "(5) Excellent"] | `MNHLTH31` |
-| **IN-08** | Diabetes | Checkbox | ["Yes", "No"] | `DIABDX_M18` |
-| **IN-09** | High Blood Pressure | Checkbox | ["Yes", "No"] | `HIBPDX` |
-| **IN-10** | Smoker | Checkbox | ["Yes", "No"] | `ADSMOK42` |
+| **IN-01** | Age | `gr.Number` | [18, 85] | `AGE23X` |
+| **IN-02** | Sex | `gr.Radio` | ["Male", "Female"] | `SEX` |
+| **IN-03** | Region | `gr.Dropdown` | ["Northeast", "Midwest", "South", "West"] | `REGION23` |
+| **IN-04** | Income | `gr.Dropdown` | ["Low (<$30k)", "Middle", "High (>$100k)"] | `POVCAT23` |
+| **IN-05** | Insurance Status | `gr.Dropdown` | ["Private", "Public (Medicare/Medicaid)", "Uninsured"] | `INSCOV23` |
+| **IN-06** | Physical Health | `gr.Dropdown` | ["(1) Poor", "(2) Fair", "(3) Good", "(4) Very Good", "(5) Excellent"] | `RTHLTH31` |
+| **IN-07** | Mental Health | `gr.Dropdown` | ["(1) Poor", "(2) Fair", "(3) Good", "(4) Very Good", "(5) Excellent"] | `MNHLTH31` |
+| **IN-08** | Diabetes | `gr.Checkbox` | [True, False] | `DIABDX_M18` |
+| **IN-09** | High Blood Pressure | `gr.Checkbox` | [True, False] | `HIBPDX` |
+| **IN-10** | Smoker | `gr.Checkbox` | [True, False] | `ADSMOK42` |
 
 ### Prediction Engine
 | ID | Requirement | Details |
