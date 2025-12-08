@@ -51,14 +51,14 @@ The UI must be a simple form on a single page with no more than 10 core inputs. 
 | **FR-02** | **Inflation Adjustment** | Model predicts in 2023 dollars. Apply medical inflation multiplier: `Final_Prediction = Model_Output × (1 + Medical_Inflation_Rate)^(CurrentYear - 2023)` |
 | **FR-03** | **Cost Range** | Generate 25th–75th percentile range to communicate prediction uncertainty. Never output a single point estimate. |
 | **FR-04** | **Cost Drivers** | Compute SHAP values for each prediction to explain feature contributions as dollar impacts. |
-| **FR-05** | **Comparison Benchmark** | Compare user's prediction to the national average for their age group. Pre-compute benchmarks from MEPS data by demographic segment. |
+| **FR-05** | **Comparison Benchmarks** | Compare user's prediction to: (1) National average, (2) Average for their age group. Pre-compute benchmarks from MEPS data. |
 
 ### Result Display
 | ID | Component | Description | UI Element | Example |
 | :--- | :--- | :--- | :--- | :--- |
 | **UI-01** | **Cost Range** | Large, prominent display of cost prediction as a range. | `gr.Markdown` | "Estimated Healthcare Cost for Next Year: **$1,450 – $2,100**" |
 | **UI-02** | **Cost Drivers** | Explanation of key cost drivers and their dollar impact (SHAP). | `gr.Markdown` | "Your Diabetes Diagnosis (+$1,200), your Age (+$400), but your "Excellent" self-reported health lowered the estimate by (-$300)" |
-| **UI-03** | **Comparison Benchmark** | Bar chart comparing user vs. national average for their age group. | `gr.Plot` | "You are projected to spend 15% less than the national average for your age group." |
+| **UI-03** | **Comparison Benchmarks** | Bar chart comparing user vs. national average and age group average. | `gr.Plot` | "National Median: $4,800 vs. Your Age Group (45–54): $3,200" |
 
 
 ## Data & Machine Learning Specifications
