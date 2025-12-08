@@ -38,8 +38,8 @@ The UI must be a simple form on a single page with no more than 10 core inputs. 
 | **IN-03** | Region | `gr.Dropdown` | ["Northeast", "Midwest", "South", "West"] | `REGION23` |
 | **IN-04** | Income | `gr.Dropdown` | ["Low (<$30k)", "Middle", "High (>$100k)"] | `POVCAT23` |
 | **IN-05** | Insurance Status | `gr.Dropdown` | ["Private", "Public (Medicare/Medicaid)", "Uninsured"] | `INSCOV23` |
-| **IN-06** | Physical Health | `gr.Dropdown` | ["(1) Poor", "(2) Fair", "(3) Good", "(4) Very Good", "(5) Excellent"] | `RTHLTH31` |
-| **IN-07** | Mental Health | `gr.Dropdown` | ["(1) Poor", "(2) Fair", "(3) Good", "(4) Very Good", "(5) Excellent"] | `MNHLTH31` |
+| **IN-06** | Physical Health | `gr.Radio` | ["(1) Poor", "(2) Fair", "(3) Good", "(4) Very Good", "(5) Excellent"] | `RTHLTH31` |
+| **IN-07** | Mental Health | `gr.Radio` | ["(1) Poor", "(2) Fair", "(3) Good", "(4) Very Good", "(5) Excellent"] | `MNHLTH31` |
 | **IN-08** | Diabetes | `gr.Checkbox` | [True, False] | `DIABDX_M18` |
 | **IN-09** | High Blood Pressure | `gr.Checkbox` | [True, False] | `HIBPDX` |
 | **IN-10** | Smoker | `gr.Checkbox` | [True, False] | `ADSMOK42` |
@@ -76,8 +76,8 @@ The model will utilize the following features mapping to user inputs:
 | `REGION23` | Categorical | Dropdown (Map from Zip) |
 | `POVCAT23` | Ordinal (1-5) | Dropdown (Income Brackets) |
 | `INSCOV23` | Categorical (1-3) | Dropdown |
-| `RTHLTH31` | Ordinal (1-5) | Dropdown |
-| `MNHLTH31` | Ordinal (1-5) | Dropdown |
+| `RTHLTH31` | Ordinal (1-5) | Radio |
+| `MNHLTH31` | Ordinal (1-5) | Radio |
 | `DIABDX_M18` | Binary | Checkbox |
 | `HIBPDX` | Binary | Checkbox |
 | `ADSMOK42` | Binary | Checkbox |
