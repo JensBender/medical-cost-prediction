@@ -26,6 +26,29 @@ The **Medical Cost Prediction App** is a consumer-facing web application that us
 | **The Caregiver** | The "sandwich generation" estimating costs for an elderly parent. | "How much should I budget for my parent's healthcare?" |
 
 
+## Competitive Positioning
+
+### Market Gap
+No existing tool combines **annual total cost prediction** with **simple, consumer-friendly inputs**. Current healthcare cost tools fall into three categories, none of which solve our users' core problem:
+
+1. **Procedure-Specific Cost Estimators** (FAIR Health, Healthcare Bluebook, hospital-based tools): Require users to know CPT codes or specific procedures. Solve "How much will THIS procedure cost?" not "How much should I budget for the year?"
+2. **Insurance Premium Calculators** (KFF Marketplace, state exchanges): Only estimate cost of insurance, not actual healthcare spending.
+3. **FSA/HSA Contribution Calculators** (FSAFEDS, HSAstore): Require users to already know their expected annual costs, they don't predict it.
+
+### Positive Differentiation
+This tool is the **only ML-powered annual healthcare cost predictor** designed for consumers who lack specialized medical or insurance knowledge. Key advantages:
+
+| **Our Approach** | **Competitor Tools** |
+| :--- | :--- |
+| Predicts total annual spending | Estimates per-procedure costs |
+| 10 simple inputs (< 1 min) | Requires CPT codes, deductibles, provider selection |
+| ML-trained on actual spending (MEPS) | Insurance rate tables or manual user input |
+| Free, no login required | Often gated behind insurance portals |
+
+### UX-First Rationale
+The 10-input constraint is a feature rather than a limitation. Our personas (Open Enrollment Planners, Budgeters) need directional accuracy for financial planning (e.g., "Should I contribute $1,000 or $3,000 to my FSA?"), not clinical precision. Being within $500 (our MAE target) is sufficient for these decisions. Sacrificing 2% accuracy to achieve 80%+ completion rate is a reasonable trade-off.
+
+
 ## Functional Requirements
 
 ### User Input 
