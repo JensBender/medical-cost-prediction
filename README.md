@@ -86,12 +86,12 @@ This project utilizes the 2023 Full-Year Consolidated Data File (HC-251).
 ![MEPS Data Infographic](assets/data_infographic.jpg)
 
 **Target Variable**  
-The target variable is **total health care expenditures in 2023** (`TOTEXP23`). This variable aggregates payments from 10 distinct sources, including:
-- Out-of-Pocket: Direct payments by individuals or families.
-- Private Insurance: Payments from private health plans.
-- Public Sources: Medicare, Medicaid, TRICARE, VA, and other federal/state funds.
+The target variable is **total out-of-pocket health care costs in 2023** (`TOTSLF23`). This variable represents what the person or their family actually paid directly for all medical events throughout 2023, including:
+- Copays and coinsurance
+- Deductibles
+- Services not covered by insurance
 
-`TOTEXP23` reflects the total money received by the health care system from all these contributors on behalf of that person throughout the calender year 2023. It is derived from both household interviews and medical provider records, adjusting those amounts when the household missed the fact that insurers paid a negotiated discount.  
+`TOTSLF23` directly answers practical user questions like "How much should I contribute to my FSA/HSA?" and "What's my financial exposure?" For uninsured users, out-of-pocket costs approximate total costs, making this target appropriate across all insurance statuses.  
 
 **Feature Selection**  
 A subset of features was selected from MEPS-HC 2023 to balance predictive power, interpretability, and data completeness. These features encompass key drivers of healthcare costs, including demographics, socioeconomic status, health conditions, chronic illnesses, healthcare utilization, and insurance coverage. Features were selected based on the following criteria:
