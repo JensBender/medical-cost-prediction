@@ -182,6 +182,23 @@ The model will utilize the following features mapping to user inputs:
 | **Data Aging** | 2023 data becomes outdated. | Inform user about limitations of the model. Consider applying a "Medical Inflation Factor" adjustment to the final output. |
 
 
+## Policy Changes (2024-2026)
+Since the collection of the 2023 MEPS data, key policy changes have been enacted that materially affect out-of-pocket costs. The cost prediction app must account for these to remain accurate for 2025/2026 predictions.
+
+### 1. Inflation Reduction Act (IRA) - Medicare Part D
+*   **2025 Change**: Annual out-of-pocket cap of **$2,000** for prescription drugs for all Medicare Part D beneficiaries.
+*   **Impact**: MEPS 2023 data will contain seniors with >$2,000 in drug spending. The model will over-predict costs for this group unless hard-capped.
+*   **Mitigation**: Add a UI disclaimer for Medicare users clarifying that their actual out-of-pocket prescription costs are capped at $2,000 (meaning the model prediction may be an overestimate).
+
+### 2. ACA Marketplace Adjustments
+*   **Cost Sharing Limits**: For 2025, the out-of-pocket limit is **$9,200** (individual).
+*   **Subsidy Expiration Risk**: Enhanced premium tax credits expire at the end of 2025. If not renewed, premiums could double in 2026, potentially increasing the uninsured population.
+
+### 3. Medicare Part B Increases
+*   **Deductibles**: Increased to $257 in 2025 (up from ~$226 in 2023).
+*   **Premiums**: Standard premium rose to $185.00 in 2025.
+
+
 ## Appendix
 
 ### Target Variable Details
