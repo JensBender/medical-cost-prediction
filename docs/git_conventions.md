@@ -56,11 +56,10 @@ Conventional structure of a commit message with a header, body, and footer:
     - **Description**: Use the **Body** of the commit message to list key findings or changes, since the raw diff will just be JSON metadata.
 4.  **No Large Files**: Never commit large datasets or model artifacts (`.pkl`, `.joblib`, `.h5`) directly. Commit the scripts that generate them or the pointer files.
 5.  **Header Formatting**: Use all lowercase for the type, scope, and subject, except for proper nouns or acronyms (e.g., `FastAPI`, `JSON`). Do not end the subject with a period.
-6.  **Body Formatting**: Use standard English grammar, capitalization, and punctuation for the body.
+6.  **Body Formatting**: Use standard English grammar, capitalization, and punctuation for prose. Omit trailing periods for bullet points.
 
 
 ## 3. Examples
-
 **Data Preprocessing**
 ```text
 feat(data): implement standard scaling for numerical features
@@ -94,14 +93,14 @@ chore(model): update learning rate and max_depth
 - Reduced max_depth to 5 to prevent overfitting
 ```
 
-**Evaluation**
+**Model Evaluation**
 ```text
 feat(eval): add RMSE and MAE metrics in model evaluation section
 ```
 
-**Deployment**
+**API**
 ```text
-feat(app): add /predict endpoint using FastAPI
+feat(api): add /predict endpoint using FastAPI
 
 Created the main inference route that accepts JSON input 
 and returns the predicted medical cost.
@@ -109,7 +108,7 @@ and returns the predicted medical cost.
 
 **Breaking Change**
 ```text
-feat(app): change input format for prediction endpoint
+feat(api): change input format for prediction endpoint
 
 The API now expects a list of dictionaries instead of a single dictionary 
 to support batch predictions.
