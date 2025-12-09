@@ -23,14 +23,16 @@ Conventional structure of a commit message with a header, body, and footer:
     - `test`: Adding or refactoring tests.
     - `chore`: Build tasks, package manager configs, etc.
 - **Scope**: Describes **where** it changed, i.e. the specific section of the codebase. For this project, use:
-    - `app`: Web application code.
     - `data`: Data loading, preprocessing, cleaning, or dataset versioning.
     - `eda`: Exploratory data analysis.
     - `model`: Model architecture, training logic, or hyperparameter tuning.
     - `eval`: Model evaluation, metric calculations, feature importance or error analysis.
     - `notebook`: Jupyter Notebook.
+    - `ui`: Gradio user interface frontend.
+    - `api`: FastAPI backend, prediction endpoint.
     - `deploy`: Deployment scripts, Dockerfiles, or serving code.
     - `docs`: Files in the `docs/` directory.
+    - `prd`: Product Requirements Document.
     - `tests`: Unit tests.
 - **Subject**: A concise description of the change (maximum 50 characters).
 
