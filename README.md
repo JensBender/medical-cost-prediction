@@ -93,6 +93,12 @@ The target variable is **total out-of-pocket health care costs in 2023** (`TOTSL
 
 `TOTSLF23` directly answers practical user questions like "How much should I contribute to my FSA/HSA?" and "What's my financial exposure?" For uninsured users, out-of-pocket costs approximate total costs, making this target appropriate across all insurance statuses.  
 
+<details>
+<summary>📊 US Healthcare Costs Explained</summary>
+
+![US Healthcare Costs Guide Infographic](./assets/healthcare_costs_guide.png)
+</details>
+
 **Feature Selection**  
 A subset of features was selected from MEPS-HC 2023 to balance predictive power, interpretability, and data completeness. These features encompass key drivers of healthcare costs, including demographics, socioeconomic status, health conditions, chronic illnesses, healthcare utilization, and insurance coverage. Features were selected based on the following criteria:
 - **Predictive Power:** Includes major determinants of spending such as age, chronic conditions, and utilization patterns.
