@@ -65,3 +65,7 @@ Our target variable (`TOTSLF23`) sums these expenses:
 - ❌ Over-the-counter medications
 
 **Exception:** Uninsured users pay the full amount, so out-of-pocket ≈ total cost for them.
+
+
+## Infographic
+![US Healthcare Costs Guide Infographic](../assets/healthcare_costs_guide.png)
