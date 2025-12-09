@@ -29,7 +29,7 @@ The **Medical Cost Prediction App** is a consumer-facing web application that us
 ## Functional Requirements
 
 ### User Input 
-The UI must be a simple form on a single page with no more than 10 core inputs. Inputs are mapped to MEPS variables.
+The UI must be a simple form with no more than 10 inputs on a single page. Inputs are mapped to MEPS variables.
 
 | ID | UI Label | UI Element | Value Range | MEPS Variable |
 | :--- | :--- | :--- | :--- | :--- |
@@ -66,6 +66,14 @@ The UI must be a simple form on a single page with no more than 10 core inputs. 
 ### Dataset
 *   **Source:** MEPS-HC 2023 Full Year Consolidated Data File (H251).
 *   **Documentation:** [H251 Codebook](https://meps.ahrq.gov/data_stats/download_data_files_codebook.jsp?PUFId=H251).
+
+### Feature Selection 
+The primary goal is a fast, frictionless user experience—not maximizing predictive power at the cost of usability. Feature selection follows these principles:
+1.  **UX-First Constraint**: Maximum of 10 inputs to ensure quick completion (~1 minute).
+2.  **Consumer Accessibility**: Only information users know about themselves without consulting medical records (e.g., no lab values, procedure codes, or claims history).
+3.  **Optimize Within Constraints**: Among accessible features, select those with the highest predictive value for healthcare expenditures based on feature importance analysis.
+
+**Process**: Begin with a broader candidate pool of accessible features, train models, and use feature importance scores (e.g., SHAP) to select the final ≤10 features that maximize predictive power within the UX constraints.
 
 ### Feature Mapping (MEPS to UI)
 The model will utilize the following features mapping to user inputs:
