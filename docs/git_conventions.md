@@ -32,6 +32,7 @@ Conventional structure of a commit message with a header, body, and footer:
     - `api`: FastAPI backend, prediction endpoint.
     - `deploy`: Deployment scripts, Dockerfiles, or serving code.
     - `docs`: Files in the `docs/` directory.
+    - `readme`: README.md file.
     - `prd`: Product Requirements Document.
     - `tests`: Unit tests.
 - **Subject**: A concise description of the change (maximum 50 characters).
