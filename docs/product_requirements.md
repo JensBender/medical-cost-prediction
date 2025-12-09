@@ -29,24 +29,28 @@ The **Medical Cost Prediction App** is a consumer-facing web application that us
 ## Competitive Positioning
 
 ### Market Gap
-No existing tool combines **annual total cost prediction** with **simple, consumer-friendly inputs**. Current healthcare cost tools fall into three categories, none of which solve our users' core problem:
+No existing tool combines **ML-powered personalized predictions** with **simple, consumer-friendly inputs** for annual healthcare costs. Current tools fall into three categories, none of which solve our users' core problem:
 
 1. **Procedure-Specific Cost Estimators** (FAIR Health, Healthcare Bluebook, hospital-based tools): Require users to know CPT codes or specific procedures. Solve "How much will THIS procedure cost?" not "How much should I budget for the year?"
 2. **Insurance Premium Calculators** (KFF Marketplace, state exchanges): Only estimate cost of insurance, not actual healthcare spending.
-3. **FSA/HSA Contribution Calculators** (FSAFEDS, HSAstore): Require users to already know their expected annual costs, they don't predict it.
+3. **FSA/HSA Contribution Calculators** (FSAFEDS, HSAstore): Require users to already know their expected annual costs—they don't predict it.
 
-### Positive Differentiation
-This tool is the **only ML-powered annual healthcare cost predictor** designed for consumers who lack specialized medical or insurance knowledge. Key advantages:
+**Closest Competitor**: The KFF (Kaiser Family Foundation) Household Health Spending Calculator provides annual cost estimates but uses **demographic subgroup averaging** rather than personalized ML predictions. It categorizes health status as simply "good" or "worse" and returns the average spending for broad demographic buckets (e.g., "single person, $50k income, employer coverage, good health"). This approach cannot capture individual-level variations (e.g., diabetes vs. hypertension) or complex non-linear interactions between features that ML models learn from individual-level data.
 
-| **Our Approach** | **Competitor Tools** |
+### Our Differentiation
+This tool is the **only ML-powered annual healthcare cost predictor** with easily accessible inputs, designed for consumers who lack specialized medical or insurance knowledge.
+
+| **Our ML Approach** | **Competitor Approaches** |
 | :--- | :--- |
-| Predicts total annual spending | Estimates per-procedure costs |
-| 10 simple inputs (< 1 min) | Requires CPT codes, deductibles, provider selection |
-| ML-trained on actual spending (MEPS) | Insurance rate tables or manual user input |
-| Free, no login required | Often gated behind insurance portals |
+| **Personalized predictions** from individual-level MEPS data (30k+ records) | Demographic subgroup averages or insurance rate tables |
+| **Granular health inputs**: 5-point scales for physical/mental health + specific chronic conditions (diabetes, hypertension, smoking) | Broad health categories ("good" vs. "worse") or no health inputs |
+| **Explainable predictions**: SHAP values show cost drivers (e.g., "Diabetes +$1,200") | Black box averages with no explanation |
+| **Uncertainty ranges**: 25th–75th percentile for planning worst-case scenarios | Single point estimates |
+| **10 accessible inputs** (< 1 min completion) | Either requires CPT codes/deductibles OR oversimplified 4-5 broad buckets |
+| **Free, no login required** | Often gated behind insurance portals |
 
 ### UX-First Rationale
-The 10-input constraint is a feature rather than a limitation. Our personas (Open Enrollment Planners, Budgeters) need directional accuracy for financial planning (e.g., "Should I contribute $1,000 or $3,000 to my FSA?"), not clinical precision. Being within $500 (our MAE target) is sufficient for these decisions. Sacrificing 2% accuracy to achieve 80%+ completion rate is a reasonable trade-off.
+The 10-input constraint is a feature rather than a limitation. Our personas (Open Enrollment Planners, Budgeters) need ballpark estimates for financial planning (e.g., "Should I contribute $1,000 or $3,000 to my FSA?"), not clinical precision. Being within $500 (our MAE target) is sufficient for these decisions. The ML model captures complex patterns from individual-level data while keeping inputs simple and accessible. Sacrificing 2% absolute accuracy to achieve 80%+ completion rate is the right trade-off for this use case.
 
 
 ## Functional Requirements
