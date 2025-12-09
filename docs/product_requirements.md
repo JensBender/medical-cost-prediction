@@ -7,7 +7,7 @@
 
 
 ## Executive Summary
-The **Medical Cost Prediction App** is a consumer-facing web application that uses machine learning trained on the Medical Expenditure Panel Survey (MEPS) to predict annual healthcare costs.
+The **Medical Cost Prediction App** is a consumer-facing web application that uses machine learning trained on the Medical Expenditure Panel Survey (MEPS) to predict annual **out-of-pocket** healthcare costs.
 
 **The Problem:** Healthcare pricing is a "black box." While insurance portals show *unit prices* for individual treatments (e.g., "cost of an MRI"), consumers struggle to predict their total expected costs for the entire year. Fixed calculators (e.g., "add $500 per child") are inaccurate because they ignore health status, and insurance tools require specific procedure codes that often users don't know.
 
@@ -83,7 +83,7 @@ The UI must be a simple form with no more than 10 inputs on a single page. Input
 ### Result Display
 | ID | Component | Description | UI Element | Example |
 | :--- | :--- | :--- | :--- | :--- |
-| **UI-01** | **Cost Range** | Large, prominent display of cost prediction as a range. | `gr.Markdown` | "Estimated Healthcare Cost for Next Year: **$1,450 – $2,100**" |
+| **UI-01** | **Cost Range** | Large, prominent display of out-of-pocket cost prediction as a range. | `gr.Markdown` | "Estimated Out-of-Pocket Healthcare Cost for Next Year: **$1,450 – $2,100**" |
 | **UI-02** | **Cost Drivers** | Explanation of key cost drivers and their dollar impact (SHAP). | `gr.Markdown` | "Your Diabetes Diagnosis (+$1,200), your Age (+$400), but your "Excellent" self-reported health lowered the estimate by (-$300)" |
 | **UI-03** | **Comparison Benchmarks** | Bar chart comparing user vs. national and age group benchmarks. | `gr.Plot` | "Typical American (median): $4,800 vs. Typical for Age 45–54 (median): $3,200" |
 
@@ -93,6 +93,11 @@ The UI must be a simple form with no more than 10 inputs on a single page. Input
 ### Dataset
 *   **Source:** MEPS-HC 2023 Full Year Consolidated Data File (H251).
 *   **Documentation:** [H251 Codebook](https://meps.ahrq.gov/data_stats/download_data_files_codebook.jsp?PUFId=H251).
+
+### Target Variable
+*   **Variable:** `TOTSLF23` — Total amount paid out-of-pocket by the person or their family for all medical events in the year 2023.
+*   **Rationale:** Our primary personas (Open Enrollment Planners, Budgeters) need to know what **they will personally pay**, not the total cost shared across insurance and government payers. Out-of-pocket costs directly answer: "How much should I contribute to my FSA/HSA?" and "What's my financial exposure?"
+*   **Note:** For uninsured users, out-of-pocket ≈ total cost, so this target remains appropriate across all insurance statuses.
 
 ### Feature Selection 
 The primary goal is a fast, frictionless user experience. We prioritize usability over  predictive power if it requires complex inputs. 
@@ -125,10 +130,10 @@ The model will utilize the following features mapping to user inputs:
 
 ### Model Architecture
 *   **Algorithm:** Gradient Boosting Regressor (XGBoost or LightGBM).
-*   **Objective:** `TOTEXP23` (Total Health Care Expenditures).
+*   **Objective:** `TOTSLF23` (Out-of-Pocket Health Care Expenditures).
 *   **Handling Zeros:** Use a Two-Part Model (Hurdle Model) or Tweedie Objective function to handle zero-inflated cost data.
 *   **Weighting:** Training must utilize `PERWT23F` (Person Weight) to ensure national representation.
-*   **Preprocessing:** Log-transformation of target variable `log(TOTEXP23 + 1)` recommended for training stability.
+*   **Preprocessing:** Log-transformation of target variable `log(TOTSLF23 + 1)` recommended for training stability.
 
 
 ## Non-Functional Requirements
