@@ -179,24 +179,29 @@ The model will utilize the following features mapping to user inputs:
 | :--- | :--- | :--- |
 | **Outlier Prediction** | Model predicts extreme costs ($100k+) for a standard user. | Consider implementing "Guardrails" in the code to cap displayed predictions at the 95th percentile with a "High Cost Risk" label instead of a raw number. |
 | **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a Fairness Audit. Include income as a feature so the user sees that income impacts the prediction. |
-| **Data Aging** | 2023 data becomes outdated. | Inform user about limitations of the model. Consider applying a "Medical Inflation Factor" adjustment to the final output. |
+| **Data Aging** | 2023 data becomes outdated. | Inform user about limitations of the model. Apply a "Medical Inflation Factor" adjustment (FR-02) to account for cost increases from 2023 to current prediction year. |
+| **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Display general disclaimer about model limitations. For Medicare/Medicaid users, add contextual note: "Recent policy changes (2024-2026) may lower actual costs compared to this estimate." |
 
 
 ## Policy Changes (2024-2026)
-Since the collection of the 2023 MEPS data, key policy changes have been enacted that materially affect out-of-pocket costs. The cost prediction app must account for these to remain accurate for 2025/2026 predictions.
+Since the collection of the 2023 MEPS data, key policy changes have been enacted that affect out-of-pocket costs. This section documents these changes for awareness and transparency.
 
-### 1. Inflation Reduction Act (IRA) - Medicare Part D
-*   **2025 Change**: Annual out-of-pocket cap of **$2,000** for prescription drugs for all Medicare Part D beneficiaries.
-*   **Impact**: MEPS 2023 data will contain seniors with >$2,000 in drug spending. The model will over-predict costs for this group unless hard-capped.
-*   **Mitigation**: Add a UI disclaimer for Medicare users clarifying that their actual out-of-pocket prescription costs are capped at $2,000 (meaning the model prediction may be an overestimate).
+**Note**: The app predicts **total out-of-pocket costs** (`TOTSLF23`), not costs itemized by category. This limits our ability to apply policy-specific hard caps (e.g., prescription-only caps). The existing Medical Inflation Factor (FR-02) already accounts for general cost changes from 2023→2025.
 
-### 2. ACA Marketplace Adjustments
-*   **Cost Sharing Limits**: For 2025, the out-of-pocket limit is **$9,200** (individual).
-*   **Subsidy Expiration Risk**: Enhanced premium tax credits expire at the end of 2025. If not renewed, premiums could double in 2026, potentially increasing the uninsured population.
+**1. Inflation Reduction Act (IRA) - Medicare Part D**
+*   **2025 Change**: Annual out-of-pocket cap of **$2,000** for prescription drugs for Medicare Part D beneficiaries.
+*   **Impact**: Model may over-predict costs for Medicare users with high prescription spending, as 2023 training data includes seniors who spent >$2,000 on drugs.
+*   **Mitigation**: Display contextual disclaimer for "Public (Medicare/Medicaid)" users: *"Note: The 2025 Inflation Reduction Act caps prescription drug costs at $2,000/year for Medicare beneficiaries. Your actual costs may be lower than this estimate."*
 
-### 3. Medicare Part B Increases
-*   **Deductibles**: Increased to $257 in 2025 (up from ~$226 in 2023).
-*   **Premiums**: Standard premium rose to $185.00 in 2025.
+**2. ACA Marketplace Adjustments**
+*   **Cost Sharing Limits**: For 2025, the maximum out-of-pocket limit is **$9,200** (individual) for ACA marketplace plans.
+*   **Subsidy Expiration Risk**: Enhanced premium tax credits expire December 31, 2025. If not renewed, unsubsidized premiums could increase significantly in 2026.
+*   **Mitigation**: Display general disclaimer about model limitations. Cannot apply hard cap because app does not differentiate marketplace from employer insurance within the "Private" insurance category.
+
+**3. Medicare Part B Increases**
+*   **Deductibles**: Increased to $257 in 2025 (up from $226 in 2023).
+*   **Premiums**: Standard premium rose to $185.00/month in 2025 (up from $164.90 in 2023).
+*   **Mitigation**: The Medical Inflation Factor (FR-02) already accounts for these cost increases. No additional adjustment needed.
 
 
 ## Appendix
