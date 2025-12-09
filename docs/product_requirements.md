@@ -68,12 +68,17 @@ The UI must be a simple form with no more than 10 inputs on a single page. Input
 *   **Documentation:** [H251 Codebook](https://meps.ahrq.gov/data_stats/download_data_files_codebook.jsp?PUFId=H251).
 
 ### Feature Selection 
-The primary goal is a fast, frictionless user experience—not maximizing predictive power at the cost of usability. Feature selection follows these principles:
-1.  **UX-First Constraint**: Maximum of 10 inputs to ensure quick completion (~1 minute).
-2.  **Consumer Accessibility**: Only information users know about themselves without consulting medical records (e.g., no lab values, procedure codes, or claims history).
-3.  **Optimize Within Constraints**: Among accessible features, select those with the highest predictive value for healthcare expenditures based on feature importance analysis.
+The primary goal is a fast, frictionless user experience. We prioritize usability over  predictive power if it requires complex inputs. 
 
-**Process**: Begin with a broader candidate pool of accessible features, train models, and use feature importance scores (e.g., SHAP) to select the final ≤10 features that maximize predictive power within the UX constraints.
+**Feature Selection Principles**:
+1.  **UX-First Constraint**: Maximum of 10 inputs to ensure user completion in under 1 minute.
+2.  **Consumer Accessibility**: Inputs must be information users know offhand (e.g., age, self-rated health). The user doesn't need to leave their chair to find an insurance card, past bill, or medical record. No asking for specifics like "deductible amount" or "ICD-10 codes" that require mental effort or looking up technical terms.
+3.  **Optimize Within Constraints**: Among the pool of "accessible" inputs, select the variables with the highest feature importance to maximize predictive power within the specific UX constraints.
+
+**Feature Selection Process**:
+1.  **Candidate Screening**: Identify all MEPS variables that a layperson can answer easily without having to look something up or think too hard.
+2.  **Feature Importance Ranking**: Train preliminary models on these candidate features to obtain feature importance scores.
+3.  **Final Feature Selection**: Select the top 10 or less features that maximize predictive power within the strict user experience constraints.
 
 ### Feature Mapping (MEPS to UI)
 The model will utilize the following features mapping to user inputs:
