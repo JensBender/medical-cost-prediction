@@ -68,4 +68,4 @@ Our target variable (`TOTSLF23`) sums these expenses:
 
 
 ## Infographic
-![US Healthcare Costs Guide Infographic](../assets/healthcare_costs_guide.png)
+![US Healthcare Costs Infographic](../assets/healthcare_costs_infographic.png)
