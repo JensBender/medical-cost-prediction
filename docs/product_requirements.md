@@ -166,10 +166,14 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 
 
 ## Technical Stack Recommendation
-*   **Model Training:** Python (Scikit-Learn, XGBoost). Model serialized as `.joblib`.
+*   **Core:** Python 3.13.
+*   **Preprocessing:** NumPy, Pandas, Scikit-Learn Pipeline (imputation, scaling, encoding).
+*   **EDA:** Pandas, Seaborn, Matplotlib, JupyterLab.
+*   **Modeling:** Scikit-Learn, XGBoost, Joblib (for serialization).
 *   **Web App:** 
     *   **Frontend**: Gradio or Streamlit (for demo).
-    *   **Backend**: FastAPI (for production).
+    *   **Backend**: FastAPI (for production) and Pydantic (for API data validation).
+*   **Testing:** Pytest.
 *   **Hosting:** 
     *   **Source Code**: GitHub.
     *   **Model/Pipeline**: Hugging Face Hub.
