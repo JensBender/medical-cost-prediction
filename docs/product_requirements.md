@@ -88,7 +88,7 @@ The UI must be a simple form with no more than 10 inputs on a single page. Input
 | **UI-01** | **Cost Range** | Large, prominent display of out-of-pocket cost prediction as a range. | `gr.Markdown` | "Estimated Out-of-Pocket Healthcare Cost for Next Year: **$1,450 – $2,100**" |
 | **UI-02** | **Cost Drivers** | Explanation of key cost drivers and their dollar impact (SHAP). | `gr.Markdown` | "Your Diabetes Diagnosis (+$1,200), your Age (+$400), but your "Excellent" self-reported health lowered the estimate by (-$300)" |
 | **UI-03** | **Comparison Benchmarks** | Bar chart comparing user vs. national and age group benchmarks. | `gr.Plot` | "Typical American (median): $4,800 vs. Typical for Age 45–54 (median): $3,200" |
-| **UI-04** | **Limitations Notice** | Disclaimer explaining prediction limitations and intended use. | `gr.Markdown` | "**⚠️ Important Limitations**<br>• **Data**: Based on 2023 data and may not reflect 2024-2026 policy changes.<br>• **Scope**: Does not include insurance premiums or over-the-counter medications.<br>• **Intent**: This is a financial planning tool, not a medical billing quote or insurance estimate." |
+| **UI-04** | **Limitations Notice** | Contextual guidance to help users interpret their prediction. | `gr.Markdown` | "**ℹ️ About This Estimate**<br>• Based on 2023 national survey data; recent policy changes may affect actual costs.<br>• Does not include insurance premiums or over-the-counter medications.<br>• This is a statistical estimate. Actual costs depend on your specific plan, providers, and health events." |
 
 
 ## Data & Machine Learning Specifications
@@ -162,7 +162,7 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 ## UI/UX Guidelines
 *   **Tone:** Helpful, calm, non-judgmental. Avoid complex medical jargon (e.g. "High Blood Pressure" instead of "Hypertension").
 *   **Visuals:** Use trust-building colors (Blues/Greens).
-*   **Disclaimer:** A permanent footer stating: *"This tool is for educational purposes only. It is a statistical estimate based on 2023 national data, not a medical billing quote."*
+*   **Footer Disclaimer:** A permanent footer on all pages: *"Estimates based on 2023 U.S. national data. Not intended as medical or financial advice."*
 
 
 ## Technical Stack Recommendation
