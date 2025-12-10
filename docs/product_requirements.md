@@ -56,6 +56,8 @@ The 10-input constraint is a feature rather than a limitation. Our personas (Ope
 ## Functional Requirements
 
 ### User Input 
+> **Status:** *Preliminary. Features shown below are the most promising candidates based on initial analysis. Final feature selection pending.*
+
 The UI must be a simple form with no more than 10 inputs on a single page. Inputs are mapped to MEPS variables.
 
 | ID | UI Label | UI Element | Value Range | MEPS Variable |
@@ -123,13 +125,13 @@ Notes:
 </details>
 
 ### Feature Selection 
-The primary goal is a fast, frictionless user experience. We prioritize usability over  predictive power if it requires complex inputs. 
+The primary goal is a fast, frictionless user experience. We prioritize usability over predictive power if it requires complex inputs. 
 
 **Feature Selection Principles**:
 1.  **UX-First Constraint**: Maximum of 10 inputs to ensure user completion in under 1 minute.
 2.  **Consumer Accessibility**: Inputs must be information users know offhand (e.g., age, self-rated health). The user doesn't need to leave their chair to find an insurance card, past bill, or medical record. No asking for specifics like "deductible amount" or "ICD-10 codes" that require mental effort or looking up technical terms.
 3.  **Optimize Within Constraints**: Among the pool of "accessible" inputs, select the variables with the highest feature importance to maximize predictive power within the UX constraints. 
- 
+
 **Feature Selection Process**:
 1.  **Candidate Screening**: Identify all MEPS variables that a layperson can answer easily without having to look something up or think too hard.
 2.  **Feature Importance Ranking**: Train preliminary models on these candidate features to obtain feature importance scores.
