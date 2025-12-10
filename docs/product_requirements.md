@@ -174,7 +174,7 @@ The model will utilize the following features mapping to user inputs:
 *   **User Satisfaction:** Positive sentiment on optional "Was this helpful?" feedback.
 
 
-## Risk Assessment
+## Risk Assessment & Mitigation
 | Risk | Example | Mitigation Strategy |
 | :--- | :--- | :--- |
 | **Outlier Prediction** | Model predicts extreme costs ($100k+) for a standard user. | Consider implementing "Guardrails" in the code to cap displayed predictions at the 95th percentile with a "High Cost Risk" label instead of a raw number. |
@@ -186,7 +186,7 @@ The model will utilize the following features mapping to user inputs:
 ## Policy Changes (2024-2026)
 Since the collection of the 2023 MEPS data, key policy changes have been enacted that affect out-of-pocket costs. This section documents these changes for awareness and transparency.
 
-**Note**: The app predicts **total out-of-pocket costs** (`TOTSLF23`), not costs itemized by category. This limits our ability to apply policy-specific hard caps (e.g., prescription-only caps). The existing Medical Inflation Factor (FR-02) already accounts for general cost changes from 2023→2025.
+**Note**: The app predicts **total out-of-pocket costs** (`TOTSLF23`), not costs itemized by category. This limits our ability to apply policy-specific hard caps (e.g., prescription drug cap). The existing Medical Inflation Factor (FR-02) already accounts for general cost changes.
 
 **1. Inflation Reduction Act (IRA) - Medicare Part D**
 *   **2025 Change**: Annual out-of-pocket cap of **$2,000** for prescription drugs for Medicare Part D beneficiaries.
