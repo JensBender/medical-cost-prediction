@@ -38,11 +38,11 @@ No existing tool combines **ML-powered personalized predictions** with **simple,
 **Closest Competitor**: The KFF (Kaiser Family Foundation) Household Health Spending Calculator provides annual cost estimates but uses **demographic subgroup averaging** rather than personalized ML predictions. It categorizes health status as simply "good" or "worse" and returns the average spending for broad demographic buckets (e.g., "single person, $50k income, employer coverage, good health"). This approach cannot capture individual-level variations (e.g., diabetes vs. hypertension) or complex non-linear interactions between features that ML models learn from individual-level data.
 
 ### Our Differentiation
-This tool is the **only ML-powered annual healthcare cost predictor** with easily accessible inputs, designed for consumers who lack specialized medical or insurance knowledge.
+This tool is the **only ML-powered out-of-pocket healthcare cost planner** with easily accessible inputs, designed for consumers who lack specialized medical or insurance knowledge.
 
 | **Our ML Approach** | **Competitor Approaches** |
 | :--- | :--- |
-| **Personalized predictions** from individual-level MEPS data (30k+ records) | Demographic subgroup averages or insurance rate tables |
+| **Personalized predictions** from individual-level MEPS data (28k+ records) | Demographic subgroup averages or insurance rate tables |
 | **Granular health inputs**: 5-point scales for physical/mental health + specific chronic conditions (diabetes, hypertension, smoking) | Broad health categories ("good" vs. "worse") or no health inputs |
 | **Explainable predictions**: SHAP values show cost drivers (e.g., "Diabetes +$1,200") | Black box averages with no explanation |
 | **Uncertainty ranges**: 25th–75th percentile for planning worst-case scenarios | Single point estimates |
