@@ -94,7 +94,7 @@ The target variable is **total out-of-pocket health care costs in 2023** (`TOTSL
 `TOTSLF23` directly answers practical user questions like "How much should I contribute to my FSA/HSA?" and "What's my financial exposure?" For uninsured users, out-of-pocket costs approximate total costs, making this target appropriate across all insurance statuses.  
 
 <details>
-<summary>📊 US Healthcare Costs Explained</summary>
+<summary><strong>US Healthcare Costs Explained</strong> (click to expand)</summary>
 
 ![US Healthcare Costs Infographic](./assets/healthcare_costs_infographic.png)
 </details>
