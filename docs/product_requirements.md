@@ -181,9 +181,9 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 
 
 ## Success Metrics
-*   **Model Accuracy:** Mean Absolute Error (MAE) on the test set is within $500 of the baseline MEPS benchmarks for the median patient.
+*   **Predictive Performance:** Median Absolute Error (MdAE) on the test set is < $500 (i.e., for the typical user, the prediction is within $500 of the actual cost).
 *   **Completion Rate:** > 80% of users who start the questionnaire complete it.
-*   **User Satisfaction:** Positive sentiment on optional "Was this helpful?" feedback.
+*   **User Satisfaction:** Positive sentiment on optional "Was this helpful?" feedback (optional).
 
 
 ## Risk Assessment & Mitigation
