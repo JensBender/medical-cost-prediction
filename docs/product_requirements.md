@@ -98,7 +98,27 @@ The UI must be a simple form with no more than 10 inputs on a single page. Input
 *   **Variable:** `TOTSLF23` — Total amount paid out-of-pocket by the person or their family for all medical events in the year 2023.
 *   **Rationale:** Our primary personas (Open Enrollment Planners, Budgeters) need to know what **they will personally pay**, not the total cost shared across insurance and government payers. Out-of-pocket costs directly answer: "How much should I contribute to my FSA/HSA?" and "What's my financial exposure?"
 *   **Note:** For uninsured users, out-of-pocket ≈ total cost, so this target remains appropriate across all insurance statuses.
-*   **Details:** See [Target Variable Details](#target-variable-details) in Appendix.
+
+<details>
+<summary><strong>Detailed Breakdown of TOTSLF23</strong> (click to expand)</summary>
+
+`TOTSLF23` is the aggregate sum of all out-of-pocket payments made by the person or their family for healthcare services received in 2023. It sums the "Self/Family" share of costs across all medical event categories. It includes the following service types:
+*   **Office-Based Visits (`OBSLF23`):** Co-pays and deductibles for doctor's appointments, check-ups, and specialist visits.
+*   **Prescribed Medicines (`RXSLF23`):** Out-of-pocket costs for filled prescriptions (does **not** include over-the-counter drugs).
+*   **Hospital Inpatient Stays (`IPSLF23`):** Direct payments for overnight hospitalizations (room & board, treatments).
+*   **Emergency Room Visits (`ERSLF23`):** Co-pays and bills for ER visits that did not result in an admission.
+*   **Outpatient Department Visits (`OPSLF23`):** Costs for same-day surgeries, scans, or therapies at a hospital.
+*   **Dental Care (`DVSLF23`):** Payments for cleanings, fillings, orthodontia, etc.
+*   **Vision Services (`VISLF23`):** Costs for eye exams, glasses, and contact lenses.
+*   **Home Health Care (`HHSLF23` + `HNSLF23`):** Payments for agency or independent home health providers.
+*   **Other Medical (`OMSLF23`):** Equipment (crutches, hearing aids), ambulance services, and other miscellaneous supplies.
+
+Notes:  
+*   **Excludes Premiums:** Monthly insurance premiums (e.g., deducted from a paycheck) are not included. `TOTSLF23` only tracks payments for services received.
+*   **Excludes Over-the-Counter (OTC) Drugs:** Expenses for non-prescription medications (e.g., Tylenol, vitamins) are not included.
+*   **For uninsured users**: `TOTSLF23` will typically equal the **Total Expenditure** (`TOTTCH23`), as they bear the full cost unless they received charity care (which is not counted as an expenditure in MEPS).
+
+</details>
 
 ### Feature Selection 
 The primary goal is a fast, frictionless user experience. We prioritize usability over  predictive power if it requires complex inputs. 
@@ -203,27 +223,3 @@ Since the collection of the 2023 MEPS data, key policy changes have been enacted
 *   **Premiums**: Standard premium rose to $185.00/month in 2025 (up from $164.90 in 2023).
 *   **Mitigation**: The Medical Inflation Factor (FR-02) already accounts for these cost increases. No additional adjustment needed.
 
-
-## Appendix
-
-### Target Variable Details
-*   **Variable:** `TOTSLF23` — **Total Amount Paid by Self/Family (2023)**
-*   **Definition:** This variable is the aggregate sum of all out-of-pocket payments made by the person or their family for healthcare services received in 2023. It sums the "Self/Family" share of costs across all medical event categories.
-*   **Rationale:** Our primary personas (Open Enrollment Planners, Budgeters) need to know their personal financial liability, not the total cost of care. `TOTSLF23` directly answers, "How much cash did I have to pay?"—which determines FSA/HSA funding needs and maximum financial exposure.
-*   **Components (What is included):**
-    `TOTSLF23` is calculated by summing the out-of-pocket expenses for the following specific service types:
-    *   **Office-Based Visits (`OBSLF23`):** Co-pays and deductibles for doctor's appointments, check-ups, and specialist visits.
-    *   **Prescribed Medicines (`RXSLF23`):** Out-of-pocket costs for filled prescriptions (does **not** include over-the-counter drugs).
-    *   **Hospital Inpatient Stays (`IPSLF23`):** Direct payments for overnight hospitalizations (room & board, treatments).
-    *   **Emergency Room Visits (`ERSLF23`):** Co-pays and bills for ER visits that did not result in an admission.
-    *   **Outpatient Department Visits (`OPSLF23`):** Costs for same-day surgeries, scans, or therapies at a hospital.
-    *   **Dental Care (`DVSLF23`):** Payments for cleanings, fillings, orthodontia, etc.
-    *   **Vision Services (`VISLF23`):** Costs for eye exams, glasses, and contact lenses.
-    *   **Home Health Care (`HHSLF23` + `HNSLF23`):** Payments for agency or independent home health providers.
-    *   **Other Medical (`OMSLF23`):** Equipment (crutches, hearing aids), ambulance services, and other miscellaneous supplies.
-
-*   **Important Exclusions:**
-    *   **Premiums:** This variable does **not** include monthly insurance premiums (e.g., deducted from a paycheck). It only tracks payments for *services* received.
-    *   **Over-the-Counter (OTC) Drugs:** Expenses for non-prescription medications (e.g., Tylenol, vitamins) are not included.
-
-*   **User Note:** For uninsured users, `TOTSLF23` will typically equal the **Total Expenditure** (`TOTTCH23`), as they bear the full cost unless they received charity care (which is not counted as an expenditure in MEPS).
