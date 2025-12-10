@@ -92,8 +92,9 @@ The UI must be a simple form with no more than 10 inputs on a single page. Input
 ## Data & Machine Learning Specifications
 
 ### Dataset
-*   **Source:** MEPS-HC 2023 Full Year Consolidated Data File (H251).
-*   **Documentation:** [H251 Codebook](https://meps.ahrq.gov/data_stats/download_data_files_codebook.jsp?PUFId=H251).
+*   **Source:** [MEPS-HC 2023 Full Year Consolidated Data File (H251)](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251).
+*   **Documentation:** [MEPS-HC 2023 Documentation](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml).
+*   **Codebook:** [MEPS-HC 2023 Codebook](https://meps.ahrq.gov/data_stats/download_data_files_codebook.jsp?PUFId=H251).
 
 ### Target Variable
 *   **Variable:** `TOTSLF23` — Total amount paid out-of-pocket by the person or their family for all medical events in the year 2023.
@@ -127,28 +128,12 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 **Feature Selection Principles**:
 1.  **UX-First Constraint**: Maximum of 10 inputs to ensure user completion in under 1 minute.
 2.  **Consumer Accessibility**: Inputs must be information users know offhand (e.g., age, self-rated health). The user doesn't need to leave their chair to find an insurance card, past bill, or medical record. No asking for specifics like "deductible amount" or "ICD-10 codes" that require mental effort or looking up technical terms.
-3.  **Optimize Within Constraints**: Among the pool of "accessible" inputs, select the variables with the highest feature importance to maximize predictive power within the specific UX constraints.
-
+3.  **Optimize Within Constraints**: Among the pool of "accessible" inputs, select the variables with the highest feature importance to maximize predictive power within the UX constraints. 
+ 
 **Feature Selection Process**:
 1.  **Candidate Screening**: Identify all MEPS variables that a layperson can answer easily without having to look something up or think too hard.
 2.  **Feature Importance Ranking**: Train preliminary models on these candidate features to obtain feature importance scores.
-3.  **Final Feature Selection**: Select the top 10 or less features that maximize predictive power within the strict user experience constraints.
-
-### Feature Mapping (MEPS to UI)
-The model will utilize the following features mapping to user inputs:
-
-| MEPS Variable | Data Type | UI Input |
-| :--- | :--- | :--- |
-| `AGE23X` | Continuous | Slider |
-| `SEX` | Binary | Toggle |
-| `REGION23` | Categorical | Dropdown (Map from Zip) |
-| `POVCAT23` | Ordinal (1-5) | Dropdown (Income Brackets) |
-| `INSCOV23` | Categorical (1-3) | Dropdown |
-| `RTHLTH31` | Ordinal (1-5) | Radio |
-| `MNHLTH31` | Ordinal (1-5) | Radio |
-| `DIABDX_M18` | Binary | Checkbox |
-| `HIBPDX` | Binary | Checkbox |
-| `ADSMOK42` | Binary | Checkbox |
+3.  **Final Feature Selection**: Select the top 10 or less features that maximize predictive power within the UX constraints.
 
 ### Model Architecture
 *   **Algorithm:** Gradient Boosting Regressor (XGBoost or LightGBM).
