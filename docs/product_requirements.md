@@ -81,6 +81,7 @@ The UI must be a simple form with no more than 10 inputs on a single page. Input
 | **FR-03** | **Cost Range** | Generate 25th–75th percentile range (typical range) and 90th percentile (budget-safe estimate) to communicate prediction uncertainty. Never output a single point estimate. |
 | **FR-04** | **Cost Drivers** | Compute SHAP values for each prediction to explain feature contributions as dollar impacts. |
 | **FR-05** | **Comparison Benchmarks** | Compare user's prediction to (1) national average and (2) average for their age group. Pre-compute benchmarks from MEPS data. |
+| **FR-06** | **Confidence Indicator** | Flag predictions in the top 10% of the cost distribution (>90th percentile) as "High Uncertainty" to signal reduced model accuracy for extreme costs. |
 
 ### Result Display
 | ID | Component | Description | UI Element | Example |
@@ -89,6 +90,7 @@ The UI must be a simple form with no more than 10 inputs on a single page. Input
 | **UI-02** | **Cost Drivers** | Explanation of key cost drivers and their dollar impact (SHAP). | `gr.Markdown` | "Your Diabetes Diagnosis (+$1,200), your Age (+$400), but your "Excellent" self-reported health lowered the estimate by (-$300)" |
 | **UI-03** | **Comparison Benchmarks** | Bar chart comparing user vs. national and age group benchmarks. | `gr.Plot` | "Typical American (median): $4,800 vs. Typical for Age 45–54 (median): $3,200" |
 | **UI-04** | **Limitations Notice** | Contextual guidance to help users interpret their prediction. | `gr.Markdown` | "**ℹ️ About This Estimate**<br>• Based on 2023 national survey data; recent policy changes may affect actual costs.<br>• Does not include insurance premiums or over-the-counter medications.<br>• This is a statistical estimate. Actual costs depend on your specific plan, providers, and health events." |
+| **UI-05** | **High-Cost Disclaimer** | Dynamic warning displayed when predicted cost exceeds the 90th percentile threshold. | `gr.Markdown` | "**⚠️ Note on This Estimate**<br>Your predicted cost is in the top 10% of healthcare spending. Estimates in this range have higher uncertainty because high costs are often driven by unpredictable events. Consider this a rough guideline rather than a precise forecast." |
 
 
 ## Data & Machine Learning Specifications
