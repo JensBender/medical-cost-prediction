@@ -139,12 +139,40 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 2.  **Feature Importance Ranking**: Train preliminary models on these candidate features to obtain feature importance scores.
 3.  **Final Feature Selection**: Select the top 10 or less features that maximize predictive power within the UX constraints.
 
-### Model Architecture
-*   **Algorithm:** Gradient Boosting Regressor (XGBoost or LightGBM).
-*   **Objective:** `TOTSLF23` (Out-of-Pocket Health Care Expenditures).
-*   **Handling Zeros:** Use a Two-Part Model (Hurdle Model) or Tweedie Objective function to handle zero-inflated cost data.
-*   **Weighting:** Training must utilize `PERWT23F` (Person Weight) to ensure national representation.
-*   **Preprocessing:** Log-transformation of target variable `log(TOTSLF23 + 1)` recommended for training stability.
+### Model Training
+**Training Strategy**  
+1.  **Baseline Models**: Train all candidate models with (mostly) default hyperparameters.
+2.  **Model Selection**: Select best 2–4 models based on MdAE on validation set.
+3.  **Hyperparameter Tuning**: Tune selected models via randomized search, evaluated on validation set.
+4.  **Final Model Selection**: Select best-performing model based on validation set performance.
+5.  **Final Evaluation**: Evaluate the selected final model on held-out test set ONCE for unbiased performance reporting.
+
+**Baseline Models**  
+All models use MAE-based training loss (instead of MSE) for robustness to the right-skewed, zero-inflated target variable distribution.
+
+| Model | Training Loss | Preprocessing | Notes |
+| :--- | :--- | :--- | :--- |
+| Linear Regression | MSE (default) | Log-transform | Inverse-transform predictions |
+| Elastic Net | MSE (default) | Log-transform | Inverse-transform predictions |
+| K-Nearest Neighbors | N/A (distance-based) | Log-transform | Inverse-transform predictions |
+| MLP (sklearn) | MSE (default) | Log-transform | Inverse-transform predictions |
+| Decision Tree | `criterion='absolute_error'` | Native target | MAE-based splits |
+| Random Forest | `criterion='absolute_error'` | Native target | MAE-based splits |
+| XGBoost | `objective='reg:tweedie'` | Native target | Tweedie handles skew natively |
+
+> **Note:** A Two-Part (Hurdle) Model, where part 1 predicts P(cost > 0) and part 2 predicts E[cost \| cost > 0], is a valid alternative for explicitly modeling zero-inflation. Consider as a future enhancement if single-stage models underperform on zero-cost users.
+
+**Preprocessing**  
+Different model families require different target variable preprocessing:
+
+| Branch | Target Transform | Models | Rationale |
+| :--- | :--- | :--- | :--- |
+| **Log-Transform** | `log(y + 1)` → inverse on prediction | Linear, Elastic Net, KNN, MLP | Stabilizes variance for models assuming homoscedastic errors |
+| **Native Target** | No transform | Decision Tree, Random Forest, XGBoost | Non-parametric models; MAE/Tweedie criteria handle skew natively |
+
+**Sample Weights**  
+*   All models must use `PERWT23F` (person weight) via `sample_weight` parameter to ensure national representativeness.
+*   Models without native `sample_weight` support should be excluded.
 
 ### Model Evaluation
 Evaluate predictive performance of model and perform error analysis.
