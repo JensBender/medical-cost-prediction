@@ -146,6 +146,15 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 *   **Weighting:** Training must utilize `PERWT23F` (Person Weight) to ensure national representation.
 *   **Preprocessing:** Log-transformation of target variable `log(TOTSLF23 + 1)` recommended for training stability.
 
+### Model Evaluation
+Evaluation tasks to diagnose model performance and quantify heteroskedasticity (prediction accuracy varying by cost level).
+
+| ID | Evaluation Task | Details |
+| :--- | :--- | :--- |
+| **EV-01** | **Stratified Error Analysis** | Report MdAE separately for low (0–50th percentile), medium (50th–90th percentile), and high (90th+ percentile) cost tiers. This diagnoses where the model underperforms and quantifies heteroskedasticity. |
+| **EV-02** | **Interval Calibration** | Verify that ~50% of actual costs fall within the predicted 25th–75th percentile range. Report calibration separately for each cost tier to ensure uncertainty estimates are reliable across all segments. |
+| **EV-03** | **Overall Performance** | Report overall MdAE on the full test set as the primary success metric. |
+
 
 ## Non-Functional Requirements
 
@@ -192,7 +201,7 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 Healthcare cost data has unique characteristics that influence metric selection: 
 * **Zero-inflated**: Many users have $0 out-of-pocket costs. 
 * **Right-skewed**: Few users have extremely high costs. 
-* **Heteroskedastic**: Prediction difficulty varies across cost levels.
+* **Heteroskedastic**: Prediction performance is typically lower for high costs due to less training data in this range and costs being driven by unpredictable events (e.g., accidents, sudden diagnoses).
 
 | Metric | Pros | Cons | Verdict |
 | :--- | :--- | :--- | :--- |
