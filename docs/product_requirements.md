@@ -182,8 +182,29 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 
 ## Success Metrics
 *   **Predictive Performance:** Median Absolute Error (MdAE) on the test set is < $500 (i.e., for the typical user, the prediction is within $500 of the actual cost).
+*   **Interval Coverage:** ≥ 50% of actual costs fall within the predicted 25th–75th percentile range.
 *   **Completion Rate:** > 80% of users who start the questionnaire complete it.
 *   **User Satisfaction:** Positive sentiment on optional "Was this helpful?" feedback (optional).
+
+### Metric Selection Rationale
+Healthcare cost data has unique characteristics that influence metric selection: 
+* **Zero-inflated**: Many users have $0 out-of-pocket costs. 
+* **Right-skewed**: Few users have extremely high costs. 
+* **Heteroskedastic**: Prediction difficulty varies across cost levels.
+
+| Metric | Pros | Cons | Verdict |
+| :--- | :--- | :--- | :--- |
+| **MdAE** (Median Absolute Error) | Robust to outliers; represents "typical" error; directly interpretable in dollars | Ignores performance on high-cost outliers; median can hide bimodal error distributions | ✅ **Selected** |
+| **MAE** (Mean Absolute Error) | Intuitive; interpretable in dollars; standard metric | Sensitive to outliers, a few extreme errors inflate the metric | ⚠️ Use as secondary metric |
+| **RMSE** (Root Mean Squared Error) | Penalizes large errors more heavily | Very sensitive to outliers; less interpretable for skewed data | ❌ Not recommended |
+| **MAPE** (Mean Absolute Percentage Error) | Scale-independent; good for comparing across cost levels | Undefined when actual cost = $0 (common in healthcare data) | ❌ Not recommended |
+| **R²** (Coefficient of Determination) | Shows variance explained; standard in regression | Not in dollar terms; can be misleading on skewed/zero-inflated data | ⚠️ Use as secondary metric |
+
+**Why MdAE?**
+*  **Robust to zero-inflation and outliers**: Many users have $0 costs; some have $50k+. MdAE captures "typical" performance without being distorted.
+*  **Aligns with user story**: Our goal is accuracy "for the typical user", the median explicitly measures this.
+*  **Actionable threshold**: "$500 error" is intuitive for stakeholders and directly maps to FSA/HSA contribution decisions.
+*  **Interval Coverage as complement**: Since we output 25th–75th percentile ranges, we also measure calibration of uncertainty estimates.
 
 
 ## Risk Assessment & Mitigation
