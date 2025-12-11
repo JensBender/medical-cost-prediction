@@ -147,13 +147,13 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 *   **Preprocessing:** Log-transformation of target variable `log(TOTSLF23 + 1)` recommended for training stability.
 
 ### Model Evaluation
-Evaluation tasks to diagnose model performance and quantify heteroskedasticity (prediction accuracy varying by cost level).
+Evaluate predictive performance of model and perform error analysis.
 
 | ID | Evaluation Task | Details |
 | :--- | :--- | :--- |
-| **EV-01** | **Stratified Error Analysis** | Report MdAE separately for low (0–50th percentile), medium (50th–90th percentile), and high (90th+ percentile) cost tiers. This diagnoses where the model underperforms and quantifies heteroskedasticity. |
-| **EV-02** | **Interval Calibration** | Verify that ~50% of actual costs fall within the predicted 25th–75th percentile range. Report calibration separately for each cost tier to ensure uncertainty estimates are reliable across all segments. |
-| **EV-03** | **Overall Performance** | Report overall MdAE on the full test set as the primary success metric. |
+| **EV-01** | **Overall Performance** | Report overall MdAE on the full test set as the primary success metric. |
+| **EV-02** | **Stratified Error Analysis** | Report MdAE separately for low (0–50th percentile), medium (50th–90th percentile), and high (90th+ percentile) cost tiers. This diagnoses where the model underperforms and quantifies heteroskedasticity. |
+| **EV-03** | **Interval Calibration** | Report what % of actual costs fall within the predicted 25th–75th percentile range, both overall and for each cost tier. This diagnoses how accurate the prediction interval is across cost levels. Performance is expected to degrade for the high-cost tier due to (1) inherent unpredictability of high-cost events and (2) less training data in that range. |
 
 
 ## Non-Functional Requirements
