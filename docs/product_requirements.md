@@ -139,6 +139,36 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 2.  **Feature Importance Ranking**: Train preliminary models on these candidate features to obtain feature importance scores.
 3.  **Final Feature Selection**: Select the top 10 or less features that maximize predictive power within the UX constraints.
 
+### Data Preprocessing
+All preprocessing steps are implemented as scikit-learn pipelines to ensure consistency between training and inference, prevent data leakage, and simplify deployment.
+
+**Data Cleaning**  
+Perform once before pipeline:
+
+| Action | Rationale |
+| :--- | :--- |
+| Drop rows where `PERWT23F = 0` | Zero-weight respondents don't represent the population. |
+| Handle MEPS Negative Codes | Convert `-1` (Inapplicable), `-8` (DK) to: `0` for binary conditions (assume "No"), `NaN` for ordinal health status (then impute). |
+
+**Feature Preprocessing**  
+Implemented via `ColumnTransformer`:
+
+| Feature Type | Columns | Transformer | Notes |
+| :--- | :--- | :--- | :--- |
+| Numerical | `AGE23X`, `RTHLTH31`, `MNHLTH31` | `StandardScaler` | Health scales (1–5) treated as numerical |
+| Ordinal | `POVCAT23` | `OrdinalEncoder` | Low < Middle < High; preserve ordering |
+| Nominal | `SEX`, `REGION23`, `INSCOV23` | `OneHotEncoder` | Drop first to avoid multicollinearity |
+| Binary | `DIABDX_M18`, `HIBPDX`, `ADSMOK42` | passthrough | Already 0/1 encoded |
+| Engineered | — | `FunctionTransformer` | Create `COMORBIDITY_COUNT` = sum of 3 binary flags |
+
+**Target Preprocessing**  
+Different model families require different target variable handling. Implemented via `TransformedTargetRegressor` for log-transform branch.
+
+| Model Family | Target Transform | Models | Rationale |
+| :--- | :--- | :--- | :--- |
+| Regression-based | `log(y + 1)` → inverse on prediction | Linear Regression, Elastic Net, KNN, MLP | Stabilizes variance for models assuming homoscedastic errors |
+| Tree-based | None | Decision Tree, Random Forest, XGBoost | Non-parametric models; MAE/Tweedie criteria handle skew natively |
+
 ### Model Training
 **Training Strategy**  
 1.  **Baseline Models**: Train all candidate models with (mostly) default hyperparameters.
@@ -161,14 +191,6 @@ All models use MAE-based training loss (instead of MSE) for robustness to the ri
 | XGBoost | `objective='reg:tweedie'` | Native target | Tweedie handles skew natively |
 
 > **Note:** A Two-Part (Hurdle) Model, where part 1 predicts P(cost > 0) and part 2 predicts E[cost \| cost > 0], is a valid alternative for explicitly modeling zero-inflation. Consider as a future enhancement if single-stage models underperform on zero-cost users.
-
-**Preprocessing**  
-Different model families require different target variable preprocessing:
-
-| Branch | Target Transform | Models | Rationale |
-| :--- | :--- | :--- | :--- |
-| **Log-Transform** | `log(y + 1)` → inverse on prediction | Linear, Elastic Net, KNN, MLP | Stabilizes variance for models assuming homoscedastic errors |
-| **Native Target** | No transform | Decision Tree, Random Forest, XGBoost | Non-parametric models; MAE/Tweedie criteria handle skew natively |
 
 **Sample Weights**  
 *   All models must use `PERWT23F` (person weight) via `sample_weight` parameter to ensure national representativeness.
