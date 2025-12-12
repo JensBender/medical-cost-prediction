@@ -91,6 +91,7 @@ The UI must be a simple form with no more than 10 inputs on a single page. Input
 | **UI-03** | **Comparison Benchmarks** | Bar chart comparing user vs. national and age group benchmarks. | `gr.Plot` | "Typical American (median): $4,800 vs. Typical for Age 45–54 (median): $3,200" |
 | **UI-04** | **Limitations Notice** | Contextual guidance to help users interpret their prediction. | `gr.Markdown` | "**ℹ️ About This Estimate**<br>• Based on 2023 national survey data; recent policy changes may affect actual costs.<br>• Does not include insurance premiums or over-the-counter medications.<br>• This is a statistical estimate. Actual costs depend on your specific plan, providers, and health events." |
 | **UI-05** | **High-Cost Disclaimer** | Dynamic warning displayed when predicted cost exceeds the 90th percentile threshold. | `gr.Markdown` | "**⚠️ Note on This Estimate**<br>Your predicted cost is in the top 10% of healthcare spending. Estimates in this range have higher uncertainty because high costs are often driven by unpredictable events. Consider this a rough guideline rather than a precise forecast." |
+| **UI-06** | **Permanent Footer** | Always-visible disclaimer at the bottom of the page. Covers legal liability and data aging limitations. | `gr.Markdown` | *"Not intended as medical, financial, or legal advice. Based on 2023 U.S. national survey data."* |
 
 
 ## Data Specifications
@@ -226,9 +227,12 @@ Evaluate predictive performance of model and perform error analysis.
 
 
 ## UI/UX Guidelines
-*   **Tone:** Helpful, calm, non-judgmental. Avoid complex medical jargon (e.g. "High Blood Pressure" instead of "Hypertension").
-*   **Visuals:** Use trust-building colors (Blues/Greens).
-*   **Footer Disclaimer:** A permanent footer on all pages: *"Estimates based on 2023 U.S. national data. Not intended as medical or financial advice."*
+
+| Aspect | Guideline | Gradio Implementation |
+| :--- | :--- | :--- |
+| **Tone** | Helpful, calm, non-judgmental. Avoid medical jargon (e.g., "High Blood Pressure" not "Hypertension"). | Use plain language in all `label` and `info` parameters. |
+| **Visuals** | Trust-building colors (Blues/Greens). Clean, modern design. | Use `gr.themes.Soft()` or custom CSS via `gr.Blocks(css=...)`. |
+| **Footer** | Permanent disclaimer visible on all pages (define text in Result Display section). | Add `gr.Markdown(footer_text)` at the end of the layout. |
 
 
 ## Technical Stack Recommendation
@@ -278,8 +282,8 @@ Healthcare cost data has unique characteristics that influence metric selection:
 | :--- | :--- | :--- |
 | **Outlier Prediction** | Model predicts extreme costs ($100k+) for a standard user. | Consider implementing "Guardrails" in the code to cap displayed predictions at the 95th percentile with a "High Cost Risk" label instead of a raw number. |
 | **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a Fairness Audit. Include income as a feature so the user sees that income impacts the prediction. |
-| **Data Aging** | 2023 data becomes outdated. | Inform user about limitations of the model. Apply a "Medical Inflation Factor" adjustment (FR-02) to account for cost increases from 2023 to current prediction year. |
-| **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Display general disclaimer about model limitations. For Medicare/Medicaid users, add contextual note: "Recent policy changes (2024-2026) may lower actual costs compared to this estimate." |
+| **Data Aging** | 2023 data becomes outdated. | Display permanent footer (UI-06) and limitations notice (UI-04). Apply Medical Inflation Factor (FR-02) to adjust for cost increases. |
+| **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Covered by permanent footer (UI-06). For Medicare/Medicaid users, add contextual note: *"Recent policy changes (2024-2026) may lower actual costs compared to this estimate."* |
 
 
 ## Policy Changes (2024-2026)
@@ -295,7 +299,7 @@ Since the collection of the 2023 MEPS data, key policy changes have been enacted
 **2. ACA Marketplace Adjustments**
 *   **Cost Sharing Limits**: For 2025, the maximum out-of-pocket limit is **$9,200** (individual) for ACA marketplace plans.
 *   **Subsidy Expiration Risk**: Enhanced premium tax credits expire December 31, 2025. If not renewed, unsubsidized premiums could increase significantly in 2026.
-*   **Mitigation**: Display general disclaimer about model limitations. Cannot apply hard cap because app does not differentiate marketplace from employer insurance within the "Private" insurance category.
+*   **Mitigation**: Covered by permanent footer (UI-06). Cannot apply hard cap because app does not differentiate marketplace from employer insurance within the "Private" insurance category.
 
 **3. Medicare Part B Increases**
 *   **Deductibles**: Increased to $257 in 2025 (up from $226 in 2023).
