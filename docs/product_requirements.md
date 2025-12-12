@@ -212,15 +212,17 @@ Evaluate predictive performance of model and perform error analysis.
 ## Non-Functional Requirements
 
 ### Privacy & Security
-*   **NFR-01: Stateless Operation.** The app must NOT store any user input in a database. Data exists only in RAM during the session (Ephemeral).
-*   **NFR-02: No PII.** No names, emails, exact addresses, or SSNs shall be requested.
+| ID | Requirement | Details |
+| :--- | :--- | :--- |
+| **NFR-01** | Ephemeral Sessions | No user data written to disk or database. All inputs remain in browser/RAM session state only. |
+| **NFR-02** | No PII Collection | No names, emails, exact addresses, or SSNs shall be requested. |
 
-### Performance
-*   **NFR-03: Latency.** Inference prediction must be returned in < 200ms.
-*   **NFR-04: Mobile responsive.** The UI must adapt to smartphone screens.
-
-### Reliability
-*   **NFR-05: Fallback Mode.** If the user doesn't provide an input, the app must display an informative message or impute the value.
+### Performance & Usability
+| ID | Requirement | Details |
+| :--- | :--- | :--- |
+| **NFR-03** | Latency | Inference prediction must return in < 200ms (server-side) or < 2 seconds (end-to-end including network). |
+| **NFR-04** | Responsive Design | Expect ~65% desktop, ~35% mobile (typical for Hugging Face Spaces). Gradio handles responsive layouts natively. Ensure form inputs remain usable on smaller screens. |
+| **NFR-05** | Fallback Mode | If user skips an input, display informative message or impute value. |
 
 
 ## UI/UX Guidelines
