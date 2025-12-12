@@ -28,18 +28,26 @@ The **Medical Cost Planner** is a consumer-facing web application that uses mach
 
 ## User Flow
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   1. LAND ON    │     │   2. FILL OUT   │     │   3. VIEW       │     │   4. (OPTIONAL) │
-│      PAGE       │────▶│      FORM       │────▶│     RESULTS     │────▶│  GIVE FEEDBACK  │
-└─────────────────┘     └─────────────────┘     └─────────────────┘     └─────────────────┘
-        │                       │                       │                       │
-   See headline,           Enter 10 inputs        See cost range,         "Was this
-   understand value        (< 1 minute)           cost drivers,           helpful?" 
-   proposition                                    benchmarks              (thumbs up/down)
+┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+│  1. LAND ON  │      │ 2. FILL OUT  │      │  3. VIEW     │
+│     PAGE     │─────▶│     FORM     │────▶│   RESULTS    │
+└──────────────┘      └──────────────┘      └──────────────┘
+       │                     │                     │
+  See headline,        Enter 10 inputs       See cost range,
+  understand value     (< 1 minute)          cost drivers,
+  proposition                                benchmarks
 ```
 
-**Happy Path:** User lands → fills form → sees prediction → leaves with actionable budget number.  
-**Edge Cases:** User skips inputs (imputation applied) | User gets high-cost prediction (disclaimer shown).
+**Happy Path:** User lands → fills form → sees prediction → leaves with actionable number for budgeting.
+
+**Edge Cases:**
+| Scenario | System Response |
+| :--- | :--- |
+| User skips optional inputs | Imputation applied (median/mode); prediction proceeds |
+| Predicted cost > 90th percentile | High-uncertainty disclaimer displayed (UI-05) |
+| Predicted cost = $0 | Valid result; display "minimal expected costs" messaging |
+| Uninsured user | Note that OOP ≈ total cost; prediction may be higher than insured peers |
+| Server error / timeout | Display friendly error message; suggest retry |
 
 
 ## Competitive Positioning
