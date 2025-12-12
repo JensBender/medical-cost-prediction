@@ -26,6 +26,22 @@ The **Medical Cost Planner** is a consumer-facing web application that uses mach
 | **The Caregiver** | The "sandwich generation" estimating costs for an elderly parent. | "How much should I budget for my parent's healthcare?" |
 
 
+## User Flow
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   1. LAND ON    │     │   2. FILL OUT   │     │   3. VIEW       │     │   4. (OPTIONAL) │
+│      PAGE       │────▶│      FORM       │────▶│     RESULTS     │────▶│  GIVE FEEDBACK  │
+└─────────────────┘     └─────────────────┘     └─────────────────┘     └─────────────────┘
+        │                       │                       │                       │
+   See headline,           Enter 10 inputs        See cost range,         "Was this
+   understand value        (< 1 minute)           cost drivers,           helpful?" 
+   proposition                                    benchmarks              (thumbs up/down)
+```
+
+**Happy Path:** User lands → fills form → sees prediction → leaves with actionable budget number.  
+**Edge Cases:** User skips inputs (imputation applied) | User gets high-cost prediction (disclaimer shown).
+
+
 ## Competitive Positioning
 
 ### Market Gap
@@ -51,6 +67,22 @@ This tool is the **only ML-powered out-of-pocket healthcare cost planner** with 
 
 ### UX-First Rationale
 The 10-input constraint is a feature rather than a limitation. Our personas (Open Enrollment Planners, Budgeters) need ballpark estimates for financial planning (e.g., "Should I contribute $1,000 or $3,000 to my FSA?"), not clinical precision. Being within $500 (our MAE target) is sufficient for these decisions. The ML model captures complex patterns from individual-level data while keeping inputs simple and accessible. Sacrificing 2% absolute accuracy to achieve 80%+ completion rate is the right trade-off for this use case.
+
+
+## Out of Scope
+The following are explicitly **not** part of this project:
+
+| Category | What's Excluded | Rationale |
+| :--- | :--- | :--- |
+| **Population** | Children (< 18 years) | MEPS pediatric data has different cost drivers; adult-focused MVP |
+| **Population** | Family/household aggregation | Predicts individual costs only; users can run multiple times |
+| **Features** | Specific procedure predictions | We predict annual totals, not "How much will my MRI cost?" |
+| **Features** | Insurance plan comparison | We don't recommend plans; users input their current plan |
+| **Features** | Historical trends / user tracking | No user accounts; stateless predictions |
+| **Integrations** | Insurance portal integration | No API connections to external systems |
+| **Integrations** | Medical record imports | Users self-report; no clinical data ingestion |
+| **Data** | Real-time pricing data | Model uses MEPS survey data, not live cost databases |
+| **Compliance** | HIPAA-regulated data handling | Not applicable — no PHI collected; inputs are self-reported, anonymous, and not stored |
 
 
 ## Functional Requirements
@@ -161,8 +193,18 @@ Since the collection of the 2023 MEPS data, key policy changes have been enacted
 *   **Premiums**: Standard premium rose to $185.00/month in 2025 (up from $164.90 in 2023).
 *   **Mitigation**: The Medical Inflation Factor (FR-02) already accounts for these cost increases. No additional adjustment needed.
 
+### Glossary
+| Term | Definition |
+| :--- | :--- |
+| **FSA** | Flexible Spending Account. Employer-sponsored account for tax-free healthcare savings. "Use it or lose it" annually. |
+| **HSA** | Health Savings Account. Tax-advantaged account for healthcare expenses. Funds roll over year to year. |
+| **MdAE** | Median Absolute Error. Primary evaluation metric measuring the median difference between predicted and actual costs. |
+| **MEPS** | Medical Expenditure Panel Survey. Federal survey by the Agency for Healthcare Research and Quality tracking U.S. healthcare utilization and expenditures. |
+| **Out-of-Pocket (OOP)** | Healthcare costs paid directly by the patient (deductibles, copays, coinsurance). Excludes premiums. |
+| **SHAP** | SHapley Additive exPlanations. Method for explaining ML predictions by showing each feature's contribution. |
+| **TOTSLF23** | MEPS variable representing total out-of-pocket healthcare expenditure for 2023. |
 
-## Related Documentation
+### Related Documentation
 *   [U.S. Healthcare Costs Guide](./us_healthcare_costs_guide.md): Primer on U.S. healthcare payment structures, terminology, and why Americans need to predict out-of-pocket costs.
 *   [ML with MEPS: Prior Work](./ml_with_meps.md): Literature review of existing ML projects using MEPS data, informing competitive positioning.
 *   [Technical Specifications](./technical_specifications.md): Implementation details for data preprocessing pipeline, machine learning model architecture, and web app deployment.
