@@ -93,7 +93,7 @@ The UI must be a simple form with no more than 10 inputs on a single page. Input
 | **UI-05** | **High-Cost Disclaimer** | Dynamic warning displayed when predicted cost exceeds the 90th percentile threshold. | `gr.Markdown` | "**⚠️ Note on This Estimate**<br>Your predicted cost is in the top 10% of healthcare spending. Estimates in this range have higher uncertainty because high costs are often driven by unpredictable events. Consider this a rough guideline rather than a precise forecast." |
 
 
-## Data & Machine Learning Specifications
+## Data Specifications
 
 ### Dataset
 *   **Source:** [MEPS-HC 2023 Full Year Consolidated Data File (H251)](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251).
@@ -138,6 +138,9 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 1.  **Candidate Screening**: Identify all MEPS variables that a layperson can answer easily without having to look something up or think too hard.
 2.  **Feature Importance Ranking**: Train preliminary models on these candidate features to obtain feature importance scores.
 3.  **Final Feature Selection**: Select the top 10 or less features that maximize predictive power within the UX constraints.
+
+
+## Machine Learning Specifications
 
 ### Data Preprocessing
 All preprocessing steps are implemented as scikit-learn pipelines to ensure consistency between training and inference, prevent data leakage, and simplify deployment.
