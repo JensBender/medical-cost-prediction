@@ -149,3 +149,8 @@ Healthcare cost data has unique characteristics that influence evaluation metric
     *   **Source Code**: GitHub.
     *   **Model/Pipeline**: Hugging Face Hub.
     *   **Web App**: Hugging Face Spaces.
+
+
+## References
+*   [ML with MEPS: Prior Work](./ml_with_meps.md): Literature review of existing ML projects using MEPS data, informing competitive positioning.
+*   [U.S. Healthcare Costs Guide](./us_healthcare_costs_guide.md): Primer on U.S. healthcare payment structures, terminology, and why Americans need to predict out-of-pocket costs.

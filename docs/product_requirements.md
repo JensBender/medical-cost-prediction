@@ -161,3 +161,8 @@ Since the collection of the 2023 MEPS data, key policy changes have been enacted
 *   **Premiums**: Standard premium rose to $185.00/month in 2025 (up from $164.90 in 2023).
 *   **Mitigation**: The Medical Inflation Factor (FR-02) already accounts for these cost increases. No additional adjustment needed.
 
+
+## Related Documentation
+*   [U.S. Healthcare Costs Guide](./us_healthcare_costs_guide.md): Primer on U.S. healthcare payment structures, terminology, and why Americans need to predict out-of-pocket costs.
+*   [ML with MEPS: Prior Work](./ml_with_meps.md): Literature review of existing ML projects using MEPS data, informing competitive positioning.
+*   [Technical Specifications](./technical_specifications.md): Implementation details for data preprocessing pipeline, machine learning model architecture, and web app deployment.
