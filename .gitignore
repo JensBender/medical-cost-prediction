@@ -4,7 +4,6 @@ models/
 figures/
 notebooks/machine_learning_template.ipynb
 notebooks/loan_default_prediction.ipynb
-docs/prd2.md
 assets/healthcare_costs_infographic_large.png
 
 # Environment variables
