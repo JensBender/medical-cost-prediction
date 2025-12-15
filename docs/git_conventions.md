@@ -34,6 +34,7 @@ Conventional structure of a commit message with a header, body, and footer:
     - `docs`: Files in the `docs/` directory.
     - `readme`: README.md file.
     - `prd`: Product Requirements Document.
+    - `tech-spec`: Technical Specifications Document.
     - `tests`: Unit tests.
 - **Subject**: A concise description of the change (maximum 50 characters).
 
