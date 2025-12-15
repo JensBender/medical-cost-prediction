@@ -159,14 +159,14 @@ The UI must be a simple form with no more than 10 inputs on a single page. Input
 
 
 ## Technical Approach
-> For technical implementation details (data preprocessing pipeline, machine learning model architecture, web app deployment), see [Technical Specifications](./technical_specifications.md).
+For technical implementation details such as data preprocessing, machine learning modeling, and web app deployment, see [Technical Specifications](./technical_specifications.md).
 
 
 ## Success Metrics
 *   **Predictive Performance:** Median Absolute Error (MdAE) on the test set is < $500 (i.e., for the typical user, the prediction is within $500 of the actual cost).
-*   **Interval Coverage:** ≥ 50% of actual costs fall within the predicted 25th–75th percentile range.
-*   **Completion Rate:** > 80% of users who start the questionnaire complete it.
-*   **User Satisfaction:** Positive sentiment on optional "Was this helpful?" feedback (optional).
+*   **Interval Coverage:** ≥ 50% of actual costs in the test set fall within the predicted 25th–75th percentile range.
+*   **Completion Rate:** > 70% of users who enter at least one value (e.g., select an age) successfully generate a cost prediction.
+*   **User Satisfaction:** Positive sentiment on "Was this helpful?" feedback (optional).
 
 
 ## Risk Assessment & Mitigation
@@ -213,5 +213,5 @@ Since the collection of the 2023 MEPS data, key policy changes have been enacted
 
 ### Related Documentation
 *   [U.S. Healthcare Costs Guide](./us_healthcare_costs_guide.md): Primer on U.S. healthcare payment structures, terminology, and why Americans need to predict out-of-pocket costs.
-*   [ML with MEPS: Prior Work](./ml_with_meps.md): Literature review of existing ML projects using MEPS data, informing competitive positioning.
-*   [Technical Specifications](./technical_specifications.md): Implementation details for data preprocessing pipeline, machine learning model architecture, and web app deployment.
+*   [ML with MEPS](./ml_with_meps.md): Literature review of existing machine learning projects using MEPS data, informing competitive positioning.
+*   [Technical Specifications](./technical_specifications.md): Implementation details for data preprocessing, machine learning modeling, and web app deployment.
