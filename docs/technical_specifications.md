@@ -22,8 +22,8 @@
 3. [Deployment Specifications](#deployment-specifications)
    - [API Contract](#api-contract)
    - [Inference Pipeline](#inference-pipeline)
-4. [Technical Stack](#technical-stack-recommendation)
-5. [Testing Strategy](#testing-strategy)
+4. [Testing Strategy](#testing-strategy)
+5. [Technical Stack Recommendation](#technical-stack-recommendation)
 6. [References](#references)
 
 
@@ -73,6 +73,22 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 2.  **Feature Importance Ranking**: Train preliminary models on these candidate features to obtain feature importance scores.
 3.  **Final Feature Selection**: Select the top 10 or less features that maximize predictive power within the UX constraints.
 
+### Candidate Features
+The following features have been identified in the Product Requirements as the initial candidate set (IN-01 to IN-10). These map directly to MEPS variables.
+
+| UI Label | MEPS Variable | Data Type | Notes |
+| :--- | :--- | :--- | :--- |
+| **Age** | `AGE23X` | Numerical | Range 18-85. |
+| **Sex** | `SEX` | Nominal | Male/Female. |
+| **Region** | `REGION23` | Nominal | Census region (NE, MW, S, W). |
+| **Income** | `POVCAT23` | Ordinal | Poverty category (Low/Mid/High). |
+| **Insurance** | `INSCOV23` | Nominal | Private/Public/Uninsured. |
+| **Phys. Health** | `RTHLTH31` | Ordinal | Self-reported (1-5). |
+| **Ment. Health** | `MNHLTH31` | Ordinal | Self-reported (1-5). |
+| **Diabetes** | `DIABDX_M18` | Binary | Diagnose flag. |
+| **Hypertension** | `HIBPDX` | Binary | Diagnose flag. |
+| **Smoker** | `ADSMOK42` | Binary | Currently smokes. |
+
 
 ## Machine Learning Specifications
 
@@ -115,7 +131,7 @@ Different model families require different target variable handling. Implemented
 5.  **Final Evaluation**: Evaluate the selected final model on held-out test set ONCE for unbiased performance reporting.
 
 **Baseline Models**  
-All models use MAE-based training loss (instead of MSE) for robustness to the right-skewed, zero-inflated target variable distribution.
+We evaluate all models using MdAE (Median Absolute Error). For training, tree-based models use absolute error criteria where possible. Linear models default to MSE but are evaluated on their ability to minimize median error on the validation set.
 
 | Model | Training Loss | Preprocessing | Notes |
 | :--- | :--- | :--- | :--- |
@@ -138,9 +154,9 @@ Evaluate predictive performance of model and perform error analysis.
 
 | ID | Evaluation Task | Details |
 | :--- | :--- | :--- |
-| **EV-01** | **Overall Performance** | Report overall MdAE on the full test set as the primary success metric. |
+| **EV-01** | **Overall Performance** | Report overall MdAE on the full test set as the primary success metric. **Target: < $500.** |
 | **EV-02** | **Stratified Error Analysis** | Report MdAE separately for low (0–50th percentile), medium (50th–90th percentile), and high (90th+ percentile) cost tiers. This diagnoses where the model underperforms and quantifies heteroskedasticity. |
-| **EV-03** | **Interval Calibration** | Report what % of actual costs fall within the predicted 25th–75th percentile range, both overall and for each cost tier. This diagnoses how accurate the prediction interval is across cost levels. Performance is expected to degrade for the high-cost tier due to (1) inherent unpredictability of high-cost events and (2) less training data in that range. |
+| **EV-03** | **Interval Calibration** | Report what % of actual costs fall within the predicted 25th–75th percentile range. **Target: ≥ 50% coverage.** This diagnoses how accurate the prediction interval is across cost levels. Performance is expected to degrade for the high-cost tier due to (1) inherent unpredictability of high-cost events and (2) less training data in that range. |
 
 ### Metric Selection Rationale
 Healthcare cost data has unique characteristics that influence evaluation metric selection: 
@@ -163,11 +179,42 @@ Healthcare cost data has unique characteristics that influence evaluation metric
 *  **Interval Coverage as complement**: Since we output 25th–75th percentile ranges, we also measure calibration of uncertainty estimates.
 
 
+## Deployment Specifications
+
+### API Contract
+The model will be exposed via a Python API (internal to the web app process) or a REST endpoint if decoupled.
+*   **Input Schema:** `features: Dict[str, Union[str, int, float]]`
+*   **Output Schema:**
+    ```json
+    {
+      "prediction_median": float,
+      "prediction_25th": float,
+      "prediction_75th": float,
+      "prediction_90th": float,
+      "shap_values": Dict[str, float],
+      "warning_flags": List[str]
+    }
+    ```
+
+### Inference Pipeline
+1.  **Validation:** Ensure inputs are within valid ranges (e.g., Age 18-85).
+2.  **Imputation:** Fill missing values (Mode for categorical, Median for numerical).
+3.  **Transformation:** Apply `ColumnTransformer` (Scaling/Encoding).
+4.  **Prediction:** Run model inference.
+5.  **Explainability:** Run TreeExplainer/KernelExplainer.
+6.  **Post-Processing:** Apply inflation adjustment + inverse log-transform (if applicable).
+
+## Testing Strategy
+*   **Unit Tests**
+*   **Integration Tests**
+*   **End-to-End Tests**
+
+
 ## Technical Stack Recommendation
 *   **Core:** Python 3.13.
 *   **Preprocessing:** NumPy, Pandas, Scikit-Learn Pipeline (imputation, scaling, encoding).
 *   **EDA:** Pandas, Seaborn, Matplotlib, JupyterLab.
-*   **Modeling:** Scikit-Learn, XGBoost, Joblib (for serialization).
+*   **Modeling:** Scikit-Learn, XGBoost, SHAP (for explainability), Joblib (for serialization).
 *   **Web App:** 
     *   **Frontend**: Gradio or Streamlit (for demo).
     *   **Backend**: FastAPI (for production) and Pydantic (for API data validation).
