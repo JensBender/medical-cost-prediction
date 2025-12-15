@@ -1,4 +1,31 @@
 # Technical Specifications
+| **Project Name** | Medical Cost Prediction |
+| :--- | :--- |
+| **Status** | Project scoping |
+| **Created** | December 12, 2025 |
+| **Last Updated** | December 15, 2025 |
+
+**Companion Document:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
+
+
+## Table of Contents
+1. [Data Specifications](#data-specifications)
+   - [Dataset](#dataset)
+   - [Target Variable](#target-variable)
+   - [Feature Selection](#feature-selection)
+   - [Candidate Features](#candidate-features)
+2. [Machine Learning Specifications](#machine-learning-specifications)
+   - [Data Preprocessing](#data-preprocessing)
+   - [Model Training](#model-training)
+   - [Model Evaluation](#model-evaluation)
+   - [Metric Selection Rationale](#metric-selection-rationale)
+3. [Deployment Specifications](#deployment-specifications)
+   - [API Contract](#api-contract)
+   - [Inference Pipeline](#inference-pipeline)
+4. [Technical Stack](#technical-stack-recommendation)
+5. [Testing Strategy](#testing-strategy)
+6. [References](#references)
+
 
 ## Data Specifications
 
@@ -8,8 +35,8 @@
 *   **Codebook:** [MEPS-HC 2023 Codebook](https://meps.ahrq.gov/data_stats/download_data_files_codebook.jsp?PUFId=H251).
 
 ### Target Variable
-*   **Variable:** `TOTSLF23` — Total amount paid out-of-pocket by the person or their family for all medical events in the year 2023.
-*   **Rationale:** Our primary personas (Open Enrollment Planners, Budgeters) need to know what **they will personally pay**, not the total cost shared across insurance and government payers. Out-of-pocket costs directly answer: "How much should I contribute to my FSA/HSA?" and "What's my financial exposure?"
+*   **`TOTSLF23`:** Total amount paid out-of-pocket by the person or their family for all medical events in the year 2023.
+*   **Rationale:** Our primary personas (Open Enrollment Planners, Budgeters) need to know what they will personally pay, not the total cost shared across insurance and government payers. Out-of-pocket costs directly answer: "How much should I contribute to my FSA/HSA?" and "What's my financial exposure?"
 *   **Note:** For uninsured users, out-of-pocket ≈ total cost, so this target remains appropriate across all insurance statuses.
 
 <details>
@@ -34,7 +61,7 @@ Notes:
 </details>
 
 ### Feature Selection 
-The primary goal is a fast, frictionless user experience. We prioritize usability over predictive power if it requires complex inputs. 
+The primary goal is a fast, frictionless user experience. We prioritize usability over predictive performance if it requires complex inputs. 
 
 **Feature Selection Principles**:
 1.  **UX-First Constraint**: Maximum of 10 inputs to ensure user completion in under 1 minute.
@@ -152,5 +179,5 @@ Healthcare cost data has unique characteristics that influence evaluation metric
 
 
 ## References
-*   [ML with MEPS: Prior Work](./ml_with_meps.md): Literature review of existing ML projects using MEPS data, informing competitive positioning.
 *   [U.S. Healthcare Costs Guide](./us_healthcare_costs_guide.md): Primer on U.S. healthcare payment structures, terminology, and why Americans need to predict out-of-pocket costs.
+*   [ML with MEPS](./ml_with_meps.md): Literature review of existing machine learning projects using MEPS data, informing competitive positioning.
