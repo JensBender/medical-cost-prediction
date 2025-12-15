@@ -140,12 +140,12 @@ The UI must be a simple form with no more than 10 inputs on a single page. Input
 | ID | Requirement | Details |
 | :--- | :--- | :--- |
 | **NFR-01** | Ephemeral Sessions | No user data written to disk or database. All inputs remain in browser/RAM session state only. |
-| **NFR-02** | No PII Collection | No names, emails, exact addresses, or SSNs shall be requested. |
+| **NFR-02** | No PII Collection | No names, emails, addresses, or social security numbers shall be requested. |
 
 ### Performance & Usability
 | ID | Requirement | Details |
 | :--- | :--- | :--- |
-| **NFR-03** | Latency | Inference prediction must return in < 200ms (server-side) or < 2 seconds (end-to-end including network). |
+| **NFR-03** | Latency | Inference prediction (including SHAP generation) must return in < 1 second (server-side) to ensure a responsive UX (~3s end-to-end). |
 | **NFR-04** | Responsive Design | Expect ~65% desktop, ~35% mobile (typical for Hugging Face Spaces). Gradio handles responsive layouts natively. Ensure form inputs remain usable on smaller screens. |
 | **NFR-05** | Fallback Mode | If user skips an input, display informative message or impute value. |
 
@@ -154,9 +154,8 @@ The UI must be a simple form with no more than 10 inputs on a single page. Input
 
 | Aspect | Guideline | Gradio Implementation |
 | :--- | :--- | :--- |
-| **Tone** | Helpful, calm, non-judgmental. Avoid medical jargon (e.g., "High Blood Pressure" not "Hypertension"). | Use plain language in all `label` and `info` parameters. |
+| **Tone** | Helpful, calm, non-judgmental. Avoid medical jargon (e.g., "High Blood Pressure" not "Hypertension"). | Use plain language in all UI text elements. |
 | **Visuals** | Trust-building colors (Blues/Greens). Clean, modern design. | Use `gr.themes.Soft()` or custom CSS via `gr.Blocks(css=...)`. |
-| **Footer** | Permanent disclaimer visible on all pages (define text in Result Display section). | Add `gr.Markdown(footer_text)` at the end of the layout. |
 
 
 ## Technical Approach
