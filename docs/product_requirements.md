@@ -8,13 +8,13 @@
 
 
 ## Executive Summary
-The **Medical Cost Planner** is a consumer-facing web application that uses machine learning trained on the Medical Expenditure Panel Survey (MEPS) to predict annual **out-of-pocket** healthcare costs.
+The **Medical Cost Planner** is a consumer-facing web application that uses machine learning to predict annual out-of-pocket healthcare costs.
 
-**The Problem:** Healthcare pricing is a "black box." While insurance portals show unit prices for individual treatments (e.g., cost of an MRI), consumers struggle to predict their total expected costs for the entire year. Fixed calculators (e.g., "add $500 per child") are inaccurate because they ignore important factors such as a person's health conditions, and insurance tools require specific procedure codes that often users don't know.
+**The Problem:** Healthcare pricing is a "black box." While insurance portals show prices for individual treatments (e.g., an MRI), consumers lack tools to predict their total expected costs for the year. Existing calculators are often too generic (ignoring health conditions) or too complex (requiring specific procedure codes).
 
-**Our Solution:** This tool enables users to predict their expected healthcare costs based on easily available information instead of complex medical records. Users can simply enter their age, sex, insurance status, self-rated health, and pre-existing health conditions to receive a personalized forecast for expected out-of-pocket healthcare costs for the upcoming year. This forecast can be used for FSA/HSA contributions and emergency fund planning.
+**Our Solution:** A personalized forecasting tool based on accessible inputs. Users simply enter demographic and health details such as age, insurance status, and chronic conditions to receive a cost estimate for the upcoming year. This empowers users to make data-driven decisions for FSA/HSA contributions and emergency planning.
 
-**How it works:** The web app is powered by a machine learning model trained on the Medical Expenditure Panel Survey (MEPS), which is considered the gold standard for U.S. healthcare cost data. MEPS captures what people with specific demographic and health profiles actually spent on healthcare. Our ML model learns these complex, often nonlinear patterns and makes them accessible through a simple web app, providing a free, data-driven financial planning tool for everyone.
+**How it works:** The web app is powered by a machine learning model trained on the Medical Expenditure Panel Survey (MEPS), the gold standard for U.S. healthcare data. By analyzing what people with similar demographic and health profiles actually spent, our model learns real-world cost patterns and translates them into actionable financial insights without requiring complex medical records.
 
 
 ## User Personas
