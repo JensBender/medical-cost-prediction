@@ -54,7 +54,7 @@ The **Medical Cost Planner** is a consumer-facing web application that uses mach
 ## Competitive Positioning
 
 ### Market Gap
-Current tools are either too complex or their predictions are too generic. No existing solution is easy to use, delivers personalized predictions, and is powered by machine learning.
+Current tools are either too complex or their predictions are too generic. No existing solution is easy to use, delivers personalized predictions, and is powered by machine learning (ML).
 
 1.  **Procedure Estimators** (FAIR Health, Bluebook): Too specific. Great for checking the price of one MRI, useless for budgeting a whole year.
 2.  **Premium Calculators** (KFF, Exchanges): Too broad. They estimate insurance bills, not medical spending.
@@ -63,7 +63,7 @@ Current tools are either too complex or their predictions are too generic. No ex
 **Closest Competitor:** The KFF Household Health Spending Calculator uses broad demographic averages (e.g., "Health: Good vs. Bad"). It ignores important details like specific health conditions and produces generic estimates that fail to capture the complex interactions of multiple risk factors in individual users.
 
 ### Our Differentiation
-We are the only **ML-powered, direct-to-consumer planner**. We trade clinical granularity for actionable financial guidance.
+We stand apart as the first consumer-centric planner for out-of-pocket healthcare costs. By leveraging machine learning, we prioritize ease of use without compromising predictive performance.
 
 | **Our ML Approach** | **Competitor Approaches** |
 | :--- | :--- |
@@ -71,10 +71,10 @@ We are the only **ML-powered, direct-to-consumer planner**. We trade clinical gr
 | **Granular Health Inputs**: Specific conditions (Diabetes, Hypertension) & 5-point health scales. | **Binary**: Often just "Good" vs. "Poor". |
 | **Explainable**: SHAP values reveal *why* costs are high (e.g., "Tobacco use: +$500"). | **Black Box**: No context provided. |
 | **Probabilistic**: Output includes 25th-75th percentile and "Worst Case" (90th%) ranges. | **Deterministic**: Single point estimates that imply false precision. |
-| **Frictionless**: 10 inputs, no login, free. | **High Friction**: Requires CPT codes, logins, or deep insurance knowledge. |
+| **Frictionless**: Quick, easy, and free to use, no login required. | **High Friction**: Requires CPT codes, logins, or deep insurance knowledge. |
 
 ### UX-First Rationale
-**Simplicity > Perfection.** Users need a "ballpark" for decision making (e.g., $1k vs $3k FSA contribution), not a medical bill audit. By limiting inputs to 10 high-impact variables, we achieve an 80%+ completion rate while remaining within $500 (MdAE) of actual costs—the sweet spot for personal finance.
+**Simplicity > Perfection**: Users need a "ballpark" estimate for decision making (e.g., $1k vs $3k FSA contribution), not a medical bill audit. By limiting inputs to 10 high-impact variables, we achieve user friendliness while remaining within $500 (MdAE) of actual costs, a helpful sweet spot for personal finance.
 
 
 ## Out of Scope
