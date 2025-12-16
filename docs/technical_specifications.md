@@ -30,7 +30,7 @@
 ## Data Specifications
 
 ### Dataset
-*   **Source:** [MEPS-HC 2023 Full Year Consolidated Data File (H251)](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251).
+*   **Data File:** [MEPS-HC 2023 Full Year Consolidated Data File (H251)](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251).
 *   **Documentation:** [MEPS-HC 2023 Documentation](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml).
 *   **Codebook:** [MEPS-HC 2023 Codebook](https://meps.ahrq.gov/data_stats/download_data_files_codebook.jsp?PUFId=H251).
 
@@ -98,10 +98,10 @@ All preprocessing steps are implemented as scikit-learn pipelines to ensure cons
 **Data Cleaning**  
 Perform once before pipeline:
 
-| Action | Rationale |
-| :--- | :--- |
-| Drop rows where `PERWT23F = 0` | Zero-weight respondents don't represent the population. |
-| Handle MEPS Negative Codes | Convert `-1` (Inapplicable), `-8` (DK) to: `0` for binary conditions (assume "No"), `NaN` for ordinal health status (then impute). |
+| Action | Rationale | Details |
+| :--- | :--- | :--- |
+| Drop rows where `PERWT23F = 0` | Zero-weight respondents don't represent the population. | Removes ~456 rows (N=18,919 total, 18,463 positive weight). |
+| Handle MEPS Negative Codes | Standardize missing/inapplicable values for modeling. | Convert `-1` (Inapplicable), `-7` (Refused), `-8` (DK), `-15` (Cannot be Computed) to:<br>• `0` for binary conditions (assume "No")<br>• `NaN` for ordinal health status (to be imputed). |
 
 **Feature Preprocessing**  
 Implemented via `ColumnTransformer`:
