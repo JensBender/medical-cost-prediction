@@ -3,9 +3,9 @@
 | :--- | :--- |
 | **Status** | Project scoping |
 | **Created** | December 12, 2025 |
-| **Last Updated** | December 15, 2025 |
+| **Last Updated** | December 16, 2025 |
 
-**Companion Document:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
+**Note:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
 
 
 ## Table of Contents
@@ -226,5 +226,6 @@ The model will be exposed via a Python API (internal to the web app process) or 
 
 
 ## References
+*   [Product Requirements Document (PRD)](./product_requirements.md): The high-level product vision, user personas, requirements, and success metrics that guide this technical implementation.
 *   [U.S. Healthcare Costs Guide](./us_healthcare_costs_guide.md): Primer on U.S. healthcare payment structures, terminology, and why Americans need to predict out-of-pocket costs.
 *   [ML with MEPS](./ml_with_meps.md): Literature review of existing machine learning projects using MEPS data, informing competitive positioning.
