@@ -206,6 +206,8 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to adjust for the compl
 │   └── e2e/                 # End-to-end tests
 │
 ├── docs/                    # Project documentation and references
+│   ├── product_requirements.md # Product Requirements Document (PRD)
+│   ├── technical_specifications.md # Technical Specifications
 │   ├── h251doc.pdf          # MEPS-HC 2023 documentation
 │   ├── h251cb.pdf           # MEPS-HC 2023 codebook
 │   └── git_conventions.md   # Conventions for Git commit messages 
