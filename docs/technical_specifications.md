@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Project scoping |
 | **Created** | December 12, 2025 |
-| **Last Updated** | December 16, 2025 |
+| **Last Updated** | December 18, 2025 |
 
 **Note:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
 
@@ -40,7 +40,7 @@
 *   **Note:** For uninsured users, out-of-pocket ≈ total cost, so this target remains appropriate across all insurance statuses.
 
 <details>
-<summary><strong>Detailed Breakdown of TOTSLF23</strong> (click to expand)</summary>
+<summary>ℹ️ <strong>Detailed Breakdown of TOTSLF23</strong> (click to expand)</summary>
 
 `TOTSLF23` is the aggregate sum of all out-of-pocket payments made by the person or their family for healthcare services received in 2023. It sums the "Self/Family" share of costs across all medical event categories. It includes the following service types:
 *   **Office-Based Visits (`OBSLF23`):** Co-pays and deductibles for doctor's appointments, check-ups, and specialist visits.
@@ -63,7 +63,7 @@ Notes:
 ### Feature Selection 
 The primary goal is a fast, frictionless user experience. We prioritize usability over predictive performance if it requires complex inputs. 
 
-**Feature Selection Principles**:
+**Feature Selection Rationale**:
 1.  **UX-First Constraint**: Maximum of 10 inputs to ensure user completion in under 1 minute.
 2.  **Consumer Accessibility**: Inputs must be information users know offhand (e.g., age, self-rated health). The user doesn't need to leave their chair to find an insurance card, past bill, or medical record. No asking for specifics like "deductible amount" or "ICD-10 codes" that require mental effort or looking up technical terms.
 3.  **Optimize Within Constraints**: Among the pool of "accessible" inputs, select the variables with the highest feature importance to maximize predictive power within the UX constraints. 
@@ -100,8 +100,8 @@ Perform once before pipeline:
 
 | Action | Rationale | Details |
 | :--- | :--- | :--- |
-| Drop rows where `PERWT23F = 0` | Zero-weight respondents don't represent the population. | Removes ~456 rows (N=18,919 total, 18,463 positive weight). |
-| Handle MEPS Negative Codes | Standardize missing/inapplicable values for modeling. | Convert `-1` (Inapplicable), `-7` (Refused), `-8` (DK), `-15` (Cannot be Computed) to:<br>• `0` for binary conditions (assume "No")<br>• `NaN` for ordinal health status (to be imputed). |
+| Drop rows where `PERWT23F = 0` | Respondents with a person weight of zero don't represent the population. | Removes ~456 rows (N=18,919 total, 18,463 with positive weight). |
+| Handle MEPS Negative Codes | Standardize missing/inapplicable values for modeling. | Convert `-1`, `-7`, `-8`, `-15` to `NaN` for all features.<br>Missing values will be handled by the imputation step in the ML pipeline (Mode for Categorical/Binary, Median for Numerical). |
 
 **Feature Preprocessing**  
 Implemented via `ColumnTransformer`:
