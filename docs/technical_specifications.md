@@ -18,7 +18,6 @@
    - [Data Preprocessing](#data-preprocessing)
    - [Model Training](#model-training)
    - [Model Evaluation](#model-evaluation)
-   - [Metric Selection Rationale](#metric-selection-rationale)
 3. [Deployment Specifications](#deployment-specifications)
    - [API Contract](#api-contract)
    - [Inference Pipeline](#inference-pipeline)
@@ -163,7 +162,7 @@ Evaluate predictive performance of model and perform error analysis.
 | **EV-02** | **Stratified Error Analysis** | Report MdAE separately for low (0–50th percentile), medium (50th–90th percentile), and high (90th+ percentile) cost tiers. This diagnoses where the model underperforms and quantifies heteroskedasticity. |
 | **EV-03** | **Interval Calibration** | Report what % of actual costs fall within the predicted 25th–75th percentile range. **Target: ≥ 50% coverage.** This diagnoses how accurate the prediction interval is across cost levels. Performance is expected to degrade for the high-cost tier due to (1) inherent unpredictability of high-cost events and (2) less training data in that range. |
 
-### Metric Selection Rationale
+**Metric Selection Rationale**  
 Healthcare cost data has unique characteristics that influence evaluation metric selection: 
 * **Zero-inflated**: Many users have $0 out-of-pocket costs. 
 * **Right-skewed**: Few users have extremely high costs. 
