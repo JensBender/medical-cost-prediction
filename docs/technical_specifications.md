@@ -129,12 +129,11 @@ We apply transformations selectively based on how each model handles this varian
 | **Decision Tree, Random Forest, XGBoost** | None | **Robust.** These models are non-parametric and partition data into local regions. They can learn to accept low variance in one node and high variance in another without global transformation. |
 
 ### Model Training
-**Training Strategy**  
-1.  **Baseline Models**: Train all candidate models with (mostly) default hyperparameters.
-2.  **Model Selection**: Select best 2–4 models based on MdAE on validation set.
-3.  **Hyperparameter Tuning**: Tune selected models via randomized search, evaluated on validation set.
-4.  **Final Model Selection**: Select best-performing model based on validation set performance.
-5.  **Final Evaluation**: Evaluate the selected final model on held-out test set ONCE for unbiased performance reporting.
+**Procedure**  
+1.  **Train-Validation-Test Split**: Split the data into 70% train, 15% validation, and 15% test (~2,700 test samples).
+2.  **Baseline Models**: Train all candidate models with (mostly) default hyperparameters. Evaluate all models based on MdAE on the validation set. Select the best 2–4 models for optimization.
+3.  **Hyperparameter Tuning**: Tune selected models via randomized search. Select the best-performing model based on validation set performance.
+4.  **Final Model**: Evaluate the selected model on the hold-out test set to assess real-world performance on unseen data.
 
 **Baseline Models**  
 We evaluate all models using MdAE (Median Absolute Error). For training, tree-based models use absolute error criteria where possible. Linear models default to MSE but are evaluated on their ability to minimize median error on the validation set.
