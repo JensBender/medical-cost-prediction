@@ -114,13 +114,19 @@ Implemented via `ColumnTransformer`:
 | Binary | `DIABDX_M18`, `HIBPDX`, `ADSMOK42` | passthrough | Already 0/1 encoded |
 | Engineered | — | `FunctionTransformer` | Create `COMORBIDITY_COUNT` = sum of 3 binary flags |
 
-**Target Preprocessing**  
-Different model families require different target variable handling. Implemented via `TransformedTargetRegressor` for log-transform branch.
+**The Heteroscedasticity Problem**  
+Medical cost data is inherently **heteroscedastic**, meaning the "noise" or variance in errors is not constant but grows with the target value. 
+*   **Example:** A standard office visit costing **$100** might vary by **±$20**. A complex surgery costing **$100,000** might vary by **±$20,000**. 
+*   **Impact:** If we treat raw dollars as the target, models that assume constant variance (homoscedasticity) will be overwhelmingly driven by the massive errors in the high-cost patients, ignoring the smaller, consistent patterns in the low-cost majority.
 
-| Model Family | Target Transform | Models | Rationale |
-| :--- | :--- | :--- | :--- |
-| Regression-based | `log(y + 1)` → inverse on prediction | Linear Regression, Elastic Net, KNN, MLP | Stabilizes variance for models assuming homoscedastic errors |
-| Tree-based | None | Decision Tree, Random Forest, XGBoost | Non-parametric models; MAE/Tweedie criteria handle skew natively |
+**Target Preprocessing**  
+We apply transformations selectively based on how each model handles this variance. 
+
+| Models | Target Transform | Rationale |
+| :--- | :--- | :--- |
+| **Linear Regression, Elastic Net, MLP** | `log(y + 1)` | **Strict Assumption.** These models assume constant error variance. `log` stabilizes variance by compressing high values; `+1` handles zero-cost cases where `log(0)` is undefined. |
+| **K-Nearest Neighbors (KNN)** | `log(y + 1)` | **Outlier Sensitive.** KNN averages the values of neighbors. Without `log`, a single high-cost neighbor can skew the prediction massively. |
+| **Decision Tree, Random Forest, XGBoost** | None | **Robust.** These models are non-parametric and partition data into local regions. They can learn to accept low variance in one node and high variance in another without global transformation. |
 
 ### Model Training
 **Training Strategy**  
