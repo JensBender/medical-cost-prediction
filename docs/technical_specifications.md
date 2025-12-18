@@ -208,10 +208,18 @@ The model will be exposed via a Python API (internal to the web app process) or 
 5.  **Explainability:** Run TreeExplainer/KernelExplainer.
 6.  **Post-Processing:** Apply inflation adjustment + inverse log-transform (if applicable).
 
+
 ## Testing Strategy
-*   **Unit Tests**
-*   **Integration Tests**
-*   **End-to-End Tests**
+**Unit Tests**  
+*   **Preprocessing Pipelines:** Validate encoding, scaling, imputation, and handling of edge cases (e.g., unseen categories).
+*   **Data Validation:** Ensure Pydantic models correctly reject invalid inputs.
+
+**Integration Tests**  
+*   **Serving:** Verify serialized pipeline loading and output structure.
+*   **Endpoints:** Validate JSON responses and HTTP status codes (200/422).
+
+**End-to-End Tests**  
+*   **User Journey:** Simulate full flow: user input → processing → cost prediction.
 
 
 ## Technical Stack Recommendation
