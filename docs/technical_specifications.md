@@ -101,7 +101,7 @@ Perform once before pipeline:
 | Action | Rationale | Details |
 | :--- | :--- | :--- |
 | Drop rows where `PERWT23F = 0` | Respondents with a person weight of zero don't represent the population. | Removes ~456 rows (N=18,919 total, 18,463 with positive weight). |
-| Handle MEPS Negative Codes | Standardize missing/inapplicable values for modeling. | Convert `-1`, `-7`, `-8`, `-15` to `NaN` for all features.<br>Missing values will be handled by the imputation step in the ML pipeline (Mode for Categorical/Binary, Median for Numerical). |
+| Handle MEPS Negative Codes | Standardize missing/inapplicable values for modeling. | Convert `-1` (Inapplicable), `-7` (Refused), `-8` (Don't know), `-15` (Cannot be computed) to `NaN`.<br>Treating survey non-response and missing inputs from web app users identically (as `NaN` → Imputed Mode/Median) to align data handling between training and inference. |
 
 **Feature Preprocessing**  
 Implemented via `ColumnTransformer`:
