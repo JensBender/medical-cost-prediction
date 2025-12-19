@@ -73,20 +73,41 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 3.  **Final Feature Selection**: Select the top 10 or less features that maximize predictive power within the UX constraints.
 
 ### Candidate Features
-The following features have been identified in the Product Requirements as the initial candidate set (IN-01 to IN-10). These map directly to MEPS variables.
+The following MEPS variables have been identified as candidate features for the model. All candidates satisfy the UX-first constraint: users can answer from memory without looking up documents or technical terms. The final feature set (≤10 inputs) will be selected based on empirical feature importance ranking.
 
-| UI Label | MEPS Variable | Data Type | Notes |
-| :--- | :--- | :--- | :--- |
-| **Age** | `AGE23X` | Numerical | Range 18-85. |
-| **Sex** | `SEX` | Nominal | Male/Female. |
-| **Region** | `REGION23` | Nominal | Census region (NE, MW, S, W). |
-| **Income** | `POVCAT23` | Ordinal | Poverty category (Low/Mid/High). |
-| **Insurance** | `INSCOV23` | Nominal | Private/Public/Uninsured. |
-| **Phys. Health** | `RTHLTH31` | Ordinal | Self-reported (1-5). |
-| **Ment. Health** | `MNHLTH31` | Ordinal | Self-reported (1-5). |
-| **Diabetes** | `DIABDX_M18` | Binary | Diagnose flag. |
-| **Hypertension** | `HIBPDX` | Binary | Diagnose flag. |
-| **Smoker** | `ADSMOK42` | Binary | Currently smokes. |
+**Demographics & Socioeconomic**
+| UI Label | MEPS Variable | Data Type | Description | Rationale |
+| :--- | :--- | :--- | :--- | :--- |
+| **Age** | `AGE23X` | Numerical | Age at end of year (18–85). | ✅ Universal predictor of healthcare utilization; strongly correlated with chronic conditions and costs. |
+| **Sex** | `SEX` | Nominal | Male or Female. | ✅ Biologically relevant (e.g., pregnancy, gender-specific conditions); easy to answer. |
+| **Region** | `REGION23` | Nominal | Census region (Northeast, Midwest, South, West). | ⚠️ May have low predictive power for out-of-pocket costs specifically; consider dropping if feature importance is weak. |
+| **Income** | `POVCAT23` | Ordinal | Family income as % of poverty line (Poor/Near Poor/Low/Middle/High). | ✅ Correlated with insurance type, access to care, and ability to pay out-of-pocket. |
+| **Insurance** | `INSCOV23` | Nominal | Insurance coverage status (Private, Public, Uninsured). | ✅ **Critical.** Directly determines cost-sharing structure; strongest predictor of out-of-pocket vs. total cost. |
+
+**Perceived Health**
+| UI Label | MEPS Variable | Data Type | Description | Rationale |
+| :--- | :--- | :--- | :--- | :--- |
+| **Phys. Health** | `RTHLTH31` | Ordinal | Self-reported physical health (1=Excellent to 5=Poor). | ✅ Strong predictor of utilization; captures overall health burden in one question. |
+| **Ment. Health** | `MNHLTH31` | Ordinal | Self-reported mental health (1=Excellent to 5=Poor). | ✅ Complements physical health; captures behavioral health costs (therapy, Rx). |
+
+**Chronic Conditions**
+| UI Label | MEPS Variable | Data Type | Description | Rationale |
+| :--- | :--- | :--- | :--- | :--- |
+| **Diabetes** | `DIABDX_M18` | Binary | Ever diagnosed with diabetes. | ✅ High-cost chronic condition with ongoing Rx, monitoring, and complication costs. Very common (~11% prevalence). |
+| **Hypertension** | `HIBPDX` | Binary | Ever diagnosed with high blood pressure. | ✅ Very common (~30% prevalence); drives ongoing Rx costs and cardiovascular risk. |
+| **Heart Disease** | `CHDDX` | Binary | Ever diagnosed with coronary heart disease. | ✅ **Major cost driver** with high downstream costs (procedures, Rx, monitoring). Lower prevalence but high impact. |
+| **High Cholesterol** | `CHOLDX` | Binary | Ever diagnosed with high cholesterol. | ⚠️ Very common (~28% prevalence); drives statin Rx costs. May be partially redundant with hypertension. |
+| **Arthritis** | `ARTHDX` | Binary | Ever diagnosed with arthritis. | ⚠️ Very common (~25% prevalence); high Rx/therapy costs. May overlap with age effects. |
+| **Cancer** | `CANCERDX` | Binary | Ever diagnosed with any cancer. | ⚠️ Major cost driver if active; easy to answer. May capture historical rather than current-year costs. |
+| **Asthma** | `ASTHDX` | Binary | Ever diagnosed with asthma. | ⚠️ Chronic condition with ongoing costs (inhalers, visits). Lower prevalence (~8%). |
+| **Stroke** | `STRKDX` | Binary | Ever diagnosed with stroke. | ⚠️ High downstream costs (rehab, Rx). Lower prevalence (~3%). |
+
+**Behavioral**
+| UI Label | MEPS Variable | Data Type | Description | Rationale |
+| :--- | :--- | :--- | :--- | :--- |
+| **Smoker** | `ADSMOK42` | Binary | Currently smokes cigarettes. | ⚠️ Known health risk factor but may have **lower predictive power** for out-of-pocket costs than chronic conditions. Consider dropping if outperformed by condition flags. |
+
+> **Note:** The final model will use ≤10 features. During feature importance ranking, we expect to retain Age, Sex, Income, Insurance, Physical Health, Mental Health, and 2–4 chronic condition flags. Region and Smoker are candidates for removal if empirical importance is low.
 
 
 ## Machine Learning Specifications
