@@ -34,9 +34,9 @@ The **Medical Cost Planner** is a consumer-facing web application that uses mach
 │     PAGE     │─────▶│     FORM     │────▶│   RESULTS    │
 └──────────────┘      └──────────────┘      └──────────────┘
        │                     │                     │
-  See headline,        Enter 10 inputs       See cost range,
-  understand value     (< 1 minute)          cost drivers,
-  proposition                                benchmarks
+  See headline,        Answer a few          See cost range,
+  understand value     quick questions       cost drivers,
+  proposition          (< 90 seconds)        benchmarks
 ```
 
 **Happy Path:** User lands → fills out form → sees prediction → leaves with actionable number for budgeting.
@@ -74,7 +74,7 @@ We stand apart as the first consumer-centric planner for out-of-pocket healthcar
 | **Frictionless**: Quick, easy, and free to use, no login required. | **High Friction**: Requires CPT codes, logins, or deep insurance knowledge. |
 
 ### UX-First Rationale
-**Simplicity > Perfection**: Users need a "ballpark" estimate for decision making (e.g., $1k vs $3k FSA contribution), not a medical bill audit. By limiting inputs to 10 high-impact variables, we achieve user friendliness while remaining within $500 (MdAE) of actual costs, a helpful sweet spot for personal finance.
+**Simplicity > Perfection**: Users need a "ballpark" estimate for decision making (e.g., $1k vs $3k FSA contribution), not a medical bill audit. By targeting form completion in **under 90 seconds** with ~10–12 high-impact inputs, we achieve user friendliness while remaining within $500 (MdAE) of actual costs—a helpful sweet spot for personal finance. The input count is a soft guideline; cognitive load and completion time are the true UX goals.
 
 
 ## Out of Scope
@@ -98,7 +98,7 @@ The following are explicitly **not** part of this project:
 ### User Input 
 > **Status:** *Preliminary. Features shown below are the most promising candidates based on initial analysis. Final feature selection pending.*
 
-The UI must be a simple form with no more than 10 inputs on a single page. Inputs are mapped to MEPS variables.
+The UI must be a simple form on a single page, designed for completion in **under 90 seconds**. As a guideline, aim for ~10–12 discrete UI interactions (e.g., dropdowns, radio buttons, checkboxes). A multi-select checklist (e.g., chronic conditions) counts as one interaction. Inputs are mapped to MEPS variables.
 
 | ID | UI Label | UI Element | Value Range | MEPS Variable |
 | :--- | :--- | :--- | :--- | :--- |
