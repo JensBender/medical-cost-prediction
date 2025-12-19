@@ -149,30 +149,39 @@ We apply transformations selectively based on how each model handles this varian
 | **Decision Tree, Random Forest, XGBoost** | None | **Robust.** These models are non-parametric and partition data into local regions. They can learn to accept low variance in one node and high variance in another without global transformation. |
 
 ### Model Training
-**Procedure**  
-1.  **Train-Validation-Test Split**: Split the data into 70% train, 15% validation, and 15% test (~2,700 test samples).
-2.  **Baseline Models**: Train all candidate models with (mostly) default hyperparameters. Evaluate all models based on MdAE on the validation set. Select the best 2–4 models for optimization.
-3.  **Hyperparameter Tuning**: Tune selected models via randomized search. Select the best-performing model based on validation set performance.
-4.  **Final Model**: Evaluate the selected model on the hold-out test set to assess real-world performance on unseen data.
 
-**Baseline Models**  
-We evaluate all models using MdAE (Median Absolute Error). For training, tree-based models use absolute error criteria where possible. Linear models default to MSE but are evaluated on their ability to minimize median error on the validation set.
+**Training Procedure**  
+A 4-phase approach where each model is evaluated with its own optimal feature set.
 
-| Model | Training Loss | Preprocessing | Notes |
+| Phase | Goal | Details |
+| :--- | :--- | :--- |
+| **1. Baseline Models** | Compare baseline models on full features | Train all models on ~30 features with (mostly) default hyperparameters. Evaluate MdAE on validation set. Select top 3–4 models. |
+| **2. Feature Selection** | Find optimal features per model | Each model uses its own selection method (see below). Target ~10–12 features for 90 sec UX. |
+| **3. Hyperparameter Tuning** | Optimize hyperparameters | Tune each model via randomized search on its own reduced feature set. Select best tuned model + features combination. |
+| **4. Final Model** | Evaluate & deploy | Evaluate final model + features on hold-out test set. |
+
+**Candidate Models**
+| Model | Loss Function | Target Transform | Notes |
 | :--- | :--- | :--- | :--- |
-| Linear Regression | MSE (default) | Log-transform | Inverse-transform predictions |
-| Elastic Net | MSE (default) | Log-transform | Inverse-transform predictions |
-| K-Nearest Neighbors | N/A (distance-based) | Log-transform | Inverse-transform predictions |
-| MLP (sklearn) | MSE (default) | Log-transform | Inverse-transform predictions |
-| Decision Tree | `criterion='absolute_error'` | Native target | MAE-based splits |
-| Random Forest | `criterion='absolute_error'` | Native target | MAE-based splits |
-| XGBoost | `objective='reg:tweedie'` | Native target | Tweedie handles skew natively |
+| Linear Regression | MSE | `log(y+1)` | Inverse-transform predictions |
+| Elastic Net | MSE + L1/L2 | `log(y+1)` | Built-in feature selection |
+| K-Nearest Neighbors | Distance-based | `log(y+1)` | Sensitive to outliers without log |
+| MLP (sklearn) | MSE | `log(y+1)` | Inverse-transform predictions |
+| Decision Tree | `absolute_error` | None | MAE-based splits; robust to skew |
+| Random Forest | `absolute_error` | None | MAE-based splits; robust to skew |
+| XGBoost | `reg:tweedie` | None | Tweedie handles skew natively |
 
-> **Note:** A Two-Part (Hurdle) Model, where part 1 predicts P(cost > 0) and part 2 predicts E[cost \| cost > 0], is a valid alternative for explicitly modeling zero-inflation. Consider as a future enhancement if single-stage models underperform on zero-cost users.
+**Feature Selection by Model Type**
+| Model | Method | Notes |
+| :--- | :--- | :--- |
+| Elastic Net | L1 regularization | Non-zero coefficients = selected features |
+| Random Forest | `feature_importances_` | Built-in feature importance scores |
+| XGBoost | `feature_importances_` | Built-in feature importance scores |
+| KNN, MLP | Recursive Feature Elimination (RFE) | Wrapper method with CV |
 
-**Sample Weights**  
-*   All models must use `PERWT23F` (person weight) via `sample_weight` parameter to ensure national representativeness.
-*   Models without native `sample_weight` support should be excluded.
+> **Sample Weights:** All models must use `PERWT23F` as `sample_weight` to ensure national representativeness.
+
+> **Future Enhancement:** A Two-Part (Hurdle) Model—P(cost > 0) then E[cost | cost > 0]—may improve predictions for zero-cost users if single-stage models underperform.
 
 ### Model Evaluation
 Evaluate predictive performance of model and perform error analysis.
