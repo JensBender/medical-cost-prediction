@@ -18,7 +18,7 @@ Deep Research report on the 30 best candidate features for predicting out-of-poc
 
 ### **Subjective Health and Lifestyle (High-Fidelity Proxies)**
 
-8. **RTHLTH31 (Perceived Physical Health):** As discussed, this is a powerful, low-friction input for predicting overall utilization intensity. [[5]](#ref5)  
+8. **RTHLTH31 (Perceived Physical Health):** This is a powerful, low-friction input for predicting overall utilization intensity. [[5]](#ref5)  
 9. **MNHLTH31 (Perceived Mental Health):** Poor mental health is increasingly recognized as a multiplier for physical healthcare costs due to treatment adherence and systemic physiological effects. [[5]](#ref5)  
 10. **ADSMOK42 (Smoking Status):** A direct indicator of future respiratory and cardiovascular risk. [[2]](#ref2)  
 11. **BMI (Body Mass Index):** While not explicitly in every PUF, it is often derived from weight/height variables in MEPS. High BMI is a primary driver of metabolic and orthopedic costs. [[2]](#ref2)
