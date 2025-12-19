@@ -63,17 +63,17 @@ Notes:
 The primary goal is a fast, frictionless user experience. We prioritize usability over predictive performance if it requires complex inputs. 
 
 **Feature Selection Rationale**:
-1.  **UX-First Constraint**: Maximum of 10 inputs to ensure user completion in under 1 minute.
+1.  **UX-First Constraint**: Target form completion in **under 90 seconds**. This is a soft guideline. Cognitive load and completion time matter more than a strict input count. As a ballpark, aim for ~10–12 discrete UI interactions, noting that a multi-select checklist (e.g., chronic conditions) counts as one interaction even with many options.
 2.  **Consumer Accessibility**: Inputs must be information users know offhand (e.g., age, self-rated health). The user doesn't need to leave their chair to find an insurance card, past bill, or medical record. No asking for specifics like "deductible amount" or "ICD-10 codes" that require mental effort or looking up technical terms.
 3.  **Optimize Within Constraints**: Among the pool of "accessible" inputs, select the variables with the highest feature importance to maximize predictive power within the UX constraints. 
 
 **Feature Selection Process**:
 1.  **Candidate Screening**: Identify all MEPS variables that a layperson can answer easily without having to look something up or think too hard.
 2.  **Feature Importance Ranking**: Train preliminary models on these candidate features to obtain feature importance scores.
-3.  **Final Feature Selection**: Select the top 10 or less features that maximize predictive power within the UX constraints.
+3.  **Final Feature Selection**: Select the top-performing features that maximize predictive power while keeping form completion under ~90 seconds.
 
 ### Candidate Features
-The following MEPS variables have been identified as candidate features for the model. All candidates satisfy the UX-first constraint: users can answer from memory without looking up documents or technical terms. The final feature set (≤10 inputs) will be selected based on empirical feature importance ranking.
+The following MEPS variables have been identified as candidate features for the model. All candidates satisfy the UX-first constraint: users can answer from memory without looking up documents or technical terms. The final feature set will be selected based on empirical feature importance ranking, targeting form completion in under 90 seconds.
 
 **Demographics & Socioeconomic**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
@@ -107,7 +107,7 @@ The following MEPS variables have been identified as candidate features for the 
 | :--- | :--- | :--- | :--- | :--- |
 | **Smoker** | `ADSMOK42` | Binary | Currently smokes cigarettes. | ⚠️ Known health risk factor but may have **lower predictive power** for out-of-pocket costs than chronic conditions. Consider dropping if outperformed by condition flags. |
 
-> **Note:** The final model will use ≤10 features. During feature importance ranking, we expect to retain Age, Sex, Income, Insurance, Physical Health, Mental Health, and 2–4 chronic condition flags. Region and Smoker are candidates for removal if empirical importance is low.
+> **Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions may be grouped into a single multi-select checklist to minimize cognitive load.
 
 
 ## Machine Learning Specifications
