@@ -138,13 +138,19 @@ The following MEPS variables have been identified as candidate features for the 
 | **Cancer** | `CANCERDX` | Binary | Ever diagnosed with any cancer. | ⚠️ Major cost driver if active. |
 | **Asthma** | `ASTHDX` | Binary | Ever diagnosed with asthma. | ⚠️ Ongoing costs (inhalers); lower prevalence (~8%). |
 | **Stroke** | `STRKDX` | Binary | Ever diagnosed with stroke. | ⚠️ High downstream costs; lower prevalence (~3%). |
+| **Depression** | `DEPRDX` | Binary | Ever diagnosed with depression. | ✅ Significant cost multiplier; drives utilization. |
+
+**Symptoms**
+| UI Label | MEPS Variable | Data Type | Description | Rationale |
+| :--- | :--- | :--- | :--- | :--- |
+| **Joint Pain** | `JTPAIN31_M18` | Binary | Joint pain/stiffness in past 12 months. | ⚠️ Captures undiagnosed musculoskeletal issues. |
 
 **Behavioral**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
 | **Smoker** | `ADSMOK42` | Binary | Currently smokes cigarettes. | ⚠️ Known risk factor; may have lower predictive power than conditions. |
 
-> **Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions and functional limitations should each be grouped into a single multi-select checklist to minimize cognitive load (~12–14 total UI interactions).
+> **Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions, symptoms, and functional limitations should be grouped into multi-select checklists to minimize cognitive load (~13–15 total UI interactions).
 
 
 ## Machine Learning Specifications
