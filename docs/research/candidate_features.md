@@ -1,65 +1,144 @@
 # Candidate Features for Medical Cost Prediction
-Deep Research report on the 30 best candidate features for predicting out-of-pocket medical costs using MEPS-HC 2023 data. These 30 MEPS variables are selected because they are known offhand by users, have established significance in the literature, and are well-documented in the data codebook. 
-> **Tool:** Gemini Deep Research  
-> **Date:** 2025-12-19  
 
-### **Demographic Variables**
-Primary drivers of healthcare utilization and medical costs.
+Candidate feature list for predicting annual out-of-pocket healthcare costs (`TOTSLF23`) using MEPS-HC 2023 data. Features are selected based on three criteria:
 
-1. **AGE31X (Age):** Primary driver of healthcare utilization; costs typically follow a U-curve, peaking for infants and the elderly. [[1]](#ref1)  
-2. **SEX (Gender):** Influences utilization patterns based on reproductive health and gender-specific conditions. [[2]](#ref2)  
-3. **FAMSZE23 (Family Size):** A larger household increases the statistical probability of high-cost medical events. [[1]](#ref1)  
-4. **MARRY23X (Marital Status):** Used as a proxy for social support and income stability, both correlating with healthcare access. [[3]](#ref3)
+1. **Consumer Accessibility:** Users can answer from memory without looking up documents or records.
+2. **Temporal Validity:** Variables reflect beginning-of-year status to enable prospective prediction.
+3. **Predictive Power:** Features have established significance in the healthcare cost prediction literature.
 
-### **Socio-Economic and Location Variables**
-Proxies for healthcare access, literacy, and regional pricing variations.
+> **Sources:** Gemini Deep Research (Dec 2025), MEPS H251 Codebook, and domain literature review.
 
-5. **POVCAT23 (Poverty Category):** Income relative to the federal poverty line; determines subsidy eligibility and insurance quality. [[4]](#ref4)  
-6. **HIDEG (Highest Degree):** Education level correlates with health literacy and the use of preventive services. [[4]](#ref4)  
-7. **REGION23 (Census Region):** Captures geographic variations in healthcare pricing and provider density. [[2]](#ref2)
+---
 
-### **Subjective Health and Lifestyle**
-High-fidelity proxies for utilization intensity based on health perceptions and habits.
+## Temporal Alignment Rationale
 
-8. **RTHLTH31 (Perceived Physical Health):** A powerful subjective indicator of overall utilization intensity. [[5]](#ref5)  
-9. **MNHLTH31 (Perceived Mental Health):** A significant cost multiplier via its impact on treatment adherence and physical health. [[5]](#ref5)  
-10. **ADSMOK42 (Smoking Status):** A risk factor for respiratory and cardiovascular diseases. [[2]](#ref2)  
-11. **BMI (Body Mass Index):** A primary driver of high-cost metabolic and orthopedic conditions. [[2]](#ref2)
+MEPS variable suffixes indicate when data was collected during the survey year:
 
-### **Priority Conditions**
-The "cost engine" of chronic conditions driving sustained medical expenditures.
+| Suffix | Timing | Example |
+|:---|:---|:---|
+| `31` | Beginning of year (Rounds 3/1) | `RTHLTH31` |
+| `42` | Mid-year (Rounds 4/2) | `ADSMOK42` |
+| `53` | End of year (Rounds 5/3) | `RTHLTH53` |
+| `23` or `23X` | Full-year summary or year-end point | `AGE23X`, `INSCOV23` |
 
-12. **HIBPDX (Hypertension):** Drives predictable long-term costs for lifelong medication and routine monitoring. [[6]](#ref6)  
-13. **CHOLDX (High Cholesterol):** Increases pharmacy spending and periodic laboratory requirements. [[6]](#ref6)  
-14. **CHDDX (Coronary Heart Disease):** Indicates high risk for expensive acute cardiac events. [[6]](#ref6)  
-15. **ANGIDX (Angina):** Indicator of advanced cardiovascular disease and localized care needs. [[6]](#ref6)  
-16. **MIDX (Heart Attack History):** Predictor of future intensive inpatient and specialist care. [[7]](#ref7)  
-17. **STRKDX (Stroke):** Associated with substantial long-term rehabilitation and care costs. [[7]](#ref7)  
-18. **EMPHDX (Emphysema):** Drives costs for specialized medication, oxygen, and emergency care. [[6]](#ref6)  
-19. **CHBRON31 (Chronic Bronchitis):** Contributes significantly to the overall respiratory healthcare burden. [[6]](#ref6)  
-20. **ASTHDX (Asthma):** Drives ER visits and specialized medication costs, especially for younger patients. [[1]](#ref1)  
-21. **CANCERDX (Cancer):** A primary driver of extreme "tail" costs and intensive treatment regimens. [[7]](#ref7)  
-22. **DIABDX (Diabetes):** Strong predictor of sustained, high-magnitude outpatient and pharmacy expenditures. [[1]](#ref1)  
-23. **ARTHDX (Arthritis):** Drives long-term spending on pharmaceuticals and physical therapy. [[7]](#ref7)  
-24. **DEPRDX (Depression):** Correlates with increased utilization across all medical service categories. [[7]](#ref7)
+**Use Case:** Users will access the app during Open Enrollment (Nov–Dec) to predict costs for the **upcoming year**. To avoid data leakage (using end-of-year status to predict costs that already occurred), we use **beginning-of-year (`31`) variables** for time-varying self-reported status. "Ever diagnosed" chronic conditions are stable and do not require temporal adjustment.
 
-### **Insurance and Activity Limitations**
-Variables defining the functional burden and the conversion of total costs to out-of-pocket expenses.
+---
 
-25. **INSCOV23 (Insurance Coverage Indicator):** The critical factor for converting total medical expenditures into out-of-pocket costs. [[1]](#ref1)  
-26. **ADLHLP31 (ADL Help Needed):** Indicates a need for help with basic daily activities; a high-cost functional indicator. [[7]](#ref7)  
-27. **IADLHP31 (IADL Help Needed):** Tracks limitations in complex tasks, signaling high-cost care requirements. [[7]](#ref7)  
-28. **COGLIM31 (Cognitive Limitations):** Signifies mental functional capacity, correlating with specialized care needs. [[3]](#ref3)  
-29. **WRKLIM31 (Work Limitation):** A proxy for condition severity and its impact on daily functioning. [[3]](#ref3)  
-30. **ANYLIM23 (Any Limitation):** A composite indicator of physical or cognitive limitations, signaling high healthcare needs. [[3]](#ref3)
+## Feature Categories
 
+### 1. Demographics
+Primary drivers of healthcare utilization based on biological and geographic factors.
 
-#### **Works cited**
+| Variable | Label | Type | Description | Rationale |
+|:---|:---|:---|:---|:---|
+| `AGE23X` | Age | Numerical | Age as of Dec 31, 2023 (18–85). | Primary driver of utilization; costs follow a U-curve. [[1]](#ref1) |
+| `SEX` | Sex | Nominal | Biological sex (Male/Female). | Influences utilization via gender-specific conditions. [[2]](#ref2) |
+| `REGION23` | Region | Nominal | Census region (Northeast, Midwest, South, West). | Captures geographic pricing variations. [[2]](#ref2) |
+| `MARRY31X` | Marital Status | Nominal | Marital status at beginning of year. | Proxy for social support and income stability. [[3]](#ref3) |
 
-1. <a id="ref1"></a>Who determines United States Healthcare out-of-pocket costs ..., accessed December 19, 2025, [https://pmc.ncbi.nlm.nih.gov/articles/PMC8184979/](https://pmc.ncbi.nlm.nih.gov/articles/PMC8184979/)  
-2. <a id="ref2"></a>Predictive Modelling of Healthcare Insurance Costs Using Machine ..., accessed December 19, 2025, [https://www.preprints.org/manuscript/202502.1873](https://www.preprints.org/manuscript/202502.1873)  
-3. <a id="ref3"></a>AIX360/examples/tutorials/MEPS.ipynb at master \- GitHub, accessed December 19, 2025, [https://github.com/Trusted-AI/AIX360/blob/master/examples/tutorials/MEPS.ipynb](https://github.com/Trusted-AI/AIX360/blob/master/examples/tutorials/MEPS.ipynb)  
-4. <a id="ref4"></a>MEPS HC 251 2023 Full Year Consolidated Data File August 2025, accessed December 19, 2025, [https://meps.ahrq.gov/data\_stats/download\_data/pufs/h251/h251doc.pdf](https://meps.ahrq.gov/data\_stats/download\_data/pufs/h251/h251doc.pdf)  
-5. <a id="ref5"></a>Supervised Learning Methods for Predicting Healthcare Costs \- NIH, accessed December 19, 2025, [https://pmc.ncbi.nlm.nih.gov/articles/PMC5977561/](https://pmc.ncbi.nlm.nih.gov/articles/PMC5977561/)  
-6. <a id="ref6"></a>MEPS HC 251 2023 Full Year Consolidated Data File, accessed December 19, 2025, [https://meps.ahrq.gov/data\_stats/download_data/pufs/h251/h251doc.shtml](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml)  
+### 2. Socioeconomic
+Proxies for healthcare access, literacy, insurance quality, and ability to pay.
+
+| Variable | Label | Type | Description | Rationale |
+|:---|:---|:---|:---|:---|
+| `POVCAT23` | Income Category | Ordinal | Family income as % of poverty line (Poor/Near Poor/Low/Middle/High). | Determines subsidy eligibility and insurance quality. [[4]](#ref4) |
+| `HIDEG` | Education | Ordinal | Highest degree attained. | Correlates with health literacy and preventive care use. [[4]](#ref4) |
+| `EMPST31` | Employment Status | Nominal | Employment status at beginning of year. | Strong proxy for insurance type and income. |
+
+### 3. Insurance & Access
+Variables defining cost-sharing structure and healthcare access patterns.
+
+| Variable | Label | Type | Description | Rationale |
+|:---|:---|:---|:---|:---|
+| `INSCOV23` | Insurance Coverage | Nominal | Coverage status (Private, Public, Uninsured). | **Critical.** Directly determines OOP vs. total cost split. [[1]](#ref1) |
+| `HAVEUS42` | Usual Source of Care | Binary | Whether person has a regular doctor/clinic. | Strong predictor of access and preventive care. |
+
+### 4. Perceived Health Status
+High-fidelity subjective indicators of overall health burden and utilization intensity.
+
+| Variable | Label | Type | Description | Rationale |
+|:---|:---|:---|:---|:---|
+| `RTHLTH31` | Physical Health | Numerical | Self-rated physical health at beginning of year (Excellent to Poor). | Strongest subjective predictor of utilization. [[5]](#ref5) |
+| `MNHLTH31` | Mental Health | Numerical | Self-rated mental health at beginning of year (Excellent to Poor). | Significant cost multiplier via treatment adherence. [[5]](#ref5) |
+
+> ⚠️ **Note:** Use `31` suffix (beginning of year), not `53` (end of year), to avoid temporal leakage.
+
+### 5. Functional Limitations
+Screener questions identifying individuals requiring more frequent care due to impairments.
+
+| Variable | Label | Type | Description | Rationale |
+|:---|:---|:---|:---|:---|
+| `ADLHLP31` | ADL Help Needed | Binary | Needs help with Activities of Daily Living (bathing, dressing). | High-cost functional indicator. [[7]](#ref7) |
+| `IADLHP31` | IADL Help Needed | Binary | Needs help with Instrumental ADLs (paying bills, shopping). | Signals high-cost care requirements. [[7]](#ref7) |
+| `WLKLIM31` | Walking Limitation | Binary | Physical limitation (walking, climbing, lifting). | Captures mobility impairment. |
+| `COGLIM31` | Cognitive Limitation | Binary | Confusion or memory loss. | Correlates with specialized care needs. [[3]](#ref3) |
+
+> **UI Recommendation:** Present as a single checklist ("Do you have difficulty with any of the following?").
+
+### 6. Chronic Conditions
+The "cost engine" — chronic conditions driving sustained medical expenditures. 
+
+| Variable | Label | Type | Description | Rationale |
+|:---|:---|:---|:---|:---|
+| `HIBPDX` | Hypertension | Binary | Ever diagnosed with high blood pressure. | Very common (~30%); drives ongoing Rx costs. [[6]](#ref6) |
+| `CHOLDX` | High Cholesterol | Binary | Ever diagnosed with high cholesterol. | Very common (~28%); drives statin Rx costs. [[6]](#ref6) |
+| `DIABDX_M18` | Diabetes | Binary | Ever diagnosed with diabetes. | High-cost condition with ongoing costs. [[1]](#ref1) |
+| `CHDDX` | Heart Disease | Binary | Ever diagnosed with coronary heart disease. | Major cost driver (procedures, Rx, monitoring). [[6]](#ref6) |
+| `STRKDX` | Stroke | Binary | Ever diagnosed with stroke. | High downstream costs (rehab, Rx). [[7]](#ref7) |
+| `CANCERDX` | Cancer | Binary | Ever diagnosed with any cancer. | Primary driver of extreme "tail" costs. [[7]](#ref7) |
+| `ARTHDX` | Arthritis | Binary | Ever diagnosed with arthritis. | Very common (~25%); drives Rx/therapy costs. [[7]](#ref7) |
+| `ASTHDX` | Asthma | Binary | Ever diagnosed with asthma. | Chronic condition with ongoing costs (inhalers). [[1]](#ref1) |
+
+> **UI Recommendation:** Present as a single multi-select checklist ("Have you ever been diagnosed with any of the following?"). Counts as 1 UI interaction.
+
+### 7. Behavioral
+Lifestyle factors with established health risk associations.
+
+| Variable | Label | Type | Description | Rationale |
+|:---|:---|:---|:---|:---|
+| `ADSMOK42` | Current Smoker | Binary | Currently smokes cigarettes. | Known risk factor for respiratory/cardiovascular disease. [[2]](#ref2) |
+
+---
+
+## Excluded Variables
+
+The following variables from alternative recommendations are **excluded** due to temporal leakage or deployment mismatch:
+
+| Variable | Reason for Exclusion |
+|:---|:---|
+| `ADAPPT42` | Doctor visit count accumulated during year; not known at prediction time. |
+| `ERTOT23` | ER visit count for full year; creates data leakage. |
+| `DDNWRK23` | Work days missed during year; outcome-adjacent variable. |
+| `RACETHX` | Ethically sensitive; likely redundant with income/region proxies. |
+| `RUSIZE23`, `FAMSZE23` | Household size; we predict individual costs, not family costs. |
+| `HOUR53` | Hours worked; adds cognitive load; employment status suffices. |
+
+---
+
+## Summary
+
+| Category | # Features | # UI Interactions |
+|:---|:---|:---|
+| Demographics | 3–4 | 3–4 |
+| Socioeconomic | 2–3 | 2–3 |
+| Insurance & Access | 2 | 2 |
+| Perceived Health | 2 | 2 |
+| Functional Limitations | 3–4 | 1 (checklist) |
+| Chronic Conditions | 8 | 1 (checklist) |
+| Behavioral | 1 | 1 |
+| **Total** | **~21–24 features** | **~12–14 interactions** |
+
+Final feature selection will be based on empirical feature importance ranking, targeting form completion in **under 90 seconds**.
+
+---
+
+## Works Cited
+
+1. <a id="ref1"></a>Who determines United States Healthcare out-of-pocket costs..., accessed December 19, 2025, [https://pmc.ncbi.nlm.nih.gov/articles/PMC8184979/](https://pmc.ncbi.nlm.nih.gov/articles/PMC8184979/)
+2. <a id="ref2"></a>Predictive Modelling of Healthcare Insurance Costs Using Machine..., accessed December 19, 2025, [https://www.preprints.org/manuscript/202502.1873](https://www.preprints.org/manuscript/202502.1873)
+3. <a id="ref3"></a>AIX360/examples/tutorials/MEPS.ipynb at master \- GitHub, accessed December 19, 2025, [https://github.com/Trusted-AI/AIX360/blob/master/examples/tutorials/MEPS.ipynb](https://github.com/Trusted-AI/AIX360/blob/master/examples/tutorials/MEPS.ipynb)
+4. <a id="ref4"></a>MEPS HC 251 2023 Full Year Consolidated Data File August 2025, accessed December 19, 2025, [https://meps.ahrq.gov/data\_stats/download\_data/pufs/h251/h251doc.pdf](https://meps.ahrq.gov/data\_stats/download\_data/pufs/h251/h251doc.pdf)
+5. <a id="ref5"></a>Supervised Learning Methods for Predicting Healthcare Costs \- NIH, accessed December 19, 2025, [https://pmc.ncbi.nlm.nih.gov/articles/PMC5977561/](https://pmc.ncbi.nlm.nih.gov/articles/PMC5977561/)
+6. <a id="ref6"></a>MEPS HC 251 2023 Full Year Consolidated Data File, accessed December 19, 2025, [https://meps.ahrq.gov/data\_stats/download_data/pufs/h251/h251doc.shtml](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml)
 7. <a id="ref7"></a>Dataset: Medical Expenditure Panel Survey (MEPS), accessed December 19, 2025, [https://www.disabilitystatistics.org/dataset-directory/dataset/70](https://www.disabilitystatistics.org/dataset-directory/dataset/70)
