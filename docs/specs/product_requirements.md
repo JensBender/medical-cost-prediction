@@ -118,12 +118,12 @@ The UI must be a simple form on a single page, designed for completion in **unde
 **Chronic Conditions Checklist** (1 interaction)
 | ID | UI Label | UI Element | Options | MEPS Variables |
 | :--- | :--- | :--- | :--- | :--- |
-| **IN-10** | Chronic Conditions | `gr.CheckboxGroup` | Diabetes, High Blood Pressure, Heart Disease, High Cholesterol, Arthritis, Cancer, Asthma, Stroke | `DIABDX_M18`, `HIBPDX`, `CHDDX`, `CHOLDX`, `ARTHDX`, `CANCERDX`, `ASTHDX`, `STRKDX` |
+| **IN-10** | Chronic Conditions | `gr.CheckboxGroup` | Diabetes, High Blood Pressure, Heart Disease, High Cholesterol, Arthritis, Cancer, Asthma, Stroke, Depression | `DIABDX_M18`, `HIBPDX`, `CHDDX`, `CHOLDX`, `ARTHDX`, `CANCERDX`, `ASTHDX`, `STRKDX`, `DEPRDX` |
 
-**Functional Limitations Checklist** (1 interaction, optional)
+**Functional Limitations & Symptoms Checklist** (1 interaction, optional)
 | ID | UI Label | UI Element | Options | MEPS Variables |
 | :--- | :--- | :--- | :--- | :--- |
-| **IN-11** | Difficulty With | `gr.CheckboxGroup` | Daily activities (bathing, dressing), Managing tasks (bills, shopping), Walking/climbing stairs, Memory/concentration | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31` |
+| **IN-11** | Difficulty With | `gr.CheckboxGroup` | Daily activities (bathing, dressing), Managing tasks (bills, shopping), Walking/climbing stairs, Memory/concentration, Joint pain in past year | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
 
 
 ### Prediction Engine
