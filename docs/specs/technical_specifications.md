@@ -85,6 +85,8 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 
 **The Rule:** For time-varying self-reported status (health, limitations), use **`31` suffix** (beginning of year). For "ever diagnosed" chronic conditions, timing is less critical since they're stable. For utilization counts (`ERTOT23`, `ADAPPT42`), **exclude entirely** — these are accumulated during the year and unavailable at prediction time.
 
+**Note on Training-Serving Skew:** While MEPS '31' interviews occur in the first half of the year (Jan–July), most app usage may occur in Nov–Dec (pre-year). This creates a slight discrepancy: training data may contain minor "leakage" where a Feb illness influences a June interview score. Consequently, real-world predictive performance may be slightly lower than during training stage, as the app performs a more strictly prospective prediction.
+
 </details>
 
 **Feature Selection Process**:
