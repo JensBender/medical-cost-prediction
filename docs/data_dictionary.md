@@ -27,9 +27,9 @@
 | :--- | :--- | :--- | :--- |
 | **AGE23X** | AGE - 12/31/23 (EDITED/IMPUTED) | Num | Age as of end of year. |
 | **SEX** | SEX | Enum | 1=Male, 2=Female. |
-| **RACEV1X** | RACE (IMPUTED/EDITED/RECODED) | Enum | 1=White, 2=Black, 3=Amer Ind, 4=Asian, 6=Multiple. |
-| **HISPANX** | HISPANIC ETHNICITY | Enum | 1=Hispanic, 2=Not Hispanic. |
-| **MARRY23X** | MARITAL STATUS-12/31/23 | Enum | 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married. |
+| **RACEV1X** | RACE (IMPUTED/EDITED/RECODED) | Enum | 1=White, 2=Black, 3=Amer Ind, 4=Asian/Nat. Hawaiian/Pac. Isl., 6=Multiple. |
+| **HISPANX** | HISPANIC ETHNICITY (IMPUTED/EDITED) | Enum | 1=Hispanic, 2=Not Hispanic. |
+| **MARRY23X** | MARITAL STATUS-12/31/23 (EDITED/IMPUTED) | Enum | 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married, 6=Under 16. |
 | **REGION23** | CENSUS REGION AS OF 12/31/23 | Enum | 1=Northeast, 2=Midwest, 3=South, 4=West. |
 
 ## 4. Socioeconomic Status
@@ -39,7 +39,7 @@
 | **TTLP23X** | PERSON'S TOTAL INCOME | Num | Sum of all income sources for 2023. |
 | **FAMINC23** | FAMILY'S TOTAL INCOME | Num | Total income for the reporting unit. |
 | **EDUCYR** | YEARS OF EDUC WHEN FIRST ENTERED | Num | Years of education (0-17). |
-| **HIDEG** | HIGHEST DEGREE WHEN FIRST ENTERED | Enum | 1=No Degree, 2=GED, 3=HS Diploma, 4=Bachelor, etc. |
+| **HIDEG** | HIGHEST DEGREE WHEN FIRST ENTERED | Enum | 1=No Degree, 2=GED, 3=HS Diploma, 4=Bachelor, 5=Master, 6=Doctorate, 7=Other, 8=Under 16. |
 
 ## 5. Health Status & Conditions
 *Note: Conditions often do not have a year suffix.*
@@ -53,7 +53,7 @@
 | **ANGIDX** | ANGINA DIAGNOSIS (>17) | Enum | 1=Yes, 2=No. |
 | **MIDX** | HEART ATTACK (MI) DIAG (>17) | Enum | 1=Yes, 2=No. |
 | **STRKDX** | STROKE DIAGNOSIS (>17) | Enum | 1=Yes, 2=No. |
-| **DIABDX_M18** | DIABETES DIAGNOSIS (>17) | Enum | 1=Yes, 2=No. |
+| **DIABDX_M18** | DIABETES DIAGNOSIS | Enum | 1=Yes, 2=No. |
 | **ASTHDX** | ASTHMA DIAGNOSIS | Enum | 1=Yes, 2=No. |
 | **CANCERDX** | CANCER DIAGNOSIS (>17) | Enum | 1=Yes, 2=No. |
 
