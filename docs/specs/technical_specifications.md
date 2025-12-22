@@ -65,49 +65,86 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 **Feature Selection Rationale**:
 1.  **UX-First Constraint**: Target form completion in **under 90 seconds**. This is a soft guideline. Cognitive load and completion time matter more than a strict input count. As a ballpark, aim for ~10–12 discrete UI interactions, noting that a multi-select checklist (e.g., chronic conditions) counts as one interaction even with many options.
 2.  **Consumer Accessibility**: Inputs must be information users know offhand (e.g., age, self-rated health). The user doesn't need to leave their chair to find an insurance card, past bill, or medical record. No asking for specifics like "deductible amount" or "ICD-10 codes" that require mental effort or looking up technical terms.
-3.  **Optimize Within Constraints**: Among the pool of "accessible" inputs, select the variables with the highest feature importance to maximize predictive power within the UX constraints. 
+3.  **Temporal Validity**: Variables must reflect **beginning-of-year status** to enable prospective prediction without data leakage (see box below).
+4.  **Optimize Within Constraints**: Among the pool of "accessible" inputs, select the variables with the highest feature importance to maximize predictive power within the UX constraints. 
+
+<details>
+<summary>ℹ️ <strong>Temporal Alignment: Why Variable Suffixes Matter</strong> (click to expand)</summary>
+
+**Use Case:** Users access the app during Open Enrollment (Nov–Dec) to predict costs for the **upcoming year**. We train on MEPS data where features predict that same year's total costs.
+
+**MEPS Variable Suffixes:**
+| Suffix | Timing | Example |
+|:---|:---|:---|
+| `31` | Beginning of year (Rounds 3/1) | `RTHLTH31` |
+| `42` | Mid-year (Rounds 4/2) | `ADSMOK42` |
+| `53` | End of year (Rounds 5/3) | `RTHLTH53` |
+| `23` / `23X` | Full-year summary or year-end point | `AGE23X`, `INSCOV23` |
+
+**The Leakage Risk:** Using `RTHLTH53` (end-of-year health) to predict `TOTSLF23` (full-year costs) would mean using information collected *after* many costs already occurred. A person diagnosed mid-year would report worse health at year-end, but that health decline was caused by events we're trying to predict.
+
+**The Rule:** For time-varying self-reported status (health, limitations), use **`31` suffix** (beginning of year). For "ever diagnosed" chronic conditions, timing is less critical since they're stable. For utilization counts (`ERTOT23`, `ADAPPT42`), **exclude entirely** — these are accumulated during the year and unavailable at prediction time.
+
+</details>
 
 **Feature Selection Process**:
-1.  **Candidate Screening**: Identify all MEPS variables that a layperson can answer easily without having to look something up or think too hard.
+1.  **Candidate Screening**: Identify all MEPS variables that a layperson can answer easily without having to look something up or think too hard. Ensure temporal validity (no end-of-year or in-year utilization variables).
 2.  **Feature Importance Ranking**: Train preliminary models on these candidate features to obtain feature importance scores.
 3.  **Final Feature Selection**: Select the top-performing features that maximize predictive power while keeping form completion under ~90 seconds.
 
 ### Candidate Features
-The following MEPS variables have been identified as candidate features for the model. All candidates satisfy the UX-first constraint: users can answer from memory without looking up documents or technical terms. The final feature set will be selected based on empirical feature importance ranking, targeting form completion in under 90 seconds.
+The following MEPS variables have been identified as candidate features for the model. All candidates satisfy three constraints: (1) users can answer from memory, (2) variables reflect beginning-of-year status (temporal validity), and (3) established predictive power in literature. The final feature set will be selected based on empirical feature importance ranking, targeting form completion in under 90 seconds.
+
+> **Full Details:** See [Candidate Features Research](../research/candidate_features.md) for complete rationale, literature citations, and excluded variables.
 
 **Demographics & Socioeconomic**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Age** | `AGE23X` | Numerical | Age at end of year (18–85). | ✅ Universal predictor of healthcare utilization; strongly correlated with chronic conditions and costs. |
-| **Sex** | `SEX` | Nominal | Male or Female. | ✅ Biologically relevant (e.g., pregnancy, gender-specific conditions); easy to answer. |
-| **Region** | `REGION23` | Nominal | Census region (Northeast, Midwest, South, West). | ⚠️ May have low predictive power for out-of-pocket costs specifically; consider dropping if feature importance is weak. |
-| **Income** | `POVCAT23` | Ordinal | Family income as % of poverty line (Poor/Near Poor/Low/Middle/High). | ✅ Correlated with insurance type, access to care, and ability to pay out-of-pocket. |
-| **Insurance** | `INSCOV23` | Nominal | Insurance coverage status (Private, Public, Uninsured). | ✅ **Critical.** Directly determines cost-sharing structure; strongest predictor of out-of-pocket vs. total cost. |
+| **Age** | `AGE23X` | Numerical | Age at end of year (18–85). | ✅ Universal predictor; strongly correlated with chronic conditions and costs. |
+| **Sex** | `SEX` | Nominal | Male or Female. | ✅ Biologically relevant; easy to answer. |
+| **Region** | `REGION23` | Nominal | Census region (Northeast, Midwest, South, West). | ⚠️ May have low predictive power; consider dropping if low feature importance. |
+| **Income** | `POVCAT23` | Ordinal | Family income as % of poverty line. | ✅ Correlated with insurance type and ability to pay OOP. |
+| **Education** | `HIDEG` | Ordinal | Highest degree attained. | ⚠️ Correlates with health literacy; may be redundant with income. |
+| **Employment** | `EMPST31` | Nominal | Employment status at beginning of year. | ⚠️ Strong proxy for insurance type. |
 
-**Perceived Health**
+**Insurance & Access**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Phys. Health** | `RTHLTH31` | Ordinal | Self-reported physical health (1=Excellent to 5=Poor). | ✅ Strong predictor of utilization; captures overall health burden in one question. |
-| **Ment. Health** | `MNHLTH31` | Ordinal | Self-reported mental health (1=Excellent to 5=Poor). | ✅ Complements physical health; captures behavioral health costs (therapy, Rx). |
+| **Insurance** | `INSCOV23` | Nominal | Coverage status (Private, Public, Uninsured). | ✅ **Critical.** Directly determines OOP cost-sharing structure. |
+| **Usual Doctor** | `HAVEUS42` | Binary | Has a usual source of care (regular doctor/clinic). | ✅ Strong predictor of access and preventive care utilization. |
 
-**Chronic Conditions**
+**Perceived Health** 
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Diabetes** | `DIABDX_M18` | Binary | Ever diagnosed with diabetes. | ✅ High-cost chronic condition with ongoing Rx, monitoring, and complication costs. Very common (~11% prevalence). |
-| **Hypertension** | `HIBPDX` | Binary | Ever diagnosed with high blood pressure. | ✅ Very common (~30% prevalence); drives ongoing Rx costs and cardiovascular risk. |
-| **Heart Disease** | `CHDDX` | Binary | Ever diagnosed with coronary heart disease. | ✅ **Major cost driver** with high downstream costs (procedures, Rx, monitoring). Lower prevalence but high impact. |
-| **High Cholesterol** | `CHOLDX` | Binary | Ever diagnosed with high cholesterol. | ⚠️ Very common (~28% prevalence); drives statin Rx costs. May be partially redundant with hypertension. |
-| **Arthritis** | `ARTHDX` | Binary | Ever diagnosed with arthritis. | ⚠️ Very common (~25% prevalence); high Rx/therapy costs. May overlap with age effects. |
-| **Cancer** | `CANCERDX` | Binary | Ever diagnosed with any cancer. | ⚠️ Major cost driver if active; easy to answer. May capture historical rather than current-year costs. |
-| **Asthma** | `ASTHDX` | Binary | Ever diagnosed with asthma. | ⚠️ Chronic condition with ongoing costs (inhalers, visits). Lower prevalence (~8%). |
-| **Stroke** | `STRKDX` | Binary | Ever diagnosed with stroke. | ⚠️ High downstream costs (rehab, Rx). Lower prevalence (~3%). |
+| **Physical Health** | `RTHLTH31` | Numerical | Self-reported physical health (1=Excellent to 5=Poor). | ✅ Strong predictor of utilization. |
+| **Mental Health** | `MNHLTH31` | Numerical | Self-reported mental health (1=Excellent to 5=Poor). | ✅ Complements physical health; captures behavioral costs. |
+
+**Functional Limitations**
+| UI Label | MEPS Variable | Data Type | Description | Rationale |
+| :--- | :--- | :--- | :--- | :--- |
+| **ADL Help** | `ADLHLP31` | Binary | Needs help with Activities of Daily Living (bathing, dressing). | ⚠️ High-cost functional indicator. |
+| **IADL Help** | `IADLHP31` | Binary | Needs help with Instrumental ADLs (bills, shopping). | ⚠️ Signals high-cost care requirements. |
+| **Walking Limit** | `WLKLIM31` | Binary | Physical limitation (walking, climbing, lifting). | ⚠️ Captures mobility impairment. |
+| **Cognitive Limit** | `COGLIM31` | Binary | Confusion or memory loss. | ⚠️ Correlates with specialized care needs. |
+
+**Chronic Conditions** *("Ever diagnosed" — stable over time)*
+| UI Label | MEPS Variable | Data Type | Description | Rationale |
+| :--- | :--- | :--- | :--- | :--- |
+| **Diabetes** | `DIABDX_M18` | Binary | Ever diagnosed with diabetes. | ✅ High-cost; very common (~11%). |
+| **Hypertension** | `HIBPDX` | Binary | Ever diagnosed with high blood pressure. | ✅ Very common (~30%); drives Rx costs. |
+| **Heart Disease** | `CHDDX` | Binary | Ever diagnosed with coronary heart disease. | ✅ **Major cost driver** with high downstream costs. |
+| **High Cholesterol** | `CHOLDX` | Binary | Ever diagnosed with high cholesterol. | ⚠️ Very common (~28%); may overlap with hypertension. |
+| **Arthritis** | `ARTHDX` | Binary | Ever diagnosed with arthritis. | ⚠️ Very common (~25%); may overlap with age. |
+| **Cancer** | `CANCERDX` | Binary | Ever diagnosed with any cancer. | ⚠️ Major cost driver if active. |
+| **Asthma** | `ASTHDX` | Binary | Ever diagnosed with asthma. | ⚠️ Ongoing costs (inhalers); lower prevalence (~8%). |
+| **Stroke** | `STRKDX` | Binary | Ever diagnosed with stroke. | ⚠️ High downstream costs; lower prevalence (~3%). |
 
 **Behavioral**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Smoker** | `ADSMOK42` | Binary | Currently smokes cigarettes. | ⚠️ Known health risk factor but may have **lower predictive power** for out-of-pocket costs than chronic conditions. Consider dropping if outperformed by condition flags. |
+| **Smoker** | `ADSMOK42` | Binary | Currently smokes cigarettes. | ⚠️ Known risk factor; may have lower predictive power than conditions. |
 
-> **Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions may be grouped into a single multi-select checklist to minimize cognitive load.
+> **Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions and functional limitations should each be grouped into a single multi-select checklist to minimize cognitive load (~12–14 total UI interactions).
 
 
 ## Machine Learning Specifications
@@ -124,15 +161,14 @@ Perform once before pipeline:
 | Handle MEPS Negative Codes | Standardize missing/inapplicable values for modeling. | Convert `-1` (Inapplicable), `-7` (Refused), `-8` (Don't know), `-15` (Cannot be computed) to `NaN`.<br>Treating survey non-response and missing inputs from web app users identically (as `NaN` → Imputed Mode/Median) to align data handling between training and inference. |
 
 **Feature Preprocessing**  
-Implemented via `ColumnTransformer`:
+Implemented via `ColumnTransformer`. Exact columns depend on final feature selection.
 
-| Feature Type | Columns | Transformer | Notes |
+| Feature Type | Example Columns | Transformer | Notes |
 | :--- | :--- | :--- | :--- |
-| Numerical | `AGE23X`, `RTHLTH31`, `MNHLTH31` | `StandardScaler` | Health scales (1–5) treated as numerical |
-| Ordinal | `POVCAT23` | `OrdinalEncoder` | Low < Middle < High; preserve ordering |
-| Nominal | `SEX`, `REGION23`, `INSCOV23` | `OneHotEncoder` | Drop first to avoid multicollinearity |
-| Binary | `DIABDX_M18`, `HIBPDX`, `ADSMOK42` | passthrough | Already 0/1 encoded |
-| Engineered | — | `FunctionTransformer` | Create `COMORBIDITY_COUNT` = sum of 3 binary flags |
+| Numerical | `AGE23X` | `StandardScaler` | Age in years |
+| Ordinal | `POVCAT23`, `HIDEG` | `OrdinalEncoder` | Preserve ordering (Low < Middle < High) |
+| Nominal | `SEX`, `REGION23`, `INSCOV23`, `EMPST31` | `OneHotEncoder` | Drop first to avoid multicollinearity |
+| Binary | `DIABDX_M18`, `HIBPDX`, `CHDDX`, etc. | passthrough | Already 0/1 encoded |
 
 **The Heteroscedasticity Problem**  
 Medical cost data is inherently **heteroscedastic**, meaning the "noise" or variance in errors is not constant but grows with the target value. 
