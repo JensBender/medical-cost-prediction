@@ -3,29 +3,33 @@ Deep Research report on the 30 best candidate features for predicting out-of-poc
 > **Tool:** Gemini Deep Research  
 > **Date:** 2025-12-19  
 
-### **Demographic Variables (Primary Drivers)**
+### **Demographic Variables**
+Primary drivers of healthcare utilization and medical costs.
 
 1. **AGE31X (Age):** Primary driver of healthcare utilization; costs typically follow a U-curve, peaking for infants and the elderly. [[1]](#ref1)  
 2. **SEX (Gender):** Influences utilization patterns based on reproductive health and gender-specific conditions. [[2]](#ref2)  
 3. **FAMSZE23 (Family Size):** A larger household increases the statistical probability of high-cost medical events. [[1]](#ref1)  
 4. **MARRY23X (Marital Status):** Used as a proxy for social support and income stability, both correlating with healthcare access. [[3]](#ref3)
 
-### **Socio-Economic and Location Variables (Access Proxies)**
+### **Socio-Economic and Location Variables**
+Proxies for healthcare access, literacy, and regional pricing variations.
 
 5. **POVCAT23 (Poverty Category):** Income relative to the federal poverty line; determines subsidy eligibility and insurance quality. [[4]](#ref4)  
 6. **HIDEG (Highest Degree):** Education level correlates with health literacy and the use of preventive services. [[4]](#ref4)  
 7. **REGION23 (Census Region):** Captures geographic variations in healthcare pricing and provider density. [[2]](#ref2)
 
-### **Subjective Health and Lifestyle (High-Fidelity Proxies)**
+### **Subjective Health and Lifestyle**
+High-fidelity proxies for utilization intensity based on health perceptions and habits.
 
 8. **RTHLTH31 (Perceived Physical Health):** A powerful subjective indicator of overall utilization intensity. [[5]](#ref5)  
 9. **MNHLTH31 (Perceived Mental Health):** A significant cost multiplier via its impact on treatment adherence and physical health. [[5]](#ref5)  
 10. **ADSMOK42 (Smoking Status):** A risk factor for respiratory and cardiovascular diseases. [[2]](#ref2)  
 11. **BMI (Body Mass Index):** A primary driver of high-cost metabolic and orthopedic conditions. [[2]](#ref2)
 
-### **Priority Conditions (The "Cost Engine")**
+### **Priority Conditions**
+The "cost engine" of chronic conditions driving sustained medical expenditures.
 
-12. **HIBPDX (Hypertension):** Drives predictable base costs for lifelong medication and routine monitoring. [[6]](#ref6)  
+12. **HIBPDX (Hypertension):** Drives predictable long-term costs for lifelong medication and routine monitoring. [[6]](#ref6)  
 13. **CHOLDX (High Cholesterol):** Increases pharmacy spending and periodic laboratory requirements. [[6]](#ref6)  
 14. **CHDDX (Coronary Heart Disease):** Indicates high risk for expensive acute cardiac events. [[6]](#ref6)  
 15. **ANGIDX (Angina):** Indicator of advanced cardiovascular disease and localized care needs. [[6]](#ref6)  
@@ -39,7 +43,8 @@ Deep Research report on the 30 best candidate features for predicting out-of-poc
 23. **ARTHDX (Arthritis):** Drives long-term spending on pharmaceuticals and physical therapy. [[7]](#ref7)  
 24. **DEPRDX (Depression):** Correlates with increased utilization across all medical service categories. [[7]](#ref7)
 
-### **Insurance and Activity Limitations (Functional Burden)**
+### **Insurance and Activity Limitations**
+Variables defining the functional burden and the conversion of total costs to out-of-pocket expenses.
 
 25. **INSCOV23 (Insurance Coverage Indicator):** The critical factor for converting total medical expenditures into out-of-pocket costs. [[1]](#ref1)  
 26. **ADLHLP31 (ADL Help Needed):** Indicates a need for help with basic daily activities; a high-cost functional indicator. [[7]](#ref7)  
