@@ -96,10 +96,13 @@ The following are explicitly **not** part of this project:
 ## Functional Requirements
 
 ### User Input 
-> **Status:** *Preliminary. Features shown below are the most promising candidates based on initial analysis. Final feature selection pending.*
+> **Status:** *Preliminary. Features shown below are candidates based on domain knowledge and research. Final feature selection pending empirical feature importance ranking.*
 
-The UI must be a simple form on a single page, designed for completion in **under 90 seconds**. As a guideline, aim for ~10–12 discrete UI interactions (e.g., dropdowns, radio buttons, checkboxes). A multi-select checklist (e.g., chronic conditions) counts as one interaction. Inputs are mapped to MEPS variables.
+The UI must be a simple form on a single page, designed for completion in **under 90 seconds**. As a guideline, aim for ~12–14 discrete UI interactions (e.g., dropdowns, radio buttons, checklists). A multi-select checklist (e.g., chronic conditions) counts as one interaction. Inputs are mapped to MEPS variables with correct temporal alignment (beginning-of-year status for prospective prediction).
 
+> **Full Details:** See [Technical Specifications: Candidate Features](./technical_specifications.md#candidate-features) and [Candidate Features Research](../research/candidate_features.md).
+
+**Single-Value Inputs** (~8–10 interactions)
 | ID | UI Label | UI Element | Value Range | MEPS Variable |
 | :--- | :--- | :--- | :--- | :--- |
 | **IN-01** | Age | `gr.Number` | [18, 85] | `AGE23X` |
@@ -107,11 +110,21 @@ The UI must be a simple form on a single page, designed for completion in **unde
 | **IN-03** | Region | `gr.Dropdown` | ["Northeast", "Midwest", "South", "West"] | `REGION23` |
 | **IN-04** | Income | `gr.Dropdown` | ["Low (<$30k)", "Middle", "High (>$100k)"] | `POVCAT23` |
 | **IN-05** | Insurance Status | `gr.Dropdown` | ["Private", "Public (Medicare/Medicaid)", "Uninsured"] | `INSCOV23` |
-| **IN-06** | Physical Health | `gr.Radio` | ["(1) Poor", "(2) Fair", "(3) Good", "(4) Very Good", "(5) Excellent"] | `RTHLTH31` |
-| **IN-07** | Mental Health | `gr.Radio` | ["(1) Poor", "(2) Fair", "(3) Good", "(4) Very Good", "(5) Excellent"] | `MNHLTH31` |
-| **IN-08** | Diabetes | `gr.Checkbox` | [True, False] | `DIABDX_M18` |
-| **IN-09** | High Blood Pressure | `gr.Checkbox` | [True, False] | `HIBPDX` |
-| **IN-10** | Smoker | `gr.Checkbox` | [True, False] | `ADSMOK42` |
+| **IN-06** | Physical Health | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `RTHLTH31` |
+| **IN-07** | Mental Health | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `MNHLTH31` |
+| **IN-08** | Regular Doctor | `gr.Radio` | ["Yes", "No"] | `HAVEUS42` |
+| **IN-09** | Smoker | `gr.Checkbox` | [True, False] | `ADSMOK42` |
+
+**Chronic Conditions Checklist** (1 interaction)
+| ID | UI Label | UI Element | Options | MEPS Variables |
+| :--- | :--- | :--- | :--- | :--- |
+| **IN-10** | Chronic Conditions | `gr.CheckboxGroup` | Diabetes, High Blood Pressure, Heart Disease, High Cholesterol, Arthritis, Cancer, Asthma, Stroke | `DIABDX_M18`, `HIBPDX`, `CHDDX`, `CHOLDX`, `ARTHDX`, `CANCERDX`, `ASTHDX`, `STRKDX` |
+
+**Functional Limitations Checklist** (1 interaction, optional)
+| ID | UI Label | UI Element | Options | MEPS Variables |
+| :--- | :--- | :--- | :--- | :--- |
+| **IN-11** | Difficulty With | `gr.CheckboxGroup` | Daily activities (bathing, dressing), Managing tasks (bills, shopping), Walking/climbing stairs, Memory/concentration | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31` |
+
 
 ### Prediction Engine
 | ID | Requirement | Details |
