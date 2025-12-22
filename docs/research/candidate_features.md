@@ -89,10 +89,18 @@ The "cost engine" — chronic conditions driving sustained medical expenditures.
 | `CANCERDX` | Cancer | Binary | Ever diagnosed with any cancer. | Primary driver of extreme "tail" costs. [[7]](#ref7) |
 | `ARTHDX` | Arthritis | Binary | Ever diagnosed with arthritis. | Very common (~25%); drives Rx/therapy costs. [[7]](#ref7) |
 | `ASTHDX` | Asthma | Binary | Ever diagnosed with asthma. | Chronic condition with ongoing costs (inhalers). [[1]](#ref1) |
+| `DEPRDX` | Depression | Binary | Ever diagnosed with depression. | Significant cost multiplier; drives utilization across categories. [[7]](#ref7) |
 
-> **UI Recommendation:** Present as a single multi-select checklist ("Have you ever been diagnosed with any of the following?"). Counts as 1 UI interaction.
+### 7. Symptoms
+Symptom-based variables that capture health issues not yet formally diagnosed.
 
-### 7. Behavioral
+| Variable | Label | Type | Description | Rationale |
+|:---|:---|:---|:---|:---|
+| `JTPAIN31_M18` | Joint Pain | Binary | Joint pain, aching, or stiffness in past 12 months. | Captures undiagnosed musculoskeletal issues; beginning-of-year. |
+
+> **UI Recommendation:** Present chronic conditions as a multi-select checklist ("Have you ever been diagnosed with any of the following?"). Joint pain can be added to the functional limitations checklist.
+
+### 8. Behavioral
 Lifestyle factors with established health risk associations.
 
 | Variable | Label | Type | Description | Rationale |
@@ -112,7 +120,8 @@ The following variables from alternative recommendations are **excluded** due to
 | `DDNWRK23` | Work days missed during year; outcome-adjacent variable. |
 | `RACETHX` | Ethically sensitive; likely redundant with income/region proxies. |
 | `RUSIZE23`, `FAMSZE23` | Household size; we predict individual costs, not family costs. |
-| `HOUR53` | Hours worked; adds cognitive load; employment status suffices. |
+| `HOUR31`, `HOUR53` | Hours worked per week; low marginal value over employment status; adds cognitive load. |
+| `BMINDX53` | BMI; requires 2 inputs (height/weight); end-of-year suffix; effects captured by chronic conditions. |
 
 ---
 
@@ -124,10 +133,11 @@ The following variables from alternative recommendations are **excluded** due to
 | Socioeconomic | 2–3 | 2–3 |
 | Insurance & Access | 2 | 2 |
 | Perceived Health | 2 | 2 |
-| Functional Limitations | 3–4 | 1 (checklist) |
-| Chronic Conditions | 8 | 1 (checklist) |
+| Functional Limitations | 4 | 1 (checklist) |
+| Chronic Conditions | 9 | 1 (checklist) |
+| Symptoms | 1 | 1 (with limitations) |
 | Behavioral | 1 | 1 |
-| **Total** | **~21–24 features** | **~12–14 interactions** |
+| **Total** | **~24–27 features** | **~13–15 interactions** |
 
 Final feature selection will be based on empirical feature importance ranking, targeting form completion in **under 90 seconds**.
 
