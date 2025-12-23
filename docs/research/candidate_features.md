@@ -60,8 +60,8 @@ High-fidelity subjective indicators of overall health burden and utilization int
 | `MNHLTH31` | Mental Health | Numerical | Self-rated mental health at beginning of year (Excellent to Poor). | Significant cost multiplier via treatment adherence. [[5]](#ref5) |
 
 
-### 5. Functional Limitations
-Screener questions identifying individuals requiring more frequent care due to impairments.
+### 5. Functional Limitations & Symptoms
+Screener questions identifying individuals requiring more frequent care due to physical or cognitive impairments.
 
 | Variable | Label | Type | Description | Rationale |
 |:---|:---|:---|:---|:---|
@@ -69,6 +69,7 @@ Screener questions identifying individuals requiring more frequent care due to i
 | `IADLHP31` | IADL Help Needed | Binary | Needs help with Instrumental ADLs (paying bills, shopping). | Signals high-cost care requirements. [[7]](#ref7) |
 | `WLKLIM31` | Walking Limitation | Binary | Physical limitation (walking, climbing, lifting). | Captures mobility impairment. |
 | `COGLIM31` | Cognitive Limitation | Binary | Confusion or memory loss. | Correlates with specialized care needs. [[3]](#ref3) |
+| `JTPAIN31_M18` | Joint Pain | Binary | Joint pain, aching, or stiffness in past 12 months. | Captures undiagnosed musculoskeletal issues. |
 
 **UI Recommendation:** Present as a single checklist ("Do you have difficulty with any of the following?").
 
@@ -87,14 +88,7 @@ The "cost engine" driving sustained medical expenditures.
 | `ASTHDX` | Asthma | Binary | Ever diagnosed with asthma. | Chronic condition with ongoing costs (inhalers). [[1]](#ref1) |
 | `DEPRDX` | Depression | Binary | Ever diagnosed with depression. | Significant cost multiplier; drives utilization across categories. [[7]](#ref7) |
 
-### 7. Symptoms
-Symptom-based variables that capture health issues not yet formally diagnosed.
-
-| Variable | Label | Type | Description | Rationale |
-|:---|:---|:---|:---|:---|
-| `JTPAIN31_M18` | Joint Pain | Binary | Joint pain, aching, or stiffness in past 12 months. | Captures undiagnosed musculoskeletal issues. |
-
-**UI Recommendation:** Present chronic conditions as a multi-select checklist ("Have you ever been diagnosed with any of the following?"). Joint pain can be added to the functional limitations checklist.
+**UI Recommendation:** Present chronic conditions as a multi-select checklist ("Have you ever been diagnosed with any of the following?").
 
 ### 8. Behavioral
 Lifestyle factors with established health risk associations.
