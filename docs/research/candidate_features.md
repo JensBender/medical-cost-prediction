@@ -51,7 +51,7 @@ Variables defining cost-sharing structure and healthcare access patterns.
 | `INSCOV23` | Insurance Coverage | Nominal | Coverage status (Private, Public, Uninsured). | **Critical.** Directly determines OOP vs. total cost split. [[1]](#ref1) |
 | `HAVEUS42` | Usual Source of Care | Binary | Whether person has a regular doctor/clinic. | Strong predictor of access and preventive care. |
 
-### 4. Health Status & Lifestyle
+### 4. Perceived Health & Lifestyle
 Subjective indicators of overall health burden and behavioral risk factors that drive healthcare utilization.
 
 | Variable | Label | Type | Description | Rationale |
@@ -61,7 +61,7 @@ Subjective indicators of overall health burden and behavioral risk factors that 
 | `ADSMOK42` | Current Smoker | Binary | Currently smokes cigarettes. | Stable behavioral risk factor; mid-year measure used as proxy for year-round status. [[2]](#ref2) |
 
 
-### 5. Functional Limitations & Symptoms
+### 5. Limitations & Symptoms
 Screener questions identifying individuals requiring more frequent care due to physical or cognitive impairments.
 
 | Variable | Label | Type | Description | Rationale |
@@ -112,8 +112,8 @@ The "cost engine" driving sustained medical expenditures.
 | Demographics | 4 | 4 |
 | Socioeconomic | 2–3 | 2–3 |
 | Insurance & Access | 2 | 2 |
-| Health Status & Lifestyle | 3 | 3 |
-| Functional Limitations & Symptoms | 5 | 1 (checklist) |
+| Perceived Health & Lifestyle | 3 | 3 |
+| Limitations & Symptoms | 5 | 1 (checklist) |
 | Chronic Conditions | 9 | 1 (checklist) |
 | **Total** | **~25–26 features** | **~13–14 interactions** |
 
