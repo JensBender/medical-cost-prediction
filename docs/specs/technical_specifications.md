@@ -97,7 +97,7 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 ### Candidate Features
 The following MEPS variables have been identified as candidate features for the model. All candidates satisfy three constraints: (1) users can answer from memory, (2) variables reflect beginning-of-year status (temporal validity), and (3) established predictive power in literature. The final feature set will be selected based on empirical feature importance ranking, targeting form completion in under 90 seconds.
 
-> **Full Details:** See [Candidate Features Research](../research/candidate_features.md) for complete rationale, literature citations, and excluded variables.
+**Full Details:** See [Candidate Features Research](../research/candidate_features.md) document.
 
 **Demographics & Socioeconomic**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
@@ -105,6 +105,7 @@ The following MEPS variables have been identified as candidate features for the 
 | **Age** | `AGE23X` | Numerical | Age at end of year (18–85). | ✅ Universal predictor; strongly correlated with chronic conditions and costs. |
 | **Sex** | `SEX` | Nominal | Male or Female. | ✅ Biologically relevant; easy to answer. |
 | **Region** | `REGION23` | Nominal | Census region (Northeast, Midwest, South, West). | ⚠️ May have low predictive power; consider dropping if low feature importance. |
+| **Marital Status** | `MARRY31X` | Nominal | Marital status at beginning of year. | ⚠️ Proxy for social support and income stability. |
 | **Income** | `POVCAT23` | Ordinal | Family income as % of poverty line. | ✅ Correlated with insurance type and ability to pay OOP. |
 | **Education** | `HIDEG` | Ordinal | Highest degree attained. | ⚠️ Correlates with health literacy; may be redundant with income. |
 | **Employment** | `EMPST31` | Nominal | Employment status at beginning of year. | ⚠️ Strong proxy for insurance type. |
@@ -115,19 +116,21 @@ The following MEPS variables have been identified as candidate features for the 
 | **Insurance** | `INSCOV23` | Nominal | Coverage status (Private, Public, Uninsured). | ✅ **Critical.** Directly determines OOP cost-sharing structure. |
 | **Usual Doctor** | `HAVEUS42` | Binary | Has a usual source of care (regular doctor/clinic). | ✅ Strong predictor of access and preventive care utilization. |
 
-**Perceived Health** 
+**Perceived Health & Lifestyle** 
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
 | **Physical Health** | `RTHLTH31` | Numerical | Self-reported physical health (1=Excellent to 5=Poor). | ✅ Strong predictor of utilization. |
 | **Mental Health** | `MNHLTH31` | Numerical | Self-reported mental health (1=Excellent to 5=Poor). | ✅ Complements physical health; captures behavioral costs. |
+| **Smoker** | `ADSMOK42` | Binary | Currently smokes cigarettes. | ⚠️ Known risk factor; proxy for year-round status. |
 
-**Functional Limitations**
+**Limitations & Symptoms**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
 | **ADL Help** | `ADLHLP31` | Binary | Needs help with Activities of Daily Living (bathing, dressing). | ⚠️ High-cost functional indicator. |
 | **IADL Help** | `IADLHP31` | Binary | Needs help with Instrumental ADLs (bills, shopping). | ⚠️ Signals high-cost care requirements. |
 | **Walking Limit** | `WLKLIM31` | Binary | Physical limitation (walking, climbing, lifting). | ⚠️ Captures mobility impairment. |
 | **Cognitive Limit** | `COGLIM31` | Binary | Confusion or memory loss. | ⚠️ Correlates with specialized care needs. |
+| **Joint Pain** | `JTPAIN31_M18` | Binary | Joint pain/stiffness in past 12 months. | ⚠️ Captures undiagnosed musculoskeletal issues. |
 
 **Chronic Conditions** *("Ever diagnosed" — stable over time)*
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
@@ -142,17 +145,7 @@ The following MEPS variables have been identified as candidate features for the 
 | **Stroke** | `STRKDX` | Binary | Ever diagnosed with stroke. | ⚠️ High downstream costs; lower prevalence (~3%). |
 | **Depression** | `DEPRDX` | Binary | Ever diagnosed with depression. | ✅ Significant cost multiplier; drives utilization. |
 
-**Symptoms**
-| UI Label | MEPS Variable | Data Type | Description | Rationale |
-| :--- | :--- | :--- | :--- | :--- |
-| **Joint Pain** | `JTPAIN31_M18` | Binary | Joint pain/stiffness in past 12 months. | ⚠️ Captures undiagnosed musculoskeletal issues. |
-
-**Behavioral**
-| UI Label | MEPS Variable | Data Type | Description | Rationale |
-| :--- | :--- | :--- | :--- | :--- |
-| **Smoker** | `ADSMOK42` | Binary | Currently smokes cigarettes. | ⚠️ Known risk factor; may have lower predictive power than conditions. |
-
-> **Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions, symptoms, and functional limitations should be grouped into multi-select checklists to minimize cognitive load (~13–15 total UI interactions).
+**Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions and limitations/symptoms should be grouped into multi-select checklists to minimize cognitive load (~13–14 total UI interactions).
 
 
 ## Machine Learning Specifications
@@ -175,7 +168,7 @@ Implemented via `ColumnTransformer`. Exact columns depend on final feature selec
 | :--- | :--- | :--- | :--- |
 | Numerical | `AGE23X` | `StandardScaler` | Age in years |
 | Ordinal | `POVCAT23`, `HIDEG` | `OrdinalEncoder` | Preserve ordering (Low < Middle < High) |
-| Nominal | `SEX`, `REGION23`, `INSCOV23`, `EMPST31` | `OneHotEncoder` | Drop first to avoid multicollinearity |
+| Nominal | `SEX`, `REGION23`, `INSCOV23`, `MARRY31X`, `EMPST31` | `OneHotEncoder` | Drop first to avoid multicollinearity |
 | Binary | `DIABDX_M18`, `HIBPDX`, `CHDDX`, etc. | passthrough | Already 0/1 encoded |
 
 **The Heteroscedasticity Problem**  
