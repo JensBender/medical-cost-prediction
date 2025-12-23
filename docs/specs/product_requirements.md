@@ -108,6 +108,7 @@ The UI must be a simple form on a single page, designed for completion in **unde
 | **IN-01** | Age | `gr.Number` | [18, 85] | `AGE23X` |
 | **IN-02** | Sex | `gr.Radio` | ["Male", "Female"] | `SEX` |
 | **IN-03** | Region | `gr.Dropdown` | ["Northeast", "Midwest", "South", "West"] | `REGION23` |
+| **IN-12** | Marital Status | `gr.Dropdown` | ["Married", "Widowed", "Divorced", "Separated", "Never Married"] | `MARRY31X` |
 | **IN-04** | Income | `gr.Dropdown` | ["Low (<$30k)", "Middle", "High (>$100k)"] | `POVCAT23` |
 | **IN-05** | Insurance Status | `gr.Dropdown` | ["Private", "Public (Medicare/Medicaid)", "Uninsured"] | `INSCOV23` |
 | **IN-06** | Physical Health | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `RTHLTH31` |
@@ -120,10 +121,10 @@ The UI must be a simple form on a single page, designed for completion in **unde
 | :--- | :--- | :--- | :--- | :--- |
 | **IN-10** | Chronic Conditions | `gr.CheckboxGroup` | Diabetes, High Blood Pressure, Heart Disease, High Cholesterol, Arthritis, Cancer, Asthma, Stroke, Depression | `DIABDX_M18`, `HIBPDX`, `CHDDX`, `CHOLDX`, `ARTHDX`, `CANCERDX`, `ASTHDX`, `STRKDX`, `DEPRDX` |
 
-**Functional Limitations & Symptoms Checklist** (1 interaction, optional)
+**Limitations & Symptoms Checklist** (1 interaction, optional)
 | ID | UI Label | UI Element | Options | MEPS Variables |
 | :--- | :--- | :--- | :--- | :--- |
-| **IN-11** | Difficulty With | `gr.CheckboxGroup` | Daily activities (bathing, dressing), Managing tasks (bills, shopping), Walking/climbing stairs, Memory/concentration, Joint pain in past year | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
+| **IN-11** | Limitations & Symptoms | `gr.CheckboxGroup` | Daily activities (bathing, dressing), Managing tasks (bills, shopping), Walking/climbing stairs, Memory/concentration, Joint pain in past year | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
 
 
 ### Prediction Engine
