@@ -1,16 +1,14 @@
 # Candidate Features for Medical Cost Prediction
 
+> **Sources:** Gemini Deep Research (Dec 2025), MEPS H251 Codebook, and domain literature review.
+
 Candidate feature list for predicting annual out-of-pocket healthcare costs (`TOTSLF23`) using MEPS-HC 2023 data. Features are selected based on three criteria:
 
 1. **Consumer Accessibility:** Users can answer from memory without looking up documents or records.
-2. **Temporal Validity:** Variables were measured at the beginning of the year to enable cost prediction for the upcoming year without data leakage.
+2. **Beginning-of-Year Data:** Variables were measured at the beginning of the year to enable cost prediction for the upcoming year without data leakage.
 3. **Predictive Power:** Features have established significance in the healthcare cost prediction literature.
 
-**Sources:** Gemini Deep Research (Dec 2025), MEPS H251 Codebook, and domain literature review.
-
-
-## Temporal Alignment Rationale
-
+**Beginning-of-Year Rationale**  
 MEPS variable suffixes indicate when data was collected during the survey year:
 
 | Suffix | Timing | Example |
@@ -21,6 +19,7 @@ MEPS variable suffixes indicate when data was collected during the survey year:
 | `23` or `23X` | Full-year summary or year-end point | `AGE23X`, `INSCOV23` |
 
 The Medical Cost Planner app is designed for use during Open Enrollment (Nov–Dec) to forecast healthcare costs for the **upcoming calendar year**. To mirror this prospective use case and prevent data leakage (using year-end health status to predict costs that have already occurred), we train specifically on **beginning-of-year (`31`) variables** for all time-varying metrics like self-rated health and functional limitations. Diagnostic flags for chronic conditions are treated as temporally stable and do not require such adjustment.
+
 
 ## Feature Categories
 
