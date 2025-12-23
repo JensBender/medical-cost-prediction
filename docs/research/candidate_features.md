@@ -27,69 +27,69 @@ The Medical Cost Planner app is designed for use during Open Enrollment (Nov–D
 ### 1. Demographics
 Primary drivers of healthcare utilization based on biological and geographic factors.
 
-| Variable | Label | Type | Description | Rationale |
-|:---|:---|:---|:---|:---|
-| `AGE23X` | Age | Numerical | Age as of Dec 31, 2023 (18–85). | Primary driver of utilization; costs follow a U-curve with most spending at high age. [[1]](#ref1) |
-| `SEX` | Sex | Nominal | Biological sex (Male/Female). | Influences utilization via gender-specific conditions. [[2]](#ref2) |
-| `REGION23` | Region | Nominal | Census region (Northeast, Midwest, South, West). | Captures geographic pricing variations. [[2]](#ref2) |
-| `MARRY31X` | Marital Status | Nominal | Marital status at beginning of year. | Proxy for social support and income stability. [[3]](#ref3) |
+| Variable | Label | Type | Description | Survey Question | Rationale |
+|:---|:---|:---|:---|:---|:---|
+| `AGE23X` | Age | Numerical | Age as of Dec 31, 2023 (18–85). | "What is your date of birth?" | Primary driver of utilization; costs follow a U-curve with most spending at high age. [[1]](#ref1) |
+| `SEX` | Sex | Nominal | Biological sex (Male/Female). | "Are you male or female?" | Influences utilization via gender-specific conditions. [[2]](#ref2) |
+| `REGION23` | Region | Nominal | Census region. | Derived from primary residence address | Captures geographic pricing variations. [[2]](#ref2) |
+| `MARRY31X` | Marital Status | Nominal | Marital status at beginning of year. | "Are you now married, widowed, divorced, separated, or never married?" | Proxy for social support and income stability. [[3]](#ref3) |
 
 ### 2. Socioeconomic
 Proxies for healthcare access, literacy, insurance quality, and ability to pay.
 
-| Variable | Label | Type | Description | Rationale |
-|:---|:---|:---|:---|:---|
-| `POVCAT23` | Income Category | Ordinal | Family income as % of poverty line (Poor/Near Poor/Low/Middle/High). | Determines subsidy eligibility and insurance quality. [[4]](#ref4) |
-| `HIDEG` | Education | Ordinal | Highest degree attained. | Correlates with health literacy and preventive care use. [[4]](#ref4) |
-| `EMPST31` | Employment Status | Nominal | Employment status at beginning of year. | Strong proxy for insurance type and income. |
+| Variable | Label | Type | Description | Survey Question | Rationale |
+|:---|:---|:---|:---|:---|:---|
+| `POVCAT23` | Income Category | Ordinal | Family income as % of poverty line. | Derived from total family income and household size | Determines subsidy eligibility and insurance quality. [[4]](#ref4) |
+| `HIDEG` | Education | Ordinal | Highest degree attained. | "What is the highest degree you have received?" | Correlates with health literacy and preventive care use. [[4]](#ref4) |
+| `EMPST31` | Employment Status | Nominal | Employment status at beginning of year. | "Are you currently working at a job or business?" | Strong proxy for insurance type and income. |
 
 ### 3. Insurance & Access
 Variables defining cost-sharing structure and healthcare access patterns.
 
-| Variable | Label | Type | Description | Rationale |
-|:---|:---|:---|:---|:---|
-| `INSCOV23` | Insurance Coverage | Nominal | Coverage status (Private, Public, Uninsured). | **Critical.** Directly determines OOP vs. total cost split. [[1]](#ref1) |
-| `HAVEUS42` | Usual Source of Care | Binary | Whether person has a regular doctor/clinic. | Strong predictor of access and preventive care. |
+| Variable | Label | Type | Description | Survey Question | Rationale |
+|:---|:---|:---|:---|:---|:---|
+| `INSCOV23` | Insurance Coverage | Nominal | Coverage status (Private, Public, Uninsured). | "Are you covered by any type of health insurance?" | **Critical.** Directly determines OOP vs. total cost split. [[1]](#ref1) |
+| `HAVEUS42` | Usual Source of Care | Binary | Whether person has a regular doctor/clinic. | "Is there a particular place you usually go if you are sick?" | Strong predictor of access and preventive care. |
 
 ### 4. Perceived Health & Lifestyle
 Subjective indicators of overall health burden and behavioral risk factors that drive healthcare utilization.
 
-| Variable | Label | Type | Description | Rationale |
-|:---|:---|:---|:---|:---|
-| `RTHLTH31` | Physical Health | Numerical | Self-rated physical health at beginning of year (Excellent to Poor). | Strongest subjective predictor of utilization. [[5]](#ref5) |
-| `MNHLTH31` | Mental Health | Numerical | Self-rated mental health at beginning of year (Excellent to Poor). | Significant cost multiplier via treatment adherence. [[5]](#ref5) |
-| `ADSMOK42` | Current Smoker | Binary | Currently smokes cigarettes. | Stable behavioral risk factor; mid-year measure used as proxy for year-round status. [[2]](#ref2) |
+| Variable | Label | Type | Description | Survey Question | Rationale |
+|:---|:---|:---|:---|:---|:---|
+| `RTHLTH31` | Physical Health | Numerical | Self-rated physical health (1–5). | "In general, would you say your health is excellent, very good, good, fair, or poor?" | Strongest subjective predictor of utilization. [[5]](#ref5) |
+| `MNHLTH31` | Mental Health | Numerical | Self-rated mental health (1–5). | "In general, would you say your mental health is excellent, very good, good, fair, or poor?" | Significant cost multiplier via treatment adherence. [[5]](#ref5) |
+| `ADSMOK42` | Current Smoker | Binary | Currently smokes cigarettes. | "Do you currently smoke cigarettes?" | Stable behavioral risk factor. [[2]](#ref2) |
 
 
 ### 5. Limitations & Symptoms
 Screener questions identifying individuals requiring more frequent care due to physical or cognitive impairments.
 
-| Variable | Label | Type | Description | Rationale |
-|:---|:---|:---|:---|:---|
-| `ADLHLP31` | ADL Help Needed | Binary | Needs help with Activities of Daily Living (bathing, dressing). | High-cost functional indicator. [[7]](#ref7) |
-| `IADLHP31` | IADL Help Needed | Binary | Needs help with Instrumental ADLs (paying bills, shopping). | Signals high-cost care requirements. [[7]](#ref7) |
-| `WLKLIM31` | Walking Limitation | Binary | Physical limitation (walking, climbing, lifting). | Captures mobility impairment. |
-| `COGLIM31` | Cognitive Limitation | Binary | Confusion or memory loss. | Correlates with specialized care needs. [[3]](#ref3) |
-| `JTPAIN31_M18` | Joint Pain | Binary | Joint pain, aching, or stiffness in past 12 months. | Captures undiagnosed musculoskeletal issues. |
+| Variable | Label | Type | Description | Survey Question | Rationale |
+|:---|:---|:---|:---|:---|:---|
+| `ADLHLP31` | ADL Help Needed | Binary | Help with personal care. | "Do you receive help with personal care such as bathing, dressing, or getting around?" | High-cost functional indicator. [[7]](#ref7) |
+| `IADLHP31` | IADL Help Needed | Binary | Help with instrumental ADLs. | "Do you receive help using the phone, paying bills, or shopping?" | Signals high-cost care requirements. [[7]](#ref7) |
+| `WLKLIM31` | Walking Limitation | Binary | Physical limitation. | "Do you have any difficulty walking, climbing stairs, or lifting?" | Captures mobility impairment. |
+| `COGLIM31` | Cognitive Limitation | Binary | Confusion or memory loss. | "Do you experience confusion, memory loss, or problems making decisions?" | Correlates with specialized care needs. [[3]](#ref3) |
+| `JTPAIN31_M18` | Joint Pain | Binary | Joint pain/stiffness in past year. | "In the past 12 months, have you had pain, aching, or stiffness in or around a joint?" | Captures undiagnosed musculoskeletal issues. |
 
 **UI Recommendation:** Present as a single checklist ("Do you have difficulty with any of the following?").
 
 ### 6. Chronic Conditions
 The "cost engine" driving sustained medical expenditures. 
 
-| Variable | Label | Type | Description | Rationale |
-|:---|:---|:---|:---|:---|
-| `HIBPDX` | Hypertension | Binary | Ever diagnosed with high blood pressure. | Very common (~30%); drives ongoing Rx costs. [[6]](#ref6) |
-| `CHOLDX` | High Cholesterol | Binary | Ever diagnosed with high cholesterol. | Very common (~28%); drives statin Rx costs. [[6]](#ref6) |
-| `DIABDX_M18` | Diabetes | Binary | Ever diagnosed with diabetes. | High-cost condition with ongoing costs. [[1]](#ref1) |
-| `CHDDX` | Heart Disease | Binary | Ever diagnosed with coronary heart disease. | Major cost driver (procedures, Rx, monitoring). [[6]](#ref6) |
-| `STRKDX` | Stroke | Binary | Ever diagnosed with stroke. | High downstream costs (rehab, Rx). [[7]](#ref7) |
-| `CANCERDX` | Cancer | Binary | Ever diagnosed with any cancer. | Primary driver of extreme "tail" costs. [[7]](#ref7) |
-| `ARTHDX` | Arthritis | Binary | Ever diagnosed with arthritis. | Very common (~25%); drives Rx/therapy costs. [[7]](#ref7) |
-| `ASTHDX` | Asthma | Binary | Ever diagnosed with asthma. | Chronic condition with ongoing costs (inhalers). [[1]](#ref1) |
-| `DEPRDX` | Depression | Binary | Ever diagnosed with depression. | Significant cost multiplier; drives utilization across categories. [[7]](#ref7) |
+| Variable | Label | Type | Description | Survey Question | Rationale |
+|:---|:---|:---|:---|:---|:---|
+| `HIBPDX` | Hypertension | Binary | Ever diagnosed with high BP. | "Have you ever been told by a doctor that you have high blood pressure?" | Common; drives Rx costs. [[6]](#ref6) |
+| `CHOLDX` | High Cholesterol | Binary | Ever diagnosed with high chol. | "Have you ever been told by a doctor that you have high cholesterol?" | Common; drives Rx costs. [[6]](#ref6) |
+| `DIABDX_M18` | Diabetes | Binary | Ever diagnosed with diabetes. | "Have you ever been told by a doctor that you have diabetes?" | High-cost condition. [[1]](#ref1) |
+| `CHDDX` | Heart Disease | Binary | Ever diagnosed with heart dis. | "Have you ever been told by a doctor that you have coronary heart disease?" | Major cost driver. [[6]](#ref6) |
+| `STRKDX` | Stroke | Binary | Ever diagnosed with stroke. | "Have you ever been told by a doctor that you had a stroke?" | High downstream costs. [[7]](#ref7) |
+| `CANCERDX` | Cancer | Binary | Ever diagnosed with cancer. | "Have you ever been told by a doctor that you had cancer?" | Primary driver of tail costs. [[7]](#ref7) |
+| `ARTHDX` | Arthritis | Binary | Ever diagnosed with arthritis. | "Have you ever been told by a doctor that you have arthritis?" | Drives Rx/therapy costs. [[7]](#ref7) |
+| `ASTHDX` | Asthma | Binary | Ever diagnosed with asthma. | "Have you ever been told by a doctor that you have asthma?" | Chronic condition with ongoing costs. [[1]](#ref1) |
+| `DEPRDX` | Depression | Binary | Ever diagnosed with depression. | "Have you ever been told by a doctor that you have depression?" | Significant cost multiplier. [[7]](#ref7) |
 
-**UI Recommendation:** Present chronic conditions as a multi-select checklist ("Have you ever been diagnosed with any of the following?").
+**UI Recommendation:** Present chronic conditions as a multi-select checklist ("Have you ever been told by a doctor that you have any of the following?").
 
 
 ## Excluded Variables
