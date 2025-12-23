@@ -3,12 +3,11 @@
 Candidate feature list for predicting annual out-of-pocket healthcare costs (`TOTSLF23`) using MEPS-HC 2023 data. Features are selected based on three criteria:
 
 1. **Consumer Accessibility:** Users can answer from memory without looking up documents or records.
-2. **Temporal Validity:** Variables reflect beginning-of-year status to enable prospective prediction.
+2. **Temporal Validity:** Variables were measured at the beginning of the year to enable cost prediction for the upcoming year without data leakage.
 3. **Predictive Power:** Features have established significance in the healthcare cost prediction literature.
 
-> **Sources:** Gemini Deep Research (Dec 2025), MEPS H251 Codebook, and domain literature review.
+**Sources:** Gemini Deep Research (Dec 2025), MEPS H251 Codebook, and domain literature review.
 
----
 
 ## Temporal Alignment Rationale
 
@@ -21,9 +20,7 @@ MEPS variable suffixes indicate when data was collected during the survey year:
 | `53` | End of year (Rounds 5/3) | `RTHLTH53` |
 | `23` or `23X` | Full-year summary or year-end point | `AGE23X`, `INSCOV23` |
 
-**Use Case:** Users will access the app during Open Enrollment (Nov–Dec) to predict costs for the **upcoming year**. To avoid data leakage (using end-of-year status to predict costs that already occurred), we use **beginning-of-year (`31`) variables** for time-varying self-reported status. "Ever diagnosed" chronic conditions are stable and do not require temporal adjustment.
-
----
+The Medical Cost Planner app is designed for use during Open Enrollment (Nov–Dec) to forecast healthcare costs for the **upcoming calendar year**. To mirror this prospective use case and prevent data leakage (using year-end health status to predict costs that have already occurred), we train specifically on **beginning-of-year (`31`) variables** for all time-varying metrics like self-rated health and functional limitations. Diagnostic flags for chronic conditions are treated as temporally stable and do not require such adjustment.
 
 ## Feature Categories
 
@@ -32,7 +29,7 @@ Primary drivers of healthcare utilization based on biological and geographic fac
 
 | Variable | Label | Type | Description | Rationale |
 |:---|:---|:---|:---|:---|
-| `AGE23X` | Age | Numerical | Age as of Dec 31, 2023 (18–85). | Primary driver of utilization; costs follow a U-curve. [[1]](#ref1) |
+| `AGE23X` | Age | Numerical | Age as of Dec 31, 2023 (18–85). | Primary driver of utilization; costs follow a U-curve with most spending at high age. [[1]](#ref1) |
 | `SEX` | Sex | Nominal | Biological sex (Male/Female). | Influences utilization via gender-specific conditions. [[2]](#ref2) |
 | `REGION23` | Region | Nominal | Census region (Northeast, Midwest, South, West). | Captures geographic pricing variations. [[2]](#ref2) |
 | `MARRY31X` | Marital Status | Nominal | Marital status at beginning of year. | Proxy for social support and income stability. [[3]](#ref3) |
@@ -62,7 +59,6 @@ High-fidelity subjective indicators of overall health burden and utilization int
 | `RTHLTH31` | Physical Health | Numerical | Self-rated physical health at beginning of year (Excellent to Poor). | Strongest subjective predictor of utilization. [[5]](#ref5) |
 | `MNHLTH31` | Mental Health | Numerical | Self-rated mental health at beginning of year (Excellent to Poor). | Significant cost multiplier via treatment adherence. [[5]](#ref5) |
 
-> ⚠️ **Note:** Use `31` suffix (beginning of year), not `53` (end of year), to avoid temporal leakage.
 
 ### 5. Functional Limitations
 Screener questions identifying individuals requiring more frequent care due to impairments.
@@ -74,10 +70,10 @@ Screener questions identifying individuals requiring more frequent care due to i
 | `WLKLIM31` | Walking Limitation | Binary | Physical limitation (walking, climbing, lifting). | Captures mobility impairment. |
 | `COGLIM31` | Cognitive Limitation | Binary | Confusion or memory loss. | Correlates with specialized care needs. [[3]](#ref3) |
 
-> **UI Recommendation:** Present as a single checklist ("Do you have difficulty with any of the following?").
+**UI Recommendation:** Present as a single checklist ("Do you have difficulty with any of the following?").
 
 ### 6. Chronic Conditions
-The "cost engine" — chronic conditions driving sustained medical expenditures. 
+The "cost engine" driving sustained medical expenditures. 
 
 | Variable | Label | Type | Description | Rationale |
 |:---|:---|:---|:---|:---|
@@ -96,9 +92,9 @@ Symptom-based variables that capture health issues not yet formally diagnosed.
 
 | Variable | Label | Type | Description | Rationale |
 |:---|:---|:---|:---|:---|
-| `JTPAIN31_M18` | Joint Pain | Binary | Joint pain, aching, or stiffness in past 12 months. | Captures undiagnosed musculoskeletal issues; beginning-of-year. |
+| `JTPAIN31_M18` | Joint Pain | Binary | Joint pain, aching, or stiffness in past 12 months. | Captures undiagnosed musculoskeletal issues. |
 
-> **UI Recommendation:** Present chronic conditions as a multi-select checklist ("Have you ever been diagnosed with any of the following?"). Joint pain can be added to the functional limitations checklist.
+**UI Recommendation:** Present chronic conditions as a multi-select checklist ("Have you ever been diagnosed with any of the following?"). Joint pain can be added to the functional limitations checklist.
 
 ### 8. Behavioral
 Lifestyle factors with established health risk associations.
@@ -107,11 +103,8 @@ Lifestyle factors with established health risk associations.
 |:---|:---|:---|:---|:---|
 | `ADSMOK42` | Current Smoker | Binary | Currently smokes cigarettes. | Known risk factor for respiratory/cardiovascular disease. [[2]](#ref2) |
 
----
 
 ## Excluded Variables
-
-The following variables from alternative recommendations are **excluded** due to temporal leakage or deployment mismatch:
 
 | Variable | Reason for Exclusion |
 |:---|:---|
@@ -123,7 +116,6 @@ The following variables from alternative recommendations are **excluded** due to
 | `HOUR31`, `HOUR53` | Hours worked per week; low marginal value over employment status; adds cognitive load. |
 | `BMINDX53` | BMI; requires 2 inputs (height/weight); end-of-year suffix; effects captured by chronic conditions. |
 
----
 
 ## Summary
 
@@ -141,7 +133,6 @@ The following variables from alternative recommendations are **excluded** due to
 
 Final feature selection will be based on empirical feature importance ranking, targeting form completion in **under 90 seconds**.
 
----
 
 ## Works Cited
 
