@@ -51,13 +51,14 @@ Variables defining cost-sharing structure and healthcare access patterns.
 | `INSCOV23` | Insurance Coverage | Nominal | Coverage status (Private, Public, Uninsured). | **Critical.** Directly determines OOP vs. total cost split. [[1]](#ref1) |
 | `HAVEUS42` | Usual Source of Care | Binary | Whether person has a regular doctor/clinic. | Strong predictor of access and preventive care. |
 
-### 4. Perceived Health Status
-High-fidelity subjective indicators of overall health burden and utilization intensity.
+### 4. Health Status & Lifestyle
+Subjective indicators of overall health burden and behavioral risk factors that drive healthcare utilization.
 
 | Variable | Label | Type | Description | Rationale |
 |:---|:---|:---|:---|:---|
 | `RTHLTH31` | Physical Health | Numerical | Self-rated physical health at beginning of year (Excellent to Poor). | Strongest subjective predictor of utilization. [[5]](#ref5) |
 | `MNHLTH31` | Mental Health | Numerical | Self-rated mental health at beginning of year (Excellent to Poor). | Significant cost multiplier via treatment adherence. [[5]](#ref5) |
+| `ADSMOK42` | Current Smoker | Binary | Currently smokes cigarettes. | Stable behavioral risk factor; mid-year measure used as proxy for year-round status. [[2]](#ref2) |
 
 
 ### 5. Functional Limitations & Symptoms
@@ -90,13 +91,6 @@ The "cost engine" driving sustained medical expenditures.
 
 **UI Recommendation:** Present chronic conditions as a multi-select checklist ("Have you ever been diagnosed with any of the following?").
 
-### 8. Behavioral
-Lifestyle factors with established health risk associations.
-
-| Variable | Label | Type | Description | Rationale |
-|:---|:---|:---|:---|:---|
-| `ADSMOK42` | Current Smoker | Binary | Currently smokes cigarettes. | Known risk factor for respiratory/cardiovascular disease. [[2]](#ref2) |
-
 
 ## Excluded Variables
 
@@ -115,15 +109,13 @@ Lifestyle factors with established health risk associations.
 
 | Category | # Features | # UI Interactions |
 |:---|:---|:---|
-| Demographics | 3–4 | 3–4 |
+| Demographics | 4 | 4 |
 | Socioeconomic | 2–3 | 2–3 |
 | Insurance & Access | 2 | 2 |
-| Perceived Health | 2 | 2 |
-| Functional Limitations | 4 | 1 (checklist) |
+| Health Status & Lifestyle | 3 | 3 |
+| Functional Limitations & Symptoms | 5 | 1 (checklist) |
 | Chronic Conditions | 9 | 1 (checklist) |
-| Symptoms | 1 | 1 (with limitations) |
-| Behavioral | 1 | 1 |
-| **Total** | **~24–27 features** | **~13–15 interactions** |
+| **Total** | **~25–26 features** | **~13–14 interactions** |
 
 Final feature selection will be based on empirical feature importance ranking, targeting form completion in **under 90 seconds**.
 
