@@ -102,7 +102,7 @@ The following MEPS variables have been identified as candidate features for the 
 **Demographics & Socioeconomic**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Age** | `AGE23X` | Numerical | Age at end of year (18–85). | ✅ Universal predictor; strongly correlated with chronic conditions and costs. |
+| **Birth Year** | `AGE23X` | Numerical | In what year were you born? Used to calculate age at end of year (18–85). | ✅ Primary driver of utilization; costs follow a U-curve with age. |
 | **Sex** | `SEX` | Nominal | Male or Female. | ✅ Biologically relevant; easy to answer. |
 | **Region** | `REGION23` | Nominal | Census region (Northeast, Midwest, South, West). | ⚠️ May have low predictive power; consider dropping if low feature importance. |
 | **Marital Status** | `MARRY31X` | Nominal | Marital status at beginning of year. | ⚠️ Proxy for social support and income stability. |

@@ -105,7 +105,7 @@ The UI must be a simple form on a single page, designed for completion in **unde
 **Single-Value Inputs** (~10–12 interactions)
 | ID | UI Label | UI Question | UI Element | Value Range | MEPS Variable |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **IN-01** | Age | What is your age? | `gr.Number` | [18, 85] | `AGE23X` |
+| **IN-01** | Birth Year | In what year were you born? | `gr.Number` | [1940, 2007] | `AGE23X` |
 | **IN-02** | Sex | Are you male or female? | `gr.Radio` | ["Male", "Female"] | `SEX` |
 | **IN-03** | Region | In which region do you live? | `gr.Dropdown` | ["Northeast", "Midwest", "South", "West"] | `REGION23` |
 | **IN-12** | Marital Status | Are you now married, widowed, divorced, separated, or never married? | `gr.Dropdown` | ["Married", "Widowed", "Divorced", "Separated", "Never Married"] | `MARRY31X` |
