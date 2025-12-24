@@ -113,37 +113,37 @@ The following MEPS variables have been identified as candidate features for the 
 **Insurance & Access**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Insurance** | `INSCOV23` | Nominal | Coverage status (Private, Public, Uninsured). | ✅ **Critical.** Directly determines OOP cost-sharing structure. |
-| **Usual Doctor** | `HAVEUS42` | Binary | Has a usual source of care (regular doctor/clinic). | ✅ Strong predictor of access and preventive care utilization. |
+| **Insurance** | `INSCOV23` | Nominal | Coverage status (Private, Public Only, Uninsured). | ✅ **Critical.** Determines OOP vs. total cost split. |
+| **Usual Doctor** | `HAVEUS42` | Binary | Regular doctor or clinic. | ✅ Strong predictor of access and preventive care. |
 
 **Perceived Health & Lifestyle** 
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Physical Health** | `RTHLTH31` | Numerical | Self-reported physical health (1=Excellent to 5=Poor). | ✅ Strong predictor of utilization. |
-| **Mental Health** | `MNHLTH31` | Numerical | Self-reported mental health (1=Excellent to 5=Poor). | ✅ Complements physical health; captures behavioral costs. |
-| **Smoker** | `ADSMOK42` | Binary | Currently smokes cigarettes. | ⚠️ Known risk factor; proxy for year-round status. |
+| **Physical Health** | `RTHLTH31` | Numerical | Self-rated physical health (1=Excellent to 5=Poor). | ✅ Strongest subjective predictor of utilization. |
+| **Mental Health** | `MNHLTH31` | Numerical | Self-rated mental health (1=Excellent to 5=Poor). | ✅ Significant cost multiplier via treatment adherence. |
+| **Smoker** | `ADSMOK42` | Binary | Currently smokes cigarettes. | ⚠️ Stable behavioral risk factor. |
 
 **Limitations & Symptoms**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **ADL Help** | `ADLHLP31` | Binary | Needs help with Activities of Daily Living (bathing, dressing). | ⚠️ High-cost functional indicator. |
-| **IADL Help** | `IADLHP31` | Binary | Needs help with Instrumental ADLs (bills, shopping). | ⚠️ Signals high-cost care requirements. |
-| **Walking Limit** | `WLKLIM31` | Binary | Physical limitation (walking, climbing, lifting). | ⚠️ Captures mobility impairment. |
+| **ADL Help** | `ADLHLP31` | Binary | Needs help with personal care (bathing, dressing). | ⚠️ High-cost functional indicator. |
+| **IADL Help** | `IADLHP31` | Binary | Needs help with bills, meds, shopping, etc. | ⚠️ Signals high-cost care requirements. |
+| **Walking Limit** | `WLKLIM31` | Binary | Difficulty walking or climbing stairs. | ⚠️ Captures mobility impairment. |
 | **Cognitive Limit** | `COGLIM31` | Binary | Confusion or memory loss. | ⚠️ Correlates with specialized care needs. |
 | **Joint Pain** | `JTPAIN31_M18` | Binary | Joint pain/stiffness in past 12 months. | ⚠️ Captures undiagnosed musculoskeletal issues. |
 
 **Chronic Conditions** *("Ever diagnosed" — stable over time)*
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Diabetes** | `DIABDX_M18` | Binary | Ever diagnosed with diabetes. | ✅ High-cost; very common (~11%). |
-| **Hypertension** | `HIBPDX` | Binary | Ever diagnosed with high blood pressure. | ✅ Very common (~30%); drives Rx costs. |
-| **Heart Disease** | `CHDDX` | Binary | Ever diagnosed with coronary heart disease. | ✅ **Major cost driver** with high downstream costs. |
-| **High Cholesterol** | `CHOLDX` | Binary | Ever diagnosed with high cholesterol. | ⚠️ Very common (~28%); may overlap with hypertension. |
-| **Arthritis** | `ARTHDX` | Binary | Ever diagnosed with arthritis. | ⚠️ Very common (~25%); may overlap with age. |
-| **Cancer** | `CANCERDX` | Binary | Ever diagnosed with any cancer. | ⚠️ Major cost driver if active. |
-| **Asthma** | `ASTHDX` | Binary | Ever diagnosed with asthma. | ⚠️ Ongoing costs (inhalers); lower prevalence (~8%). |
-| **Stroke** | `STRKDX` | Binary | Ever diagnosed with stroke. | ⚠️ High downstream costs; lower prevalence (~3%). |
-| **Depression** | `DEPRDX` | Binary | Ever diagnosed with depression. | ✅ Significant cost multiplier; drives utilization. |
+| **Hypertension** | `HIBPDX` | Binary | Diagnosed with high blood pressure. | ✅ Common; drives Rx costs. |
+| **High Cholesterol** | `CHOLDX` | Binary | Diagnosed with high cholesterol. | ⚠️ Common; drives Rx costs. |
+| **Diabetes** | `DIABDX_M18` | Binary | Diagnosed with diabetes. | ✅ High-cost condition. |
+| **Heart Disease** | `CHDDX` | Binary | Diagnosed with heart disease (CHD). | ✅ Major cost driver. |
+| **Stroke** | `STRKDX` | Binary | Diagnosed with stroke. | ⚠️ High downstream costs. |
+| **Cancer** | `CANCERDX` | Binary | Diagnosed with cancer. | ⚠️ Primary driver of tail costs. |
+| **Arthritis** | `ARTHDX` | Binary | Diagnosed with arthritis. | ⚠️ Drives Rx/therapy costs. |
+| **Asthma** | `ASTHDX` | Binary | Diagnosed with asthma. | ⚠️ Chronic condition with ongoing costs. |
+| **Depression** | `DEPRDX` | Binary | Diagnosed with depression. | ✅ Significant cost multiplier. |
 
 **Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions and limitations/symptoms should be grouped into multi-select checklists to minimize cognitive load (~13–14 total UI interactions).
 
