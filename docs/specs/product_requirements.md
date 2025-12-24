@@ -103,30 +103,30 @@ The UI must be a simple form on a single page, designed for completion in **unde
 > **Full Details:** See [Technical Specifications: Candidate Features](./technical_specifications.md#candidate-features) and [Candidate Features Research](../research/candidate_features.md).
 
 **Single-Value Inputs** (~10–12 interactions)
-| ID | UI Label | UI Element | Value Range | MEPS Variable |
-| :--- | :--- | :--- | :--- | :--- |
-| **IN-01** | Age | `gr.Number` | [18, 85] | `AGE23X` |
-| **IN-02** | Sex | `gr.Radio` | ["Male", "Female"] | `SEX` |
-| **IN-03** | Region | `gr.Dropdown` | ["Northeast", "Midwest", "South", "West"] | `REGION23` |
-| **IN-12** | Marital Status | `gr.Dropdown` | ["Married", "Widowed", "Divorced", "Separated", "Never Married"] | `MARRY31X` |
-| **IN-04** | Income Category | `gr.Dropdown` | ["Poor", "Near Poor", "Low", "Middle", "High"] | `POVCAT23` |
-| **IN-13** | Education | `gr.Dropdown` | ["No Degree", "GED", "HS Diploma", "Bachelor's", "Master's", "Doctorate", "Other"] | `HIDEG` |
-| **IN-14** | Employment Status | `gr.Dropdown` | ["Employed", "Job to return to", "Job during period", "Not employed"] | `EMPST31` |
-| **IN-05** | Insurance Status | `gr.Dropdown` | ["Private", "Public Only", "Uninsured"] | `INSCOV23` |
-| **IN-06** | Physical Health | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `RTHLTH31` |
-| **IN-07** | Mental Health | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `MNHLTH31` |
-| **IN-08** | Regular Doctor | `gr.Radio` | ["Yes", "No"] | `HAVEUS42` |
-| **IN-09** | Smoker | `gr.Radio` | ["Yes", "No"] | `ADSMOK42` |
+| ID | UI Label | UI Question | UI Element | Value Range | MEPS Variable |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **IN-01** | Age | What is your age? | `gr.Number` | [18, 85] | `AGE23X` |
+| **IN-02** | Sex | Are you male or female? | `gr.Radio` | ["Male", "Female"] | `SEX` |
+| **IN-03** | Region | In which region do you live? | `gr.Dropdown` | ["Northeast", "Midwest", "South", "West"] | `REGION23` |
+| **IN-12** | Marital Status | Are you now married, widowed, divorced, separated, or never married? | `gr.Dropdown` | ["Married", "Widowed", "Divorced", "Separated", "Never Married"] | `MARRY31X` |
+| **IN-04** | Income Category | What is your family income % of poverty line? | `gr.Dropdown` | ["Poor", "Near Poor", "Low", "Middle", "High"] | `POVCAT23` |
+| **IN-13** | Education | What is the highest degree you have received? | `gr.Dropdown` | ["No Degree", "GED", "HS Diploma", "Bachelor's", "Master's", "Doctorate", "Other"] | `HIDEG` |
+| **IN-14** | Employment Status | Are you currently working at a job or business? | `gr.Dropdown` | ["Employed", "Job to return to", "Job during period", "Not employed"] | `EMPST31` |
+| **IN-05** | Insurance Status | Are you covered by any type of health insurance? | `gr.Dropdown` | ["Private", "Public Only", "Uninsured"] | `INSCOV23` |
+| **IN-06** | Physical Health | In general, would you say your health is...? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `RTHLTH31` |
+| **IN-07** | Mental Health | In general, would you say your mental health is...? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `MNHLTH31` |
+| **IN-08** | Regular Doctor | Is there a particular place you usually go if you are sick? | `gr.Radio` | ["Yes", "No"] | `HAVEUS42` |
+| **IN-09** | Smoker | Do you currently smoke cigarettes? | `gr.Radio` | ["Yes", "No"] | `ADSMOK42` |
 
 **Chronic Conditions Checklist** (1 interaction)
-| ID | UI Label | UI Element | Options | MEPS Variables |
-| :--- | :--- | :--- | :--- | :--- |
-| **IN-10** | Chronic Conditions | `gr.CheckboxGroup` | Hypertension, High Cholesterol, Diabetes, Heart Disease, Stroke, Cancer, Arthritis, Asthma, Depression | `HIBPDX`, `CHOLDX`, `DIABDX_M18`, `CHDDX`, `STRKDX`, `CANCERDX`, `ARTHDX`, `ASTHDX`, `DEPRDX` |
+| ID | UI Label | UI Question | UI Element | Options | MEPS Variables |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **IN-10** | Chronic Conditions | Have you ever been told by a doctor that you have any of the following? | `gr.CheckboxGroup` | Hypertension, High Cholesterol, Diabetes, Heart Disease, Stroke, Cancer, Arthritis, Asthma, Depression | `HIBPDX`, `CHOLDX`, `DIABDX_M18`, `CHDDX`, `STRKDX`, `CANCERDX`, `ARTHDX`, `ASTHDX`, `DEPRDX` |
 
 **Limitations & Symptoms Checklist** (1 interaction, optional)
-| ID | UI Label | UI Element | Options | MEPS Variables |
-| :--- | :--- | :--- | :--- | :--- |
-| **IN-11** | Limitations & Symptoms | `gr.CheckboxGroup` | Personal care (bathing, dressing), Daily tasks (bills, shopping), Walking/climbing stairs, Concentration/memory, Joint pain in past year | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
+| ID | UI Label | UI Question | UI Element | Options | MEPS Variables |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **IN-11** | Limitations & Symptoms | Do you have difficulty with any of the following? | `gr.CheckboxGroup` | Personal care (bathing, dressing), Daily tasks (bills, shopping), Walking/climbing stairs, Concentration/memory, Joint pain in past year | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
 
 
 ### Prediction Engine
