@@ -102,29 +102,31 @@ The UI must be a simple form on a single page, designed for completion in **unde
 
 > **Full Details:** See [Technical Specifications: Candidate Features](./technical_specifications.md#candidate-features) and [Candidate Features Research](../research/candidate_features.md).
 
-**Single-Value Inputs** (~8–10 interactions)
+**Single-Value Inputs** (~10–12 interactions)
 | ID | UI Label | UI Element | Value Range | MEPS Variable |
 | :--- | :--- | :--- | :--- | :--- |
 | **IN-01** | Age | `gr.Number` | [18, 85] | `AGE23X` |
 | **IN-02** | Sex | `gr.Radio` | ["Male", "Female"] | `SEX` |
 | **IN-03** | Region | `gr.Dropdown` | ["Northeast", "Midwest", "South", "West"] | `REGION23` |
 | **IN-12** | Marital Status | `gr.Dropdown` | ["Married", "Widowed", "Divorced", "Separated", "Never Married"] | `MARRY31X` |
-| **IN-04** | Income | `gr.Dropdown` | ["Low (<$30k)", "Middle", "High (>$100k)"] | `POVCAT23` |
-| **IN-05** | Insurance Status | `gr.Dropdown` | ["Private", "Public (Medicare/Medicaid)", "Uninsured"] | `INSCOV23` |
+| **IN-04** | Income Category | `gr.Dropdown` | ["Poor", "Near Poor", "Low", "Middle", "High"] | `POVCAT23` |
+| **IN-13** | Education | `gr.Dropdown` | ["No Degree", "GED", "HS Diploma", "Bachelor's", "Master's", "Doctorate", "Other"] | `HIDEG` |
+| **IN-14** | Employment Status | `gr.Dropdown` | ["Employed", "Job to return to", "Job during period", "Not employed"] | `EMPST31` |
+| **IN-05** | Insurance Status | `gr.Dropdown` | ["Private", "Public Only", "Uninsured"] | `INSCOV23` |
 | **IN-06** | Physical Health | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `RTHLTH31` |
 | **IN-07** | Mental Health | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `MNHLTH31` |
 | **IN-08** | Regular Doctor | `gr.Radio` | ["Yes", "No"] | `HAVEUS42` |
-| **IN-09** | Smoker | `gr.Checkbox` | [True, False] | `ADSMOK42` |
+| **IN-09** | Smoker | `gr.Radio` | ["Yes", "No"] | `ADSMOK42` |
 
 **Chronic Conditions Checklist** (1 interaction)
 | ID | UI Label | UI Element | Options | MEPS Variables |
 | :--- | :--- | :--- | :--- | :--- |
-| **IN-10** | Chronic Conditions | `gr.CheckboxGroup` | Diabetes, High Blood Pressure, Heart Disease, High Cholesterol, Arthritis, Cancer, Asthma, Stroke, Depression | `DIABDX_M18`, `HIBPDX`, `CHDDX`, `CHOLDX`, `ARTHDX`, `CANCERDX`, `ASTHDX`, `STRKDX`, `DEPRDX` |
+| **IN-10** | Chronic Conditions | `gr.CheckboxGroup` | Hypertension, High Cholesterol, Diabetes, Heart Disease, Stroke, Cancer, Arthritis, Asthma, Depression | `HIBPDX`, `CHOLDX`, `DIABDX_M18`, `CHDDX`, `STRKDX`, `CANCERDX`, `ARTHDX`, `ASTHDX`, `DEPRDX` |
 
 **Limitations & Symptoms Checklist** (1 interaction, optional)
 | ID | UI Label | UI Element | Options | MEPS Variables |
 | :--- | :--- | :--- | :--- | :--- |
-| **IN-11** | Limitations & Symptoms | `gr.CheckboxGroup` | Daily activities (bathing, dressing), Managing tasks (bills, shopping), Walking/climbing stairs, Memory/concentration, Joint pain in past year | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
+| **IN-11** | Limitations & Symptoms | `gr.CheckboxGroup` | Personal care (bathing, dressing), Daily tasks (bills, shopping), Walking/climbing stairs, Concentration/memory, Joint pain in past year | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
 
 
 ### Prediction Engine
