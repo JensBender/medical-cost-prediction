@@ -21,7 +21,9 @@ MEPS variable suffixes indicate when data was collected during the survey year:
 The Medical Cost Planner app is designed for use during Open Enrollment (Nov–Dec) to forecast healthcare costs for the **upcoming calendar year**. To mirror this prospective use case and prevent data leakage (using year-end health status to predict costs that have already occurred), we train specifically on **beginning-of-year (`31`) variables** for all time-varying features like perceived health, limitations, and symptoms. Chronic conditions are treated as temporally stable and measures from mid-year or end-of-year may be used if no beginning-of-year variable is available.
 
 **Training-Serving Temporal Skew**  
-MEPS `31` variables are collected Jan–June of the survey year, meaning some "beginning of year" values may reflect events that occurred after costs started accumulating. App users providing data in Nov–Dec for the upcoming year perform a strictly prospective prediction. This may cause slight overestimation of costs in training metrics compared to real-world performance. The effect is expected to be small since most high-importance features (chronic conditions, demographics) are temporally stable.
+MEPS `31` variables are collected Jan–June of the survey year, meaning some "beginning of year" values may reflect events that occurred after costs started accumulating. App users providing data in Nov–Dec for the upcoming year perform a strictly prospective prediction. This may cause slight overestimation of costs in training metrics compared to real-world performance. The effect is expected to be small since most high-importance features (chronic conditions, demographics) are temporally stable. 
+
+Note: For predictions made in Oct–Dec, consider using the upcoming year as the target year for age calculation to align with open enrollment planning.
 
 
 ## Feature Categories
