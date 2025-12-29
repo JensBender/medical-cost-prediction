@@ -93,7 +93,7 @@ The "cost engine" driving sustained medical expenditures.
 | `ASTHDX` | Asthma | Diagnosed with asthma | "Have you ever been told by a doctor or other health professional that you have asthma?" | Yes, No | Chronic condition with ongoing costs. [[1]](#ref1) |
 | `DEPRDX` | Depression | Diagnosed with depression | "Have you ever been told by a doctor or other health professional that you have depression?" | Yes, No | Significant cost multiplier. [[7]](#ref7) |
 
-**UI Recommendation:** Present chronic conditions as a multi-select checklist ("Have you ever been told by a doctor or other health professional that you have any of the following?").
+**UI Recommendation:** Present chronic conditions as a multi-select checklist with the prompt "Have you ever been told by a doctor or other health professional that you:" and with wording as close to original survey question as possible.
 
 
 ## Excluded Variables

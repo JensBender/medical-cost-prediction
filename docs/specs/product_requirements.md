@@ -121,7 +121,7 @@ The UI must be a simple form on a single page, designed for completion in **unde
 **Chronic Conditions Checklist** (1 interaction)
 | ID | UI Label | UI Question | UI Element | Options | MEPS Variables |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **IN-13** | Chronic Conditions | Have you ever been told by a doctor or other health professional that you have any of the following? | `gr.CheckboxGroup` | High blood pressure (Hypertension), High cholesterol, Diabetes (or sugar diabetes), Coronary heart disease, Stroke, Cancer (any malignancy), Arthritis, Asthma, Depression | `HIBPDX`, `CHOLDX`, `DIABDX_M18`, `CHDDX`, `STRKDX`, `CANCERDX`, `ARTHDX`, `ASTHDX`, `DEPRDX` |
+| **IN-13** | Chronic Conditions | Have you ever been told by a doctor or other health professional that you: | `gr.CheckboxGroup` | have hypertension, also called high blood pressure; have high cholesterol; have diabetes or sugar diabetes; have coronary heart disease; had a stroke; had cancer or a malignancy of any kind; have arthritis; have asthma; have depression | `HIBPDX`, `CHOLDX`, `DIABDX_M18`, `CHDDX`, `STRKDX`, `CANCERDX`, `ARTHDX`, `ASTHDX`, `DEPRDX` |
 
 **Limitations & Symptoms Checklist** (1 interaction, optional)
 | ID | UI Label | UI Question | UI Element | Options | MEPS Variables |
