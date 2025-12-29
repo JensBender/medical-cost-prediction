@@ -76,7 +76,7 @@ Screener questions identifying individuals requiring more frequent care due to p
 | `COGLIM31` | Cognitive Limitation | Confusion or memory loss | "Do you have serious difficulty concentrating, remembering, or making decisions?" | Yes, No | Correlates with specialized care needs. [[3]](#ref3) |
 | `JTPAIN31_M18` | Joint Pain | Pain/stiffness in past year | "During the past 12 months, did you have pain, aching, stiffness, or swelling in or around a joint?" | Yes, No | Captures undiagnosed musculoskeletal issues |
 
-**UI Recommendation:** Present as a single checklist ("Do you have serious difficulty with, or receive help for, any of the following?").
+**UI Recommendation:** Present as a single checklist with the prompt "Do any of the following apply to you?" and options as first-person statements (e.g., "I receive help or supervision...").
 
 ### 6. Chronic Conditions
 The "cost engine" driving sustained medical expenditures. 

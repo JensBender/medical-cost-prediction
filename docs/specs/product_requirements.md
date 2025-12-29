@@ -126,7 +126,7 @@ The UI must be a simple form on a single page, designed for completion in **unde
 **Limitations & Symptoms Checklist** (1 interaction, optional)
 | ID | UI Label | UI Question | UI Element | Options | MEPS Variables |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **IN-14** | Limitations & Symptoms | Do you have serious difficulty with, or receive help for, any of the following? | `gr.CheckboxGroup` | Personal care (bathing, dressing, getting around), Daily tasks (using phone, bills, meds, meals, shopping), Serious difficulty walking or climbing stairs, Serious difficulty concentrating, remembering, or making decisions, Joint pain, aching, or stiffness (in past 12 months) | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
+| **IN-14** | Limitations & Symptoms | Do any of the following apply to you? | `gr.CheckboxGroup` | I receive help or supervision with personal care such as bathing, dressing, or getting around the house; I receive help or supervision with using the telephone, paying bills, taking medications, preparing light meals, doing laundry, or going shopping; I have serious difficulty walking or climbing stairs; I have serious difficulty concentrating, remembering, or making decisions; During the past 12 months, I had pain, aching, stiffness, or swelling in or around a joint | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
 
 
 ### Prediction Engine
