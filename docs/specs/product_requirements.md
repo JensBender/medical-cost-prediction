@@ -121,12 +121,12 @@ The UI must be a simple form on a single page, designed for completion in **unde
 **Chronic Conditions Checklist** (1 interaction)
 | ID | UI Label | UI Question | UI Element | Options | MEPS Variables |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **IN-13** | Chronic Conditions | Have you ever been told by a doctor that you have any of the following? | `gr.CheckboxGroup` | Hypertension, High Cholesterol, Diabetes, Heart Disease, Stroke, Cancer, Arthritis, Asthma, Depression | `HIBPDX`, `CHOLDX`, `DIABDX_M18`, `CHDDX`, `STRKDX`, `CANCERDX`, `ARTHDX`, `ASTHDX`, `DEPRDX` |
+| **IN-13** | Chronic Conditions | Have you ever been told by a doctor or other health professional that you have any of the following? | `gr.CheckboxGroup` | High blood pressure (Hypertension), High cholesterol, Diabetes (or sugar diabetes), Coronary heart disease, Stroke, Cancer (any malignancy), Arthritis, Asthma, Depression | `HIBPDX`, `CHOLDX`, `DIABDX_M18`, `CHDDX`, `STRKDX`, `CANCERDX`, `ARTHDX`, `ASTHDX`, `DEPRDX` |
 
 **Limitations & Symptoms Checklist** (1 interaction, optional)
 | ID | UI Label | UI Question | UI Element | Options | MEPS Variables |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **IN-14** | Limitations & Symptoms | Do you have difficulty with any of the following? | `gr.CheckboxGroup` | Personal care (bathing, dressing), Daily tasks (bills, shopping), Walking/climbing stairs, Concentration/memory, Joint pain in past year | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
+| **IN-14** | Limitations & Symptoms | Do you have serious difficulty with, or receive help for, any of the following? | `gr.CheckboxGroup` | Personal care (bathing, dressing, getting around), Daily tasks (using phone, bills, meds, meals, shopping), Serious difficulty walking or climbing stairs, Serious difficulty concentrating, remembering, or making decisions, Joint pain, aching, or stiffness (in past 12 months) | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
 
 
 ### Prediction Engine

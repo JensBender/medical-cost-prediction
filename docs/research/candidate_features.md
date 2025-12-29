@@ -76,7 +76,7 @@ Screener questions identifying individuals requiring more frequent care due to p
 | `COGLIM31` | Cognitive Limitation | Confusion or memory loss | "Do you have serious difficulty concentrating, remembering, or making decisions?" | Yes, No | Correlates with specialized care needs. [[3]](#ref3) |
 | `JTPAIN31_M18` | Joint Pain | Pain/stiffness in past year | "During the past 12 months, did you have pain, aching, stiffness, or swelling in or around a joint?" | Yes, No | Captures undiagnosed musculoskeletal issues |
 
-**UI Recommendation:** Present as a single checklist ("Do you have difficulty with any of the following?").
+**UI Recommendation:** Present as a single checklist ("Do you have serious difficulty with, or receive help for, any of the following?").
 
 ### 6. Chronic Conditions
 The "cost engine" driving sustained medical expenditures. 
@@ -93,7 +93,7 @@ The "cost engine" driving sustained medical expenditures.
 | `ASTHDX` | Asthma | Diagnosed with asthma | "Have you ever been told by a doctor or other health professional that you have asthma?" | Yes, No | Chronic condition with ongoing costs. [[1]](#ref1) |
 | `DEPRDX` | Depression | Diagnosed with depression | "Have you ever been told by a doctor or other health professional that you have depression?" | Yes, No | Significant cost multiplier. [[7]](#ref7) |
 
-**UI Recommendation:** Present chronic conditions as a multi-select checklist ("Have you ever been told by a doctor that you have any of the following?").
+**UI Recommendation:** Present chronic conditions as a multi-select checklist ("Have you ever been told by a doctor or other health professional that you have any of the following?").
 
 
 ## Excluded Variables
