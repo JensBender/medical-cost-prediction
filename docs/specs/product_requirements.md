@@ -102,14 +102,15 @@ The UI must be a simple form on a single page, designed for completion in **unde
 
 > **Full Details:** See [Technical Specifications: Candidate Features](./technical_specifications.md#candidate-features) and [Candidate Features Research](../research/candidate_features.md).
 
-**Single-Value Inputs** (12 interactions)
+**Single-Value Inputs** (13 interactions)
 | ID | UI Label | UI Question | UI Element | Value Range | MEPS Variable |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **IN-01** | Birth Year | In what year were you born? | `gr.Number` | [1940, 2007] | `AGE23X` |
 | **IN-02** | Sex | Are you male or female? | `gr.Radio` | ["Male", "Female"] | `SEX` |
 | **IN-03** | State | In which state do you live? | `gr.Dropdown` | ["Alabama", "Alaska", "Arizona", ...] (50 States + DC) | `REGION23` (Mapped from State) |
 | **IN-04** | Marital Status | Are you now married, widowed, divorced, separated, or never married? | `gr.Dropdown` | ["Married", "Widowed", "Divorced", "Separated", "Never Married"] | `MARRY31X` |
-| **IN-05** | Income Category | What is your family income % of poverty line? | `gr.Dropdown` | ["Poor", "Near Poor", "Low", "Middle", "High"] | `POVCAT23` |
+| **IN-05a** | Household Size | How many people live in your household? | `gr.Dropdown` | [1, 2, 3, 4, 5, 6, 7, 8+] | Helper for `POVCAT23` |
+| **IN-05b** | Household Income | What is your approximate annual household income? | `gr.Dropdown` | *Dynamic ranges based on IN-05a (see below)* | `POVCAT23` |
 | **IN-06** | Education | What is the highest degree you have received? | `gr.Dropdown` | ["No Degree", "GED", "HS Diploma", "Bachelor's", "Master's", "Doctorate", "Other"] | `HIDEG` |
 | **IN-07** | Employment Status | Are you currently working at a job or business? | `gr.Dropdown` | ["Employed", "Job to return to", "Job during period", "Not employed"] | `EMPST31` |
 | **IN-08** | Insurance Status | Are you covered by any type of health insurance? | `gr.Dropdown` | ["Private", "Public Only", "Uninsured"] | `INSCOV23` |
@@ -117,6 +118,22 @@ The UI must be a simple form on a single page, designed for completion in **unde
 | **IN-10** | Mental Health | In general, would you say your mental health is...? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `MNHLTH31` |
 | **IN-11** | Regular Doctor | Is there a particular place you usually go if you are sick? | `gr.Radio` | ["Yes", "No"] | `HAVEUS42` |
 | **IN-12** | Smoker | Do you currently smoke cigarettes? | `gr.Radio` | ["Yes", "No"] | `ADSMOK42` |
+
+**Dynamic Income Ranges (IN-05b)**  
+Income dropdown options update dynamically based on household size (IN-05a). Each range maps directly to a POVCAT category using 2023 Federal Poverty Level thresholds to match MEPS training data derivation.
+
+| HH Size | Poor (<100% FPL) | Near Poor (100–124%) | Low Income (125–199%) | Middle Income (200–399%) | High Income (≥400%) |
+| :---: | :--- | :--- | :--- | :--- | :--- |
+| 1 | Under $14,600 | $14,600 – $18,100 | $18,200 – $29,000 | $29,100 – $58,300 | Over $58,300 |
+| 2 | Under $19,700 | $19,700 – $24,400 | $24,500 – $39,200 | $39,300 – $78,800 | Over $78,800 |
+| 3 | Under $24,900 | $24,900 – $30,800 | $30,900 – $49,500 | $49,600 – $99,400 | Over $99,400 |
+| 4 | Under $30,000 | $30,000 – $37,200 | $37,300 – $59,700 | $59,800 – $119,900 | Over $119,900 |
+| 5 | Under $35,100 | $35,100 – $43,500 | $43,600 – $69,900 | $70,000 – $140,500 | Over $140,500 |
+| 6 | Under $40,300 | $40,300 – $49,900 | $50,000 – $80,100 | $80,200 – $161,000 | Over $161,000 |
+| 7 | Under $45,400 | $45,400 – $56,200 | $56,300 – $90,300 | $90,400 – $181,600 | Over $181,600 |
+| 8+ | Under $50,600 | $50,600 – $62,600 | $62,700 – $100,600 | $100,700 – $202,100 | Over $202,100 |
+
+*Note: Thresholds based on 2023 HHS Federal Poverty Guidelines. Values rounded for clean UI display.*
 
 **Chronic Conditions Checklist** (1 interaction)
 | ID | UI Label | UI Question | UI Element | Options | MEPS Variables |
