@@ -147,6 +147,22 @@ The following MEPS variables have been identified as candidate features for the 
 
 **Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions and limitations/symptoms should be grouped into multi-select checklists to minimize cognitive load (~13–14 total UI interactions).
 
+**Income Mapping Table (POVCAT23)**
+Household income dropdown options update dynamically based on household size (IN-05a). Each range maps directly to a `POVCAT23` category using 2023 Federal Poverty Level thresholds to match MEPS training data.
+
+| HH Size | Poor (<100% FPL) | Near Poor (100–124%) | Low Income (125–199%) | Middle Income (200–399%) | High Income (≥400%) |
+| :---: | :--- | :--- | :--- | :--- | :--- |
+| 1 | Under $14,600 | $14,600 – $18,100 | $18,200 – $29,000 | $29,100 – $58,300 | Over $58,300 |
+| 2 | Under $19,700 | $19,700 – $24,400 | $24,500 – $39,200 | $39,300 – $78,800 | Over $78,800 |
+| 3 | Under $24,900 | $24,900 – $30,800 | $30,900 – $49,500 | $49,600 – $99,400 | Over $99,400 |
+| 4 | Under $30,000 | $30,000 – $37,200 | $37,300 – $59,700 | $59,800 – $119,900 | Over $119,900 |
+| 5 | Under $35,100 | $35,100 – $43,500 | $43,600 – $69,900 | $70,000 – $140,500 | Over $140,500 |
+| 6 | Under $40,300 | $40,300 – $49,900 | $50,000 – $80,100 | $80,200 – $161,000 | Over $161,000 |
+| 7 | Under $45,400 | $45,400 – $56,200 | $56,300 – $90,300 | $90,400 – $181,600 | Over $181,600 |
+| 8+ | Under $50,600 | $50,600 – $62,600 | $62,700 – $100,600 | $100,700 – $202,100 | Over $202,100 |
+
+*Note: Thresholds derived from 2023 HHS Federal Poverty Guidelines. Values rounded for clean UI display.*
+
 
 ## Machine Learning Specifications
 
