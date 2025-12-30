@@ -107,7 +107,7 @@ The UI must be a simple form on a single page, designed for completion in **unde
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **IN-01** | Birth Year | In what year were you born? | `gr.Number` | [1940, 2007] | `AGE23X` |
 | **IN-02** | Sex | Are you male or female? | `gr.Radio` | ["Male", "Female"] | `SEX` |
-| **IN-03** | Region | In which region do you live? | `gr.Dropdown` | ["Northeast", "Midwest", "South", "West"] | `REGION23` |
+| **IN-03** | State | In which state do you live? | `gr.Dropdown` | ["Alabama", "Alaska", "Arizona", ...] (50 States + DC) | `REGION23` (Mapped from State) |
 | **IN-04** | Marital Status | Are you now married, widowed, divorced, separated, or never married? | `gr.Dropdown` | ["Married", "Widowed", "Divorced", "Separated", "Never Married"] | `MARRY31X` |
 | **IN-05** | Income Category | What is your family income % of poverty line? | `gr.Dropdown` | ["Poor", "Near Poor", "Low", "Middle", "High"] | `POVCAT23` |
 | **IN-06** | Education | What is the highest degree you have received? | `gr.Dropdown` | ["No Degree", "GED", "HS Diploma", "Bachelor's", "Master's", "Doctorate", "Other"] | `HIDEG` |
