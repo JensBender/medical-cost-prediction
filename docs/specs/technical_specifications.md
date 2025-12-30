@@ -108,7 +108,7 @@ The following MEPS variables have been identified as candidate features for the 
 | **Marital Status** | `MARRY31X` | Nominal | Marital status at beginning of year. | ⚠️ Proxy for social support and income stability. |
 | **Poverty Category** | `POVCAT23` | Ordinal | Family income as % of poverty line. | ✅ Correlated with insurance type and ability to pay OOP. |
 | **Family Size** | `FAMSZE23` | Numerical | Number of related persons residing together (CPS definition). | ✅ Required to derive Poverty Category; captures household resource sharing. |
-| **Education** | `HIDEG` | Ordinal | Highest degree attained. | ⚠️ Correlates with health literacy; may be redundant with income. |
+| **Education** | `HIDEG` | Ordinal | Highest degree attained. Maps UI labels to MEPS `HIDEG` categories. | ✅ Correlates with health literacy; includes Professional Degrees in Doctorate bucket. |
 | **Employment** | `EMPST31` | Nominal | Employment status at beginning of year. | ⚠️ Strong proxy for insurance type. |
 
 **Insurance & Access**
@@ -163,6 +163,20 @@ To ensure stigma-free and accurate income reporting, the UI displays dynamic inc
 | 8+ | Under $50,600 | $50,600 – $62,600 | $62,700 – $100,600 | $100,700 – $202,100 | Over $202,100 |
 
 *Note: Thresholds derived from 2023 HHS Federal Poverty Guidelines. Values rounded for clean UI display.*
+
+#### Education Mapping Table (HIDEG)
+To ensure high-quality data while maintaining a clean UI, the "Education" dropdown options are mapped to the consolidated `HIDEG` categories used during model training.
+
+| UI Label | HIDEG Code | Mapping Rationale |
+| :--- | :---: | :--- |
+| No Degree | 1 | Standard MEPS mapping. |
+| GED | 2 | Standard MEPS mapping. |
+| High School Diploma | 3 | Standard MEPS mapping. |
+| Associate's Degree | 7 | Maps to "Other Degree" to avoid "No Degree" or "Bachelor's" misclassification. |
+| Bachelor's Degree | 4 | Standard MEPS mapping. |
+| Master's Degree | 5 | Standard MEPS mapping. |
+| Doctorate or Professional (MD, JD, etc.) | 6 | Ensures high-income professional degrees are correctly attributed to the top tier. |
+| Other | 7 | Standard MEPS mapping for vocational/trade degrees. |
 
 
 ## Machine Learning Specifications
