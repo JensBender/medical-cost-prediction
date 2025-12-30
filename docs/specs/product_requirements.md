@@ -111,7 +111,7 @@ The UI must be a simple form on a single page, designed for completion in **unde
 | **IN-04** | Marital Status | Are you now married, widowed, divorced, separated, or never married? | `gr.Dropdown` | ["Married", "Widowed", "Divorced", "Separated", "Never Married"] | `MARRY31X` |
 | **IN-05a** | Family Size | How many people (including yourself) live in your home who are related to you by birth, marriage, or adoption? | `gr.Dropdown` | [1, 2, 3, 4, 5, 6, 7, 8+] | `FAMSZE23` |
 | **IN-05b** | Poverty Category | What is your approximate annual household income? | `gr.Dropdown` | Dynamic ranges based on household size (IN-05a). Map to 2023 poverty categories. | `POVCAT23` |
-| **IN-06** | Education | What is the highest degree you have received? | `gr.Dropdown` | ["No Degree", "GED", "HS Diploma", "Bachelor's", "Master's", "Doctorate", "Other"] | `HIDEG` |
+| **IN-06** | Education | What is the highest degree you have obtained? | `gr.Dropdown` | ["No Degree", "GED", "High School Diploma", "Associate's Degree", "Bachelor's Degree", "Master's Degree", "Doctorate or Professional (MD, JD, etc.)", "Other"] | `HIDEG` |
 | **IN-07** | Employment Status | Are you currently working at a job or business? | `gr.Dropdown` | ["Employed", "Job to return to", "Job during period", "Not employed"] | `EMPST31` |
 | **IN-08** | Insurance Status | Are you covered by any type of health insurance? | `gr.Dropdown` | ["Private", "Public Only", "Uninsured"] | `INSCOV23` |
 | **IN-09** | Physical Health | In general, would you say your health is...? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `RTHLTH31` |
