@@ -121,12 +121,12 @@ The UI must be a simple form on a single page, designed for completion in **unde
 **Chronic Conditions Checklist** (1 interaction)
 | ID | UI Label | UI Question | UI Element | Options | MEPS Variables |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **IN-13** | Chronic Conditions | Have you ever been told by a doctor or other health professional that you: | `gr.CheckboxGroup` | have hypertension, also called high blood pressure; have high cholesterol; have diabetes or sugar diabetes; have coronary heart disease; had a stroke; had cancer or a malignancy of any kind; have arthritis; have asthma; have depression | `HIBPDX`, `CHOLDX`, `DIABDX_M18`, `CHDDX`, `STRKDX`, `CANCERDX`, `ARTHDX`, `ASTHDX`, `DEPRDX` |
+| **IN-13** | Chronic Conditions | Have you ever been told by a doctor or other health professional that you: | `gr.CheckboxGroup` | (1) have hypertension, also called high blood pressure, (2) have high cholesterol, (3) have diabetes or sugar diabetes, (4) have coronary heart disease, (5) had a stroke, (6) had cancer or a malignancy of any kind, (7) have arthritis, (8) have asthma, (9) have depression | `HIBPDX`, `CHOLDX`, `DIABDX_M18`, `CHDDX`, `STRKDX`, `CANCERDX`, `ARTHDX`, `ASTHDX`, `DEPRDX` |
 
 **Limitations & Symptoms Checklist** (1 interaction, optional)
 | ID | UI Label | UI Question | UI Element | Options | MEPS Variables |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **IN-14** | Limitations & Symptoms | Do any of the following apply to you? | `gr.CheckboxGroup` | I receive help or supervision with personal care such as bathing, dressing, or getting around the house; I receive help or supervision with using the telephone, paying bills, taking medications, preparing light meals, doing laundry, or going shopping; I have serious difficulty walking or climbing stairs; I have serious difficulty concentrating, remembering, or making decisions; During the past 12 months, I had pain, aching, stiffness, or swelling in or around a joint | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
+| **IN-14** | Limitations & Symptoms | Do any of the following apply to you? | `gr.CheckboxGroup` | (1) I receive help or supervision with personal care such as bathing, dressing, or getting around the house, (2) I receive help or supervision with using the telephone, paying bills, taking medications, preparing light meals, doing laundry, or going shopping, (3) I have serious difficulty walking or climbing stairs, (4) I have serious difficulty concentrating, remembering, or making decisions, (5) During the past 12 months, I had pain, aching, stiffness, or swelling in or around a joint | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
 
 
 ### Prediction Engine
