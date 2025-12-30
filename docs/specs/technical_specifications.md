@@ -106,7 +106,8 @@ The following MEPS variables have been identified as candidate features for the 
 | **Sex** | `SEX` | Nominal | Male or Female. | ✅ Biologically relevant; easy to answer. |
 | **Region** | `REGION23` | Nominal | Census region (Northeast, Midwest, South, West). | ⚠️ May have low predictive power; consider dropping if low feature importance. |
 | **Marital Status** | `MARRY31X` | Nominal | Marital status at beginning of year. | ⚠️ Proxy for social support and income stability. |
-| **Income** | `POVCAT23` | Ordinal | Family income as % of poverty line. | ✅ Correlated with insurance type and ability to pay OOP. |
+| **Poverty Category** | `POVCAT23` | Ordinal | Family income as % of poverty line. | ✅ Correlated with insurance type and ability to pay OOP. |
+| **Family Size** | `FAMSZE23` | Numerical | Number of related persons residing together (CPS definition). | ✅ Required to derive Poverty Category; captures household resource sharing. |
 | **Education** | `HIDEG` | Ordinal | Highest degree attained. | ⚠️ Correlates with health literacy; may be redundant with income. |
 | **Employment** | `EMPST31` | Nominal | Employment status at beginning of year. | ⚠️ Strong proxy for insurance type. |
 
@@ -147,10 +148,10 @@ The following MEPS variables have been identified as candidate features for the 
 
 **Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions and limitations/symptoms should be grouped into multi-select checklists to minimize cognitive load (~13–14 total UI interactions).
 
-**Income Mapping Table (POVCAT23)**
-Household income dropdown options update dynamically based on household size (IN-05a). Each range maps directly to a `POVCAT23` category using 2023 Federal Poverty Level thresholds to match MEPS training data.
+#### Income Mapping Table (POVCAT23)
+To ensure stigma-free and accurate income reporting, the UI displays dynamic income ranges based on the user's reported family size. These ranges map directly to the `POVCAT23` categories used in training, based on 2023 Federal Poverty Level (FPL) thresholds.
 
-| HH Size | Poor (<100% FPL) | Near Poor (100–124%) | Low Income (125–199%) | Middle Income (200–399%) | High Income (≥400%) |
+| Family Size | Poor (<100% FPL) | Near Poor (100–124%) | Low Income (125–199%) | Middle Income (200–399%) | High Income (≥400%) |
 | :---: | :--- | :--- | :--- | :--- | :--- |
 | 1 | Under $14,600 | $14,600 – $18,100 | $18,200 – $29,000 | $29,100 – $58,300 | Over $58,300 |
 | 2 | Under $19,700 | $19,700 – $24,400 | $24,500 – $39,200 | $39,300 – $78,800 | Over $78,800 |

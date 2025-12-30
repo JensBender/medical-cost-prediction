@@ -43,11 +43,12 @@ Proxies for healthcare access, literacy, insurance quality, and ability to pay.
 
 | Variable | Label | Description | Survey Question | Response Categories | Rationale |
 |:---|:---|:---|:---|:---|:---|
-| `POVCAT23` | Income Category | Family income % of poverty | Derived from total income | Poor, Near Poor, Low, Middle, High | Determines subsidy eligibility and insurance quality. [[4]](#ref4) |
+| `POVCAT23` | Poverty Category | Family income % of poverty | Derived from family income + size | Poor, Near Poor, Low, Middle, High | Determines subsidy eligibility and insurance quality. [[4]](#ref4) |
+| `FAMSZE23` | Family Size | Number of related persons residing together | "How many people (including yourself) live in your home who are related to you by birth, marriage, or adoption?" | Numerical (1–8+) | Based on CPS definition; excludes roommates and family living elsewhere. |
 | `HIDEG` | Education | Highest degree attained | "What is the highest degree you have received?" | No Degree, GED, HS Diploma, Bachelor's, Master's, Doctorate, Other | Correlates with health literacy and preventive care use. [[4]](#ref4) |
 | `EMPST31` | Employment Status | Status at beginning of year | "Are you currently working at a job or business?" | Employed, Job to return to, Job during period, Not employed | Strong proxy for insurance type and income |
 
-**UI Recommendation for POVCAT23:** Users should not be asked to self-identify with poverty labels (e.g., "Poor", "Near Poor"), which causes stigma and inaccuracy. Instead, use a two-step approach: (1) ask household size first, then (2) display income ranges that dynamically map to POVCAT categories based on 2023 FPL thresholds. See PRD for detailed income range tables.
+**UI Recommendation for POVCAT23:** Users should not be asked to self-identify with poverty labels (e.g., "Poor", "Near Poor"), which causes stigma and inaccuracy. Instead, use a two-step approach: (1) ask **Family Size** first, then (2) display income ranges that dynamically map to POVCAT categories based on 2023 FPL thresholds. Note: For accuracy, "Family" should follow the CPS definition (people related by blood, marriage, or adoption living together).
 
 ### 3. Insurance & Access
 Variables defining cost-sharing structure and healthcare access patterns.
@@ -106,7 +107,7 @@ The "cost engine" driving sustained medical expenditures.
 | `ERTOT23` | ER visit count for full year; creates data leakage. |
 | `DDNWRK23` | Work days missed during year; outcome-adjacent variable. |
 | `RACETHX` | Ethically sensitive; likely redundant with income/region proxies. |
-| `RUSIZE23`, `FAMSZE23` | Household size; we predict individual costs, not family costs. |
+| `RUSIZE23` | Household size; potentially redundant with FAMSZE23. |
 | `HOUR31`, `HOUR53` | Hours worked per week; low marginal value over employment status; adds cognitive load. |
 | `BMINDX53` | BMI; requires 2 inputs (height/weight); end-of-year suffix; effects captured by chronic conditions. |
 
