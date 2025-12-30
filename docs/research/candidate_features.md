@@ -47,6 +47,8 @@ Proxies for healthcare access, literacy, insurance quality, and ability to pay.
 | `HIDEG` | Education | Highest degree attained | "What is the highest degree you have received?" | No Degree, GED, HS Diploma, Bachelor's, Master's, Doctorate, Other | Correlates with health literacy and preventive care use. [[4]](#ref4) |
 | `EMPST31` | Employment Status | Status at beginning of year | "Are you currently working at a job or business?" | Employed, Job to return to, Job during period, Not employed | Strong proxy for insurance type and income |
 
+**UI Recommendation for POVCAT23:** Users should not be asked to self-identify with poverty labels (e.g., "Poor", "Near Poor"), which causes stigma and inaccuracy. Instead, use a two-step approach: (1) ask household size first, then (2) display income ranges that dynamically map to POVCAT categories based on 2023 FPL thresholds. See PRD for detailed income range tables.
+
 ### 3. Insurance & Access
 Variables defining cost-sharing structure and healthcare access patterns.
 
