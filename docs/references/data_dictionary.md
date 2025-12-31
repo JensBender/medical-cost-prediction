@@ -10,7 +10,7 @@
 | :--- | :--- | :--- | :--- |
 | **DUPERSID** | PERSON ID (DUID + PID) | Char(8) | **Primary Key.** Unique identifier for each person. |
 | **DUID** | DWELLING UNIT ID | Num | Identifies the household. |
-| **PID** | PERSON NUMBER | Num | Identifies person within the household. |
+| **PID** | PERSON ID | Num | Identifies person within the household. |
 | **PANEL** | PANEL NUMBER | Num | Panel 27 or 28. |
 
 ## 2. Survey Design & Weights
@@ -27,56 +27,55 @@
 | :--- | :--- | :--- | :--- |
 | **AGE23X** | AGE - 12/31/23 (EDITED/IMPUTED) | Num | Age as of end of year. |
 | **SEX** | SEX | Enum | 1=Male, 2=Female. |
-| **RACEV1X** | RACE (IMPUTED/EDITED/RECODED) | Enum | 1=White, 2=Black, 3=Amer Ind, 4=Asian/Nat. Hawaiian/Pac. Isl., 6=Multiple. |
-| **HISPANX** | HISPANIC ETHNICITY (IMPUTED/EDITED) | Enum | 1=Hispanic, 2=Not Hispanic. |
-| **MARRY23X** | MARITAL STATUS-12/31/23 (EDITED/IMPUTED) | Enum | 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married, 6=Under 16. |
 | **REGION23** | CENSUS REGION AS OF 12/31/23 | Enum | 1=Northeast, 2=Midwest, 3=South, 4=West. |
+| **MARRY31X** | MARITAL STATUS - R3/1 | Enum | Status at beginning of year. 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married. |
+| **RACETHX** | RACE/ETHNICITY (IMPUTED) | Enum | 1=Hispanic, 2=White Only, 3=Black Only, 4=Asian Only, 5=Other/Multi. (Excluded from model for fairness/redundancy, kept for reference). |
 
 ## 4. Socioeconomic Status
 | Variable | Label | Type | Description |
 | :--- | :--- | :--- | :--- |
-| **POVCAT23** | FAMILY INC AS % OF POVERTY LINE | Enum | 1=Poor/Negative, 2=Near Poor, 3=Low Inc, 4=Middle Inc, 5=High Inc. |
-| **TTLP23X** | PERSON'S TOTAL INCOME | Num | Sum of all income sources for 2023. |
-| **FAMINC23** | FAMILY'S TOTAL INCOME | Num | Total income for the reporting unit. |
-| **EDUCYR** | YEARS OF EDUC WHEN FIRST ENTERED | Num | Years of education (0-17). |
-| **HIDEG** | HIGHEST DEGREE WHEN FIRST ENTERED | Enum | 1=No Degree, 2=GED, 3=HS Diploma, 4=Bachelor, 5=Master, 6=Doctorate, 7=Other, 8=Under 16. |
+| **POVCAT23** | FAMILY INC AS % OF POVERTY LINE | Enum | Derived variable. 1=Poor/Negative, 2=Near Poor, 3=Low Income, 4=Middle Income, 5=High Income. |
+| **FAMSZE23** | TOTAL NUMBER OF PERSONS IN FAMILY | Num | Count of related persons in the reporting unit. |
+| **HIDEG** | HIGHEST DEGREE WHEN FIRST ENTERED | Enum | 1=No Degree, 2=GED, 3=HS Diploma, 4=Bachelor, 5=Master, 6=Doctorate, 7=Other. |
+| **EMPST31** | EMPLOYMENT STATUS - R3/1 | Enum | Status at beginning of year. 1=Employed, 2=Job to return to, 3=Job during ref period, 4=Not employed. |
 
 ## 5. Health Status & Conditions
-*Note: Conditions often do not have a year suffix.*
+*Note: Conditions ending in `31` reflect beginning-of-year status. Chronic conditions (DX) are "ever diagnosed".*
 
 | Variable | Label | Type | Description |
 | :--- | :--- | :--- | :--- |
-| **RTHLTH53** | PERCEIVED HEALTH STATUS - RD 5/3 | Enum | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor. |
-| **MNHLTH53** | PERCEIVED MENTAL HEALTH - RD 5/3 | Enum | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor. |
+| **RTHLTH31** | PERCEIVED HEALTH STATUS - RD 3/1 | Enum | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor. |
+| **MNHLTH31** | PERCEIVED MENTAL HEALTH - RD 3/1 | Enum | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor. |
+| **ADSMOK42** | CURRENTLY SMOKE | Enum | 1=Yes, 2=No. (Round 4/2 is standard for health behaviors). |
 | **HIBPDX** | HIGH BLOOD PRESSURE DIAG (>17) | Enum | 1=Yes, 2=No. |
+| **CHOLDX** | HIGH CHOLESTEROL DIAGNOSIS (>17) | Enum | 1=Yes, 2=No. |
+| **DIABDX_M18**| DIABETES DIAGNOSIS (>17) | Enum | 1=Yes, 2=No. |
 | **CHDDX** | CORONARY HEART DISEASE DIAG (>17) | Enum | 1=Yes, 2=No. |
-| **ANGIDX** | ANGINA DIAGNOSIS (>17) | Enum | 1=Yes, 2=No. |
-| **MIDX** | HEART ATTACK (MI) DIAG (>17) | Enum | 1=Yes, 2=No. |
 | **STRKDX** | STROKE DIAGNOSIS (>17) | Enum | 1=Yes, 2=No. |
-| **DIABDX_M18** | DIABETES DIAGNOSIS | Enum | 1=Yes, 2=No. |
-| **ASTHDX** | ASTHMA DIAGNOSIS | Enum | 1=Yes, 2=No. |
 | **CANCERDX** | CANCER DIAGNOSIS (>17) | Enum | 1=Yes, 2=No. |
+| **ARTHDX** | ARTHRITIS DIAGNOSIS (>17) | Enum | 1=Yes, 2=No. |
+| **ASTHDX** | ASTHMA DIAGNOSIS | Enum | 1=Yes, 2=No. |
+| **DEPRDX** | DEPRESSION DIAGNOSIS | Enum | 1=Yes, 2=No. |
 
-## 6. Insurance Coverage (Summary)
+## 6. Functional Limitations
+| Variable | Label | Type | Description |
+| :--- | :--- | :--- | :--- |
+| **ADLHLP31** | ADL HELP - RD 3/1 | Enum | 1=Yes, 2=No. Help with personal care. |
+| **IADLHP31** | IADL HELP - RD 3/1 | Enum | 1=Yes, 2=No. Help with routine needs. |
+| **WLKLIM31** | LIMITATION IN PHYSICAL FUNCTIONING | Enum | 1=Yes, 2=No. Difficulty walking/climbing. |
+| **COGLIM31** | COGNITIVE LIMITATIONS | Enum | 1=Yes, 2=No. Confusion/memory loss. |
+| **JTPAIN31_M18**| JOINT PAIN LAST 12 MONTHS | Enum | 1=Yes, 2=No. |
+
+## 7. Insurance & Access
 | Variable | Label | Type | Description |
 | :--- | :--- | :--- | :--- |
 | **INSCOV23** | HEALTH INSURANCE COVERAGE INDICATOR | Enum | 1=Any Private, 2=Public Only, 3=Uninsured. |
-| **MCDEV23** | EVER HAVE MEDICAID/SCHIP DURING 23 | Enum | 1=Yes, 2=No. |
-| **MCREV23** | EVER HAVE MEDICARE DURING 23 | Enum | 1=Yes, 2=No. |
-| **PRVEV23** | EVER HAVE PRIVATE INSURANCE DURING 23 | Enum | 1=Yes, 2=No. |
+| **HAVEUS42** | AC01 HAS USUAL 3RD PARTY SRC PROVIDER | Enum | 1=Yes, 2=No. (Has regular doctor/clinic). |
 
-## 7. Healthcare Utilization & Expenditure (Targets)
+## 8. Healthcare Utilization & Expenditure (Targets)
 *Suffix is '23' for the year 2023.*
 
 | Variable | Label | Type | Description |
 | :--- | :--- | :--- | :--- |
-| **TOTEXP23** | TOTAL HEALTH CARE EXP 23 | Num | **Total Cost.** Sum of all payments for all events. |
-| **TOTSLF23** | TOTAL AMT PAID BY SELF/FAMILY 23 | Num | **Out of Pocket.** Amount paid by patient. |
-| **TOTMCR23** | TOTAL AMT PAID BY MEDICARE 23 | Num | Amount paid by Medicare. |
-| **TOTMCD23** | TOTAL AMT PAID BY MEDICAID 23 | Num | Amount paid by Medicaid. |
-| **TOTPRV23** | TOTAL AMT PAID BY PRIVATE INS 23 | Num | Amount paid by Private Insurance. |
-| **OBTOTV23** | OFFICE BASED PROVIDER VISITS 23 | Num | Total number of office visits. |
-| **OPTOTV23** | OUTPATIENT DEPT PROVIDER VISITS 23 | Num | Total number of outpatient hospital visits. |
-| **ERTOT23** | EMERGENCY ROOM VISITS 23 | Num | Total number of ER visits. |
-| **IPDIS23** | HOSPITAL DISCHARGES 23 | Num | Total number of inpatient stays. |
-| **RXTOT23** | # PRESC MEDS INCL REFILLS 23 | Num | Total number of prescription fills. |
+| **TOTSLF23** | TOTAL AMT PAID BY SELF/FAMILY 23 | Num | **Target Variable.** Out-of-pocket costs. |
+| **TOTEXP23** | TOTAL HEALTH CARE EXP 23 | Num | Total cost (all payers). |
