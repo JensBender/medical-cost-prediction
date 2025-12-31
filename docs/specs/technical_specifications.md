@@ -106,7 +106,7 @@ The following MEPS variables have been identified as candidate features for the 
 | **Sex** | `SEX` | Nominal | Male or Female. | ✅ Biologically relevant; easy to answer. |
 | **Region** | `REGION23` | Nominal | Census region (Northeast, Midwest, South, West). | ⚠️ May have low predictive power; consider dropping if low feature importance. |
 | **Marital Status** | `MARRY31X` | Nominal | Marital status at beginning of year. | ⚠️ Proxy for social support and income stability. |
-| **Poverty Category** | `POVCAT23` | Ordinal | Family income as % of poverty line. | ✅ Correlated with insurance type and ability to pay OOP. |
+| **Family Income** | `POVCAT23` | Ordinal | Family income mapped to poverty category. | ✅ Correlated with insurance type and ability to pay OOP. |
 | **Family Size** | `FAMSZE23` | Numerical | Number of related persons residing together (CPS definition). | ✅ Required to derive Poverty Category; captures household resource sharing. |
 | **Education** | `HIDEG` | Ordinal | Highest degree attained. Maps UI labels to MEPS `HIDEG` categories. | ✅ Correlates with health literacy; includes Professional Degrees in Doctorate bucket. |
 | **Employment** | `EMPST31` | Nominal | Employment status at beginning of year. | ⚠️ Strong proxy for insurance type. |
