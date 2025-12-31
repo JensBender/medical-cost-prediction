@@ -56,7 +56,21 @@ Variables defining cost-sharing structure and healthcare access patterns.
 | Variable | Label | Description | Survey Question | Response Categories | Rationale |
 |:---|:---|:---|:---|:---|:---|
 | `INSCOV23` | Insurance Coverage | Coverage status | "Are you covered by any type of health insurance?" | Private, Public Only, Uninsured | Critical as it determines OOP vs. total cost split. [[1]](#ref1) |
-| `HAVEUS42` | Usual Provider | Regular doctor/clinic | "Is there a particular place you usually go if you are sick?" | Yes, No | Strong predictor of access and preventive care |
+| `HAVEUS42` | Usual Source of Care | Regular doctor/clinic | "Is there a particular place you usually go if you are sick or need advice about your health?" | Yes, No | Strong predictor of access and preventive care |
+
+**UI Recommendation for HAVEUS42:**
+The MEPS variable `HAVEUS42` is derived from a two-step process in the original survey:
+1. **AC01:** "Is there a particular doctor's office, clinic, health center, or other place that you usually go if you are sick or need advice about health?" (Options: Yes, No, More than one place)
+2. **AC02:** (If "More than one place") "Would you go to one of these places first or most often if you are sick?"
+
+To optimize for UX and minimize cognitive load, we condense this into a single binary question:
+> **"Is there a particular doctor's office, clinic, health center, or other place you usually go if you are sick or need medical advice?"**
+
+**Rationale for Single UI Input:**
+* **Mapping Accuracy:** The `HAVEUS42` variable in the training data already collapses "More than one place" into a binary "Yes" (if a primary place exists) or "No." By asking about a "regular" place, we naturally guide users to this same logic without requiring a multi-step skip pattern.
+* **Inclusion of "Medical Advice":** Including "need medical advice" is critical. It ensures users who visit for routine care or wellness (not just acute illness) correctly identify as having a usual source of care, matching the MEPS definition and improving feature accuracy.
+* **Reduced Friction:** A single radio-button interaction aligns with the "under 90 seconds" form completion goal.
+
 
 ### 4. Perceived Health & Lifestyle
 Subjective indicators of overall health burden and behavioral risk factors that drive healthcare utilization.
