@@ -109,8 +109,8 @@ The UI must be a simple form on a single page, designed for completion in **unde
 | **IN-02** | Sex | Are you male or female? | `gr.Radio` | ["Male", "Female"] | `SEX` |
 | **IN-03** | State | In which state do you live? | `gr.Dropdown` | ["Alabama", "Alaska", "Arizona", ...] (50 States + DC) | `REGION23` (Mapped from State) |
 | **IN-04** | Marital Status | Are you now married, widowed, divorced, separated, or never married? | `gr.Dropdown` | ["Married", "Widowed", "Divorced", "Separated", "Never Married"] | `MARRY31X` |
-| **IN-05a** | Family Size | How many people (including yourself) live in your home who are related to you by birth, marriage, or adoption? | `gr.Dropdown` | [1, 2, 3, 4, 5, 6, 7, 8+] | `FAMSZE23` |
-| **IN-05b** | Poverty Category | What is your approximate annual household income? | `gr.Dropdown` | Dynamic ranges based on household size (IN-05a). Map to 2023 poverty categories. | `POVCAT23` |
+| **IN-05a** | Family Size | How many people (including yourself) live in your home who are related to you by blood, marriage, or adoption? | `gr.Dropdown` | [1, 2, 3, 4, 5, 6, 7, 8+] | `FAMSZE23` |
+| **IN-05b** | Family Income | What is your family's total annual income from all sources? | `gr.Dropdown` | Dynamic ranges based on family size (IN-05a). Map to 2023 poverty categories. | `POVCAT23` |
 | **IN-06** | Education | What is the highest degree you have obtained? | `gr.Dropdown` | ["No Degree", "GED", "High School Diploma", "Associate's Degree", "Bachelor's Degree", "Master's Degree", "Doctorate or Professional (MD, JD, etc.)", "Other"] | `HIDEG` |
 | **IN-07** | Employment Status | Do you currently have a job for pay or own a business? | `gr.Dropdown` | ["Employed", "On leave / Job to return to", "Worked earlier this year, but not now", "Not employed this year"] | `EMPST31` |
 | **IN-08** | Insurance Status | Are you covered by any type of health insurance? | `gr.Dropdown` | ["Private", "Public Only", "Uninsured"] | `INSCOV23` |
