@@ -116,7 +116,7 @@ The UI must be a simple form on a single page, designed for completion in **unde
 | **IN-08** | Insurance Status | Are you covered by any type of health insurance? | `gr.Dropdown` | ["Private", "Public Only", "Uninsured"] | `INSCOV23` |
 | **IN-09** | Physical Health | In general, would you say your health is...? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `RTHLTH31` |
 | **IN-10** | Mental Health | In general, would you say your mental health is...? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `MNHLTH31` |
-| **IN-11** | Regular Doctor | Is there a particular place you usually go if you are sick? | `gr.Radio` | ["Yes", "No"] | `HAVEUS42` |
+| **IN-11** | Usual Source of Care | Is there a particular doctor's office, clinic, health center, or other place you usually go if you are sick or need medical advice? | `gr.Radio` | ["Yes", "No"] | `HAVEUS42` |
 | **IN-12** | Smoker | Do you currently smoke cigarettes? | `gr.Radio` | ["Yes", "No"] | `ADSMOK42` |
 
 **Chronic Conditions Checklist** (1 interaction)
