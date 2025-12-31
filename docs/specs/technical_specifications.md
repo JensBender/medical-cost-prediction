@@ -115,7 +115,7 @@ The following MEPS variables have been identified as candidate features for the 
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
 | **Insurance** | `INSCOV23` | Nominal | Coverage status (Private, Public Only, Uninsured). | ✅ **Critical.** Determines OOP vs. total cost split. |
-| **Usual Doctor** | `HAVEUS42` | Binary | Regular doctor or clinic. | ✅ Strong predictor of access and preventive care. |
+| **Usual Source of Care** | `HAVEUS42` | Binary | Has regular doctor or clinic | ✅ Strong predictor of access and preventive care. |
 
 **Perceived Health & Lifestyle** 
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
