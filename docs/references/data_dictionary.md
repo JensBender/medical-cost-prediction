@@ -1,16 +1,27 @@
 # MEPS-HC 2023 Data Dictionary
+
 **Survey:** Medical Expenditure Panel Survey (MEPS)  
 **Component**: Household Component (HC)  
 **Year:** 2023  
 **Dataset:** Full Year Consolidated Data File (HC-251)  
 **Level:** Person-Level  
 
+## Standard Missing & Inapplicable Codes
+Most MEPS variables use the following codes for missing or non-applicable data:
+*   **-1 INAPPLICABLE**: Variable does not apply to this person.
+*   **-7 REFUSED**: Person refused to answer the question.
+*   **-8 DON'T KNOW**: Person did not know the answer.
+*   **-9 NOT ASCERTAINED**: Data not collected (e.g., due to skip patterns or interview termination).
+*   **-15 CANNOT BE COMPUTED**: Used for some complex derived variables.
+
+---
+
 ## 1. Identifiers (Keys)
 | Variable | Label | Type | Values | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | **DUPERSID** | PERSON ID (DUID + PID) | Char(8) | Unique ID | **Primary Key.** Unique identifier for each person. |
-| **DUID** | DWELLING UNIT ID | Num | 30001–68884 | Identifies the household. |
-| **PID** | PERSON ID | Num | 101–503 | Identifies person within the household. |
+| **DUID** | DWELLING UNIT ID | Num | 30001–68884 | Identifies the dwelling unit (household). |
+| **PID** | PERSON ID | Num | 101–503 | Identifies person within the dwelling unit. |
 | **PANEL** | PANEL NUMBER | Num | 27, 28 | Panel number associated with the round. |
 
 ## 2. Survey Design & Weights
@@ -26,50 +37,50 @@
 | Variable | Label | Type | Values | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | **AGE23X** | AGE - 12/31/23 (EDITED/IMPUTED) | Num | 0–85 | Age as of end of year. Top-coded at 85. |
-| **SEX** | SEX | Enum | 1=Male, 2=Female | Biological sex. |
+| **SEX** | SEX | Enum | 1=Male, 2=Female | Biological sex. No missing codes. |
 | **REGION23** | CENSUS REGION AS OF 12/31/23 | Enum | 1=Northeast, 2=Midwest, 3=South, 4=West | Census region based on address. |
-| **MARRY31X** | MARITAL STATUS - R3/1 | Enum | 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married, 6=Under 16 | Status at beginning of year. |
-| **POVCAT23** | FAMILY INC AS % OF POVERTY LINE | Enum | 1=Poor/Negative, 2=Near Poor, 3=Low Income, 4=Middle Income, 5=High Income | Derived variable based on family income and size. |
+| **MARRY31X** | MARITAL STATUS - R3/1 (EDITED/IMPUTED) | Enum | 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married, 6=Under 16 | Status at beginning of year. 6 is Under 16 (Inapplicable). |
+| **POVCAT23** | FAMILY INC AS % OF POVERTY LINE | Enum | 1=Poor/Negative, 2=Near Poor, 3=Low Income, 4=Middle Income, 5=High Income | Derived variable. Usually no missing codes. |
 | **FAMSZE23** | TOTAL NUMBER OF PERSONS IN FAMILY | Num | 1–14 | Count of related persons in the reporting unit. |
-| **HIDEG** | HIGHEST DEGREE WHEN FIRST ENTERED | Enum | 1=No Degree, 2=GED, 3=High School Diploma, 4=Bachelor's Degree, 5=Master's Degree, 6=Doctorate Degree, 7=Other Degree, 8=Under 16 | Highest degree attained at time of entry. |
-| **EMPST31** | EMPLOYMENT STATUS - R3/1 | Enum | 1=Employed, 2=Job to return to, 3=Job during ref period, 4=Not employed | Status at beginning of year. |
+| **HIDEG** | HIGHEST DEGREE WHEN FIRST ENTERED | Enum | 1=No Degree, 2=GED, 3=HS Diploma, 4=Bachelor's, 5=Master's, 6=Doctorate, 7=Other, 8=Under 16 | Highest degree attained. Codes -1, -7, -8, -9 apply. 8 is Under 16. |
+| **EMPST31** | EMPLOYMENT STATUS - R3/1 | Enum | 1=Employed, 2=Job to return to, 3=Job during ref period, 4=Not employed | Status at beginning of year. Codes -1, -7, -8, -9 apply. |
 
 ## 4. Insurance & Access
 | Variable | Label | Type | Values | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| **INSCOV23** | HEALTH INSURANCE COVERAGE INDICATOR | Enum | 1=Any Private, 2=Public Only, 3=Uninsured | Summary coverage status for 2023. |
-| **HAVEUS42** | AC01 HAS USUAL 3RD PARTY SRC PROVIDER | Enum | 1=Yes, 2=No | Has a particular doctor or clinic they usually go to. |
+| **INSCOV23** | HEALTH INSURANCE COVERAGE INDICATOR | Enum | 1=Any Private, 2=Public Only, 3=Uninsured | Summary coverage status for 2023. No missing codes. |
+| **HAVEUS42** | AC01 HAS USUAL 3RD PARTY SRC PROVIDER | Enum | 1=Yes, 2=No | Has a usual source of care. Codes -1, -7, -8, -9 apply. |
 
 ## 5. Perceived Health & Lifestyle
 | Variable | Label | Type | Values | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| **RTHLTH31** | PERCEIVED HEALTH STATUS - RD 3/1 | Enum | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor | Self-rated physical health at start of year. |
-| **MNHLTH31** | PERCEIVED MENTAL HEALTH - RD 3/1 | Enum | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor | Self-rated mental health at start of year. |
-| **ADSMOK42** | CURRENTLY SMOKE | Enum | 1=Yes, 2=No | Round 4/2 is the standard asking round for health behaviors. |
+| **RTHLTH31** | PERCEIVED HEALTH STATUS - RD 3/1 | Enum | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor | Codes -1, -7, -8, -9 apply. |
+| **MNHLTH31** | PERCEIVED MENTAL HEALTH - RD 3/1 | Enum | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor | Codes -1, -7, -8, -9 apply. |
+| **ADSMOK42** | CURRENTLY SMOKE | Enum | 1=Yes, 2=No | Codes -1, -7, -8, -9 apply. |
 
 ## 6. Limitations & Symptoms
 | Variable | Label | Type | Values | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| **ADLHLP31** | ADL HELP - RD 3/1 | Enum | 1=Yes, 2=No | Needs help with personal care (bathing, dressing, etc.). |
-| **IADLHP31** | IADL HELP - RD 3/1 | Enum | 1=Yes, 2=No | Needs help with routine needs (bills, shopping, etc.). |
-| **WLKLIM31** | LIMITATION IN PHYSICAL FUNCTIONING | Enum | 1=Yes, 2=No | Difficulty walking or climbing stairs. |
-| **COGLIM31** | COGNITIVE LIMITATIONS | Enum | 1=Yes, 2=No | Confusion or memory loss. |
-| **JTPAIN31_M18**| JOINT PAIN LAST 12 MONTHS | Enum | 1=Yes, 2=No | Pain, swelling, or stiffness in joints. |
+| **ADLHLP31** | ADL HELP - RD 3/1 | Enum | 1=Yes, 2=No | Needs help with personal care. Codes -1, -7, -8, -9 apply. |
+| **IADLHP31** | IADL HELP - RD 3/1 | Enum | 1=Yes, 2=No | Needs help with routine needs. Codes -1, -7, -8, -9 apply. |
+| **WLKLIM31** | LIMITATION IN PHYSICAL FUNCTIONING | Enum | 1=Yes, 2=No | Difficulty walking/climbing stairs. Codes -1, -7, -8, -9 apply. |
+| **COGLIM31** | COGNITIVE LIMITATIONS | Enum | 1=Yes, 2=No | Confusion/memory loss. Codes -1, -7, -8, -9 apply. |
+| **JTPAIN31_M18**| JOINT PAIN LAST 12 MONTHS | Enum | 1=Yes, 2=No | Pain/stiffness in joints. Codes -1, -7, -8, -9 apply. |
 
 ## 7. Chronic Conditions
 *Note: Chronic conditions (DX) are "ever diagnosed".*
 
 | Variable | Label | Type | Values | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| **HIBPDX** | HIGH BLOOD PRESSURE DIAG (>17) | Enum | 1=Yes, 2=No | Diagnosed hypertension. |
-| **CHOLDX** | HIGH CHOLESTEROL DIAGNOSIS (>17) | Enum | 1=Yes, 2=No | Diagnosed high cholesterol. |
-| **DIABDX_M18**| DIABETES DIAGNOSIS (>17) | Enum | 1=Yes, 2=No | Diagnosed diabetes. |
-| **CHDDX** | CORONARY HEART DISEASE DIAG (>17) | Enum | 1=Yes, 2=No | Diagnosed coronary heart disease. |
-| **STRKDX** | STROKE DIAGNOSIS (>17) | Enum | 1=Yes, 2=No | Diagnosed stroke. |
-| **CANCERDX** | CANCER DIAGNOSIS (>17) | Enum | 1=Yes, 2=No | Diagnosed cancer/malignancy. |
-| **ARTHDX** | ARTHRITIS DIAGNOSIS (>17) | Enum | 1=Yes, 2=No | Diagnosed arthritis. |
-| **ASTHDX** | ASTHMA DIAGNOSIS | Enum | 1=Yes, 2=No | Diagnosed asthma. |
-| **DEPRDX** | DEPRESSION DIAGNOSIS | Enum | 1=Yes, 2=No | Diagnosed depression. |
+| **HIBPDX** | HIGH BLOOD PRESSURE DIAG (>17) | Enum | 1=Yes, 2=No | Codes -1, -7, -8, -9 apply. |
+| **CHOLDX** | HIGH CHOLESTEROL DIAGNOSIS (>17) | Enum | 1=Yes, 2=No | Codes -1, -7, -8, -9 apply. |
+| **DIABDX_M18**| DIABETES DIAGNOSIS (>17) | Enum | 1=Yes, 2=No | Codes -1, -7, -8, -9 apply. |
+| **CHDDX** | CORONARY HEART DISEASE DIAG (>17) | Enum | 1=Yes, 2=No | Codes -1, -7, -8, -9 apply. |
+| **STRKDX** | STROKE DIAGNOSIS (>17) | Enum | 1=Yes, 2=No | Codes -1, -7, -8, -9 apply. |
+| **CANCERDX** | CANCER DIAGNOSIS (>17) | Enum | 1=Yes, 2=No | Codes -1, -7, -8, -9 apply. |
+| **ARTHDX** | ARTHRITIS DIAGNOSIS (>17) | Enum | 1=Yes, 2=No | Codes -1, -7, -8, -9 apply. |
+| **ASTHDX** | ASTHMA DIAGNOSIS | Enum | 1=Yes, 2=No | Codes -1, -7, -8, -9 apply. |
+| **DEPRDX** | DEPRESSION DIAGNOSIS | Enum | 1=Yes, 2=No | Codes -1, -7, -8, -9 apply. |
 
 ## 8. Healthcare Utilization & Expenditure (Targets)
 *Suffix is '23' for the year 2023.*
