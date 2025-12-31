@@ -43,12 +43,21 @@ Proxies for healthcare access, literacy, insurance quality, and ability to pay.
 
 | Variable | Label | Description | Survey Question | Response Categories | Rationale |
 |:---|:---|:---|:---|:---|:---|
-| `POVCAT23` | Poverty Category | Family income % of poverty | Derived from family income + size | Poor, Near Poor, Low, Middle, High | Determines subsidy eligibility and insurance quality. [[4]](#ref4) |
+| `POVCAT23` | Poverty Category | Family income relative to poverty line | Derived from detailed income components and family size | Poor, Near Poor, Low, Middle, High | Determines subsidy eligibility and insurance quality. [[4]](#ref4) |
 | `FAMSZE23` | Family Size | Number of related persons residing together | "How many people (including yourself) live in your home who are related to you by birth, marriage, or adoption?" | Numerical (1–8+) | Based on CPS definition; excludes roommates and family living elsewhere. |
 | `HIDEG` | Education | Highest degree attained | Derived from years of education, high school diploma status, and degree type | No Degree, GED, HS Diploma, Bachelor's, Master's, Doctorate, Other | Correlates with health literacy and preventive care use. [[4]](#ref4) |
 | `EMPST31` | Employment Status | Status at beginning of year | Derived from a series of questions covering current job, job to return to, and work earlier in the round | Employed, Job to Return to, Job During Ref Period, Not Employed | Strong proxy for insurance type and income |
 
-**UI Recommendation for POVCAT23:** Users should not be asked to self-identify with poverty labels (e.g., "Poor", "Near Poor"), which causes stigma and inaccuracy. Instead, use a two-step approach: (1) ask **Family Size** first, then (2) display income ranges that dynamically map to POVCAT categories based on 2023 FPL thresholds. Note: For accuracy, "Family" should follow the CPS definition (people related by blood, marriage, or adoption living together).
+**UI Recommendation for POVCAT23:**
+The MEPS variable `POVCAT23` is not a single survey question but derived from multiple questions:
+1. **Detailed Income Questions:** An extensive series of questions asking for wages, salary, business income, social security, etc., for each family member.
+2. **Family Composition:** Used to determine the applicable Federal Poverty Level (FPL) threshold.
+
+**Proposed UI Input:**
+To optimize for UX (income ranges are faster and less intrusive than exact amounts) and avoid stigma (ask users to self-identify as "Poor"), we replace the construction process with a two-step input:
+1. **Family Size:** "How many people (including yourself) live in your home who are related to you by blood, marriage, or adoption?"
+2. **Income Range:** "What is your family's total annual income from all sources?" (Approximates the MEPS aggregation of wages, business, and other income; aligns with the MEPS experimental "show card" method used for early estimates).
+
 
 ### 3. Insurance & Access
 Variables defining cost-sharing structure and healthcare access patterns.
