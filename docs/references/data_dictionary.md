@@ -6,7 +6,7 @@
 **Level:** Person-Level  
 
 ## 1. Identifiers (Keys)
-| Variable | Label | Format | Notes |
+| Variable | Label | Type | Description |
 | :--- | :--- | :--- | :--- |
 | **DUPERSID** | PERSON ID (DUID + PID) | Char(8) | **Primary Key.** Unique identifier for each person. |
 | **DUID** | DWELLING UNIT ID | Num | Identifies the household. |
@@ -16,7 +16,7 @@
 ## 2. Survey Design & Weights
 *CRITICAL: Use these for population estimates.*
 
-| Variable | Label | Type | Notes |
+| Variable | Label | Type | Description |
 | :--- | :--- | :--- | :--- |
 | **PERWT23F** | FINAL PERSON WEIGHT, 2023 | Num | Weight to represent the US population. |
 | **VARSTR** | VARIANCE ESTIMATION STRATUM | Num | Use for Taylor Series variance estimation. |
@@ -28,15 +28,14 @@
 | **AGE23X** | AGE - 12/31/23 (EDITED/IMPUTED) | Num | Age as of end of year. |
 | **SEX** | SEX | Enum | 1=Male, 2=Female. |
 | **REGION23** | CENSUS REGION AS OF 12/31/23 | Enum | 1=Northeast, 2=Midwest, 3=South, 4=West. |
-| **MARRY31X** | MARITAL STATUS - R3/1 | Enum | Status at beginning of year. 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married. |
-| **RACETHX** | RACE/ETHNICITY (IMPUTED) | Enum | 1=Hispanic, 2=White Only, 3=Black Only, 4=Asian Only, 5=Other/Multi. (Excluded from model for fairness/redundancy, kept for reference). |
+| **MARRY31X** | MARITAL STATUS - R3/1 | Enum | Status at beginning of year. 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married, 6=Under 16. |
 
 ## 4. Socioeconomic Status
 | Variable | Label | Type | Description |
 | :--- | :--- | :--- | :--- |
 | **POVCAT23** | FAMILY INC AS % OF POVERTY LINE | Enum | Derived variable. 1=Poor/Negative, 2=Near Poor, 3=Low Income, 4=Middle Income, 5=High Income. |
-| **FAMSZE23** | TOTAL NUMBER OF PERSONS IN FAMILY | Num | Count of related persons in the reporting unit. |
-| **HIDEG** | HIGHEST DEGREE WHEN FIRST ENTERED | Enum | 1=No Degree, 2=GED, 3=HS Diploma, 4=Bachelor, 5=Master, 6=Doctorate, 7=Other. |
+| **FAMSZE23** | TOTAL NUMBER OF PERSONS IN FAMILY | Num | Count of persons in the family (Range: 1-14). |
+| **HIDEG** | HIGHEST DEGREE WHEN FIRST ENTERED | Enum | 1=No Degree, 2=GED, 3=High School Diploma, 4=Bachelor's Degree, 5=Master's Degree, 6=Doctorate Degree, 7=Other Degree, 8=Under 16. |
 | **EMPST31** | EMPLOYMENT STATUS - R3/1 | Enum | Status at beginning of year. 1=Employed, 2=Job to return to, 3=Job during ref period, 4=Not employed. |
 
 ## 5. Health Status & Conditions
