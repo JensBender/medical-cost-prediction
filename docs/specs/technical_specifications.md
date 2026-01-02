@@ -32,6 +32,9 @@
 *   **Data File:** [MEPS-HC 2023 Full Year Consolidated Data File (H251)](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251).
 *   **Documentation:** [MEPS-HC 2023 Documentation](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml).
 *   **Codebook:** [MEPS-HC 2023 Codebook](https://meps.ahrq.gov/data_stats/download_data_files_codebook.jsp?PUFId=H251).
+*   **Population Scope:** The dataset represents the **U.S. civilian noninstitutionalized (CSN) population**.
+    *   **Included:** People living in households and non-institutional group quarters (e.g., college dorms).
+    *   **Excluded:** Active-duty military, people in institutions like nursing homes or prisons, and people who moved abroad during the survey year.
 
 ### Target Variable
 *   **`TOTSLF23`:** Total amount paid out-of-pocket by the person or their family for all medical events in the year 2023.
@@ -102,7 +105,7 @@ The following MEPS variables have been identified as candidate features for the 
 **Demographics & Socioeconomic**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Birth Year** | `AGE23X` | Numerical | In what year were you born? Used to calculate age at end of year (18–85). | ✅ Primary driver of utilization; costs follow a U-curve with age. |
+| **Birth Year** | `AGE23X` | Numerical | In what year were you born? Used to calculate age at end of year (18–85). Top-coded at 85 per MEPS privacy protocol. | ✅ Primary driver of utilization; costs follow a U-curve with age. |
 | **Sex** | `SEX` | Nominal | Male or Female. | ✅ Biologically relevant; easy to answer. |
 | **Region** | `REGION23` | Nominal | Census region (Northeast, Midwest, South, West). | ⚠️ May have low predictive power; consider dropping if low feature importance. |
 | **Marital Status** | `MARRY31X` | Nominal | Marital status at beginning of year. | ⚠️ Proxy for social support and income stability. |
@@ -189,7 +192,7 @@ Perform once before pipeline:
 
 | Action | Rationale | Details |
 | :--- | :--- | :--- |
-| Drop rows where `PERWT23F = 0` | Respondents with a person weight of zero don't represent the population. | Removes ~456 rows (N=18,919 total, 18,463 with positive weight). |
+| Drop rows where `PERWT23F = 0` | Respondents with a person weight of zero are "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad during the year). | Removes ~456 rows (N=18,919 total, 18,463 with positive weight). |
 | Handle MEPS Negative Codes | Standardize missing/inapplicable values for modeling. | Convert `-1` (Inapplicable), `-7` (Refused), `-8` (Don't know), `-15` (Cannot be computed) to `NaN`.<br>Treating survey non-response and missing inputs from web app users identically (as `NaN` → Imputed Mode/Median) to align data handling between training and inference. |
 
 **Feature Preprocessing**  

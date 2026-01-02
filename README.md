@@ -69,7 +69,9 @@
 
 
 ## 🗂️ Data
-The **Medical Expenditure Panel Survey (MEPS)** is the most complete source of data on the cost and use of health care and health insurance coverage in the United States. Administered by the **Agency for Healthcare Research and Quality (AHRQ)**, it is a set of large-scale surveys of families and individuals, their medical providers, and employers. MEPS provides nationally representative estimates for the U.S. civilian noninstitutionalized population.
+The **Medical Expenditure Panel Survey (MEPS)** is the most complete source of data on the cost and use of health care and health insurance coverage in the United States. Administered by the **Agency for Healthcare Research and Quality (AHRQ)**, it is a set of large-scale surveys of families and individuals, their medical providers, and employers. MEPS provides nationally representative estimates for the **U.S. civilian noninstitutionalized population**:
+- **Included:** People living in households (houses, apartments) and non-institutional group quarters (e.g., college dorms).
+- **Excluded:** Active-duty military, and people in institutions like nursing homes or prisons. Also excludes individual periods where a respondent moved outside the U.S. during the survey year.
 
 **MEPS Household Component**  
 The Household Component (MEPS-HC) collects comprehensive data directly from families and individuals. To ensure accuracy, household-reported expenditures are validated and imputed using the Medical Provider Component (MEPS-MPC), which draws data directly from doctors, hospitals, and pharmacies.

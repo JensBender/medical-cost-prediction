@@ -224,6 +224,7 @@ Since the collection of the 2023 MEPS data, key policy changes have been enacted
 | **HSA** | Health Savings Account. Tax-advantaged account for healthcare expenses. Funds roll over year to year. |
 | **MdAE** | Median Absolute Error. Primary evaluation metric measuring the median difference between predicted and actual costs. |
 | **MEPS** | Medical Expenditure Panel Survey. Federal survey by the Agency for Healthcare Research and Quality tracking U.S. healthcare utilization and expenditures. |
+| **Noninstitutionalized Civilian Population** | The specific U.S. population segment represented by MEPS. Includes people in households and dorms; **excludes** active-duty military and people in institutions (nursing homes, prisons). |
 | **Out-of-Pocket (OOP)** | Healthcare costs paid directly by the patient (deductibles, copays, coinsurance). Excludes premiums. |
 | **SHAP** | SHapley Additive exPlanations. Method for explaining ML predictions by showing each feature's contribution. |
 | **TOTSLF23** | MEPS variable representing total out-of-pocket healthcare expenditure for 2023. |
