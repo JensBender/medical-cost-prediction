@@ -198,6 +198,13 @@ For technical implementation details such as data preprocessing, machine learnin
 ## Future Considerations  
 The following features and improvements are planned for future releases beyond the MVP:
 
+**Two-Part (Hurdle) Modeling**  
+*   **Goal**: Improve accuracy for users with zero or very low expected medical spending.
+*   **Technical Strategy**: Implement a **Two-Part Model** to handle zero-inflation in healthcare costs:
+    *   **Part 1 (Classifier)**: Predict the probability that a user will have *any* out-of-pocket costs (Cost > $0 vs. Cost = $0).
+    *   **Part 2 (Regressor)**: For those predicted to have costs, predict the specific dollar amount.
+*   **Value**: This approach prevents the model from "averaging" zero-cost and high-cost users together, which can lead to biased estimates for healthy individuals.
+
 **Support for Under 18 Population**  
 *   **Rationale for 18+ in current model**:
     *   **Distinct Cost Drivers**: Pediatric costs are driven by development, vaccinations, and acute illness, whereas adult costs are driven by chronic disease and aging.
