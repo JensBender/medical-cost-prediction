@@ -14,7 +14,16 @@ Most MEPS variables use the following codes for missing or non-applicable data:
 *   **-9 NOT ASCERTAINED**: Data not collected (e.g., due to skip patterns or interview termination).
 *   **-15 CANNOT BE COMPUTED**: Used for some complex derived variables.
 
----
+
+## Population Scope: Noninstitutionalized Civilian Population
+MEPS data represents the **U.S. civilian noninstitutionalized population**. Understanding this scope is critical for interpreting weights and results.
+
+*   **Included (In-Scope):** People living in households (houses, apartments, etc.) and non-institutional group quarters (e.g., college dormitories).
+*   **Excluded (Out-of-Scope):**
+    *   **Institutionalized Individuals:** People in nursing homes, prisons, jails, or long-term psychiatric hospitals.
+    *   **Active-Duty Military:** Members of the U.S. Armed Forces (they typically use the military's own healthcare system).
+    *   **Non-U.S. Residents:** Individuals who moved abroad during the survey year (they are considered "out-of-scope" for the period they reside abroad).
+
 
 ## 1. Identifiers (Keys)
 | Variable | Label | Type | Values | Description |
@@ -36,7 +45,7 @@ Most MEPS variables use the following codes for missing or non-applicable data:
 ## 3. Demographics & Socioeconomic
 | Variable | Label | Type | Values | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| **AGE23X** | AGE - 12/31/23 (EDITED/IMPUTED) | Num | 0–85 | Age as of end of year. Top-coded at 85. |
+| **AGE23X** | AGE - 12/31/23 (EDITED/IMPUTED) | Num | 0–85 | Age as of end of year. Top-coded at 85 for privacy (85+ is coded as 85). |
 | **SEX** | SEX | Enum | 1=Male, 2=Female | Biological sex. No missing codes. |
 | **REGION23** | CENSUS REGION AS OF 12/31/23 | Enum | 1=Northeast, 2=Midwest, 3=South, 4=West | Census region based on address. |
 | **MARRY31X** | MARITAL STATUS - R3/1 (EDITED/IMPUTED) | Enum | 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married, 6=Under 16 | Status at beginning of year. 6 is Under 16 (Inapplicable). |
