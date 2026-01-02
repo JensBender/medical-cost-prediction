@@ -82,7 +82,7 @@ The following are explicitly **not** part of this project:
 
 | Category | What's Excluded | Rationale |
 | :--- | :--- | :--- |
-| **Population** | Children (< 18 years) | MEPS pediatric data has different cost drivers; adult-focused MVP |
+| **Population** | Children (< 18 years) | MEPS pediatric data has different cost drivers; adult-focused MVP. See [Future Consideration](#future-considerations). |
 | **Population** | Family/household aggregation | Predicts individual costs only; users can run multiple times |
 | **Features** | Specific procedure predictions | We predict annual totals, not "How much will my MRI cost?" |
 | **Features** | Insurance plan comparison | We don't recommend plans; users input their current plan |
@@ -193,6 +193,17 @@ For technical implementation details such as data preprocessing, machine learnin
 | **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a Fairness Audit. Include income as a feature so the user sees that income impacts the prediction. |
 | **Data Aging** | 2023 data becomes outdated. | Display permanent footer (UI-06) and limitations notice (UI-04). Apply Medical Inflation Factor (FR-02) to adjust for cost increases. |
 | **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Covered by permanent footer (UI-06). For Medicare/Medicaid users, add contextual note: *"Recent policy changes (2024-2026) may lower actual costs compared to this estimate."* |
+
+
+## Future Considerations  
+The following features and improvements are planned for future releases beyond the MVP:
+
+**Support for Under 18 Population**  
+*   **Goal**: Expand the app to support users under the age of 18.
+*   **Technical Strategy**: Implement a **Two-Model Architecture**.
+    *   **Adult Model (18+)**: Continue using the current model specialized for chronic disease and aging drivers.
+    *   **Pediatric Model (< 18)**: Train a separate model using child-specific features (e.g., asthma, ADHD, well-child visits, and birth-related costs).
+*   **UX/UI Impact**: Add an initial age selection that dynamically adjusts the rest of the form questions (e.g., hiding "Employment", "Education", and "Marital Status" for children).
 
 
 ## Appendix
