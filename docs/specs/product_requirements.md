@@ -199,6 +199,11 @@ For technical implementation details such as data preprocessing, machine learnin
 The following features and improvements are planned for future releases beyond the MVP:
 
 **Support for Under 18 Population**  
+*   **Rationale for 18+ in current model**:
+    *   **Distinct Cost Drivers**: Pediatric costs are driven by development, vaccinations, and acute illness, whereas adult costs are driven by chronic disease and aging.
+    *   **Feature Incompatibility**: Key adult predictors (e.g., Marital Status, Employment, Education) are inapplicable to children, necessitating a different feature set.
+    *   **Data Constraints**: Many MEPS chronic condition variables are only recorded for respondents aged 18+.
+    *   **Model Precision**: A unified 0–85 model risks lower accuracy by conflating two very different healthcare utilization patterns. 
 *   **Goal**: Expand the app to support users under the age of 18.
 *   **Technical Strategy**: Implement a **Two-Model Architecture**.
     *   **Adult Model (18+)**: Continue using the current model specialized for chronic disease and aging drivers.
