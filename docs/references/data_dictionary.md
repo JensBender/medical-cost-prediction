@@ -25,6 +25,24 @@ MEPS data represents the **U.S. civilian noninstitutionalized population**. Unde
     *   **Non-U.S. Residents:** Individuals who moved abroad during the survey year (they are considered "out-of-scope" for the period they reside abroad).
 
 
+## Data Types
+To ensure consistency between the raw survey data, the machine learning pipeline, and the web application, each variable is managed across three distinct layers:
+
+1.  **Semantic Type:** Defines the statistical nature of the variable (binary, nominal, ordinal, numerical). This determines the preprocessing strategy (e.g., encoding vs. scaling). While the final model input is always **numerical** (`int` / `float`), this layer tracks the original intent.
+2.  **Storage Type:** The physical format of the raw data as provided in the source files (e.g., strings in a CSV).
+3.  **Application Type:** The Python-native implementation for the web application. Using `Enum` and `IntEnum` ensures type safety, provides human-readable labels for UI components (like dropdowns), and facilitates input validation.
+
+| Semantic Type | Storage Type | Application Type | Preprocessing |
+| :--- | :--- | :--- | :--- |
+| **Numerical** | `int` / `float` | `int` / `float` | `StandardScaler` or Passthrough |
+| **Nominal** | `str` / `int` | `Enum` / `IntEnum` | `OneHotEncoder` |
+| **Ordinal** | `str` / `int` | `Enum` / `IntEnum` | `OrdinalEncoder` |
+| **Binary** | `str` / `int` / `bool` | `bool` / `IntEnum` | Encode as [0, 1] then Passthrough |
+| **ID** | `str` / `int` | `str` | Drop (Excluded from features) |
+
+**Note:** Most binary variables in the MEPS dataset use `1` for "Yes" and `2` for "No". During preprocessing, these are transformed to `1` (True) and `0` (False). This allows the model to treat them as simple indicators and is a requirement for most algorithms (e.g., Logistic Regression, XGBoost) to interpret the feature correctly without unnecessary expansion via One-Hot Encoding.
+
+
 ## 1. Identifiers
 | Variable | Label | Semantic Type | Storage Type | Values | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -39,7 +57,7 @@ MEPS data represents the **U.S. civilian noninstitutionalized population**. Unde
 | Variable | Label | Semantic Type | Storage Type | Values | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **PERWT23F** | FINAL PERSON WEIGHT, 2023 | Numerical | Float | 0.0 – 98,252.0 | Weight to represent the US population. |
-| **VARSTR** | VARIANCE ESTIMATION STRATUM | Numerical | Int | 2001–2117 | Use for Taylor Series variance estimation. |
+| **VARSTR** | VARIANCE ESTIMATION STRATUM | Nominal | Int | 2001–2117 | Use for Taylor Series variance estimation. |
 | **VARPSU** | VARIANCE ESTIMATION PSU | Nominal | Int | 1–3 | Use for Taylor Series variance estimation. |
 
 ## 3. Demographics
