@@ -40,7 +40,7 @@ To ensure consistency between the raw MEPS data, the ML pipeline, and the web ap
 | **Numerical** | Continuous or discrete quantities | `int` / `float` | `int` / `float` | `StandardScaler` or Passthrough |
 | **Ordinal** | Categories with inherent order | `str` / `int` | `IntEnum` | `OrdinalEncoder` (preserves order) |
 | **Nominal** | Categories without order | `str` / `int` | `Enum` / `IntEnum` | `OneHotEncoder` |
-| **Binary** | Exactly two mutually exclusive states | `int` | `bool` | Remap to [0, 1], then Passthrough |
+| **Binary** | Two-state categories (e.g., Yes/No) | `int` / `str` | `bool` | Binary Mapping (0/1) |
 | **ID** | Unique identifiers | `str` / `int` | `str` | Drop (excluded from features) |
 
 **Note:**  Most MEPS binary variables use `1` for "Yes" and `2` for "No". During preprocessing, map `1` → `1` (True) and `2` → `0` (False). 
