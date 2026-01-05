@@ -105,53 +105,53 @@ The following MEPS variables have been identified as candidate features for the 
 **Demographics**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Birth Year** | `AGE23X` | Numerical | In what year were you born? Used to calculate age at end of year (18–85). Top-coded at 85 per MEPS privacy protocol. | ✅ Primary driver of utilization; costs follow a U-curve with age. |
-| **Sex** | `SEX` | Nominal | Male or Female. | ✅ Biologically relevant; easy to answer. |
-| **Region** | `REGION23` | Nominal | Census region (Northeast, Midwest, South, West). | ⚠️ May have low predictive power; consider dropping if low feature importance. |
-| **Marital Status** | `MARRY31X` | Nominal | Marital status at beginning of year. | ⚠️ Proxy for social support and income stability. |
+| **Birth Year** | `AGE23X` | Numerical (Int) | In what year were you born? Used to calculate age at end of year (18–85). Top-coded at 85 per MEPS privacy protocol. | ✅ Primary driver of utilization; costs follow a U-curve with age. |
+| **Sex** | `SEX` | Binary (Int) | Male or Female. | ✅ Biologically relevant; easy to answer. |
+| **Region** | `REGION23` | Nominal (Int) | Census region (Northeast, Midwest, South, West). | ⚠️ May have low predictive power; consider dropping if low feature importance. |
+| **Marital Status** | `MARRY31X` | Nominal (Int) | Marital status at beginning of year. | ⚠️ Proxy for social support and income stability. |
 
 **Socioeconomic**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Family Income** | `POVCAT23` | Ordinal | Family income mapped to poverty category. | ✅ Correlated with insurance type and ability to pay OOP. |
-| **Family Size** | `FAMSZE23` | Numerical | Number of related persons residing together (CPS definition). | ✅ Required to derive Poverty Category; captures household resource sharing. |
-| **Education** | `HIDEG` | Ordinal | Highest degree attained. Maps UI labels to MEPS `HIDEG` categories. | ✅ Correlates with health literacy; includes Professional Degrees in Doctorate bucket. |
-| **Employment** | `EMPST31` | Nominal | Employment status at beginning of year. | ⚠️ Strong proxy for insurance type. |
+| **Family Income** | `POVCAT23` | Ordinal (Int) | Family income mapped to poverty category. | ✅ Correlated with insurance type and ability to pay OOP. |
+| **Family Size** | `FAMSZE23` | Numerical (Int) | Number of related persons residing together (CPS definition). | ✅ Required to derive Poverty Category; captures household resource sharing. |
+| **Education** | `HIDEG` | Ordinal (Int) | Highest degree attained. Maps UI labels to MEPS `HIDEG` categories. | ✅ Correlates with health literacy; includes Professional Degrees in Doctorate bucket. |
+| **Employment** | `EMPST31` | Nominal (Int) | Employment status at beginning of year. | ⚠️ Strong proxy for insurance type. |
 
 **Insurance & Access**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Insurance** | `INSCOV23` | Nominal | Coverage status (Private, Public Only, Uninsured). | ✅ **Critical.** Determines OOP vs. total cost split. |
-| **Usual Source of Care** | `HAVEUS42` | Binary | Has regular doctor or clinic | ✅ Strong predictor of access and preventive care. |
+| **Insurance** | `INSCOV23` | Nominal (Int) | Coverage status (Private, Public Only, Uninsured). | ✅ **Critical.** Determines OOP vs. total cost split. |
+| **Usual Source of Care** | `HAVEUS42` | Binary (Int) | Has regular doctor or clinic | ✅ Strong predictor of access and preventive care. |
 
 **Perceived Health & Lifestyle** 
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Physical Health** | `RTHLTH31` | Numerical | Self-rated physical health (1=Excellent to 5=Poor). | ✅ Strongest subjective predictor of utilization. |
-| **Mental Health** | `MNHLTH31` | Numerical | Self-rated mental health (1=Excellent to 5=Poor). | ✅ Significant cost multiplier via treatment adherence. |
-| **Smoker** | `ADSMOK42` | Binary | Currently smokes cigarettes. | ⚠️ Stable behavioral risk factor. |
+| **Physical Health** | `RTHLTH31` | Numerical (Int) | Self-rated physical health (1=Excellent to 5=Poor). | ✅ Strongest subjective predictor of utilization. |
+| **Mental Health** | `MNHLTH31` | Numerical (Int) | Self-rated mental health (1=Excellent to 5=Poor). | ✅ Significant cost multiplier via treatment adherence. |
+| **Smoker** | `ADSMOK42` | Binary (Int) | Currently smokes cigarettes. | ⚠️ Stable behavioral risk factor. |
 
 **Limitations & Symptoms**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **ADL Help** | `ADLHLP31` | Binary | Needs help with personal care (bathing, dressing). | ⚠️ High-cost functional indicator. |
-| **IADL Help** | `IADLHP31` | Binary | Needs help with bills, meds, shopping, etc. | ⚠️ Signals high-cost care requirements. |
-| **Walking Limit** | `WLKLIM31` | Binary | Difficulty walking or climbing stairs. | ⚠️ Captures mobility impairment. |
-| **Cognitive Limit** | `COGLIM31` | Binary | Confusion or memory loss. | ⚠️ Correlates with specialized care needs. |
-| **Joint Pain** | `JTPAIN31_M18` | Binary | Joint pain/stiffness in past 12 months. | ⚠️ Captures undiagnosed musculoskeletal issues. |
+| **ADL Help** | `ADLHLP31` | Binary (Int) | Needs help with personal care (bathing, dressing). | ⚠️ High-cost functional indicator. |
+| **IADL Help** | `IADLHP31` | Binary (Int) | Needs help with bills, meds, shopping, etc. | ⚠️ Signals high-cost care requirements. |
+| **Walking Limit** | `WLKLIM31` | Binary (Int) | Difficulty walking or climbing stairs. | ⚠️ Captures mobility impairment. |
+| **Cognitive Limit** | `COGLIM31` | Binary (Int) | Confusion or memory loss. | ⚠️ Correlates with specialized care needs. |
+| **Joint Pain** | `JTPAIN31_M18` | Binary (Int) | Joint pain/stiffness in past 12 months. | ⚠️ Captures undiagnosed musculoskeletal issues. |
 
 **Chronic Conditions** *("Ever diagnosed" — stable over time)*
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Hypertension** | `HIBPDX` | Binary | Diagnosed with high blood pressure. | ✅ Common; drives Rx costs. |
-| **High Cholesterol** | `CHOLDX` | Binary | Diagnosed with high cholesterol. | ⚠️ Common; drives Rx costs. |
-| **Diabetes** | `DIABDX_M18` | Binary | Diagnosed with diabetes. | ✅ High-cost condition. |
-| **Heart Disease** | `CHDDX` | Binary | Diagnosed with heart disease (CHD). | ✅ Major cost driver. |
-| **Stroke** | `STRKDX` | Binary | Diagnosed with stroke. | ⚠️ High downstream costs. |
-| **Cancer** | `CANCERDX` | Binary | Diagnosed with cancer. | ⚠️ Primary driver of tail costs. |
-| **Arthritis** | `ARTHDX` | Binary | Diagnosed with arthritis. | ⚠️ Drives Rx/therapy costs. |
-| **Asthma** | `ASTHDX` | Binary | Diagnosed with asthma. | ⚠️ Chronic condition with ongoing costs. |
-| **Depression** | `DEPRDX` | Binary | Diagnosed with depression. | ✅ Significant cost multiplier. |
+| **Hypertension** | `HIBPDX` | Binary (Int) | Diagnosed with high blood pressure. | ✅ Common; drives Rx costs. |
+| **High Cholesterol** | `CHOLDX` | Binary (Int) | Diagnosed with high cholesterol. | ⚠️ Common; drives Rx costs. |
+| **Diabetes** | `DIABDX_M18` | Binary (Int) | Diagnosed with diabetes. | ✅ High-cost condition. |
+| **Heart Disease** | `CHDDX` | Binary (Int) | Diagnosed with heart disease (CHD). | ✅ Major cost driver. |
+| **Stroke** | `STRKDX` | Binary (Int) | Diagnosed with stroke. | ⚠️ High downstream costs. |
+| **Cancer** | `CANCERDX` | Binary (Int) | Diagnosed with cancer. | ⚠️ Primary driver of tail costs. |
+| **Arthritis** | `ARTHDX` | Binary (Int) | Diagnosed with arthritis. | ⚠️ Drives Rx/therapy costs. |
+| **Asthma** | `ASTHDX` | Binary (Int) | Diagnosed with asthma. | ⚠️ Chronic condition with ongoing costs. |
+| **Depression** | `DEPRDX` | Binary (Int) | Diagnosed with depression. | ✅ Significant cost multiplier. |
 
 **Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions and limitations/symptoms should be grouped into multi-select checklists to minimize cognitive load (~13–14 total UI interactions).
 
