@@ -26,21 +26,24 @@ MEPS data represents the **U.S. civilian noninstitutionalized population**. Unde
 
 
 ## Data Types
-To ensure consistency between the raw survey data, the machine learning pipeline, and the web application, each variable is managed across three distinct layers:
+To ensure consistency between the raw MEPS data, the ML pipeline, and the web application, each variable is managed across three layers:
 
-1.  **Semantic Type:** Defines the statistical nature of the variable (binary, nominal, ordinal, numerical). This determines the preprocessing strategy (e.g., encoding vs. scaling). While the final model input is always **numerical** (`int` / `float`), this layer tracks the original intent.
-2.  **Storage Type:** The physical format of the raw data as provided in the source files (e.g., strings in a CSV).
-3.  **Application Type:** The Python-native implementation for the web application. Using `Enum` and `IntEnum` ensures type safety, provides human-readable labels for UI components (like dropdowns), and facilitates input validation.
+| Layer | Description |
+| :--- | :--- |
+| **Semantic Type** | The statistical nature of the variable, determining the preprocessing strategy. |
+| **Storage Type** | The physical format in the raw MEPS data file (e.g. string in a CSV file). |
+| **Application Type** | The Python type used in the web app for type safety and UI components. |
 
-| Semantic Type | Storage Type | Application Type | Preprocessing |
-| :--- | :--- | :--- | :--- |
-| **Numerical** | `int` / `float` | `int` / `float` | `StandardScaler` or Passthrough |
-| **Nominal** | `str` / `int` | `Enum` / `IntEnum` | `OneHotEncoder` |
-| **Ordinal** | `str` / `int` | `Enum` / `IntEnum` | `OrdinalEncoder` |
-| **Binary** | `str` / `int` / `bool` | `bool` / `IntEnum` | Encode as [0, 1] then Passthrough |
-| **ID** | `str` / `int` | `str` | Drop (Excluded from features) |
+**Data Type Mapping**
+| Semantic Type | Definition | Storage Type | Application Type | Preprocessing |
+| :--- | :--- | :--- | :--- | :--- |
+| **Numerical** | Continuous or discrete quantities | `int` / `float` | `int` / `float` | `StandardScaler` or Passthrough |
+| **Ordinal** | Categories with inherent order | `str` / `int` | `IntEnum` | `OrdinalEncoder` (preserves order) |
+| **Nominal** | Categories without order | `str` / `int` | `Enum` / `IntEnum` | `OneHotEncoder` |
+| **Binary** | Exactly two mutually exclusive states | `int` | `bool` | Remap to [0, 1], then Passthrough |
+| **ID** | Unique identifiers | `str` / `int` | `str` | Drop (excluded from features) |
 
-**Note:** Most binary variables in the MEPS dataset use `1` for "Yes" and `2` for "No". During preprocessing, these are transformed to `1` (True) and `0` (False). This allows the model to treat them as simple indicators and is a requirement for most algorithms (e.g., Logistic Regression, XGBoost) to interpret the feature correctly without unnecessary expansion via One-Hot Encoding.
+**Note:**  Most MEPS binary variables use `1` for "Yes" and `2` for "No". During preprocessing, map `1` → `1` (True) and `2` → `0` (False). 
 
 
 ## 1. Identifiers
