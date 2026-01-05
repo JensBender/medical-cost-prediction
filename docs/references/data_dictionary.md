@@ -6,7 +6,7 @@
 **Dataset:** Full Year Consolidated Data File (HC-251)  
 **Level:** Person-Level  
 
-## Standard Missing & Inapplicable Codes
+## Missing Value Codes
 Most MEPS variables use the following codes for missing or non-applicable data:
 *   **-1 INAPPLICABLE**: Variable does not apply to this person.
 *   **-7 REFUSED**: Person refused to answer the question.
@@ -15,7 +15,7 @@ Most MEPS variables use the following codes for missing or non-applicable data:
 *   **-15 CANNOT BE COMPUTED**: Used for some complex derived variables.
 
 
-## Population Scope: Noninstitutionalized Civilian Population
+## Target Population
 MEPS data represents the **U.S. civilian noninstitutionalized population**. Understanding this scope is critical for interpreting weights and results.
 
 *   **Included (In-Scope):** People living in households (houses, apartments, etc.) and non-institutional group quarters (e.g., college dormitories).
@@ -25,7 +25,7 @@ MEPS data represents the **U.S. civilian noninstitutionalized population**. Unde
     *   **Non-U.S. Residents:** Individuals who moved abroad during the survey year (they are considered "out-of-scope" for the period they reside abroad).
 
 
-## 1. Identifiers (Keys)
+## 1. Identifiers
 | Variable | Label | Type | Values | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | **DUPERSID** | PERSON ID (DUID + PID) | Char(8) | Unique ID | **Primary Key.** Unique identifier for each person. |
@@ -33,7 +33,7 @@ MEPS data represents the **U.S. civilian noninstitutionalized population**. Unde
 | **PID** | PERSON NUMBER | Num | 101–503 | Identifies person within the dwelling unit. |
 | **PANEL** | PANEL NUMBER | Num | 27, 28 | Panel number associated with the round. |
 
-## 2. Survey Design & Weights
+## 2. Survey Weights
 *CRITICAL: Use these for population estimates.*
 
 | Variable | Label | Type | Values | Description |
@@ -91,7 +91,7 @@ MEPS data represents the **U.S. civilian noninstitutionalized population**. Unde
 | **ASTHDX** | ASTHMA DIAGNOSIS | Enum | 1=Yes, 2=No | Asked for all ages. Codes -1, -7, -8, -9 apply. |
 | **DEPRDX** | DEPRESSION DIAGNOSIS | Enum | 1=Yes, 2=No | Asked for all ages. Codes -1, -7, -8, -9 apply. |
 
-## 8. Healthcare Utilization & Expenditure (Targets)
+## 8. Healthcare Expenditure (Targets)
 *Suffix is '23' for the year 2023.*
 
 | Variable | Label | Type | Values | Description |
