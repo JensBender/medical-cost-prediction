@@ -102,13 +102,17 @@ The following MEPS variables have been identified as candidate features for the 
 
 **Full Details:** See [Candidate Features Research](../research/candidate_features.md) document.
 
-**Demographics & Socioeconomic**
+**Demographics**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
 | **Birth Year** | `AGE23X` | Numerical | In what year were you born? Used to calculate age at end of year (18–85). Top-coded at 85 per MEPS privacy protocol. | ✅ Primary driver of utilization; costs follow a U-curve with age. |
 | **Sex** | `SEX` | Nominal | Male or Female. | ✅ Biologically relevant; easy to answer. |
 | **Region** | `REGION23` | Nominal | Census region (Northeast, Midwest, South, West). | ⚠️ May have low predictive power; consider dropping if low feature importance. |
 | **Marital Status** | `MARRY31X` | Nominal | Marital status at beginning of year. | ⚠️ Proxy for social support and income stability. |
+
+**Socioeconomic**
+| UI Label | MEPS Variable | Data Type | Description | Rationale |
+| :--- | :--- | :--- | :--- | :--- |
 | **Family Income** | `POVCAT23` | Ordinal | Family income mapped to poverty category. | ✅ Correlated with insurance type and ability to pay OOP. |
 | **Family Size** | `FAMSZE23` | Numerical | Number of related persons residing together (CPS definition). | ✅ Required to derive Poverty Category; captures household resource sharing. |
 | **Education** | `HIDEG` | Ordinal | Highest degree attained. Maps UI labels to MEPS `HIDEG` categories. | ✅ Correlates with health literacy; includes Professional Degrees in Doctorate bucket. |
