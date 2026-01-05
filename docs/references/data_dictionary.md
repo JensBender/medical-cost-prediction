@@ -28,13 +28,10 @@ MEPS data represents the **U.S. civilian noninstitutionalized population**. Unde
 ## Data Types
 To ensure consistency between the raw MEPS data, the ML pipeline, and the web application, each variable is managed across three layers:
 
-| Layer | Description |
-| :--- | :--- |
-| **Semantic Type** | The statistical nature of the variable, determining the preprocessing strategy. |
-| **Storage Type** | The physical format in the raw MEPS data file (e.g. string in a CSV file). |
-| **Application Type** | The Python type used in the web app for type safety and UI components. |
+*   **Semantic Type:** The statistical nature of the variable, determining the preprocessing strategy.   
+*   **Storage Type:** The physical format in the raw MEPS data file (e.g. string in a CSV file).   
+*   **Application Type:** The Python type used in the web app for type safety and UI components. 
 
-**Data Type Mapping**
 | Semantic Type | Definition | Storage Type | Application Type | Preprocessing |
 | :--- | :--- | :--- | :--- | :--- |
 | **Numerical** | Continuous or discrete quantities | `int` / `float` | `int` / `float` | `StandardScaler` or Passthrough |
