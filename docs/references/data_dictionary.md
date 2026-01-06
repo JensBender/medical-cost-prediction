@@ -111,7 +111,6 @@ To ensure consistency between the raw MEPS data, the ML pipeline, and the web ap
 | **CANCERDX** | CANCER DIAGNOSIS (>17) | Binary | Int | 1=Yes, 2=No | Codes -1, -7, -8, -9 apply. |
 | **ARTHDX** | ARTHRITIS DIAGNOSIS (>17) | Binary | Int | 1=Yes, 2=No | Codes -1, -7, -8, -9 apply. |
 | **ASTHDX** | ASTHMA DIAGNOSIS | Binary | Int | 1=Yes, 2=No | Asked for all ages. Codes -1, -7, -8, -9 apply. |
-| **DEPRDX** | DEPRESSION DIAGNOSIS | Binary | Int | 1=Yes, 2=No | Asked for all ages. Codes -1, -7, -8, -9 apply. |
 
 ## 9. Healthcare Expenditure (Targets)
 *Suffix is '23' for the year 2023.*
