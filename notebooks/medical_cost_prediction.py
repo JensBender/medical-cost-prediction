@@ -91,8 +91,8 @@ except Exception as e:
 # %%
 # List of columns to keep based on the data dictionary
 columns_to_keep = [
-    # 1. Identifiers
-    "DUPERSID", "DUID", "PID", "PANEL",
+    # 1. ID
+    "DUPERSID",
     
     # 2. Survey Weights
     "PERWT23F", "VARSTR", "VARPSU",
@@ -113,14 +113,15 @@ columns_to_keep = [
     "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
     
     # 8. Chronic Conditions
-    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX", "DEPRDX",
+    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX", 
     
-    # 9. Healthcare Expenditure (Targets)
-    "TOTSLF23", "TOTEXP23"
+    # 9. Healthcare Expenditure (Target)
+    "TOTSLF23"
 ]
 
-# Drop all other columns (keeping 36 out of 1,500+)
+# Drop all other columns (keeping 31 out of 1,500+)
 df = df[columns_to_keep]
+df.head()
 
 # %% [markdown]
 # <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 📌 Initial data inspection to understand the structure of the dataset and detect obvious issues.</p>
