@@ -151,7 +151,6 @@ The following MEPS variables have been identified as candidate features for the 
 | **Cancer** | `CANCERDX` | Binary (Int) | Diagnosed with cancer. | ⚠️ Primary driver of tail costs. |
 | **Arthritis** | `ARTHDX` | Binary (Int) | Diagnosed with arthritis. | ⚠️ Drives Rx/therapy costs. |
 | **Asthma** | `ASTHDX` | Binary (Int) | Diagnosed with asthma. | ⚠️ Chronic condition with ongoing costs. |
-| **Depression** | `DEPRDX` | Binary (Int) | Diagnosed with depression. | ✅ Significant cost multiplier. |
 
 **Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions and limitations/symptoms should be grouped into multi-select checklists to minimize cognitive load (~13–14 total UI interactions).
 
