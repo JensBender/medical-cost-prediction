@@ -1,5 +1,6 @@
 # Jupyter Notebook
 jupyterlab==4.5.0
+jupytext==1.18.1
 
 # Data Manipulation 
 numpy==2.3.5
