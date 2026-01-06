@@ -117,7 +117,6 @@ The "cost engine" driving sustained medical expenditures.
 | `CANCERDX` | Cancer | Diagnosed with cancer | "Have you ever been told by a doctor or other health professional that you had cancer or a malignancy of any kind?" | Yes, No | Primary driver of tail costs. [[7]](#ref7) |
 | `ARTHDX` | Arthritis | Diagnosed with arthritis | "Have you ever been told by a doctor or other health professional that you have arthritis?" | Yes, No | Drives Rx/therapy costs. [[7]](#ref7) |
 | `ASTHDX` | Asthma | Diagnosed with asthma | "Have you ever been told by a doctor or other health professional that you have asthma?" | Yes, No | Chronic condition with ongoing costs. [[1]](#ref1) |
-| `DEPRDX` | Depression | Diagnosed with depression | "Have you ever been told by a doctor or other health professional that you have depression?" | Yes, No | Significant cost multiplier. [[7]](#ref7) |
 
 **UI Recommendation:** Present chronic conditions as a multi-select checklist with the prompt "Have you ever been told by a doctor or other health professional that you:" and with wording as close to original survey question as possible.
 
@@ -140,12 +139,12 @@ The "cost engine" driving sustained medical expenditures.
 | Category | # Features | # UI Interactions |
 |:---|:---|:---|
 | Demographics | 4 | 4 |
-| Socioeconomic | 2–3 | 2–3 |
+| Socioeconomic | 4 | 4 |
 | Insurance & Access | 2 | 2 |
 | Perceived Health & Lifestyle | 3 | 3 |
 | Limitations & Symptoms | 5 | 1 (checklist) |
-| Chronic Conditions | 9 | 1 (checklist) |
-| **Total** | **~25–26 features** | **~13–14 interactions** |
+| Chronic Conditions | 8 | 1 (checklist) |
+| **Total** | **26 features** | **15 interactions** |
 
 Final feature selection will be based on empirical feature importance ranking, targeting form completion in **under 90 seconds**.
 
