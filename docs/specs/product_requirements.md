@@ -102,7 +102,7 @@ The UI must be a simple form on a single page, designed for completion in **unde
 
 > **Full Details:** See [Technical Specifications: Candidate Features](./technical_specifications.md#candidate-features) and [Candidate Features Research](../research/candidate_features.md).
 
-**Single-Value Inputs** (13 interactions)
+**Single-Selection Interactions** (13 UI interactions, 13 inputs)
 | ID | UI Label | UI Question | UI Element | Value Range | MEPS Variable |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **IN-01** | Birth Year | In what year were you born? | `gr.Number` | [1940, 2007] | `AGE23X` |
@@ -119,15 +119,11 @@ The UI must be a simple form on a single page, designed for completion in **unde
 | **IN-11** | Usual Source of Care | Is there a particular doctor's office, clinic, health center, or other place you usually go if you are sick or need medical advice? | `gr.Radio` | ["Yes", "No"] | `HAVEUS42` |
 | **IN-12** | Smoker | Do you currently smoke cigarettes? | `gr.Radio` | ["Yes", "No"] | `ADSMOK42` |
 
-**Chronic Conditions Checklist** (1 interaction)
+**Multi-Selection Interactions** (2 UI interactions, 13 inputs)
 | ID | UI Label | UI Question | UI Element | Options | MEPS Variables |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **IN-13** | Chronic Conditions | Have you ever been told by a doctor or other health professional that you: | `gr.CheckboxGroup` | (1) have hypertension, also called high blood pressure, (2) have high cholesterol, (3) have diabetes or sugar diabetes, (4) have coronary heart disease, (5) had a stroke, (6) had cancer or a malignancy of any kind, (7) have arthritis, (8) have asthma | `HIBPDX`, `CHOLDX`, `DIABDX_M18`, `CHDDX`, `STRKDX`, `CANCERDX`, `ARTHDX`, `ASTHDX` |
-
-**Limitations & Symptoms Checklist** (1 interaction, optional)
-| ID | UI Label | UI Question | UI Element | Options | MEPS Variables |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **IN-14** | Limitations & Symptoms | Do any of the following apply to you? | `gr.CheckboxGroup` | (1) I receive help or supervision with personal care such as bathing, dressing, or getting around the house, (2) I receive help or supervision with using the telephone, paying bills, taking medications, preparing light meals, doing laundry, or going shopping, (3) I have serious difficulty walking or climbing stairs, (4) I have serious difficulty concentrating, remembering, or making decisions, (5) During the past 12 months, I had pain, aching, stiffness, or swelling in or around a joint | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
+| **IN-13** | Chronic Conditions Checklist (8 inputs) | Have you ever been told by a doctor or other health professional that you: | `gr.CheckboxGroup` | (1) have hypertension, also called high blood pressure, (2) have high cholesterol, (3) have diabetes or sugar diabetes, (4) have coronary heart disease, (5) had a stroke, (6) had cancer or a malignancy of any kind, (7) have arthritis, (8) have asthma | `HIBPDX`, `CHOLDX`, `DIABDX_M18`, `CHDDX`, `STRKDX`, `CANCERDX`, `ARTHDX`, `ASTHDX` |
+| **IN-14** | Limitations & Symptoms Checklist (5 inputs) | Do any of the following apply to you? | `gr.CheckboxGroup` | (1) I receive help or supervision with personal care such as bathing, dressing, or getting around the house, (2) I receive help or supervision with using the telephone, paying bills, taking medications, preparing light meals, doing laundry, or going shopping, (3) I have serious difficulty walking or climbing stairs, (4) I have serious difficulty concentrating, remembering, or making decisions, (5) During the past 12 months, I had pain, aching, stiffness, or swelling in or around a joint | `ADLHLP31`, `IADLHP31`, `WLKLIM31`, `COGLIM31`, `JTPAIN31_M18` |
 
 
 ### Prediction Engine
