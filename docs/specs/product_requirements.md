@@ -2,8 +2,8 @@
 | **Project Name** | Medical Cost Prediction |
 | :--- | :--- |
 | **Status** | Project scoping |
-| **Created** | December 5, 2025 |
-| **Last Updated** | January 7, 2026 |
+| **Created** | 2025-12-05 |
+| **Last Updated** | 2026-01-07 |
 | **Data Source** | Medical Expenditure Panel Survey (MEPS) |
 
 

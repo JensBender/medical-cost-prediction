@@ -2,8 +2,8 @@
 | **Project Name** | Medical Cost Prediction |
 | :--- | :--- |
 | **Status** | Project scoping |
-| **Created** | December 12, 2025 |
-| **Last Updated** | December 18, 2025 |
+| **Created** | 2025-12-12 |
+| **Last Updated** | 2026-01-07 |
 
 **Note:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
 
