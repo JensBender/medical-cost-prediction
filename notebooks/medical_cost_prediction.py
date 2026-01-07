@@ -69,7 +69,7 @@ from sklearn.metrics import (
 #     <h1 style="margin:0px">Data Loading and Inspection</h1>
 # </div>
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Load data from the <code>h251.sas7bdat</code> file (SAS V9 format) into a Pandas DataFrame.
+#     📌 Load the MEPS-HC 2023 data from the <code>h251.sas7bdat</code> file (SAS V9 format) into a Pandas DataFrame.
 # </div>
 
 # %%
@@ -94,8 +94,8 @@ columns_to_keep = [
     # 1. ID
     "DUPERSID",
     
-    # 2. Survey Weights
-    "PERWT23F", "VARSTR", "VARPSU",
+    # 2. Sample Weights
+    "PERWT23F", 
     
     # 3. Demographics
     "AGE23X", "SEX", "REGION23", "MARRY31X",
@@ -119,7 +119,7 @@ columns_to_keep = [
     "TOTSLF23"
 ]
 
-# Drop all other columns (keeping 31 out of 1,500+)
+# Drop all other columns (keeping 29 out of 1,500+)
 df = df[columns_to_keep]
 df.head()
 
