@@ -4,7 +4,7 @@
 <!-- HEADER IMAGE  -->
 
 <!-- SHORT SUMMARY  -->
-
+Designing an end-to-end ML application to predict out-of-pocket healthcare costs for personalized financial planning. Adopting a product-driven approach, authoring comprehensive Product Requirements and Technical Specifications that prioritize UX-centric design and model transparency. Architecting the ML pipeline to translate complex survey data (MEPS) into actionable budgeting insights.
 
 ## 📋 Table of Contents
 <ol>
