@@ -96,7 +96,7 @@ The target variable is **total out-of-pocket health care costs in 2023** (`TOTSL
 `TOTSLF23` directly answers practical user questions like "How much should I contribute to my FSA/HSA?" and "What's my financial exposure?" For uninsured users, out-of-pocket costs approximate total costs, making this target appropriate across all insurance statuses.  
 
 <details>
-<summary><strong>US Healthcare Costs Explained</strong> (click to expand)</summary>
+<summary>ℹ️<strong>US Healthcare Costs Explained</strong> (click to expand)</summary>
 
 ![US Healthcare Costs Infographic](./assets/healthcare_costs_infographic.png)
 </details>
@@ -106,6 +106,9 @@ A subset of 26 candidate features was selected from MEPS-HC 2023 based on the fo
 - **Consumer Accessibility:** Users can answer from memory without looking up records, ensuring the model is usable in a consumer-facing app.
 - **Beginning-of-Year Data:** To enable the app to be used during Open Enrollment for predicting *upcoming* costs, only variables measured at the beginning of the year (`31` suffix) or stable traits are used to prevent data leakage.
 - **Predictive Power:** Features have established significance in healthcare cost literature.
+
+Note: These candidate features will be further reduced based on importance scores to meet the UX goal of a form completion time of less than 90 seconds.
+
 
 **Features**
 | Category | Variable | Label | Description |
