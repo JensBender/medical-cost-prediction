@@ -102,46 +102,40 @@ The target variable is **total out-of-pocket health care costs in 2023** (`TOTSL
 </details>
 
 **Feature Selection**  
-A subset of features was selected from MEPS-HC 2023 to balance predictive power, interpretability, and data completeness. These features encompass key drivers of healthcare costs, including demographics, socioeconomic status, health conditions, chronic illnesses, healthcare utilization, and insurance coverage. Features were selected based on the following criteria:
-- **Predictive Power:** Includes major determinants of spending such as age, chronic conditions, and utilization patterns.
-- **Data Quality:** Prioritizes variables with low missingness to minimize imputation artifacts.
-- **Interpretability:** Maintains a feature set suitable for explaining model decisions.
-- **Manageability:** Limits the scope to ~30–35 high-impact variables, ensuring a focused analysis.
+A subset of 26 features was selected from MEPS-HC 2023 to balance predictive power, user accessibility, and the requirements of prospective prediction. Features were selected based on the following criteria:
+- **Consumer Accessibility:** Users can answer from memory without looking up records, ensuring the model is usable in a consumer-facing app.
+- **Beginning-of-Year Data:** To enable the app to be used during Open Enrollment for predicting *upcoming* costs, only variables measured at the beginning of the year (`31` suffix) or stable traits are used to prevent data leakage.
+- **Predictive Power:** Features have established significance in healthcare cost literature and exploratory analysis.
 
 **Features**
-| Category | Variable | Description |
-| :--- | :--- | :--- |
-| **Demographics** | `AGE23X` | Age in years. |
-| | `SEX` | Sex (male/female). |
-| | `RACEV2X` | Race/ethnicity (collapsed categories). |
-| | `REGION23` | Census region. |
-| | `MARRY23X` | Marital status. |
-| **Socioeconomic Status** | `EDUCYR` | Years of education when first entered MEPS. |
-| | `POVCAT23` | Family income as % of poverty line (categorical). |
-| | `INSCOV23` | Health insurance coverage indicator. |
-| | `EMPST53` | Employment status (Round 5/3). |
-| **Health** | `RTHLTH53` | Perceived health status (Round 5/3). |
-| | `MNHLTH53` | Perceived mental health status (Round 5/3). |
-| | `WLKLIM31` | Limitation in physical functioning (Round 3/1). |
-| | `ACTLIM31` | Any limitation work/housework/school (Round 3/1). |
-| | `COGLIM31` | Cognitive limitations (Round 3/1). |
-| | `DIABDX_M18` | Diabetes diagnosis. |
-| | `HIBPDX` | High blood pressure diagnosis (>17). |
-| | `CHOLDX` | High cholesterol diagnosis (>17). |
-| | `ASTHDX` | Asthma diagnosis. |
-| | `CHDDX` | Coronary heart disease diagnosis (>17). |
-| | `ARTHDX` | Arthritis diagnosis (>17). |
-| | `EMPHDX` | Emphysema diagnosis (>17). |
-| **Healthcare Utilization** | `OBTOTV23` | Number of office-based provider visits 2023. |
-| | `OPDRV23` | Number of outpatient dept physician visits. |
-| | `ERTOT23` | Number of emergency room visits. |
-| | `IPDIS23` | Number of hospital discharges. |
-| | `RXTOT23` | Number of prescription meds incl refills. |
-| | `HHTOTD23` | Number of home health provider days. |
-| **Insurance Details** | `PRVEV23` | Ever have private insurance during 2023. |
-| | `MCREV23` | Ever have Medicare during 2023 (edited). |
-| | `MCDEV23` | Ever have Medicaid/SCHIP during 2023 (edited). |
-| | `UNINS23` | Uninsured all of 2023. |
+| Category | Variable | Label | Description |
+| :--- | :--- | :--- | :--- |
+| **Demographics** | `AGE23X` | Age | Age as of Dec 31, 2023. |
+| | `SEX` | Sex | Biological sex. |
+| | `REGION23` | Region | Census region (Northeast, Midwest, South, West). |
+| | `MARRY31X` | Marital Status | Status at beginning of year. |
+| **Socioeconomic Status** | `POVCAT23` | Poverty Category | Family income relative to poverty line. |
+| | `FAMSZE23` | Family Size | Number of related persons residing together. |
+| | `HIDEG` | Education | Highest degree attained. |
+| | `EMPST31` | Employment Status | Status at beginning of year. |
+| **Insurance & Access** | `INSCOV23` | Insurance | Coverage status (Private, Public, Uninsured). |
+| | `HAVEUS42` | Usual Source of Care | Regular doctor or clinic. |
+| **Perceived Health** | `RTHLTH31` | Physical Health | Self-rated physical health (1–5). |
+| | `MNHLTH31` | Mental Health | Self-rated mental health (1–5). |
+| | `ADSMOK42` | Smoker | Currently smokes cigarettes. |
+| **Limitations** | `ADLHLP31` | ADL Help | Needs help with personal care. |
+| | `IADLHP31` | IADL Help | Needs help with IADLs (bills, meds, etc.). |
+| | `WLKLIM31` | Walking Limitation | Difficulty walking or climbing stairs. |
+| | `COGLIM31` | Cognitive Limitation | Confusion or memory loss. |
+| | `JTPAIN31_M18` | Joint Pain | Pain/stiffness in past year. |
+| **Chronic Conditions** | `HIBPDX` | Hypertension | Diagnosed with high blood pressure. |
+| | `CHOLDX` | High Cholesterol | Diagnosed with high cholesterol. |
+| | `DIABDX_M18` | Diabetes | Diagnosed with diabetes. |
+| | `CHDDX` | Heart Disease | Diagnosed with coronary heart disease. |
+| | `STRKDX` | Stroke | Diagnosed with stroke. |
+| | `CANCERDX` | Cancer | Diagnosed with cancer or malignancy. |
+| | `ARTHDX` | Arthritis | Diagnosed with arthritis. |
+| | `ASTHDX` | Asthma | Diagnosed with asthma. |
 
 **Sample Weights**  
 MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to adjust for the complex survey design (stratification, clustering, oversampling) and non-response. This machine learning project utilizes these weights in model training to correct for the survey's intentional oversampling of specific subgroups (e.g., the elderly, low-income), preventing the model from being biased toward these groups and ensuring it learns relationships that are true for the general population.
