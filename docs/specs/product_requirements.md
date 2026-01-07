@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Project scoping |
 | **Created** | December 5, 2025 |
-| **Last Updated** | December 15, 2025 |
+| **Last Updated** | January 7, 2026 |
 | **Data Source** | Medical Expenditure Panel Survey (MEPS) |
 
 
@@ -96,11 +96,16 @@ The following are explicitly **not** part of this project:
 ## Functional Requirements
 
 ### User Input 
-> **Status:** *Preliminary. Features shown below are candidates based on domain knowledge and research. Final feature selection pending empirical feature importance ranking.*
+> **Status:** *Preliminary (Candidate Features). Final feature selection pending. Reduce number of features based on empirical feature importance ranking to meet the UX budget below.*
 
-The UI must be a simple form on a single page, designed for completion in **under 90 seconds**. As a guideline, aim for ~12–14 discrete UI interactions (e.g., dropdowns, radio buttons, checklists). A multi-select checklist (e.g., chronic conditions) counts as one interaction. Inputs are mapped to MEPS variables with correct temporal alignment (beginning-of-year status for prospective prediction).
+**UX Budget:**
+* Completion Time Goal: < 90 seconds
+* UI Interactions Target: ~12–14 
+* UI Interactions Current: 15 
 
-> **Full Details:** See [Technical Specifications: Candidate Features](./technical_specifications.md#candidate-features) and [Candidate Features Research](../research/candidate_features.md).
+The UI must be a simple form on a single page. A multi-select checklist (e.g., chronic conditions) counts as one UI interaction. Inputs are mapped to MEPS variables with correct temporal alignment (beginning-of-year status for prospective prediction).
+
+**Full Details:** See [Technical Specifications: Candidate Features](./technical_specifications.md#candidate-features) and [Candidate Features Research](../research/candidate_features.md).
 
 **Single-Selection Interactions** (13 UI interactions, 13 inputs)
 | ID | UI Label | UI Question | UI Element | Value Range | MEPS Variable |
