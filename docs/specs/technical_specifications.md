@@ -152,7 +152,7 @@ The following MEPS variables have been identified as candidate features for the 
 | **Arthritis** | `ARTHDX` | Binary (Int) | Diagnosed with arthritis. | ⚠️ Drives Rx/therapy costs. |
 | **Asthma** | `ASTHDX` | Binary (Int) | Diagnosed with asthma. | ⚠️ Chronic condition with ongoing costs. |
 
-**Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions and limitations/symptoms should be grouped into multi-select checklists to minimize cognitive load (~13–14 total UI interactions).
+**Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions and limitations/symptoms should be grouped into multi-select checklists to minimize cognitive load (~12–14 total UI interactions).
 
 #### Income Mapping Table (POVCAT23)
 To ensure stigma-free and accurate income reporting, the UI displays dynamic income ranges based on the user's reported family size. These ranges map directly to the `POVCAT23` categories used in training, based on 2023 Federal Poverty Level (FPL) thresholds.
