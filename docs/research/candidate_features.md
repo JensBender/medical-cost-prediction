@@ -96,8 +96,8 @@ Screener questions identifying individuals requiring more frequent care due to p
 
 | Variable | Label | Description | Survey Question | Response Categories | Rationale |
 |:---|:---|:---|:---|:---|:---|
-| `ADLHLP31` | ADL Help | Needs help with personal care | "Do you receive help or supervision with personal care such as bathing, dressing, or getting around the house?" | Yes, No | High-cost functional indicator. [[7]](#ref7) |
-| `IADLHP31` | IADL Help | Needs help with IADLs | "Do you receive help or supervision with using the telephone, paying bills, taking medications, preparing light meals, doing laundry, or going shopping?" | Yes, No | Signals high-cost care requirements. [[7]](#ref7) |
+| `ADLHLP31` | ADL Help | Needs help with activities of daily living | "Do you receive help or supervision with personal care such as bathing, dressing, or getting around the house?" | Yes, No | High-cost functional indicator. [[7]](#ref7) |
+| `IADLHP31` | IADL Help | Needs help with instrumental activities of daily living | "Do you receive help or supervision with using the telephone, paying bills, taking medications, preparing light meals, doing laundry, or going shopping?" | Yes, No | Signals high-cost care requirements. [[7]](#ref7) |
 | `WLKLIM31` | Walking Limitation | Difficulty walking or climbing stairs | "Do you have serious difficulty walking or climbing stairs?" | Yes, No | Captures mobility impairment |
 | `COGLIM31` | Cognitive Limitation | Confusion or memory loss | "Do you have serious difficulty concentrating, remembering, or making decisions?" | Yes, No | Correlates with specialized care needs. [[3]](#ref3) |
 | `JTPAIN31_M18` | Joint Pain | Pain/stiffness in past year | "During the past 12 months, did you have pain, aching, stiffness, or swelling in or around a joint?" | Yes, No | Captures undiagnosed musculoskeletal issues |
