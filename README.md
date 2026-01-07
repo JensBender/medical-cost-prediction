@@ -113,7 +113,7 @@ A subset of 26 candidate features was selected from MEPS-HC 2023 based on the fo
 | **Demographics** | `AGE23X` | Age | Age as of Dec 31, 2023. |
 | | `SEX` | Sex | Biological sex. |
 | | `REGION23` | Region | Census region (Northeast, Midwest, South, West). |
-| | `MARRY31X` | Marital Status | Status at beginning of year. |
+| | `MARRY31X` | Marital Status | Status at beginning of year (Married, Widowed, Divorced, Separated, Never Married). |
 | **Socioeconomic** | `POVCAT23` | Poverty Category | Family income relative to poverty line. |
 | | `FAMSZE23` | Family Size | Number of related persons residing together. |
 | | `HIDEG` | Education | Highest degree attained. |
