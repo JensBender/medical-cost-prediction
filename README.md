@@ -102,10 +102,10 @@ The target variable is **total out-of-pocket health care costs in 2023** (`TOTSL
 </details>
 
 **Feature Selection**  
-A subset of 26 features was selected from MEPS-HC 2023 to balance predictive power, user accessibility, and the requirements of prospective prediction. Features were selected based on the following criteria:
+A subset of 26 candidate features was selected from MEPS-HC 2023 based on the following criteria:
 - **Consumer Accessibility:** Users can answer from memory without looking up records, ensuring the model is usable in a consumer-facing app.
 - **Beginning-of-Year Data:** To enable the app to be used during Open Enrollment for predicting *upcoming* costs, only variables measured at the beginning of the year (`31` suffix) or stable traits are used to prevent data leakage.
-- **Predictive Power:** Features have established significance in healthcare cost literature and exploratory analysis.
+- **Predictive Power:** Features have established significance in healthcare cost literature.
 
 **Features**
 | Category | Variable | Label | Description |
@@ -114,17 +114,17 @@ A subset of 26 features was selected from MEPS-HC 2023 to balance predictive pow
 | | `SEX` | Sex | Biological sex. |
 | | `REGION23` | Region | Census region (Northeast, Midwest, South, West). |
 | | `MARRY31X` | Marital Status | Status at beginning of year. |
-| **Socioeconomic Status** | `POVCAT23` | Poverty Category | Family income relative to poverty line. |
+| **Socioeconomic** | `POVCAT23` | Poverty Category | Family income relative to poverty line. |
 | | `FAMSZE23` | Family Size | Number of related persons residing together. |
 | | `HIDEG` | Education | Highest degree attained. |
 | | `EMPST31` | Employment Status | Status at beginning of year. |
 | **Insurance & Access** | `INSCOV23` | Insurance | Coverage status (Private, Public, Uninsured). |
 | | `HAVEUS42` | Usual Source of Care | Regular doctor or clinic. |
-| **Perceived Health** | `RTHLTH31` | Physical Health | Self-rated physical health (1–5). |
+| **Perceived Health & Lifestyle** | `RTHLTH31` | Physical Health | Self-rated physical health (1–5). |
 | | `MNHLTH31` | Mental Health | Self-rated mental health (1–5). |
 | | `ADSMOK42` | Smoker | Currently smokes cigarettes. |
-| **Limitations** | `ADLHLP31` | ADL Help | Needs help with personal care. |
-| | `IADLHP31` | IADL Help | Needs help with IADLs (bills, meds, etc.). |
+| **Limitations & Symptoms** | `ADLHLP31` | ADL Help | Needs help with activities of daily living (personal care, bathing, dressing). |
+| | `IADLHP31` | IADL Help | Needs help with instrumental activities of daily living (paying bills, taking medications, doing laundry). |
 | | `WLKLIM31` | Walking Limitation | Difficulty walking or climbing stairs. |
 | | `COGLIM31` | Cognitive Limitation | Confusion or memory loss. |
 | | `JTPAIN31_M18` | Joint Pain | Pain/stiffness in past year. |
