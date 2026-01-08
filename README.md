@@ -138,7 +138,7 @@ These 26 candidate features will be further reduced based on importance scores t
 | Asthma | `ASTHDX` | Diagnosed with asthma. |
 
 **Sample Weights**  
-MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to adjust for the complex survey design (stratification, clustering, oversampling) and non-response. This machine learning project utilizes these weights in model training to correct for the survey's intentional oversampling of specific subgroups (e.g., the elderly, low-income), preventing the model from being biased toward these groups and ensuring it learns relationships that are true for the general population.
+MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to account for the complex survey design and non-response. This project incorporates these weights during model training to correct for the intentional oversampling of specific subgroups (e.g., the elderly and low-income), ensuring the model remains representative of the general population and prevents bias toward overrepresented groups.
 
 **MEPS Resources**
 | Resource | Description | Link |
