@@ -245,6 +245,8 @@ This project uses two isolated environments to keep application dependencies lig
 
 
 ## ©️ License
+This project is licensed under the [MIT License](LICENSE).
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
