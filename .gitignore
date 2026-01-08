@@ -4,8 +4,8 @@ models/
 figures/
 notebooks/machine_learning_template.ipynb
 notebooks/loan_default_prediction.ipynb
-assets/healthcare_costs_infographic_large.png
 assets/header_old.png
+assets/header_chatgpt_1.png
 
 # Environment variables
 .env
