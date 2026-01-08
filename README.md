@@ -98,6 +98,7 @@ The target variable is **total out-of-pocket health care costs in 2023** (`TOTSL
 
 ![US Healthcare Costs Infographic](./assets/healthcare_costs_infographic.png)
 </details>
+<br>
 
 **Feature Selection**  
 Candidate features were selected from MEPS-HC 2023 based on the following criteria:
