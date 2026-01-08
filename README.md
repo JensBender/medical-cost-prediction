@@ -175,7 +175,8 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to account for the comp
 ## 📂 Project Structure
 ```text
 ├── notebooks/               # Jupyter Notebooks 
-│   └── medical_cost_prediction.ipynb  # Preprocessing, EDA, model training, evaluation, tuning and selection
+│   ├── medical_cost_prediction.ipynb  # Preprocessing, EDA, model training, evaluation, tuning and selection
+│   └── medical_cost_prediction.py     # Script version of the notebook
 │
 ├── app/                     # Web application source code
 │   └── app.py               # Main application file
@@ -194,8 +195,9 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to account for the comp
 │   └── tuning/              # Hyperparameter tuning results
 │
 ├── assets/                  # Images and other assets for README
+│   ├── header.png           # Header image
 │   ├── data_infographic.jpg # MEPS data overview infographic
-│   └── header.png           # Project header image
+│   └── healthcare_costs_infographic.png  # U.S. healthcare cost explainer
 │
 ├── tests/                   # Software testing for web application
 │   ├── unit/                # Unit tests
@@ -206,7 +208,7 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to account for the comp
 │   ├── specs/               # PRD and tech specs
 │   │   ├── product_requirements.md
 │   │   └── technical_specifications.md
-│   ├── references/          # Official MEPS documentation and codebook 
+│   ├── references/          # MEPS documentation, codebook, and data dictionary 
 │   ├── research/            # Background research 
 │   └── workflow/            # Git conventions
 │
