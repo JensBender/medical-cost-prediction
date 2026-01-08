@@ -5,7 +5,7 @@
 <img src="assets/header.png" alt="Header Image">
 
 <!-- SHORT SUMMARY  -->
-Designing an end-to-end ML application to predict out-of-pocket healthcare costs for personalized financial planning. Adopting a product-driven approach, authoring comprehensive Product Requirements and Technical Specifications that prioritize UX-centric design and model transparency. Architecting the ML pipeline to translate complex survey data (MEPS) into actionable budgeting insights.
+Designing an end-to-end ML application to predict out-of-pocket healthcare costs for personalized financial planning. Adopting a product-driven approach, authoring comprehensive Product Requirements and Technical Specifications that prioritize UX-centric design and model transparency. Engineering the ML pipeline to translate complex survey data (MEPS) into actionable budgeting insights.
 
 ## 📋 Table of Contents
 <ol>
@@ -84,13 +84,9 @@ The **Medical Expenditure Panel Survey (MEPS)** is the most complete source of d
 The Household Component (MEPS-HC) collects comprehensive data directly from families and individuals. To ensure accuracy, household-reported expenditures are validated and imputed using the Medical Provider Component (MEPS-MPC), which draws data directly from doctors, hospitals, and pharmacies.
 
 **MEPS-HC 2023**  
-This project utilizes the 2023 Full-Year Consolidated Data File (HC-251).
+This project utilizes the 2023 Full-Year Consolidated Data File (HC-251). The data was released in August 2025.
 - **Sample Size:** 18,919 individuals.
 - **Variables:** 1,374.
-- **Data Domains:** Medical expenditures, conditions, and events, demographics (e.g., age, ethnicity, and income), health insurance coverage, access to care, health status, and jobs held.
-- **Format:** Available in ASCII, SAS transport, SAS V9, XLSX, and Stata file formats.
-- **Collection Period:** Rounds 3, 4, and 5 of Panel 27, and Rounds 1, 2, and the 2023 portion of Round 3 of Panel 28.
-- **Released:** August 2025.
 
 ![MEPS Data Infographic](assets/data_infographic.jpg)
 
