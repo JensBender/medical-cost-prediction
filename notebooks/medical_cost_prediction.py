@@ -119,7 +119,7 @@ columns_to_keep = [
     "TOTSLF23"
 ]
 
-# Drop all other columns (keeping 29 out of 1,500+)
+# Drop all other columns (keeping 29 out of 1,374)
 df = df[columns_to_keep]
 
 # %% [markdown]
@@ -127,7 +127,7 @@ df = df[columns_to_keep]
 
 # %%
 # Show DataFrame info to check the number of rows and columns, data types and missing values
-df.info(verbose=True, show_counts=True)
+df.info()
 
 # %%
 # Show top five rows of the training data
@@ -140,3 +140,19 @@ df.head()
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Data Preprocessing</h1>
 # </div> 
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Target Population Filtering</h2>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Remove respondents with a person weight of zero. These individuals are considered "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad) and do not represent the project's target population.
+# </div>
+
+# %%
+# Drop rows (keeping 18,463 out of 18,919 respondents)
+df = df[df["PERWT23F"] > 0].copy() 
+
+# %%
+df.info()  
