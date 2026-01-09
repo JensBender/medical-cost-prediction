@@ -143,7 +143,7 @@ df.head()
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Target Population Filtering</h2>
+#     <h2 style="margin:0px">Filtering Target Population</h2>
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
@@ -156,3 +156,26 @@ df = df[df["PERWT23F"] > 0].copy()
 
 # %%
 df.info()  
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Handling Duplicates</h2>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Identify duplicates based on: <br>
+#     - All columns
+#     - The ID column only
+#     - All columns except the ID column (may be same record entered twice under different IDs) 
+# </div>
+
+# %%
+# Identify duplicates based on all columns
+df.duplicated().value_counts()
+
+# %%
+# Identify duplicates based on the ID column
+df.duplicated(["DUPERSID"]).value_counts()
+
+# %% [markdown]
+# <p style="background-color:#f7fff8; padding:15px; border-width:3px; border-color:#e0f0e0; border-style:solid; border-radius:6px"> ✅ No duplicates were found based on all columns or the ID column.</p>
