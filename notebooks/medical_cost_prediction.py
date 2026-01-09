@@ -163,10 +163,12 @@ df.info()
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Identify duplicates based on: <br>
-#     - All columns
-#     - The ID column only
-#     - All columns except the ID column (may be same record entered twice under different IDs) 
+#     📌 Identify duplicates based on:
+# <ul>
+#     <li><strong>All columns</strong>: To detect exactly identical rows.</li>
+#     <li><strong>ID column only</strong>: To ensure that no two people share the same ID.</li>
+#     <li><strong>All columns except ID</strong>: To catch "hidden" duplicates where the same respondent may have been recorded twice under different IDs.</li>
+# </ul>
 # </div>
 
 # %%
