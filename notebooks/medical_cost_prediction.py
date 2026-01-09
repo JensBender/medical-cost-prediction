@@ -147,12 +147,16 @@ df.head()
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Remove respondents with a person weight of zero. These individuals are considered "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad) and do not represent the project's target population.
+#     📌 Target population:
+#     <ul style="margin-bottom:0px">
+#         <li><b>Positive person weight</b> (<code>PERWT23F > 0</code>): Drop respondents with a person weight of zero (456 respondents). These individuals are considered "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad).</li>
+#         <li><b>Adults</b> (<code>AGE23X >= 18</code>): Drop respondents under age 18 (3796 respondents), as the medical cost planner app targets adults.</li>
+#     </ul>
 # </div>
 
 # %%
-# Drop rows (keeping 18,463 out of 18,919 respondents)
-df = df[df["PERWT23F"] > 0].copy() 
+# Drop out-of-scope and non-adult respondents
+df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy() 
 
 # %%
 df.info()  
