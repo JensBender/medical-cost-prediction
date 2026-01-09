@@ -185,3 +185,11 @@ df.duplicated(["DUPERSID"]).value_counts()
 
 # %% [markdown]
 # <p style="background-color:#f7fff8; padding:15px; border-width:3px; border-color:#e0f0e0; border-style:solid; border-radius:6px"> ✅ No duplicates were found based on all columns or the ID column.</p>
+
+# %%
+# Identify duplicates based on all columns except ID  
+duplicates_without_id = df.duplicated(subset=df.columns.drop("DUPERSID"), keep=False)
+duplicates_without_id.value_counts()
+
+# %%
+df[duplicates_without_id]
