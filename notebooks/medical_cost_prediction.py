@@ -121,7 +121,6 @@ columns_to_keep = [
 
 # Drop all other columns (keeping 29 out of 1,500+)
 df = df[columns_to_keep]
-df.head()
 
 # %% [markdown]
 # <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 📌 Initial data inspection to understand the structure of the dataset and detect obvious issues.</p>
@@ -133,3 +132,11 @@ df.info(verbose=True, show_counts=True)
 # %%
 # Show top five rows of the training data
 df.head()
+
+# %% [markdown]
+# <strong>Note</strong>: Keeping column names in ALL CAPS in this project to ensure consistency with official MEPS documentation, codebook, and data dictionary.
+
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Data Preprocessing</h1>
+# </div> 
