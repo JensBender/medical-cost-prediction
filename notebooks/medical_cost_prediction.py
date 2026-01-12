@@ -147,13 +147,15 @@ df[duplicates_without_id]
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Filter the following columns from the original data (1,374 columns):
+#     📌 Filter the following columns from the 1,374 columns of the original data:
 #     <ul style="margin-bottom:0px">
-#         <li>ID</li>
-#         <li>Sample Weights</li>
-#         <li>Candidate Features</li>
-#         <li>Target Variable</li>
+#         <li><b>ID</b>: Unique identifier for each respondent (<code>DUPERSID</code>).</li>
+#         <li><b>Sample Weights</b>: Ensures population representativeness (<code>PERWT23F</code>).</li>
+#         <li><b>Candidate Features</b>: 26 variables selected for their consumer accessibility, beginning-of-year measurement, and predictive power.</li> 
+#         <li><b>Target Variable</b>: Total out-of-pocket health care costs (<code>TOTSLF23</code>).</li>
 #     </ul>
+#     <br>
+#     <b>Rationale</b>: For a detailed breakdown of the target variable selection and feature selection criteria, see the <b><a href="../docs/specs/technical_specifications.md">Technical Specifications</a></b> and <b><a href="../docs/research/candidate_features.md">Candidate Features Research</a></b>.
 # </div>
 
 # %%
