@@ -140,6 +140,7 @@ duplicates_without_id = df.duplicated(subset=df.columns.drop(id_columns), keep=F
 duplicates_without_id.value_counts()
 
 # %%
+# Show duplicates
 df[duplicates_without_id]
 
 # %% [markdown]
