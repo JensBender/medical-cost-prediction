@@ -96,7 +96,7 @@ except Exception as e:
 df.info()
 
 # %%
-# Show top five rows of the training data
+# Show top five rows of the data
 df.head()
 
 # %% [markdown]
@@ -134,12 +134,16 @@ df.duplicated(["DUPERSID"]).value_counts()
 # <p style="background-color:#f7fff8; padding:15px; border-width:3px; border-color:#e0f0e0; border-style:solid; border-radius:6px"> ✅ No duplicates were found based on all columns or the ID column.</p>
 
 # %%
-# Identify duplicates based on all columns except ID  
-duplicates_without_id = df.duplicated(subset=df.columns.drop("DUPERSID"), keep=False)
+# Identify duplicates based on all columns except ID columns
+id_columns = ["DUPERSID", "DUID", "PID", "PANEL"]
+duplicates_without_id = df.duplicated(subset=df.columns.drop(id_columns), keep=False)
 duplicates_without_id.value_counts()
 
 # %%
 df[duplicates_without_id]
+
+# %% [markdown]
+# **Note**: There are 3 pairs (or 6 rows) of duplicates that have identical values across all 1,300+ columns except for their IDs. Analysis shows these are young siblings (ages 1 and 5) with identical parent-reported health data, identical survey weights (`PERWT23F`), and identical costs. Thus, they appear to be valid respondents rather than "ghost records". However, they will be naturally excluded when filtering for the adult target population.
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
