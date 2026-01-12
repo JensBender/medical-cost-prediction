@@ -134,7 +134,7 @@ df.info()
 df.head()
 
 # %% [markdown]
-# <strong>Note</strong>: Keeping column names in ALL CAPS in this project to ensure consistency with official MEPS documentation, codebook, and data dictionary.
+# <strong>Note</strong>: Kept column names in ALL CAPS in this project to ensure consistency with official MEPS documentation, codebook, and data dictionary.
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -147,15 +147,15 @@ df.head()
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Target population:
+#     📌 Filter the target population based on the following criteria:
 #     <ul style="margin-bottom:0px">
-#         <li><b>Positive person weight</b> (<code>PERWT23F > 0</code>): Drop respondents with a person weight of zero (456 respondents). These individuals are considered "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad).</li>
-#         <li><b>Adults</b> (<code>AGE23X >= 18</code>): Drop respondents under age 18 (3796 respondents), as the medical cost planner app targets adults.</li>
+#         <li><b>Positive person weight</b> (<code>PERWT23F > 0</code>): Drop respondents with a person weight of zero (i.e., 456 respondents). These individuals are considered "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad).</li>
+#         <li><b>Adults</b> (<code>AGE23X >= 18</code>): Drop respondents under age 18 (i.e., 3796 respondents), as the medical cost planner app targets adults.</li>
 #     </ul>
 # </div>
 
 # %%
-# Drop out-of-scope and non-adult respondents
+# Filter DataFrame (keeping 14,768 out of 18,919 respondents)
 df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy() 
 
 # %%
