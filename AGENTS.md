@@ -33,10 +33,16 @@ Agents should follow this directory structure strictly when adding new files:
 
 ### Dual Environment Strategy
 This project uses two isolated virtual environments to minimize production dependencies:
-1. Training (`.venv-train`): Used for notebooks and model training. Primary libraries: pandas, sklearn, matplotlib, seaborn, jupyterlab.
-2. App (`.venv-app`): Used for the FastAPI/Gradio application. Primary libraries: fastapi, gradio, sklearn.
+1. **Training (`.venv-train`)**: Used for notebooks, data science work, and model training.
+2. **App (`.venv-app`)**: Used for the FastAPI/Gradio web application.
+
+**Crucial for AI Agents:** When using the `run_command` tool to execute Python code or scripts, you **must** use the python executable located within the relevant virtual environment to ensure all dependencies (like pandas, sklearn) are available.
+
+- For **Training tasks**, use: `./.venv-train/Scripts/python` (Windows) or `./.venv-train/bin/python` (Unix).
+- For **App tasks**, use: `./.venv-app/Scripts/python` (Windows) or `./.venv-app/bin/python` (Unix).
 
 When suggesting or running installation commands, always clarify which environment is being targeted.
+
 
 ### Documentation and Commits
 - PRD vs Tech Spec: The `specs/product_requirements.md` defines the problem and requirements. The `specs/technical_specifications.md` defines the implementation details.
