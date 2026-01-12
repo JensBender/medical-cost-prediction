@@ -88,40 +88,6 @@ except PermissionError:
 except Exception as e:
     print(f"An unexpected error occurred: {e}")
 
-# %%
-# List of columns to keep based on the data dictionary
-columns_to_keep = [
-    # 1. ID
-    "DUPERSID",
-    
-    # 2. Sample Weights
-    "PERWT23F", 
-    
-    # 3. Demographics
-    "AGE23X", "SEX", "REGION23", "MARRY31X",
-    
-    # 4. Socioeconomic
-    "POVCAT23", "FAMSZE23", "HIDEG", "EMPST31",
-    
-    # 5. Insurance & Access
-    "INSCOV23", "HAVEUS42",
-    
-    # 6. Perceived Health & Lifestyle
-    "RTHLTH31", "MNHLTH31", "ADSMOK42",
-    
-    # 7. Limitations & Symptoms
-    "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
-    
-    # 8. Chronic Conditions
-    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX", 
-    
-    # 9. Healthcare Expenditure (Target)
-    "TOTSLF23"
-]
-
-# Drop all other columns (keeping 29 out of 1,374)
-df = df[columns_to_keep]
-
 # %% [markdown]
 # <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 📌 Initial data inspection to understand the structure of the dataset and detect obvious issues.</p>
 
@@ -134,32 +100,13 @@ df.info()
 df.head()
 
 # %% [markdown]
-# <strong>Note</strong>: Kept column names in ALL CAPS in this project to ensure consistency with official MEPS documentation, codebook, and data dictionary.
-
-# %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Data Preprocessing</h1>
 # </div> 
-
-# %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Filtering Target Population</h2>
-# </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Filter the target population based on the following criteria:
-#     <ul style="margin-bottom:0px">
-#         <li><b>Positive person weight</b> (<code>PERWT23F > 0</code>): Drop respondents with a person weight of zero (i.e., 456 respondents). These individuals are considered "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad).</li>
-#         <li><b>Adults</b> (<code>AGE23X >= 18</code>): Drop respondents under age 18 (i.e., 3796 respondents), as the medical cost planner app targets adults.</li>
-#     </ul>
+#     <strong>Note</strong>: Kept column names in ALL CAPS in this project to ensure consistency with official MEPS documentation and codebook.
 # </div>
-
-# %%
-# Filter DataFrame (keeping 14,768 out of 18,919 respondents)
-df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy() 
-
-# %%
-df.info()  
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
@@ -193,3 +140,73 @@ duplicates_without_id.value_counts()
 
 # %%
 df[duplicates_without_id]
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Variable Selection</h2>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Filter the following columns from the original data (1,374 columns):
+#     <ul style="margin-bottom:0px">
+#         <li>ID</li>
+#         <li>Sample Weights</li>
+#         <li>Candidate Features</li>
+#         <li>Target Variable</li>
+#     </ul>
+# </div>
+
+# %%
+# List of columns to keep 
+columns_to_keep = [
+    # 1. ID
+    "DUPERSID",
+    
+    # 2. Sample Weights
+    "PERWT23F", 
+
+    # 3 Candidate Features.
+    # 3.1 Demographics
+    "AGE23X", "SEX", "REGION23", "MARRY31X",
+    
+    # 3.2 Socioeconomic
+    "POVCAT23", "FAMSZE23", "HIDEG", "EMPST31",
+    
+    # 3.3 Insurance & Access
+    "INSCOV23", "HAVEUS42",
+    
+    # 3.4 Perceived Health & Lifestyle
+    "RTHLTH31", "MNHLTH31", "ADSMOK42",
+    
+    # 3.5 Limitations & Symptoms
+    "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
+    
+    # 3.6 Chronic Conditions
+    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX", 
+    
+    # 4. Healthcare Expenditure (Target)
+    "TOTSLF23"
+]
+
+# Drop all other columns (keeping 29 out of 1,374)
+df = df[columns_to_keep]
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Filtering Target Population</h2>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Filter the target population based on the following criteria:
+#     <ul style="margin-bottom:0px">
+#         <li><b>Positive person weight</b> (<code>PERWT23F > 0</code>): Drop respondents with a person weight of zero (i.e., 456 respondents). These individuals are considered "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad).</li>
+#         <li><b>Adults</b> (<code>AGE23X >= 18</code>): Drop respondents under age 18 (i.e., 3796 respondents), as the medical cost planner app targets adults.</li>
+#     </ul>
+# </div>
+
+# %%
+# Filter DataFrame (keeping 14,768 out of 18,919 respondents)
+df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy() 
+
+# %%
+df.info()  
