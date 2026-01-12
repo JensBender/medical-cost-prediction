@@ -105,7 +105,7 @@ df.head()
 # </div> 
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     <strong>Note</strong>: Kept column names in ALL CAPS in this project to ensure consistency with official MEPS documentation and codebook.
+#     <strong>Note</strong>: Kept column names in ALL CAPS in this project to ensure consistency with official <b><a href="../docs/references/h251doc.pdf">MEPS documentation</a></b>, <b><a href="../docs/references/h251cb.pdf">codebook</a></b>, and <b><a href="../docs/references/data_dictionary.md">data dictionary</a></b>.
 # </div>
 
 # %% [markdown]
