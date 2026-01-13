@@ -154,7 +154,7 @@ df[duplicates_without_id]
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Filter the following columns from the 1,374 columns of the original data:
+#     📌 Filter the following columns (out of 1,374):
 #     <ul style="margin-bottom:0px">
 #         <li><b>ID</b>: Unique identifier for each respondent (<code>DUPERSID</code>).</li>
 #         <li><b>Sample Weights</b>: Ensures population representativeness (<code>PERWT23F</code>).</li>
@@ -206,7 +206,7 @@ df = df[columns_to_keep]
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Filter the target population based on the following criteria:
+#     📌 Filter rows to match the target population based on the following criteria:
 #     <ul style="margin-bottom:0px">
 #         <li><b>Positive person weight</b> (<code>PERWT23F > 0</code>): Drop respondents with a person weight of zero (i.e., 456 respondents). These individuals are considered "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad).</li>
 #         <li><b>Adults</b> (<code>AGE23X >= 18</code>): Drop respondents under age 18 (i.e., 3796 respondents), as the medical cost planner app targets adults.</li>
