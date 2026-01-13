@@ -8,9 +8,9 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.18.1
 #   kernelspec:
-#     display_name: Medical Cost Prediction
+#     display_name: .venv-train
 #     language: python
-#     name: medical_cost_prediction
+#     name: python3
 # ---
 
 # %% [markdown]
@@ -219,3 +219,16 @@ df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy()
 
 # %%
 df.info()  
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Handling Data Types</h2>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Identify and convert incorrect storage data types.
+# </div>
+
+# %%
+# Identify storage data types
+df.dtypes
