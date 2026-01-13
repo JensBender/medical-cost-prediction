@@ -144,7 +144,9 @@ duplicates_without_id.value_counts()
 df[duplicates_without_id]
 
 # %% [markdown]
-# **Note**: There are 3 pairs (or 6 rows) of duplicates that have identical values across all 1,300+ columns except for their IDs. Analysis shows these are young siblings (ages 1 and 5) with identical parent-reported health data, identical survey weights (`PERWT23F`), and identical costs. Thus, they appear to be valid respondents rather than "ghost records". However, they will be naturally excluded when filtering for the adult target population.
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     💡 There are 3 pairs (or 6 rows) of duplicates that have identical values across all 1,300+ columns except for their IDs. Analysis shows these are young siblings (ages 1 and 5) living in the same household with identical parent-reported health data, identical sample weights, and identical costs. Thus, they appear to be valid respondents rather than "ghost records". However, they will be naturally excluded when filtering for the adult target population.
+# </div>
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
