@@ -227,8 +227,25 @@ df.info()
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Identify and convert incorrect storage data types.
+#     <ul>
+#         <li><b>ID</b>: <code>DUPERSID</code> is an identifier, not a quantity. Converting them to <code>string</code> prevents unintended math.</li>
+#         <li><b>Sample Weights</b>: <code>PERWT23F</code> contains decimal precision critical for population-level estimates. Must remain <code>float</code>.</li>
+#         <li><b>Candidate Features</b>: The SAS loader stored all 26 features as floats by default. All features are either numerical or categories represented by numbers. Thus, they can all be converted to <code>int</code> (also handles missing codes like -1, -7).</li>
+#         <li><b>Target</b>: <code>TOTSLF23</code> is rounded to whole dollars in the MEPS Full Year Consolidated files (format 6.0); can be safely stored as <code>int</code>.</li>
+#     </ul>
 # </div>
 
 # %%
-# Identify storage data types
+# Identify storage data types (defaulted to float/object by SAS loader)
 df.dtypes
+
+# %%
+# Convert ID to string
+df["DUPERSID"] = df["DUPERSID"].astype(str)
+
+# Convert feature and target columns from float to integer
+int_cols = df.columns.drop(["DUPERSID", "PERWT23F"])
+df[int_cols] = df[int_cols].astype(int)
+
+# Verify the changes
+df.info()
