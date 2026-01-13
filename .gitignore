@@ -16,6 +16,7 @@ assets/header_chatgpt_1.png
 # IDE artifacts
 .vscode/
 **/.ipynb_checkpoints/
+.jupyter_ystore.db
 
 # Python artifacts
 **/__pycache__/

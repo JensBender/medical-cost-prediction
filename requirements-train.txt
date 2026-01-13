@@ -1,6 +1,7 @@
 # Jupyter Notebook
 jupyterlab==4.5.0
-jupytext==1.18.1
+jupytext==1.18.1  # to sync .ipynb with .py 
+jupyter-collaboration==4.2.0  # to auto-reload .py changes in .ipynb
 
 # Data Manipulation 
 numpy==2.3.5
