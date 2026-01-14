@@ -251,3 +251,21 @@ df[int_cols] = df[int_cols].astype(int)
 
 # Verify the changes
 df.info()
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Standardizing Missing Values</h2>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>MEPS Missing Value Codes</strong> <br>
+#     MEPS variables use the following codes for missing or non-applicable data:
+#     <ul style="margin-bottom:0px">
+#         <li><b>-1 INAPPLICABLE</b>: Variable does not apply to this person.</li>
+#         <li><b>-7 REFUSED</b>: Person refused to answer the question.</li>
+#         <li><b>-8 DON'T KNOW</b>: Person did not know the answer.</li>
+#         <li><b>-9 NOT ASCERTAINED</b>: Data not collected (e.g., due to skip patterns or interview termination).</li>
+#         <li><b>-15 CANNOT BE COMPUTED</b>: Used for some complex derived variables.</li>
+#     </ul>
+# </div>
+
