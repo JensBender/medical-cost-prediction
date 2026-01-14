@@ -277,6 +277,7 @@ df.isnull().sum()
 # %%
 # Identify MEPS-specific missing values 
 missing_codes = [-1, -7, -8, -9, -15]
-
-# Show frequencies of each missing code by column
-pd.DataFrame({missing_code: (df == missing_code).sum() for missing_code in missing_codes})
+missing_frequency_df = pd.DataFrame({code: (df == code).sum() for code in missing_codes})
+missing_frequency_df["TOTAL"] = missing_frequency_df.sum(axis=1)
+missing_frequency_df["PERCENTAGE"] = (missing_frequency_df["TOTAL"] / len(df) * 100).round(2)
+missing_frequency_df.sort_values("TOTAL", ascending=False) 
