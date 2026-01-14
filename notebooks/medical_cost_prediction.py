@@ -273,3 +273,10 @@ df.info()
 # %%
 # Identify standard missing values (np.nan, pd.NA, None, pd.NaT)
 df.isnull().sum()
+
+# %%
+# Identify MEPS-specific missing values 
+missing_codes = [-1, -7, -8, -9, -15]
+
+# Show frequencies of each missing code by column
+pd.DataFrame({missing_code: (df == missing_code).sum() for missing_code in missing_codes})
