@@ -8,9 +8,9 @@
 #       format_version: '1.3'
 #       jupytext_version: 1.18.1
 #   kernelspec:
-#     display_name: .venv-train
+#     display_name: Medical Cost Prediction
 #     language: python
-#     name: python3
+#     name: medical_cost_prediction
 # ---
 
 # %% [markdown]
@@ -154,7 +154,7 @@ df[duplicates_without_id]
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Filter the following columns (out of 1,374):
+#     📌 Filter the following 29 columns (out of 1,374):
 #     <ul style="margin-bottom:0px">
 #         <li><b>ID</b>: Unique identifier for each respondent (<code>DUPERSID</code>).</li>
 #         <li><b>Sample Weights</b>: Ensures population representativeness (<code>PERWT23F</code>).</li>
@@ -211,10 +211,12 @@ df = df[columns_to_keep]
 #         <li><b>Positive person weight</b> (<code>PERWT23F > 0</code>): Drop respondents with a person weight of zero (i.e., 456 respondents). These individuals are considered "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad).</li>
 #         <li><b>Adults</b> (<code>AGE23X >= 18</code>): Drop respondents under age 18 (i.e., 3796 respondents), as the medical cost planner app targets adults.</li>
 #     </ul>
+#     <br>
+#     <b>Note</b>: Keeps 14,768 out of 18,919 respondents.
 # </div>
 
 # %%
-# Filter DataFrame (keeping 14,768 out of 18,919 respondents)
+# Filter DataFrame 
 df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy() 
 
 # %%
@@ -230,8 +232,8 @@ df.info()
 #     <ul>
 #         <li><b>ID</b>: <code>DUPERSID</code> is an identifier, not a quantity. Converting them to <code>string</code> prevents unintended math.</li>
 #         <li><b>Sample Weights</b>: <code>PERWT23F</code> contains decimal precision critical for population-level estimates. Must remain <code>float</code>.</li>
-#         <li><b>Candidate Features</b>: The SAS loader stored all 26 features as floats by default. All features are either numerical or categories represented by numbers. Thus, they can all be converted to <code>int</code> (also handles missing codes like -1, -7).</li>
-#         <li><b>Target</b>: <code>TOTSLF23</code> is rounded to whole dollars in the MEPS Full Year Consolidated files (format 6.0); can be safely stored as <code>int</code>.</li>
+#         <li><b>Candidate Features</b>: The SAS loader stored all 26 features as floats by default. All features are either numerical or integer-encoded categorical variables. Converting them from <code>float</code> to <code>int</code> ensures proper representation and correctly handles missing codes (e.g., -1, -7).</li>
+#         <li><b>Target</b>: <code>TOTSLF23</code> is rounded to whole dollars in the MEPS Full Year data files (format 6.0). Can be safely stored as <code>int</code>.</li>
 #     </ul>
 # </div>
 
