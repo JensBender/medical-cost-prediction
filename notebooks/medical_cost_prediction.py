@@ -269,3 +269,7 @@ df.info()
 #     </ul>
 # </div>
 
+
+# %%
+# Identify standard missing values (np.nan, pd.NA, None, pd.NaT)
+df.isnull().sum()
