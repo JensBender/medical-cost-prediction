@@ -281,3 +281,7 @@ missing_frequency_df = pd.DataFrame({code: (df == code).sum() for code in missin
 missing_frequency_df["TOTAL"] = missing_frequency_df.sum(axis=1)
 missing_frequency_df["PERCENTAGE"] = (missing_frequency_df["TOTAL"] / len(df) * 100).round(2)
 missing_frequency_df.sort_values("TOTAL", ascending=False) 
+
+# %%
+# Convert all MEPS missing codes to np.nan
+df = df.replace(missing_codes, np.nan)
