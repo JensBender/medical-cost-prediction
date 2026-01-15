@@ -229,8 +229,13 @@ df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy()
 #     <ul>
 #         <li><b>ID</b>: <code>DUPERSID</code> is an identifier, not a quantity. Converting them to <code>string</code> prevents unintended math.</li>
 #         <li><b>Sample Weights</b>: <code>PERWT23F</code> contains decimal precision critical for population-level estimates. Must remain <code>float</code>.</li>
-#         <li><b>Candidate Features</b>: The SAS loader stored all 26 features as floats by default. All features are either numerical or integer-encoded categorical variables. Converting them from <code>float</code> to <code>int</code> ensures proper representation and correctly handles missing codes (e.g., -1, -7).</li>
-#         <li><b>Target</b>: <code>TOTSLF23</code> is rounded to whole dollars in the MEPS Full Year data files (format 6.0). Can be safely stored as <code>int</code>.</li>
+#         <li><b>Candidate Features</b>: The SAS loader stored all 26 features as floats by default. Although many features are categorical and represent integer codes (e.g., 1=Male, 2=Female), they are maintained as <code>float</code> for two practical reasons:
+#             <ul>
+#                 <li>Missing Value Compatibility: In standard Pandas, <code>np.nan</code> is a floating-point object. Assigning it to an integer-typed column triggers an automatic cast back to <code>float64</code>.</li>
+#                 <li>Downstream Consistency: Most machine learning estimators (e.g., Scikit-Learn, XGBoost) internally convert numeric inputs to floating-point precision during computation.</li>
+#             </ul>
+#         </li>
+#         <li><b>Target Variable</b>: <code>TOTSLF23</code> is rounded to whole dollars in the MEPS data. Can be safely stored as <code>int</code>.</li>
 #     </ul>
 # </div>
 
@@ -242,9 +247,9 @@ df.dtypes
 # Convert ID to string
 df["DUPERSID"] = df["DUPERSID"].astype(str)
 
-# Convert feature and target columns from float to integer
-int_cols = df.columns.drop(["DUPERSID", "PERWT23F"])
-df[int_cols] = df[int_cols].astype(int)
+# Convert only the Target column to integer
+# Features are kept as float to accommodate np.nan and ML requirements
+df["TOTSLF23"] = df["TOTSLF23"].astype(int)
 
 # Verify the changes
 df.info()
