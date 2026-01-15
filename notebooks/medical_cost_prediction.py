@@ -259,8 +259,8 @@ df.info()
 #     <ul style="margin-bottom:0px">
 #         <li><b>np.nan</b>: Standard missing value indicator (technically a float); often the default in Pandas for numerical data.</li>
 #         <li><b>pd.NA</b>: Unified missing value indicator for modern nullable data types (mostly integer and boolean).</li>
-#         <li><b>None</b>: Python's native missing value indicator; often used for object and string data types.</li>
-#         <li><b>pd.NaT</b>: Specific missing value indicator for datetime and timedelta data types.</li>
+#         <li><b>None</b>: Python's native type; often used for object and string data.</li>
+#         <li><b>pd.NaT</b>: For datetime and timedelta data types.</li>
 #     </ul>
 #     <br>
 #     ℹ️ MEPS Missing Values:
@@ -275,12 +275,12 @@ df.info()
 
 
 # %%
-# Identify standard missing values (np.nan, pd.NA, None, pd.NaT)
+# Identify Pandas missing values
 df.isnull().sum()
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Handle MEPS-specific missing and skip patterns.
+#     📌 Handle MEPS-specific missing values and skip patterns.
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
@@ -292,7 +292,7 @@ df.isnull().sum()
 # </div>
 
 # %%
-# Identify MEPS-specific missing values 
+# Identify MEPS missing values 
 missing_codes = [-1, -7, -8, -9, -15]
 missing_frequency_df = pd.DataFrame({code: (df == code).sum() for code in missing_codes})
 missing_frequency_df["TOTAL"] = missing_frequency_df.sum(axis=1)
@@ -300,11 +300,11 @@ missing_frequency_df["PERCENTAGE"] = (missing_frequency_df["TOTAL"] / len(df) * 
 missing_frequency_df.sort_values("TOTAL", ascending=False) 
 
 # %%
-# PERFORM LOGIC RECOVERY
-# 1. Recover Smoker Status: Map -1 (Never smokers) to 2 (No)
+# Recover skip logic
+# Smoker: Convert -1 (Never Smoker) to 2 (No)
 df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2
 
-# 2. Recover Joint Pain: Map -1 to 1 (Yes) only if they have an Arthritis Diagnosis
+# Joint Pain: Convert -1 to 1 (Yes) only if they have Arthritis 
 df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
 
 # %%
