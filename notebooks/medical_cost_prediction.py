@@ -255,7 +255,7 @@ df.info()
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Pandas Missing Values:
+#     ℹ️ <b>Pandas Missing Values</b>:
 #     <ul style="margin-bottom:0px">
 #         <li><b>np.nan</b>: Standard missing value indicator (technically a float); often the default in Pandas for numerical data.</li>
 #         <li><b>pd.NA</b>: Unified missing value indicator for modern nullable data types (mostly integer and boolean).</li>
@@ -263,7 +263,7 @@ df.info()
 #         <li><b>pd.NaT</b>: For datetime and timedelta data types.</li>
 #     </ul>
 #     <br>
-#     ℹ️ MEPS Missing Values:
+#     ℹ️ <b>MEPS Missing Values</b>:
 #     <ul style="margin-bottom:0px">
 #         <li><b>-1 INAPPLICABLE</b>: Variable does not apply (structural skip).</li>
 #         <li><b>-7 REFUSED</b>: Person refused to answer.</li>
@@ -280,16 +280,25 @@ df.isnull().sum()
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Handle MEPS-specific missing values and skip patterns.
-# </div>
-#
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     Skip patterns: Address high "Inapplicable" (-1) rates by recovering "ground truth" values defined by MEPS structural skip patterns.  
+#     📌 <b>Handle MEPS-Specific Missing Values and Skip Patterns</b>
+#     <br><br>
+#     <b>Understanding Skip Patterns</b><br>
+#     Skip patterns (routing logic) are used in surveys to ensure respondents only answer questions relevant to them, reducing burden and improving data quality. For analysis, this creates "structural" missingness (coded as -1 Inapplicable) that can often be recovered by looking at the respondent's path through the survey.
+#     <br><br>
+#     <b>Recovering Implied Values:</b>  
 #     <ul>
-#         <li><b>Smoking (ADSMOK42)</b>: This question is only asked if the respondent answered "Yes" to the gateway question: <i>"Have you smoked at least 100 cigarettes in your life?"</i>. Respondents who answered "No" are coded as -1. For the Medical Cost Planner app, these "Never Smokers" are functionally <b>"No" (2)</b>.</li>
-#         <li><b>Joint Pain (JTPAIN31_M18)</b>: This question is skipped for adults who already reported an <b>Arthritis Diagnosis (ARTHDX)</b> earlier in the interview. Since arthritis inherently involves joint symptoms, these -1 values are logically recovered as <b>"Yes" (1)</b>.</li>
+#         <li><b>Smoker</b> (<code>ADSMOK42</code>): This question is only asked if the respondent already confirmed smoking 100+ cigarettes in their life. Those who said "No" skip this and are coded -1. In this project, these "Never Smokers" are mapped to "No" (2).</li>
+#         <li><b>Joint Pain</b> (<code>JTPAIN31_M18</code>): Respondents who already reported an arthritis diagnosis (<code>ARTHDX = 1</code>) earlier in the interview skip this question and are coded -1. Since arthritis inherently involves joint symptoms, these values are mapped to "Yes" (1).</li>
 #     </ul>
 # </div>
+
+# %%
+# Recover implied values
+# Smoker: Convert -1 (Never Smoker) to 2 (No)
+df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2
+
+# Joint Pain: Convert -1 to 1 (Yes) only if they have Arthritis 
+df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
 
 # %%
 # Identify MEPS missing values 
@@ -298,14 +307,6 @@ missing_frequency_df = pd.DataFrame({code: (df == code).sum() for code in missin
 missing_frequency_df["TOTAL"] = missing_frequency_df.sum(axis=1)
 missing_frequency_df["PERCENTAGE"] = (missing_frequency_df["TOTAL"] / len(df) * 100).round(2)
 missing_frequency_df.sort_values("TOTAL", ascending=False) 
-
-# %%
-# Recover skip logic
-# Smoker: Convert -1 (Never Smoker) to 2 (No)
-df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2
-
-# Joint Pain: Convert -1 to 1 (Yes) only if they have Arthritis 
-df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
 
 # %%
 # Convert all remaining MEPS missing codes to np.nan
