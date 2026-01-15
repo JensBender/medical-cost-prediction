@@ -255,7 +255,15 @@ df.info()
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ MEPS Missing Value Codes:
+#     ℹ️ Pandas Missing Values:
+#     <ul style="margin-bottom:0px">
+#         <li><b>np.nan</b>: Standard missing value indicator (technically a float); often the default in Pandas for numerical data.</li>
+#         <li><b>pd.NA</b>: Unified missing value indicator for modern nullable data types (mostly integer and boolean).</li>
+#         <li><b>None</b>: Python's native missing value indicator; often used for object and string data types.</li>
+#         <li><b>pd.NaT</b>: Specific missing value indicator for datetime and timedelta data types.</li>
+#     </ul>
+#     <br>
+#     ℹ️ MEPS Missing Values:
 #     <ul style="margin-bottom:0px">
 #         <li><b>-1 INAPPLICABLE</b>: Variable does not apply (structural skip).</li>
 #         <li><b>-7 REFUSED</b>: Person refused to answer.</li>
