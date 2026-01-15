@@ -219,9 +219,6 @@ df = df[columns_to_keep]
 # Filter DataFrame 
 df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy() 
 
-# %%
-df.info()  
-
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Handling Data Types</h2>
@@ -253,19 +250,18 @@ df[int_cols] = df[int_cols].astype(int)
 df.info()
 
 # %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Standardizing Missing Values</h2>
-# </div>
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h2 style="margin:0px">Standardizing Missing Values</h1>
+# </div> 
 #
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     <strong>MEPS Missing Value Codes</strong> <br>
-#     MEPS variables use the following codes for missing or non-applicable data:
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ MEPS Missing Value Codes:
 #     <ul style="margin-bottom:0px">
-#         <li><b>-1 INAPPLICABLE</b>: Variable does not apply to this person.</li>
-#         <li><b>-7 REFUSED</b>: Person refused to answer the question.</li>
+#         <li><b>-1 INAPPLICABLE</b>: Variable does not apply (structural skip).</li>
+#         <li><b>-7 REFUSED</b>: Person refused to answer.</li>
 #         <li><b>-8 DON'T KNOW</b>: Person did not know the answer.</li>
-#         <li><b>-9 NOT ASCERTAINED</b>: Data not collected (e.g., due to skip patterns or interview termination).</li>
-#         <li><b>-15 CANNOT BE COMPUTED</b>: Used for some complex derived variables.</li>
+#         <li><b>-9 NOT ASCERTAINED</b>: Administrative or technical error in collection.</li>
+#         <li><b>-15 CANNOT BE COMPUTED</b>: Incomplete data for a constructed variable.</li>
 #     </ul>
 # </div>
 
@@ -273,6 +269,19 @@ df.info()
 # %%
 # Identify standard missing values (np.nan, pd.NA, None, pd.NaT)
 df.isnull().sum()
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Handle MEPS-specific missing and skip patterns.
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     Skip patterns: Address high "Inapplicable" (-1) rates by recovering "ground truth" values defined by MEPS structural skip patterns.  
+#     <ul>
+#         <li><b>Smoking (ADSMOK42)</b>: This question is only asked if the respondent answered "Yes" to the gateway question: <i>"Have you smoked at least 100 cigarettes in your life?"</i>. Respondents who answered "No" are coded as -1. For the Medical Cost Planner app, these "Never Smokers" are functionally <b>"No" (2)</b>.</li>
+#         <li><b>Joint Pain (JTPAIN31_M18)</b>: This question is skipped for adults who already reported an <b>Arthritis Diagnosis (ARTHDX)</b> earlier in the interview. Since arthritis inherently involves joint symptoms, these -1 values are logically recovered as <b>"Yes" (1)</b>.</li>
+#     </ul>
+# </div>
 
 # %%
 # Identify MEPS-specific missing values 
@@ -283,5 +292,13 @@ missing_frequency_df["PERCENTAGE"] = (missing_frequency_df["TOTAL"] / len(df) * 
 missing_frequency_df.sort_values("TOTAL", ascending=False) 
 
 # %%
-# Convert all MEPS missing codes to np.nan
+# PERFORM LOGIC RECOVERY
+# 1. Recover Smoker Status: Map -1 (Never smokers) to 2 (No)
+df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2
+
+# 2. Recover Joint Pain: Map -1 to 1 (Yes) only if they have an Arthritis Diagnosis
+df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
+
+# %%
+# Convert all remaining MEPS missing codes to np.nan
 df = df.replace(missing_codes, np.nan)
