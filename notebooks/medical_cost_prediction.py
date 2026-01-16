@@ -229,13 +229,14 @@ df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy()
 #     <ul>
 #         <li><b>ID</b>: <code>DUPERSID</code> is an identifier, not a quantity. Converting them to <code>string</code> prevents unintended math.</li>
 #         <li><b>Sample Weights</b>: <code>PERWT23F</code> contains decimal precision critical for population-level estimates. Must remain <code>float</code>.</li>
-#         <li><b>Candidate Features</b>: The SAS loader stored all 26 features as floats by default. Although many features are categorical and represent integer codes (e.g., 1=Male, 2=Female), they are maintained as <code>float</code> for two practical reasons:
+#         <li><b>Candidate Features</b>: The SAS loader stored all 26 features as floats by default. Although many features are categorical and represent integer codes (e.g., 1=Male, 2=Female), they are maintained as <code>float</code> for three practical reasons:
 #             <ul>
-#                 <li>Missing Value Compatibility: In standard Pandas, <code>np.nan</code> is a floating-point object. Assigning it to an integer-typed column triggers an automatic cast back to <code>float64</code>.</li>
-#                 <li>Downstream Consistency: Most machine learning estimators (e.g., Scikit-Learn, XGBoost) internally convert numeric inputs to floating-point precision during computation.</li>
+#                 <li>Missing Value Compatibility: In standard Pandas, <code>np.nan</code> is a floating-point object. Assigning it to an integer column triggers an automatic cast back to <code>float64</code>.</li>
+#                 <li>Pipeline Consistency: scikit-learn transformers (e.g., <code>SimpleImputer</code>, <code>StandardScaler</code>) internally use floats and automatically convert numerical inputs to <code>float</code>, even when using <code>set_config(transform_output="pandas")</code>. Keeping them as floats avoids redundant type casting.</li>
+#                 <li>Model Consistency: Most machine learning models (e.g., XGBoost, Linear Regression) internally use floats and automatically convert numerical inputs to <code>float</code> during training and inference.</li>
 #             </ul>
 #         </li>
-#         <li><b>Target Variable</b>: <code>TOTSLF23</code> is rounded to whole dollars in the MEPS data. Can be safely stored as <code>int</code>.</li>
+#         <li><b>Target Variable</b>: <code>TOTSLF23</code> is rounded to whole dollars in the raw MEPS data. It is kept as <code>float</code> to ensure consistency with the continuous output of regression models. While <code>np.nan</code> triggers float casting, this dataset contains no missing values for the target, and any missing target values would typically be dropped rather than imputed.</li>
 #     </ul>
 # </div>
 
@@ -247,9 +248,9 @@ df.dtypes
 # Convert ID to string
 df["DUPERSID"] = df["DUPERSID"].astype(str)
 
-# Convert only the Target column to integer
-# Features are kept as float to accommodate np.nan and ML requirements
-df["TOTSLF23"] = df["TOTSLF23"].astype(int)
+# Features and Target are kept as float to accommodate np.nan and ML requirements
+# No manual conversion to int is needed as sklearn pipelines will operate on floats anyway.
+
 
 # Verify the changes
 df.info()
@@ -260,7 +261,7 @@ df.info()
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ <b>Pandas Missing Values</b>:
+#     ℹ️ <b>Pandas Missing Value Types</b>:
 #     <ul style="margin-bottom:0px">
 #         <li><b>np.nan</b>: Standard missing value indicator (technically a float); often the default in Pandas for numerical data.</li>
 #         <li><b>pd.NA</b>: Unified missing value indicator for modern nullable data types (mostly integer and boolean).</li>
@@ -268,7 +269,7 @@ df.info()
 #         <li><b>pd.NaT</b>: For datetime and timedelta data types.</li>
 #     </ul>
 #     <br>
-#     ℹ️ <b>MEPS Missing Values</b>:
+#     ℹ️ <b>MEPS Missing Value Codes</b>:
 #     <ul style="margin-bottom:0px">
 #         <li><b>-1 INAPPLICABLE</b>: Variable does not apply (structural skip).</li>
 #         <li><b>-7 REFUSED</b>: Person refused to answer.</li>
@@ -288,7 +289,7 @@ df.isnull().sum()
 #     📌 <b>Handle MEPS-Specific Missing Values and Skip Patterns</b>
 #     <br><br>
 #     <b>Understanding Skip Patterns</b><br>
-#     Skip patterns (routing logic) are used in surveys to ensure respondents only answer questions relevant to them, reducing burden and improving data quality. For analysis, this creates "structural" missingness (coded as -1 Inapplicable) that can often be recovered by looking at the respondent's path through the survey.
+#     Skip patterns (routing logic) are used in surveys to ensure respondents only answer questions relevant to them, reducing burden and improving data quality. For analysis, this creates "structural" missingness (coded as -1 Inapplicable) can often be recovered by looking at the respondent's path through the survey.
 #     <br><br>
 #     <b>Recovering Implied Values:</b>  
 #     <ul>
