@@ -92,10 +92,22 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 
 </details>
 
-**Feature Selection Process**:
-1.  **Candidate Screening**: Identify all MEPS variables that a layperson can answer easily without having to look something up or think too hard. Ensure temporal validity (no end-of-year or in-year utilization variables).
-2.  **Feature Importance Ranking**: Train preliminary models on these candidate features to obtain feature importance scores.
-3.  **Final Feature Selection**: Select the top-performing features that maximize predictive power while keeping form completion under ~90 seconds.
+**Feature Selection**:
+To balance predictive performance with a frictionless user experience (target < 90s completion), we classify features based on two dimensions: **Feature Importance** and **User Friction** (Sensitivity + Cognitive Load).
+
+**Decision Matrix**:
+| | **Low User Friction**<br>*(Non-sensitive/Easy to answer)* | **High User Friction**<br>*(Sensitive/Hard to know)* |
+| :--- | :--- | :--- |
+| **High Feature Importance** | **REQUIRED**<br>They drive model performance.<br>*Examples: Age, Insurance* | **OPTIONAL**<br>Allow skipping to respect sensitivity/cognitive load. Impute or use reasonable defaults.<br>*Examples: Income, Mental Health* |
+| **Low Feature Importance** | **OPTIONAL**<br>Nice-to-have. Impute or use reasonable defaults.<br>*Examples: Region* | **DROP**<br>Hard to answer and low value. Remove entirely.<br>*Examples: Complex medical history* |
+
+**Selection Process**:
+1.  **Candidate Screening**: Identify MEPS variables that a layperson can answer from memory. Ensure temporal validity (no end-of-year or in-year variables).
+2.  **Feature Importance Ranking**: Train preliminary models to obtain feature importance scores.
+3.  **Final Feature Selection**: Map features to the matrix above.
+    *   **High Importance / High Friction**: Make optional in UI. Consider informing user via tooltip that providing it improves accuracy.
+    *   **Imputation Strategy**: Implement robust imputation for all production features (even required ones) to prevent app crashes on edge cases.
+
 
 ### Candidate Features
 The following MEPS variables have been identified as candidate features for the model. All candidates satisfy three constraints: (1) users can answer from memory, (2) variables reflect beginning-of-year status (temporal validity), and (3) established predictive power in literature. The final feature set will be selected based on empirical feature importance ranking, targeting form completion in under 90 seconds.
