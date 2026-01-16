@@ -313,3 +313,50 @@ df = df.replace(missing_codes, np.nan)
 
 # Verify results
 df.isnull().sum().sort_values(ascending=False)
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Train-Validation-Test Split</h2>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Split the data into 80% for training, 10% for validation, and 10% for testing.
+#     <table style="margin-left:0; margin-top:20px; margin-bottom:20px">
+#         <tr>
+#             <th style="background-color:#f5ecda;">Data</th>
+#             <th style="background-color:#f5ecda;">Size (%)</th>
+#             <th style="background-color:#f5ecda;">Size (Total)</th>
+#         </tr>
+#         <tr>
+#             <td style="background-color:#fff6e4;">Training Set</td>
+#             <td style="background-color:#fff6e4;">80%</td>
+#             <td style="background-color:#fff6e4;">11,814</td>
+#         </tr>
+#         <tr>
+#             <td style="background-color:#f5ecda;">Validation Set</td>
+#             <td style="background-color:#f5ecda;">10%</td>
+#             <td style="background-color:#f5ecda;">1,477</td>
+#         </tr>
+#         <tr>
+#             <td style="background-color:#fff6e4;">Test Set</td>
+#             <td style="background-color:#fff6e4;">10%</td>
+#             <td style="background-color:#fff6e4;">1,477</td>
+#         </tr>
+#     </table>
+# </div>
+
+# %%
+# Split the data into X features and y target
+X = df.drop("TOTSLF23", axis=1)
+y = df["TOTSLF23"]
+
+# %%
+# Split the data into training and temporary sets (80% train, 20% temporary)
+X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Split the temporary data into validation and test sets (50% each)
+# Note: This accomplishes a 80% training, 10% validation and 10% test set size
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+
+# Delete the temporary data to free up memory
+del X_temp, y_temp
