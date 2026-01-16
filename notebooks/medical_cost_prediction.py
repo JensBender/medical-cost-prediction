@@ -236,7 +236,7 @@ df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy()
 #                 <li>Model Consistency: Most machine learning models (e.g., XGBoost, Linear Regression) internally use floats and automatically convert numerical inputs to <code>float</code> during training and inference.</li>
 #             </ul>
 #         </li>
-#         <li><b>Target Variable</b>: <code>TOTSLF23</code> is rounded to whole dollars in the raw MEPS data. It is kept as <code>float</code> to ensure consistency with the continuous output of regression models. While <code>np.nan</code> triggers float casting, this dataset contains no missing values for the target, and any missing target values would typically be dropped rather than imputed.</li>
+#         <li><b>Target Variable</b>: <code>TOTSLF23</code> is rounded to whole dollars in the raw MEPS data. It is kept as <code>float</code> for Model Consistency and to avoid redundant type casting, as regression models deliver <code>float</code> predictions during training and inference.</li>
 #     </ul>
 # </div>
 
