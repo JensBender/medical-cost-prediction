@@ -399,3 +399,11 @@ df["TOTSLF23"].describe()
 #     <strong>Visualize Distributions</strong> <br> 
 #     📌 Histogram that shows the distribution of the target variable. 
 # </div>
+
+# %%
+# Histogram of health care costs
+sns.histplot(df["TOTSLF23"])
+
+# %%
+# Histogram of health care costs excluding zero costs and top 1% 
+sns.histplot(df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] < 13055)]["TOTSLF23"])
