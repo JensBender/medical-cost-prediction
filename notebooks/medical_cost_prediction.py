@@ -470,6 +470,17 @@ plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
 plt.show()
 
 # %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     💡 <b>Insight</b>: High inequality in out-of-pocket health care spending.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Top 1% Concentration</b>: The top 1% of respondents account for 20% of total out-of-pocket costs.</li>
+#         <li><b>The 80/20 Rule</b>: The top 20% of respondents account for roughly 80% of total costs.</li>
+#         <li><b>Zero Costs</b>: 21% of respondents have $0 in out-of-pocket costs.</li>
+#         <li><b>Bottom 50%</b>: The bottom half of the population collectively accounts for less than 5% of total costs.</li>
+#     </ul>
+# </div> 
+
+# %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Visualize Distributions</strong> <br> 
 #     📌 Histogram that shows the distribution of the target variable. 
