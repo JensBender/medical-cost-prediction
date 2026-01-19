@@ -387,7 +387,7 @@ del X_temp, y_temp
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Descriptive Statistics</strong> <br>
-#     📌 Examine descriptive statistics of out-of-pocket health care costs. 
+#     📌 Examine descriptive statistics of out-of-pocket health care costs (target variable). 
 # </div>
 
 # %%
@@ -404,6 +404,18 @@ zero_costs_summary = pd.DataFrame({
     ]
 }, index=["Zero Costs", "Positive Costs"]).round(2)
 zero_costs_summary
+
+# %%
+# Top 1% costs
+top_1_cutoff = df["TOTSLF23"].quantile(0.99)
+top_1_sum = df[df["TOTSLF23"] > top_1_cutoff]["TOTSLF23"].sum()
+bottom_99_sum = df[df["TOTSLF23"] <= top_1_cutoff]["TOTSLF23"].sum()
+top_1_share = top_1_sum / (top_1_sum + bottom_99_sum) * 100
+
+print(f"The top 1% starts at: ${top_1_cutoff:,.0f}")
+print(f"The top 1% have summed costs of: ${top_1_sum / 1e6:.1f}M")
+print(f"The bottom 99% have summed costs of: ${bottom_99_sum / 1e6:.1f}M")
+print(f"The top 1% of respondents account for {top_1_share:.0f}% of the costs.")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
