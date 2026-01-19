@@ -360,3 +360,42 @@ X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, r
 
 # Delete the temporary data to free up memory
 del X_temp, y_temp
+
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Exploratory Data Analysis (EDA)</h1>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Univariate EDA</h2>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Analyze the distribution of a single column using descriptive statistics and visualizations.
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Numerical Columns</h3>
+# </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Examine descriptive statistics (e.g., mean, median, standard deviation) and visualize the distributions (e.g., histograms) of numerical columns.
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Descriptive Statistics</strong> <br>
+#     📌 Examine descriptive statistics of numerical columns. 
+# </div>
+
+# %%
+# Descriptive statistics of the target variable
+df["TOTSLF23"].describe()
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Visualize Distributions</strong> <br> 
+#     📌 Histogram that shows the distribution of the target variable. 
+# </div>
