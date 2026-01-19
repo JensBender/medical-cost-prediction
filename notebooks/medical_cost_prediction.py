@@ -395,7 +395,7 @@ del X_temp, y_temp
 df["TOTSLF23"].describe()
 
 # %%
-# Frequency of zero costs
+# Zero costs
 zero_costs_summary = pd.DataFrame({
     "Count": [(df["TOTSLF23"] == 0).sum(), (df["TOTSLF23"] > 0).sum()],
     "Percentage": [
@@ -413,9 +413,26 @@ bottom_99_sum = df[df["TOTSLF23"] <= top_1_cutoff]["TOTSLF23"].sum()
 top_1_share = top_1_sum / (top_1_sum + bottom_99_sum) * 100
 
 print(f"The top 1% starts at: ${top_1_cutoff:,.0f}")
-print(f"The top 1% have summed costs of: ${top_1_sum / 1e6:.1f}M")
-print(f"The bottom 99% have summed costs of: ${bottom_99_sum / 1e6:.1f}M")
+print(f"The top 1% have summed costs of: ${top_1_sum / 1_000_000:.1f}M")
+print(f"The bottom 99% have summed costs of: ${bottom_99_sum / 1_000_000:.1f}M")
 print(f"The top 1% of respondents account for {top_1_share:.0f}% of the costs.")
+
+# %%
+# Concentration of Spend Analysis
+percentiles = [0.5, 0.8, 0.9, 0.95, 0.99]
+stats = []
+total_spend = df["TOTSLF23"].sum()
+for p in percentiles:
+    cutoff = df["TOTSLF23"].quantile(p)
+    spend_above = df[df["TOTSLF23"] > cutoff]["TOTSLF23"].sum()
+    share = (spend_above / total_spend) * 100
+    stats.append({
+        "Top X%": f"Top {(1-p)*100:.0f}%",
+        "Cutoff": f"${cutoff:,.0f}",
+        "Share of Total Spend": f"{share:.0f}%"
+    })
+concentration_df = pd.DataFrame(stats)
+concentration_df
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
