@@ -419,7 +419,7 @@ print(f"The top 1% of respondents account for {top_1_share:.0f}% of total out-of
 
 # %%
 # Concentration of Out-of-Pocket Costs
-percentiles = [0.5, 0.8, 0.9, 0.95, 0.99]
+percentiles = [0.99, 0.95, 0.9, 0.8, 0.5]
 stats = []
 total_spend = df["TOTSLF23"].sum()
 for p in percentiles:
@@ -429,25 +429,27 @@ for p in percentiles:
     stats.append({
         "Top X%": f"Top {(1-p)*100:.0f}%",
         "Cutoff": f"${cutoff:,.0f}",
-        "Share of Total Out-of-Pocket Costs": f"{share:.0f}%"
+        "Share of Total Costs": f"{share:.0f}%"
     })
 concentration_df = pd.DataFrame(stats)
 concentration_df
 
 # %%
 # Lorenz Curve
-# Sort costs from smallest to largest
-sorted_costs = np.sort(df["TOTSLF23"])
+import matplotlib.ticker as mtick
+
+# Sort costs from lowest to highest
+sorted_costs = df["TOTSLF23"].sort_values()
 
 # Calculate cumulative percentage of population and costs
 cum_pop = np.arange(1, len(sorted_costs) + 1) / len(sorted_costs) * 100
-cum_costs = np.cumsum(sorted_costs) / np.sum(sorted_costs) * 100
+cum_costs = sorted_costs.cumsum() / sorted_costs.sum() * 100
 
 # Plotting
 plt.figure(figsize=(8, 6))
 
 # The Lorenz Curve
-plt.plot(cum_pop, cum_costs, label="Lorenz Curve (Actual Out-of-Pocket Costs)", color="#084594", lw=2)
+plt.plot(cum_pop, cum_costs, label="Lorenz Curve (Actual Costs)", color="#084594", lw=2)
 
 # The Line of Equality (Perfectly equal spend)
 plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality")
@@ -455,11 +457,16 @@ plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equali
 # Fill the area for visual emphasis
 plt.fill_between(cum_pop, cum_costs, cum_pop, color="#084594", alpha=0.1)
 
+# Customization
 plt.title("Lorenz Curve: Concentration of Out-of-Pocket Costs")
-plt.xlabel("Cumulative % of Population (Ordered from Lowest to Highest Out-of-Pocket Costs)")
-plt.ylabel("Cumulative % of Total Out-of-Pocket Costs")
+plt.xlabel("Cumulative % of Population (Ordered from Lowest to Highest Costs)")
+plt.ylabel("Cumulative % of Total Costs")
 plt.legend()
 plt.grid(True, alpha=0.3)
+plt.xticks(range(0, 101, 10))  # set grid lines every 10%
+plt.yticks(range(0, 101, 10))
+plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())  # format axis tick labels as percentages
+plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
 plt.show()
 
 # %% [markdown]
