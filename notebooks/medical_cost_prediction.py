@@ -434,6 +434,34 @@ for p in percentiles:
 concentration_df = pd.DataFrame(stats)
 concentration_df
 
+# %%
+# Lorenz Curve
+# Sort costs from smallest to largest
+sorted_costs = np.sort(df["TOTSLF23"])
+
+# Calculate cumulative percentage of population and costs
+cum_pop = np.arange(1, len(sorted_costs) + 1) / len(sorted_costs) * 100
+cum_costs = np.cumsum(sorted_costs) / np.sum(sorted_costs) * 100
+
+# Plotting
+plt.figure(figsize=(8, 6))
+
+# The Lorenz Curve
+plt.plot(cum_pop, cum_costs, label="Lorenz Curve (Actual Spend)", color="#084594", lw=2)
+
+# The Line of Equality (Perfectly equal spend)
+plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality")
+
+# Fill the area for visual emphasis
+plt.fill_between(cum_pop, cum_costs, cum_pop, color="#084594", alpha=0.1)
+
+plt.title("Lorenz Curve: Concentration of Out-of-Pocket Costs")
+plt.xlabel("Cumulative % of Population (Ordered from Lowest to Highest Spend)")
+plt.ylabel("Cumulative % of Total Out-of-Pocket Costs")
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.show()
+
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Visualize Distributions</strong> <br> 
@@ -446,4 +474,4 @@ sns.histplot(df["TOTSLF23"])
 
 # %%
 # Histogram of health care costs excluding zero costs and top 1% 
-sns.histplot(df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] < 13055)]["TOTSLF23"])
+sns.histplot(df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] <= top_1_cutoff)]["TOTSLF23"])
