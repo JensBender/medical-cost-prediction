@@ -105,7 +105,7 @@ df.head()
 # </div> 
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     <strong>Note</strong>: Kept column names in ALL CAPS in this project to ensure consistency with official <b><a href="../docs/references/h251doc.pdf">MEPS documentation</a></b>, <b><a href="../docs/references/h251cb.pdf">codebook</a></b>, and <b><a href="../docs/references/data_dictionary.md">data dictionary</a></b>.
+#     <strong>Note:</strong> Kept column names in ALL CAPS in this project to ensure consistency with official <b><a href="../docs/references/h251doc.pdf">MEPS documentation</a></b>, <b><a href="../docs/references/h251cb.pdf">codebook</a></b>, and <b><a href="../docs/references/data_dictionary.md">data dictionary</a></b>.
 # </div>
 
 # %% [markdown]
@@ -156,13 +156,13 @@ df[duplicates_without_id]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Filter the following 29 columns (out of 1,374):
 #     <ul style="margin-bottom:0px">
-#         <li><b>ID</b>: Unique identifier for each respondent (<code>DUPERSID</code>).</li>
-#         <li><b>Sample Weights</b>: Ensures population representativeness (<code>PERWT23F</code>).</li>
-#         <li><b>Candidate Features</b>: 26 variables selected for their consumer accessibility, beginning-of-year measurement, and predictive power.</li> 
-#         <li><b>Target Variable</b>: Total out-of-pocket health care costs (<code>TOTSLF23</code>).</li>
+#         <li><b>ID:</b> Unique identifier for each respondent (<code>DUPERSID</code>).</li>
+#         <li><b>Sample Weights:</b> Ensures population representativeness (<code>PERWT23F</code>).</li>
+#         <li><b>Candidate Features:</b> 26 variables selected for their consumer accessibility, beginning-of-year measurement, and predictive power.</li> 
+#         <li><b>Target Variable:</b> Total out-of-pocket health care costs (<code>TOTSLF23</code>).</li>
 #     </ul>
 #     <br>
-#     <b>Rationale</b>: For a detailed breakdown of the target variable selection and feature selection criteria, see the <b><a href="../docs/specs/technical_specifications.md">Technical Specifications</a></b> and <b><a href="../docs/research/candidate_features.md">Candidate Features Research</a></b>.
+#     <b>Rationale:</b> For a detailed breakdown of the target variable selection and feature selection criteria, see the <b><a href="../docs/specs/technical_specifications.md">Technical Specifications</a></b> and <b><a href="../docs/research/candidate_features.md">Candidate Features Research</a></b>.
 # </div>
 
 # %%
@@ -208,11 +208,11 @@ df = df[columns_to_keep]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Filter rows to match the target population based on the following criteria:
 #     <ul style="margin-bottom:0px">
-#         <li><b>Positive person weight</b> (<code>PERWT23F > 0</code>): Drop respondents with a person weight of zero (i.e., 456 respondents). These individuals are considered "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad).</li>
-#         <li><b>Adults</b> (<code>AGE23X >= 18</code>): Drop respondents under age 18 (i.e., 3796 respondents), as the medical cost planner app targets adults.</li>
+#         <li><b>Positive person weight (<code>PERWT23F > 0</code>):</b> Drop respondents with a person weight of zero (i.e., 456 respondents). These individuals are considered "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad).</li>
+#         <li><b>Adults (<code>AGE23X >= 18</code>):</b> Drop respondents under age 18 (i.e., 3796 respondents), as the medical cost planner app targets adults.</li>
 #     </ul>
 #     <br>
-#     <b>Note</b>: Keeps 14,768 out of 18,919 respondents.
+#     <b>Note:</b> Keeps 14,768 out of 18,919 respondents.
 # </div>
 
 # %%
@@ -227,16 +227,16 @@ df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy()
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Identify and convert incorrect storage data types.
 #     <ul>
-#         <li><b>ID</b>: <code>DUPERSID</code> is an identifier, not a quantity. Converting them to <code>string</code> prevents unintended math.</li>
-#         <li><b>Sample Weights</b>: <code>PERWT23F</code> contains decimal precision critical for population-level estimates. Must remain <code>float</code>.</li>
-#         <li><b>Candidate Features</b>: The SAS loader stored all 26 features as floats by default. Although many features are categorical and represent integer codes (e.g., 1=Male, 2=Female), they are maintained as <code>float</code> for three practical reasons:
+#         <li><b>ID:</b> <code>DUPERSID</code> is an identifier, not a quantity. Converting them to <code>string</code> prevents unintended math.</li>
+#         <li><b>Sample Weights:</b> <code>PERWT23F</code> contains decimal precision critical for population-level estimates. Must remain <code>float</code>.</li>
+#         <li><b>Candidate Features:</b> The SAS loader stored all 26 features as floats by default. Although many features are categorical and represent integer codes (e.g., 1=Male, 2=Female), they are maintained as <code>float</code> for three practical reasons:
 #             <ul>
 #                 <li>Missing Value Compatibility: In standard Pandas, <code>np.nan</code> is a floating-point object. Assigning it to an integer column automatically casts back to <code>float64</code>.</li>
 #                 <li>Data Preprocessing Consistency: scikit-learn transformers (e.g., <code>SimpleImputer</code>, <code>StandardScaler</code>) internally use floats and automatically convert numerical inputs to <code>float</code>, even when using <code>set_config(transform_output="pandas")</code>. Keeping them as floats avoids redundant type casting.</li>
 #                 <li>Model Consistency: Most machine learning models (e.g., XGBoost, Linear Regression) internally use floats and automatically convert numerical inputs to <code>float</code> during training and inference. Keeping them as floats avoids redundant type casting.</li>
 #             </ul>
 #         </li>
-#         <li><b>Target Variable</b>: <code>TOTSLF23</code> is rounded to whole dollars in the raw MEPS data. It is kept as <code>float</code> for Model Consistency and to avoid redundant type casting, as ML models deliver <code>float</code> predictions during training and inference.</li>
+#         <li><b>Target Variable:</b> <code>TOTSLF23</code> is rounded to whole dollars in the raw MEPS data. It is kept as <code>float</code> for Model Consistency and to avoid redundant type casting, as ML models deliver <code>float</code> predictions during training and inference.</li>
 #     </ul>
 # </div>
 
@@ -256,19 +256,19 @@ df["DUPERSID"] = df["DUPERSID"].astype(str)
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ <b>Pandas Missing Value Types</b>:
 #     <ul style="margin-bottom:0px">
-#         <li><b>np.nan</b>: Standard missing value indicator (technically a float); often the default in Pandas for numerical data.</li>
-#         <li><b>pd.NA</b>: Unified missing value indicator for modern nullable data types (mostly integer and boolean).</li>
-#         <li><b>None</b>: Python's native type; often used for object and string data.</li>
-#         <li><b>pd.NaT</b>: For datetime and timedelta data types.</li>
+#         <li><b>np.nan:</b> Standard missing value indicator (technically a float); often the default in Pandas for numerical data.</li>
+#         <li><b>pd.NA:</b> Unified missing value indicator for modern nullable data types (mostly integer and boolean).</li>
+#         <li><b>None:</b> Python's native type; often used for object and string data.</li>
+#         <li><b>pd.NaT:</b> For datetime and timedelta data types.</li>
 #     </ul>
 #     <br>
-#     ℹ️ <b>MEPS Missing Value Codes</b>:
+#     ℹ️ <b>MEPS Missing Value Codes:</b>
 #     <ul style="margin-bottom:0px">
-#         <li><b>-1 INAPPLICABLE</b>: Variable does not apply (structural skip).</li>
-#         <li><b>-7 REFUSED</b>: Person refused to answer.</li>
-#         <li><b>-8 DON'T KNOW</b>: Person did not know the answer.</li>
-#         <li><b>-9 NOT ASCERTAINED</b>: Administrative or technical error in collection.</li>
-#         <li><b>-15 CANNOT BE COMPUTED</b>: Incomplete data for a constructed variable.</li>
+#         <li><b>-1 INAPPLICABLE:</b> Variable does not apply (structural skip).</li>
+#         <li><b>-7 REFUSED:</b> Person refused to answer.</li>
+#         <li><b>-8 DON'T KNOW:</b> Person did not know the answer.</li>
+#         <li><b>-9 NOT ASCERTAINED:</b> Administrative or technical error in collection.</li>
+#         <li><b>-15 CANNOT BE COMPUTED:</b> Incomplete data for a constructed variable.</li>
 #     </ul>
 # </div>
 
@@ -286,8 +286,8 @@ df.isnull().sum()
 #     <br><br>
 #     <b>Recovering Implied Values:</b>  
 #     <ul>
-#         <li><b>Smoker</b> (<code>ADSMOK42</code>): This question is only asked if the respondent already confirmed smoking 100+ cigarettes in their life. Those who said "No" skip this and are coded -1. In this project, these "Never Smokers" are mapped to "No" (2).</li>
-#         <li><b>Joint Pain</b> (<code>JTPAIN31_M18</code>): Respondents who already reported an arthritis diagnosis (<code>ARTHDX = 1</code>) earlier in the interview skip this question and are coded -1. Since arthritis inherently involves joint symptoms, these values are mapped to "Yes" (1).</li>
+#         <li><b>Smoker (<code>ADSMOK42</code>):</b> This question is only asked if the respondent already confirmed smoking 100+ cigarettes in their life. Those who said "No" skip this and are coded -1. In this project, these "Never Smokers" are mapped to "No" (2).</li>
+#         <li><b>Joint Pain (<code>JTPAIN31_M18</code>):</b> Respondents who already reported an arthritis diagnosis (<code>ARTHDX = 1</code>) earlier in the interview skip this question and are coded -1. Since arthritis inherently involves joint symptoms, these values are mapped to "Yes" (1).</li>
 #     </ul>
 # </div>
 
@@ -387,7 +387,7 @@ del X_temp, y_temp
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Descriptive Statistics</strong> <br>
-#     📌 Examine descriptive statistics of out-of-pocket costs (target variable). 
+#     📌 Examine descriptive statistics of total out-of-pocket health care costs (target variable). 
 # </div>
 
 # %%
@@ -471,12 +471,12 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     💡 <b>Insight</b>: High inequality in out-of-pocket health care spending.
+#     💡 <b>Insight:</b> High inequality in out-of-pocket health care spending.
 #     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>Top 1% Concentration</b>: The top 1% of respondents account for 20% of total out-of-pocket costs.</li>
-#         <li><b>The 80/20 Rule</b>: The top 20% of respondents account for roughly 80% of total costs.</li>
-#         <li><b>Zero Costs</b>: 21% of respondents have $0 in out-of-pocket costs.</li>
-#         <li><b>Bottom 50%</b>: The bottom half of the population collectively accounts for less than 5% of total costs.</li>
+#         <li><b>Top 1% Concentration:</b> The top 1% of respondents account for 20% of total out-of-pocket costs.</li>
+#         <li><b>The 80/20 Rule:</b> The top 20% of respondents account for roughly 80% of total costs.</li>
+#         <li><b>Zero Costs:</b> 21% of respondents have $0 in out-of-pocket costs.</li>
+#         <li><b>Bottom 50%:</b> The bottom half of the population collectively accounts for less than 5% of total costs.</li>
 #     </ul>
 # </div> 
 
