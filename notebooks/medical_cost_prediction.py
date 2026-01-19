@@ -387,12 +387,23 @@ del X_temp, y_temp
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Descriptive Statistics</strong> <br>
-#     📌 Examine descriptive statistics of numerical columns. 
+#     📌 Examine descriptive statistics of out-of-pocket health care costs. 
 # </div>
 
 # %%
-# Descriptive statistics of the target variable
+# Descriptive statistics of target variable
 df["TOTSLF23"].describe()
+
+# %%
+# Frequency of zero costs
+zero_costs_summary = pd.DataFrame({
+    "Count": [(df["TOTSLF23"] == 0).sum(), (df["TOTSLF23"] > 0).sum()],
+    "Percentage": [
+        (df["TOTSLF23"] == 0).mean() * 100,
+        (df["TOTSLF23"] > 0).mean() * 100
+    ]
+}, index=["Zero Costs", "Positive Costs"]).round(2)
+zero_costs_summary
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
