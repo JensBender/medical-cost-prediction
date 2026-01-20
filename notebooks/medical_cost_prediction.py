@@ -423,18 +423,17 @@ sns.histplot(df["PERWT23F"])
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Descriptive Statistics</strong> <br>
-#     📌 Examine descriptive statistics of total out-of-pocket health care costs. 
+#     📌 Examine descriptive statistics of total out-of-pocket health care costs, both on sample-level and population-level. 
 # </div>
 
 # %%
-# Sample descriptive statistics (unweighted)
+# Sample statistics (unweighted)
 df["TOTSLF23"].describe()
 
 
 # %%
-# Population descriptive statistics (weighted) 
-
-# Helper function to calculate weighted quantiles with numpy (pandas has none)
+# Population statistics (weighted) 
+# Helper function to calculate weighted quantiles (with numpy as not available in pandas)
 def weighted_quantile(variable, weights, quantile):
     sorter = np.argsort(variable)
     values = variable.iloc[sorter]
@@ -443,12 +442,13 @@ def weighted_quantile(variable, weights, quantile):
     cumulative_weight /= np.sum(weights)
     return np.interp(quantile, cumulative_weight, values)
 
-# Helper function to calculate weighted standard deviation with numpy (pandas has none)
+# Helper function to calculate weighted standard deviation (with numpy as not available in pandas)
 def weighted_std(variable, weights):
     weighted_mean = np.average(variable, weights=weights)
     weighted_variance = np.average((variable - weighted_mean)**2, weights=weights)
     return np.sqrt(weighted_variance)
 
+# Calculate weighted statistics
 w_mean = np.average(df["TOTSLF23"], weights=df["PERWT23F"])
 w_std = weighted_std(df["TOTSLF23"], weights=df["PERWT23F"])
 w_p25 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.25)
@@ -471,14 +471,14 @@ comparison_df = pd.DataFrame({
         df["PERWT23F"].sum(),  # sum of weights = count of target population
         w_mean,
         w_std,
-        df["TOTSLF23"].min(),   # min is identical
+        df["TOTSLF23"].min(),  # min is identical
         w_p25,
         w_median,
         w_p75,
-        df["TOTSLF23"].max()    # max is identical
+        df["TOTSLF23"].max()  # max is identical
     ]
 }, index=["count", "mean", "std", "min", "25%", "50%", "75%", "max"])
-comparison_df.style.format("{:,.0f}")
+comparison_df.style.format("{:,.0f}")  # format all values with comma thousand separator and no decimals
 
 # %%
 # Zero costs
