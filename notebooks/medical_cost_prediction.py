@@ -380,6 +380,39 @@ del X_temp, y_temp
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Sample Weights</h3>
+# </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Examine descriptive statistics and visualize the distribution of the sample weights. 
+# </div>
+
+# %%
+# Descriptive statistics of sample weights
+df["PERWT23F"].describe()
+
+# %%
+# Sum of sample weights
+df["PERWT23F"].sum()
+
+# %%
+# Histogram of sample weights
+sns.histplot(df["PERWT23F"])
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     💡 <b>Insight:</b> Sample weights enable inference from the sample to the U.S. civilian non-institutionalized adult population.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Sum:</b> The sum of all weights is approximately 260 million, representing the estimated U.S. adult population in 2023.</li>
+#         <li><b>Median:</b> A typical respondent represents roughly 14,600 people.</li>
+#         <li><b>Right-Skewed Distribution:</b> The histogram shows a single peak with a long, sparse tail. The mean (17,584) is significantly higher than the median, confirming that a small number of respondents represent a disproportionately large share of the population.</li>
+#         <li><b>Sampling Strategy:</b> Weights range from 502 to 131,657 and the distribution is unimodal. This reflects MEPS's strategy of oversampling specific subgroups to ensure enough raw data for reliable estimates for minority or high-need subgroups.</li>
+#         <li><b>Standard Deviation:</b> Because weights vary significantly (std ≈ 12,334), simple unweighted averages would be biased. Use the weights to ensure high-weight respondents contribute their proportional share to national estimates.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">Target Variable</h3>
 # </div> 
 #
@@ -496,36 +529,3 @@ sns.histplot(df["TOTSLF23"])
 # %%
 # Histogram of out-of-pocket costs excluding zero costs and top 1% 
 sns.histplot(df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] <= top_1_cutoff)]["TOTSLF23"])
-
-# %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Sample Weights</h3>
-# </div> 
-#
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Examine descriptive statistics and visualize the distribution of the sample weights. 
-# </div>
-
-# %%
-# Descriptive statistics of sample weights
-df["PERWT23F"].describe()
-
-# %%
-# Sum of sample weights
-df["PERWT23F"].sum()
-
-# %%
-# Histogram of sample weights
-sns.histplot(df["PERWT23F"])
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     💡 <b>Insight:</b> Sample weights enable inference from the sample to the U.S. civilian non-institutionalized adult population.
-#     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>Sum:</b> The sum of all weights is approximately 260 million, representing the estimated U.S. adult population in 2023.</li>
-#         <li><b>Median:</b> A typical respondent represents roughly 14,600 people.</li>
-#         <li><b>Right-Skewed Distribution:</b> The histogram shows a single peak with a long, sparse tail. The mean (17,584) is significantly higher than the median, confirming that a small number of respondents represent a disproportionately large share of the population.</li>
-#         <li><b>Sampling Strategy:</b> Weights range from 502 to 131,657 and the distribution is unimodal. This reflects MEPS's strategy of oversampling specific subgroups to ensure enough raw data for reliable estimates for minority or high-need subgroups.</li>
-#         <li><b>Standard Deviation:</b> Because weights vary significantly (std ≈ 12,334), simple unweighted averages would be biased. Use the weights to ensure high-weight respondents contribute their proportional share to national estimates.</li>
-#     </ul>
-# </div>
