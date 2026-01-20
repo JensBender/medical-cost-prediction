@@ -427,8 +427,12 @@ sns.histplot(df["PERWT23F"])
 # </div>
 
 # %%
-# Descriptive statistics of target variable
+# Sample descriptive statistics (unweighted)
 df["TOTSLF23"].describe()
+
+# %%
+# Population descriptive statistics (weighted) 
+weighted_mean = np.average(df["TOTSLF23"], weights=df["PERWT23F"])
 
 # %%
 # Zero costs
