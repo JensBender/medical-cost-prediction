@@ -449,11 +449,36 @@ def weighted_std(variable, weights):
     weighted_variance = np.average((variable - weighted_mean)**2, weights=weights)
     return np.sqrt(weighted_variance)
 
-weighted_mean = np.average(df["TOTSLF23"], weights=df["PERWT23F"])
-weighted_std = weighted_std(df["TOTSLF23"], weights=df["PERWT23F"])
-weighted_p25 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.25)
-weighted_median = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.5)
-weighted_p75 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.75)
+w_mean = np.average(df["TOTSLF23"], weights=df["PERWT23F"])
+w_std = weighted_std(df["TOTSLF23"], weights=df["PERWT23F"])
+w_p25 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.25)
+w_median = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.5)
+w_p75 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.75)
+
+# Create comparison table
+comparison_df = pd.DataFrame({
+    "Sample (Unweighted)": [
+        len(df),
+        df["TOTSLF23"].mean(),
+        df["TOTSLF23"].std(),
+        df["TOTSLF23"].min(),
+        df["TOTSLF23"].quantile(0.25),
+        df["TOTSLF23"].median(),
+        df["TOTSLF23"].quantile(0.75),
+        df["TOTSLF23"].max()
+    ],
+    "Population (Weighted)": [
+        df["PERWT23F"].sum(),  # sum of weights = count of target population
+        w_mean,
+        w_std,
+        df["TOTSLF23"].min(),   # min is identical
+        w_p25,
+        w_median,
+        w_p75,
+        df["TOTSLF23"].max()    # max is identical
+    ]
+}, index=["count", "mean", "std", "min", "25%", "50%", "75%", "max"])
+comparison_df.style.format("{:,.0f}")
 
 # %%
 # Zero costs
