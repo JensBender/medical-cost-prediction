@@ -525,9 +525,8 @@ df["PERWT23F"].sum()
 #     💡 <b>Insight:</b> Sample weights enable inference from the sample to the U.S. civilian non-institutionalized adult population.
 #     <ul style="margin-top:10px; margin-bottom:0px">
 #         <li><b>Sum:</b> The sum of all weights is approximately 260 million, representing the estimated U.S. adult population in 2023.</li>
-#         <li><b>Typical Respondent (Median):</b> A typical respondent represents roughly 14,600 people.</li>
-#         <li><b>Right-Skewed Distribution:</b> The Mean (17,584) is higher than the Median (14,593). This indicates that a small number of "high-weight" respondents represent a disproportionately large share of the population.</li>
-#         <li><b>Sampling Design (Min/Max):</b> Weights range from 502 to 131,657. This reflects MEPS's strategy of oversampling specific subgroups (low weights) to ensure statistical reliability for minority or high-need demographics.</li>
+#         <li><b>Median:</b> A typical respondent (median) represents roughly 14,600 people. The mean (17,584) is higher than the median, indicating a right-skewed distribution with a small number of "high-weight" respondents representing a disproportionately large share of the population.</li>
+#         <li><b>Min/Max:</b> Weights range from 502 to 131,657. This reflects MEPS's strategy of oversampling specific subgroups (low weights) to ensure statistical reliability for minority or high-need demographics.</li>
 #         <li><b>Standard Deviation:</b> Because weights vary significantly (std ≈ 12,334), , simple unweighted averages would be biased. Calculating population-level statistics (like mean costs) requires using these weights to ensure high-weight respondents contribute their proportional share.</li>
 #     </ul>
 # </div>
