@@ -430,8 +430,22 @@ sns.histplot(df["PERWT23F"])
 # Sample descriptive statistics (unweighted)
 df["TOTSLF23"].describe()
 
+
 # %%
 # Population descriptive statistics (weighted) 
+
+# Helper function to calculate weighted quantiles (pandas has none)
+def weighted_quantile(variable, weights, quantile):
+    sorter = np.argsort(variable)
+    values = variable.iloc[sorter]
+    weights = weights.iloc[sorter]
+    cumulative_weight = np.cumsum(weights) - 0.5 * weights
+    cumulative_weight /= np.sum(weights)
+    return np.interp(quantile, cumulative_weight, values)
+
+weighted_median = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.5)
+weighted_p25 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.25)
+weighted_p75 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.75)
 weighted_mean = np.average(df["TOTSLF23"], weights=df["PERWT23F"])
 
 # %%
