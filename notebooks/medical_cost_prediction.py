@@ -380,17 +380,17 @@ del X_temp, y_temp
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Numerical Columns</h3>
+#     <h3 style="margin:0px">Target Variable</h3>
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Examine descriptive statistics (e.g., mean, median, standard deviation) and visualize the distributions (e.g., histograms) of numerical columns.
+#     ℹ️ Examine descriptive statistics (e.g., mean, median, standard deviation) and visualize the distribution (e.g., histograms) of total out-of-pocket health care costs.
 # </div>
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Descriptive Statistics</strong> <br>
-#     📌 Examine descriptive statistics of total out-of-pocket health care costs (target variable). 
+#     📌 Examine descriptive statistics of total out-of-pocket health care costs. 
 # </div>
 
 # %%
@@ -496,3 +496,22 @@ sns.histplot(df["TOTSLF23"])
 # %%
 # Histogram of out-of-pocket costs excluding zero costs and top 1% 
 sns.histplot(df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] <= top_1_cutoff)]["TOTSLF23"])
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Sample Weights</h3>
+# </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Examine descriptive statistics (e.g., mean, median, standard deviation) and visualize the distribution (e.g., histograms) of the sample weights.
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Descriptive Statistics</strong> <br>
+#     📌 Examine descriptive statistics of the sample weights. 
+# </div>
+
+# %%
+# Descriptive statistics of the sample weights
+df["PERWT23F"].describe()
