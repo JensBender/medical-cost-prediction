@@ -434,7 +434,7 @@ df["TOTSLF23"].describe()
 # %%
 # Population descriptive statistics (weighted) 
 
-# Helper function to calculate weighted quantiles (pandas has none)
+# Helper function to calculate weighted quantiles with numpy (pandas has none)
 def weighted_quantile(variable, weights, quantile):
     sorter = np.argsort(variable)
     values = variable.iloc[sorter]
@@ -443,10 +443,17 @@ def weighted_quantile(variable, weights, quantile):
     cumulative_weight /= np.sum(weights)
     return np.interp(quantile, cumulative_weight, values)
 
-weighted_median = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.5)
-weighted_p25 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.25)
-weighted_p75 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.75)
+# Helper function to calculate weighted standard deviation with numpy (pandas has none)
+def weighted_std(variable, weights):
+    weighted_mean = np.average(variable, weights=weights)
+    weighted_variance = np.average((variable - weighted_mean)**2, weights=weights)
+    return np.sqrt(weighted_variance)
+
 weighted_mean = np.average(df["TOTSLF23"], weights=df["PERWT23F"])
+weighted_std = weighted_std(df["TOTSLF23"], weights=df["PERWT23F"])
+weighted_p25 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.25)
+weighted_median = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.5)
+weighted_p75 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.75)
 
 # %%
 # Zero costs
