@@ -587,24 +587,45 @@ df.nlargest(10, "TOTSLF23")[["TOTSLF23", "AGE23X", "PERWT23F"]]
 #     </ul>
 # </div>
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Cost Concentration Analysis</strong> <br>
+#     📌 Examine the cost thresholds, cost totals, and shares of out-of-pocket costs for the top 1%, 5%, 10%, 20%, and 50% of spenders (sample and population). 
+# </div>
+
 # %%
-# Sample concentration of out-of-pocket costs
+# Concentration Benchmarks 
 percentiles = [0.99, 0.95, 0.9, 0.8, 0.5]
 stats = []
-sample_total_spend = df["TOTSLF23"].sum()
+
+sample_total_costs = df["TOTSLF23"].sum()
+pop_total_costs = df["pop_costs"].sum()
+
 for p in percentiles:
-    cutoff = df["TOTSLF23"].quantile(p)
-    sample_spend_above = df[df["TOTSLF23"] > cutoff]["TOTSLF23"].sum()
-    share = (sample_spend_above / sample_total_spend) * 100
+    # Calculate Threshold
+    threshold = df["TOTSLF23"].quantile(p)
+    
+    # Sample Share (Unweighted)
+    sample_share = (df[df["TOTSLF23"] >= threshold]["TOTSLF23"].sum() / sample_total_costs) * 100
+    
+    # Population Share (Weighted)
+    pop_share = (df[df["TOTSLF23"] >= threshold]["pop_costs"].sum() / pop_total_costs) * 100
+    
     stats.append({
         "Top X%": f"Top {(1-p)*100:.0f}%",
-        "Cutoff": f"${cutoff:,.0f}",
-        "Share of Total Costs (Sample)": f"{share:.0f}%"
+        "Threshold (Cutoff)": f"${threshold:,.0f}",
+        "Share of Sample Costs": f"{sample_share:.1f}%",
+        "Share of Population Costs": f"{pop_share:.1f}%"
     })
-concentration_df = pd.DataFrame(stats)
-concentration_df
 
+concentration_benchmarks_df = pd.DataFrame(stats)
+concentration_benchmarks_df
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Lorenz Curve</strong> <br>
+#     📌 Plot the Lorenz Curve. 
+# </div>
 
 # %%
 # Lorenz Curve
