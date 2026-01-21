@@ -144,7 +144,7 @@ duplicates_without_id.value_counts()
 df[duplicates_without_id]
 
 # %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insight:</b> Detected 3 pairs (6 rows) of respondents with identical values across all 1,300+ columns except for their IDs. 
 #     <p style="margin-top:10px; margin-bottom:0px">
 #         These appear to be young siblings (ages 1 and 5) from the same household with identical parent-reported health data, sample weights, and costs. Analysis suggests they are valid respondents rather than "ghost" records. Regardless, they will be excluded when filtering for the adult target population.
@@ -400,7 +400,7 @@ df["PERWT23F"].sum()
 sns.histplot(df["PERWT23F"])
 
 # %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insight:</b> Using sample weights in machine learning models is essential to correct for oversampling and ensure that predictions are representative of the U.S. civilian noninstitutionalized adult population. 
 #     <ul style="margin-top:10px; margin-bottom:0px">
 #         <li><b>Sum:</b> The sum of all weights is approximately 260 million, representing the estimated U.S. adult population in 2023.</li>
@@ -556,7 +556,7 @@ plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
 plt.show()
 
 # %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insight:</b> High inequality in out-of-pocket health care spending.
 #     <ul style="margin-top:10px; margin-bottom:0px">
 #         <li><b>Top 1% Concentration:</b> The top 1% of respondents account for 20% of total out-of-pocket costs.</li>
