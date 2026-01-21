@@ -534,21 +534,44 @@ zero_costs_df.style.format({
 # Top 1% analysis
 top_1_cutoff = df["TOTSLF23"].quantile(0.99)
 
-# Unweighted sample
+# 1. Sample (Unweighted)
 sample_total_costs = df["TOTSLF23"].sum()
-sample_top_1_costs = df[df["TOTSLF23"] > top_1_cutoff]["TOTSLF23"].sum()
-sample_top_1_share = (sample_top_1_costs / sample_total_costs) * 100
+sample_top_1_costs = df[df["TOTSLF23"] >= top_1_cutoff]["TOTSLF23"].sum()
+sample_bottom_99_costs = df[df["TOTSLF23"] < top_1_cutoff]["TOTSLF23"].sum()
 
-# Weighted population
-df["weighted_costs"] = df["TOTSLF23"] * df["PERWT23F"]  # costs * weight gives the population-level costs
-pop_total_costs = df["weighted_costs"].sum()
-pop_top_1_costs = df[df["TOTSLF23"] > top_1_cutoff]["weighted_costs"].sum()
-pop_top_1_share = (pop_top_1_costs / pop_total_costs) * 100
+# 2. Population (Weighted)
+df["pop_costs"] = df["TOTSLF23"] * df["PERWT23F"]  
+pop_total_costs = df["pop_costs"].sum()
+pop_top_1_costs = df[df["TOTSLF23"] >= top_1_cutoff]["pop_costs"].sum()
+pop_bottom_99_costs = df[df["TOTSLF23"] < top_1_cutoff]["pop_costs"].sum()
 
-print(f"Top 1% Threshold: ${top_1_cutoff:,.0f}")
-print("-" * 40)
-print(f"Top 1% Share of Costs - Sample (Unweighted): {sample_top_1_share:.1f}%")
-print(f"Top 1% Share of Costs - Population (Weighted): {pop_top_1_share:.1f}%")
+# Create comparison table
+top1_pct_summary = pd.DataFrame({
+    "Sample (Unweighted)": [
+        top_1_cutoff,
+        sample_top_1_costs / 1e6,  # Millions
+        (sample_top_1_costs / sample_total_costs) * 100,
+        sample_bottom_99_costs / 1e6,  # Millions
+        (sample_bottom_99_costs / sample_total_costs) * 100
+    ],
+    "Population (Weighted)": [
+        top_1_cutoff,
+        pop_top_1_costs / 1e9,  # Billions
+        (pop_top_1_costs / pop_total_costs) * 100,
+        pop_bottom_99_costs / 1e9,  # Billions
+        (pop_bottom_99_costs / pop_total_costs) * 100
+    ]
+}, index=[
+    "Top 1% Threshold",
+    "Top 1% Total Costs",
+    "Top 1% Share of Costs",
+    "Bottom 99% Total Costs",
+    "Bottom 99% Share of Costs"
+])
+top1_pct_summary.style.format("${:,.0f}", subset=(["Top 1% Threshold"], slice(None))) \
+                 .format("${:,.1f}M", subset=(["Top 1% Total Costs", "Bottom 99% Total Costs"], "Sample (Unweighted)")) \
+                 .format("${:,.1f}B", subset=(["Top 1% Total Costs", "Bottom 99% Total Costs"], "Population (Weighted)")) \
+                 .format("{:.1f}%", subset=(["Top 1% Share of Costs", "Bottom 99% Share of Costs"], slice(None)))
 
 # %%
 # Inspecting the "Super-Spenders" (Top 10 outliers)
@@ -580,6 +603,8 @@ for p in percentiles:
     })
 concentration_df = pd.DataFrame(stats)
 concentration_df
+
+
 
 # %%
 # Lorenz Curve
