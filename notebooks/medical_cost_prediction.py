@@ -486,9 +486,15 @@ sample_vs_population_stats.style.format("{:,.0f}")  # format all values with com
 #     </ul>
 # </div>
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Zero Costs Analysis</strong> <br>
+#     📌 Deeper analysis of people with zero out-of-pocket health care costs (sample and population). 
+# </div>
+
 # %%
-# Zero costs
-zero_costs_summary = pd.DataFrame({
+# Zero costs analysis
+zero_costs_df = pd.DataFrame({
     "Count (Unweighted)": [len(df[df["TOTSLF23"] == 0]), len(df[df["TOTSLF23"] > 0])],
     "Count (Weighted)": [df[df["TOTSLF23"] == 0]["PERWT23F"].sum(), df[df["TOTSLF23"] > 0]["PERWT23F"].sum()],
     "Percentage (Unweighted)": [
@@ -500,7 +506,7 @@ zero_costs_summary = pd.DataFrame({
         (df.loc[df["TOTSLF23"] > 0, "PERWT23F"].sum() / df["PERWT23F"].sum()) * 100
     ]
 }, index=["Zero Costs", "Positive Costs"]).round(2)
-zero_costs_summary.style.format({
+zero_costs_df.style.format({
     "Count (Unweighted)": "{:,.0f}",
     "Count (Weighted)": "{:,.0f}",
     "Percentage (Unweighted)": "{:.1f}%",
@@ -517,8 +523,14 @@ zero_costs_summary.style.format({
 #     </ul>
 # </div>
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Top 1% Analysis</strong> <br>
+#     📌 Deeper analysis of people in the top 1% of out-of-pocket health care costs (sample and population). 
+# </div>
+
 # %%
-# Top 1% analysis (sample and population)
+# Top 1% analysis
 top_1_cutoff = df["TOTSLF23"].quantile(0.99)
 
 # Unweighted sample
@@ -542,11 +554,11 @@ df.nlargest(10, "TOTSLF23")[["TOTSLF23", "AGE23X", "PERWT23F"]]
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> Extreme concentration and "Heavy-Tail" risk.
+#     💡 <b>Insight:</b> Extreme cost concentration and "heavy-tail" risk.
 #     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>The 1% Rule:</b> The top 1% of spenders (starting at ~$13,000) account for approximately 20% of all out-of-pocket costs. This hyper-concentration is consistent across both sample and population levels.</li>
-#         <li><b>Extreme Outliers:</b> The gap between the 99th percentile ($13k) and the maximum ($104k) is massive. These "super-spenders" represent a significant challenge for predictive modeling, as a single misprediction here could lead to very high Error (RMSE).</li>
-#         <li><b>Financial Risk Definition:</b> The $13,000 threshold serves as a useful benchmark for "catastrophic" financial exposure in the context of the medical cost planner app.</li>
+#         <li><b>The 1% Rule:</b> The top 1% of spenders (starting at ~\$13k) account for roughly 20% of all out-of-pocket costs. This hyper-concentration is consistent across both sample and population.</li>
+#         <li><b>Extreme Outliers:</b> The gap between the 99th percentile (\$13k) and the maximum (\$104k) is massive. These "super-spenders" represent a significant challenge for predictive modeling, as a single misprediction here could lead to very high error (RMSE).</li>
+#         <li><b>Financial Risk Definition:</b> The \$13k threshold serves as a useful benchmark for "catastrophic" financial exposure in the context of the medical cost planner app.</li>
 #     </ul>
 # </div>
 
