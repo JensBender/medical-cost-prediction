@@ -475,7 +475,19 @@ sample_vs_population_stats = pd.DataFrame({
 }, index=["count", "mean", "std", "min", "25%", "50%", "75%", "max"])
 sample_vs_population_stats.style.format("{:,.0f}")  # format all values with comma thousand separator and round to zero decimals
 
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insight:</b> The descriptive statistics reveal a highly skewed and volatile cost distribution, emphasizing the importance of using sample weights for representative estimates.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Right Skewness:</b> The population mean (\$1,106) is over 4x higher than the median (\$251), indicating that a few high-cost cases disproportionately influence the average.</li>
+#         <li><b>Sampling Bias Correction:</b> Weighted population statistics are consistently lower than unweighted sample statistics (e.g., mean drops from \$1,160 to \$1,106), showing that the raw sample slightly over-represented higher-cost individuals.</li>
+#         <li><b>Extreme Financial Risk:</b> While 75% of the population spends less than \$1,042 out-of-pocket, the maximum reaches \$104,652, highlighting severe financial exposure for a minority.</li>
+#         <li><b>High Dispersion:</b> The standard deviation (~\$3,000) is nearly triple the mean, reflecting the inherent unpredictability and high variance in health care costs.</li>
+#     </ul>
+# </div>
+
 # %%
+
 # Zero costs
 zero_costs_summary = pd.DataFrame({
     "Count": [(df["TOTSLF23"] == 0).sum(), (df["TOTSLF23"] > 0).sum()],
