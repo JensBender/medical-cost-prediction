@@ -37,7 +37,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Data preprocessing (Scikit-learn)
+# Data preprocessing (scikit-learn)
 from sklearn.preprocessing import (
     StandardScaler, 
     OneHotEncoder, 
@@ -104,8 +104,8 @@ df.head()
 #     <h1 style="margin:0px">Data Preprocessing</h1>
 # </div> 
 #
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     <strong>Note:</strong> Kept column names in ALL CAPS in this project to ensure consistency with official <b><a href="../docs/references/h251doc.pdf">MEPS documentation</a></b>, <b><a href="../docs/references/h251cb.pdf">codebook</a></b>, and <b><a href="../docs/references/data_dictionary.md">data dictionary</a></b>.
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <strong>Note:</strong> Kept column names in ALL CAPS to ensure consistency with official <b><a href="../docs/references/h251doc.pdf">MEPS documentation</a></b>, <b><a href="../docs/references/h251cb.pdf">codebook</a></b>, and <b><a href="../docs/references/data_dictionary.md">data dictionary</a></b>.
 # </div>
 
 # %% [markdown]
@@ -239,7 +239,7 @@ df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy()
 #                 <li>Model Consistency: Most machine learning models (e.g., XGBoost, Linear Regression) internally use floats and automatically convert numerical inputs to <code>float</code> during training and inference. Keeping them as floats avoids redundant type casting.</li>
 #             </ul>
 #         </li>
-#         <li><b>Target Variable:</b> <code>TOTSLF23</code> is rounded to whole dollars in the raw MEPS data. It is kept as <code>float</code> for Model Consistency and to avoid redundant type casting, as ML models deliver <code>float</code> predictions during training and inference.</li>
+#         <li><b>Target Variable:</b> <code>TOTSLF23</code> was stored as <code>float</code> by the SAS loader. Although it is rounded to whole dollars in the MEPS data, it is kept as <code>float</code> for data preprocessing and model consistency and to avoid redundant type casting, as ML models deliver <code>float</code> predictions during training and inference.</li>
 #     </ul>
 # </div>
 
@@ -417,7 +417,7 @@ sns.histplot(df["PERWT23F"])
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Examine descriptive statistics (e.g., mean, median, standard deviation) and visualize the distribution (e.g., histograms) of total out-of-pocket health care costs.
+#     ℹ️ Examine descriptive statistics and visualize the distribution of total out-of-pocket health care costs.
 # </div>
 
 # %% [markdown]
