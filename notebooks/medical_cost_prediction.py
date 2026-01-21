@@ -495,22 +495,23 @@ sample_vs_population_stats.style.format("{:,.0f}")  # format all values with com
 # %%
 # Zero costs analysis
 zero_costs_df = pd.DataFrame({
-    "Count (Unweighted)": [len(df[df["TOTSLF23"] == 0]), len(df[df["TOTSLF23"] > 0])],
-    "Count (Weighted)": [df[df["TOTSLF23"] == 0]["PERWT23F"].sum(), df[df["TOTSLF23"] > 0]["PERWT23F"].sum()],
-    "Percentage (Unweighted)": [
+    "Sample (Unweighted) Count": [len(df[df["TOTSLF23"] == 0]), len(df[df["TOTSLF23"] > 0])],
+    "Population (Weighted) Count": [df[df["TOTSLF23"] == 0]["PERWT23F"].sum(), df[df["TOTSLF23"] > 0]["PERWT23F"].sum()],
+    "Sample (Unweighted) %": [
         (df["TOTSLF23"] == 0).mean() * 100,
         (df["TOTSLF23"] > 0).mean() * 100
     ],
-    "Percentage (Weighted)": [
+    "Population (Weighted) %": [
         (df.loc[df["TOTSLF23"] == 0, "PERWT23F"].sum() / df["PERWT23F"].sum()) * 100,
         (df.loc[df["TOTSLF23"] > 0, "PERWT23F"].sum() / df["PERWT23F"].sum()) * 100
     ]
 }, index=["Zero Costs", "Positive Costs"]).round(2)
+
 zero_costs_df.style.format({
-    "Count (Unweighted)": "{:,.0f}",
-    "Count (Weighted)": "{:,.0f}",
-    "Percentage (Unweighted)": "{:.1f}%",
-    "Percentage (Weighted)": "{:.1f}%"
+    "Sample (Unweighted) Count": "{:,.0f}",
+    "Population (Weighted) Count": "{:,.0f}",
+    "Sample (Unweighted) %": "{:.1f}%",
+    "Population (Weighted) %": "{:.1f}%"
 })
 
 # %% [markdown]
@@ -545,8 +546,9 @@ pop_top_1_costs = df[df["TOTSLF23"] > top_1_cutoff]["weighted_costs"].sum()
 pop_top_1_share = (pop_top_1_costs / pop_total_costs) * 100
 
 print(f"Top 1% Threshold: ${top_1_cutoff:,.0f}")
-print(f"Top 1% Share of Costs (Sample): {sample_top_1_share:.1f}%")
-print(f"Top 1% Share of Costs (Population): {pop_top_1_share:.1f}%")
+print("-" * 40)
+print(f"Top 1% Share of Costs - Sample (Unweighted): {sample_top_1_share:.1f}%")
+print(f"Top 1% Share of Costs - Population (Weighted): {pop_top_1_share:.1f}%")
 
 # %%
 # Inspecting the "Super-Spenders" (Top 10 outliers)
