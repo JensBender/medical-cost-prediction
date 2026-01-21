@@ -443,12 +443,12 @@ def weighted_std(variable, weights):
     weighted_variance = np.average((variable - weighted_mean)**2, weights=weights)
     return np.sqrt(weighted_variance)
 
-# Calculate weighted statistics
-w_mean = np.average(df["TOTSLF23"], weights=df["PERWT23F"])
-w_std = weighted_std(df["TOTSLF23"], weights=df["PERWT23F"])
-w_p25 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.25)
-w_median = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.5)
-w_p75 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.75)
+# Calculate weighted (population) statistics
+pop_mean = np.average(df["TOTSLF23"], weights=df["PERWT23F"])
+pop_std = weighted_std(df["TOTSLF23"], weights=df["PERWT23F"])
+pop_p25 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.25)
+pop_median = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.5)
+pop_p75 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.75)
 
 # Create comparison table: Sample vs. population statistics 
 sample_vs_population_stats = pd.DataFrame({
@@ -464,12 +464,12 @@ sample_vs_population_stats = pd.DataFrame({
     ],
     "Population (Weighted)": [
         df["PERWT23F"].sum(),  # sum of weights = count of target population
-        w_mean,
-        w_std,
+        pop_mean,
+        pop_std,
         df["TOTSLF23"].min(),  # min is identical
-        w_p25,
-        w_median,
-        w_p75,
+        pop_p25,
+        pop_median,
+        pop_p75,
         df["TOTSLF23"].max()  # max is identical
     ]
 }, index=["count", "mean", "std", "min", "25%", "50%", "75%", "max"])
@@ -565,18 +565,18 @@ df.nlargest(10, "TOTSLF23")[["TOTSLF23", "AGE23X", "PERWT23F"]]
 # </div>
 
 # %%
-# Concentration of Out-of-Pocket Costs
+# Sample concentration of out-of-pocket costs
 percentiles = [0.99, 0.95, 0.9, 0.8, 0.5]
 stats = []
-total_spend = df["TOTSLF23"].sum()
+sample_total_spend = df["TOTSLF23"].sum()
 for p in percentiles:
     cutoff = df["TOTSLF23"].quantile(p)
-    spend_above = df[df["TOTSLF23"] > cutoff]["TOTSLF23"].sum()
-    share = (spend_above / total_spend) * 100
+    sample_spend_above = df[df["TOTSLF23"] > cutoff]["TOTSLF23"].sum()
+    share = (sample_spend_above / sample_total_spend) * 100
     stats.append({
         "Top X%": f"Top {(1-p)*100:.0f}%",
         "Cutoff": f"${cutoff:,.0f}",
-        "Share of Total Costs": f"{share:.0f}%"
+        "Share of Total Costs (Sample)": f"{share:.0f}%"
     })
 concentration_df = pd.DataFrame(stats)
 concentration_df
