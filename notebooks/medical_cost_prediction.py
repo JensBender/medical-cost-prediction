@@ -507,6 +507,16 @@ zero_costs_summary.style.format({
     "Percentage (Weighted)": "{:.1f}%"
 })
 
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insight:</b> The large proportion of zeros confirms that the target variable is zero-inflated.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>High Zero-Cost Prevalence:</b> Over 22% of the U.S. adult population (approx. 58 million people) had zero out-of-pocket health care costs in 2023.</li>
+#         <li><b>Correction of Sampling Bias:</b> The weighted population percentage (22.3%) is higher than the unweighted sample percentage (20.7%), indicating that zero-cost individuals were slightly under-represented in the raw survey data.</li>
+#         <li><b>Modeling Implications:</b> The zero-inflated target variable suggests that a two-part modeling strategy (e.g., predicting the probability of any spend vs. the amount of spend) may be more effective than a single standard regression.</li>
+#     </ul>
+# </div>
+
 # %%
 # Top 1% costs
 top_1_cutoff = df["TOTSLF23"].quantile(0.99)
