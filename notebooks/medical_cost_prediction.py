@@ -399,6 +399,7 @@ df["PERWT23F"].sum()
 # Histogram of sample weights
 sns.histplot(df["PERWT23F"])
 
+
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insight:</b> Using sample weights in machine learning models is essential to correct for oversampling and ensure that predictions are representative of the U.S. civilian noninstitutionalized adult population. 
@@ -427,13 +428,7 @@ sns.histplot(df["PERWT23F"])
 # </div>
 
 # %%
-# Sample statistics (unweighted)
-df["TOTSLF23"].describe()
-
-
-# %%
-# Population statistics (weighted) 
-# Helper function to calculate weighted quantiles (with numpy as not available in pandas)
+# Helper function to calculate weighted quantiles (using numpy; not available in pandas)
 def weighted_quantile(variable, weights, quantile):
     sorter = np.argsort(variable)
     values = variable.iloc[sorter]
@@ -442,7 +437,7 @@ def weighted_quantile(variable, weights, quantile):
     cumulative_weight /= np.sum(weights)
     return np.interp(quantile, cumulative_weight, values)
 
-# Helper function to calculate weighted standard deviation (with numpy as not available in pandas)
+# Helper function to calculate weighted standard deviation (using numpy; not available in pandas)
 def weighted_std(variable, weights):
     weighted_mean = np.average(variable, weights=weights)
     weighted_variance = np.average((variable - weighted_mean)**2, weights=weights)
@@ -455,8 +450,8 @@ w_p25 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.25)
 w_median = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.5)
 w_p75 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.75)
 
-# Create comparison table
-comparison_df = pd.DataFrame({
+# Create comparison table: Sample vs. population statistics 
+sample_vs_population_stats = pd.DataFrame({
     "Sample (Unweighted)": [
         len(df),
         df["TOTSLF23"].mean(),
@@ -478,7 +473,7 @@ comparison_df = pd.DataFrame({
         df["TOTSLF23"].max()  # max is identical
     ]
 }, index=["count", "mean", "std", "min", "25%", "50%", "75%", "max"])
-comparison_df.style.format("{:,.0f}")  # format all values with comma thousand separator and no decimals
+sample_vs_population_stats.style.format("{:,.0f}")  # format all values with comma thousand separator and round to zero decimals
 
 # %%
 # Zero costs
