@@ -487,16 +487,25 @@ sample_vs_population_stats.style.format("{:,.0f}")  # format all values with com
 # </div>
 
 # %%
-
 # Zero costs
 zero_costs_summary = pd.DataFrame({
-    "Count": [(df["TOTSLF23"] == 0).sum(), (df["TOTSLF23"] > 0).sum()],
-    "Percentage": [
+    "Count (Unweighted)": [len(df[df["TOTSLF23"] == 0]), len(df[df["TOTSLF23"] > 0])],
+    "Count (Weighted)": [df[df["TOTSLF23"] == 0]["PERWT23F"].sum(), df[df["TOTSLF23"] > 0]["PERWT23F"].sum()],
+    "Percentage (Unweighted)": [
         (df["TOTSLF23"] == 0).mean() * 100,
         (df["TOTSLF23"] > 0).mean() * 100
+    ],
+    "Percentage (Weighted)": [
+        (df.loc[df["TOTSLF23"] == 0, "PERWT23F"].sum() / df["PERWT23F"].sum()) * 100,
+        (df.loc[df["TOTSLF23"] > 0, "PERWT23F"].sum() / df["PERWT23F"].sum()) * 100
     ]
 }, index=["Zero Costs", "Positive Costs"]).round(2)
-zero_costs_summary
+zero_costs_summary.style.format({
+    "Count (Unweighted)": "{:,.0f}",
+    "Count (Weighted)": "{:,.0f}",
+    "Percentage (Unweighted)": "{:.1f}%",
+    "Percentage (Weighted)": "{:.1f}%"
+})
 
 # %%
 # Top 1% costs
