@@ -518,16 +518,37 @@ zero_costs_summary.style.format({
 # </div>
 
 # %%
-# Top 1% costs
+# Top 1% analysis (sample and population)
 top_1_cutoff = df["TOTSLF23"].quantile(0.99)
-top_1_sum = df[df["TOTSLF23"] > top_1_cutoff]["TOTSLF23"].sum()
-bottom_99_sum = df[df["TOTSLF23"] <= top_1_cutoff]["TOTSLF23"].sum()
-top_1_share = top_1_sum / (top_1_sum + bottom_99_sum) * 100
 
-print(f"The top 1% starts at: ${top_1_cutoff:,.0f}")
-print(f"The top 1% have summed costs of: ${top_1_sum / 1_000_000:.1f}M")
-print(f"The bottom 99% have summed costs of: ${bottom_99_sum / 1_000_000:.1f}M")
-print(f"The top 1% of respondents account for {top_1_share:.0f}% of total out-of-pocket costs.")
+# Unweighted sample
+sample_total_costs = df["TOTSLF23"].sum()
+sample_top_1_costs = df[df["TOTSLF23"] > top_1_cutoff]["TOTSLF23"].sum()
+sample_top_1_share = (sample_top_1_costs / sample_total_costs) * 100
+
+# Weighted population
+df["weighted_costs"] = df["TOTSLF23"] * df["PERWT23F"]  # costs * weight gives the population-level costs
+pop_total_costs = df["weighted_costs"].sum()
+pop_top_1_costs = df[df["TOTSLF23"] > top_1_cutoff]["weighted_costs"].sum()
+pop_top_1_share = (pop_top_1_costs / pop_total_costs) * 100
+
+print(f"Top 1% Threshold: ${top_1_cutoff:,.0f}")
+print(f"Top 1% Share of Costs (Sample): {sample_top_1_share:.1f}%")
+print(f"Top 1% Share of Costs (Population): {pop_top_1_share:.1f}%")
+
+# %%
+# Inspecting the "Super-Spenders" (Top 10 outliers)
+df.nlargest(10, "TOTSLF23")[["TOTSLF23", "AGE23X", "PERWT23F"]]
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insight:</b> Extreme concentration and "Heavy-Tail" risk.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>The 1% Rule:</b> The top 1% of spenders (starting at ~$13,000) account for approximately 20% of all out-of-pocket costs. This hyper-concentration is consistent across both sample and population levels.</li>
+#         <li><b>Extreme Outliers:</b> The gap between the 99th percentile ($13k) and the maximum ($104k) is massive. These "super-spenders" represent a significant challenge for predictive modeling, as a single misprediction here could lead to very high Error (RMSE).</li>
+#         <li><b>Financial Risk Definition:</b> The $13,000 threshold serves as a useful benchmark for "catastrophic" financial exposure in the context of the medical cost planner app.</li>
+#     </ul>
+# </div>
 
 # %%
 # Concentration of Out-of-Pocket Costs
