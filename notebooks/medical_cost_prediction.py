@@ -613,13 +613,20 @@ for p in percentiles:
     
     stats.append({
         "Top X%": f"Top {(1-p)*100:.0f}%",
-        "Threshold (Cutoff)": f"${threshold:,.0f}",
-        "Share of Sample Costs": f"{sample_share:.1f}%",
-        "Share of Population Costs": f"{pop_share:.1f}%"
+        "Threshold": threshold,
+        "Share of Total Costs (Sample)": sample_share,
+        "Share of Total Costs (Population)": pop_share
     })
 
-concentration_benchmarks_df = pd.DataFrame(stats)
-concentration_benchmarks_df
+# Set "Top X%" as DataFrame index
+cost_concentration_df = pd.DataFrame(stats).set_index("Top X%")
+
+# Show table with formatted values
+cost_concentration_df.style.format({
+    "Threshold": "${:,.0f}",
+    "Share of Total Costs (Sample)": "{:.1f}%",
+    "Share of Total Costs (Population)": "{:.1f}%"
+})
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
