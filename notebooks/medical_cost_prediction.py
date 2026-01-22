@@ -532,30 +532,30 @@ zero_costs_df.style.format({
 
 # %%
 # Top 1% analysis
-top_1_cutoff = df["TOTSLF23"].quantile(0.99)
-
 # 1. Sample (Unweighted)
 sample_total_costs = df["TOTSLF23"].sum()
-sample_top_1_costs = df[df["TOTSLF23"] >= top_1_cutoff]["TOTSLF23"].sum()
-sample_bottom_99_costs = df[df["TOTSLF23"] < top_1_cutoff]["TOTSLF23"].sum()
+sample_top_1_cutoff = df["TOTSLF23"].quantile(0.99)
+sample_top_1_costs = df[df["TOTSLF23"] >= sample_top_1_cutoff]["TOTSLF23"].sum()
+sample_bottom_99_costs = df[df["TOTSLF23"] < sample_top_1_cutoff]["TOTSLF23"].sum()
 
 # 2. Population (Weighted)
 df["pop_costs"] = df["TOTSLF23"] * df["PERWT23F"]  
 pop_total_costs = df["pop_costs"].sum()
-pop_top_1_costs = df[df["TOTSLF23"] >= top_1_cutoff]["pop_costs"].sum()
-pop_bottom_99_costs = df[df["TOTSLF23"] < top_1_cutoff]["pop_costs"].sum()
+pop_top_1_cutoff = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.99)
+pop_top_1_costs = df[df["TOTSLF23"] >= pop_top_1_cutoff]["pop_costs"].sum()
+pop_bottom_99_costs = df[df["TOTSLF23"] < pop_top_1_cutoff]["pop_costs"].sum()
 
 # Create comparison table
 top_1_pct_df = pd.DataFrame({
     "Sample (Unweighted)": [
-        top_1_cutoff,
+        sample_top_1_cutoff,
         sample_top_1_costs / 1e6,  # Millions
         (sample_top_1_costs / sample_total_costs) * 100,
         sample_bottom_99_costs / 1e6,  # Millions
         (sample_bottom_99_costs / sample_total_costs) * 100
     ],
     "Population (Weighted)": [
-        top_1_cutoff,
+        pop_top_1_cutoff,
         pop_top_1_costs / 1e9,  # Billions
         (pop_top_1_costs / pop_total_costs) * 100,
         pop_bottom_99_costs / 1e9,  # Billions
@@ -602,18 +602,20 @@ sample_total_costs = df["TOTSLF23"].sum()
 pop_total_costs = df["pop_costs"].sum()
 
 for p in percentiles:
-    # Calculate Threshold
-    threshold = df["TOTSLF23"].quantile(p)
+    # Calculate Thresholds
+    sample_threshold = df["TOTSLF23"].quantile(p)
+    pop_threshold = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], p)
     
     # Sample Share (Unweighted)
-    sample_share = (df[df["TOTSLF23"] >= threshold]["TOTSLF23"].sum() / sample_total_costs) * 100
+    sample_share = (df[df["TOTSLF23"] >= sample_threshold]["TOTSLF23"].sum() / sample_total_costs) * 100
     
     # Population Share (Weighted)
-    pop_share = (df[df["TOTSLF23"] >= threshold]["pop_costs"].sum() / pop_total_costs) * 100
+    pop_share = (df[df["TOTSLF23"] >= pop_threshold]["pop_costs"].sum() / pop_total_costs) * 100
     
     stats.append({
         "Top X%": f"Top {(1-p)*100:.0f}%",
-        "Threshold": threshold,
+        "Threshold (Sample)": sample_threshold,
+        "Threshold (Population)": pop_threshold,
         "Share of Total Costs (Sample)": sample_share,
         "Share of Total Costs (Population)": pop_share
     })
@@ -623,7 +625,8 @@ cost_concentration_df = pd.DataFrame(stats).set_index("Top X%")
 
 # Show table with formatted values
 cost_concentration_df.style.format({
-    "Threshold": "${:,.0f}",
+    "Threshold (Sample)": "${:,.0f}",
+    "Threshold (Population)": "${:,.0f}",
     "Share of Total Costs (Sample)": "{:.1f}%",
     "Share of Total Costs (Population)": "{:.1f}%"
 })
@@ -692,4 +695,4 @@ sns.histplot(df["TOTSLF23"])
 
 # %%
 # Histogram of out-of-pocket costs excluding zero costs and top 1% 
-sns.histplot(df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] <= top_1_cutoff)]["TOTSLF23"])
+sns.histplot(df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] <= sample_top_1_cutoff)]["TOTSLF23"])
