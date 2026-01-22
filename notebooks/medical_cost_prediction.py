@@ -418,7 +418,7 @@ sns.histplot(df["PERWT23F"])
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Examine descriptive statistics and visualize the distribution of total out-of-pocket health care costs.
+#     ℹ️ Examine descriptive statistics and visualize the distribution of total out-of-pocket health care costs. Unless otherwise specified, the statistics and insights in this section refer to population-level estimates (calculated using sample weights) to ensure representativeness of the U.S. adult population.
 # </div>
 
 # %% [markdown]
