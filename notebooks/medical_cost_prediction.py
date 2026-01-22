@@ -527,51 +527,58 @@ zero_costs_df.style.format({
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Top 1% Analysis</strong> <br>
-#     📌 Deeper analysis of people in the top 1% of out-of-pocket health care costs (sample and population). 
+#     📌 Deeper analysis of respondents in the top 1% and top 0.1% of out-of-pocket health care costs to understand extreme tail risk. 
 # </div>
 
 # %%
 # Top 1% analysis
-# 1. Sample (Unweighted)
+# Sample (Unweighted)
 sample_total_costs = df["TOTSLF23"].sum()
 sample_top_1_cutoff = df["TOTSLF23"].quantile(0.99)
+sample_top_01_cutoff = df["TOTSLF23"].quantile(0.999)
 sample_top_1_costs = df[df["TOTSLF23"] >= sample_top_1_cutoff]["TOTSLF23"].sum()
-sample_bottom_99_costs = df[df["TOTSLF23"] < sample_top_1_cutoff]["TOTSLF23"].sum()
+sample_top_01_costs = df[df["TOTSLF23"] >= sample_top_01_cutoff]["TOTSLF23"].sum()
 
-# 2. Population (Weighted)
+# Population (Weighted)
 df["pop_costs"] = df["TOTSLF23"] * df["PERWT23F"]  
 pop_total_costs = df["pop_costs"].sum()
 pop_top_1_cutoff = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.99)
+pop_top_01_cutoff = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.999)
 pop_top_1_costs = df[df["TOTSLF23"] >= pop_top_1_cutoff]["pop_costs"].sum()
-pop_bottom_99_costs = df[df["TOTSLF23"] < pop_top_1_cutoff]["pop_costs"].sum()
+pop_top_01_costs = df[df["TOTSLF23"] >= pop_top_01_cutoff]["pop_costs"].sum()
 
 # Create comparison table
-top_1_pct_df = pd.DataFrame({
+top_1_df = pd.DataFrame({
     "Sample (Unweighted)": [
         sample_top_1_cutoff,
         sample_top_1_costs / 1e6,  # Millions
         (sample_top_1_costs / sample_total_costs) * 100,
-        sample_bottom_99_costs / 1e6,  # Millions
-        (sample_bottom_99_costs / sample_total_costs) * 100
+        sample_top_01_cutoff,
+        sample_top_01_costs / 1e6,  # Millions
+        (sample_top_01_costs / sample_total_costs) * 100
     ],
     "Population (Weighted)": [
         pop_top_1_cutoff,
         pop_top_1_costs / 1e9,  # Billions
         (pop_top_1_costs / pop_total_costs) * 100,
-        pop_bottom_99_costs / 1e9,  # Billions
-        (pop_bottom_99_costs / pop_total_costs) * 100
+        pop_top_01_cutoff,
+        pop_top_01_costs / 1e9,  # Billions
+        (pop_top_01_costs / pop_total_costs) * 100
     ]
 }, index=[
     "Top 1% Threshold",
     "Top 1% Total Costs",
     "Top 1% Share of Costs",
-    "Bottom 99% Total Costs",
-    "Bottom 99% Share of Costs"
+    "Top 0.1% Threshold",
+    "Top 0.1% Total Costs",
+    "Top 0.1% Share of Costs"
 ])
-top_1_pct_df.style.format("${:,.0f}", subset=(["Top 1% Threshold"], slice(None))) \
-                 .format("${:,.1f}M", subset=(["Top 1% Total Costs", "Bottom 99% Total Costs"], "Sample (Unweighted)")) \
-                 .format("${:,.1f}B", subset=(["Top 1% Total Costs", "Bottom 99% Total Costs"], "Population (Weighted)")) \
-                 .format("{:.1f}%", subset=(["Top 1% Share of Costs", "Bottom 99% Share of Costs"], slice(None)))
+
+# Style the table
+top_1_df.style.format("${:,.0f}", subset=(["Top 0.1% Threshold", "Top 1% Threshold"], slice(None))) \
+                 .format("${:,.1f}M", subset=(["Top 0.1% Total Costs", "Top 1% Total Costs"], "Sample (Unweighted)")) \
+                 .format("${:,.1f}B", subset=(["Top 0.1% Total Costs", "Top 1% Total Costs"], "Population (Weighted)")) \
+                 .format("{:.1f}%", subset=(["Top 0.1% Share of Costs", "Top 1% Share of Costs"], slice(None)))
 
 # %%
 # Inspecting the "Super-Spenders" (Top 10 outliers)
@@ -579,11 +586,12 @@ df.nlargest(10, "TOTSLF23")[["TOTSLF23", "AGE23X", "PERWT23F"]]
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> Extreme cost concentration and "heavy-tail" risk.
+#     💡 <b>Insight:</b> Extreme cost concentration in the tail of the distribution.
 #     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>The 1% Rule:</b> The top 1% of spenders (starting at ~\$13k) account for roughly 20% of all out-of-pocket costs. This hyper-concentration is consistent across both sample and population.</li>
-#         <li><b>Extreme Outliers:</b> The gap between the 99th percentile (\$13k) and the maximum (\$104k) is massive. These "super-spenders" represent a significant challenge for predictive modeling, as a single misprediction here could lead to very high error (RMSE).</li>
-#         <li><b>Financial Risk Definition:</b> The \$13k threshold serves as a useful benchmark for "catastrophic" financial exposure in the context of the medical cost planner app.</li>
+#         <li><b>The 1% Rule:</b> The top 1% of spenders —those spending over ~\$13k—account for roughly 20% of all out-of-pocket costs.</li>
+#         <li><b>The Hyper-Tail (Top 0.1%):</b> The top 0.1% of spenders—those spending over ~\$39k—account for a disproportionate share of total costs (approx. 5%). This highlights that the tail is not just long, but extremely heavy.</li>
+#         <li><b>Extreme Outliers:</b> The gap between the 99th percentile (\$12,868) and the maximum (\$104,652) is massive. These "super-spenders" represent a significant challenge for predictive modeling, as a single misprediction here could lead to very high error (RMSE).</li>
+#         <li><b>Financial Risk Benchmarks:</b> These thresholds provide a clear picture of what "catastrophic" spending looks like in the U.S. adult population.</li>
 #     </ul>
 # </div>
 
@@ -595,6 +603,41 @@ df.nlargest(10, "TOTSLF23")[["TOTSLF23", "AGE23X", "PERWT23F"]]
 
 # %%
 # Cost Concentration Benchmarks 
+percentiles = [0.99, 0.95, 0.9, 0.8, 0.5]
+stats = []
+
+sample_total_costs = df["TOTSLF23"].sum()
+pop_total_costs = df["pop_costs"].sum()
+
+for p in percentiles:
+    # Calculate Thresholds
+    sample_threshold = df["TOTSLF23"].quantile(p)
+    pop_threshold = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], p)
+    
+    # Sample Share (Unweighted)
+    sample_share = (df[df["TOTSLF23"] >= sample_threshold]["TOTSLF23"].sum() / sample_total_costs) * 100
+    
+    # Population Share (Weighted)
+    pop_share = (df[df["TOTSLF23"] >= pop_threshold]["pop_costs"].sum() / pop_total_costs) * 100
+    
+    stats.append({
+        "Top X%": f"Top {(1-p)*100:.0f}%",
+        "Threshold (Sample)": sample_threshold,
+        "Threshold (Population)": pop_threshold,
+        "Share of Total Costs (Sample)": sample_share,
+        "Share of Total Costs (Population)": pop_share
+    })
+
+# Set "Top X%" as DataFrame index
+cost_concentration_df = pd.DataFrame(stats).set_index("Top X%")
+
+# Show table with formatted values
+cost_concentration_df.style.format({
+    "Threshold (Sample)": "${:,.0f}",
+    "Threshold (Population)": "${:,.0f}",
+    "Share of Total Costs (Sample)": "{:.1f}%",
+    "Share of Total Costs (Population)": "{:.1f}%"
+})# Cost Concentration Benchmarks 
 percentiles = [0.99, 0.95, 0.9, 0.8, 0.5]
 stats = []
 
@@ -695,4 +738,5 @@ sns.histplot(df["TOTSLF23"])
 
 # %%
 # Histogram of out-of-pocket costs excluding zero costs and top 1% 
+sns.histplot(df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] <= sample_top_1_cutoff)]["TOTSLF23"])# Histogram of out-of-pocket costs excluding zero costs and top 1% 
 sns.histplot(df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] <= sample_top_1_cutoff)]["TOTSLF23"])
