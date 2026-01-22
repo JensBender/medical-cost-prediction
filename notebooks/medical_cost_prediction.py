@@ -582,6 +582,17 @@ top_1_df.style.format("${:,.0f}", subset=(["Top 0.1% Threshold", "Top 1% Thresho
                  .format("${:,.1f}B", subset=(["Top 0.1% Total Costs", "Top 1% Total Costs"], "Population (Weighted)")) \
                  .format("{:.1f}%", subset=(["Top 0.1% Share of Costs", "Top 1% Share of Costs"], slice(None)))
 
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insight:</b> Extreme cost concentration in the tail of the distribution.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>The 1% Rule:</b> The top 1% of spenders —those spending over ~\$13k—account for roughly 20% of all out-of-pocket costs.</li>
+#         <li><b>The Hyper-Tail (Top 0.1%):</b> The top 0.1% of spenders—those spending over ~\$39k—account for a disproportionate share of total costs (approx. 5%). This highlights that the tail is not just long, but extremely heavy.</li>
+#         <li><b>Extreme Outliers:</b> The gap between the 99th percentile (\$12,868) and the maximum (\$104,652) is massive. These "super-spenders" represent a significant challenge for predictive modeling, as a single misprediction here could lead to very high error (RMSE).</li>
+#         <li><b>Financial Risk Benchmarks:</b> These thresholds provide a clear picture of what "catastrophic" spending looks like in the U.S. adult population.</li>
+#     </ul>
+# </div>
+
 # %%
 # Inspecting the "Super-Spenders" (Everyone in the Top 0.1% of the population)
 # This helps us identify if there are common patterns (e.g., age or chronic conditions) among extreme spenders.
@@ -593,12 +604,12 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> Extreme cost concentration in the tail of the distribution.
+#     💡 <b>Insight:</b> The "Super-Spender" profiles reveal a critical dichotomy for predictive modeling.
 #     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>The 1% Rule:</b> The top 1% of spenders —those spending over ~\$13k—account for roughly 20% of all out-of-pocket costs.</li>
-#         <li><b>The Hyper-Tail (Top 0.1%):</b> The top 0.1% of spenders—those spending over ~\$39k—account for a disproportionate share of total costs (approx. 5%). This highlights that the tail is not just long, but extremely heavy.</li>
-#         <li><b>Extreme Outliers:</b> The gap between the 99th percentile (\$12,868) and the maximum (\$104,652) is massive. These "super-spenders" represent a significant challenge for predictive modeling, as a single misprediction here could lead to very high error (RMSE).</li>
-#         <li><b>Financial Risk Benchmarks:</b> These thresholds provide a clear picture of what "catastrophic" spending looks like in the U.S. adult population.</li>
+#         <li><b>Acute vs. Chronic Drivers:</b> Extreme spending is driven by two distinct groups: "Multi-Morbid" individuals (e.g., 85 years with 7 chronic conditions) and "Acute Shock" individuals (e.g., 24 years with 1 condition but \$104k in costs). This suggests some costs are driven by long-term management, while others stem from unpredictable catastrophic events.</li>
+#         <li><b>Age/Cost De-coupling:</b> While elderly respondents are more frequent in the tail, the absolute maximum spender is young (24). This confirms that age alone is not a reliable proxy for extreme financial risk.</li>
+#         <li><b>Modeling Implications:</b> The massive variance within this top 0.1% (ranging from \$39k to \$104k) will likely make the model's RMSE highly sensitive to these specific rows. A single misprediction here could dominate the total error.</li>
+#         <li><b>Strategy:</b> To handle this "heavy-tail," we should consider target transformations (e.g., Log or Box-Cox) or robust loss functions during the modeling phase to prevent these outliers from over-influencing the fit.</li>
 #     </ul>
 # </div>
 
