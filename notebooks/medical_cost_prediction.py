@@ -418,7 +418,9 @@ sns.histplot(df["PERWT23F"])
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Examine descriptive statistics and visualize the distribution of total out-of-pocket health care costs. Unless otherwise specified, the statistics and insights in this section refer to population-level estimates (calculated using sample weights) to ensure representativeness of the U.S. adult population.
+#     ℹ️ Examine descriptive statistics and visualize the distribution of total out-of-pocket health care costs.
+#     <br>
+#     <b>Note:</b> Unless otherwise specified, all descriptive statistics and insights in this section refer to population-level estimates (calculated using sample weights) to ensure representativeness of the U.S. adult population.
 # </div>
 
 # %% [markdown]
@@ -581,8 +583,13 @@ top_1_df.style.format("${:,.0f}", subset=(["Top 0.1% Threshold", "Top 1% Thresho
                  .format("{:.1f}%", subset=(["Top 0.1% Share of Costs", "Top 1% Share of Costs"], slice(None)))
 
 # %%
-# Inspecting the "Super-Spenders" (Top 10 outliers)
-df.nlargest(10, "TOTSLF23")[["TOTSLF23", "AGE23X", "PERWT23F"]]
+# Inspecting the "Super-Spenders" (Everyone in the Top 0.1% of the population)
+# This helps us identify if there are common patterns (e.g., age or chronic conditions) among extreme spenders.
+chronic_cols = ["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"]
+df["CHRONIC_COUNT"] = (df[chronic_cols] == 1).sum(axis=1)
+
+super_spenders = df[df["TOTSLF23"] >= pop_top_01_cutoff].sort_values("TOTSLF23", ascending=False)
+super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_COUNT"] + chronic_cols]
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
