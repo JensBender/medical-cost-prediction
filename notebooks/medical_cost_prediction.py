@@ -145,9 +145,9 @@ df[duplicates_without_id]
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> Detected 3 pairs (6 rows) of respondents with identical values across all 1,300+ columns except for their IDs. 
+#     💡 <b>Insight:</b> Detected 3 pairs (6 rows) of  duplicates based on all columns except ID columns. 
 #     <p style="margin-top:10px; margin-bottom:0px">
-#         These appear to be young siblings (ages 1 and 5) from the same household with identical parent-reported health data, sample weights, and costs. Analysis suggests they are valid respondents rather than "ghost" records. Regardless, they will be excluded when filtering for the adult target population.
+#         These respondents have identical values across all 1,300+ columns except for their IDs. They appear to be young siblings (ages 1 and 5) from the same household with identical parent-reported health data, sample weights, and costs. Analysis suggests they are valid respondents rather than "ghost" records. Regardless, they will be excluded when filtering for the adult target population.
 #     </p>
 # </div>
 
@@ -205,11 +205,11 @@ df = df[columns_to_keep]
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Filtering Target Population</h2>
+#     <h2 style="margin:0px">Target Population Filtering</h2>
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Filter rows to match the target population based on the following criteria:
+#     📌 Filter rows to match the target population (target audience for app) based on the following criteria:
 #     <ul style="margin-bottom:0px">
 #         <li><b>Positive person weight (<code>PERWT23F > 0</code>):</b> Drop respondents with a person weight of zero (i.e., 456 respondents). These individuals are considered "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad).</li>
 #         <li><b>Adults (<code>AGE23X >= 18</code>):</b> Drop respondents under age 18 (i.e., 3796 respondents), as the medical cost planner app targets adults.</li>
@@ -546,7 +546,7 @@ pop_top_1_costs = df[df["TOTSLF23"] >= top_1_cutoff]["pop_costs"].sum()
 pop_bottom_99_costs = df[df["TOTSLF23"] < top_1_cutoff]["pop_costs"].sum()
 
 # Create comparison table
-top1_pct_summary = pd.DataFrame({
+top_1_pct_df = pd.DataFrame({
     "Sample (Unweighted)": [
         top_1_cutoff,
         sample_top_1_costs / 1e6,  # Millions
@@ -568,7 +568,7 @@ top1_pct_summary = pd.DataFrame({
     "Bottom 99% Total Costs",
     "Bottom 99% Share of Costs"
 ])
-top1_pct_summary.style.format("${:,.0f}", subset=(["Top 1% Threshold"], slice(None))) \
+top_1_pct_df.style.format("${:,.0f}", subset=(["Top 1% Threshold"], slice(None))) \
                  .format("${:,.1f}M", subset=(["Top 1% Total Costs", "Bottom 99% Total Costs"], "Sample (Unweighted)")) \
                  .format("${:,.1f}B", subset=(["Top 1% Total Costs", "Bottom 99% Total Costs"], "Population (Weighted)")) \
                  .format("{:.1f}%", subset=(["Top 1% Share of Costs", "Bottom 99% Share of Costs"], slice(None)))
@@ -590,11 +590,11 @@ df.nlargest(10, "TOTSLF23")[["TOTSLF23", "AGE23X", "PERWT23F"]]
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Cost Concentration Analysis</strong> <br>
-#     📌 Examine the cost thresholds, cost totals, and shares of out-of-pocket costs for the top 1%, 5%, 10%, 20%, and 50% of spenders (sample and population). 
+#     📌 Examine the cost thresholds, totals, and shares for the top 1%, 5%, 10%, 20%, and 50% of spenders (sample and population). 
 # </div>
 
 # %%
-# Concentration Benchmarks 
+# Cost Concentration Benchmarks 
 percentiles = [0.99, 0.95, 0.9, 0.8, 0.5]
 stats = []
 
