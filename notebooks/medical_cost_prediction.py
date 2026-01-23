@@ -452,6 +452,11 @@ pop_p25 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.25)
 pop_median = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.5)
 pop_p75 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.75)
 
+# Calculate total costs (sum)
+sample_total_costs = df["TOTSLF23"].sum()
+df["pop_costs"] = df["TOTSLF23"] * df["PERWT23F"]  
+pop_total_costs = df["pop_costs"].sum()
+
 # Create comparison table: Sample vs. population statistics 
 sample_vs_population_stats = pd.DataFrame({
     "Sample (Unweighted)": [
@@ -462,7 +467,8 @@ sample_vs_population_stats = pd.DataFrame({
         df["TOTSLF23"].quantile(0.25),
         df["TOTSLF23"].median(),
         df["TOTSLF23"].quantile(0.75),
-        df["TOTSLF23"].max()
+        df["TOTSLF23"].max(),
+        sample_total_costs
     ],
     "Population (Weighted)": [
         df["PERWT23F"].sum(),  # sum of weights = count of target population
@@ -472,10 +478,16 @@ sample_vs_population_stats = pd.DataFrame({
         pop_p25,
         pop_median,
         pop_p75,
-        df["TOTSLF23"].max()  # max is identical
+        df["TOTSLF23"].max(),  # max is identical
+        pop_total_costs
     ]
-}, index=["count", "mean", "std", "min", "25%", "50%", "75%", "max"])
-sample_vs_population_stats.style.format("{:,.0f}")  # format all values with comma thousand separator and round to zero decimals
+}, index=["count", "mean", "std", "min", "25%", "50%", "75%", "max", "sum"])
+
+# Display table
+# Formatting: Comma thousand separator and rounded to zero decimals (sample sum in Millions, population sum in Billions with one decimal)
+sample_vs_population_stats.style.format("{:,.0f}") \
+    .format(lambda x: f"${x/1e6:.1f}M", subset=("sum", "Sample (Unweighted)")) \
+    .format(lambda x: f"${x/1e9:.1f}B", subset=("sum", "Population (Weighted)"))
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -549,15 +561,12 @@ zero_costs_df.style.format({
 # %%
 # Top 1% analysis
 # Sample (Unweighted)
-sample_total_costs = df["TOTSLF23"].sum()
 sample_top_1_cutoff = df["TOTSLF23"].quantile(0.99)
 sample_top_01_cutoff = df["TOTSLF23"].quantile(0.999)
 sample_top_1_costs = df[df["TOTSLF23"] >= sample_top_1_cutoff]["TOTSLF23"].sum()
 sample_top_01_costs = df[df["TOTSLF23"] >= sample_top_01_cutoff]["TOTSLF23"].sum()
 
 # Population (Weighted)
-df["pop_costs"] = df["TOTSLF23"] * df["PERWT23F"]  
-pop_total_costs = df["pop_costs"].sum()
 pop_top_1_cutoff = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.99)
 pop_top_01_cutoff = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.999)
 pop_top_1_costs = df[df["TOTSLF23"] >= pop_top_1_cutoff]["pop_costs"].sum()
