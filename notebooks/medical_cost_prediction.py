@@ -499,6 +499,7 @@ sample_vs_population_stats.style.format("{:,.0f}") \
     .format(lambda x: f"${x/1e6:.1f}M", subset=("sum", "Sample (Unweighted)")) \
     .format(lambda x: f"${x/1e9:.1f}B", subset=("sum", "Population (Weighted)"))
 
+
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insight:</b> The descriptive statistics reveal a highly skewed and volatile cost distribution, emphasizing the importance of using sample weights for representative estimates.
@@ -517,12 +518,70 @@ sample_vs_population_stats.style.format("{:,.0f}") \
 # </div>
 
 # %%
-# Histogram of out-of-pocket costs
-sns.histplot(df["TOTSLF23"])
+# Histogram: Sample vs. Population (overlayed)
+import matplotlib.ticker as mtick
+
+plt.figure(figsize=(10, 6))
+
+sns.histplot(
+    data=df, x="TOTSLF23", label="Sample (Unweighted)",
+    stat="probability", bins=50, color="#2c699d", alpha=0.4, element="step"
+)
+
+sns.histplot(
+    data=df, x="TOTSLF23", weights="PERWT23F", label="Population (Weighted)",
+    stat="probability", bins=50, color="#4e8ac8", alpha=0.6, element="step"
+)
+
+# Formatting
+plt.title("Full Distribution of Out-of-Pocket Costs")
+plt.xlabel("Out-of-Pocket Costs ($)")
+plt.ylabel("Population Share")
+plt.legend()
+
+# Format X-axis as currency with commas
+plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
+# Format Y-axis as percentages
+plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+
+plt.grid(True, alpha=0.3)
+plt.show()
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     ℹ️ Note: Due to the zero-inflation (22% at \$0) and the extremely heavy tail (max \$104k), the full distribution is heavily compressed into the first few bins.<br>
+#     📌 Visualize the "typical" distribution excluding zeros and the top 1% of spenders. This means zooming in a bit.
+# </div>
 
 # %%
-# Histogram of out-of-pocket costs excluding zero costs and top 1% 
-sns.histplot(df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] <= sample_p99)]["TOTSLF23"])
+# Histogram of typical range (0 < Costs <= 99th Percentile)
+plot_data = df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] <= pop_p99)].copy()
+
+plt.figure(figsize=(10, 6))
+
+sns.histplot(
+    data=plot_data, x="TOTSLF23", label="Sample (Unweighted)",
+    stat="probability", bins=50, color="#2c699d", alpha=0.4, element="step"
+)
+
+sns.histplot(
+    data=plot_data, x="TOTSLF23", weights="PERWT23F", label="Population (Weighted)",
+    stat="probability", bins=50, color="#4e8ac8", alpha=0.6, element="step"
+)
+
+# Formatting
+plt.title("Distribution of Typical Out-of-Pocket Costs (0 < Costs \u2264 99th Percentile)")
+plt.xlabel("Out-of-Pocket Costs ($)")
+plt.ylabel("Population Share")
+plt.legend()
+
+# Format X-axis as currency with commas
+plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
+# Format Y-axis as percentages
+plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+
+plt.grid(True, alpha=0.3)
+plt.show()
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
