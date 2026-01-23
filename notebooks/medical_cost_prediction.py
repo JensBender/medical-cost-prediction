@@ -490,6 +490,20 @@ sample_vs_population_stats.style.format("{:,.0f}")  # format all values with com
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Histogram</strong> <br> 
+#     📌 Visualize the distribution of out-of-pocket health care costs. 
+# </div>
+
+# %%
+# Histogram of out-of-pocket costs
+sns.histplot(df["TOTSLF23"])
+
+# %%
+# Histogram of out-of-pocket costs excluding zero costs and top 1% 
+sns.histplot(df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] <= sample_top_1_cutoff)]["TOTSLF23"])
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Zero Costs Analysis</strong> <br>
 #     📌 Deeper analysis of people with zero out-of-pocket health care costs (sample and population). 
 # </div>
@@ -743,18 +757,3 @@ plt.show()
 #         <li><b>Bottom 50%:</b> The bottom half of the population collectively accounts for less than 5% of total costs.</li>
 #     </ul>
 # </div> 
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     <strong>Visualize Distributions</strong> <br> 
-#     📌 Histogram that shows the distribution of the target variable. 
-# </div>
-
-# %%
-# Histogram of out-of-pocket costs
-sns.histplot(df["TOTSLF23"])
-
-# %%
-# Histogram of out-of-pocket costs excluding zero costs and top 1% 
-sns.histplot(df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] <= sample_top_1_cutoff)]["TOTSLF23"])# Histogram of out-of-pocket costs excluding zero costs and top 1% 
-sns.histplot(df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] <= sample_top_1_cutoff)]["TOTSLF23"])
