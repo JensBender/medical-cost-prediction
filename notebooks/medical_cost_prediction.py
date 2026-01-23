@@ -523,23 +523,25 @@ import matplotlib.ticker as mtick
 
 plt.figure(figsize=(10, 6))
 
-sns.histplot(
-    data=df, x="TOTSLF23", label="Sample (Unweighted)",
-    stat="probability", bins=50, color="#2c699d", alpha=0.4, element="step"
-)
-
+# Population histogram (Filled Bars)
 sns.histplot(
     data=df, x="TOTSLF23", weights="PERWT23F", label="Population (Weighted)",
-    stat="probability", bins=50, color="#4e8ac8", alpha=0.6, element="step"
+    stat="probability", bins=50, color="#4e8ac8", alpha=0.5, element="bars"
+)
+
+# Sample histogram (Outline Step)
+sns.histplot(
+    data=df, x="TOTSLF23", label="Sample (Unweighted)",
+    stat="probability", bins=50, color="#2c699d", alpha=0.8, element="step"
 )
 
 # Formatting
-plt.title("Full Distribution of Out-of-Pocket Costs")
-plt.xlabel("Out-of-Pocket Costs ($)")
-plt.ylabel("Population Share")
+plt.title("Distribution of Out-of-Pocket Costs")
+plt.xlabel("Out-of-Pocket Costs")
+plt.ylabel("Share")
 plt.legend()
 
-# Format X-axis as currency with commas
+# Format X-axis as dollars with comma thousand separator rounded to zero decimals
 plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
 # Format Y-axis as percentages
 plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
@@ -549,8 +551,8 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     ℹ️ Note: Due to the zero-inflation (22% at \$0) and the extremely heavy tail (max \$104k), the full distribution is heavily compressed into the first few bins.<br>
-#     📌 Visualize the "typical" distribution excluding zeros and the top 1% of spenders. This means zooming in a bit.
+#     ℹ️ Note: Due to the zero-inflation (22% have \$0 costs) and the extremely heavy tail (max \$104k), the full distribution is heavily compressed into the first few bins.<br>
+#     📌 Visualize the "typical" distribution excluding zero costs and the top 1% of spenders (zooming in).
 # </div>
 
 # %%
@@ -559,27 +561,32 @@ plot_data = df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] <= pop_p99)].copy()
 
 plt.figure(figsize=(10, 6))
 
-sns.histplot(
-    data=plot_data, x="TOTSLF23", label="Sample (Unweighted)",
-    stat="probability", bins=50, color="#2c699d", alpha=0.4, element="step"
-)
-
+# Population histogram (Filled Bars)
 sns.histplot(
     data=plot_data, x="TOTSLF23", weights="PERWT23F", label="Population (Weighted)",
-    stat="probability", bins=50, color="#4e8ac8", alpha=0.6, element="step"
+    stat="probability", bins=50, color="#4e8ac8", alpha=0.5, element="bars"
 )
+
+# Sample histogram (Outline Step)
+sns.histplot(
+    data=plot_data, x="TOTSLF23", label="Sample (Unweighted)",
+    stat="probability", bins=50, color="#2c699d", alpha=0.8, element="step"
+)
+
+# Add population mean line for context
+pop_typical_mean = np.average(plot_data["TOTSLF23"], weights=plot_data["PERWT23F"])
+plt.axvline(pop_typical_mean, color="#e63946", linestyle="--", alpha=0.8, label=f"Population Mean: ${pop_typical_mean:,.0f}")
 
 # Formatting
 plt.title("Distribution of Typical Out-of-Pocket Costs (0 < Costs \u2264 99th Percentile)")
-plt.xlabel("Out-of-Pocket Costs ($)")
-plt.ylabel("Population Share")
+plt.xlabel("Out-of-Pocket Costs")
+plt.ylabel("Share")
 plt.legend()
 
-# Format X-axis as currency with commas
+# Format X-axis as dollars with comma thousand separator 
 plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
 # Format Y-axis as percentages
 plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
-
 plt.grid(True, alpha=0.3)
 plt.show()
 
