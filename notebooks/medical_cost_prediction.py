@@ -556,8 +556,8 @@ plt.show()
 # </div>
 
 # %%
-# Histogram of typical range (0 < Costs <= 99th Percentile)
-plot_data = df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] <= pop_p99)].copy()
+# Histogram of typical range (0 < Costs < 99th Percentile)
+plot_data = df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] < pop_p99)].copy()
 
 plt.figure(figsize=(10, 6))
 
@@ -578,7 +578,7 @@ pop_typical_mean = np.average(plot_data["TOTSLF23"], weights=plot_data["PERWT23F
 plt.axvline(pop_typical_mean, color="#e63946", linestyle="--", alpha=0.8, label=f"Population Mean: ${pop_typical_mean:,.0f}")
 
 # Formatting
-plt.title("Distribution of Typical Out-of-Pocket Costs (0 < Costs \u2264 99th Percentile)")
+plt.title("Distribution of Typical Out-of-Pocket Costs (0 < Costs < 99th Percentile)")
 plt.xlabel("Out-of-Pocket Costs")
 plt.ylabel("Share")
 plt.legend()
