@@ -660,6 +660,13 @@ cum_sample_costs = lorenz_df["TOTSLF23"].cumsum() / lorenz_df["TOTSLF23"].sum() 
 cum_pop_pct = lorenz_df["PERWT23F"].cumsum() / lorenz_df["PERWT23F"].sum() * 100
 cum_pop_costs = lorenz_df["pop_costs"].cumsum() / lorenz_df["pop_costs"].sum() * 100
 
+# Identify Pareto Point (80/20 rule) on the population curve
+# Find the index label closest to the 80th percentile of the population
+idx_80 = (cum_pop_pct - 80).abs().idxmin()
+x_80 = cum_pop_pct.loc[idx_80]
+y_80 = cum_pop_costs.loc[idx_80]
+top_20_share = 100 - y_80
+
 # Calculate the Gini Coefficient 
 # Note: Quantifies inequality (the higher the number, the more the cost is concentrated) 
 # Gini = A / (A + B), which simplifies to 1 - 2*B, where B is the area under the Lorenz Curve (calculated via the trapezoidal rule)
@@ -684,6 +691,13 @@ plt.plot(cum_pop_pct, cum_pop_costs,
 plt.plot(cum_sample_pct, cum_sample_costs, 
          label=f"Sample (Gini: {gini_sample:.2f})", 
          color="#4e8ac8", lw=1.5, linestyle=":")
+
+# Highlight Pareto Point (80/20 Rule)
+plt.plot(x_80, y_80, 'o', color="#fb8500", markersize=8, label="Pareto Point (80/20)")
+plt.annotate(f"Top 20% account for\n{top_20_share:.1f}% of costs", 
+             xy=(x_80, y_80), xytext=(x_80 - 35, y_80 + 15),
+             arrowprops=dict(arrowstyle="->", color="black", connectionstyle="arc3,rad=-0.2"),
+             fontsize=10, fontweight="bold")
 
 # Highlight Zero-Cost Threshold (% of population with $0 costs)
 pop_zero_pct = (df.loc[df["TOTSLF23"] == 0, "PERWT23F"].sum() / df["PERWT23F"].sum()) * 100
@@ -711,10 +725,8 @@ plt.show()
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insight:</b> High inequality in out-of-pocket health care spending.
 #     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>Top 1% Concentration:</b> The top 1% of respondents account for 20% of total out-of-pocket costs.</li>
-#         <li><b>The 80/20 Rule:</b> The top 20% of respondents account for roughly 80% of total costs.</li>
-#         <li><b>Zero Costs:</b> 21% of respondents have $0 in out-of-pocket costs.</li>
-#         <li><b>Bottom 50%:</b> The bottom half of the population collectively accounts for less than 5% of total costs.</li>
+#         <li><b>The 80/20 Rule:</b> The top 20% of respondents account for almost 80% of total costs.</li>
+#         <li><b>Zero Costs:</b> 22.3% of the U.S. adult population have $0 in out-of-pocket costs.</li>
 #     </ul>
 # </div> 
 
@@ -761,6 +773,18 @@ cost_concentration_df.style.format({
     "Share of Total Costs (Sample)": "{:.1f}%",
     "Share of Total Costs (Population)": "{:.1f}%"
 })
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Top 1%</b> of the population account for <b>20.6%</b> of total out-of-pocket costs.</li>
+#         <li><b>Top 5%</b> account for <b>45.9%</b> of costs.</li>
+#         <li><b>Top 10%</b> account for <b>61.7%</b> of costs.</li>
+#         <li><b>Top 20%</b> account for <b>79.3%</b> of costs.</li>
+#         <li><b>Bottom 50%</b> account for <b>2.4%</b> costs.</li>
+#     </ul>
+# </div> 
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
