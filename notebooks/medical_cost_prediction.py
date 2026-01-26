@@ -451,10 +451,12 @@ pop_std = weighted_std(df["TOTSLF23"], weights=df["PERWT23F"])
 pop_p25 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.25)
 pop_median = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.5)
 pop_p75 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.75)
+pop_p95 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.95)
 pop_p99 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.99)
 pop_p999 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.999)
 
 # Calculate sample (unweighted) quantiles
+sample_p95 = df["TOTSLF23"].quantile(0.95)
 sample_p99 = df["TOTSLF23"].quantile(0.99)
 sample_p999 = df["TOTSLF23"].quantile(0.999)
 
@@ -473,6 +475,7 @@ sample_vs_population_stats = pd.DataFrame({
         df["TOTSLF23"].quantile(0.25),
         df["TOTSLF23"].median(),
         df["TOTSLF23"].quantile(0.75),
+        sample_p95,
         sample_p99,
         sample_p999,
         df["TOTSLF23"].max(),
@@ -486,12 +489,13 @@ sample_vs_population_stats = pd.DataFrame({
         pop_p25,
         pop_median,
         pop_p75,
+        pop_p95,
         pop_p99,
         pop_p999,
         df["TOTSLF23"].max(),  # max is identical
         pop_total_costs
     ]
-}, index=["count", "mean", "std", "min", "25%", "50%", "75%", "99%", "99.9%", "max", "sum"])
+}, index=["count", "mean", "std", "min", "25%", "50%", "75%", "95%", "99%", "99.9%", "max", "sum"])
 
 # Display table
 # Formatting: Comma thousand separator and rounded to zero decimals (sample sum in Millions, population sum in Billions with one decimal)
@@ -557,12 +561,12 @@ plt.show()
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     ℹ️ Note: Due to the zero-inflation (22% have \$0 costs) and the extremely heavy tail (max \$104k), the full distribution is heavily compressed into the first few bins.<br>
-#     📌 Visualize the "typical" distribution excluding zero costs and the top 1% of spenders (zooming in).
+#     📌 Visualize the "typical" distribution excluding zero costs and the top 5% of spenders (zooming in).
 # </div>
 
 # %%
-# Histogram of typical range (excluding zero costs and top 1%)
-plot_data = df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] < pop_p99)].copy()
+# Histogram of typical range (excluding zero costs and top 5%)
+plot_data = df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] < pop_p95)].copy()
 
 plt.figure(figsize=(10, 6))
 
@@ -583,7 +587,7 @@ plt.axvline(pop_mean, color="#e63946", linestyle="--", alpha=0.8, label=f"Popula
 plt.axvline(pop_median, color="#fb8500", linestyle="--", alpha=0.8, label=f"Population Median: ${pop_median:,.0f}")
 
 # Formatting
-plt.title("Distribution of Typical Out-of-Pocket Costs (excluding zero costs and top 1%)")
+plt.title("Distribution of Typical Out-of-Pocket Costs (excluding zero costs and top 5%)")
 plt.xlabel("Out-of-Pocket Costs")
 plt.ylabel("Share")
 plt.legend()
