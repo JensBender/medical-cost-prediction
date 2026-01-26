@@ -600,6 +600,11 @@ plt.grid(True, alpha=0.3)
 plt.show()
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insight:</b> The "typical" distribution (excluding zeros and the top 5%) remains heavily right-skewed with a massive share of the population still concentrated in the lowest cost bins. To get a better picture, I will plot a Lorenz Curve to quantify the overall concentration of healthcare costs and conduct in-depth Zero-Cost Analysis and Top 1% Analysis.
+# </div>
+
+# %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Zero Costs Analysis</strong> <br>
 #     📌 Deeper analysis of people with zero out-of-pocket health care costs (sample and population). 
