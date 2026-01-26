@@ -661,9 +661,10 @@ cum_pop_pct = lorenz_df["PERWT23F"].cumsum() / lorenz_df["PERWT23F"].sum() * 100
 cum_pop_costs = lorenz_df["pop_costs"].cumsum() / lorenz_df["pop_costs"].sum() * 100
 
 # Calculate the Gini Coefficient 
-# Note: Quantifies the degree of inequality (the higher the number, the more the cost is concentrated)
+# Note: Quantifies inequality (the higher the number, the more the cost is concentrated) 
+# Gini = A / (A + B), which simplifies to 1 - 2*B, where B is the area under the Lorenz Curve (calculated via the trapezoidal rule)
 def calculate_gini(pct, costs):
-    return 1 - 2 * np.trapz(costs / 100, pct / 100)
+    return 1 - 2 * np.trapezoid(costs / 100, pct / 100)
 
 gini_sample = calculate_gini(cum_sample_pct, cum_sample_costs)
 gini_pop = calculate_gini(cum_pop_pct, cum_pop_costs)
