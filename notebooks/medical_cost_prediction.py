@@ -649,35 +649,61 @@ zero_costs_df.style.format({
 
 # %%
 # Lorenz Curve
-# Sort costs from lowest to highest
-sorted_costs = df["TOTSLF23"].sort_values()
+# Create DataFrame for plotting the Lorenz Curve sorted by cost 
+lorenz_df = df[["TOTSLF23", "PERWT23F", "pop_costs"]].sort_values("TOTSLF23").copy()
 
-# Calculate cumulative percentage of the sample and costs
-cum_sample_pct = np.arange(1, len(sorted_costs) + 1) / len(sorted_costs) * 100
-cum_sample_costs = sorted_costs.cumsum() / sorted_costs.sum() * 100
+# Cumulative percentage and costs of sample (unweighted) 
+cum_sample_pct = np.arange(1, len(lorenz_df) + 1) / len(lorenz_df) * 100
+cum_sample_costs = lorenz_df["TOTSLF23"].cumsum() / lorenz_df["TOTSLF23"].sum() * 100
+
+# Cumulative percentage and costs of population (weighted)
+cum_pop_pct = lorenz_df["PERWT23F"].cumsum() / lorenz_df["PERWT23F"].sum() * 100
+cum_pop_costs = lorenz_df["pop_costs"].cumsum() / lorenz_df["pop_costs"].sum() * 100
+
+# Calculate the Gini Coefficient 
+# Note: Quantifies the degree of inequality (the higher the number, the more the cost is concentrated)
+def calculate_gini(pct, costs):
+    return 1 - 2 * np.trapz(costs / 100, pct / 100)
+
+gini_sample = calculate_gini(cum_sample_pct, cum_sample_costs)
+gini_pop = calculate_gini(cum_pop_pct, cum_pop_costs)
 
 # Plotting
-plt.figure(figsize=(8, 6))
+plt.figure(figsize=(9, 7))
 
-# The Lorenz Curve
-plt.plot(cum_sample_pct, cum_sample_costs, label="Lorenz Curve", color="#084594", lw=2)
+# Line of Equality
+plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality", alpha=0.6)
 
-# The Line of Equality (Perfectly equal spend)
-plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality")
+# Population Lorenz Curve
+plt.plot(cum_pop_pct, cum_pop_costs, 
+         label=f"Population (Gini: {gini_pop:.2f})", 
+         color="#084594", lw=2.5)
 
-# Fill the area for visual emphasis
-plt.fill_between(cum_sample_pct, cum_sample_costs, cum_sample_pct, color="#084594", alpha=0.1)
+# Sample Lorenz Curve
+plt.plot(cum_sample_pct, cum_sample_costs, 
+         label=f"Sample (Gini: {gini_sample:.2f})", 
+         color="#4e8ac8", lw=1.5, linestyle=":")
+
+# Highlight Zero-Cost Threshold (% of population with $0 costs)
+pop_zero_pct = (df.loc[df["TOTSLF23"] == 0, "PERWT23F"].sum() / df["PERWT23F"].sum()) * 100
+plt.axvline(pop_zero_pct, color="#e63946", linestyle="--", alpha=0.3, lw=1)
+plt.text(pop_zero_pct + 1, 5, f"{pop_zero_pct:.1f}% have $0 Costs", color="#e63946", alpha=0.7, fontsize=9)
+
+# Fill for emphasis
+plt.fill_between(cum_pop_pct, cum_pop_costs, cum_pop_pct, color="#084594", alpha=0.05)
 
 # Customization
-plt.title("Lorenz Curve: Concentration of Out-of-Pocket Costs (Sample)")
-plt.xlabel("Cumulative % of Sample (Ordered from Lowest to Highest Costs)")
-plt.ylabel("Cumulative % of Total Costs")
-plt.legend()
-plt.grid(True, alpha=0.3)
-plt.xticks(range(0, 101, 10))  # set grid lines every 10%
+plt.title("Lorenz Curve: Concentration of Out-of-Pocket Costs", fontsize=14, pad=15)
+plt.xlabel("Cumulative % of U.S. Adults (Sorted from Lowest to Highest Cost)", fontsize=11)
+plt.ylabel("Cumulative % of Total Costs", fontsize=11)
+plt.legend(loc="upper left", fontsize=10)
+plt.grid(True, alpha=0.2)
+plt.xticks(range(0, 101, 10))
 plt.yticks(range(0, 101, 10))
-plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())  # format axis tick labels as percentages
+plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())
 plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
+
+plt.tight_layout()
 plt.show()
 
 # %% [markdown]
