@@ -601,7 +601,7 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> The "typical" distribution (excluding zeros and the top 5%) remains heavily right-skewed with a massive share of the population still concentrated in the lowest cost bins. To get a better picture, I will plot a Lorenz Curve to quantify the overall concentration of healthcare costs and conduct in-depth Zero-Cost Analysis and Top 1% Analysis.
+#     💡 <b>Insight:</b> The "typical" distribution (excluding zeros and the top 5%) remains heavily right-skewed with a massive share of the population still concentrated in the lowest cost bins. To get a better picture, I will conduct in-depth Zero Costs Analysis, Lorenz Curve, Cost Concentration Analysis, and Top 1% Analysis.
 # </div>
 
 # %% [markdown]
@@ -641,6 +641,102 @@ zero_costs_df.style.format({
 #         <li><b>Modeling Implications:</b> The zero-inflated target variable suggests that a two-part modeling strategy (e.g., predicting the probability of any spend vs. the amount of spend) may be more effective than a single standard regression.</li>
 #     </ul>
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Lorenz Curve</strong> <br>
+#     📌 Plot the Lorenz Curve. 
+# </div>
+
+# %%
+# Lorenz Curve
+import matplotlib.ticker as mtick
+
+# Sort costs from lowest to highest
+sorted_costs = df["TOTSLF23"].sort_values()
+
+# Calculate cumulative percentage of population and costs
+cum_pop = np.arange(1, len(sorted_costs) + 1) / len(sorted_costs) * 100
+cum_costs = sorted_costs.cumsum() / sorted_costs.sum() * 100
+
+# Plotting
+plt.figure(figsize=(8, 6))
+
+# The Lorenz Curve
+plt.plot(cum_pop, cum_costs, label="Lorenz Curve (Actual Costs)", color="#084594", lw=2)
+
+# The Line of Equality (Perfectly equal spend)
+plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality")
+
+# Fill the area for visual emphasis
+plt.fill_between(cum_pop, cum_costs, cum_pop, color="#084594", alpha=0.1)
+
+# Customization
+plt.title("Lorenz Curve: Concentration of Out-of-Pocket Costs")
+plt.xlabel("Cumulative % of Population (Ordered from Lowest to Highest Costs)")
+plt.ylabel("Cumulative % of Total Costs")
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.xticks(range(0, 101, 10))  # set grid lines every 10%
+plt.yticks(range(0, 101, 10))
+plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())  # format axis tick labels as percentages
+plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
+plt.show()
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insight:</b> High inequality in out-of-pocket health care spending.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Top 1% Concentration:</b> The top 1% of respondents account for 20% of total out-of-pocket costs.</li>
+#         <li><b>The 80/20 Rule:</b> The top 20% of respondents account for roughly 80% of total costs.</li>
+#         <li><b>Zero Costs:</b> 21% of respondents have $0 in out-of-pocket costs.</li>
+#         <li><b>Bottom 50%:</b> The bottom half of the population collectively accounts for less than 5% of total costs.</li>
+#     </ul>
+# </div> 
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Cost Concentration Analysis</strong> <br>
+#     📌 Examine the cost thresholds, totals, and shares for the top 1%, 5%, 10%, 20%, and 50% of spenders (sample and population). 
+# </div>
+
+# %%
+# Cost Concentration Benchmarks 
+percentiles = [0.99, 0.95, 0.9, 0.8, 0.5]
+stats = []
+
+sample_total_costs = df["TOTSLF23"].sum()
+pop_total_costs = df["pop_costs"].sum()
+
+for p in percentiles:
+    # Calculate Thresholds
+    sample_threshold = df["TOTSLF23"].quantile(p)
+    pop_threshold = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], p)
+    
+    # Sample Share (Unweighted)
+    sample_share = (df[df["TOTSLF23"] >= sample_threshold]["TOTSLF23"].sum() / sample_total_costs) * 100
+    
+    # Population Share (Weighted)
+    pop_share = (df[df["TOTSLF23"] >= pop_threshold]["pop_costs"].sum() / pop_total_costs) * 100
+    
+    stats.append({
+        "Top X%": f"Top {(1-p)*100:.0f}%",
+        "Threshold (Sample)": sample_threshold,
+        "Threshold (Population)": pop_threshold,
+        "Share of Total Costs (Sample)": sample_share,
+        "Share of Total Costs (Population)": pop_share
+    })
+
+# Set "Top X%" as DataFrame index
+cost_concentration_df = pd.DataFrame(stats).set_index("Top X%")
+
+# Show table with formatted values
+cost_concentration_df.style.format({
+    "Threshold (Sample)": "${:,.0f}",
+    "Threshold (Population)": "${:,.0f}",
+    "Share of Total Costs (Sample)": "{:.1f}%",
+    "Share of Total Costs (Population)": "{:.1f}%"
+})
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
@@ -721,99 +817,3 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 #         <li><b>Strategy:</b> To prevent these outliers from dominating the training, we must consider target transformations (Log/Box-Cox) or robust regression techniques that "downweight" the influence of extreme residuals.</li>
 #     </ul>
 # </div>
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     <strong>Cost Concentration Analysis</strong> <br>
-#     📌 Examine the cost thresholds, totals, and shares for the top 1%, 5%, 10%, 20%, and 50% of spenders (sample and population). 
-# </div>
-
-# %%
-# Cost Concentration Benchmarks 
-percentiles = [0.99, 0.95, 0.9, 0.8, 0.5]
-stats = []
-
-sample_total_costs = df["TOTSLF23"].sum()
-pop_total_costs = df["pop_costs"].sum()
-
-for p in percentiles:
-    # Calculate Thresholds
-    sample_threshold = df["TOTSLF23"].quantile(p)
-    pop_threshold = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], p)
-    
-    # Sample Share (Unweighted)
-    sample_share = (df[df["TOTSLF23"] >= sample_threshold]["TOTSLF23"].sum() / sample_total_costs) * 100
-    
-    # Population Share (Weighted)
-    pop_share = (df[df["TOTSLF23"] >= pop_threshold]["pop_costs"].sum() / pop_total_costs) * 100
-    
-    stats.append({
-        "Top X%": f"Top {(1-p)*100:.0f}%",
-        "Threshold (Sample)": sample_threshold,
-        "Threshold (Population)": pop_threshold,
-        "Share of Total Costs (Sample)": sample_share,
-        "Share of Total Costs (Population)": pop_share
-    })
-
-# Set "Top X%" as DataFrame index
-cost_concentration_df = pd.DataFrame(stats).set_index("Top X%")
-
-# Show table with formatted values
-cost_concentration_df.style.format({
-    "Threshold (Sample)": "${:,.0f}",
-    "Threshold (Population)": "${:,.0f}",
-    "Share of Total Costs (Sample)": "{:.1f}%",
-    "Share of Total Costs (Population)": "{:.1f}%"
-})
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     <strong>Lorenz Curve</strong> <br>
-#     📌 Plot the Lorenz Curve. 
-# </div>
-
-# %%
-# Lorenz Curve
-import matplotlib.ticker as mtick
-
-# Sort costs from lowest to highest
-sorted_costs = df["TOTSLF23"].sort_values()
-
-# Calculate cumulative percentage of population and costs
-cum_pop = np.arange(1, len(sorted_costs) + 1) / len(sorted_costs) * 100
-cum_costs = sorted_costs.cumsum() / sorted_costs.sum() * 100
-
-# Plotting
-plt.figure(figsize=(8, 6))
-
-# The Lorenz Curve
-plt.plot(cum_pop, cum_costs, label="Lorenz Curve (Actual Costs)", color="#084594", lw=2)
-
-# The Line of Equality (Perfectly equal spend)
-plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality")
-
-# Fill the area for visual emphasis
-plt.fill_between(cum_pop, cum_costs, cum_pop, color="#084594", alpha=0.1)
-
-# Customization
-plt.title("Lorenz Curve: Concentration of Out-of-Pocket Costs")
-plt.xlabel("Cumulative % of Population (Ordered from Lowest to Highest Costs)")
-plt.ylabel("Cumulative % of Total Costs")
-plt.legend()
-plt.grid(True, alpha=0.3)
-plt.xticks(range(0, 101, 10))  # set grid lines every 10%
-plt.yticks(range(0, 101, 10))
-plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())  # format axis tick labels as percentages
-plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
-plt.show()
-
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> High inequality in out-of-pocket health care spending.
-#     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>Top 1% Concentration:</b> The top 1% of respondents account for 20% of total out-of-pocket costs.</li>
-#         <li><b>The 80/20 Rule:</b> The top 20% of respondents account for roughly 80% of total costs.</li>
-#         <li><b>Zero Costs:</b> 21% of respondents have $0 in out-of-pocket costs.</li>
-#         <li><b>Bottom 50%:</b> The bottom half of the population collectively accounts for less than 5% of total costs.</li>
-#     </ul>
-# </div> 
