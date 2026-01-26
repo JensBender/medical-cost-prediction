@@ -523,13 +523,13 @@ import matplotlib.ticker as mtick
 
 plt.figure(figsize=(10, 6))
 
-# Population histogram (Filled Bars)
+# Population histogram 
 sns.histplot(
     data=df, x="TOTSLF23", weights="PERWT23F", label="Population (Weighted)",
     stat="probability", bins=50, color="#4e8ac8", alpha=0.5, element="bars"
 )
 
-# Sample histogram (Outline Step)
+# Sample histogram 
 sns.histplot(
     data=df, x="TOTSLF23", label="Sample (Unweighted)",
     stat="probability", bins=50, color="#2c699d", alpha=0.8, element="step"
@@ -539,6 +539,11 @@ sns.histplot(
 plt.title("Distribution of Out-of-Pocket Costs")
 plt.xlabel("Out-of-Pocket Costs")
 plt.ylabel("Share")
+
+# Add population mean and median lines for context
+plt.axvline(pop_mean, color="#e63946", linestyle="--", alpha=0.8, label=f"Population Mean: ${pop_mean:,.0f}")
+plt.axvline(pop_median, color="#fb8500", linestyle="--", alpha=0.8, label=f"Population Median: ${pop_median:,.0f}")
+
 plt.legend()
 
 # Format X-axis as dollars with comma thousand separator rounded to zero decimals
@@ -556,34 +561,34 @@ plt.show()
 # </div>
 
 # %%
-# Histogram of typical range (0 < Costs < 99th Percentile)
+# Histogram of typical range (excluding zero costs and top 1%)
 plot_data = df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] < pop_p99)].copy()
 
 plt.figure(figsize=(10, 6))
 
-# Population histogram (Filled Bars)
+# Population histogram 
 sns.histplot(
     data=plot_data, x="TOTSLF23", weights="PERWT23F", label="Population (Weighted)",
     stat="probability", bins=50, color="#4e8ac8", alpha=0.5, element="bars"
 )
 
-# Sample histogram (Outline Step)
+# Sample histogram
 sns.histplot(
     data=plot_data, x="TOTSLF23", label="Sample (Unweighted)",
     stat="probability", bins=50, color="#2c699d", alpha=0.8, element="step"
 )
 
-# Add population mean line for context
-pop_typical_mean = np.average(plot_data["TOTSLF23"], weights=plot_data["PERWT23F"])
-plt.axvline(pop_typical_mean, color="#e63946", linestyle="--", alpha=0.8, label=f"Population Mean: ${pop_typical_mean:,.0f}")
+# Add population mean and median lines for context
+plt.axvline(pop_mean, color="#e63946", linestyle="--", alpha=0.8, label=f"Population Mean: ${pop_mean:,.0f}")
+plt.axvline(pop_median, color="#fb8500", linestyle="--", alpha=0.8, label=f"Population Median: ${pop_median:,.0f}")
 
 # Formatting
-plt.title("Distribution of Typical Out-of-Pocket Costs (0 < Costs < 99th Percentile)")
+plt.title("Distribution of Typical Out-of-Pocket Costs (excluding zero costs and top 1%)")
 plt.xlabel("Out-of-Pocket Costs")
 plt.ylabel("Share")
 plt.legend()
 
-# Format X-axis as dollars with comma thousand separator 
+# Format X-axis as dollars with thousand separator 
 plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
 # Format Y-axis as percentages
 plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
