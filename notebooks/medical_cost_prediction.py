@@ -724,10 +724,12 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> High inequality in out-of-pocket health care spending.
+#     💡 <b>Insight:</b> The Lorenz Curve reveals extreme inequality in out-of-pocket health care spending, far exceeding typical measures of economic inequality.
 #     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>The 80/20 Rule:</b> The top 20% of respondents account for almost 80% of total costs.</li>
-#         <li><b>Zero Costs:</b> 22.3% of the U.S. adult population have $0 in out-of-pocket costs.</li>
+#         <li><b>The 80/20 Rule:</b> The top 20% of spenders account for <b>79.3%</b> of total costs, almost perfectly reflecting the Pareto Principle.</li>
+#         <li><b>Inequality Comparison:</b> A Gini coefficient of <b>0.77</b> represents massive concentration. For context, U.S. income inequality (Gini ~0.45) is often considered high; healthcare cost inequality is significantly more than wealth.</li>
+#         <li><b>The "Low-Cost" Majority:</b> The curve remains flat for the first <b>70%</b> of the population, who combined account for only about <b>12%</b> of total out-of-pocket costs.</li>
+#         <li><b>Zero Costs:</b> A significant "hurdle" for modeling is the <b>22.3%</b> of U.S. adults who incur $0 in costs, requiring a model capable of handling zero-inflation.</li>
 #     </ul>
 # </div> 
 
@@ -777,13 +779,11 @@ cost_concentration_df.style.format({
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insights:</b> 
+#     💡 <b>Insights:</b> The cost concentration analysis quantifies the "heavy tail" of the distribution:
 #     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>Top 1%</b> of the population account for <b>20.6%</b> of total out-of-pocket costs.</li>
-#         <li><b>Top 5%</b> account for <b>45.9%</b> of costs.</li>
-#         <li><b>Top 10%</b> account for <b>61.7%</b> of costs.</li>
-#         <li><b>Top 20%</b> account for <b>79.3%</b> of costs.</li>
-#         <li><b>Bottom 50%</b> account for <b>2.4%</b> costs.</li>
+#         <li><b>Top 1% vs. Bottom 50%:</b> The top 1% of spenders account for <b>20.6%</b> of total costs. This is nearly <b>ten times</b> more than the bottom 50% of the population combined (2.4%).</li>
+#         <li><b>Exponential Escalation:</b> The cost threshold more than <b>doubles</b> between the top 5% ($4,518) and the top 1% (\$12,868), indicating that financial risk increases exponentially as one moves into the tail.</li>
+#         <li><b>Predictive Challenge:</b> Because the bottom half of the population contributes so little to the total sum, a model that focuses on the "average" person will be highly accurate for the majority but fail catastrophically for the "super-spenders" who drive the actual financial risk.</li>
 #     </ul>
 # </div> 
 
