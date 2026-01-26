@@ -35,6 +35,7 @@ import numpy as np
 
 # Data visualization
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick  # to format axis ticks
 import seaborn as sns
 
 # Data preprocessing (scikit-learn)
@@ -523,8 +524,6 @@ sample_vs_population_stats.style.format("{:,.0f}") \
 
 # %%
 # Histogram: Sample vs. Population (overlayed)
-import matplotlib.ticker as mtick
-
 plt.figure(figsize=(10, 6))
 
 # Population histogram 
@@ -650,30 +649,28 @@ zero_costs_df.style.format({
 
 # %%
 # Lorenz Curve
-import matplotlib.ticker as mtick
-
 # Sort costs from lowest to highest
 sorted_costs = df["TOTSLF23"].sort_values()
 
-# Calculate cumulative percentage of population and costs
-cum_pop = np.arange(1, len(sorted_costs) + 1) / len(sorted_costs) * 100
-cum_costs = sorted_costs.cumsum() / sorted_costs.sum() * 100
+# Calculate cumulative percentage of the sample and costs
+cum_sample_pct = np.arange(1, len(sorted_costs) + 1) / len(sorted_costs) * 100
+cum_sample_costs = sorted_costs.cumsum() / sorted_costs.sum() * 100
 
 # Plotting
 plt.figure(figsize=(8, 6))
 
 # The Lorenz Curve
-plt.plot(cum_pop, cum_costs, label="Lorenz Curve (Actual Costs)", color="#084594", lw=2)
+plt.plot(cum_sample_pct, cum_sample_costs, label="Lorenz Curve", color="#084594", lw=2)
 
 # The Line of Equality (Perfectly equal spend)
 plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality")
 
 # Fill the area for visual emphasis
-plt.fill_between(cum_pop, cum_costs, cum_pop, color="#084594", alpha=0.1)
+plt.fill_between(cum_sample_pct, cum_sample_costs, cum_sample_pct, color="#084594", alpha=0.1)
 
 # Customization
-plt.title("Lorenz Curve: Concentration of Out-of-Pocket Costs")
-plt.xlabel("Cumulative % of Population (Ordered from Lowest to Highest Costs)")
+plt.title("Lorenz Curve: Concentration of Out-of-Pocket Costs (Sample)")
+plt.xlabel("Cumulative % of Sample (Ordered from Lowest to Highest Costs)")
 plt.ylabel("Cumulative % of Total Costs")
 plt.legend()
 plt.grid(True, alpha=0.3)
