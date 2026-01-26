@@ -670,7 +670,7 @@ gini_sample = calculate_gini(cum_sample_pct, cum_sample_costs)
 gini_pop = calculate_gini(cum_pop_pct, cum_pop_costs)
 
 # Plotting
-plt.figure(figsize=(9, 7))
+plt.figure(figsize=(9, 7))  
 
 # Line of Equality
 plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality", alpha=0.6)
@@ -690,10 +690,11 @@ idx_80 = (cum_pop_pct - 80).abs().idxmin()  # find the index label closest to th
 x_80 = cum_pop_pct.loc[idx_80]
 y_80 = cum_pop_costs.loc[idx_80]
 top_20_share = 100 - y_80
+
 plt.plot(x_80, y_80, 'o', color="#fb8500", markersize=8)
 plt.annotate(f"Top 20% account for\n{top_20_share:.1f}% of costs", 
-             xy=(x_80, y_80), xytext=(x_80 - 35, y_80 + 15),
-             arrowprops=dict(arrowstyle="->", color="black", connectionstyle="arc3,rad=-0.2"),
+             xy=(x_80, y_80), xytext=(x_80 - 30, y_80 + 10),
+             arrowprops=dict(arrowstyle="->", color="black", connectionstyle="arc3,rad=-0.2", alpha=0.8),
              fontsize=10, fontweight="bold")
 
 # Highlight Zero-Cost Threshold (the point where costs begin to rise)
@@ -701,7 +702,7 @@ pop_zero_pct = (df.loc[df["TOTSLF23"] == 0, "PERWT23F"].sum() / df["PERWT23F"].s
 plt.plot(pop_zero_pct, 0, 'o', color="#fb8500", markersize=8)
 plt.annotate(f"{pop_zero_pct:.1f}% have $0 costs", 
              xy=(pop_zero_pct, 0), xytext=(pop_zero_pct - 7, 10),
-             arrowprops=dict(arrowstyle="->", color="black", alpha=0.7),
+             arrowprops=dict(arrowstyle="->", color="black", connectionstyle="arc3,rad=-0.2", alpha=0.8),
              fontsize=10, fontweight="bold")
 
 # Fill for emphasis
