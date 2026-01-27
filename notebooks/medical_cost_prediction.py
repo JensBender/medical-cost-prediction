@@ -399,6 +399,7 @@ df["PERWT23F"].sum()
 # %%
 # Histogram of sample weights
 sns.histplot(df["PERWT23F"])
+plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("{x:,.0f}"))
 
 
 # %% [markdown]
