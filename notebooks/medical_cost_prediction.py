@@ -327,7 +327,7 @@ df.isnull().sum().sort_values(ascending=False)
 #     📌 Split the data into 80% for training, 10% for validation, and 10% for testing.
 #     <br><br>
 #     <b>Why not a simple random split?</b><br>
-#     Given the highly asymmetric distribution of healthcare costs, a standard random split risks creating structurally inconsistent subsets. Simple random sampling can produce evaluation sets that either over-represent zero-cost cases or entirely omit the extreme high-cost outliers that drive population spending. Such inconsistencies introduce evaluation volatility, making performance metrics unreliable for predicting real-world financial risk.
+#     Given the highly asymmetric distribution of healthcare costs (see <a href="#target-variable"><b>Target Variable EDA</b></a>), a standard random split risks creating structurally inconsistent subsets. Simple random sampling can produce evaluation sets that either over-represent zero-cost cases or entirely omit the extreme high-cost outliers that drive population spending. Such inconsistencies introduce evaluation volatility, making performance metrics unreliable for predicting real-world financial risk.
 #     <br><br>
 #     <b>Rationale for Distribution-Informed Stratified Split</b><br>
 #     To ensure the model is evaluated on a representative mirror of the population, I use a <b>Distribution-Informed Stratified Split</b> for three critical reasons:
@@ -497,6 +497,7 @@ plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("{x:,.0f}"))
 # </div>
 
 # %% [markdown]
+# <a id="target-variable" name="target-variable"></a>
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">Target Variable</h3>
 # </div> 
