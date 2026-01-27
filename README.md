@@ -162,16 +162,16 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to account for the comp
 ## 🔍 Exploratory Data Analysis (EDA)
 
 ### Target Variable: Out-of-Pocket Costs
-The distribution of total out-of-pocket health care costs (`TOTSLF23`) is characterized by extreme right-skewness, zero-inflation, and a heavily concentrated "heavy tail." While most people have low costs, a small minority faces significant financial exposure.
+The distribution of annual out-of-pocket health care costs (`TOTSLF23`) exhibits severe right-skewness, zero-inflation, and an extremely heavy tail. While the majority of individuals incur minimal expenses, a small fraction faces extraordinary financial exposure, creating a highly concentrated cost distribution that requires robust modeling techniques.
 
 ![Lorenz Curve](assets/lorenz_curve.png)
 
 **Key Insights:**
-*   **Zero-Cost Prevalence:** Approximately **22.3%** of the U.S. adult population (estimated 58 million people) incurred **$0** in out-of-pocket costs in 2023, confirming the data is zero-inflated.
-*   **The 80/20 Rule (Pareto Principle):** The top **20%** of spenders account for **79.3%** of total out-of-pocket costs, almost perfectly reflecting the Pareto Principle.
-*   **Extreme Inequality:** With a Gini coefficient of **0.77**, healthcare cost inequality in the U.S. is massive, far exceeding typical measures of income inequality (Gini ~0.45).
-*   **Concentrated Tail Risk:** The top **1%** of spenders — those spending over **$12,868** — account for **20.6%** of all costs. This is nearly ten times the share of the bottom 50% combined (2.4%).
-*   **Extreme Outliers ("Super-Spenders"):** The maximum out-of-pocket cost reached **$104,652**. These individuals represent "Black Swan" events that could disproportionately influence model training if not handled with robust regression techniques or target transformations.
+*   **Zero-Cost Prevalence:** More than **one in five** U.S. adults (**22.3%**, or an estimated 58 million people) incurred **no out-of-pocket costs** in 2023. This high zero-inflation necessitates models capable of handling a large mass of zero values.
+*   **The 80/20 Rule:** The top **20%** of spenders account for **79.3%** of the total economic burden, demonstrating a near-perfect alignment with the **Pareto Principle**.
+*   **Extreme Concentration:** With a **Gini coefficient of 0.77**, healthcare cost concentration is extraordinary. For context, this far exceeds typical measures of U.S. income inequality (~0.45).
+*   **The Top 1% Phenomenon:** The top 1% of spenders (spending over **$12,868**) account for **20.6%** of all costs—nearly **ten times** the amount of the bottom 50% combined (which account for 2.4% of all costs).
+*   **Impact of "Super-Spenders":** The maximum individual cost reached **$104,652**. These "Black Swan" events can disproportionately skew training, requiring robust regression or target transformations to ensure model stability.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
