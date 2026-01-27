@@ -455,7 +455,7 @@ def verify_split(y_subset, name):
     
     # Merge metrics and strata proportions 
     for i, prob in strata_probs.items():
-        stats[f"Bin {i} (%)"] = prob
+        stats[f"Bin {int(i)} %"] = prob
         
     return pd.Series(stats, name=name)
 
@@ -468,7 +468,7 @@ split_metrics = pd.concat([
 ], axis=1).T
 
 # Display summary table formatted for readability
-split_metrics.style.format("{:,.2f}") \
+split_metrics.style.format("{:,.1f}") \
             .format("{:,.0f}", subset=["Samples", "Max Cost"]) \
             .format("${:,.0f}", subset=["Mean Cost", "Median Cost", "Max Cost"])
 
