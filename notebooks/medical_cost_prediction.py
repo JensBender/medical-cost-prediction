@@ -324,27 +324,71 @@ df.isnull().sum().sort_values(ascending=False)
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Split the data into 80% for training, 10% for validation, and 10% for testing.
-#     <table style="margin-left:0; margin-top:20px; margin-bottom:20px">
-#         <tr>
-#             <th style="background-color:#f5ecda;">Data</th>
-#             <th style="background-color:#f5ecda;">Size (%)</th>
-#             <th style="background-color:#f5ecda;">Size (Total)</th>
+#     📌 <b>Rationale for Tail-Informed Stratification</b><br>
+#     EDA demonstrated that healthcare costs follow a distribution that is zero-inflated with an extremely heavy tail. To ensure the model's performance metrics are statistically valid and representative of the total population, a standard random split is replaced with <b>Hurdle-Style Stratified Sampling</b> for three critical reasons:
+#     <ul>
+#         <li><b>Preserving the Zero-Hurdle (22.3%):</b> Guarantees that the structural proportion of zero-cost individuals remains identical across all sets, ensuring consistent evaluation of the model's "hurdle" logic.</li>
+#         <li><b>Capturing the Pareto Distribution:</b> Prevents evaluation bias by ensuring the 20% of spenders who drive ~80% of the total economic burden are proportionally represented in the test set.</li>
+#         <li><b>Mitigating 'Black Swan' Risks (Top 1%):</b> Uses high-resolution non-linear bins (50, 80, 95, and 99th percentiles) to force the inclusion of "super-spenders" in the test set, preventing unstable performance metric fluctuations caused by the extreme tail.</li>
+#     </ul>
+#     <b>Strategy:</b> Split the data into 80% for training, 10% for validation, and 10% for testing.
+#     <b>Hurdle-Style Strata Distribution:</b>
+#     <table style="margin-left:0; margin-top:20px; margin-bottom:20px; border-collapse: collapse; width: 100%;">
+#         <tr style="background-color:#f5ecda;">
+#             <th>Bin</th>
+#             <th>Category</th>
+#             <th>Percentile (of Positives)</th>
+#             <th>Train (80%)</th>
+#             <th>Val (10%)</th>
+#             <th>Test (10%)</th>
 #         </tr>
 #         <tr>
-#             <td style="background-color:#fff6e4;">Training Set</td>
-#             <td style="background-color:#fff6e4;">80%</td>
-#             <td style="background-color:#fff6e4;">11,814</td>
+#             <td style="background-color:#fff6e4; text-align:center;"><b>-1</b></td>
+#             <td style="background-color:#fff6e4;"><b>Zero Costs</b></td>
+#             <td style="background-color:#fff6e4;">N/A (Hurdle)</td>
+#             <td style="background-color:#fff6e4; text-align:center;">2,640</td>
+#             <td style="background-color:#fff6e4; text-align:center;">330</td>
+#             <td style="background-color:#fff6e4; text-align:center;">330</td>
 #         </tr>
 #         <tr>
-#             <td style="background-color:#f5ecda;">Validation Set</td>
-#             <td style="background-color:#f5ecda;">10%</td>
-#             <td style="background-color:#f5ecda;">1,477</td>
+#             <td style="text-align:center;"><b>0</b></td>
+#             <td>Low Spend</td>
+#             <td>0 - 50%</td>
+#             <td style="text-align:center;">4,587</td>
+#             <td style="text-align:center;">573</td>
+#             <td style="text-align:center;">574</td>
 #         </tr>
 #         <tr>
-#             <td style="background-color:#fff6e4;">Test Set</td>
-#             <td style="background-color:#fff6e4;">10%</td>
-#             <td style="background-color:#fff6e4;">1,477</td>
+#             <td style="background-color:#fff6e4; text-align:center;"><b>1</b></td>
+#             <td style="background-color:#fff6e4;">Moderate</td>
+#             <td style="background-color:#fff6e4;">50 - 80%</td>
+#             <td style="background-color:#fff6e4; text-align:center;">2,752</td>
+#             <td style="background-color:#fff6e4; text-align:center;">344</td>
+#             <td style="background-color:#fff6e4; text-align:center;">344</td>
+#         </tr>
+#         <tr>
+#             <td style="text-align:center;"><b>2</b></td>
+#             <td>High Spend</td>
+#             <td>80 - 95%</td>
+#             <td style="text-align:center;">1,376</td>
+#             <td style="text-align:center;">172</td>
+#             <td style="text-align:center;">172</td>
+#         </tr>
+#         <tr>
+#             <td style="background-color:#fff6e4; text-align:center;"><b>3</b></td>
+#             <td style="background-color:#fff6e4;">Ultra High</td>
+#             <td style="background-color:#fff6e4;">95 - 99%</td>
+#             <td style="background-color:#fff6e4; text-align:center;">367</td>
+#             <td style="background-color:#fff6e4; text-align:center;">46</td>
+#             <td style="background-color:#fff6e4; text-align:center;">46</td>
+#         </tr>
+#         <tr>
+#             <td style="text-align:center;"><b>4</b></td>
+#             <td><b>Super-Spenders</b></td>
+#             <td><b>Top 1%</b></td>
+#             <td style="text-align:center;"><b>92</b></td>
+#             <td style="text-align:center;"><b>12</b></td>
+#             <td style="text-align:center;"><b>11</b></td>
 #         </tr>
 #     </table>
 # </div>
@@ -355,15 +399,49 @@ X = df.drop("TOTSLF23", axis=1)
 y = df["TOTSLF23"]
 
 # %%
-# Split the data into training and temporary sets (80% train, 20% temporary)
-X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.2, random_state=42)
+# Define a helper function for hurdle-style stratification
+def create_stratification_bins(y):
+    # Initialize strata series 
+    strata = pd.Series(index=y.index, dtype=int)
+    
+    # Bin -1: Zeros (Handle the hurdle separately)
+    is_zero = (y == 0)
+    strata[is_zero] = -1
+    
+    # Custom non-linear quantiles for positive values to capture the tail
+    positive_y = y[~is_zero]
+    bins = [0, 0.5, 0.8, 0.95, 0.99, 1.0]
+    
+    # Assign positive spenders to bins 0 through 4
+    strata[~is_zero] = pd.qcut(positive_y, q=bins, labels=False, duplicates='drop')
+    return strata
 
-# Split the temporary data into validation and test sets (50% each)
-# Note: This accomplishes a 80% training, 10% validation and 10% test set size
-X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+# Generate the stratification guide 
+y_strata = create_stratification_bins(y)
 
-# Delete the temporary data to free up memory
-del X_temp, y_temp
+# Perform the first stratified split (80% Train, 20% Temp)
+X_train, X_temp, y_train, y_temp = train_test_split(
+    X, y, test_size=0.20, random_state=42, stratify=y_strata
+)
+
+# Re-calculate strata for the temporary set to ensure the 50/50 split is also representative
+temp_strata = create_stratification_bins(y_temp)
+
+# Perform the second stratified split (10% Val, 10% Test)
+X_val, X_test, y_val, y_test = train_test_split(
+    X_temp, y_temp, test_size=0.50, random_state=42, stratify=temp_strata
+)
+
+# Delete temporary data to free up memory
+del X_temp, y_temp, y_strata, temp_strata
+
+# Verification: Check if the tail and zeros are preserved
+print(f"Total Rows: {len(df)}")
+print(f"Zero-cost % in Total: {(df['TOTSLF23'] == 0).mean():.1%}")
+print(f"Zero-cost % in Test:  {(y_test == 0).mean():.1%}")
+print(f"Max cost in Total:    ${df['TOTSLF23'].max():,.0f}")
+print(f"Max cost in Test:     ${y_test.max():,.0f}")
+
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
