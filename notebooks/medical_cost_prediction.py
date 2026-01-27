@@ -324,15 +324,19 @@ df.isnull().sum().sort_values(ascending=False)
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 <b>Rationale for Tail-Informed Stratification</b><br>
-#     EDA demonstrated that healthcare costs follow a distribution that is zero-inflated with an extremely heavy tail. To ensure the model's performance metrics are statistically valid and representative of the total population, a standard random split is replaced with <b>Hurdle-Style Stratified Sampling</b> for three critical reasons:
+#     📌 Split the data into 80% for training, 10% for validation, and 10% for testing.
+#     <br><br>
+#     <b>Why not a simple random split?</b><br>
+#     Given the highly asymmetric distribution of healthcare costs, a standard random split risks creating structurally inconsistent subsets. Simple random sampling can produce evaluation sets that either over-represent zero-cost cases or entirely omit the extreme high-cost outliers that drive population spending. Such inconsistencies introduce evaluation volatility, making performance metrics unreliable for predicting real-world financial risk.
+#     <br><br>
+#     <b>Rationale for Distribution-Informed Stratified Split</b><br>
+#     To ensure the model is evaluated on a representative mirror of the population, I use a <b>Distribution-Informed Stratified Split</b> for three critical reasons:
 #     <ul>
-#         <li><b>Preserving the Zero-Hurdle (22.3%):</b> Guarantees that the structural proportion of zero-cost individuals remains identical across all sets, ensuring consistent evaluation of the model's "hurdle" logic.</li>
+#         <li><b>Preserving the Zero-Hurdle (22.3%):</b> Guarantees that the structural proportion of zero-cost individuals remains identical across all sets, ensuring consistent evaluation of the model's ability to predict cost occurrence.</li>
 #         <li><b>Capturing the Pareto Distribution:</b> Prevents evaluation bias by ensuring the 20% of spenders who drive ~80% of the total economic burden are proportionally represented in the test set.</li>
-#         <li><b>Mitigating 'Black Swan' Risks (Top 1%):</b> Uses high-resolution non-linear bins (50, 80, 95, and 99th percentiles) to force the inclusion of "super-spenders" in the test set, preventing unstable performance metric fluctuations caused by the extreme tail.</li>
+#         <li><b>Mitigating 'Black Swan' Risks (Top 1%):</b> Uses high-resolution non-linear bins (50, 80, 95, and 99th percentiles) to force the inclusion of extreme high-cost individuals in the test set, preventing unstable performance metric fluctuations.</li>
 #     </ul>
-#     <b>Strategy:</b> Split the data into 80% for training, 10% for validation, and 10% for testing.
-#     <br><br><b>Hurdle-Style Strata Distribution</b>
+#     <b>Strata Distribution</b>
 #     <table style="margin-left:0; margin-top:20px; margin-bottom:20px">
 #         <tr>
 #             <th style="background-color:#f5ecda;">Bin</th>
@@ -399,7 +403,7 @@ X = df.drop("TOTSLF23", axis=1)
 y = df["TOTSLF23"]
 
 # %%
-# Define a helper function for hurdle-style stratification
+# Define a helper function for distribution-informed stratification
 def create_stratification_bins(y):
     # Initialize strata series 
     strata = pd.Series(index=y.index, dtype=int)
@@ -419,7 +423,7 @@ def create_stratification_bins(y):
 # Generate the stratification guide 
 y_strata = create_stratification_bins(y)
 
-# Perform the first stratified split (80% Train, 20% Temp)
+# Perform the first distribution-informed stratified split (80% Train, 20% Temp)
 X_train, X_temp, y_train, y_temp = train_test_split(
     X, y, test_size=0.20, random_state=42, stratify=y_strata
 )
