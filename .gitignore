@@ -4,8 +4,8 @@ models/
 figures/
 notebooks/machine_learning_template.ipynb
 notebooks/loan_default_prediction.ipynb
-assets/header_old.png
-assets/header_chatgpt_1.png
+assets/header_*.png
+assets/header_*.jpg
 
 # Environment variables
 .env
