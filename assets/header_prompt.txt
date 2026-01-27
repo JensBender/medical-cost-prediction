@@ -1,0 +1,10 @@
+# Medical Cost Prediction Header Prompts (use a 3:1 aspect ratio, since 4:1 and 5:1 is not supported by most AI image generators)
+
+### Option 1: The Premium Dashboard (3:1 Ratio)
+A premium wide-screen banner (3:1 aspect ratio) for a product named "Medical Cost Planner". The design features a futuristic digital dashboard with sleek, glowing line charts and data visualizations. In the center, the text "Medical Cost Planner" is displayed in a clean, bold, professional sans-serif font. All other labels and UI elements should be abstract icons or glowing lines to avoid gibberish text. The background is a clean, dark-blue clinical environment. 4k, high-quality 3D render.
+
+### Option 2: The Abstract Intersection (3:1 Ratio)
+A minimalist, artistic representation of health and finance (3:1 aspect ratio). A sleek, glowing DNA helix on the left transitions into a rising financial bar chart on the right. Centered in the middle is the product name "Medical Cost Planner" in a modern, crisp white font. No other text or labels should be visible. Use a sophisticated palette of deep navy, emerald green, and crisp white. Soft cinematic lighting, professional tech aesthetic.
+
+### Option 3: The "Glassmorphism" UI (3:1 Ratio)
+A wide (3:1) hero image for a web app. The scene shows a floating, transparent glass card over a soft-focus medical laboratory background. On the glass card, the text "Medical Cost Planner" is elegantly engraved. Subtle 3D icons of a medical cross and a dollar sign float nearby. The image should be clean, spacious, and look like a high-end interface. Absolutely no other text or labels. High resolution, elegant and trustworthy.
