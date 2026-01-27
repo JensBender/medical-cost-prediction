@@ -332,34 +332,34 @@ df.isnull().sum().sort_values(ascending=False)
 #         <li><b>Mitigating 'Black Swan' Risks (Top 1%):</b> Uses high-resolution non-linear bins (50, 80, 95, and 99th percentiles) to force the inclusion of "super-spenders" in the test set, preventing unstable performance metric fluctuations caused by the extreme tail.</li>
 #     </ul>
 #     <b>Strategy:</b> Split the data into 80% for training, 10% for validation, and 10% for testing.
-#     <b>Hurdle-Style Strata Distribution:</b>
-#     <table style="margin-left:0; margin-top:20px; margin-bottom:20px; border-collapse: collapse; width: 100%;">
-#         <tr style="background-color:#f5ecda;">
-#             <th>Bin</th>
-#             <th>Category</th>
-#             <th>Percentile (of Positives)</th>
-#             <th>Train (80%)</th>
-#             <th>Val (10%)</th>
-#             <th>Test (10%)</th>
+#     <br><br><b>Hurdle-Style Strata Distribution</b>
+#     <table style="margin-left:0; margin-top:20px; margin-bottom:20px">
+#         <tr>
+#             <th style="background-color:#f5ecda;">Bin</th>
+#             <th style="background-color:#f5ecda;">Category</th>
+#             <th style="background-color:#f5ecda;">Percentile (of Positives)</th>
+#             <th style="background-color:#f5ecda;">Train (80%)</th>
+#             <th style="background-color:#f5ecda;">Val (10%)</th>
+#             <th style="background-color:#f5ecda;">Test (10%)</th>
 #         </tr>
 #         <tr>
-#             <td style="background-color:#fff6e4; text-align:center;"><b>-1</b></td>
-#             <td style="background-color:#fff6e4;"><b>Zero Costs</b></td>
+#             <td style="background-color:#fff6e4; text-align:center;"><b>0</b></td>
+#             <td style="background-color:#fff6e4;">Zero Costs</td>
 #             <td style="background-color:#fff6e4;">N/A (Hurdle)</td>
 #             <td style="background-color:#fff6e4; text-align:center;">2,640</td>
 #             <td style="background-color:#fff6e4; text-align:center;">330</td>
 #             <td style="background-color:#fff6e4; text-align:center;">330</td>
 #         </tr>
 #         <tr>
-#             <td style="text-align:center;"><b>0</b></td>
-#             <td>Low Spend</td>
-#             <td>0 - 50%</td>
-#             <td style="text-align:center;">4,587</td>
-#             <td style="text-align:center;">573</td>
-#             <td style="text-align:center;">574</td>
+#             <td style="background-color:#f5ecda; text-align:center;"><b>1</b></td>
+#             <td style="background-color:#f5ecda;">Low Spend</td>
+#             <td style="background-color:#f5ecda;">0 - 50%</td>
+#             <td style="background-color:#f5ecda; text-align:center;">4,587</td>
+#             <td style="background-color:#f5ecda; text-align:center;">573</td>
+#             <td style="background-color:#f5ecda; text-align:center;">574</td>
 #         </tr>
 #         <tr>
-#             <td style="background-color:#fff6e4; text-align:center;"><b>1</b></td>
+#             <td style="background-color:#fff6e4; text-align:center;"><b>2</b></td>
 #             <td style="background-color:#fff6e4;">Moderate</td>
 #             <td style="background-color:#fff6e4;">50 - 80%</td>
 #             <td style="background-color:#fff6e4; text-align:center;">2,752</td>
@@ -367,28 +367,28 @@ df.isnull().sum().sort_values(ascending=False)
 #             <td style="background-color:#fff6e4; text-align:center;">344</td>
 #         </tr>
 #         <tr>
-#             <td style="text-align:center;"><b>2</b></td>
-#             <td>High Spend</td>
-#             <td>80 - 95%</td>
-#             <td style="text-align:center;">1,376</td>
-#             <td style="text-align:center;">172</td>
-#             <td style="text-align:center;">172</td>
+#             <td style="background-color:#f5ecda; text-align:center;"><b>3</b></td>
+#             <td style="background-color:#f5ecda;">High Spend</td>
+#             <td style="background-color:#f5ecda;">80 - 95%</td>
+#             <td style="background-color:#f5ecda; text-align:center;">1,376</td>
+#             <td style="background-color:#f5ecda; text-align:center;">172</td>
+#             <td style="background-color:#f5ecda; text-align:center;">172</td>
 #         </tr>
 #         <tr>
-#             <td style="background-color:#fff6e4; text-align:center;"><b>3</b></td>
-#             <td style="background-color:#fff6e4;">Ultra High</td>
+#             <td style="background-color:#fff6e4; text-align:center;"><b>4</b></td>
+#             <td style="background-color:#fff6e4;">Very High</td>
 #             <td style="background-color:#fff6e4;">95 - 99%</td>
 #             <td style="background-color:#fff6e4; text-align:center;">367</td>
 #             <td style="background-color:#fff6e4; text-align:center;">46</td>
 #             <td style="background-color:#fff6e4; text-align:center;">46</td>
 #         </tr>
 #         <tr>
-#             <td style="text-align:center;"><b>4</b></td>
-#             <td><b>Super-Spenders</b></td>
-#             <td><b>Top 1%</b></td>
-#             <td style="text-align:center;"><b>92</b></td>
-#             <td style="text-align:center;"><b>12</b></td>
-#             <td style="text-align:center;"><b>11</b></td>
+#             <td style="background-color:#f5ecda; text-align:center;"><b>5</b></td>
+#             <td style="background-color:#f5ecda;">Extreme Spend</td>
+#             <td style="background-color:#f5ecda;">Top 1%</td>
+#             <td style="background-color:#f5ecda; text-align:center;">92</td>
+#             <td style="background-color:#f5ecda; text-align:center;">12</td>
+#             <td style="background-color:#f5ecda; text-align:center;">11</td>
 #         </tr>
 #     </table>
 # </div>
@@ -404,16 +404,16 @@ def create_stratification_bins(y):
     # Initialize strata series 
     strata = pd.Series(index=y.index, dtype=int)
     
-    # Bin -1: Zeros (Handle the hurdle separately)
+    # Bin 0: Zero Costs (Handle the hurdle separately)
     is_zero = (y == 0)
-    strata[is_zero] = -1
+    strata[is_zero] = 0
     
     # Custom non-linear quantiles for positive values to capture the tail
     positive_y = y[~is_zero]
     bins = [0, 0.5, 0.8, 0.95, 0.99, 1.0]
     
-    # Assign positive spenders to bins 0 through 4
-    strata[~is_zero] = pd.qcut(positive_y, q=bins, labels=False, duplicates='drop')
+    # Assign positive spenders to bins 1 through 5 (shifted by 1)
+    strata[~is_zero] = pd.qcut(positive_y, q=bins, labels=False, duplicates='drop') + 1
     return strata
 
 # Generate the stratification guide 
