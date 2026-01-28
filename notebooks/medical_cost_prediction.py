@@ -440,14 +440,10 @@ X_val, X_test, y_val, y_test = train_test_split(
     X_temp, y_temp, test_size=0.50, random_state=42, stratify=temp_strata
 )
 
-# Delete temporary data to free up memory
-del X_temp, y_temp, y_strata, temp_strata
-
-# Verification: Check if the distribution and tail are preserved across splits
-def verify_split(y_subset, name):
-    # Calculate strata for this subset to check proportions
-    strata = create_stratification_bins(y_subset)
-    strata_freq = strata.value_counts(normalize=True).sort_index() * 100
+# Helper function to verify the stratification splits
+def verify_split(y_subset, y_subset_strata, name):
+    # Calculate relative frequencies of the bins
+    strata_freq = y_subset_strata.value_counts(normalize=True).sort_index() * 100
     
     # Calculate key distribution metrics
     stats = {
@@ -465,13 +461,16 @@ def verify_split(y_subset, name):
 
 # Create DataFrame of split verification statistics
 split_verification_df = pd.concat([
-    verify_split(y, "Total Dataset"),
-    verify_split(y_train, "Train (80%)"),
-    verify_split(y_val, "Validation (10%)"),
-    verify_split(y_test, "Test (10%)")
+    verify_split(y, y_strata, "Total Dataset"),
+    verify_split(y_train, y_strata.loc[y_train.index], "Train (80%)"),
+    verify_split(y_val, y_strata.loc[y_val.index], "Validation (10%)"),
+    verify_split(y_test, y_strata.loc[y_test.index], "Test (10%)")
 ], axis=1).T
 
-# Display (format for readability) 
+# Delete temporary variables to free up memory
+del X_temp, y_temp, temp_strata, y_strata
+
+# Display the verification DataFrame (format for readability) 
 split_verification_df.style.format("{:,.1f}") \
             .format("{:,.0f}", subset=["Samples", "Max Cost"]) \
             .format("${:,.0f}", subset=["Mean Cost", "Median Cost", "Max Cost"]) \
