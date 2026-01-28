@@ -485,6 +485,16 @@ split_verification_df.style.format("{:,.1f}") \
             .format("{:.2f}%", subset=["Bin 0", "Bin 1", "Bin 2", "Bin 3", "Bin 4", "Bin 5", "Bin 6"])
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insight:</b> The distribution-informed stratification successfully created representative and robust data splits.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Structural Precision:</b> Relative frequencies of all strata (Bins 0–6) are near-perfectly preserved across all splits, ensuring that the zero-inflation and the Pareto-style concentration are balanced.</li>
+#         <li><b>Mitigation of "Metric Drift":</b> By forcing the inclusion of extreme high-cost individuals (99.9th percentile) in the Test set, we prevent "luck-of-the-draw" bias and ensure that performance metrics (e.g., R²) are robust against catastrophic outliers.</li>
+#         <li><b>Representative Benchmarking:</b> The stability of central tendencies (Median Cost) confirms that the typical patient profile is identical in each set, allowing for reliable and generalizable model evaluation.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Exploratory Data Analysis (EDA)</h1>
 # </div>
