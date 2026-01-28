@@ -447,35 +447,35 @@ del X_temp, y_temp, y_strata, temp_strata
 def verify_split(y_subset, name):
     # Calculate strata for this subset to check proportions
     strata = create_stratification_bins(y_subset)
-    strata_probs = strata.value_counts(normalize=True).sort_index() * 100
+    strata_freq = strata.value_counts(normalize=True).sort_index() * 100
     
     # Calculate key distribution metrics
     stats = {
         "Samples": len(y_subset),
         "Mean Cost": y_subset.mean(),
         "Median Cost": y_subset.median(),
-        "Max Cost": y_subset.max(),
-        "Zero-Cost %": (y_subset == 0).mean() * 100
+        "Max Cost": y_subset.max()
     }
     
     # Merge metrics and strata proportions 
-    for i, prob in strata_probs.items():
-        stats[f"Bin {int(i)} %"] = prob
+    for i, freq in strata_freq.items():
+        stats[f"Bin {int(i)}"] = freq
         
     return pd.Series(stats, name=name)
 
-# Consolidate verification statistics
-split_metrics = pd.concat([
+# Create DataFrame of split verification statistics
+split_verification_df = pd.concat([
     verify_split(y, "Total Dataset"),
     verify_split(y_train, "Train (80%)"),
     verify_split(y_val, "Validation (10%)"),
     verify_split(y_test, "Test (10%)")
 ], axis=1).T
 
-# Display summary table formatted for readability
-split_metrics.style.format("{:,.1f}") \
+# Display (format for readability) 
+split_verification_df.style.format("{:,.1f}") \
             .format("{:,.0f}", subset=["Samples", "Max Cost"]) \
-            .format("${:,.0f}", subset=["Mean Cost", "Median Cost", "Max Cost"])
+            .format("${:,.0f}", subset=["Mean Cost", "Median Cost", "Max Cost"]) \
+            .format("{:.1f}%", subset=["Bin 0", "Bin 1", "Bin 2", "Bin 3", "Bin 4", "Bin 5"])
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
