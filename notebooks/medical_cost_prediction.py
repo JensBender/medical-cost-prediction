@@ -327,14 +327,17 @@ df.isnull().sum().sort_values(ascending=False)
 #     📌 Split the data into 80% for training, 10% for validation, and 10% for testing.
 #     <br><br>
 #     <b>Why not a simple random split?</b><br>
-#     Given the highly asymmetric distribution of healthcare costs (see <a href="#target-variable"><b>Target Variable EDA</b></a>), a standard random split risks creating structurally inconsistent subsets. Simple random sampling can produce evaluation sets that either over-represent zero-cost cases or entirely omit the extreme high-cost outliers that drive population spending. Such inconsistencies introduce evaluation volatility, making performance metrics unreliable for predicting real-world financial risk.
+#     Healthcare costs exhibit a zero-inflated, heavily right-skewed distribution (see <a href="#target-variable"><b>Target Variable EDA</b></a>). The primary risk of a random split in healthcare cost data is the "luck-of-the-draw" misdistribution of super-spenders. Since the extreme tail of the distribution (the top 1%) accounts for a massive share of total population spending, omitting even a few of these individuals from the test set—or over-representing them in the train set—creates catastrophic "metric drift." This makes performance indicators (like R² or MSE) highly volatile and unreliable for predicting real-world financial risk. 
 #     <br><br>
-#     <b>Rationale for Distribution-Informed Stratified Split</b><br>
-#     To ensure the model is evaluated on a representative mirror of the population, I use a <b>Distribution-Informed Stratified Split</b> for three critical reasons:
+#     <b>Why not a quartile or quintile split?</b><br>
+#     Standard quartile or quintile bins are too coarse to capture the extreme tail. Because healthcare costs are so concentrated, a quintile-based split (top 20%) would treat a respondent at the 81st percentile (e.g., \$2,000) the same as a "super-spender" at the 99.9th percentile (e.g., \$100,000). Only high-resolution, non-linear strata at the 95th and 99th percentiles can guarantee that these "Black Swan" cases are balanced across all subsets.
+#     <br><br>
+#     <b>Distribution-Informed Stratified Split</b><br>
+#     To ensure the model is evaluated on a representative mirror of the population, I use a distribution-informed stratified split:
 #     <ul>
-#         <li><b>Preserving the Zero-Hurdle (22.3%):</b> Guarantees that the structural proportion of zero-cost individuals remains identical across all sets, ensuring consistent evaluation of the model's ability to predict cost occurrence.</li>
+#         <li><b>Mitigating 'Black Swan' Risks (Primary):</b> Uses high-resolution non-linear bins (80, 95, and 99th percentiles) to force the inclusion of extreme high-cost individuals in all sets, preventing unstable performance metric fluctuations.</li>
+#         <li><b>Preserving the Zero-Hurdle (Secondary):</b> Guarantees that the 22.3% of zero-cost individuals remain identical across all sets, ensuring consistent evaluation of the model's ability to predict cost occurrence.</li>
 #         <li><b>Capturing the Pareto Distribution:</b> Prevents evaluation bias by ensuring the 20% of spenders who drive ~80% of the total economic burden are proportionally represented in the test set.</li>
-#         <li><b>Mitigating 'Black Swan' Risks (Top 1%):</b> Uses high-resolution non-linear bins (50, 80, 95, and 99th percentiles) to force the inclusion of extreme high-cost individuals in the test set, preventing unstable performance metric fluctuations.</li>
 #     </ul>
 #     <b>Strata Distribution</b>
 #     <table style="margin-left:0; margin-top:20px; margin-bottom:20px">
