@@ -474,7 +474,7 @@ del X_temp, y_temp, temp_strata, y_strata
 split_verification_df.style.format("{:,.1f}") \
             .format("{:,.0f}", subset=["Samples", "Max Cost"]) \
             .format("${:,.0f}", subset=["Mean Cost", "Median Cost", "Max Cost"]) \
-            .format("{:.1f}%", subset=["Bin 0", "Bin 1", "Bin 2", "Bin 3", "Bin 4", "Bin 5"])
+            .format("{:.2f}%", subset=["Bin 0", "Bin 1", "Bin 2", "Bin 3", "Bin 4", "Bin 5"])
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
