@@ -391,11 +391,19 @@ df.isnull().sum().sort_values(ascending=False)
 #         </tr>
 #         <tr>
 #             <td style="background-color:#f5ecda; text-align:center;"><b>5</b></td>
-#             <td style="background-color:#f5ecda;">Extreme Spend</td>
-#             <td style="background-color:#f5ecda;">Top 1%</td>
-#             <td style="background-color:#f5ecda; text-align:center;">92</td>
-#             <td style="background-color:#f5ecda; text-align:center;">12</td>
-#             <td style="background-color:#f5ecda; text-align:center;">11</td>
+#             <td style="background-color:#f5ecda;">Massively High</td>
+#             <td style="background-color:#f5ecda;">99 - 99.9%</td>
+#             <td style="background-color:#f5ecda; text-align:center;">83</td>
+#             <td style="background-color:#f5ecda; text-align:center;">10</td>
+#             <td style="background-color:#f5ecda; text-align:center;">10</td>
+#         </tr>
+#         <tr>
+#             <td style="background-color:#fff6e4; text-align:center;"><b>6</b></td>
+#             <td style="background-color:#fff6e4;">Super Spenders</td>
+#             <td style="background-color:#fff6e4;">Top 0.1%</td>
+#             <td style="background-color:#fff6e4; text-align:center;">12</td>
+#             <td style="background-color:#fff6e4; text-align:center;">1</td>
+#             <td style="background-color:#fff6e4; text-align:center;">2</td>
 #         </tr>
 #     </table>
 # </div>
@@ -416,7 +424,7 @@ def create_stratification_bins(y):
     
     # Custom non-linear quantiles for positive values to capture the tail
     positive_y = y[~is_zero]
-    bins = [0, 0.5, 0.8, 0.95, 0.99, 1.0]
+    bins = [0, 0.5, 0.8, 0.95, 0.99, 0.999, 1.0]
     
     # Assign positive spenders to bins 1 through 5 
     # Note: labels=False returns the bin indices (0-4) instead of Interval objects (e.g., [0, 150.5]). We add 1 to shift the indices to 1-5 with 0 being reserved for the zero cost bin.
@@ -474,7 +482,7 @@ del X_temp, y_temp, temp_strata, y_strata
 split_verification_df.style.format("{:,.1f}") \
             .format("{:,.0f}", subset=["Samples", "Max Cost"]) \
             .format("${:,.0f}", subset=["Mean Cost", "Median Cost", "Max Cost"]) \
-            .format("{:.2f}%", subset=["Bin 0", "Bin 1", "Bin 2", "Bin 3", "Bin 4", "Bin 5"])
+            .format("{:.2f}%", subset=["Bin 0", "Bin 1", "Bin 2", "Bin 3", "Bin 4", "Bin 5", "Bin 6"])
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
