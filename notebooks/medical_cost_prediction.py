@@ -418,11 +418,13 @@ def create_stratification_bins(y):
     positive_y = y[~is_zero]
     bins = [0, 0.5, 0.8, 0.95, 0.99, 1.0]
     
-    # Assign positive spenders to bins 1 through 5 (shifted by 1)
-    strata[~is_zero] = pd.qcut(positive_y, q=bins, labels=False, duplicates='drop') + 1
+    # Assign positive spenders to bins 1 through 5 
+    # Note: labels=False returns the bin indices (0-4) instead of Interval objects (e.g., [0, 150.5]). We add 1 to shift the indices to 1-5 with 0 being reserved for the zero cost bin.
+    # Note: duplicates="drop" avoids errors if multiple quantiles (e.g., 0.95 and 0.99) result in the same cost value.
+    strata[~is_zero] = pd.qcut(positive_y, q=bins, labels=False, duplicates="drop") + 1
     return strata
 
-# Generate the stratification guide 
+# Generate the stratification column 
 y_strata = create_stratification_bins(y)
 
 # Perform the first distribution-informed stratified split (80% Train, 20% Temp)
@@ -433,7 +435,7 @@ X_train, X_temp, y_train, y_temp = train_test_split(
 # Re-calculate strata for the temporary set to ensure the 50/50 split is also representative
 temp_strata = create_stratification_bins(y_temp)
 
-# Perform the second stratified split (10% Val, 10% Test)
+# Perform the second stratified split (resulting in 10% Val, 10% Test)
 X_val, X_test, y_val, y_test = train_test_split(
     X_temp, y_temp, test_size=0.50, random_state=42, stratify=temp_strata
 )
