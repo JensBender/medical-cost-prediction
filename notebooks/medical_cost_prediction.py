@@ -499,13 +499,13 @@ split_verification_df.style.format("{:,.1f}") \
 #     <h2 style="margin:0px">Summary</h2>
 # </div>
 #
-# - **Loaded data** from the MEPS-HC 2023 SAS file into a Pandas DataFrame using `pandas` `read_sas`.
-# - **Handled duplicates:** Verified the absence of duplicates based on the ID column, all columns except ID, and complete row comparison.
-# - **Variable selection:** Filtered columns for the target variable, candidate features, ID, and sample weights (29 columns out of 1,374).
-# - **Target population filtering:** Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
-# - **Handled data types**: Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models.
-# - **Standardized missing values**: Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
-# - **Train-validation-test split**: Split data into training (80%), validation (10%), and test (10%) sets with `sklearn` `train_test_split`. Used a distribution-informed stratified split to balance zero-inflation and extreme tail of target variable.
+# - **Data Loading**: Imported MEPS-HC 2023 SAS data using `pandas` `read_sas`.
+# - **Handling Duplicates**: Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
+# - **Variable Selection**: Filtered 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
+# - **Target Population Filtering**: Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
+# - **Handling Data Types**: Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models.
+# - **Standardizing Missing Values**: Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
+# - **Train-Validation-Test Split**: Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and extreme tail of the target variable.
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
