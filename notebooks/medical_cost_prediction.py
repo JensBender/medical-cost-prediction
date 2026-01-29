@@ -268,6 +268,7 @@ binary_features = [
 nominal_features = ["REGION23", "MARRY31X", "EMPST31", "INSCOV23"]
 ordinal_features = ["POVCAT23", "HIDEG"]
 categorical_features = nominal_features + ordinal_features + binary_features
+all_features = numerical_features + categorical_features
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
