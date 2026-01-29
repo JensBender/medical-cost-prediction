@@ -253,6 +253,23 @@ df.dtypes
 df["DUPERSID"] = df["DUPERSID"].astype(str)
 
 # %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 
+#     📌 Define semantic data types of features (numerical, binary, nominal, ordinal) for downstream tasks like EDA, further preprocessing steps, and machine learning.
+# </div> 
+
+# %%
+# Define semantic data types
+numerical_features = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
+binary_features = [
+    "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31", 
+    "WLKLIM31", "COGLIM31", "JTPAIN31_M18", "HIBPDX", "CHOLDX", 
+    "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
+]
+nominal_features = ["REGION23", "MARRY31X", "EMPST31", "INSCOV23"]
+ordinal_features = ["POVCAT23", "HIDEG"]
+categorical_features = nominal_features + ordinal_features + binary_features
+
+# %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h2 style="margin:0px">Standardizing Missing Values</h1>
 # </div> 
