@@ -499,13 +499,13 @@ split_verification_df.style.format("{:,.1f}") \
 #     <h2 style="margin:0px">Summary</h2>
 # </div>
 #
-# - **Loaded data** from the MEPS `h251.sas7bdat` file (SAS V9 format) into a Pandas DataFrame using `pandas` `read_sas`.
+# - **Loaded data** from the MEPS-HC 2023 SAS file into a Pandas DataFrame using `pandas` `read_sas`.
 # - **Handled duplicates:** Verified the absence of duplicates based on the ID column, all columns except ID, and complete row comparison.
 # - **Variable selection:** Filtered columns for the target variable, candidate features, ID, and sample weights (29 columns out of 1,374).
-# - **Target population filtering:** Filtered rows for the target audience of the medical cost planner app, i.e., adults with positive person weights (14,768 out of 18,919 respondents).
-# - **Handled data types**: Converted identifiers to strings and maintained features and the target variable as floats to ensure compatibility with missing value indicators (`np.nan`), scikit-learn transformers, and machine learning models.
-# - **Standardized missing values**: Recovered implied values from survey skip patterns and converted MEPS-specific missing codes (e.g., -1, -7, -8, -9) to `np.nan` for machine learning compatibility.
-# - **Train-validation-test split**: Performed a distribution-informed stratified split into training (80%), validation (10%), and test (10%) sets to account for the zero-inflated, heavy tail distribution of out-of-pocket costs using `sklearn` `train_test_split`.
+# - **Target population filtering:** Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
+# - **Handled data types**: Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models.
+# - **Standardized missing values**: Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
+# - **Train-validation-test split**: Split data into training (80%), validation (10%), and test (10%) sets with `sklearn` `train_test_split`. Used a distribution-informed stratified split to balance zero-inflation and extreme tail of target variable.
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
