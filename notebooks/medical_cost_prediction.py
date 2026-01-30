@@ -39,6 +39,7 @@ import matplotlib.ticker as mtick  # to format axis ticks
 import seaborn as sns
 
 # Data preprocessing (scikit-learn)
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import (
     StandardScaler, 
     OneHotEncoder, 
@@ -536,6 +537,70 @@ missing_values_df.loc["TOTSLF23"] = [
 
 # Sort and display
 missing_values_df.sort_values("Training", ascending=False)
+
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Handling Outliers</h2>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">3SD Method</h3>
+# </div>
+#
+# <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 📌 Identify and remove univariate outliers in numerical columns by applying the 3 standard deviation rule (3SD). A data point is considered an outlier if it falls more than 3 standard deviations above or below the mean of the column.</p> 
+
+# %%
+# Custom scikit-learn transformer class to identify outliers using the 3SD method
+class OutlierRemover3SD(BaseEstimator, TransformerMixin):
+    def fit(self, df, numerical_columns):
+        # Convert single column string to list
+        if isinstance(numerical_columns, str):
+            self.numerical_columns_ = [numerical_columns]
+        else:
+            self.numerical_columns_ = numerical_columns
+            
+        # Calculate statistics (mean, standard deviation, cutoff values) for each column
+        self.stats_ = pd.DataFrame(index=self.numerical_columns_)
+        self.stats_["mean"] = df[self.numerical_columns_].mean()
+        self.stats_["sd"] = df[self.numerical_columns_].std()
+        self.stats_["lower_cutoff"] = self.stats_["mean"] - 3 * self.stats_["sd"]
+        self.stats_["upper_cutoff"] = self.stats_["mean"] + 3 * self.stats_["sd"]
+        
+        # Create masks for filtering outliers 
+        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
+        self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
+     
+        # Calculate number of outliers
+        self.stats_["outliers"] = (~self.masks_).sum()  # by column
+        self.outliers_ = (~self.final_mask_).sum()  # across all columns
+        
+        return self
+
+    def transform(self, df):
+        # Create masks for new df
+        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
+        self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
+        
+        # Remove outliers based on the final mask
+        return df[self.final_mask_]
+
+    def fit_transform(self, df, numerical_columns):
+        # Perform both fit and transform 
+        return self.fit(df, numerical_columns).transform(df)
+
+
+# Initialize outlier remover 
+outlier_remover_3sd = OutlierRemover3SD()
+
+# Fit outlier remover to training data
+outlier_remover_3sd.fit(X_train, numerical_features)
+
+# Show outliers in training data
+print(f"Training data: Identified {outlier_remover_3sd.outliers_} rows ({outlier_remover_3sd.outliers_ / len(outlier_remover_3sd.final_mask_) * 100:.1f}%) with outliers.")
+print("Statistics and outliers by column:")
+round(outlier_remover_3sd.stats_, 2)
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
