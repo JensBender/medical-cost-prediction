@@ -267,6 +267,8 @@ binary_features = [
 ]
 nominal_features = ["REGION23", "MARRY31X", "EMPST31", "INSCOV23"]
 ordinal_features = ["POVCAT23", "HIDEG"]
+
+# Combined feature sets
 categorical_features = nominal_features + ordinal_features + binary_features
 all_features = numerical_features + categorical_features
 
@@ -521,7 +523,7 @@ split_verification_df.style.format("{:,.1f}") \
 # - **Handling Duplicates**: Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
 # - **Variable Selection**: Filtered 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
 # - **Target Population Filtering**: Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
-# - **Handling Data Types**: Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models.
+# - **Handling Data Types**: Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models. Defined semantic data types for all features (numerical, binary, nominal, ordinal).
 # - **Standardizing Missing Values**: Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
 # - **Train-Validation-Test Split**: Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and extreme tail of the target variable.
 
