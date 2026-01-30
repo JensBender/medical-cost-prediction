@@ -521,21 +521,21 @@ split_verification_df.style.format("{:,.1f}") \
 
 # %%
 # Identify missing values
-print("Training Data - Features:")
-print(X_train.isnull().sum())
 print("\nTraining Data - Target Variable:")
 print(y_train.isnull().sum())
 
-print("\nValidation Data - Features:")
-print(X_val.isnull().sum())
 print("\nValidation Data - Target Variable:")
 print(y_val.isnull().sum())
 
-print("\nTest Data - Features:")
-print(X_test.isnull().sum())
 print("\nTest Data - Target Variable:")
 print(y_test.isnull().sum())
 
+missing_values_df = pd.DataFrame({
+    "Training": X_train.isnull().sum(),
+    "Validation": X_val.isnull().sum(),
+    "Test": X_test.isnull().sum(),
+})
+missing_values_df
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Summary</h2>
