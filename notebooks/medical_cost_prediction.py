@@ -573,7 +573,8 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
      
         # Calculate number of outliers
-        self.stats_["outliers"] = (~self.masks_).sum()  # by column
+        self.stats_["n_outliers"] = (~self.masks_).sum()  # by column
+        self.stats_["pct_outliers"] = self.stats_["n_outliers"] / len(df) * 100  # by column
         self.outliers_ = (~self.final_mask_).sum()  # across all columns
         
         return self
@@ -600,7 +601,14 @@ outlier_remover_3sd.fit(X_train, numerical_features)
 # Show outliers in training data
 print(f"Training Data: Identified {outlier_remover_3sd.outliers_} rows ({outlier_remover_3sd.outliers_ / len(outlier_remover_3sd.final_mask_) * 100:.1f}%) with outliers.\n")
 print("Outlier statistics by column:")
-round(outlier_remover_3sd.stats_, 2)
+outlier_remover_3sd.stats_.style.format({
+    "mean": "{:.2f}",
+    "std": "{:.2f}",
+    "lower_cutoff": "{:.2f}",
+    "upper_cutoff": "{:.2f}",
+    "n_outliers": "{:.0f}",
+    "pct_outliers": "{:.1f}%",
+})
 
 
 # %% [markdown]
