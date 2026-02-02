@@ -522,21 +522,20 @@ split_verification_df.style.format("{:,.1f}") \
 
 # %%
 # Identify missing values
-missing_values_df = pd.DataFrame({
+# Create a summary table for missing values
+missing_value_df = pd.DataFrame({
     "Training": X_train.isnull().sum(),
     "Validation": X_val.isnull().sum(),
     "Test": X_test.isnull().sum(),
 })
-
-# Add target variable missing counts
-missing_values_df.loc["TOTSLF23"] = [
+# Add target variable missings
+missing_value_df.loc["TOTSLF23"] = [
     y_train.isnull().sum(),
     y_val.isnull().sum(),
     y_test.isnull().sum()
 ]
-
-# Sort and display
-missing_values_df.sort_values("Training", ascending=False)
+# Sort and display table
+missing_value_df.sort_values("Training", ascending=False)
 
 
 # %% [markdown]
