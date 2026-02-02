@@ -525,23 +525,21 @@ split_verification_df.style.format("{:,.1f}") \
 # Create a summary table for missing values
 missing_value_df = pd.DataFrame({
     "Training": X_train.isnull().sum(),
-    "% of Training": X_train.isnull().sum() / len(X_train) * 100,
     "Validation": X_val.isnull().sum(),
-    "% of Validation": X_val.isnull().sum() / len(X_val) * 100,
     "Test": X_test.isnull().sum(),
-    "% of Test": X_test.isnull().sum() / len(X_test) * 100
 })
 # Add target variable missings
 missing_value_df.loc["TOTSLF23"] = [
     y_train.isnull().sum(),
-    y_train.isnull().sum() / len(y_train) * 100,
     y_val.isnull().sum(),
-    y_val.isnull().sum() / len(y_val) * 100,
     y_test.isnull().sum(),
-    y_test.isnull().sum() / len(y_test) * 100
 ]
-# Sort and display table
-missing_value_df.sort_values("Training", ascending=False)
+# Display table (sorted and with percentages)
+missing_value_df.sort_values("Training", ascending=False).style.format({
+    "Training": lambda x: f"{x} ({x / len(X_train) * 100:.1f}%)",
+    "Validation": lambda x: f"{x} ({x / len(X_val) * 100:.1f}%)",
+    "Test": lambda x: f"{x} ({x / len(X_test) * 100:.1f}%)"
+})
 
 
 # %% [markdown]
