@@ -561,12 +561,12 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         else:
             self.numerical_columns_ = numerical_columns
             
-        # Calculate statistics (mean, standard deviation, cutoff values) for each column
+        # Calculate statistics (mean, std, cutoff values) for each column
         self.stats_ = pd.DataFrame(index=self.numerical_columns_)
         self.stats_["mean"] = df[self.numerical_columns_].mean()
-        self.stats_["sd"] = df[self.numerical_columns_].std()
-        self.stats_["lower_cutoff"] = self.stats_["mean"] - 3 * self.stats_["sd"]
-        self.stats_["upper_cutoff"] = self.stats_["mean"] + 3 * self.stats_["sd"]
+        self.stats_["std"] = df[self.numerical_columns_].std()
+        self.stats_["lower_cutoff"] = self.stats_["mean"] - 3 * self.stats_["std"]
+        self.stats_["upper_cutoff"] = self.stats_["mean"] + 3 * self.stats_["std"]
         
         # Create masks for filtering outliers 
         self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
@@ -579,7 +579,7 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, df):
-        # Create masks for new df
+        # Create masks for df (can be a different df than during fit; e.g. X_train, X_test)
         self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
         self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
         
@@ -598,8 +598,8 @@ outlier_remover_3sd = OutlierRemover3SD()
 outlier_remover_3sd.fit(X_train, numerical_features)
 
 # Show outliers in training data
-print(f"Training data: Identified {outlier_remover_3sd.outliers_} rows ({outlier_remover_3sd.outliers_ / len(outlier_remover_3sd.final_mask_) * 100:.1f}%) with outliers.")
-print("Statistics and outliers by column:")
+print(f"Training Data: Identified {outlier_remover_3sd.outliers_} rows ({outlier_remover_3sd.outliers_ / len(outlier_remover_3sd.final_mask_) * 100:.1f}%) with outliers.\n")
+print("Outlier statistics by column:")
 round(outlier_remover_3sd.stats_, 2)
 
 
@@ -658,7 +658,7 @@ outlier_remover_iqr = OutlierRemoverIQR()
 outlier_remover_iqr.fit(X_train, numerical_features)
 
 # Show outliers by column for training data
-print(f"Training data: Identified {outlier_remover_iqr.outliers_} rows ({outlier_remover_iqr.outliers_ / len(outlier_remover_iqr.final_mask_) * 100:.1f}%) with outliers.")
+print(f"Training data: Identified {outlier_remover_iqr.n_rows_removed_} rows ({outlier_remover_iqr.n_rows_removed_ / len(outlier_remover_iqr.final_mask_) * 100:.1f}%) with outliers.")
 print("Statistics and outliers by column:")
 round(outlier_remover_iqr.stats_, 2)
 
