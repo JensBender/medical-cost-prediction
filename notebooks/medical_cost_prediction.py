@@ -519,9 +519,13 @@ split_verification_df.style.format("{:,.1f}") \
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Handling Missing Values</h2>
 # </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Identification</strong> <br>
+#     📌 Identify missing values.
+# </div>
 
 # %%
-# Identify missing values
 # Create a summary table for missing values
 missing_value_df = pd.DataFrame({
     "Training": X_train.isnull().sum(),
@@ -541,6 +545,12 @@ missing_value_df.sort_values("Training", ascending=False).style.format({
     "Test": lambda x: f"{x} ({x / len(X_test) * 100:.1f}%)"
 })
 
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Imputation</strong> <br>
+#     📌 Impute missing values. Use the median for numerical features and the mode (most frequent value) for categorical features.
+# </div>
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
