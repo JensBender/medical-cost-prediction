@@ -607,7 +607,7 @@ outlier_remover_3sd.stats_.style.format({
     "lower_cutoff": "{:.2f}",
     "upper_cutoff": "{:.2f}",
     "n_outliers": "{:.0f}",
-    "pct_outliers": "{:.1f}%",
+    "pct_outliers": "{:.1f}%"
 })
 
 
@@ -628,7 +628,7 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         else:
             self.numerical_columns_ = numerical_columns
         
-        # Calculate statistics (first quartile, third quartile, interquartile range, cutoff values) for each column
+        # Calculate statistics (quartiles, interquartile range, cutoff values) for each column
         self.stats_ = pd.DataFrame(index=self.numerical_columns_)
         self.stats_["Q1"] = df[self.numerical_columns_].quantile(0.25)
         self.stats_["Q3"] = df[self.numerical_columns_].quantile(0.75)
@@ -641,13 +641,14 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
 
         # Calculate number of outliers
-        self.stats_["outliers"] = (~self.masks_).sum()  # by column
+        self.stats_["n_outliers"] = (~self.masks_).sum()  # by column
+        self.stats_["pct_outliers"] = self.stats_["n_outliers"] / len(df) * 100  # by column
         self.outliers_ = (~self.final_mask_).sum()  # across all columns
                
         return self
 
     def transform(self, df):
-        # Create masks for new df
+        # Create masks for df (can be a different df than during fit; e.g. X_train, X_test)
         self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
         self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
         
@@ -666,9 +667,17 @@ outlier_remover_iqr = OutlierRemoverIQR()
 outlier_remover_iqr.fit(X_train, numerical_features)
 
 # Show outliers by column for training data
-print(f"Training data: Identified {outlier_remover_iqr.n_rows_removed_} rows ({outlier_remover_iqr.n_rows_removed_ / len(outlier_remover_iqr.final_mask_) * 100:.1f}%) with outliers.")
-print("Statistics and outliers by column:")
-round(outlier_remover_iqr.stats_, 2)
+print(f"Training Data: Identified {outlier_remover_iqr.outliers_} rows ({outlier_remover_iqr.outliers_ / len(outlier_remover_iqr.final_mask_) * 100:.1f}%) with outliers.\n")
+print("Outliers statistics by column:")
+outlier_remover_iqr.stats_.style.format({
+    "Q1": "{:.1f}",
+    "Q3": "{:.1f}",
+    "IQR": "{:.1f}",
+    "lower_cutoff": "{:.1f}",
+    "upper_cutoff": "{:.1f}",
+    "n_outliers": "{:.0f}",
+    "pct_outliers": "{:.1f}%"
+})
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
