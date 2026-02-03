@@ -545,6 +545,16 @@ missing_value_df.sort_values("Training", ascending=False).style.format({
     "Test": lambda x: f"{x} ({x / len(X_test) * 100:.1f}%)"
 })
 
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insight:</b> Missing value analysis reveals a high level of data integrity and consistency across all splits.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>High Data Quality:</b> Missingness is quite low (Maximum ~3.8% for Usual Source of Care), with most features well below 1%, minimizing the risk of imputation bias.</li>
+#         <li><b>Consistent Splits:</b> Missing value frequencies are near-identical across Training, Validation, and Test sets, suggesting the stratification did not introduce feature bias.</li>
+#         <li><b>Key Variable Completeness:</b> Expected cost drivers such as Age, Sex, Region, Poverty Status, Insurance, and the Target Variable are 100% complete.</li>
+#     </ul>
+# </div>
+
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
