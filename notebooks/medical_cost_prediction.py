@@ -552,6 +552,7 @@ missing_value_df.sort_values("Training", ascending=False).style.format({
 #         <li><b>High Data Quality:</b> Missingness is quite low (Maximum ~3.8% for Usual Source of Care), with most features well below 1%, minimizing the risk of imputation bias.</li>
 #         <li><b>Consistent Splits:</b> Missing value frequencies are near-identical across Training, Validation, and Test sets, suggesting the stratification did not introduce feature bias.</li>
 #         <li><b>Key Variable Completeness:</b> Expected cost drivers such as Age, Sex, Region, Poverty Status, Insurance, and the Target Variable are 100% complete.</li>
+#         <li><b>Implication for App Design:</b> The 100% completeness of demographics justifies making them required in the app, while high completeness allows us to safely treat unchecked boxes as an explicit "No" (0) rather than a missing value.</li>
 #     </ul>
 # </div>
 
