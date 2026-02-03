@@ -563,6 +563,20 @@ missing_value_df.sort_values("Training", ascending=False).style.format({
 #     📌 Impute missing values. Use the median for numerical features and the mode (most frequent value) for categorical features.
 # </div>
 
+# %%
+# Descriptive statistics of numerical features
+X_train[numerical_features].describe().T.style.format({
+    "count": "{:,.0f}",
+    "mean": "{:.2f}",
+    "std": "{:.2f}",
+    "min": "{:.2f}",
+    "25%": "{:.2f}",
+    "50%": "{:.2f}",
+    "75%": "{:.2f}",
+    "max": "{:.2f}"
+})
+
+
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Handling Outliers</h2>
