@@ -92,21 +92,26 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 
 </details>
 
-**Feature Selection**:
-To balance predictive performance with a frictionless user experience (target < 90s completion), we classify features based on two dimensions: **Feature Importance** and **User Friction** (Sensitivity + Cognitive Load).
+### Feature Selection
+The primary goal is a fast, frictionless user experience. We prioritize usability over predictive performance if it requires complex inputs.
+
+**Feature Selection Dimensioning**:
+To balance performance with a frictionless experience (target < 90s completion), we classify features based on three dimensions: **Feature Importance**, **User Friction**, and **Data Completeness** (from EDA).
 
 **Decision Matrix**:
 | | **Low User Friction**<br>*(Non-sensitive/Easy to answer)* | **High User Friction**<br>*(Sensitive/Hard to know)* |
 | :--- | :--- | :--- |
-| **High Feature Importance** | **REQUIRED**<br>They drive model performance.<br>*Examples: Age, Insurance* | **OPTIONAL**<br>Allow skipping to respect sensitivity/cognitive load. Impute or use reasonable defaults.<br>*Examples: Income, Mental Health* |
-| **Low Feature Importance** | **OPTIONAL**<br>Nice-to-have. Impute or use reasonable defaults.<br>*Examples: Region* | **DROP**<br>Hard to answer and low value. Remove entirely.<br>*Examples: Complex medical history* |
+| **High Feature Importance** | **REQUIRED**<br>High predictive power + 100% data completeness in training.<br>*Examples: Age, Sex, Insurance* | **OPTIONAL**<br>High predictive power but sensitive. High-quality defaults available from clean training data.<br>*Examples: Income, Mental Health* |
+| **Low Feature Importance** | **OPTIONAL**<br>Nice-to-have. Low impact of missingness on model stability.<br>*Examples: Region, Usual Care* | **DROP**<br>Hard to answer and low value. Remove entirely.<br>*Examples: Complex medical history* |
 
 **Selection Process**:
-1.  **Candidate Screening**: Identify MEPS variables that a layperson can answer from memory. Ensure temporal validity (no end-of-year or in-year variables).
-2.  **Feature Importance Ranking**: Train preliminary models to obtain feature importance scores.
-3.  **Final Feature Selection**: Map features to the matrix above.
-    *   **High Importance / High Friction**: Make optional in UI. Consider informing user via tooltip that providing it improves accuracy.
-    *   **Imputation Strategy**: Implement robust imputation for all production features (even required ones) to prevent app crashes on edge cases.
+1.  **Candidate Screening**: Identify MEPS variables that a layperson can answer from memory. Ensure temporal validity (no end-of-year or mid-year variables).
+2.  **Data Integrity Validation**: Verify missingness in training data. Features with 100% completeness (Age, Sex, Insurance) are prioritized as **Required** anchors.
+3.  **Feature Importance Ranking**: Train preliminary models to obtain importance scores.
+4.  **Final Feature Selection**: Map features to the matrix above.
+    *   **Imputation Strategy**: Use Mode/Median imputation. Implement a "Safety First" imputation layer for **all** features:
+        *   **Production Robustness**: Even for required features with 0% missingness in training (e.g., Age, Sex), the inference pipeline will include fallback imputation to handle malformed production inputs and avoid system crashes.
+        *   **Implicit "No" Logic**: Given the high feature completeness in training (>96%), "absence of a checked box" in UI checklists can be statistically justified as an explicit "No" response rather than a missing value.
 
 
 ### Candidate Features
@@ -303,7 +308,21 @@ Healthcare cost data has unique characteristics that influence evaluation metric
 
 ### API Contract
 The model will be exposed via a Python API (internal to the web app process) or a REST endpoint if decoupled.
-*   **Input Schema:** `features: Dict[str, Union[str, int, float]]`
+*   **Input Schema (Pydantic Style):**
+    ```python
+    class InferenceInput(BaseModel):
+        # REQUIRED (100% completeness in training)
+        age: int = Field(..., ge=18, le=85)
+        sex: int = Field(...)
+        insurance_status: int = Field(...)
+
+        # OPTIONAL (Null/None allowed; defaults to training mode/median)
+        income_bracket: Optional[int] = None
+        physical_health: Optional[int] = None
+        mental_health: Optional[int] = None
+        region: Optional[int] = None
+        chronic_conditions: List[str] = [] # Empty list implies "No" for all
+    ```
 *   **Output Schema:**
     ```json
     {
