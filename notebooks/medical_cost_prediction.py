@@ -587,6 +587,23 @@ X_train[numerical_features].describe().T.style.format({
 #     </ul>
 # </div>
 
+# %%
+# Calculate median for each numerical feature from training data
+medians = X_train[numerical_features].median()
+
+# Impute median in training, validation, and test data
+X_train[numerical_features] = X_train[numerical_features].fillna(medians)
+X_val[numerical_features] = X_val[numerical_features].fillna(medians)
+X_test[numerical_features] = X_test[numerical_features].fillna(medians)
+
+# Verify results
+pd.DataFrame({
+    "Training": X_train[numerical_features].isnull().sum(),
+    "Validation": X_val[numerical_features].isnull().sum(),
+    "Test": X_test[numerical_features].isnull().sum(),
+})
+
+
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Handling Outliers</h2>
