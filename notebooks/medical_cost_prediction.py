@@ -579,6 +579,22 @@ pd.DataFrame({
     "Test": X_test[numerical_features].isnull().sum(),
 })
 
+# %%
+# Calculate mode for each categorical feature from training data
+modes = X_train[categorical_features].mode().loc[0]
+
+# Impute mode in training, validation, and test data
+X_train[categorical_features] = X_train[categorical_features].fillna(modes)
+X_val[categorical_features] = X_val[categorical_features].fillna(modes)
+X_test[categorical_features] = X_test[categorical_features].fillna(modes)
+
+# Verify results
+pd.DataFrame({
+    "Training": X_train[categorical_features].isnull().sum(),
+    "Validation": X_val[categorical_features].isnull().sum(),
+    "Test": X_test[categorical_features].isnull().sum(),
+})
+
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
