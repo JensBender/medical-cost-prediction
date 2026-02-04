@@ -1243,14 +1243,14 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Examine descriptive statistics and visualize the distributions of numerical features.
+#     ℹ️ Examine descriptive statistics and visualize the distributions of numerical features.<br>
+#     ⚠️ Note: Conduct this EDA part exclusively on the <b>training data</b> to prevent data leakage, as these statistics will directly inform the data preprocessing strategy (e.g., handling missing values). 
 # </div>
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Descriptive Statistics</strong> <br>
-#     📌 Examine descriptive statistics (e.g., mean, median, standard deviation) of all numerical features. <br><br>
-#     ℹ️ Note: Conduct this part of the EDA exclusively on the <b>training data</b> to prevent data leakage, as these statistics will directly inform the strategy for handling missing values. 
+#     📌 Examine descriptive statistics (e.g., mean, median, standard deviation) of all numerical features.
 # </div>
 
 # %%
