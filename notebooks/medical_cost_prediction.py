@@ -564,30 +564,6 @@ missing_value_df.sort_values("Training", ascending=False).style.format({
 # </div>
 
 # %%
-# Descriptive statistics of numerical features
-X_train[numerical_features].describe().T.style.format({
-    "count": "{:,.0f}",
-    "mean": "{:.2f}",
-    "std": "{:.2f}",
-    "min": "{:.1f}",
-    "25%": "{:.1f}",
-    "50%": "{:.1f}",
-    "75%": "{:.1f}",
-    "max": "{:.1f}"
-})
-
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> Descriptive statistics justify the use of median imputation for numerical features.
-#     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>Robustness to Skewness:</b> For <code>FAMSZE23</code>, the mean (2.69) is notably higher than the median (2.0) due to extreme outliers (max 14). Imputing the median prevents these "high-cost" family sizes from biasing our guess for typical respondents.</li>
-#         <li><b>Maintaining Scale Integrity:</b> Health status variables (<code>RTHLTH31</code>, <code>MNHLTH31</code>) use a discrete 1–5 scale. Median imputation ensures that missing values are filled with actual observed integers (e.g., 2.0) rather than non-existent decimals (e.g., 2.46).</li>
-#         <li><b>Symmetry in Age:</b> While <code>AGE23X</code> is relatively symmetric (Mean ≈ Median), using the median here remains consistent with the rest of the pipeline.</li>
-#         <li><b>Minimal Imputation Bias:</b> Given the very low missingness (maximum ~0.3%), the choice of median vs. mean will not significantly impact model performance, but median remains the statistically sounder choice.</li>
-#     </ul>
-# </div>
-
-# %%
 # Calculate median for each numerical feature from training data
 medians = X_train[numerical_features].median()
 
@@ -815,7 +791,7 @@ plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("{x:,.0f}"))
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Examine descriptive statistics and visualize the distribution of total out-of-pocket health care costs.
 #     <br>
-#     <b>Note:</b> Unless otherwise specified, all descriptive statistics and insights in this section refer to population-level estimates (calculated using sample weights) to ensure representativeness of the U.S. adult population.
+#     📝 <b>Note:</b> Unless otherwise specified, all descriptive statistics and insights in this section refer to population-level estimates (calculated using sample weights) to ensure representativeness of the U.S. adult population.
 # </div>
 
 # %% [markdown]
@@ -1273,7 +1249,32 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Descriptive Statistics</strong> <br>
-#     📌 Examine descriptive statistics (e.g., mean, median, standard deviation) of all numerical features. 
+#     📌 Examine descriptive statistics (e.g., mean, median, standard deviation) of all numerical features. <br><br>
+#     ℹ️ Note: Conduct this part of the EDA exclusively on the <b>training data</b> to prevent data leakage, as these statistics will directly inform the strategy for handling missing values. 
+# </div>
+
+# %%
+# Descriptive statistics of numerical features
+X_train[numerical_features].describe().T.style.format({
+    "count": "{:,.0f}",
+    "mean": "{:.2f}",
+    "std": "{:.2f}",
+    "min": "{:.1f}",
+    "25%": "{:.1f}",
+    "50%": "{:.1f}",
+    "75%": "{:.1f}",
+    "max": "{:.1f}"
+})
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insight:</b> Descriptive statistics justify the use of median imputation for numerical features.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Robustness to Skewness:</b> For <code>FAMSZE23</code>, the mean (2.69) is notably higher than the median (2.0) due to extreme outliers (max 14). Imputing the median prevents these "high-cost" family sizes from biasing our guess for typical respondents.</li>
+#         <li><b>Maintaining Scale Integrity:</b> Health status variables (<code>RTHLTH31</code>, <code>MNHLTH31</code>) use a discrete 1–5 scale. Median imputation ensures that missing values are filled with actual observed integers (e.g., 2.0) rather than non-existent decimals (e.g., 2.46).</li>
+#         <li><b>Symmetry in Age:</b> While <code>AGE23X</code> is relatively symmetric (Mean ≈ Median), using the median here remains consistent with the rest of the pipeline.</li>
+#         <li><b>Minimal Imputation Bias:</b> Given the very low missingness (maximum ~0.3%), the choice of median vs. mean will not significantly impact model performance, but median remains the statistically sounder choice.</li>
+#     </ul>
 # </div>
 
 # %% [markdown]
