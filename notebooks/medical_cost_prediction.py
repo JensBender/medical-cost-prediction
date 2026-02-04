@@ -1260,3 +1260,24 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 #         <li><b>Strategy:</b> To prevent these outliers from dominating the training, we must consider target transformations (Log/Box-Cox) or robust regression techniques that "downweight" the influence of extreme residuals.</li>
 #     </ul>
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Numerical Features</h3>
+# </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Examine descriptive statistics and visualize the distributions of numerical features.
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Descriptive Statistics</strong> <br>
+#     📌 Examine descriptive statistics (e.g., mean, median, standard deviation) of all numerical features. 
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Visualize Distributions</strong> <br> 
+#     📌 Plot a histogram matrix that shows the distributions of all numerical features. 
+# </div>
