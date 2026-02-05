@@ -11,14 +11,33 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.10"
+
+# Core dependencies (Required for both training and the app)
 dependencies = [
-    "numpy>=2.0.0",
-    "pandas>=2.0.0",
-    "scikit-learn>=1.0.0",
-    "matplotlib>=3.0.0",
-    "seaborn>=0.12.0",
-    "xgboost>=1.5.0",
-    "joblib>=1.1.0"
+    "joblib==1.5.2",
+    "numpy==2.3.5",
+    "pandas==2.3.3",
+    "scikit-learn==1.7.2",
+]
+
+[project.optional-dependencies]
+# Dependencies for model training, notebooks, and EDA
+train = [
+    "jupyterlab==4.5.0",
+    "jupytext==1.18.1",
+    "jupyter-collaboration==4.2.0",
+    "matplotlib==3.10.7",
+    "seaborn==0.13.2",
+    "xgboost==3.1.2",
+]
+
+# Dependencies for the Web App/API and deployment
+app = [
+    "fastapi==0.123.0",
+    "pydantic==2.12.4",
+    "uvicorn==0.38.0",
+    "gradio==6.0.1",
+    "requests==2.32.5",
 ]
 
 [tool.setuptools.packages.find]

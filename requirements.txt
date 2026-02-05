@@ -1,14 +1,2 @@
-# Backend
-fastapi==0.123.0
-pydantic==2.12.4
-uvicorn==0.38.0
-
-# Frontend
-gradio==6.0.1
-requests==2.32.5
-
-# Shared (must match requirements-train.txt)
-joblib==1.5.2
-numpy==2.3.5
-pandas==2.3.3
-scikit-learn==1.7.2
+# Deployment dependencies for Web App/API defined in pyproject.toml
+. [app]

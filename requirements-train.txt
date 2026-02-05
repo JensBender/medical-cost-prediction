@@ -1,19 +1,2 @@
-# Jupyter Notebook
-jupyterlab==4.5.0
-jupytext==1.18.1  # to sync .ipynb with .py 
-jupyter-collaboration==4.2.0  # to auto-reload .py changes in .ipynb
-
-# Data Manipulation 
-numpy==2.3.5
-pandas==2.3.3
-
-# Data Visualization
-matplotlib==3.10.7
-seaborn==0.13.2
-
-# Machine Learning 
-scikit-learn==1.7.2
-xgboost==3.1.2
-
-# Model Serialization
-joblib==1.5.2
+# Model training and notebook dependencies defined in pyproject.toml
+-e .[train]
