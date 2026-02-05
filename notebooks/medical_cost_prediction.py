@@ -69,6 +69,9 @@ from sklearn.metrics import (
 # Local imports
 from src.pipeline import create_preprocessing_pipeline
 
+# Configuration
+RANDOM_STATE = 42
+
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Data Loading and Inspection</h1>
@@ -461,7 +464,7 @@ y_strata = create_stratification_bins(y)
 
 # Perform the first distribution-informed stratified split (80% Train, 20% Temp)
 X_train, X_temp, y_train, y_temp = train_test_split(
-    X, y, test_size=0.20, random_state=42, stratify=y_strata
+    X, y, test_size=0.20, random_state=RANDOM_STATE, stratify=y_strata
 )
 
 # Re-calculate strata for the temporary set to ensure the 50/50 split is also representative
@@ -469,7 +472,7 @@ temp_strata = create_stratification_bins(y_temp)
 
 # Perform the second stratified split (resulting in 10% Val, 10% Test)
 X_val, X_test, y_val, y_test = train_test_split(
-    X_temp, y_temp, test_size=0.50, random_state=42, stratify=temp_strata
+    X_temp, y_temp, test_size=0.50, random_state=RANDOM_STATE, stratify=temp_strata
 )
 
 # Helper function to verify the stratification splits
