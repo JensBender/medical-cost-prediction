@@ -10,7 +10,7 @@ authors = [
     { name = "Jens Bender" }
 ]
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = "~=3.13.0"
 
 # Core dependencies (Required for both training and the app)
 dependencies = [
