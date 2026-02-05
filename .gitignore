@@ -20,3 +20,4 @@ assets/header_*.jpg
 
 # Python artifacts
 **/__pycache__/
+*.egg-info/
