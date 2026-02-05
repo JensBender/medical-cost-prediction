@@ -66,6 +66,9 @@ from sklearn.metrics import (
     r2_score
 )
 
+# Local imports
+from src.pipeline import create_preprocessing_pipeline
+
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Data Loading and Inspection</h1>
