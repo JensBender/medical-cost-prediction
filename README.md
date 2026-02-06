@@ -5,7 +5,7 @@
 <img src="assets/header.png" alt="Header Image">
 
 <!-- SHORT SUMMARY  -->
-Designing an end-to-end ML application to predict out-of-pocket healthcare costs for personalized financial planning. Adopting a product-driven approach, authoring comprehensive Product Requirements and Technical Specifications that prioritize UX-centric design and model transparency. Engineering the ML pipeline to translate complex survey data (MEPS) into actionable budgeting insights.
+Currently developing an E2E ML application to predict annual out-of-pocket healthcare costs. Initial phase: authoring [Product Requirements](./docs/specs/product_requirements.md) and [Technical Specifications](./docs/specs/technical_specifications.md) for a user-centric system design (task completion time <90s). Engineering the ML pipeline to translate complex survey data (MEPS) into personalized budgeting insights.
 
 ## 📋 Table of Contents
 <ol>
