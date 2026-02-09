@@ -19,7 +19,7 @@
 #     <p style="text-align:center; font-size:14px; font-weight:normal; color:#4A4A4A; margin-top:12px;">
 #         Author: Jens Bender <br> 
 #         Created: December 2025<br>
-#         Last updated: January 2026
+#         Last updated: February 2026
 #     </p>
 # </div>
 
@@ -1265,7 +1265,8 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Examine descriptive statistics and visualize the distributions of numerical features.<br>
+#     ℹ️ Examine descriptive statistics and visualize the distributions of numerical features.
+#     <br><br>
 #     ⚠️ Note: Conduct this EDA part exclusively on the <b>training data</b> to prevent data leakage, as these statistics will directly inform the data preprocessing strategy (e.g., handling missing values). 
 # </div>
 
@@ -1294,7 +1295,6 @@ X_train[numerical_features].describe().T.style.format({
 #     <ul style="margin-top:10px; margin-bottom:0px">
 #         <li><b>Robustness to Skewness:</b> For <code>FAMSZE23</code>, the mean (2.69) is notably higher than the median (2.0) due to extreme outliers (max 14). Imputing the median prevents these "high-cost" family sizes from biasing our guess for typical respondents.</li>
 #         <li><b>Maintaining Scale Integrity:</b> Health status variables (<code>RTHLTH31</code>, <code>MNHLTH31</code>) use a discrete 1–5 scale. Median imputation ensures that missing values are filled with actual observed integers (e.g., 2.0) rather than non-existent decimals (e.g., 2.46).</li>
-#         <li><b>Symmetry in Age:</b> While <code>AGE23X</code> is relatively symmetric (Mean ≈ Median), using the median here remains consistent with the rest of the pipeline.</li>
 #         <li><b>Minimal Imputation Bias:</b> Given the very low missingness (maximum ~0.3%), the choice of median vs. mean will not significantly impact model performance, but median remains the statistically sounder choice.</li>
 #     </ul>
 # </div>
@@ -1304,3 +1304,29 @@ X_train[numerical_features].describe().T.style.format({
 #     <strong>Visualize Distributions</strong> <br> 
 #     📌 Plot a histogram matrix that shows the distributions of all numerical features. 
 # </div>
+
+# %%
+# Create 2x2 subplot grid
+fig, axes = plt.subplots(2, 2, figsize=(8, 6))
+
+# Flatten the axes for easier iteration
+axes = axes.flat
+
+# Iterate over all numerical features
+for i, feature in enumerate(numerical_features):
+    # Get the current axes
+    ax = axes[i]
+
+    # Create histogram for the current feature
+    sns.histplot(data=X_train, x=feature, ax=ax)
+
+    # Customize histogram
+    ax.set_title(feature.title(), fontsize=14)
+    ax.set_xlabel("")
+    ax.set_ylabel("Frequency", fontsize=12)
+
+# Adjust layout to prevent overlap
+fig.tight_layout()
+
+# Show histogram matrix
+plt.show()
