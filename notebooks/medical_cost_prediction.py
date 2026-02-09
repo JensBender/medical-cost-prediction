@@ -1374,7 +1374,7 @@ for i, feature in enumerate(numerical_features):
     )
 
     # Customize histogram
-    ax.set_title(feature, fontsize=14, fontweight="bold") 
+    ax.set_title(display_labels[feature], fontsize=14, fontweight="bold") 
     ax.set_xlabel("")
     ax.set_ylabel("Frequency" if i % 2 == 0 else "", fontsize=12) # Only y-label on left plots
     ax.grid(True, axis="y", alpha=0.3)  # Adds grid lines
