@@ -1351,6 +1351,7 @@ X_train[numerical_features].describe().T.style.format({
 # </div>
 
 # %%
+# Sample Distributions 
 # Create 2x2 subplot grid
 fig, axes = plt.subplots(2, 2, figsize=(10, 8))
 
@@ -1380,6 +1381,46 @@ for i, feature in enumerate(numerical_features):
     ax.grid(True, axis="y", alpha=0.3)  # Adds grid lines
     sns.despine(ax=ax)  # Removes top & right spines
 
+fig.tight_layout()  # Adjusts layout to prevent overlap
+
+# Show histogram matrix
+plt.show()
+
+# %%
+# Weighted Distributions
+# Create 2x2 subplot grid
+fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+
+# Flatten the axes for easier iteration
+axes = axes.flat
+
+# Iterate over all numerical features
+for i, feature in enumerate(numerical_features):
+    # Get the current axes
+    ax = axes[i]
+
+    # Create weighted histogram for the current feature
+    sns.histplot(
+        data=X_train, 
+        x=feature,
+        weights="PERWT23F",  # Sample weights
+        ax=ax,
+        discrete=True,                               # Centers bars on integers 
+        kde=True if feature == "AGE23X" else False,  # Adds a density curve for age
+        edgecolor="white",                           # Adds white border lines between bars
+        alpha=0.7,
+        color="#4e8ac8"                              # Different color to distinguish from sample
+    )
+
+    # Customize histogram
+    ax.set_title(display_labels[feature], fontsize=14, fontweight="bold") 
+    ax.set_xlabel("")
+    ax.set_ylabel("Weighted Count" if i % 2 == 0 else "", fontsize=12)  # Y-label indicates population
+    ax.grid(True, axis="y", alpha=0.3)  # Adds grid lines
+    sns.despine(ax=ax)  # Removes top & right spines
+
+# Customize matrix
+fig.suptitle("Weighted Distributions of Numerical Features (Training Data)", fontsize=16, fontweight="bold", y=1)  # Adds title
 fig.tight_layout()  # Adjusts layout to prevent overlap
 
 # Show histogram matrix
