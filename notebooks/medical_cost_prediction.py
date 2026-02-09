@@ -905,8 +905,42 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 # </div>
 
 # %%
-# Descriptive statistics of numerical features
+# Sample (unweighted) statistics
 df[numerical_features].describe().T.style.format({
+    "count": "{:,.0f}",
+    "mean": "{:.2f}",
+    "std": "{:.2f}",
+    "min": "{:.1f}",
+    "25%": "{:.1f}",
+    "50%": "{:.1f}",
+    "75%": "{:.1f}",
+    "max": "{:.1f}"
+})
+
+# %%
+# Population (weighted) statistics
+pop_stats = []
+# Iterate over all numerical features
+for feature in numerical_features:
+    # Drop missing values for the current feature
+    valid_mask = df[feature].notna()
+    values = df.loc[valid_mask, feature]
+    weights = df.loc[valid_mask, "PERWT23F"]
+    
+    pop_stats.append({
+        "count": weights.sum(),  # Sum of weights is the estimated population count
+        "mean": np.average(values, weights=weights),
+        "std": weighted_std(values, weights),
+        "min": values.min(),
+        "25%": weighted_quantile(values, weights, 0.25),
+        "50%": weighted_quantile(values, weights, 0.50),
+        "75%": weighted_quantile(values, weights, 0.75),
+        "max": values.max()
+    })
+
+# Show table of population statistics
+pop_stats_df = pd.DataFrame(pop_stats, index=numerical_features)
+pop_stats_df.style.format({
     "count": "{:,.0f}",
     "mean": "{:.2f}",
     "std": "{:.2f}",
