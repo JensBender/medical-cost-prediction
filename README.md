@@ -53,6 +53,12 @@ Currently developing an E2E ML application to predict annual out-of-pocket healt
   <li>
     <a href="#-credits">Credits</a>
   </li>
+  <li>
+    <a href="#-appendix">Appendix</a>
+    <ul>
+      <li><a href="#numerical-distributions">Numerical Distributions</a></li>      
+    </ul>
+  </li>
 </ol>
 
 
@@ -283,6 +289,13 @@ This project was made possible with the help of the following resources:
 - **Images**: The [header image](./assets/header.png), the MEPS [data infographic](./assets/data_infographic.jpg), and the [US healthcare costs infographic](./assets/healthcare_costs_infographic.png) were generated using [Gemini 3 Pro Image](https://deepmind.google/models/gemini-image/pro/) via the [Gemini app](https://gemini.google.com/app) by Google.
 - **AI Coding Assistant**: [Antigravity](https://antigravity.google/) by Google.
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+<!-- APPENDIX -->
+## 📎 Appendix
+### Numerical Distributions
+![Numerical Distributions](assets/eda_numerical_distributions.png)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
