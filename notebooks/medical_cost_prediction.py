@@ -1377,10 +1377,12 @@ for i, feature in enumerate(numerical_features):
     # Customize histogram
     ax.set_title(display_labels[feature], fontsize=14, fontweight="bold") 
     ax.set_xlabel("")
-    ax.set_ylabel("Frequency" if i % 2 == 0 else "", fontsize=12) # Only y-label on left plots
+    ax.set_ylabel("Count" if i % 2 == 0 else "", fontsize=12) # Only y-label on left plots
     ax.grid(True, axis="y", alpha=0.3)  # Adds grid lines
     sns.despine(ax=ax)  # Removes top & right spines
 
+# Customize matrix
+fig.suptitle("Sample Distributions of Numerical Features (Training Data)", fontsize=16, fontweight="bold", y=1)  # Adds title
 fig.tight_layout()  # Adjusts layout to prevent overlap
 
 # Show histogram matrix
@@ -1415,7 +1417,8 @@ for i, feature in enumerate(numerical_features):
     # Customize histogram
     ax.set_title(display_labels[feature], fontsize=14, fontweight="bold") 
     ax.set_xlabel("")
-    ax.set_ylabel("Weighted Count" if i % 2 == 0 else "", fontsize=12)  # Y-label indicates population
+    ax.set_ylabel("Weighted Count (Millions)" if i % 2 == 0 else "", fontsize=12)     # Only y-label on left plots
+    ax.yaxis.set_major_formatter(mtick.FuncFormatter(lambda x, pos: f"{x/1e6:.0f}"))  # Formats y-axis ticks in millions
     ax.grid(True, axis="y", alpha=0.3)  # Adds grid lines
     sns.despine(ax=ax)  # Removes top & right spines
 
