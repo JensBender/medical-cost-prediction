@@ -178,7 +178,7 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to account for the comp
 ### Target Variable: Out-of-Pocket Costs
 The distribution of annual out-of-pocket health care costs (`TOTSLF23`) exhibits severe right-skewness, zero-inflation, and an extremely heavy tail. While the majority of individuals incur minimal expenses, a small fraction faces extraordinary financial exposure, creating a highly concentrated cost distribution that requires robust modeling techniques.
 
-![Lorenz Curve](assets/lorenz_curve.png)
+![Lorenz Curve](assets/eda_lorenz_curve.png)
 
 **Key Insights:**
 *   **Zero-Cost Prevalence:** More than **one in five** U.S. adults (**22.3%**, or an estimated 58 million people) incurred **no out-of-pocket costs** in 2023. This high zero-inflation necessitates models capable of handling a large mass of zero values.
@@ -295,7 +295,17 @@ This project was made possible with the help of the following resources:
 <!-- APPENDIX -->
 ## 📎 Appendix
 ### Numerical Distributions
+Histogram matrix of numerical features in the training data.
 ![Numerical Distributions](assets/eda_numerical_distributions.png)
+
+Descriptive statistics of numerical features in the training data.
+| Feature         | Count  | Mean  | Std   | Min  | 25%  | 50%  | 75%  | Max  |
+|-----------------|--------|-------|-------|------|------|------|------|------|
+| Age             | 11,814 | 52.18 | 18.55 | 18.0 | 37.0 | 53.0 | 67.0 | 85.0 |
+| Family Size     | 11,809 | 2.69  | 1.55  | 1.0  | 2.0  | 2.0  | 4.0  | 14.0 |
+| Physical Health | 11,783 | 2.46  | 1.06  | 1.0  | 2.0  | 2.0  | 3.0  | 5.0  |
+| Mental Health   | 11,771 | 2.29  | 1.04  | 1.0  | 1.0  | 2.0  | 3.0  | 5.0  |
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
