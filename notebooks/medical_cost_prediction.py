@@ -109,7 +109,7 @@ df.head()
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h1 style="margin:0px">Data Preprocessing</h1>
+#     <h1 style="margin:0px">Data Preparation</h1>
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
@@ -368,20 +368,20 @@ df.isnull().sum()
 # </div>
 
 # %%
-# Recover implied values
-# Smoker: Convert -1 (Never Smoker) to 2 (No)
-df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2
-
-# Joint Pain: Convert -1 to 1 (Yes) only if they have Arthritis 
-df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
-
-# %%
 # Identify MEPS missing values 
 missing_codes = [-1, -7, -8, -9, -15]
 missing_frequency_df = pd.DataFrame({code: (df == code).sum() for code in missing_codes})
 missing_frequency_df["TOTAL"] = missing_frequency_df.sum(axis=1)
 missing_frequency_df["PERCENTAGE"] = (missing_frequency_df["TOTAL"] / len(df) * 100).round(2)
 missing_frequency_df.sort_values("TOTAL", ascending=False) 
+
+# %%
+# Recover implied values
+# Smoker: Convert -1 (Never Smoker) to 2 (No)
+df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2
+
+# Joint Pain: Convert -1 to 1 (Yes) only if they have Arthritis 
+df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
 
 # %%
 # Convert all MEPS missing codes to np.nan
@@ -391,432 +391,17 @@ df = df.replace(missing_codes, np.nan)
 df.isnull().sum().sort_values(ascending=False)
 
 # %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Train-Validation-Test Split</h2>
-# </div>
-#
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Split the data into 80% for training, 10% for validation, and 10% for testing.
-#     <br><br>
-#     <b>Why not a simple random split?</b><br>
-#     Healthcare costs exhibit a zero-inflated, heavily right-skewed distribution (see <a href="#target-variable"><b>Target Variable EDA</b></a>). The primary risk of a random split in healthcare cost data is the "luck-of-the-draw" misdistribution of super-spenders. Since the extreme tail of the distribution (the top 1%) accounts for a massive share of total population spending, omitting even a few of these individuals from the test set—or over-representing them in the train set—creates catastrophic "metric drift." This makes performance indicators (like R² or MSE) highly volatile and unreliable for predicting real-world financial risk. 
-#     <br><br>
-#     <b>Why not a quartile or quintile split?</b><br>
-#     Standard quartile or quintile bins are too coarse to capture the extreme tail. Because healthcare costs are so concentrated, a quintile-based split (top 20%) would treat a respondent at the 81st percentile (e.g., \$2,000) the same as a "super-spender" at the 99.9th percentile (e.g., \$100,000). Only high-resolution, non-linear strata at the 95th and 99th percentiles can guarantee that these "Black Swan" cases are balanced across all subsets.
-#     <br><br>
-#     <b>Distribution-Informed Stratified Split</b><br>
-#     To ensure the model is evaluated on a representative mirror of the population, I use a distribution-informed stratified split:
-#     <ul>
-#         <li><b>Mitigating 'Black Swan' Risks (Primary):</b> Uses high-resolution non-linear bins (80, 95, and 99th percentiles) to force the inclusion of extreme high-cost individuals in all sets, preventing unstable performance metric fluctuations.</li>
-#         <li><b>Preserving the Zero-Hurdle (Secondary):</b> Guarantees that the 22.3% of zero-cost individuals remain identical across all sets, ensuring consistent evaluation of the model's ability to predict cost occurrence.</li>
-#         <li><b>Capturing the Pareto Distribution:</b> Prevents evaluation bias by ensuring the 20% of spenders who drive ~80% of the total economic burden are proportionally represented in the test set.</li>
-#     </ul>
-#     <b>Strata Distribution</b>
-#     <table style="margin-left:0; margin-top:20px; margin-bottom:20px">
-#         <tr>
-#             <th style="background-color:#f5ecda;">Bin</th>
-#             <th style="background-color:#f5ecda;">Category</th>
-#             <th style="background-color:#f5ecda;">Percentile (of Positives)</th>
-#             <th style="background-color:#f5ecda;">Train (80%)</th>
-#             <th style="background-color:#f5ecda;">Val (10%)</th>
-#             <th style="background-color:#f5ecda;">Test (10%)</th>
-#         </tr>
-#         <tr>
-#             <td style="background-color:#fff6e4; text-align:center;"><b>0</b></td>
-#             <td style="background-color:#fff6e4;">Zero Costs</td>
-#             <td style="background-color:#fff6e4;">N/A (Hurdle)</td>
-#             <td style="background-color:#fff6e4; text-align:center;">2,640</td>
-#             <td style="background-color:#fff6e4; text-align:center;">330</td>
-#             <td style="background-color:#fff6e4; text-align:center;">330</td>
-#         </tr>
-#         <tr>
-#             <td style="background-color:#f5ecda; text-align:center;"><b>1</b></td>
-#             <td style="background-color:#f5ecda;">Low Spend</td>
-#             <td style="background-color:#f5ecda;">0 - 50%</td>
-#             <td style="background-color:#f5ecda; text-align:center;">4,587</td>
-#             <td style="background-color:#f5ecda; text-align:center;">573</td>
-#             <td style="background-color:#f5ecda; text-align:center;">574</td>
-#         </tr>
-#         <tr>
-#             <td style="background-color:#fff6e4; text-align:center;"><b>2</b></td>
-#             <td style="background-color:#fff6e4;">Moderate</td>
-#             <td style="background-color:#fff6e4;">50 - 80%</td>
-#             <td style="background-color:#fff6e4; text-align:center;">2,752</td>
-#             <td style="background-color:#fff6e4; text-align:center;">344</td>
-#             <td style="background-color:#fff6e4; text-align:center;">344</td>
-#         </tr>
-#         <tr>
-#             <td style="background-color:#f5ecda; text-align:center;"><b>3</b></td>
-#             <td style="background-color:#f5ecda;">High Spend</td>
-#             <td style="background-color:#f5ecda;">80 - 95%</td>
-#             <td style="background-color:#f5ecda; text-align:center;">1,376</td>
-#             <td style="background-color:#f5ecda; text-align:center;">172</td>
-#             <td style="background-color:#f5ecda; text-align:center;">172</td>
-#         </tr>
-#         <tr>
-#             <td style="background-color:#fff6e4; text-align:center;"><b>4</b></td>
-#             <td style="background-color:#fff6e4;">Very High</td>
-#             <td style="background-color:#fff6e4;">95 - 99%</td>
-#             <td style="background-color:#fff6e4; text-align:center;">367</td>
-#             <td style="background-color:#fff6e4; text-align:center;">46</td>
-#             <td style="background-color:#fff6e4; text-align:center;">46</td>
-#         </tr>
-#         <tr>
-#             <td style="background-color:#f5ecda; text-align:center;"><b>5</b></td>
-#             <td style="background-color:#f5ecda;">Massively High</td>
-#             <td style="background-color:#f5ecda;">99 - 99.9%</td>
-#             <td style="background-color:#f5ecda; text-align:center;">83</td>
-#             <td style="background-color:#f5ecda; text-align:center;">10</td>
-#             <td style="background-color:#f5ecda; text-align:center;">10</td>
-#         </tr>
-#         <tr>
-#             <td style="background-color:#fff6e4; text-align:center;"><b>6</b></td>
-#             <td style="background-color:#fff6e4;">Super Spenders</td>
-#             <td style="background-color:#fff6e4;">Top 0.1%</td>
-#             <td style="background-color:#fff6e4; text-align:center;">12</td>
-#             <td style="background-color:#fff6e4; text-align:center;">1</td>
-#             <td style="background-color:#fff6e4; text-align:center;">2</td>
-#         </tr>
-#     </table>
-# </div>
-
-# %%
-# Split the data into X features and y target
-X = df.drop("TOTSLF23", axis=1)
-y = df["TOTSLF23"]
-
-# Helper function for distribution-informed stratification
-def create_stratification_bins(y):
-    # Initialize strata series 
-    strata = pd.Series(index=y.index, dtype=int)
-    
-    # Bin 0: Zero Costs (Handle the hurdle separately)
-    is_zero = (y == 0)
-    strata[is_zero] = 0
-    
-    # Custom non-linear quantiles for positive values to capture the tail
-    positive_y = y[~is_zero]
-    bins = [0, 0.5, 0.8, 0.95, 0.99, 0.999, 1.0]
-    
-    # Assign positive spenders to bins 1 through 5 
-    # Note: labels=False returns the bin indices (0-4) instead of Interval objects (e.g., [0, 150.5]). We add 1 to shift the indices to 1-5 with 0 being reserved for the zero cost bin.
-    # Note: duplicates="drop" avoids errors if multiple quantiles (e.g., 0.95 and 0.99) result in the same cost value.
-    strata[~is_zero] = pd.qcut(positive_y, q=bins, labels=False, duplicates="drop") + 1
-    return strata
-
-# Generate the stratification column 
-y_strata = create_stratification_bins(y)
-
-# Perform the first distribution-informed stratified split (80% Train, 20% Temp)
-X_train, X_temp, y_train, y_temp = train_test_split(
-    X, y, test_size=0.20, random_state=RANDOM_STATE, stratify=y_strata
-)
-
-# Re-calculate strata for the temporary set to ensure the 50/50 split is also representative
-temp_strata = create_stratification_bins(y_temp)
-
-# Perform the second stratified split (resulting in 10% Val, 10% Test)
-X_val, X_test, y_val, y_test = train_test_split(
-    X_temp, y_temp, test_size=0.50, random_state=RANDOM_STATE, stratify=temp_strata
-)
-
-# Helper function to verify the stratification splits
-def verify_split(y_subset, y_subset_strata, name):
-    # Calculate relative frequencies of the bins
-    strata_freq = y_subset_strata.value_counts(normalize=True).sort_index() * 100
-    
-    # Calculate key distribution metrics
-    stats = {
-        "Samples": len(y_subset),
-        "Mean Cost": y_subset.mean(),
-        "Median Cost": y_subset.median(),
-        "Max Cost": y_subset.max()
-    }
-    
-    # Merge metrics and strata proportions 
-    for i, freq in strata_freq.items():
-        stats[f"Bin {int(i)}"] = freq
-        
-    return pd.Series(stats, name=name)
-
-# Create DataFrame of split verification statistics
-split_verification_df = pd.concat([
-    verify_split(y, y_strata, "Total Dataset"),
-    verify_split(y_train, y_strata.loc[y_train.index], "Train (80%)"),
-    verify_split(y_val, y_strata.loc[y_val.index], "Validation (10%)"),
-    verify_split(y_test, y_strata.loc[y_test.index], "Test (10%)")
-], axis=1).T
-
-# Delete temporary variables to free up memory
-del X_temp, y_temp, temp_strata, y_strata
-
-# Display the verification DataFrame (format for readability) 
-split_verification_df.style.format("{:,.1f}") \
-            .format("{:,.0f}", subset=["Samples", "Max Cost"]) \
-            .format("${:,.0f}", subset=["Mean Cost", "Median Cost", "Max Cost"]) \
-            .format("{:.2f}%", subset=["Bin 0", "Bin 1", "Bin 2", "Bin 3", "Bin 4", "Bin 5", "Bin 6"])
-
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> The distribution-informed stratification successfully created representative and robust data splits.
-#     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>Structural Precision:</b> Relative frequencies of all strata (Bins 0–6) are near-perfectly preserved across all splits, ensuring that the zero-inflation and the Pareto-style concentration are balanced.</li>
-#         <li><b>Mitigation of "Metric Drift":</b> By forcing the inclusion of extreme high-cost individuals (99.9th percentile) in the Test set, we prevent "luck-of-the-draw" bias and ensure that performance metrics (e.g., R²) are robust against catastrophic outliers.</li>
-#         <li><b>Representative Benchmarking:</b> The stability of central tendencies (Median Cost) confirms that the typical patient profile is identical in each set, allowing for reliable and generalizable model evaluation.</li>
-#     </ul>
-# </div>
-
-# %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Handling Missing Values</h2>
-# </div> 
-#
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     <strong>Identification</strong> <br>
-#     📌 Identify missing values.
-# </div>
-
-# %%
-# Create a summary table for missing values
-missing_value_df = pd.DataFrame({
-    "Training": X_train.isnull().sum(),
-    "Validation": X_val.isnull().sum(),
-    "Test": X_test.isnull().sum(),
-})
-# Add target variable missings
-missing_value_df.loc["TOTSLF23"] = [
-    y_train.isnull().sum(),
-    y_val.isnull().sum(),
-    y_test.isnull().sum(),
-]
-# Display table (sorted and with percentages)
-missing_value_df.sort_values("Training", ascending=False).style.format({
-    "Training": lambda x: f"{x} ({x / len(X_train) * 100:.1f}%)",
-    "Validation": lambda x: f"{x} ({x / len(X_val) * 100:.1f}%)",
-    "Test": lambda x: f"{x} ({x / len(X_test) * 100:.1f}%)"
-})
-
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> Missing value analysis reveals a high level of data integrity and consistency across all splits.
-#     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>High Data Quality:</b> Missingness is quite low (Maximum ~3.8% for Usual Source of Care), with most features well below 1%, minimizing the risk of imputation bias.</li>
-#         <li><b>Consistent Splits:</b> Missing value frequencies are near-identical across Training, Validation, and Test sets, suggesting the stratification did not introduce feature bias.</li>
-#         <li><b>Key Variable Completeness:</b> Expected cost drivers such as Age, Sex, Region, Poverty Status, Insurance, and the Target Variable are 100% complete.</li>
-#         <li><b>Implication for App Design:</b> The 100% completeness of demographics justifies making them required in the app, while high completeness allows us to safely treat unchecked boxes as an explicit "No" (0) rather than a missing value.</li>
-#     </ul>
-# </div>
-
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     <strong>Imputation</strong> <br>
-#     📌 Impute missing values. Use the median for numerical features and the mode (most frequent value) for categorical features.
-# </div>
-
-# %%
-# Calculate median for each numerical feature from training data
-medians = X_train[numerical_features].median()
-
-# Impute median in training, validation, and test data
-X_train[numerical_features] = X_train[numerical_features].fillna(medians)
-X_val[numerical_features] = X_val[numerical_features].fillna(medians)
-X_test[numerical_features] = X_test[numerical_features].fillna(medians)
-
-# Verify results
-pd.DataFrame({
-    "Training": X_train[numerical_features].isnull().sum(),
-    "Validation": X_val[numerical_features].isnull().sum(),
-    "Test": X_test[numerical_features].isnull().sum(),
-})
-
-# %%
-# Calculate mode for each categorical feature from training data
-modes = X_train[categorical_features].mode().loc[0]
-
-# Impute mode in training, validation, and test data
-X_train[categorical_features] = X_train[categorical_features].fillna(modes)
-X_val[categorical_features] = X_val[categorical_features].fillna(modes)
-X_test[categorical_features] = X_test[categorical_features].fillna(modes)
-
-# Verify results
-pd.DataFrame({
-    "Training": X_train[categorical_features].isnull().sum(),
-    "Validation": X_val[categorical_features].isnull().sum(),
-    "Test": X_test[categorical_features].isnull().sum(),
-})
-
-
-# %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Handling Outliers</h2>
-# </div>
-
-# %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">3SD Method</h3>
-# </div>
-#
-# <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 📌 Identify and remove univariate outliers in numerical columns by applying the 3 standard deviation rule (3SD). A data point is considered an outlier if it falls more than 3 standard deviations above or below the mean of the column.</p> 
-
-# %%
-# Custom scikit-learn transformer class to identify and remove outliers using the 3SD method
-class OutlierRemover3SD(BaseEstimator, TransformerMixin):
-    def fit(self, df, numerical_columns):
-        # Convert single column string to list
-        if isinstance(numerical_columns, str):
-            self.numerical_columns_ = [numerical_columns]
-        else:
-            self.numerical_columns_ = numerical_columns
-            
-        # Calculate statistics (mean, std, cutoff values) for each column
-        self.stats_ = pd.DataFrame(index=self.numerical_columns_)
-        self.stats_["mean"] = df[self.numerical_columns_].mean()
-        self.stats_["std"] = df[self.numerical_columns_].std()
-        self.stats_["lower_cutoff"] = self.stats_["mean"] - 3 * self.stats_["std"]
-        self.stats_["upper_cutoff"] = self.stats_["mean"] + 3 * self.stats_["std"]
-        
-        # Create masks for filtering outliers 
-        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
-        self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
-     
-        # Calculate number of outliers
-        self.stats_["n_outliers"] = (~self.masks_).sum()  # by column
-        self.stats_["pct_outliers"] = self.stats_["n_outliers"] / len(df) * 100  # by column
-        self.outliers_ = (~self.final_mask_).sum()  # across all columns
-        
-        return self
-
-    def transform(self, df):
-        # Create masks for df (can be a different df than during fit; e.g. X_train, X_test)
-        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
-        self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
-        
-        # Remove outliers based on the final mask
-        return df[self.final_mask_]
-
-    def fit_transform(self, df, numerical_columns):
-        # Perform both fit and transform 
-        return self.fit(df, numerical_columns).transform(df)
-
-
-# Initialize outlier remover 
-outlier_remover_3sd = OutlierRemover3SD()
-
-# Fit outlier remover to training data
-outlier_remover_3sd.fit(X_train, numerical_features)
-
-# Show outliers in training data
-print(f"Training Data: Identified {outlier_remover_3sd.outliers_} rows ({outlier_remover_3sd.outliers_ / len(outlier_remover_3sd.final_mask_) * 100:.1f}%) with outliers.\n")
-print("Outlier statistics by column:")
-outlier_remover_3sd.stats_.style.format({
-    "mean": "{:.2f}",
-    "std": "{:.2f}",
-    "lower_cutoff": "{:.2f}",
-    "upper_cutoff": "{:.2f}",
-    "n_outliers": "{:.0f}",
-    "pct_outliers": "{:.1f}%"
-})
-
-
-# %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">1.5 IQR Method </h3>
-# </div> 
-#
-# <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 📌 Identify and remove univariate outliers in numerical columns using the 1.5 interquartile range (IQR) rule. A data point is considered an outlier if it falls more than 1.5 interquartile ranges above the third quartile (Q3) or below the first quartile (Q1) of the column.</p> 
-
-# %%
-# Custom scikit-learn transformer class to identify and remove outliers using the 1.5 IQR method
-class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
-    def fit(self, df, numerical_columns):
-        # Convert single column string to list
-        if isinstance(numerical_columns, str):
-            self.numerical_columns_ = [numerical_columns]
-        else:
-            self.numerical_columns_ = numerical_columns
-        
-        # Calculate statistics (quartiles, interquartile range, cutoff values) for each column
-        self.stats_ = pd.DataFrame(index=self.numerical_columns_)
-        self.stats_["Q1"] = df[self.numerical_columns_].quantile(0.25)
-        self.stats_["Q3"] = df[self.numerical_columns_].quantile(0.75)
-        self.stats_["IQR"] = self.stats_["Q3"] - self.stats_["Q1"]
-        self.stats_["lower_cutoff"] = self.stats_["Q1"] - 1.5 * self.stats_["IQR"]
-        self.stats_["upper_cutoff"] = self.stats_["Q3"] + 1.5 * self.stats_["IQR"]
-
-        # Create masks for filtering outliers 
-        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
-        self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
-
-        # Calculate number of outliers
-        self.stats_["n_outliers"] = (~self.masks_).sum()  # by column
-        self.stats_["pct_outliers"] = self.stats_["n_outliers"] / len(df) * 100  # by column
-        self.outliers_ = (~self.final_mask_).sum()  # across all columns
-               
-        return self
-
-    def transform(self, df):
-        # Create masks for df (can be a different df than during fit; e.g. X_train, X_test)
-        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
-        self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
-        
-        # Remove outliers based on the final mask
-        return df[self.final_mask_]
-
-    def fit_transform(self, df, numerical_columns):
-        # Perform both fit and transform
-        return self.fit(df, numerical_columns).transform(df)
-
-
-# Initialize outlier remover 
-outlier_remover_iqr = OutlierRemoverIQR()
-
-# Fit outlier remover to training data
-outlier_remover_iqr.fit(X_train, numerical_features)
-
-# Show outliers by column for training data
-print(f"Training Data: Identified {outlier_remover_iqr.outliers_} rows ({outlier_remover_iqr.outliers_ / len(outlier_remover_iqr.final_mask_) * 100:.1f}%) with outliers.\n")
-print("Outliers statistics by column:")
-outlier_remover_iqr.stats_.style.format({
-    "Q1": "{:.1f}",
-    "Q3": "{:.1f}",
-    "IQR": "{:.1f}",
-    "lower_cutoff": "{:.1f}",
-    "upper_cutoff": "{:.1f}",
-    "n_outliers": "{:.0f}",
-    "pct_outliers": "{:.1f}%"
-})
-
-# %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Summary</h2>
-# </div>
-#
-# - **Data Loading**: Imported MEPS-HC 2023 SAS data using `pandas` `read_sas`.
-# - **Handling Duplicates**: Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
-# - **Variable Selection**: Filtered 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
-# - **Target Population Filtering**: Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
-# - **Handling Data Types**: Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models. Defined semantic data types for all features (numerical, binary, nominal, ordinal).
-# - **Standardizing Missing Values**: Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
-# - **Train-Validation-Test Split**: Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and extreme tail of the target variable.
-
-# %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Exploratory Data Analysis (EDA)</h1>
 # </div>
-
-# %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Univariate EDA</h2>
-# </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Analyze the distribution of a single column using descriptive statistics and visualizations.
+#     ℹ️ Analyze univariate distributions using descriptive statistics and visualizations.
 # </div>
 
 # %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Sample Weights</h3>
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h2 style="margin:0px">Sample Weights</h1>
 # </div> 
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
@@ -851,20 +436,20 @@ plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("{x:,.0f}"))
 
 # %% [markdown]
 # <a id="target-variable" name="target-variable"></a>
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Target Variable</h3>
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h2 style="margin:0px">Target Variable</h1>
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Examine descriptive statistics and visualize the distribution of total out-of-pocket health care costs.
-#     <br>
-#     📝 <b>Note:</b> Unless otherwise specified, all descriptive statistics and insights in this section refer to population-level estimates (calculated using sample weights) to ensure representativeness of the U.S. adult population.
+#     ℹ️ Examine descriptive statistics and visualize the distribution of total annual out-of-pocket healthcare costs.
+#     <br><br>
+#     📝 Note: Unless otherwise specified, all descriptive statistics and insights in this section refer to population-level estimates (calculated using sample weights) to ensure representativeness of the U.S. adult population.
 # </div>
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Descriptive Statistics</strong> <br>
-#     📌 Examine descriptive statistics of total out-of-pocket health care costs, both on sample-level and population-level. 
+#     📌 Examine descriptive statistics of out-of-pocket healthcare costs, both on sample-level and population-level. 
 # </div>
 
 # %%
@@ -956,7 +541,7 @@ sample_vs_population_stats.style.format("{:,.0f}") \
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Histogram</strong> <br> 
-#     📌 Visualize the distribution of out-of-pocket health care costs. 
+#     📌 Visualize the distribution of out-of-pocket healthcare costs. 
 # </div>
 
 # %%
@@ -1305,25 +890,23 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 # </div>
 
 # %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Numerical Features</h3>
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h2 style="margin:0px">Numerical Features</h1>
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Examine descriptive statistics and visualize the distributions of numerical features.
-#     <br><br>
-#     ⚠️ Note: Conduct this EDA part exclusively on the <b>training data</b> to prevent data leakage, as these statistics will directly inform the data preprocessing strategy (e.g., handling missing values). 
+#     ℹ️ Examine descriptive statistics and visualize the distributions of all numerical features.
 # </div>
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Descriptive Statistics</strong> <br>
-#     📌 Examine descriptive statistics (e.g., mean, median, standard deviation) of all numerical features.
+#     📌 Examine descriptive statistics (e.g., mean, median, standard deviation) of numerical features.
 # </div>
 
 # %%
 # Descriptive statistics of numerical features
-X_train[numerical_features].describe().T.style.format({
+df[numerical_features].describe().T.style.format({
     "count": "{:,.0f}",
     "mean": "{:.2f}",
     "std": "{:.2f}",
@@ -1351,7 +934,7 @@ X_train[numerical_features].describe().T.style.format({
 # </div>
 
 # %%
-# Sample Distributions 
+# Sample Distributions (Unweighted)
 # Create 2x2 subplot grid
 fig, axes = plt.subplots(2, 2, figsize=(10, 8))
 
@@ -1365,7 +948,7 @@ for i, feature in enumerate(numerical_features):
 
     # Create histogram for the current feature
     sns.histplot(
-        data=X_train, 
+        data=df, 
         x=feature, 
         ax=ax,
         discrete=True,                               # Centers bars on integers 
@@ -1382,14 +965,14 @@ for i, feature in enumerate(numerical_features):
     sns.despine(ax=ax)  # Removes top & right spines
 
 # Customize matrix
-fig.suptitle("Sample Distributions of Numerical Features (Training Data)", fontsize=16, fontweight="bold", y=1)  # Adds title
+fig.suptitle("Sample Distributions of Numerical Features", fontsize=16, fontweight="bold", y=1)  # Adds title
 fig.tight_layout()  # Adjusts layout to prevent overlap
 
 # Show histogram matrix
 plt.show()
 
 # %%
-# Weighted Distributions
+# Population Distributions (Weighted)
 # Create 2x2 subplot grid
 fig, axes = plt.subplots(2, 2, figsize=(10, 8))
 
@@ -1403,9 +986,9 @@ for i, feature in enumerate(numerical_features):
 
     # Create weighted histogram for the current feature
     sns.histplot(
-        data=X_train, 
+        data=df, 
         x=feature,
-        weights="PERWT23F",  # Sample weights
+        weights="PERWT23F",                          # Sample weights
         ax=ax,
         discrete=True,                               # Centers bars on integers 
         kde=True if feature == "AGE23X" else False,  # Adds a density curve for age
@@ -1417,14 +1000,433 @@ for i, feature in enumerate(numerical_features):
     # Customize histogram
     ax.set_title(display_labels[feature], fontsize=14, fontweight="bold") 
     ax.set_xlabel("")
-    ax.set_ylabel("Weighted Count (Millions)" if i % 2 == 0 else "", fontsize=12)     # Only y-label on left plots
+    ax.set_ylabel("Count (Millions)" if i % 2 == 0 else "", fontsize=12)     # Only y-label on left plots
     ax.yaxis.set_major_formatter(mtick.FuncFormatter(lambda x, pos: f"{x/1e6:.0f}"))  # Formats y-axis ticks in millions
     ax.grid(True, axis="y", alpha=0.3)  # Adds grid lines
     sns.despine(ax=ax)  # Removes top & right spines
 
 # Customize matrix
-fig.suptitle("Weighted Distributions of Numerical Features (Training Data)", fontsize=16, fontweight="bold", y=1)  # Adds title
+fig.suptitle("Population Distributions of Numerical Features", fontsize=16, fontweight="bold", y=1)  # Adds title
 fig.tight_layout()  # Adjusts layout to prevent overlap
 
 # Show histogram matrix
 plt.show()
+
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Train-Validation-Test Split</h1>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Split the data into 80% for training, 10% for validation, and 10% for testing.
+#     <br><br>
+#     <b>Why not a simple random split?</b><br>
+#     Healthcare costs exhibit a zero-inflated, heavily right-skewed distribution (see <a href="#target-variable"><b>Target Variable EDA</b></a>). The primary risk of a random split in healthcare cost data is the "luck-of-the-draw" misdistribution of super-spenders. Since the extreme tail of the distribution (the top 1%) accounts for a massive share of total population spending, omitting even a few of these individuals from the test set—or over-representing them in the train set—creates catastrophic "metric drift." This makes performance indicators (like R² or MSE) highly volatile and unreliable for predicting real-world financial risk. 
+#     <br><br>
+#     <b>Why not a quartile or quintile split?</b><br>
+#     Standard quartile or quintile bins are too coarse to capture the extreme tail. Because healthcare costs are so concentrated, a quintile-based split (top 20%) would treat a respondent at the 81st percentile (e.g., \$2,000) the same as a "super-spender" at the 99.9th percentile (e.g., \$100,000). Only high-resolution, non-linear strata at the 95th and 99th percentiles can guarantee that these "Black Swan" cases are balanced across all subsets.
+#     <br><br>
+#     <b>Distribution-Informed Stratified Split</b><br>
+#     To ensure the model is evaluated on a representative mirror of the population, I use a distribution-informed stratified split:
+#     <ul>
+#         <li><b>Mitigating 'Black Swan' Risks (Primary):</b> Uses high-resolution non-linear bins (80, 95, and 99th percentiles) to force the inclusion of extreme high-cost individuals in all sets, preventing unstable performance metric fluctuations.</li>
+#         <li><b>Preserving the Zero-Hurdle (Secondary):</b> Guarantees that the 22.3% of zero-cost individuals remain identical across all sets, ensuring consistent evaluation of the model's ability to predict cost occurrence.</li>
+#         <li><b>Capturing the Pareto Distribution:</b> Prevents evaluation bias by ensuring the 20% of spenders who drive ~80% of the total economic burden are proportionally represented in the test set.</li>
+#     </ul>
+#     <b>Strata Distribution</b>
+#     <table style="margin-left:0; margin-top:20px; margin-bottom:20px">
+#         <tr>
+#             <th style="background-color:#f5ecda;">Bin</th>
+#             <th style="background-color:#f5ecda;">Category</th>
+#             <th style="background-color:#f5ecda;">Percentile (of Positives)</th>
+#             <th style="background-color:#f5ecda;">Train (80%)</th>
+#             <th style="background-color:#f5ecda;">Val (10%)</th>
+#             <th style="background-color:#f5ecda;">Test (10%)</th>
+#         </tr>
+#         <tr>
+#             <td style="background-color:#fff6e4; text-align:center;"><b>0</b></td>
+#             <td style="background-color:#fff6e4;">Zero Costs</td>
+#             <td style="background-color:#fff6e4;">N/A (Hurdle)</td>
+#             <td style="background-color:#fff6e4; text-align:center;">2,640</td>
+#             <td style="background-color:#fff6e4; text-align:center;">330</td>
+#             <td style="background-color:#fff6e4; text-align:center;">330</td>
+#         </tr>
+#         <tr>
+#             <td style="background-color:#f5ecda; text-align:center;"><b>1</b></td>
+#             <td style="background-color:#f5ecda;">Low Spend</td>
+#             <td style="background-color:#f5ecda;">0 - 50%</td>
+#             <td style="background-color:#f5ecda; text-align:center;">4,587</td>
+#             <td style="background-color:#f5ecda; text-align:center;">573</td>
+#             <td style="background-color:#f5ecda; text-align:center;">574</td>
+#         </tr>
+#         <tr>
+#             <td style="background-color:#fff6e4; text-align:center;"><b>2</b></td>
+#             <td style="background-color:#fff6e4;">Moderate</td>
+#             <td style="background-color:#fff6e4;">50 - 80%</td>
+#             <td style="background-color:#fff6e4; text-align:center;">2,752</td>
+#             <td style="background-color:#fff6e4; text-align:center;">344</td>
+#             <td style="background-color:#fff6e4; text-align:center;">344</td>
+#         </tr>
+#         <tr>
+#             <td style="background-color:#f5ecda; text-align:center;"><b>3</b></td>
+#             <td style="background-color:#f5ecda;">High Spend</td>
+#             <td style="background-color:#f5ecda;">80 - 95%</td>
+#             <td style="background-color:#f5ecda; text-align:center;">1,376</td>
+#             <td style="background-color:#f5ecda; text-align:center;">172</td>
+#             <td style="background-color:#f5ecda; text-align:center;">172</td>
+#         </tr>
+#         <tr>
+#             <td style="background-color:#fff6e4; text-align:center;"><b>4</b></td>
+#             <td style="background-color:#fff6e4;">Very High</td>
+#             <td style="background-color:#fff6e4;">95 - 99%</td>
+#             <td style="background-color:#fff6e4; text-align:center;">367</td>
+#             <td style="background-color:#fff6e4; text-align:center;">46</td>
+#             <td style="background-color:#fff6e4; text-align:center;">46</td>
+#         </tr>
+#         <tr>
+#             <td style="background-color:#f5ecda; text-align:center;"><b>5</b></td>
+#             <td style="background-color:#f5ecda;">Massively High</td>
+#             <td style="background-color:#f5ecda;">99 - 99.9%</td>
+#             <td style="background-color:#f5ecda; text-align:center;">83</td>
+#             <td style="background-color:#f5ecda; text-align:center;">10</td>
+#             <td style="background-color:#f5ecda; text-align:center;">10</td>
+#         </tr>
+#         <tr>
+#             <td style="background-color:#fff6e4; text-align:center;"><b>6</b></td>
+#             <td style="background-color:#fff6e4;">Super Spenders</td>
+#             <td style="background-color:#fff6e4;">Top 0.1%</td>
+#             <td style="background-color:#fff6e4; text-align:center;">12</td>
+#             <td style="background-color:#fff6e4; text-align:center;">1</td>
+#             <td style="background-color:#fff6e4; text-align:center;">2</td>
+#         </tr>
+#     </table>
+# </div>
+
+# %%
+# Split the data into X features and y target
+X = df.drop("TOTSLF23", axis=1)
+y = df["TOTSLF23"]
+
+# Helper function for distribution-informed stratification
+def create_stratification_bins(y):
+    # Initialize strata series 
+    strata = pd.Series(index=y.index, dtype=int)
+    
+    # Bin 0: Zero Costs (Handle the hurdle separately)
+    is_zero = (y == 0)
+    strata[is_zero] = 0
+    
+    # Custom non-linear quantiles for positive values to capture the tail
+    positive_y = y[~is_zero]
+    bins = [0, 0.5, 0.8, 0.95, 0.99, 0.999, 1.0]
+    
+    # Assign positive spenders to bins 1 through 5 
+    # Note: labels=False returns the bin indices (0-4) instead of Interval objects (e.g., [0, 150.5]). We add 1 to shift the indices to 1-5 with 0 being reserved for the zero cost bin.
+    # Note: duplicates="drop" avoids errors if multiple quantiles (e.g., 0.95 and 0.99) result in the same cost value.
+    strata[~is_zero] = pd.qcut(positive_y, q=bins, labels=False, duplicates="drop") + 1
+    return strata
+
+# Generate the stratification column 
+y_strata = create_stratification_bins(y)
+
+# Perform the first distribution-informed stratified split (80% Train, 20% Temp)
+X_train, X_temp, y_train, y_temp = train_test_split(
+    X, y, test_size=0.20, random_state=RANDOM_STATE, stratify=y_strata
+)
+
+# Re-calculate strata for the temporary set to ensure the 50/50 split is also representative
+temp_strata = create_stratification_bins(y_temp)
+
+# Perform the second stratified split (resulting in 10% Val, 10% Test)
+X_val, X_test, y_val, y_test = train_test_split(
+    X_temp, y_temp, test_size=0.50, random_state=RANDOM_STATE, stratify=temp_strata
+)
+
+# Helper function to verify the stratification splits
+def verify_split(y_subset, y_subset_strata, name):
+    # Calculate relative frequencies of the bins
+    strata_freq = y_subset_strata.value_counts(normalize=True).sort_index() * 100
+    
+    # Calculate key distribution metrics
+    stats = {
+        "Samples": len(y_subset),
+        "Mean Cost": y_subset.mean(),
+        "Median Cost": y_subset.median(),
+        "Max Cost": y_subset.max()
+    }
+    
+    # Merge metrics and strata proportions 
+    for i, freq in strata_freq.items():
+        stats[f"Bin {int(i)}"] = freq
+        
+    return pd.Series(stats, name=name)
+
+# Create DataFrame of split verification statistics
+split_verification_df = pd.concat([
+    verify_split(y, y_strata, "Total Dataset"),
+    verify_split(y_train, y_strata.loc[y_train.index], "Train (80%)"),
+    verify_split(y_val, y_strata.loc[y_val.index], "Validation (10%)"),
+    verify_split(y_test, y_strata.loc[y_test.index], "Test (10%)")
+], axis=1).T
+
+# Delete temporary variables to free up memory
+del X_temp, y_temp, temp_strata, y_strata
+
+# Display the verification DataFrame (format for readability) 
+split_verification_df.style.format("{:,.1f}") \
+            .format("{:,.0f}", subset=["Samples", "Max Cost"]) \
+            .format("${:,.0f}", subset=["Mean Cost", "Median Cost", "Max Cost"]) \
+            .format("{:.2f}%", subset=["Bin 0", "Bin 1", "Bin 2", "Bin 3", "Bin 4", "Bin 5", "Bin 6"])
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insight:</b> The distribution-informed stratification successfully created representative and robust data splits.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Structural Precision:</b> Relative frequencies of all strata (Bins 0–6) are near-perfectly preserved across all splits, ensuring that the zero-inflation and the Pareto-style concentration are balanced.</li>
+#         <li><b>Mitigation of "Metric Drift":</b> By forcing the inclusion of extreme high-cost individuals (99.9th percentile) in the Test set, we prevent "luck-of-the-draw" bias and ensure that performance metrics (e.g., R²) are robust against catastrophic outliers.</li>
+#         <li><b>Representative Benchmarking:</b> The stability of central tendencies (Median Cost) confirms that the typical patient profile is identical in each set, allowing for reliable and generalizable model evaluation.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Data Preprocessing</h1>
+# </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     Perform feature engineering and preprocess the data for machine learning.
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Handling Missing Values</h2>
+# </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Identification</strong> <br>
+#     📌 Identify missing values.
+# </div>
+
+# %%
+# Create a summary table for missing values
+missing_value_df = pd.DataFrame({
+    "Training": X_train.isnull().sum(),
+    "Validation": X_val.isnull().sum(),
+    "Test": X_test.isnull().sum(),
+})
+# Add target variable missings
+missing_value_df.loc["TOTSLF23"] = [
+    y_train.isnull().sum(),
+    y_val.isnull().sum(),
+    y_test.isnull().sum(),
+]
+# Display table (sorted and with percentages)
+missing_value_df.sort_values("Training", ascending=False).style.format({
+    "Training": lambda x: f"{x} ({x / len(X_train) * 100:.1f}%)",
+    "Validation": lambda x: f"{x} ({x / len(X_val) * 100:.1f}%)",
+    "Test": lambda x: f"{x} ({x / len(X_test) * 100:.1f}%)"
+})
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insight:</b> Missing value analysis reveals a high level of data integrity and consistency across all splits.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>High Data Quality:</b> Missingness is quite low (Maximum ~3.8% for Usual Source of Care), with most features well below 1%, minimizing the risk of imputation bias.</li>
+#         <li><b>Consistent Splits:</b> Missing value frequencies are near-identical across Training, Validation, and Test sets, suggesting the stratification did not introduce feature bias.</li>
+#         <li><b>Key Variable Completeness:</b> Expected cost drivers such as Age, Sex, Region, Poverty Status, Insurance, and the Target Variable are 100% complete.</li>
+#         <li><b>Implication for App Design:</b> The 100% completeness of demographics justifies making them required in the app, while high completeness allows us to safely treat unchecked boxes as an explicit "No" (0) rather than a missing value.</li>
+#     </ul>
+# </div>
+
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Imputation</strong> <br>
+#     📌 Impute missing values. Use the median for numerical features and the mode (most frequent value) for categorical features.
+# </div>
+
+# %%
+# Calculate median for each numerical feature from training data
+medians = X_train[numerical_features].median()
+
+# Impute median in training, validation, and test data
+X_train[numerical_features] = X_train[numerical_features].fillna(medians)
+X_val[numerical_features] = X_val[numerical_features].fillna(medians)
+X_test[numerical_features] = X_test[numerical_features].fillna(medians)
+
+# Verify results
+pd.DataFrame({
+    "Training": X_train[numerical_features].isnull().sum(),
+    "Validation": X_val[numerical_features].isnull().sum(),
+    "Test": X_test[numerical_features].isnull().sum(),
+})
+
+# %%
+# Calculate mode for each categorical feature from training data
+modes = X_train[categorical_features].mode().loc[0]
+
+# Impute mode in training, validation, and test data
+X_train[categorical_features] = X_train[categorical_features].fillna(modes)
+X_val[categorical_features] = X_val[categorical_features].fillna(modes)
+X_test[categorical_features] = X_test[categorical_features].fillna(modes)
+
+# Verify results
+pd.DataFrame({
+    "Training": X_train[categorical_features].isnull().sum(),
+    "Validation": X_val[categorical_features].isnull().sum(),
+    "Test": X_test[categorical_features].isnull().sum(),
+})
+
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Handling Outliers</h2>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">3SD Method</h3>
+# </div>
+#
+# <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 📌 Identify and remove univariate outliers in numerical columns by applying the 3 standard deviation rule (3SD). A data point is considered an outlier if it falls more than 3 standard deviations above or below the mean of the column.</p> 
+
+# %%
+# Custom scikit-learn transformer class to identify and remove outliers using the 3SD method
+class OutlierRemover3SD(BaseEstimator, TransformerMixin):
+    def fit(self, df, numerical_columns):
+        # Convert single column string to list
+        if isinstance(numerical_columns, str):
+            self.numerical_columns_ = [numerical_columns]
+        else:
+            self.numerical_columns_ = numerical_columns
+            
+        # Calculate statistics (mean, std, cutoff values) for each column
+        self.stats_ = pd.DataFrame(index=self.numerical_columns_)
+        self.stats_["mean"] = df[self.numerical_columns_].mean()
+        self.stats_["std"] = df[self.numerical_columns_].std()
+        self.stats_["lower_cutoff"] = self.stats_["mean"] - 3 * self.stats_["std"]
+        self.stats_["upper_cutoff"] = self.stats_["mean"] + 3 * self.stats_["std"]
+        
+        # Create masks for filtering outliers 
+        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
+        self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
+     
+        # Calculate number of outliers
+        self.stats_["n_outliers"] = (~self.masks_).sum()  # by column
+        self.stats_["pct_outliers"] = self.stats_["n_outliers"] / len(df) * 100  # by column
+        self.outliers_ = (~self.final_mask_).sum()  # across all columns
+        
+        return self
+
+    def transform(self, df):
+        # Create masks for df (can be a different df than during fit; e.g. X_train, X_test)
+        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
+        self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
+        
+        # Remove outliers based on the final mask
+        return df[self.final_mask_]
+
+    def fit_transform(self, df, numerical_columns):
+        # Perform both fit and transform 
+        return self.fit(df, numerical_columns).transform(df)
+
+
+# Initialize outlier remover 
+outlier_remover_3sd = OutlierRemover3SD()
+
+# Fit outlier remover to training data
+outlier_remover_3sd.fit(X_train, numerical_features)
+
+# Show outliers in training data
+print(f"Training Data: Identified {outlier_remover_3sd.outliers_} rows ({outlier_remover_3sd.outliers_ / len(outlier_remover_3sd.final_mask_) * 100:.1f}%) with outliers.\n")
+print("Outlier statistics by column:")
+outlier_remover_3sd.stats_.style.format({
+    "mean": "{:.2f}",
+    "std": "{:.2f}",
+    "lower_cutoff": "{:.2f}",
+    "upper_cutoff": "{:.2f}",
+    "n_outliers": "{:.0f}",
+    "pct_outliers": "{:.1f}%"
+})
+
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">1.5 IQR Method </h3>
+# </div> 
+#
+# <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 📌 Identify and remove univariate outliers in numerical columns using the 1.5 interquartile range (IQR) rule. A data point is considered an outlier if it falls more than 1.5 interquartile ranges above the third quartile (Q3) or below the first quartile (Q1) of the column.</p> 
+
+# %%
+# Custom scikit-learn transformer class to identify and remove outliers using the 1.5 IQR method
+class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
+    def fit(self, df, numerical_columns):
+        # Convert single column string to list
+        if isinstance(numerical_columns, str):
+            self.numerical_columns_ = [numerical_columns]
+        else:
+            self.numerical_columns_ = numerical_columns
+        
+        # Calculate statistics (quartiles, interquartile range, cutoff values) for each column
+        self.stats_ = pd.DataFrame(index=self.numerical_columns_)
+        self.stats_["Q1"] = df[self.numerical_columns_].quantile(0.25)
+        self.stats_["Q3"] = df[self.numerical_columns_].quantile(0.75)
+        self.stats_["IQR"] = self.stats_["Q3"] - self.stats_["Q1"]
+        self.stats_["lower_cutoff"] = self.stats_["Q1"] - 1.5 * self.stats_["IQR"]
+        self.stats_["upper_cutoff"] = self.stats_["Q3"] + 1.5 * self.stats_["IQR"]
+
+        # Create masks for filtering outliers 
+        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
+        self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
+
+        # Calculate number of outliers
+        self.stats_["n_outliers"] = (~self.masks_).sum()  # by column
+        self.stats_["pct_outliers"] = self.stats_["n_outliers"] / len(df) * 100  # by column
+        self.outliers_ = (~self.final_mask_).sum()  # across all columns
+               
+        return self
+
+    def transform(self, df):
+        # Create masks for df (can be a different df than during fit; e.g. X_train, X_test)
+        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
+        self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
+        
+        # Remove outliers based on the final mask
+        return df[self.final_mask_]
+
+    def fit_transform(self, df, numerical_columns):
+        # Perform both fit and transform
+        return self.fit(df, numerical_columns).transform(df)
+
+
+# Initialize outlier remover 
+outlier_remover_iqr = OutlierRemoverIQR()
+
+# Fit outlier remover to training data
+outlier_remover_iqr.fit(X_train, numerical_features)
+
+# Show outliers by column for training data
+print(f"Training Data: Identified {outlier_remover_iqr.outliers_} rows ({outlier_remover_iqr.outliers_ / len(outlier_remover_iqr.final_mask_) * 100:.1f}%) with outliers.\n")
+print("Outliers statistics by column:")
+outlier_remover_iqr.stats_.style.format({
+    "Q1": "{:.1f}",
+    "Q3": "{:.1f}",
+    "IQR": "{:.1f}",
+    "lower_cutoff": "{:.1f}",
+    "upper_cutoff": "{:.1f}",
+    "n_outliers": "{:.0f}",
+    "pct_outliers": "{:.1f}%"
+})
+
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Summary</h1>
+# </div> 
+#
+# - **Data Loading**: Imported MEPS-HC 2023 SAS data using `pandas` `read_sas`.
+# - **Handling Duplicates**: Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
+# - **Variable Selection**: Filtered 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
+# - **Target Population Filtering**: Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
+# - **Handling Data Types**: Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models. Defined semantic data types for all features (numerical, binary, nominal, ordinal).
+# - **Standardizing Missing Values**: Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
+# - **Train-Validation-Test Split**: Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and extreme tail of the target variable.
