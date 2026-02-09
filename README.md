@@ -97,7 +97,7 @@ This project utilizes the 2023 Full-Year Consolidated Data File (HC-251). The da
 - **Sample Size:** 18,919 individuals.
 - **Variables:** 1,374.
 
-![MEPS Data Infographic](assets/data_infographic.jpg)
+![MEPS Data Infographic](assets/infographic_meps_data.jpg)
 
 **Target Variable**  
 The target variable is **total out-of-pocket health care costs in 2023** (`TOTSLF23`). This variable represents what the person or their family actually paid directly for all medical events throughout 2023. It includes copays and coinsurance, deductibles, and services not covered by insurance. `TOTSLF23` directly answers practical user questions like "How much should I contribute to my FSA/HSA?" and "What's my financial exposure?" For uninsured users, out-of-pocket costs approximate total costs, making this target appropriate across all insurance statuses.  
@@ -105,7 +105,7 @@ The target variable is **total out-of-pocket health care costs in 2023** (`TOTSL
 <details>
 <summary>ℹ️<strong>US Healthcare Costs Explained</strong> (click to expand)</summary>
 
-![US Healthcare Costs Infographic](./assets/healthcare_costs_infographic.png)
+![US Healthcare Costs Infographic](./assets/infographic_healthcare_costs.png)
 </details>
 <br>
 
