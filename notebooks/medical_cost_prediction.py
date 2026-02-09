@@ -1307,7 +1307,7 @@ X_train[numerical_features].describe().T.style.format({
 
 # %%
 # Create 2x2 subplot grid
-fig, axes = plt.subplots(2, 2, figsize=(8, 6))
+fig, axes = plt.subplots(2, 2, figsize=(10, 8))
 
 # Flatten the axes for easier iteration
 axes = axes.flat
@@ -1318,15 +1318,24 @@ for i, feature in enumerate(numerical_features):
     ax = axes[i]
 
     # Create histogram for the current feature
-    sns.histplot(data=X_train, x=feature, ax=ax)
+    sns.histplot(
+        data=X_train, 
+        x=feature, 
+        ax=ax,
+        discrete=True,                               # Centers bars on integers 
+        kde=True if feature == "AGE23X" else False,  # Adds a density curve for age
+        edgecolor="white",                           # Adds white border lines between bars
+        alpha=0.7
+    )
 
     # Customize histogram
-    ax.set_title(feature.title(), fontsize=14)
+    ax.set_title(feature, fontsize=14, fontweight="bold") 
     ax.set_xlabel("")
-    ax.set_ylabel("Frequency", fontsize=12)
+    ax.set_ylabel("Frequency" if i % 2 == 0 else "", fontsize=12) # Only y-label on left plots
+    ax.grid(True, axis="y", alpha=0.3)  # Adds grid lines
+    sns.despine(ax=ax)  # Removes top & right spines
 
-# Adjust layout to prevent overlap
-fig.tight_layout()
+fig.tight_layout()  # Adjusts layout to prevent overlap
 
 # Show histogram matrix
 plt.show()
