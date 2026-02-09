@@ -295,16 +295,15 @@ This project was made possible with the help of the following resources:
 <!-- APPENDIX -->
 ## 📎 Appendix
 ### Numerical Distributions
-Histogram matrix of numerical features in the training data.
 ![Numerical Distributions](assets/eda_numerical_distributions.png)
 
-Descriptive statistics of numerical features in the training data.
-| Feature         | Count  | Mean  | Std   | Min  | 25%  | 50%  | 75%  | Max  |
-|-----------------|--------|-------|-------|------|------|------|------|------|
-| Age             | 11,814 | 52.18 | 18.55 | 18.0 | 37.0 | 53.0 | 67.0 | 85.0 |
-| Family Size     | 11,809 | 2.69  | 1.55  | 1.0  | 2.0  | 2.0  | 4.0  | 14.0 |
-| Physical Health | 11,783 | 2.46  | 1.06  | 1.0  | 2.0  | 2.0  | 3.0  | 5.0  |
-| Mental Health   | 11,771 | 2.29  | 1.04  | 1.0  | 1.0  | 2.0  | 3.0  | 5.0  |
+Table of population statistics for all numerical features:
+| Feature         | Count       | Mean  | Std   | Min  | 25%  | 50%  | 75%  | Max  |
+|-----------------|-------------|-------|-------|------|------|------|------|------|
+| Age             | 259,681,066 | 48.32 | 18.54 | 18.0 | 32.0 | 47.0 | 63.0 | 85.0 |
+| Family Size     | 259,568,347 | 2.88  | 1.59  | 1.0  | 2.0  | 2.0  | 4.0  | 14.0 |
+| Physical Health | 258,917,544 | 2.37  | 1.04  | 1.0  | 2.0  | 2.0  | 3.0  | 5.0  |
+| Mental Health   | 258,635,089 | 2.26  | 1.03  | 1.0  | 1.0  | 2.0  | 3.0  | 5.0  |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
