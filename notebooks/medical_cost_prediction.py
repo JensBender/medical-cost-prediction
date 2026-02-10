@@ -256,6 +256,45 @@ display_labels = {
     "ASTHDX": "Asthma"
 }
 
+# %%
+# Categorical String Label Mappings
+# Maps integer categories to string categories for all categorical features
+categorical_label_map = {
+    # Demographics
+    "SEX": {1: "Male", 2: "Female"},
+    "REGION23": {1: "Northeast", 2: "Midwest", 3: "South", 4: "West"},
+    "MARRY31X": {1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married", 6: "Under 16"},
+    
+    # Socioeconomic
+    "POVCAT23": {1: "Poor", 2: "Near-Poor", 3: "Low Income", 4: "Middle Income", 5: "High Income"},
+    "HIDEG": {1: "No Degree", 2: "GED", 3: "HS", 4: "Bachelor's", 5: "Master's", 6: "Doctorate", 7: "Other", 8: "Under 16"},
+    "EMPST31": {1: "Employed", 2: "Job (Return)", 3: "Job (Period)", 4: "Not Employed"},
+    
+    # Insurance & Access
+    "INSCOV23": {1: "Private", 2: "Public Only", 3: "Uninsured"},
+    "HAVEUS42": {1: "Yes", 2: "No"},
+    
+    # Perceived Health & Lifestyle
+    "ADSMOK42": {1: "Yes", 2: "No"},
+    
+    # Limitations
+    "ADLHLP31": {1: "Yes", 2: "No"},
+    "IADLHP31": {1: "Yes", 2: "No"},
+    "WLKLIM31": {1: "Yes", 2: "No"},
+    "COGLIM31": {1: "Yes", 2: "No"},
+    "JTPAIN31_M18": {1: "Yes", 2: "No"},
+    
+    # Chronic Conditions
+    "HIBPDX": {1: "Yes", 2: "No"},
+    "CHOLDX": {1: "Yes", 2: "No"},
+    "DIABDX_M18": {1: "Yes", 2: "No"},
+    "CHDDX": {1: "Yes", 2: "No"},
+    "STRKDX": {1: "Yes", 2: "No"},
+    "CANCERDX": {1: "Yes", 2: "No"},
+    "ARTHDX": {1: "Yes", 2: "No"},
+    "ASTHDX": {1: "Yes", 2: "No"}
+}
+
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Target Population Filtering</h2>
