@@ -263,15 +263,19 @@ categorical_label_map = {
     # Demographics
     "SEX": {1: "Male", 2: "Female"},
     "REGION23": {1: "Northeast", 2: "Midwest", 3: "South", 4: "West"},
-    "MARRY31X": {1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married", 6: "Under 16"},
+    "MARRY31X": {
+        1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 
+        5: "Never Married", 6: "Under 16", 
+        7: "Status Changed", 8: "Status Changed", 9: "Status Changed", 10: "Status Changed"
+    },
     
     # Socioeconomic
-    "POVCAT23": {1: "Poor", 2: "Near-Poor", 3: "Low Income", 4: "Middle Income", 5: "High Income"},
-    "HIDEG": {1: "No Degree", 2: "GED", 3: "HS", 4: "Bachelor's", 5: "Master's", 6: "Doctorate", 7: "Other", 8: "Under 16"},
-    "EMPST31": {1: "Employed", 2: "Job (Return)", 3: "Job (Period)", 4: "Not Employed"},
+    "POVCAT23": {1: "Poor/Negative", 2: "Near Poor", 3: "Low Income", 4: "Middle Income", 5: "High Income"},
+    "HIDEG": {1: "No Degree", 2: "GED", 3: "HS Diploma", 4: "Bachelor's", 5: "Master's", 6: "Doctorate", 7: "Other", 8: "Under 16"},
+    "EMPST31": {1: "Employed", 2: "Job to Return To", 3: "Job in Ref Period", 4: "Not Employed"},
     
     # Insurance & Access
-    "INSCOV23": {1: "Private", 2: "Public Only", 3: "Uninsured"},
+    "INSCOV23": {1: "Any Private", 2: "Public Only", 3: "Uninsured"},
     "HAVEUS42": {1: "Yes", 2: "No"},
     
     # Perceived Health & Lifestyle
