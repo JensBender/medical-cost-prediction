@@ -548,33 +548,45 @@ plt.figure(figsize=(10, 6))
 
 # Population histogram 
 sns.histplot(
-    data=df, x="TOTSLF23", weights="PERWT23F", label="Population (Weighted)",
-    stat="probability", bins=50, color="#4e8ac8", alpha=0.5, element="bars"
+    data=df, 
+    x="TOTSLF23", 
+    weights="PERWT23F", 
+    label="Population (Weighted)",
+    stat="probability", 
+    bins=50, 
+    color="#4e8ac8", 
+    alpha=0.3,  # Lighter filling for the background
+    element="bars",
+    edgecolor="white",
+    linewidth=0.5
 )
-
 # Sample histogram 
 sns.histplot(
-    data=df, x="TOTSLF23", label="Sample (Unweighted)",
-    stat="probability", bins=50, color="#2c699d", alpha=0.8, element="step"
+    data=df, 
+    x="TOTSLF23", 
+    label="Sample (Unweighted)",
+    stat="probability", 
+    bins=50, 
+    color="#084594",  # Darker blue for contrast to population histogram
+    alpha=1.0,        # Full opacity for the line
+    element="step",
+    linewidth=2.5     # Thicker line to stand out
 )
-
-# Formatting
-plt.title("Distribution of Out-of-Pocket Costs")
-plt.xlabel("Out-of-Pocket Costs")
-plt.ylabel("Share")
 
 # Add population mean and median lines for context
 plt.axvline(pop_mean, color="#e63946", linestyle="--", alpha=0.8, label=f"Population Mean: ${pop_mean:,.0f}")
 plt.axvline(pop_median, color="#fb8500", linestyle="--", alpha=0.8, label=f"Population Median: ${pop_median:,.0f}")
 
+# Customize
+plt.title("Out-of-Pocket Costs", fontsize=14, fontweight="bold")
+plt.xlabel("")
+plt.ylabel("Share", fontsize=12)
+plt.grid(True, alpha=0.3)
+sns.despine()  # Removes top & right spines
+plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))  # Format X as dollars with comma thousand separator rounded to zero decimals
+plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))  # Format Y as percentages
 plt.legend()
 
-# Format X-axis as dollars with comma thousand separator rounded to zero decimals
-plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
-# Format Y-axis as percentages
-plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
-
-plt.grid(True, alpha=0.3)
 plt.show()
 
 # %% [markdown]
@@ -591,31 +603,45 @@ plt.figure(figsize=(10, 6))
 
 # Population histogram 
 sns.histplot(
-    data=plot_data, x="TOTSLF23", weights="PERWT23F", label="Population (Weighted)",
-    stat="probability", bins=50, color="#4e8ac8", alpha=0.5, element="bars"
+    data=plot_data, 
+    x="TOTSLF23", 
+    weights="PERWT23F", 
+    label="Population (Weighted)",
+    stat="probability", 
+    bins=50, 
+    color="#4e8ac8", 
+    alpha=0.3,  # Lighter filling for the background
+    element="bars",
+    edgecolor="white",
+    linewidth=0.5
 )
-
-# Sample histogram
+# Sample histogram 
 sns.histplot(
-    data=plot_data, x="TOTSLF23", label="Sample (Unweighted)",
-    stat="probability", bins=50, color="#2c699d", alpha=0.8, element="step"
+    data=plot_data, 
+    x="TOTSLF23", 
+    label="Sample (Unweighted)",
+    stat="probability", 
+    bins=50, 
+    color="#084594",  # Darker blue for contrast to population histogram
+    alpha=1.0,        # Full opacity for the line
+    element="step",
+    linewidth=2.5     # Thicker line to stand out
 )
 
 # Add population mean and median lines for context
 plt.axvline(pop_mean, color="#e63946", linestyle="--", alpha=0.8, label=f"Population Mean: ${pop_mean:,.0f}")
 plt.axvline(pop_median, color="#fb8500", linestyle="--", alpha=0.8, label=f"Population Median: ${pop_median:,.0f}")
 
-# Formatting
-plt.title("Distribution of Typical Out-of-Pocket Costs (excluding zero costs and top 5%)")
-plt.xlabel("Out-of-Pocket Costs")
-plt.ylabel("Share")
+# Customize
+plt.title("Typical Out-of-Pocket Costs (excluding zero costs and top 5%)", fontsize=14, fontweight="bold")
+plt.xlabel("")
+plt.ylabel("Share", fontsize=12)
+plt.grid(True, alpha=0.3)
+sns.despine()  # Removes top & right spines
+plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))  # Format X as dollars with thousand separator 
+plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))  # Format Y as percentages
 plt.legend()
 
-# Format X-axis as dollars with thousand separator 
-plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))
-# Format Y-axis as percentages
-plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
-plt.grid(True, alpha=0.3)
 plt.show()
 
 # %% [markdown]
@@ -1226,7 +1252,7 @@ split_verification_df.style.format("{:,.1f}") \
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     Perform feature engineering and preprocess the data for machine learning.
+#     ℹ️ Perform feature engineering and preprocess the data for machine learning.
 # </div>
 
 # %% [markdown]
