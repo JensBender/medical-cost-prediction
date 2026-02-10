@@ -1086,6 +1086,57 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h2 style="margin:0px">Categorical Features</h1>
+# </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Visualize the distributions of all categorical features with a bar plot matrix, both for sample and population.
+# </div>
+
+# %%
+import math
+
+# Define number of plots, columns, and rows for subplot matrix
+n_plots = len(categorical_features)
+n_cols = 3  
+n_rows = math.ceil(n_plots / n_cols) 
+
+# Create subplot matrix
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 4,n_rows * 3))
+
+# Flatten axes for easier iteration
+axes = axes.flat
+
+# Iterate over all categorical features
+for i, feature in enumerate(categorical_features):
+    # Get current axes
+    ax = axes[i]
+
+    # Calculate frequencies for current feature
+    frequencies = df[feature].value_counts()
+    
+    # Create bar plot of current feature
+    sns.barplot(
+        x=frequencies.index,
+        y=frequencies.values,
+        ax=ax,
+        alpha=0.7
+    )
+
+    # Customize current bar plot
+    ax.set_title(display_labels[feature], fontsize=14)
+    ax.set_xlabel("")
+    sns.despine(ax=ax)  # Removes top & right spines
+
+# Customize bar plot matrix
+fig.suptitle("Sample Distributions of Categorical Features", fontsize=16, fontweight="bold", y=1)
+fig.tight_layout()  # Adjust layout to prevent overlapping subplots
+
+# Show bar plot matrix
+plt.show()
+
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Train-Validation-Test Split</h1>
 # </div>
 #
