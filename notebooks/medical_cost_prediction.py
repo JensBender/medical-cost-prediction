@@ -1154,10 +1154,14 @@ for i, feature in enumerate(categorical_features):
     # Calculate frequencies for current feature
     counts = df[feature].value_counts()
     percentages = counts / counts.sum() * 100
+
+    # Map integer to string labels for current feature
+    feature_label_map = categorical_label_map.get(feature, {})  
+    string_labels = [feature_label_map.get(label, label) for label in counts.index]  # Fallback to int if no str mapped
     
     # Create bar plot of current feature
     sns.barplot(
-        x=counts.index,
+        x=string_labels,
         y=counts.values,
         ax=ax,
         alpha=0.7
