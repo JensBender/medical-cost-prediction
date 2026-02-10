@@ -1010,6 +1010,12 @@ for i, feature in enumerate(numerical_features):
     ax.set_title(display_labels[feature], fontsize=14, fontweight="bold") 
     ax.set_xlabel("")
     ax.set_ylabel("Count" if i % 2 == 0 else "", fontsize=12) # Only y-label on left plots
+    
+    # Set x-axis tick labels for perceived health features
+    if feature in ["RTHLTH31", "MNHLTH31"]:
+        ax.set_xticks([1, 2, 3, 4, 5])
+        ax.set_xticklabels(["1) Excellent", "2) Very Good", "3) Good", "4) Fair", "5) Poor"], fontsize=9, rotation=20)
+        
     ax.grid(True, axis="y", alpha=0.3)  # Adds grid lines
     sns.despine(ax=ax)  # Removes top & right spines
 
@@ -1050,6 +1056,12 @@ for i, feature in enumerate(numerical_features):
     ax.set_title(display_labels[feature], fontsize=14, fontweight="bold") 
     ax.set_xlabel("")
     ax.set_ylabel("Count (Millions)" if i % 2 == 0 else "", fontsize=12)     # Only y-label on left plots
+    
+    # Set x-axis tick labels for perceived health features
+    if feature in ["RTHLTH31", "MNHLTH31"]:
+        ax.set_xticks([1, 2, 3, 4, 5])
+        ax.set_xticklabels(["1) Excellent", "2) Very Good", "3) Good", "4) Fair", "5) Poor"], fontsize=9, rotation=20)
+        
     ax.yaxis.set_major_formatter(mtick.FuncFormatter(lambda x, pos: f"{x/1e6:.0f}"))  # Formats y-axis ticks in millions
     ax.grid(True, axis="y", alpha=0.3)  # Adds grid lines
     sns.despine(ax=ax)  # Removes top & right spines
