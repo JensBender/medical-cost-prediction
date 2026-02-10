@@ -1128,16 +1128,17 @@ for i, feature in enumerate(categorical_features):
         ax.bar_label(container, padding=3, fontsize=10)
 
     # Customize current bar plot
-    ax.set_title(display_labels[feature], fontsize=14, fontweight="bold")
+    ax.set_title(display_labels[feature], fontsize=14, fontweight="bold", y=1.02)
     ax.set_xlabel("")
-    sns.despine(ax=ax)  # Removes top & right spines
-    ax.grid(True, axis="y", alpha=0.3)
+    ax.set_ylabel("")
+    ax.set_yticks([])  # Remove y-axis tick marks and labels
+    sns.despine(ax=ax, left=True)  # Removes top, right & left spines
 
 # Customize bar plot matrix
 for j in range(i + 1, len(axes)):  # Hide empty subplots in matrix
     axes[j].axis("off")
 fig.suptitle("Sample Distributions of Categorical Features", fontsize=16, fontweight="bold", y=1)
-fig.tight_layout()  # Adjust layout to prevent overlapping subplots
+fig.tight_layout(h_pad=2.0, w_pad=4.0)  # Adjust layout to prevent overlapping subplots
 
 # Show bar plot matrix
 plt.show()
