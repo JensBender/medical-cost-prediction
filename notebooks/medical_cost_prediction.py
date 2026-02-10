@@ -1113,22 +1113,24 @@ for i, feature in enumerate(categorical_features):
     ax = axes[i]
 
     # Calculate frequencies for current feature
-    frequencies = df[feature].value_counts()
+    counts = df[feature].value_counts()
+    percentages = counts / counts.sum() * 100
     
     # Create bar plot of current feature
     sns.barplot(
-        x=frequencies.index,
-        y=frequencies.values,
+        x=counts.index,
+        y=counts.values,
         ax=ax,
         alpha=0.7
     )
 
     # Add value labels on bars
+    value_labels = [f"{count:,}\n({pct:.1f}%)" for count, pct in zip(counts, percentages)]
     for container in ax.containers:
-        ax.bar_label(container, padding=3, fontsize=10)
+        ax.bar_label(container, labels=value_labels, padding=4, fontsize=9, alpha=0.9)
 
     # Customize current bar plot
-    ax.set_title(display_labels[feature], fontsize=14, fontweight="bold", y=1.02)
+    ax.set_title(display_labels[feature], fontsize=14, fontweight="bold", y=1.05)
     ax.set_xlabel("")
     ax.set_ylabel("")
     ax.set_yticks([])  # Remove y-axis tick marks and labels
