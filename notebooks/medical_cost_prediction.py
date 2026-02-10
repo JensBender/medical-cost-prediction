@@ -442,8 +442,6 @@ plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("{x:,.0f}"))
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Examine descriptive statistics and visualize the distribution of total annual out-of-pocket healthcare costs.
-#     <br><br>
-#     📝 Note: Unless otherwise specified, all descriptive statistics and insights in this section refer to population-level estimates (calculated using sample weights) to ensure representativeness of the U.S. adult population.
 # </div>
 
 # %% [markdown]
@@ -468,7 +466,7 @@ def weighted_std(variable, weights):
     weighted_variance = np.average((variable - weighted_mean)**2, weights=weights)
     return np.sqrt(weighted_variance)
 
-# Calculate weighted (population) statistics
+# Calculate population statistics (weighted)
 pop_mean = np.average(df["TOTSLF23"], weights=df["PERWT23F"])
 pop_std = weighted_std(df["TOTSLF23"], weights=df["PERWT23F"])
 pop_p25 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.25)
@@ -478,7 +476,7 @@ pop_p95 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.95)
 pop_p99 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.99)
 pop_p999 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.999)
 
-# Calculate sample (unweighted) quantiles
+# Calculate sample quantiles (unweighted)
 sample_p95 = df["TOTSLF23"].quantile(0.95)
 sample_p99 = df["TOTSLF23"].quantile(0.99)
 sample_p999 = df["TOTSLF23"].quantile(0.999)
@@ -895,7 +893,7 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Examine descriptive statistics and visualize the distributions of all numerical features.
+#     ℹ️ Examine descriptive statistics and visualize the distributions of all numerical features, both on sample-level and population-level.
 # </div>
 
 # %% [markdown]
@@ -905,7 +903,7 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 # </div>
 
 # %%
-# Sample (unweighted) statistics
+# Sample statistics (unweighted) 
 df[numerical_features].describe().T.style.format({
     "count": "{:,.0f}",
     "mean": "{:.2f}",
@@ -918,7 +916,7 @@ df[numerical_features].describe().T.style.format({
 })
 
 # %%
-# Population (weighted) statistics
+# Population statistics (weighted) 
 pop_stats = []
 # Iterate over all numerical features
 for feature in numerical_features:
