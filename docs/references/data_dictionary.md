@@ -66,7 +66,7 @@ To ensure consistency between the raw MEPS data, the ML pipeline, and the web ap
 | **AGE23X** | AGE - 12/31/23 (EDITED/IMPUTED) | Numerical | Int | 0–85 | Age as of end of year. Top-coded at 85 for privacy (85+ is coded as 85). |
 | **SEX** | SEX | Binary | Int | 1=Male, 2=Female | Biological sex. No missing codes. |
 | **REGION23** | CENSUS REGION AS OF 12/31/23 | Nominal | Int | 1=Northeast, 2=Midwest, 3=South, 4=West | Census region based on address. |
-| **MARRY31X** | MARITAL STATUS - R3/1 (EDITED/IMPUTED) | Nominal | Int | 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married, 6=Under 16, 7-10=Status changed in round | Status at beginning of year. |
+| **MARRY31X** | MARITAL STATUS - R3/1 (EDITED/IMPUTED) | Nominal | Int | 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married, 6=Under 16, 7=Married in Round, 8=Widowed in Round, 9=Divorced in Round, 10=Separated in Round | Status at beginning of year. |
 
 ## 4. Socioeconomic
 | Variable | Label | Semantic Type | Storage Type | Values | Description |

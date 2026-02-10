@@ -264,9 +264,8 @@ categorical_label_map = {
     "SEX": {1: "Male", 2: "Female"},
     "REGION23": {1: "Northeast", 2: "Midwest", 3: "South", 4: "West"},
     "MARRY31X": {
-        1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 
-        5: "Never Married", 6: "Under 16", 
-        7: "Status Changed", 8: "Status Changed", 9: "Status Changed", 10: "Status Changed"
+        1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married", 6: "Under 16", 
+        7: "Married in Round", 8: "Widowed in Round", 9: "Divorced in Round", 10: "Separated in Round"
     },
     
     # Socioeconomic
