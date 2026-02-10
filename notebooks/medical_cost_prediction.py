@@ -1102,7 +1102,7 @@ n_cols = 3
 n_rows = math.ceil(n_plots / n_cols) 
 
 # Create subplot matrix
-fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 4,n_rows * 3))
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 4))
 
 # Flatten axes for easier iteration
 axes = axes.flat
@@ -1123,12 +1123,19 @@ for i, feature in enumerate(categorical_features):
         alpha=0.7
     )
 
+    # Add value labels on bars
+    for container in ax.containers:
+        ax.bar_label(container, padding=3, fontsize=10)
+
     # Customize current bar plot
-    ax.set_title(display_labels[feature], fontsize=14)
+    ax.set_title(display_labels[feature], fontsize=14, fontweight="bold")
     ax.set_xlabel("")
     sns.despine(ax=ax)  # Removes top & right spines
+    ax.grid(True, axis="y", alpha=0.3)
 
 # Customize bar plot matrix
+for j in range(i + 1, len(axes)):  # Hide empty subplots in matrix
+    axes[j].axis("off")
 fig.suptitle("Sample Distributions of Categorical Features", fontsize=16, fontweight="bold", y=1)
 fig.tight_layout()  # Adjust layout to prevent overlapping subplots
 
