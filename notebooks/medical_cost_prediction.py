@@ -975,15 +975,6 @@ pop_stats_df.style.format({
     "max": "{:.1f}"
 })
 
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> Descriptive statistics justify the use of median imputation for numerical features.
-#     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>Robustness to Skewness:</b> For <code>FAMSZE23</code>, the mean (2.69) is notably higher than the median (2.0) due to extreme outliers (max 14). Imputing the median prevents these "high-cost" family sizes from biasing our guess for typical respondents.</li>
-#         <li><b>Maintaining Scale Integrity:</b> Health status variables (<code>RTHLTH31</code>, <code>MNHLTH31</code>) use a discrete 1–5 scale. Median imputation ensures that missing values are filled with actual observed integers (e.g., 2.0) rather than non-existent decimals (e.g., 2.46).</li>
-#         <li><b>Minimal Imputation Bias:</b> Given the very low missingness (maximum ~0.3%), the choice of median vs. mean will not significantly impact model performance, but median remains the statistically sounder choice.</li>
-#     </ul>
-# </div>
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
@@ -1069,6 +1060,17 @@ fig.tight_layout()  # Adjusts layout to prevent overlap
 
 # Show histogram matrix
 plt.show()
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights: </b>
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Median Imputation Strategy:</b> The right-skewed nature of <code>FAMSZE23</code> and the discrete 1–5 scales of <code>RTHLTH31</code>/<code>MNHLTH31</code> make the median the most robust imputation choice. It prevents exceptionally large families or rare "Poor Health" self-ratings from biasing the central tendency for typical respondents while maintaining scale integrity (imputing observed integers like 2 rather than decimals like 2.4).</li>
+#         <li><b>Life-Cycle Coverage (Age):</b> The uniform age distribution confirms the dataset adequately represents all adult life stages. The spike at age 85 is a known artifact of top-coding for privacy but represents a significant, high-cost sub-population in the population-level data.</li>
+#         <li><b>The "Skewed Health" Challenge:</b> While the population is generally healthy (skewed toward 'Excellent' to 'Good'), the relative sparsity of "Fair" or "Poor" health ratings (4–5) creates a challenge. Predicting costs for this critical high-risk segment will depend on a limited number of extreme training samples.</li>
+#         <li><b>Data Integrity:</b> With missingness below 0.3% across these features, the risk of imputation bias is extremely low. This high data quality allows us to proceed with standard imputation techniques without significant loss of predictive power.</li>
+#     </ul>
+# </div>
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
