@@ -1132,7 +1132,7 @@ plt.show()
 # </div> 
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Visualize the distributions of all categorical features with a bar plot matrix, both for sample and population.
+#     📌 Visualize the sample distributions of all categorical features. Use a 3x2 bar plot matrix for nominal and ordinal features and a 4x4 bar plot matrix for binary features.
 # </div>
 
 # %%
@@ -1236,6 +1236,68 @@ fig.tight_layout(h_pad=3.0, w_pad=8.0)  # Adjust layout to prevent overlapping s
 
 # Show bar plot matrix
 plt.show()
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Visualize the population distributions of all categorical features. 
+# </div>
+
+# %%
+# Population Distributions (Weighted) of Nominal and Ordinal Features 
+# Create 2x3 subplot matrix
+fig, axes = plt.subplots(3, 2, figsize=(12, 9))
+
+# Flatten axes for easier iteration
+axes = axes.flat
+
+# Iterate over all nominal and ordinal features
+for i, feature in enumerate(nominal_features + ordinal_features):
+    # Get current axes
+    ax = axes[i]
+
+    # Calculate weighted population frequencies for current feature
+    pop_counts = df.groupby(feature)["PERWT23F"].sum()
+
+    # For ordinal features, retain inherent order of categories 
+    if feature in ordinal_features:
+        pop_counts = pop_counts.sort_index()
+    # For nominal features, sort by frequency
+    else:
+        pop_counts = pop_counts.sort_values(ascending=False)
+
+    pop_percentages = pop_counts / pop_counts.sum() * 100
+    
+    # Map integer to string labels for current feature
+    feature_label_map = categorical_label_map.get(feature, {})  
+    string_labels = [feature_label_map.get(label, label) for label in pop_percentages.index]  # Fallback to int if no str mapped
+     
+    # Create bar plot of current feature
+    sns.barplot(
+        x=pop_percentages.values,
+        y=string_labels,
+        ax=ax,
+        alpha=0.7
+    )
+
+    # Add value labels on bars
+    value_labels = [f"{pct:.1f}%\n({count/1e6:.1f}M)" for count, pct in zip(pop_counts, pop_percentages)]
+    for container in ax.containers:
+        ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
+
+    # Customize current bar plot
+    ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold")
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    ax.set_xticks([])  # Remove x-axis tick marks and labels
+    sns.despine(ax=ax, left=True, bottom=True)  # Removes all 4 borders
+
+# Customize bar plot matrix
+fig.suptitle("Population Distributions of Categorical Features", fontsize=16, fontweight="bold", y=1)
+fig.tight_layout(h_pad=2.0, w_pad=4.0)  # Adjust layout to prevent overlapping subplots
+
+# Show bar plot matrix
+plt.show()
+
 
 # %%
 # Population Distributions (Weighted) of Binary Features
