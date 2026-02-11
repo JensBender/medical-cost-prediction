@@ -299,7 +299,7 @@ This project was made possible with the help of the following resources:
 <!-- APPENDIX -->
 ## 📎 Appendix
 ### Numerical Distributions
-![Numerical Distributions](assets/eda_numerical_distributions.png)
+![Numerical Distributions](assets/eda_numerical_population.png)
 
 Table of population statistics for all numerical features:
 | Feature         | Count       | Mean  | Std   | Min  | 25%  | 50%  | 75%  | Max  |
@@ -312,11 +312,11 @@ Table of population statistics for all numerical features:
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Categorical Distributions
-![Numerical Distributions](assets/eda_categorical_distributions.png)
+![Categorical Distributions](assets/eda_categorical_population.png)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Binary Distributions
-![Numerical Distributions](assets/eda_binary_distributions.png)
+![Binary Distributions](assets/eda_binary_population.png)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
