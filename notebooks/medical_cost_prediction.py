@@ -1174,8 +1174,8 @@ for i, feature in enumerate(categorical_features):
      
     # Create bar plot of current feature
     sns.barplot(
-        x=string_labels,
-        y=percentages.values,
+        x=percentages.values,
+        y=string_labels,
         ax=ax,
         alpha=0.7
     )
@@ -1186,11 +1186,11 @@ for i, feature in enumerate(categorical_features):
         ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
 
     # Customize current bar plot
-    ax.set_title(display_labels[feature], fontsize=14, fontweight="bold", y=1.05)
+    ax.set_title(display_labels[feature], fontsize=14, fontweight="bold")
     ax.set_xlabel("")
     ax.set_ylabel("")
-    ax.set_yticks([])  # Remove y-axis tick marks and labels
-    sns.despine(ax=ax, left=True)  # Removes top, right & left spines
+    ax.set_xticks([])  # Remove x-axis tick marks and labels
+    sns.despine(ax=ax, left=True, bottom=True)  # Removes all 4 borders
 
 # Customize bar plot matrix
 for j in range(i + 1, len(axes)):  # Hide empty subplots in matrix
