@@ -1158,14 +1158,19 @@ for i, feature in enumerate(categorical_features):
     counts = df[feature].value_counts()
     percentages = counts / counts.sum() * 100
 
+    # Retain inherent order of categories for ordinal features
+    if feature in ordinal_features:
+        counts = counts.sort_index()
+        percentages = percentages.sort_index()
+
     # Map integer to string labels for current feature
     feature_label_map = categorical_label_map.get(feature, {})  
-    string_labels = [feature_label_map.get(label, label) for label in counts.index]  # Fallback to int if no str mapped
-    
+    string_labels = [feature_label_map.get(label, label) for label in percentages.index]  # Fallback to int if no str mapped
+     
     # Create bar plot of current feature
     sns.barplot(
         x=string_labels,
-        y=counts.values,
+        y=percentages.values,
         ax=ax,
         alpha=0.7
     )
