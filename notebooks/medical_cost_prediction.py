@@ -1049,7 +1049,7 @@ for i, feature in enumerate(numerical_features):
     )
 
     # Customize histogram
-    ax.set_title(display_labels[feature], fontsize=14, fontweight="bold") 
+    ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold") 
     ax.set_xlabel("")
     ax.set_ylabel("Count" if i % 2 == 0 else "", fontsize=12) # Only y-label on left plots
     
@@ -1095,7 +1095,7 @@ for i, feature in enumerate(numerical_features):
     )
 
     # Customize histogram
-    ax.set_title(display_labels[feature], fontsize=14, fontweight="bold") 
+    ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold") 
     ax.set_xlabel("")
     ax.set_ylabel("Count (Millions)" if i % 2 == 0 else "", fontsize=12)     # Only y-label on left plots
     
@@ -1148,7 +1148,7 @@ for i, feature in enumerate(nominal_features + ordinal_features):
     # Get current axes
     ax = axes[i]
 
-    # Calculate frequencies for current feature
+    # Calculate unweighted sample frequencies for current feature
     sample_counts = df[feature].value_counts()
     sample_percentages = sample_counts / sample_counts.sum() * 100
 
@@ -1175,7 +1175,7 @@ for i, feature in enumerate(nominal_features + ordinal_features):
         ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
 
     # Customize current bar plot
-    ax.set_title(display_labels[feature], fontsize=14, fontweight="bold")
+    ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold")
     ax.set_xlabel("")
     ax.set_ylabel("")
     ax.set_xticks([])  # Remove x-axis tick marks and labels
@@ -1202,7 +1202,7 @@ for i, feature in enumerate(binary_features):
     # Get current axes
     ax = axes[i]
 
-    # Calculate frequencies for current feature
+    # Calculate unweighted sample frequencies for current feature
     sample_counts = df[feature].value_counts().sort_index(ascending=False)
     sample_percentages = sample_counts / sample_counts.sum() * 100
     
@@ -1224,7 +1224,7 @@ for i, feature in enumerate(binary_features):
         ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
 
     # Customize current bar plot
-    ax.set_title(display_labels[feature], fontsize=12, fontweight="bold")
+    ax.set_title(display_labels.get(feature, feature), fontsize=12, fontweight="bold")
     ax.set_xlabel("")
     ax.set_ylabel("")
     ax.set_xticks([])  # Remove x-axis tick marks and labels
@@ -1272,7 +1272,7 @@ for i, feature in enumerate(binary_features):
         ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
 
     # Customize current bar plot
-    ax.set_title(display_labels[feature], fontsize=12, fontweight="bold")
+    ax.set_title(display_labels.get(feature, feature), fontsize=12, fontweight="bold")
     ax.set_xlabel("")
     ax.set_ylabel("")
     ax.set_xticks([])  # Remove x-axis tick marks and labels
