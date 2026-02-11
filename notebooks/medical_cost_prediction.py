@@ -1136,21 +1136,15 @@ plt.show()
 # </div>
 
 # %%
-import math
-
-# Define number of plots, columns, and rows for subplot matrix
-n_plots = len(categorical_features)
-n_cols = 3  
-n_rows = math.ceil(n_plots / n_cols) 
-
-# Create subplot matrix
-fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 4))
+# Nominal and ordinal features (binary features in separate plot)
+# Create 2x3 subplot matrix
+fig, axes = plt.subplots(3, 2, figsize=(12, 9))
 
 # Flatten axes for easier iteration
 axes = axes.flat
 
-# Iterate over all categorical features
-for i, feature in enumerate(categorical_features):
+# Iterate over all nominal and ordinal features
+for i, feature in enumerate(nominal_features + ordinal_features):
     # Get current axes
     ax = axes[i]
 
@@ -1162,11 +1156,6 @@ for i, feature in enumerate(categorical_features):
     if feature in ordinal_features:
         counts = counts.sort_index()
         percentages = percentages.sort_index()
-
-    # For binary features, sort category "No" (2) before "Yes" (1)
-    if feature in binary_features:
-        counts = counts.sort_index(ascending=False)
-        percentages = percentages.sort_index(ascending=False)
     
     # Map integer to string labels for current feature
     feature_label_map = categorical_label_map.get(feature, {})  
@@ -1193,8 +1182,6 @@ for i, feature in enumerate(categorical_features):
     sns.despine(ax=ax, left=True, bottom=True)  # Removes all 4 borders
 
 # Customize bar plot matrix
-for j in range(i + 1, len(axes)):  # Hide empty subplots in matrix
-    axes[j].axis("off")
 fig.suptitle("Sample Distributions of Categorical Features", fontsize=16, fontweight="bold", y=1)
 fig.tight_layout(h_pad=2.0, w_pad=4.0)  # Adjust layout to prevent overlapping subplots
 
@@ -1202,9 +1189,9 @@ fig.tight_layout(h_pad=2.0, w_pad=4.0)  # Adjust layout to prevent overlapping s
 plt.show()
 
 # %%
-# Binary Features
+# Binary features
 # Create 4x4 subplot matrix
-fig, axes = plt.subplots(4, 4, figsize=(14, 10.5))
+fig, axes = plt.subplots(4, 4, figsize=(12, 9))
 
 # Flatten axes for easier iteration
 axes = axes.flat
@@ -1236,7 +1223,7 @@ for i, feature in enumerate(binary_features):
         ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
 
     # Customize current bar plot
-    ax.set_title(display_labels[feature], fontsize=14, fontweight="bold")
+    ax.set_title(display_labels[feature], fontsize=12, fontweight="bold")
     ax.set_xlabel("")
     ax.set_ylabel("")
     ax.set_xticks([])  # Remove x-axis tick marks and labels
