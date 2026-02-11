@@ -1348,6 +1348,17 @@ fig.tight_layout(h_pad=3.0, w_pad=8.0)  # Adjust layout to prevent overlapping s
 plt.show()
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> Categorical distributions reveal key socio-economic drivers and the importance of population weighting.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>The Weighting Effect:</b> Comparing sample vs. population distributions shows that the raw sample over-represents lower-SES individuals. Weighting "uplifts" employment rates (57% → 63%) and private insurance coverage (60% → 66%) while shrinking "Poor/Negative" income (14% → 10%) and "No Degree" people (13% → 10%), ensuring the EDA accurately reflects the U.S. economic reality.</li>
+#         <li><b>Insurance as a Cost Moderator:</b> With 66% of the population privately insured and only 7.3% uninsured, out-of-pocket costs for most people will be determined by plan structures (deductibles/co-pays) rather than the "sticker price" of care.</li>
+#         <li><b>Economic Stability:</b> The population is predominantly High/Middle income (~75%) and Married (~51%). Predicting costs for the smaller "Poor/Negative" income segment (10%) may be more challenging due to fewer training samples and higher potential for cost volatility.</li>
+#         <li><b>Regional Influence:</b> Nearly 40% of the population resides in the South. Regional healthcare pricing and state-level insurance regulations in the South and West (~64% combined) will have the strongest impact on model coefficients.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Train-Validation-Test Split</h1>
 # </div>
