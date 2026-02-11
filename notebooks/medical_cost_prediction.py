@@ -1158,11 +1158,16 @@ for i, feature in enumerate(categorical_features):
     counts = df[feature].value_counts()
     percentages = counts / counts.sum() * 100
 
-    # Retain inherent order of categories for ordinal features
+    # For ordinal features, retain inherent order of categories 
     if feature in ordinal_features:
         counts = counts.sort_index()
         percentages = percentages.sort_index()
 
+    # For binary features, sort category "No" (2) before "Yes" (1)
+    if feature in binary_features:
+        counts = counts.sort_index(ascending=False)
+        percentages = percentages.sort_index(ascending=False)
+    
     # Map integer to string labels for current feature
     feature_label_map = categorical_label_map.get(feature, {})  
     string_labels = [feature_label_map.get(label, label) for label in percentages.index]  # Fallback to int if no str mapped
