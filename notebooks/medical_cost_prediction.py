@@ -1361,6 +1361,14 @@ plt.show()
 #         <li><b>Sparse High-Severity Risks:</b> Severe conditions such as Stroke (3.8%) and Coronary Heart Disease (4.7%) are relatively sparse. This scarcity reinforces the necessity of our distribution-informed stratified split to ensure these high-impact tail events are adequately represented for model evaluation.</li>
 #     </ul>
 # </div>
+#
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     <strong>Insights for Feature Engineering</strong><br>
+#     💡 The categorical distributions identified sparse but potentially high-signal "In Round" transitions for marital status (<i>Married/Widowed/Divorced/Separated in Round</i>) and employment (<i>Job in Ref Period</i>, <i>Job to return to</i>). These "In Round" markers indicate that a major life change occurred precisely between two survey interviews in the same year (e.g., a recent marriage, sudden separation, or newly joining the workforce). These events act as "life shocks"—major stressors that can be precursors to health volatility and significant out-of-pocket costs. 
+#     <br><br> 
+#     📌 To leverage this signal without overfitting on individual tiny bins, I will consolidate these transitions into a unified <code>RECENT_LIFE_TRANSITION</code> binary flag while "collapsing" the original features into their stable parent categories for robustness (see <a href="#engineering-new-features"><b>Engineering New Features</b></a>).
+# </div>
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -1545,8 +1553,7 @@ split_verification_df.style.format("{:,.1f}") \
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Perform feature engineering and preprocess the data for machine learning.
-# </div>
-
+# </div> 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Handling Missing Values</h2>
