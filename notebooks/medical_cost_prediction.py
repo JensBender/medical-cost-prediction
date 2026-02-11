@@ -1171,9 +1171,9 @@ for i, feature in enumerate(categorical_features):
     )
 
     # Add value labels on bars
-    value_labels = [f"{count:,}\n({pct:.1f}%)" for count, pct in zip(counts, percentages)]
+    value_labels = [f"{pct:.1f}%\n({count:,})" for count, pct in zip(counts, percentages)]
     for container in ax.containers:
-        ax.bar_label(container, labels=value_labels, padding=4, fontsize=9, alpha=0.9)
+        ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
 
     # Customize current bar plot
     ax.set_title(display_labels[feature], fontsize=14, fontweight="bold", y=1.05)
