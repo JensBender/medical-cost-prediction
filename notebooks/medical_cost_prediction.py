@@ -1369,6 +1369,45 @@ plt.show()
 #     <br><br> 
 #     📌 To leverage this signal without overfitting on individual tiny bins, I will consolidate these transitions into a unified <code>RECENT_LIFE_TRANSITION</code> binary flag while "collapsing" the original features into their stable parent categories for robustness (see <a href="#engineering-new-features"><b>Engineering New Features</b></a>).
 # </div>
+#
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Feature Engineering (Stateless)</h1>
+# </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Recent Life Transition</strong><br>
+#     📌 Capture critical life transitions related to marital and employment status (e.g., recently divorced, lost job) into a unified <code>RECENT_LIFE_TRANSITION</code> indicator. This preserves the predictive signal of major "life shocks" while ensuring model robustness by mapping primary status variables back to stable, well-populated categories.
+# </div>
+#
+# %%
+# Identify all "in round" transitions in marital and employment status
+# MARRY31X: 7-10 represent transitions (Married/Widowed/Divorced/Separated in Round)
+# EMPST31: 2-3 represent transitions (Job to Return To, Job in Ref Period)
+marital_transitions = [7, 8, 9, 10]
+employment_transitions = [2, 3]
+
+# Create unified RECENT_LIFE_TRANSITION flag
+df["RECENT_LIFE_TRANSITION"] = (df["MARRY31X"].isin(marital_transitions) | df["EMPST31"].isin(employment_transitions)).astype(int)
+
+# Collapse categories into their stable counterparts
+# For Marital Status: Map 7->1 (Married), 8->2 (Widowed), 9->3 (Divorced), 10->4 (Separated)
+marital_map = {7: 1, 8: 2, 9: 3, 10: 4}
+df["MARRY31X"] = df["MARRY31X"].replace(marital_map)
+
+# For Employment Status: Map 2, 3 to 4 (Not Employed)
+# EMPST31: 1=Employed, 4=Not Employed. 2 and 3 are effectively "Not working now but attached". 
+# Transitioner signal is preserved in RECENT_LIFE_TRANSITION.
+employment_map = {2: 4, 3: 4} 
+df["EMPST31"] = df["EMPST31"].replace(employment_map)
+
+# Update semantic data type lists
+if "RECENT_LIFE_TRANSITION" not in binary_features:
+    binary_features.append("RECENT_LIFE_TRANSITION")
+if "RECENT_LIFE_TRANSITION" not in categorical_features:
+    categorical_features.append("RECENT_LIFE_TRANSITION")
+if "RECENT_LIFE_TRANSITION" not in all_features:
+    all_features.append("RECENT_LIFE_TRANSITION")
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -1548,53 +1587,12 @@ split_verification_df.style.format("{:,.1f}") \
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h1 style="margin:0px">Data Preprocessing</h1>
+#     <h1 style="margin:0px">Data Preprocessing (Stateful)</h1>
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Perform feature engineering and preprocess the data for machine learning.
 # </div> 
-# %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;" id="engineering-new-features">
-#     <h2 style="margin:0px">Engineering New Features</h2>
-# </div> 
-#
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     <strong>Recent Life Transition</strong><br>
-#     📌 Capture critical life transitions related to marrital and employment status (e.g., married or divorced in round, lost job) into a unified <code>RECENT_LIFE_TRANSITION</code> indicator. This preserves the predictive signal of major "life shocks" while ensuring model robustness by mapping primary status variables back to stable, well-populated categories.
-# </div>
-
-# %%
-# Identify all "in round" transitions in marrital and employment status
-# MARRY31X: 7-10 represent transitions (Married/Widowed/Divorced/Separated in Round)
-# EMPST31: 2-3 represent transitions (Job to Return To, Job in Ref Period)
-marital_transitions = [7, 8, 9, 10]
-employment_transitions = [2, 3]
-
-# Create unified RECENT_LIFE_TRANSITION flag
-X_train['RECENT_LIFE_TRANSITION'] = (X_train['MARRY31X'].isin(marital_transitions) | X_train['EMPST31'].isin(employment_transitions)).astype(int)
-X_val['RECENT_LIFE_TRANSITION'] = (X_val['MARRY31X'].isin(marital_transitions) | X_val['EMPST31'].isin(employment_transitions)).astype(int)
-X_test['RECENT_LIFE_TRANSITION'] = (X_test['MARRY31X'].isin(marital_transitions) | X_test['EMPST31'].isin(employment_transitions)).astype(int)
-
-# Collapse categories into their stable counterparts
-# For Marital Status: Map 7->1 (Married), 8->2 (Widowed), 9->3 (Divorced), 10->4 (Separated)
-marital_map = {7: 1, 8: 2, 9: 3, 10: 4}
-X_train['MARRY31X'] = X_train['MARRY31X'].replace(marital_map)
-X_val['MARRY31X'] = X_val['MARRY31X'].replace(marital_map)
-X_test['MARRY31X'] = X_test['MARRY31X'].replace(marital_map)
-
-# For Employment Status: Map 2, 3 to 4 (Not Employed)
-# EMPST31: 1=Employed, 4=Not Employed. 2 and 3 are effectively "Not working now but attached". 
-# Transitioner signal is preserved in RECENT_LIFE_TRANSITION.
-employment_map = {2: 4, 3: 4} 
-X_train['EMPST31'] = X_train['EMPST31'].replace(employment_map)
-X_val['EMPST31'] = X_val['EMPST31'].replace(employment_map)
-X_test['EMPST31'] = X_test['EMPST31'].replace(employment_map)
-
-# Since we created a new feature, append it to the categorical_features list for subsequent processing (like OHE)
-if "RECENT_LIFE_TRANSITION" not in categorical_features:
-    binary_features.append("RECENT_LIFE_TRANSITION")
-    categorical_features.append("RECENT_LIFE_TRANSITION")
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
