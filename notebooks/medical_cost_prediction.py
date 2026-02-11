@@ -1136,7 +1136,7 @@ plt.show()
 # </div>
 
 # %%
-# Nominal and ordinal features (binary features in separate plot)
+# Sample Distributions (Unweighted) of Nominal and Ordinal Features 
 # Create 2x3 subplot matrix
 fig, axes = plt.subplots(3, 2, figsize=(12, 9))
 
@@ -1189,7 +1189,7 @@ fig.tight_layout(h_pad=2.0, w_pad=4.0)  # Adjust layout to prevent overlapping s
 plt.show()
 
 # %%
-# Binary features
+# Population Distributions (Weighted) of Binary Features
 # Create 4x4 subplot matrix
 fig, axes = plt.subplots(4, 4, figsize=(12, 9))
 
@@ -1201,24 +1201,24 @@ for i, feature in enumerate(binary_features):
     # Get current axes
     ax = axes[i]
 
-    # Calculate frequencies for current feature, sorted "No" (2) before "Yes" (1)
-    counts = df[feature].value_counts().sort_index(ascending=False)
-    percentages = counts / counts.sum() * 100
+    # Calculate weighted population frequencies for current feature
+    pop_counts = df.groupby(feature)["PERWT23F"].sum().sort_index(ascending=False)
+    pop_percentages = pop_counts / pop_counts.sum() * 100
     
     # Map integer to string labels for current feature
     feature_label_map = categorical_label_map.get(feature, {})  
-    string_labels = [feature_label_map.get(label, label) for label in percentages.index]  # Fallback to int if no str mapped
+    string_labels = [feature_label_map.get(label, label) for label in pop_percentages.index]  # Fallback to int if no str mapped
      
     # Create bar plot of current feature
     sns.barplot(
-        x=percentages.values,
+        x=pop_percentages.values,
         y=string_labels,
         ax=ax,
         alpha=0.7
     )
 
     # Add value labels on bars
-    value_labels = [f"{pct:.1f}%\n({count:,})" for count, pct in zip(counts, percentages)]
+    value_labels = [f"{pct:.1f}%\n({count/1e6:.1f}M)" for count, pct in zip(pop_counts, pop_percentages)]
     for container in ax.containers:
         ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
 
@@ -1230,7 +1230,7 @@ for i, feature in enumerate(binary_features):
     sns.despine(ax=ax, left=True, bottom=True)  # Removes all 4 borders
 
 # Customize bar plot matrix
-fig.suptitle("Sample Distributions of Binary Features", fontsize=16, fontweight="bold", y=1)
+fig.suptitle("Population Distributions of Binary Features", fontsize=16, fontweight="bold", y=1)
 fig.tight_layout(h_pad=3.0, w_pad=8.0)  # Adjust layout to prevent overlapping subplots
 
 # Show bar plot matrix
