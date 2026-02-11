@@ -57,6 +57,8 @@ Currently developing an end-to-end machine learning application to predict annua
     <a href="#-appendix">Appendix</a>
     <ul>
       <li><a href="#numerical-distributions">Numerical Distributions</a></li>      
+      <li><a href="#categorical-distributions">Categorical Distributions</a></li>      
+      <li><a href="#binary-distributions">Binary Distributions</a></li>      
     </ul>
   </li>
 </ol>
@@ -307,6 +309,14 @@ Table of population statistics for all numerical features:
 | Physical Health | 258,917,544 | 2.37  | 1.04  | 1.0  | 2.0  | 2.0  | 3.0  | 5.0  |
 | Mental Health   | 258,635,089 | 2.26  | 1.03  | 1.0  | 1.0  | 2.0  | 3.0  | 5.0  |
 
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Categorical Distributions
+![Numerical Distributions](assets/eda_categorical_distributions.png)
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Binary Distributions
+![Numerical Distributions](assets/eda_binary_distributions.png)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
