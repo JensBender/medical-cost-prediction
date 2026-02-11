@@ -1149,28 +1149,28 @@ for i, feature in enumerate(nominal_features + ordinal_features):
     ax = axes[i]
 
     # Calculate frequencies for current feature
-    counts = df[feature].value_counts()
-    percentages = counts / counts.sum() * 100
+    sample_counts = df[feature].value_counts()
+    sample_percentages = sample_counts / sample_counts.sum() * 100
 
     # For ordinal features, retain inherent order of categories 
     if feature in ordinal_features:
-        counts = counts.sort_index()
-        percentages = percentages.sort_index()
+        sample_counts = sample_counts.sort_index()
+        sample_percentages = sample_percentages.sort_index()
     
     # Map integer to string labels for current feature
     feature_label_map = categorical_label_map.get(feature, {})  
-    string_labels = [feature_label_map.get(label, label) for label in percentages.index]  # Fallback to int if no str mapped
+    string_labels = [feature_label_map.get(label, label) for label in sample_percentages.index]  # Fallback to int if no str mapped
      
     # Create bar plot of current feature
     sns.barplot(
-        x=percentages.values,
+        x=sample_percentages.values,
         y=string_labels,
         ax=ax,
         alpha=0.7
     )
 
     # Add value labels on bars
-    value_labels = [f"{pct:.1f}%\n({count:,})" for count, pct in zip(counts, percentages)]
+    value_labels = [f"{pct:.1f}%\n({count:,})" for count, pct in zip(sample_counts, sample_percentages)]
     for container in ax.containers:
         ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
 
@@ -1184,6 +1184,55 @@ for i, feature in enumerate(nominal_features + ordinal_features):
 # Customize bar plot matrix
 fig.suptitle("Sample Distributions of Categorical Features", fontsize=16, fontweight="bold", y=1)
 fig.tight_layout(h_pad=2.0, w_pad=4.0)  # Adjust layout to prevent overlapping subplots
+
+# Show bar plot matrix
+plt.show()
+
+
+# %%
+# Sample Distributions (Unweighted) of Binary Features
+# Create 4x4 subplot matrix
+fig, axes = plt.subplots(4, 4, figsize=(12, 9))
+
+# Flatten axes for easier iteration
+axes = axes.flat
+
+# Iterate over all binary features
+for i, feature in enumerate(binary_features):
+    # Get current axes
+    ax = axes[i]
+
+    # Calculate frequencies for current feature
+    sample_counts = df[feature].value_counts().sort_index(ascending=False)
+    sample_percentages = sample_counts / sample_counts.sum() * 100
+    
+    # Map integer to string labels for current feature
+    feature_label_map = categorical_label_map.get(feature, {})  
+    string_labels = [feature_label_map.get(label, label) for label in sample_percentages.index]  # Fallback to int if no str mapped
+     
+    # Create bar plot of current feature
+    sns.barplot(
+        x=sample_percentages.values,
+        y=string_labels,
+        ax=ax,
+        alpha=0.7
+    )
+
+    # Add value labels on bars
+    value_labels = [f"{pct:.1f}%\n({count:,})" for count, pct in zip(sample_counts, sample_percentages)]
+    for container in ax.containers:
+        ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
+
+    # Customize current bar plot
+    ax.set_title(display_labels[feature], fontsize=12, fontweight="bold")
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    ax.set_xticks([])  # Remove x-axis tick marks and labels
+    sns.despine(ax=ax, left=True, bottom=True)  # Removes all 4 borders
+
+# Customize bar plot matrix
+fig.suptitle("Sample Distributions of Binary Features", fontsize=16, fontweight="bold", y=1)
+fig.tight_layout(h_pad=3.0, w_pad=8.0)  # Adjust layout to prevent overlapping subplots
 
 # Show bar plot matrix
 plt.show()
