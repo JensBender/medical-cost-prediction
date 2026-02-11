@@ -1349,6 +1349,17 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> Binary distributions underscore the high prevalence of musculoskeletal conditions and the survey's "healthy-user" correction.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>High Prevalence of Joint Pain:</b> A substantial 45.0% of the population reports Joint Pain, with 24.5% diagnosed with Arthritis. These high-frequency features likely serve as primary drivers for recurring healthcare utilization and "maintenance" spending.</li>
+#         <li><b>Oversampling of Healthy Individuals:</b> Comparing sample vs. population data reveals that the raw survey over-samples individuals with chronic conditions. Survey weights act as a "health correction," reflecting lower population-wide rates for Hypertension (32% vs. 38%), Cholesterol (31% vs. 36%), and Walking Limitations (12% vs. 15%).</li>
+#         <li><b>Care Continuity:</b> Over 70% of respondents maintain a "Usual Source of Care." This widespread engagement implies that cost drivers are often rooted in established medical relationships rather than isolated acute shocks.</li>
+#         <li><b>Sparse High-Severity Risks:</b> Severe conditions such as Stroke (3.8%) and Coronary Heart Disease (4.7%) are relatively sparse. This scarcity reinforces the necessity of our distribution-informed stratified split to ensure these high-impact tail events are adequately represented for model evaluation.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> Categorical distributions reveal key socio-economic drivers and the critical impact of survey weighting.
 #     <ul style="margin-top:10px; margin-bottom:0px">
 #         <li><b>The Weighting Adjustment:</b> Comparing sample vs. population distributions confirms that the raw sample over-samples lower socio-economic segments. Applying survey weights "uplifts" employment (57% → 63%) and private insurance (60% → 66%) while "down-weighting" the proportions of those in poverty (14% → 10%) and without degrees (13% → 10%).</li>
