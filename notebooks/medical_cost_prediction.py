@@ -73,6 +73,10 @@ from src.pipeline import create_preprocessing_pipeline
 # Configuration
 RANDOM_STATE = 42
 
+# Plotting Aesthetics
+POP_COLOR = "#084594"    # Deep Navy for Population
+SAMPLE_COLOR = "#14b8a6" # Vibrant Teal for Sample
+
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Data Loading and Inspection</h1>
@@ -597,11 +601,11 @@ sns.histplot(
     label="Population (Weighted)",
     stat="probability", 
     bins=50, 
-    color="#4e8ac8", 
-    alpha=0.3,  # Lighter filling for the background
+    color=POP_COLOR, 
+    alpha=0.4,  # Increased alpha for richer color
     element="bars",
     edgecolor="white",
-    linewidth=0.5
+    linewidth=0.3
 )
 # Sample histogram 
 sns.histplot(
@@ -610,10 +614,11 @@ sns.histplot(
     label="Sample (Unweighted)",
     stat="probability", 
     bins=50, 
-    color="#084594",  # Darker blue for contrast to population histogram
-    alpha=1.0,        # Full opacity for the line
+    color=SAMPLE_COLOR,
+    alpha=1.0, 
     element="step",
-    linewidth=2.5     # Thicker line to stand out
+    linewidth=2.0,
+    linestyle="--" # Dashed for comparison
 )
 
 # Add population mean and median lines for context
@@ -652,7 +657,7 @@ sns.histplot(
     label="Population (Weighted)",
     stat="probability", 
     bins=50, 
-    color="#4e8ac8", 
+    color=POP_COLOR, 
     alpha=0.3,  # Lighter filling for the background
     element="bars",
     edgecolor="white",
@@ -665,7 +670,7 @@ sns.histplot(
     label="Sample (Unweighted)",
     stat="probability", 
     bins=50, 
-    color="#084594",  # Darker blue for contrast to population histogram
+    color=SAMPLE_COLOR,
     alpha=1.0,        # Full opacity for the line
     element="step",
     linewidth=2.5     # Thicker line to stand out
@@ -767,12 +772,12 @@ plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equali
 # Population Lorenz Curve
 plt.plot(cum_pop_pct, cum_pop_costs, 
          label=f"Population (Gini: {gini_pop:.2f})", 
-         color="#084594", lw=2.5)
+         color=POP_COLOR, lw=3)
 
 # Sample Lorenz Curve
 plt.plot(cum_sample_pct, cum_sample_costs, 
          label=f"Sample (Gini: {gini_sample:.2f})", 
-         color="#4e8ac8", lw=1.5, linestyle=":")
+         color=SAMPLE_COLOR, lw=2, linestyle="--")
 
 # Highlight Pareto Point (80/20 Rule) 
 idx_80 = (cum_pop_pct - 80).abs().idxmin()  # find the index label closest to the 80th percentile of the population
@@ -795,7 +800,7 @@ plt.annotate(f"{pop_zero_pct:.1f}% have $0 costs",
              fontsize=10, fontweight="bold")
 
 # Fill for emphasis
-plt.fill_between(cum_pop_pct, cum_pop_costs, cum_pop_pct, color="#084594", alpha=0.05)
+plt.fill_between(cum_pop_pct, cum_pop_costs, cum_pop_pct, color=POP_COLOR, alpha=0.08)
 
 # Customization
 plt.title("Lorenz Curve: Concentration of Out-of-Pocket Costs", fontsize=14, pad=15)
@@ -1050,7 +1055,7 @@ def plot_numerical_distributions(df, numerical_features, display_labels=None, we
             sns.histplot(
                 data=df, x=feature, weights=weights, ax=ax, discrete=True,
                 kde=True if feature == "AGE23X" else False,
-                edgecolor="white", alpha=0.7, color="#4e8ac8"
+                edgecolor="white", alpha=0.7, color=POP_COLOR
             )
             # Calculate completion rate (weighted)
             completion_rate = df.loc[df[feature].notna(), weights].sum() / df[weights].sum() * 100
@@ -1060,7 +1065,7 @@ def plot_numerical_distributions(df, numerical_features, display_labels=None, we
             sns.histplot(
                 data=df, x=feature, ax=ax, discrete=True,
                 kde=True if feature == "AGE23X" else False,
-                edgecolor="white", alpha=0.7
+                edgecolor="white", alpha=0.7, color=SAMPLE_COLOR
             )
             # Calculate completion rate (unweighted)
             completion_rate = df[feature].count() / len(df) * 100
@@ -1178,6 +1183,7 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
             x=percentages.values,
             y=string_labels,
             ax=ax,
+            color=POP_COLOR if weights else SAMPLE_COLOR,
             alpha=0.7
         )
     
@@ -1268,6 +1274,7 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
             x=percentages.values,
             y=string_labels,
             ax=ax,
+            color=POP_COLOR if weights else SAMPLE_COLOR,
             alpha=0.7
         )
     
