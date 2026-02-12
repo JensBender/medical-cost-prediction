@@ -1387,7 +1387,8 @@ marital_transitions = [7, 8, 9, 10]
 employment_transitions = [2, 3]
 
 # Create unified RECENT_LIFE_TRANSITION flag
-df["RECENT_LIFE_TRANSITION"] = (df["MARRY31X"].isin(marital_transitions) | df["EMPST31"].isin(employment_transitions)).astype(int)
+df["RECENT_LIFE_TRANSITION"] = (df["MARRY31X"].isin(marital_transitions) | df["EMPST31"].isin(employment_transitions)).astype(float)
+df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] = np.nan
 
 # Collapse categories into their stable counterparts
 # For Marital Status: Map 7->1 (Married), 8->2 (Widowed), 9->3 (Divorced), 10->4 (Separated)

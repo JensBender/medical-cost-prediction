@@ -23,7 +23,7 @@ Conventional structure of a commit message with a header, body, and footer:
     - `test`: Adding or refactoring tests.
     - `chore`: Build tasks, package manager configs, etc.
 - **Scope**: Describes **where** it changed, i.e. the specific section of the codebase. For this project, use:
-    - `data`: Data loading, preprocessing, cleaning, or dataset versioning.
+    - `data`: Data loading, preprocessing, cleaning, feature engineering, or dataset versioning.
     - `eda`: Exploratory data analysis.
     - `model`: Model architecture, training logic, or hyperparameter tuning.
     - `eval`: Model evaluation, metric calculations, feature importance or error analysis.
