@@ -1333,8 +1333,15 @@ for i, feature in enumerate(binary_features):
     for container in ax.containers:
         ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
 
+    # Calculate completion rate
+    completion_rate = df.loc[df[feature].notna(), "PERWT23F"].sum() / df["PERWT23F"].sum() * 100
+
     # Customize current bar plot
-    ax.set_title(display_labels.get(feature, feature), fontsize=12, fontweight="bold")
+    ax.set_title(display_labels.get(feature, feature), fontsize=12, fontweight="bold", pad=18)
+    ax.annotate(f"{completion_rate:.1f}% Complete", xy=(0.5, 1), xytext=(0, 4),
+                xycoords="axes fraction", textcoords="offset points",
+                ha="center", va="bottom", fontsize=8, color="#666666")
+
     ax.set_xlabel("")
     ax.set_ylabel("")
     ax.set_xticks([])  # Remove x-axis tick marks and labels
