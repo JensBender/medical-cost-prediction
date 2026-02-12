@@ -1361,13 +1361,12 @@ plt.show()
 #         <li><b>Sparse High-Severity Risks:</b> Severe conditions such as Stroke (3.8%) and Coronary Heart Disease (4.7%) are relatively sparse. This scarcity reinforces the necessity of our distribution-informed stratified split to ensure these high-impact tail events are adequately represented for model evaluation.</li>
 #     </ul>
 # </div>
-#
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     <strong>Insights for Feature Engineering</strong><br>
-#     💡 The categorical distributions identified sparse but potentially high-signal "In Round" transitions for marital status (<i>Married/Widowed/Divorced/Separated in Round</i>) and employment (<i>Job in Ref Period</i>, <i>Job to return to</i>). These "In Round" markers indicate that a major life change occurred precisely between two survey interviews in the same year (e.g., a recent marriage, sudden separation, or newly joining the workforce). These events act as "life shocks"—major stressors that can be precursors to health volatility and significant out-of-pocket costs. 
-#     <br><br> 
-#     📌 To leverage this signal without overfitting on individual tiny bins, I will consolidate these transitions into a unified <code>RECENT_LIFE_TRANSITION</code> binary flag while "collapsing" the original features into their stable parent categories for robustness (see <a href="#engineering-new-features"><b>Engineering New Features</b></a>).
+#     💡 <strong>Implications for Feature Engineering</strong><br>
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><strong>Recent Life Transition:</strong> Sparse "In Round" transitions regarding marrital status (e.g., recent divorce) and employment status (e.g., recent job loss) signal major "life shocks" between survey interviews. These stressors often precede health volatility and high out-of-pocket costs. To leverage this signal robustly, I will create a <code>RECENT_LIFE_TRANSITION</code> flag and collapse these categories into their parent categories (e.g., "Divorced in Round" → "Divorced").</li>
+#     </ul>
 # </div>
 #
 # %% [markdown]
@@ -1377,7 +1376,7 @@ plt.show()
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Recent Life Transition</strong><br>
-#     📌 Capture critical life transitions related to marital and employment status (e.g., recently divorced, lost job) into a unified <code>RECENT_LIFE_TRANSITION</code> indicator. This preserves the predictive signal of major "life shocks" while ensuring model robustness by mapping primary status variables back to stable, well-populated categories.
+#     📌 Capture critical life transitions related to marital and employment status (e.g., recently divorced, lost job) into a unified <code>RECENT_LIFE_TRANSITION</code> indicator. This preserves the predictive signal of major "life shocks" while ensuring model robustness by mapping sparse status categories back to stable, well-populated categories.
 # </div>
 #
 # %%
