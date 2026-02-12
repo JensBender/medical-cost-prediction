@@ -1147,12 +1147,16 @@ plt.show()
 #     <h2 style="margin:0px">Categorical Features</h1>
 # </div> 
 #
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Visualize the distributions of all categorical features, both on sample-level and population-level. Use one plot for nominal and ordinal features and a separate plot for binary features.
+# </div>
+#
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Visualize the sample distributions of all categorical features. Use a 3x2 bar plot matrix for nominal and ordinal features and a 4x4 bar plot matrix for binary features.
+#     📌 Visualize the distributions of nominal and ordinal features for sample and population. 
 # </div>
 
 # %%
-# Helper Function: Plot the Distributions of Categorical Features
+# Helper Function: Plot the Distributions of Categorical (Nominal + Ordinal) Features
 def plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels=None, categorical_label_map=None, weights=None):
     # Define subplot matrix grid
     n_plots = len(nominal_features + ordinal_features)
@@ -1238,6 +1242,11 @@ plot_categorical_distributions(df, nominal_features, ordinal_features, display_l
 # Plot population distributions (weighted) of nominal and ordinal features
 plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels, categorical_label_map, weights="PERWT23F") 
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Visualize the distributions of binary features for sample and population. 
+# </div>
+
 # %%
 # Sample Distributions (Unweighted) of Binary Features
 # Create 4x4 subplot matrix
@@ -1292,11 +1301,6 @@ fig.tight_layout(h_pad=3.0, w_pad=8.0)  # Adjust layout to prevent overlapping s
 
 # Show bar plot matrix
 plt.show()
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Visualize the population distributions of all categorical features. 
-# </div>
 
 # %%
 # Population Distributions (Weighted) of Binary Features
