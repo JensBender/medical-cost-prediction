@@ -1048,8 +1048,14 @@ for i, feature in enumerate(numerical_features):
         alpha=0.7
     )
 
+    # Calculate completion rate
+    completion_rate = df[feature].count() / len(df) * 100
+
     # Customize histogram
-    ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold") 
+    ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold", pad=20)
+    ax.annotate(f"{completion_rate:.1f}% Complete", xy=(0.5, 1), xytext=(0, 5),
+                xycoords="axes fraction", textcoords="offset points",
+                ha="center", va="bottom", fontsize=9, color="#666666")
     ax.set_xlabel("")
     ax.set_ylabel("Count" if i % 2 == 0 else "", fontsize=12) # Only y-label on left plots
     
@@ -1094,8 +1100,14 @@ for i, feature in enumerate(numerical_features):
         color="#4e8ac8"                              # Different color to distinguish from sample
     )
 
+    # Calculate completion rate
+    completion_rate = df.loc[df[feature].notna(), "PERWT23F"].sum() / df["PERWT23F"].sum() * 100
+
     # Customize histogram
-    ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold") 
+    ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold", pad=20)
+    ax.annotate(f"{completion_rate:.1f}% Complete", xy=(0.5, 1), xytext=(0, 5),
+                xycoords="axes fraction", textcoords="offset points",
+                ha="center", va="bottom", fontsize=9, color="#666666")
     ax.set_xlabel("")
     ax.set_ylabel("Count (Millions)" if i % 2 == 0 else "", fontsize=12)     # Only y-label on left plots
     
@@ -1174,8 +1186,14 @@ for i, feature in enumerate(nominal_features + ordinal_features):
     for container in ax.containers:
         ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
 
+    # Calculate completion rate
+    completion_rate = df[feature].count() / len(df) * 100
+
     # Customize current bar plot
-    ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold")
+    ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold", pad=20)
+    ax.annotate(f"{completion_rate:.1f}% Complete", xy=(0.5, 1), xytext=(0, 5),
+                xycoords="axes fraction", textcoords="offset points",
+                ha="center", va="bottom", fontsize=9, color="#666666")
     ax.set_xlabel("")
     ax.set_ylabel("")
     ax.set_xticks([])  # Remove x-axis tick marks and labels
@@ -1223,8 +1241,14 @@ for i, feature in enumerate(binary_features):
     for container in ax.containers:
         ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
 
+    # Calculate completion rate
+    completion_rate = df[feature].count() / len(df) * 100
+
     # Customize current bar plot
-    ax.set_title(display_labels.get(feature, feature), fontsize=12, fontweight="bold")
+    ax.set_title(display_labels.get(feature, feature), fontsize=12, fontweight="bold", pad=18)
+    ax.annotate(f"{completion_rate:.1f}% Complete", xy=(0.5, 1), xytext=(0, 4),
+                xycoords="axes fraction", textcoords="offset points",
+                ha="center", va="bottom", fontsize=8, color="#666666")
     ax.set_xlabel("")
     ax.set_ylabel("")
     ax.set_xticks([])  # Remove x-axis tick marks and labels
@@ -1284,8 +1308,14 @@ for i, feature in enumerate(nominal_features + ordinal_features):
     for container in ax.containers:
         ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
 
+    # Calculate completion rate
+    completion_rate = df.loc[df[feature].notna(), "PERWT23F"].sum() / df["PERWT23F"].sum() * 100
+
     # Customize current bar plot
-    ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold")
+    ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold", pad=20)
+    ax.annotate(f"{completion_rate:.1f}% Complete", xy=(0.5, 1), xytext=(0, 5),
+                xycoords="axes fraction", textcoords="offset points",
+                ha="center", va="bottom", fontsize=9, color="#666666")
     ax.set_xlabel("")
     ax.set_ylabel("")
     ax.set_xticks([])  # Remove x-axis tick marks and labels
