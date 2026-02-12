@@ -1152,11 +1152,11 @@ plt.show()
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Visualize the distributions of nominal and ordinal features for sample and population. 
+#     📌 Visualize the distributions of categorical (nominal and ordinal) features for sample and population. 
 # </div>
 
 # %%
-# Helper Function: Plot the Distributions of Categorical (Nominal + Ordinal) Features
+# Helper Function: Plot the Distributions of Categorical Features
 def plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels=None, categorical_label_map=None, weights=None):
     # Define subplot matrix grid
     n_plots = len(nominal_features + ordinal_features)
@@ -1236,11 +1236,12 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
     plt.show()
 
 
-# Plot sample distributions (unweighted) of nominal and ordinal features (binary features in a separate plot)
+# Plot sample distributions (unweighted) of categorical features (binary features in a separate plot)
 plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels, categorical_label_map)  
 
-# Plot population distributions (weighted) of nominal and ordinal features
+# Plot population distributions (weighted) of categorical features
 plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels, categorical_label_map, weights="PERWT23F") 
+
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
@@ -1248,115 +1249,90 @@ plot_categorical_distributions(df, nominal_features, ordinal_features, display_l
 # </div>
 
 # %%
-# Sample Distributions (Unweighted) of Binary Features
-# Create 4x4 subplot matrix
-fig, axes = plt.subplots(4, 4, figsize=(12, 9))
-
-# Flatten axes for easier iteration
-axes = axes.flat
-
-# Iterate over all binary features
-for i, feature in enumerate(binary_features):
-    # Get current axes
-    ax = axes[i]
-
-    # Calculate unweighted sample frequencies for current feature
-    sample_counts = df[feature].value_counts().sort_index(ascending=False)
-    sample_percentages = sample_counts / sample_counts.sum() * 100
+# Helper Function: Plot the Distributions of Binary Features
+def plot_binary_distributions(df, binary_features, display_labels=None, categorical_label_map=None, weights=None):
+    # Define subplot matrix grid
+    n_plots = len(binary_features)
+    n_cols = 4
+    n_rows = math.ceil(n_plots / n_cols)
     
-    # Map integer to string labels for current feature
-    feature_label_map = categorical_label_map.get(feature, {})  
-    string_labels = [feature_label_map.get(label, label) for label in sample_percentages.index]  # Fallback to int if no str mapped
-     
-    # Create bar plot of current feature
-    sns.barplot(
-        x=sample_percentages.values,
-        y=string_labels,
-        ax=ax,
-        alpha=0.7
-    )
-
-    # Add value labels on bars
-    value_labels = [f"{pct:.1f}%\n({count:,})" for count, pct in zip(sample_counts, sample_percentages)]
-    for container in ax.containers:
-        ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
-
-    # Calculate completion rate
-    completion_rate = df[feature].count() / len(df) * 100
-    completion_label = "100% Complete" if completion_rate >= 99.95 else f"{completion_rate:.1f}% Complete"
-
-    # Customize current bar plot
-    ax.set_title(display_labels.get(feature, feature), fontsize=12, fontweight="bold", pad=18)
-    ax.annotate(completion_label, xy=(0.5, 1), xytext=(0, 4),
-                xycoords="axes fraction", textcoords="offset points",
-                ha="center", va="bottom", fontsize=8, color="#666666")
-    ax.set_xlabel("")
-    ax.set_ylabel("")
-    ax.set_xticks([])  # Remove x-axis tick marks and labels
-    sns.despine(ax=ax, left=True, bottom=True)  # Removes all 4 borders
-
-# Customize bar plot matrix
-fig.suptitle("Sample Distributions of Binary Features", fontsize=16, fontweight="bold", y=1)
-fig.tight_layout(h_pad=3.0, w_pad=8.0)  # Adjust layout to prevent overlapping subplots
-
-# Show bar plot matrix
-plt.show()
-
-# %%
-# Population Distributions (Weighted) of Binary Features
-# Create 4x4 subplot matrix
-fig, axes = plt.subplots(4, 4, figsize=(12, 9))
-
-# Flatten axes for easier iteration
-axes = axes.flat
-
-# Iterate over all binary features
-for i, feature in enumerate(binary_features):
-    # Get current axes
-    ax = axes[i]
-
-    # Calculate weighted population frequencies for current feature
-    pop_counts = df.groupby(feature)["PERWT23F"].sum().sort_index(ascending=False)
-    pop_percentages = pop_counts / pop_counts.sum() * 100
+    # Create subplot matrix
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 3, n_rows * 2))
     
-    # Map integer to string labels for current feature
-    feature_label_map = categorical_label_map.get(feature, {})  
-    string_labels = [feature_label_map.get(label, label) for label in pop_percentages.index]  # Fallback to int if no str mapped
-     
-    # Create bar plot of current feature
-    sns.barplot(
-        x=pop_percentages.values,
-        y=string_labels,
-        ax=ax,
-        alpha=0.7
-    )
+    # Flatten axes for easier iteration
+    axes_flat = axes.flat
+    
+    # Iterate over all categorical features
+    for i, feature in enumerate(binary_features):
+        # Get current axes
+        ax = axes_flat[i]
+    
+        # Population (weighted)
+        if weights: 
+            # Calculate counts 
+            counts = df.groupby(feature)[weights].sum()  
+            # Calculate completion rate
+            completion_rate = df.loc[df[feature].notna(), weights].sum() / df[weights].sum() * 100
+        # Sample (unweighted)
+        else:   
+            counts = df[feature].value_counts()  
+            completion_rate = df[feature].count() / len(df) * 100
 
-    # Add value labels on bars
-    value_labels = [f"{pct:.1f}%\n({count/1e6:.1f}M)" for count, pct in zip(pop_counts, pop_percentages)]
-    for container in ax.containers:
-        ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
+        # Sort categories
+        counts = counts.sort_index(ascending=False)  # Sorts "No" (2) before "Yes" (1)
+        
+        # Calculate percentages
+        percentages = counts / counts.sum() * 100
+        
+        # Map integer to string labels for current feature
+        feature_label_map = categorical_label_map.get(feature, {})  
+        string_labels = [feature_label_map.get(label, label) for label in percentages.index]  # Fallback to int if no str mapped
+         
+        # Create bar plot of current feature
+        sns.barplot(
+            x=percentages.values,
+            y=string_labels,
+            ax=ax,
+            alpha=0.7
+        )
+    
+        # Add value labels on bars
+        if weights:
+            value_labels = [f"{pct:.1f}%\n({count/1e6:.1f}M)" for pct, count in zip(percentages, counts)]
+        else:
+            value_labels = [f"{pct:.1f}%\n({count:,})" for pct, count in zip(percentages, counts)]
+        for container in ax.containers:
+            ax.bar_label(container, labels=value_labels, padding=3, fontsize=8, alpha=0.9)
+    
+        # Customize current bar plot
+        ax.set_title(display_labels.get(feature, feature), fontsize=12, fontweight="bold", pad=18)
+        completion_rate_label = "100% Complete" if completion_rate >= 99.95 else f"{completion_rate:.1f}% Complete"
+        ax.annotate(  # Annotates completion rate under title
+            completion_rate_label, xy=(0.5, 1), xytext=(0, 4), xycoords="axes fraction", textcoords="offset points", 
+            ha="center", va="bottom", fontsize=8, color="#666666"
+        )
+        ax.set_xlabel("")
+        ax.set_ylabel("")
+        ax.set_xticks([])  # Removes x-axis tick marks and labels
+        sns.despine(ax=ax, left=True, bottom=True)  # Removes all 4 borders
 
-    # Calculate completion rate
-    completion_rate = df.loc[df[feature].notna(), "PERWT23F"].sum() / df["PERWT23F"].sum() * 100
-    completion_label = "100% Complete" if completion_rate >= 99.95 else f"{completion_rate:.1f}% Complete"
+    # Hides unused subplots
+    for j in range(i + 1, len(axes_flat)):
+        axes_flat[j].axis("off")  
 
-    # Customize current bar plot
-    ax.set_title(display_labels.get(feature, feature), fontsize=12, fontweight="bold", pad=18)
-    ax.annotate(completion_label, xy=(0.5, 1), xytext=(0, 4),
-                xycoords="axes fraction", textcoords="offset points",
-                ha="center", va="bottom", fontsize=8, color="#666666")
+    # Customize bar plot matrix
+    fig.suptitle(f"{'Population' if weights else 'Sample'} Distributions of Categorical Features", fontsize=16, fontweight="bold", y=1)
+    fig.tight_layout(h_pad=3.0, w_pad=8.0)  # Adjusts layout to prevent overlapping subplots
+    
+    # Show bar plot matrix
+    plt.show()
 
-    ax.set_xlabel("")
-    ax.set_ylabel("")
-    ax.set_xticks([])  # Remove x-axis tick marks and labels
-    sns.despine(ax=ax, left=True, bottom=True)  # Removes all 4 borders
 
-# Customize bar plot matrix
-fig.suptitle("Population Distributions of Binary Features", fontsize=16, fontweight="bold", y=1)
-fig.tight_layout(h_pad=3.0, w_pad=8.0)  # Adjust layout to prevent overlapping subplots
+# Plot sample distributions (unweighted) of binary features 
+plot_binary_distributions(df, binary_features, display_labels, categorical_label_map)  
 
-# Show bar plot matrix
-plt.show()
+# Plot population distributions (weighted) of binary features
+plot_binary_distributions(df, binary_features, display_labels, categorical_label_map, weights="PERWT23F") 
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
