@@ -1303,7 +1303,7 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
         axes_flat[j].axis("off")  
 
     # Customize bar plot matrix
-    fig.suptitle(f"{'Population' if weights else 'Sample'} Distributions of Categorical Features", fontsize=16, fontweight="bold", y=1)
+    fig.suptitle(f"{'Population' if weights else 'Sample'} Distributions of Binary Features", fontsize=16, fontweight="bold", y=1)
     fig.tight_layout(h_pad=3.0, w_pad=8.0)  # Adjusts layout to prevent overlapping subplots
     
     # Show bar plot matrix
