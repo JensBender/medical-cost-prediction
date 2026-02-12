@@ -1026,109 +1026,84 @@ pop_stats_df.style.format({
 # </div>
 
 # %%
-# Sample Distributions (Unweighted)
-# Create 2x2 subplot grid
-fig, axes = plt.subplots(2, 2, figsize=(10, 8))
-
-# Flatten the axes for easier iteration
-axes = axes.flat
-
-# Iterate over all numerical features
-for i, feature in enumerate(numerical_features):
-    # Get the current axes
-    ax = axes[i]
-
-    # Create histogram for the current feature
-    sns.histplot(
-        data=df, 
-        x=feature, 
-        ax=ax,
-        discrete=True,                               # Centers bars on integers 
-        kde=True if feature == "AGE23X" else False,  # Adds a density curve for age
-        edgecolor="white",                           # Adds white border lines between bars
-        alpha=0.7
-    )
-
-    # Calculate completion rate
-    completion_rate = df[feature].count() / len(df) * 100
-    completion_label = "100% Complete" if completion_rate >= 99.95 else f"{completion_rate:.1f}% Complete"
-
-    # Customize histogram
-    ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold", pad=20)
-    ax.annotate(completion_label, xy=(0.5, 1), xytext=(0, 5),
-                xycoords="axes fraction", textcoords="offset points",
-                ha="center", va="bottom", fontsize=9, color="#666666")
-    ax.set_xlabel("")
-    ax.set_ylabel("Count" if i % 2 == 0 else "", fontsize=12) # Only y-label on left plots
+# Helper Function: Plot the Distributions of Numerical Features
+def plot_numerical_distributions(df, numerical_features, display_labels=None, weights=None):
+    # Define subplot matrix grid
+    n_plots = len(numerical_features)
+    n_cols = 2
+    n_rows = math.ceil(n_plots / n_cols)
     
-    # Set x-axis tick labels for perceived health features
-    if feature in ["RTHLTH31", "MNHLTH31"]:
-        ax.set_xticks([1, 2, 3, 4, 5])
-        ax.set_xticklabels(["1) Excellent", "2) Very Good", "3) Good", "4) Fair", "5) Poor"], fontsize=9, rotation=20)
-        
-    ax.grid(True, axis="y", alpha=0.3)  # Adds grid lines
-    sns.despine(ax=ax)  # Removes top & right spines
-
-# Customize matrix
-fig.suptitle("Sample Distributions of Numerical Features", fontsize=16, fontweight="bold", y=1)  # Adds title
-fig.tight_layout()  # Adjusts layout to prevent overlap
-
-# Show histogram matrix
-plt.show()
-
-# %%
-# Population Distributions (Weighted)
-# Create 2x2 subplot grid
-fig, axes = plt.subplots(2, 2, figsize=(10, 8))
-
-# Flatten the axes for easier iteration
-axes = axes.flat
-
-# Iterate over all numerical features
-for i, feature in enumerate(numerical_features):
-    # Get the current axes
-    ax = axes[i]
-
-    # Create weighted histogram for the current feature
-    sns.histplot(
-        data=df, 
-        x=feature,
-        weights="PERWT23F",                          # Sample weights
-        ax=ax,
-        discrete=True,                               # Centers bars on integers 
-        kde=True if feature == "AGE23X" else False,  # Adds a density curve for age
-        edgecolor="white",                           # Adds white border lines between bars
-        alpha=0.7,
-        color="#4e8ac8"                              # Different color to distinguish from sample
-    )
-
-    # Calculate completion rate
-    completion_rate = df.loc[df[feature].notna(), "PERWT23F"].sum() / df["PERWT23F"].sum() * 100
-    completion_label = "100% Complete" if completion_rate >= 99.95 else f"{completion_rate:.1f}% Complete"
-
-    # Customize histogram
-    ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold", pad=20)
-    ax.annotate(completion_label, xy=(0.5, 1), xytext=(0, 5),
-                xycoords="axes fraction", textcoords="offset points",
-                ha="center", va="bottom", fontsize=9, color="#666666")
-    ax.set_xlabel("")
-    ax.set_ylabel("Count (Millions)" if i % 2 == 0 else "", fontsize=12)     # Only y-label on left plots
+    # Create subplot matrix
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 6, n_rows * 4))
     
-    # Set x-axis tick labels for perceived health features
-    if feature in ["RTHLTH31", "MNHLTH31"]:
-        ax.set_xticks([1, 2, 3, 4, 5])
-        ax.set_xticklabels(["1) Excellent", "2) Very Good", "3) Good", "4) Fair", "5) Poor"], fontsize=9, rotation=20)
+    # Flatten axes for easier iteration
+    axes_flat = axes.flat
+    
+    # Iterate over all numerical features
+    for i, feature in enumerate(numerical_features):
+        # Get current axes
+        ax = axes_flat[i]
+    
+        # Population
+        if weights:  
+            # Create histogram (weighted)
+            sns.histplot(
+                data=df, x=feature, weights=weights, ax=ax, discrete=True,
+                kde=True if feature == "AGE23X" else False,
+                edgecolor="white", alpha=0.7, color="#4e8ac8"
+            )
+            # Calculate completion rate (weighted)
+            completion_rate = df.loc[df[feature].notna(), weights].sum() / df[weights].sum() * 100
+        # Sample
+        else:  
+            # Create histogram (unweighted)
+            sns.histplot(
+                data=df, x=feature, ax=ax, discrete=True,
+                kde=True if feature == "AGE23X" else False,
+                edgecolor="white", alpha=0.7
+            )
+            # Calculate completion rate (unweighted)
+            completion_rate = df[feature].count() / len(df) * 100
+    
+        # Customize current histogram
+        ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold", pad=20)
+        completion_rate_label = "100% Complete" if completion_rate >= 99.95 else f"{completion_rate:.1f}% Complete"
+        ax.annotate(completion_rate_label, xy=(0.5, 1), xytext=(0, 5),
+                    xycoords="axes fraction", textcoords="offset points",
+                    ha="center", va="bottom", fontsize=9, color="#666666")
+        ax.set_xlabel("")
         
-    ax.yaxis.set_major_formatter(mtick.FuncFormatter(lambda x, pos: f"{x/1e6:.0f}"))  # Formats y-axis ticks in millions
-    ax.grid(True, axis="y", alpha=0.3)  # Adds grid lines
-    sns.despine(ax=ax)  # Removes top & right spines
+        # Format population counts in millions
+        if weights:  
+            ax.set_ylabel("Count (Millions)" if i % n_cols == 0 else "", fontsize=12)
+            ax.yaxis.set_major_formatter(mtick.FuncFormatter(lambda x, pos: f"{x/1e6:.1f}"))
+        else:
+            ax.set_ylabel("Count" if i % n_cols == 0 else "", fontsize=12)
+            
+        # Customize ticks for perceived health features
+        if feature in ["RTHLTH31", "MNHLTH31"]:
+            ax.set_xticks([1, 2, 3, 4, 5])
+            ax.set_xticklabels(["1) Excellent", "2) Very Good", "3) Good", "4) Fair", "5) Poor"], fontsize=9, rotation=15)
+            
+        ax.grid(True, axis="y", alpha=0.3)
+        sns.despine(ax=ax)
 
-# Customize matrix
-fig.suptitle("Population Distributions of Numerical Features", fontsize=16, fontweight="bold", y=1)  # Adds title
-fig.tight_layout()  # Adjusts layout to prevent overlap
+    # Hide unused subplots
+    for j in range(i + 1, len(axes_flat)):
+        axes_flat[j].axis("off")  
 
-# Show histogram matrix
-plt.show()
+    # Customize histogram matrix
+    fig.suptitle(f"{'Population' if weights else 'Sample'} Distributions of Numerical Features", 
+                 fontsize=16, fontweight="bold", y=1)
+    fig.tight_layout(h_pad=2.0)
+    plt.show()
+
+
+# Plot sample distributions (unweighted) of numerical features
+plot_numerical_distributions(df, numerical_features, display_labels)
+
+# Plot population distributions (weighted) of numerical features
+plot_numerical_distributions(df, numerical_features, display_labels, weights="PERWT23F")
 
 
 # %% [markdown]
