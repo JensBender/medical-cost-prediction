@@ -1141,14 +1141,14 @@ plot_numerical_distributions(df, numerical_features, display_labels, weights="PE
 
 # %%
 # Helper Function: Plot the Distributions of Categorical Features
-def plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels=None, categorical_label_map=None, weights=None):
+def plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels=None, categorical_label_map=None, weights=None, save_to_file=None):
     # Define subplot matrix grid
     n_plots = len(nominal_features + ordinal_features)
     n_cols = 2
     n_rows = math.ceil(n_plots / n_cols)
     
     # Create subplot matrix
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 6, n_rows * 3.5))
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 3))
     
     # Flatten axes for easier iteration
     axes_flat = axes.flat
@@ -1197,7 +1197,7 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
         else:
             value_labels = [f"{pct:.1f}%\n({count:,})" for pct, count in zip(percentages, counts)]
         for container in ax.containers:
-            ax.bar_label(container, labels=value_labels, padding=3, fontsize=9, alpha=0.9)
+            ax.bar_label(container, labels=value_labels, padding=3, fontsize=9 if len(value_labels) < 7 else 8, alpha=0.9)  # fontsize 9 for 1-6 categories; size 8 for 7+ categories
     
         # Customize current bar plot
         ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold", pad=20)
@@ -1217,15 +1217,19 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
     fig.suptitle(f"{'Population' if weights else 'Sample'} Distributions of Categorical Features", fontsize=16, fontweight="bold", y=1)
     fig.tight_layout(h_pad=2.0, w_pad=4.0)  # Adjusts layout to prevent overlapping subplots
     
+    # Save to file
+    if save_to_file:
+        plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
+    
     # Show bar plot matrix
     plt.show()
 
 
 # Plot sample distributions (unweighted) of categorical features (binary features in a separate plot)
-plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels, categorical_label_map)  
+plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels, categorical_label_map)  # save_to_file="../assets/eda_categorical_sample.png"
 
 # Plot population distributions (weighted) of categorical features
-plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels, categorical_label_map, weights="PERWT23F") 
+plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels, categorical_label_map, weights="PERWT23F")   # save_to_file="../assets/eda_categorical_population.png"
 
 
 # %% [markdown]
@@ -1235,14 +1239,14 @@ plot_categorical_distributions(df, nominal_features, ordinal_features, display_l
 
 # %%
 # Helper Function: Plot the Distributions of Binary Features
-def plot_binary_distributions(df, binary_features, display_labels=None, categorical_label_map=None, weights=None):
+def plot_binary_distributions(df, binary_features, display_labels=None, categorical_label_map=None, weights=None, save_to_file=None):
     # Define subplot matrix grid
     n_plots = len(binary_features)
     n_cols = 4
     n_rows = math.ceil(n_plots / n_cols)
     
     # Create subplot matrix
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 3, n_rows * 2))
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2.5, n_rows * 1.8))
     
     # Flatten axes for easier iteration
     axes_flat = axes.flat
@@ -1310,6 +1314,10 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
     fig.suptitle(f"{'Population' if weights else 'Sample'} Distributions of Binary Features", fontsize=16, fontweight="bold", y=1)
     fig.tight_layout(h_pad=3.0, w_pad=8.0)  # Adjusts layout to prevent overlapping subplots
     
+    # Save to file
+    if save_to_file:
+        plt.savefig(save_to_file, bbox_inches="tight", dpi=150)
+
     # Show bar plot matrix
     plt.show()
 
