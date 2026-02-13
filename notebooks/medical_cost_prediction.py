@@ -357,19 +357,19 @@ df["DUPERSID"] = df["DUPERSID"].astype(str)
 # </div> 
 
 # %%
-# Define semantic data types
-numerical_features = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
-binary_features = [
+# Define semantic data types (Raw)
+raw_numerical_features = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
+raw_binary_features = [
     "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31", 
     "WLKLIM31", "COGLIM31", "JTPAIN31_M18", "HIBPDX", "CHOLDX", 
     "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
 ]
-nominal_features = ["REGION23", "MARRY31X", "EMPST31", "INSCOV23"]
-ordinal_features = ["POVCAT23", "HIDEG"]
+raw_nominal_features = ["REGION23", "MARRY31X", "EMPST31", "INSCOV23"]
+raw_ordinal_features = ["POVCAT23", "HIDEG"]
 
-# Combined feature sets
-categorical_features = nominal_features + ordinal_features + binary_features
-all_features = numerical_features + categorical_features
+# Combined raw feature sets
+raw_categorical_features = raw_nominal_features + raw_ordinal_features + raw_binary_features
+raw_all_features = raw_numerical_features + raw_categorical_features
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -443,7 +443,8 @@ df.isnull().sum().sort_values(ascending=False)
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Analyze univariate distributions using descriptive statistics and visualizations.
+#     ℹ️ <b>Phase 1: Discovery & Decision Support</b><br>
+#     Analyze univariate distributions using descriptive statistics and visualizations. This first EDA focuses on understanding raw feature distributions in their near-original state. The goal is to identify sparse categories, outliers, and data quality issues to inform subsequent data preprocessing and feature engineering strategies.
 # </div>
 
 # %% [markdown]
@@ -981,7 +982,7 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 
 # %%
 # Sample statistics (unweighted) 
-df[numerical_features].describe().T.style.format({
+df[raw_numerical_features].describe().T.style.format({
     "count": "{:,.0f}",
     "mean": "{:.2f}",
     "std": "{:.2f}",
@@ -996,7 +997,7 @@ df[numerical_features].describe().T.style.format({
 # Population statistics (weighted) 
 pop_stats = []
 # Iterate over all numerical features
-for feature in numerical_features:
+for feature in raw_numerical_features:
     # Drop missing values for the current feature
     valid_mask = df[feature].notna()
     values = df.loc[valid_mask, feature]
@@ -1014,7 +1015,7 @@ for feature in numerical_features:
     })
 
 # Show table of population statistics
-pop_stats_df = pd.DataFrame(pop_stats, index=numerical_features)
+pop_stats_df = pd.DataFrame(pop_stats, index=raw_numerical_features)
 pop_stats_df.style.format({
     "count": "{:,.0f}",
     "mean": "{:.2f}",
@@ -1112,10 +1113,10 @@ def plot_numerical_distributions(df, numerical_features, display_labels=None, we
 
 
 # Plot sample distributions (unweighted) of numerical features
-plot_numerical_distributions(df, numerical_features, display_labels)  # save_to_file="../assets/eda_numerical_sample.png"
+plot_numerical_distributions(df, raw_numerical_features, display_labels)  # save_to_file="../assets/eda_numerical_sample.png"
 
 # Plot population distributions (weighted) of numerical features  
-plot_numerical_distributions(df, numerical_features, display_labels, weights="PERWT23F")  # save_to_file="../assets/eda_numerical_population.png"
+plot_numerical_distributions(df, raw_numerical_features, display_labels, weights="PERWT23F")  # save_to_file="../assets/eda_numerical_population.png"
 
 
 # %% [markdown]
@@ -1229,10 +1230,10 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
 
 
 # Plot sample distributions (unweighted) of categorical features (binary features in a separate plot)
-plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels, categorical_label_map)  # save_to_file="../assets/eda_categorical_sample.png"
+plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, display_labels, categorical_label_map)  # save_to_file="../assets/eda_categorical_sample.png"
 
 # Plot population distributions (weighted) of categorical features
-plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels, categorical_label_map, weights="PERWT23F")   # save_to_file="../assets/eda_categorical_population.png"
+plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, display_labels, categorical_label_map, weights="PERWT23F")   # save_to_file="../assets/eda_categorical_population.png"
 
 
 # %% [markdown]
@@ -1326,10 +1327,10 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
 
 
 # Plot sample distributions (unweighted) of binary features 
-plot_binary_distributions(df, binary_features, display_labels, categorical_label_map)  # save_to_file="../assets/eda_binary_sample.png"
+plot_binary_distributions(df, raw_binary_features, display_labels, categorical_label_map)  # save_to_file="../assets/eda_binary_sample.png"
 
 # Plot population distributions (weighted) of binary features
-plot_binary_distributions(df, binary_features, display_labels, categorical_label_map, weights="PERWT23F")  # save_to_file="../assets/eda_binary_population.png"
+plot_binary_distributions(df, raw_binary_features, display_labels, categorical_label_map, weights="PERWT23F")  # save_to_file="../assets/eda_binary_population.png"
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -1374,6 +1375,10 @@ employment_transitions = [2, 3]
 df["RECENT_LIFE_TRANSITION"] = (df["MARRY31X"].isin(marital_transitions) | df["EMPST31"].isin(employment_transitions)).astype(float)
 df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] = np.nan
 
+# Add labels and mappings for the new feature
+display_labels["RECENT_LIFE_TRANSITION"] = "Recent Life Transition"
+categorical_label_map["RECENT_LIFE_TRANSITION"] = {1: "Yes", 0: "No"} # Flag is 1.0 or 0.0 (and nan)
+
 # Collapse categories into their stable counterparts
 # For Marital Status: Map 7->1 (Married), 8->2 (Widowed), 9->3 (Divorced), 10->4 (Separated)
 marital_map = {7: 1, 8: 2, 9: 3, 10: 4}
@@ -1385,13 +1390,16 @@ df["MARRY31X"] = df["MARRY31X"].replace(marital_map)
 employment_map = {2: 4, 3: 4} 
 df["EMPST31"] = df["EMPST31"].replace(employment_map)
 
-# Update semantic data type lists
-if "RECENT_LIFE_TRANSITION" not in binary_features:
-    binary_features.append("RECENT_LIFE_TRANSITION")
-if "RECENT_LIFE_TRANSITION" not in categorical_features:
-    categorical_features.append("RECENT_LIFE_TRANSITION")
-if "RECENT_LIFE_TRANSITION" not in all_features:
-    all_features.append("RECENT_LIFE_TRANSITION")
+# %%
+# Define semantic data types (Final / Model-Ready)
+final_numerical_features = raw_numerical_features.copy()
+final_binary_features = raw_binary_features + ["EMPST31", "RECENT_LIFE_TRANSITION"]
+final_nominal_features = ["REGION23", "MARRY31X", "INSCOV23"]
+final_ordinal_features = raw_ordinal_features.copy()
+
+# Combined final feature sets
+final_categorical_features = final_nominal_features + final_ordinal_features + final_binary_features
+final_all_features = final_numerical_features + final_categorical_features
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -1628,34 +1636,34 @@ missing_value_df.sort_values("Training", ascending=False).style.format({
 
 # %%
 # Calculate median for each numerical feature from training data
-medians = X_train[numerical_features].median()
+medians = X_train[final_numerical_features].median()
 
 # Impute median in training, validation, and test data
-X_train[numerical_features] = X_train[numerical_features].fillna(medians)
-X_val[numerical_features] = X_val[numerical_features].fillna(medians)
-X_test[numerical_features] = X_test[numerical_features].fillna(medians)
+X_train[final_numerical_features] = X_train[final_numerical_features].fillna(medians)
+X_val[final_numerical_features] = X_val[final_numerical_features].fillna(medians)
+X_test[final_numerical_features] = X_test[final_numerical_features].fillna(medians)
 
 # Verify results
 pd.DataFrame({
-    "Training": X_train[numerical_features].isnull().sum(),
-    "Validation": X_val[numerical_features].isnull().sum(),
-    "Test": X_test[numerical_features].isnull().sum(),
+    "Training": X_train[final_numerical_features].isnull().sum(),
+    "Validation": X_val[final_numerical_features].isnull().sum(),
+    "Test": X_test[final_numerical_features].isnull().sum(),
 })
 
 # %%
 # Calculate mode for each categorical feature from training data
-modes = X_train[categorical_features].mode().loc[0]
+modes = X_train[final_categorical_features].mode().loc[0]
 
 # Impute mode in training, validation, and test data
-X_train[categorical_features] = X_train[categorical_features].fillna(modes)
-X_val[categorical_features] = X_val[categorical_features].fillna(modes)
-X_test[categorical_features] = X_test[categorical_features].fillna(modes)
+X_train[final_categorical_features] = X_train[final_categorical_features].fillna(modes)
+X_val[final_categorical_features] = X_val[final_categorical_features].fillna(modes)
+X_test[final_categorical_features] = X_test[final_categorical_features].fillna(modes)
 
 # Verify results
 pd.DataFrame({
-    "Training": X_train[categorical_features].isnull().sum(),
-    "Validation": X_val[categorical_features].isnull().sum(),
-    "Test": X_test[categorical_features].isnull().sum(),
+    "Training": X_train[final_categorical_features].isnull().sum(),
+    "Validation": X_val[final_categorical_features].isnull().sum(),
+    "Test": X_test[final_categorical_features].isnull().sum(),
 })
 
 
@@ -1716,7 +1724,7 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
 outlier_remover_3sd = OutlierRemover3SD()
 
 # Fit outlier remover to training data
-outlier_remover_3sd.fit(X_train, numerical_features)
+outlier_remover_3sd.fit(X_train, final_numerical_features)
 
 # Show outliers in training data
 print(f"Training Data: Identified {outlier_remover_3sd.outliers_} rows ({outlier_remover_3sd.outliers_ / len(outlier_remover_3sd.final_mask_) * 100:.1f}%) with outliers.\n")
@@ -1784,7 +1792,7 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
 outlier_remover_iqr = OutlierRemoverIQR()
 
 # Fit outlier remover to training data
-outlier_remover_iqr.fit(X_train, numerical_features)
+outlier_remover_iqr.fit(X_train, final_numerical_features)
 
 # Show outliers by column for training data
 print(f"Training Data: Identified {outlier_remover_iqr.outliers_} rows ({outlier_remover_iqr.outliers_ / len(outlier_remover_iqr.final_mask_) * 100:.1f}%) with outliers.\n")
@@ -1801,6 +1809,28 @@ outlier_remover_iqr.stats_.style.format({
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">EDA 2</h1>
+# </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <b>Phase 2: Validation & Model Readiness</b><br> 
+#     Analyze univariate distributions after data preprocessing and feature engineering. This second EDA ensures the data is model-ready and reveals the impact of transformations (e.g., collapsed categories, imputation effects) on the final feature set using the training data which the model will be trained on.
+# </div>
+
+# %%
+# Plot distributions of model-ready numerical features (after imputation)
+plot_numerical_distributions(X_train, final_numerical_features, display_labels)
+
+# %%
+# Plot distributions of model-ready categorical features (after collapsing and imputation)
+plot_categorical_distributions(X_train, final_nominal_features, final_ordinal_features, display_labels, categorical_label_map)
+
+# %%
+# Plot distributions of model-ready binary features (after engineering and imputation)
+plot_binary_distributions(X_train, final_binary_features, display_labels, categorical_label_map)
+
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Summary</h1>
 # </div> 
 #
@@ -1808,6 +1838,11 @@ outlier_remover_iqr.stats_.style.format({
 # - **Handling Duplicates**: Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
 # - **Variable Selection**: Filtered 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
 # - **Target Population Filtering**: Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
-# - **Handling Data Types**: Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models. Defined semantic data types for all features (numerical, binary, nominal, ordinal).
+# - **Handling Data Types**: Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models. Defined raw semantic data types for all features (numerical, binary, nominal, ordinal).
 # - **Standardizing Missing Values**: Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
+# - **Phase 1 EDA (Discovery)**: Analyzed raw feature distributions to identify sparse categories (e.g., in marital/employment status) and informed feature engineering decisions.
+# - **Feature Engineering**: Created a unified `RECENT_LIFE_TRANSITION` flag and collapsed sparse transitions into stable parent categories. Defined model-ready (`final_`) feature lists.
 # - **Train-Validation-Test Split**: Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and extreme tail of the target variable.
+# - **Data Preprocessing**: Imputed missing values using the median for numerical features and the mode for categorical features (fit on training data). 
+# - **Phase 2 EDA (Validation)**: Verified the distributions of model-ready features, confirming successful category collapsing and imputation.
+# - **Handling Outliers**: Developed custom transformers to detect univariate outliers using 3SD and 1.5 IQR methods.
