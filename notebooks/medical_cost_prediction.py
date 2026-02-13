@@ -1391,13 +1391,18 @@ employment_map = {2: 4, 3: 4}
 df["EMPST31"] = df["EMPST31"].replace(employment_map)
 
 # %%
-# Define semantic data types (Final / Model-Ready)
-final_numerical_features = raw_numerical_features.copy()
-final_binary_features = raw_binary_features + ["EMPST31", "RECENT_LIFE_TRANSITION"]
+# Define final data type lists (for model input)
+final_numerical_features = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
+final_binary_features = [
+    "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31", 
+    "WLKLIM31", "COGLIM31", "JTPAIN31_M18", "HIBPDX", "CHOLDX", 
+    "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX",
+    "EMPST31", "RECENT_LIFE_TRANSITION"
+]
 final_nominal_features = ["REGION23", "MARRY31X", "INSCOV23"]
-final_ordinal_features = raw_ordinal_features.copy()
+final_ordinal_features = ["POVCAT23", "HIDEG"]
 
-# Combined final feature sets
+# Final combined feature sets
 final_categorical_features = final_nominal_features + final_ordinal_features + final_binary_features
 final_all_features = final_numerical_features + final_categorical_features
 
