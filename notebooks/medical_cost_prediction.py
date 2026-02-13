@@ -1032,14 +1032,14 @@ pop_stats_df.style.format({
 
 # %%
 # Helper Function: Plot the Distributions of Numerical Features
-def plot_numerical_distributions(df, numerical_features, display_labels=None, weights=None):
+def plot_numerical_distributions(df, numerical_features, display_labels=None, weights=None, save_to_file=None):
     # Define subplot matrix grid
     n_plots = len(numerical_features)
     n_cols = 2
     n_rows = math.ceil(n_plots / n_cols)
     
     # Create subplot matrix
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 6, n_rows * 4))
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 3.5))
     
     # Flatten axes for easier iteration
     axes_flat = axes.flat
@@ -1098,17 +1098,21 @@ def plot_numerical_distributions(df, numerical_features, display_labels=None, we
         axes_flat[j].axis("off")  
 
     # Customize histogram matrix
-    fig.suptitle(f"{'Population' if weights else 'Sample'} Distributions of Numerical Features", 
-                 fontsize=16, fontweight="bold", y=1)
+    fig.suptitle(f"{'Population' if weights else 'Sample'} Distributions of Numerical Features", fontsize=16, fontweight="bold", y=1)
     fig.tight_layout(h_pad=2.0)
+
+    # Save to file
+    if save_to_file:
+        plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
+
     plt.show()
 
 
 # Plot sample distributions (unweighted) of numerical features
-plot_numerical_distributions(df, numerical_features, display_labels)
+plot_numerical_distributions(df, numerical_features, display_labels)  # save_to_file="../assets/eda_numerical_sample.png"
 
-# Plot population distributions (weighted) of numerical features
-plot_numerical_distributions(df, numerical_features, display_labels, weights="PERWT23F")
+# Plot population distributions (weighted) of numerical features  
+plot_numerical_distributions(df, numerical_features, display_labels, weights="PERWT23F")  # save_to_file="../assets/eda_numerical_population.png"
 
 
 # %% [markdown]
