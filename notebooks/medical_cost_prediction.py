@@ -1316,17 +1316,17 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
     
     # Save to file
     if save_to_file:
-        plt.savefig(save_to_file, bbox_inches="tight", dpi=150)
+        plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
 
     # Show bar plot matrix
     plt.show()
 
 
 # Plot sample distributions (unweighted) of binary features 
-plot_binary_distributions(df, binary_features, display_labels, categorical_label_map)  
+plot_binary_distributions(df, binary_features, display_labels, categorical_label_map)  # save_to_file="../assets/eda_binary_sample.png"
 
 # Plot population distributions (weighted) of binary features
-plot_binary_distributions(df, binary_features, display_labels, categorical_label_map, weights="PERWT23F") 
+plot_binary_distributions(df, binary_features, display_labels, categorical_label_map, weights="PERWT23F")  # save_to_file="../assets/eda_binary_population.png"
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
