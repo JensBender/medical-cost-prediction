@@ -1362,6 +1362,8 @@ plot_binary_distributions(df, raw_binary_features, display_labels, categorical_l
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Recent Life Transition</strong><br>
 #     📌 Capture critical life transitions related to marital and employment status (e.g., recently divorced, lost job) into a unified <code>RECENT_LIFE_TRANSITION</code> indicator. This preserves the predictive signal of major "life shocks" while ensuring model robustness by mapping sparse status categories back to stable, well-populated categories.
+#     <br><br>
+#     <b>Note on Implementation:</b> In web app, add a question <em>"In the last 12 months, have you experienced a change in marital or employment status?"</em> with response options "Yes" and "No".
 # </div>
 #
 # %%
