@@ -764,7 +764,7 @@ gini_sample = calculate_gini(cum_sample_pct, cum_sample_costs)
 gini_pop = calculate_gini(cum_pop_pct, cum_pop_costs)
 
 # Plotting
-plt.figure(figsize=(9, 7))  
+plt.figure(figsize=(10, 8))  
 
 # Line of Equality
 plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality", alpha=0.6)
@@ -802,7 +802,7 @@ plt.annotate(f"{pop_zero_pct:.1f}% have $0 costs",
 # Fill for emphasis
 plt.fill_between(cum_pop_pct, cum_pop_costs, cum_pop_pct, color=POP_COLOR, alpha=0.08)
 
-# Customization
+# Customize
 plt.title("Lorenz Curve: Concentration of Out-of-Pocket Costs", fontsize=14, pad=15)
 plt.xlabel("Cumulative % of U.S. Adults (Sorted from Lowest to Highest Cost)", fontsize=11)
 plt.ylabel("Cumulative % of Total Costs", fontsize=11)
@@ -812,8 +812,11 @@ plt.xticks(range(0, 101, 10))
 plt.yticks(range(0, 101, 10))
 plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())
 plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
-
 plt.tight_layout()
+
+# Save to file
+# plt.savefig("../assets/eda_lorenz_curve.png", bbox_inches="tight", dpi=200)
+
 plt.show()
 
 # %% [markdown]
