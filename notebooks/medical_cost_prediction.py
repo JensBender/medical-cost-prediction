@@ -1379,16 +1379,22 @@ df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] =
 display_labels["RECENT_LIFE_TRANSITION"] = "Recent Life Transition"
 categorical_label_map["RECENT_LIFE_TRANSITION"] = {1: "Yes", 0: "No"} # Flag is 1.0 or 0.0 (and nan)
 
-# Collapse categories into their stable counterparts
+# Collapse categories into their stable counterparts 
 # For Marital Status: Map 7->1 (Married), 8->2 (Widowed), 9->3 (Divorced), 10->4 (Separated)
 marital_map = {7: 1, 8: 2, 9: 3, 10: 4}
-df["MARRY31X"] = df["MARRY31X"].replace(marital_map)
+df["MARRY31X_GRP"] = df["MARRY31X"].replace(marital_map)
 
 # For Employment Status: Map 2, 3 to 4 (Not Employed)
 # EMPST31: 1=Employed, 4=Not Employed. 2 and 3 are effectively "Not working now but attached". 
 # Transitioner signal is preserved in RECENT_LIFE_TRANSITION.
 employment_map = {2: 4, 3: 4} 
-df["EMPST31"] = df["EMPST31"].replace(employment_map)
+df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
+
+# Add labels and mappings for the new grouped features
+display_labels["MARRY31X_GRP"] = display_labels["MARRY31X"]
+display_labels["EMPST31_GRP"] = display_labels["EMPST31"]
+categorical_label_map["MARRY31X_GRP"] = categorical_label_map["MARRY31X"]
+categorical_label_map["EMPST31_GRP"] = categorical_label_map["EMPST31"]
 
 # %%
 # Define final data type lists (for model input)
@@ -1397,14 +1403,19 @@ final_binary_features = [
     "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31", 
     "WLKLIM31", "COGLIM31", "JTPAIN31_M18", "HIBPDX", "CHOLDX", 
     "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX",
-    "EMPST31", "RECENT_LIFE_TRANSITION"
+    "EMPST31_GRP", "RECENT_LIFE_TRANSITION"  # EMPST31_GRP is binary after collapsing categories
 ]
-final_nominal_features = ["REGION23", "MARRY31X", "INSCOV23"]
+final_nominal_features = ["REGION23", "MARRY31X_GRP", "INSCOV23"]
 final_ordinal_features = ["POVCAT23", "HIDEG"]
 
 # Final combined feature sets
 final_categorical_features = final_nominal_features + final_ordinal_features + final_binary_features
 final_all_features = final_numerical_features + final_categorical_features
+
+# %%
+# Verify results
+plot_categorical_distributions(df, final_nominal_features, final_ordinal_features, display_labels, categorical_label_map, weights="PERWT23F")
+plot_binary_distributions(df, final_binary_features, display_labels, categorical_label_map, weights="PERWT23F")
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -1827,7 +1838,7 @@ outlier_remover_iqr.stats_.style.format({
 plot_numerical_distributions(X_train, final_numerical_features, display_labels)
 
 # %%
-# Plot distributions of model-ready categorical features (after collapsing and imputation)
+# Plot distributions of model-ready categorical features (after collapsing categories and imputation)
 plot_categorical_distributions(X_train, final_nominal_features, final_ordinal_features, display_labels, categorical_label_map)
 
 # %%
