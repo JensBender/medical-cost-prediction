@@ -68,7 +68,7 @@ from sklearn.metrics import (
 )
 
 # Local imports
-from src.constants import DISPLAY_LABELS
+from src.constants import DISPLAY_LABELS, CATEGORICAL_LABELS
 from src.pipeline import create_preprocessing_pipeline
 
 # Configuration
@@ -218,46 +218,9 @@ columns_to_keep = [
 df = df[columns_to_keep]
 
 # %%
-# Categorical String Label Mappings
-# Maps integer categories to string categories for all categorical features
-categorical_label_map = {
-    # Demographics
-    "SEX": {1: "Male", 2: "Female"},
-    "REGION23": {1: "Northeast", 2: "Midwest", 3: "South", 4: "West"},
-    "MARRY31X": {
-        1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married", 6: "Under 16", 
-        7: "Married in Round", 8: "Widowed in Round", 9: "Divorced in Round", 10: "Separated in Round"
-    },
-    
-    # Socioeconomic
-    "POVCAT23": {1: "Poor/Negative", 2: "Near Poor", 3: "Low Income", 4: "Middle Income", 5: "High Income"},
-    "HIDEG": {1: "No Degree", 2: "GED", 3: "HS Diploma", 4: "Bachelor's", 5: "Master's", 6: "Doctorate", 7: "Other", 8: "Under 16"},
-    "EMPST31": {1: "Employed", 2: "Job to Return To", 3: "Job in Ref Period", 4: "Not Employed"},
-    
-    # Insurance & Access
-    "INSCOV23": {1: "Any Private", 2: "Public Only", 3: "Uninsured"},
-    "HAVEUS42": {1: "Yes", 2: "No"},
-    
-    # Perceived Health & Lifestyle
-    "ADSMOK42": {1: "Yes", 2: "No"},
-    
-    # Limitations
-    "ADLHLP31": {1: "Yes", 2: "No"},
-    "IADLHP31": {1: "Yes", 2: "No"},
-    "WLKLIM31": {1: "Yes", 2: "No"},
-    "COGLIM31": {1: "Yes", 2: "No"},
-    "JTPAIN31_M18": {1: "Yes", 2: "No"},
-    
-    # Chronic Conditions
-    "HIBPDX": {1: "Yes", 2: "No"},
-    "CHOLDX": {1: "Yes", 2: "No"},
-    "DIABDX_M18": {1: "Yes", 2: "No"},
-    "CHDDX": {1: "Yes", 2: "No"},
-    "STRKDX": {1: "Yes", 2: "No"},
-    "CANCERDX": {1: "Yes", 2: "No"},
-    "ARTHDX": {1: "Yes", 2: "No"},
-    "ASTHDX": {1: "Yes", 2: "No"}
-}
+
+# %% [markdown]
+#
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
@@ -1101,7 +1064,7 @@ plot_numerical_distributions(df, raw_numerical_features, DISPLAY_LABELS, weights
 
 # %%
 # Helper Function: Plot the Distributions of Categorical Features
-def plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels=None, categorical_label_map=None, weights=None, save_to_file=None):
+def plot_categorical_distributions(df, nominal_features, ordinal_features, display_labels=None, categorical_labels=None, weights=None, save_to_file=None):
     # Define subplot matrix grid
     n_plots = len(nominal_features + ordinal_features)
     n_cols = 2
@@ -1139,7 +1102,7 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
         percentages = counts / counts.sum() * 100
         
         # Map integer to string labels for current feature
-        feature_label_map = categorical_label_map.get(feature, {})  
+        feature_label_map = categorical_labels.get(feature, {})  
         string_labels = [feature_label_map.get(label, label) for label in percentages.index]  # Fallback to int if no str mapped
          
         # Create bar plot of current feature
@@ -1186,10 +1149,10 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
 
 
 # Plot sample distributions (unweighted) of categorical features 
-plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, categorical_label_map)  # save_to_file="../figures/eda/categorical_distributions_sample.png"
+plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, CATEGORICAL_LABELS)  # save_to_file="../figures/eda/categorical_distributions_sample.png"
 
 # Plot population distributions (weighted) of categorical features
-plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, categorical_label_map, weights="PERWT23F")   # save_to_file="../figures/eda/categorical_distributions_population.png"
+plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, CATEGORICAL_LABELS, weights="PERWT23F")   # save_to_file="../figures/eda/categorical_distributions_population.png"
 
 
 # %% [markdown]
@@ -1199,7 +1162,7 @@ plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, D
 
 # %%
 # Helper Function: Plot the Distributions of Binary Features
-def plot_binary_distributions(df, binary_features, display_labels=None, categorical_label_map=None, weights=None, save_to_file=None):
+def plot_binary_distributions(df, binary_features, display_labels=None, categorical_labels=None, weights=None, save_to_file=None):
     # Define subplot matrix grid
     n_plots = len(binary_features)
     n_cols = 4
@@ -1234,7 +1197,7 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
         percentages = counts / counts.sum() * 100
         
         # Map integer to string labels for current feature
-        feature_label_map = categorical_label_map.get(feature, {})  
+        feature_label_map = categorical_labels.get(feature, {})  
         string_labels = [feature_label_map.get(label, label) for label in percentages.index]  # Fallback to int if no str mapped
          
         # Create bar plot of current feature
@@ -1283,10 +1246,10 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
 
 
 # Plot sample distributions (unweighted) of binary features 
-plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, categorical_label_map)  # save_to_file="../figures/eda/binary_distributions_sample.png"
+plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORICAL_LABELS)  # save_to_file="../figures/eda/binary_distributions_sample.png"
 
 # Plot population distributions (weighted) of binary features
-plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, categorical_label_map, weights="PERWT23F")  # save_to_file="../figures/eda/binary_distributions_population.png"
+plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORICAL_LABELS, weights="PERWT23F")  # save_to_file="../figures/eda/binary_distributions_population.png"
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -1333,8 +1296,7 @@ employment_transitions = [2, 3]
 df["RECENT_LIFE_TRANSITION"] = (df["MARRY31X"].isin(marital_transitions) | df["EMPST31"].isin(employment_transitions)).astype(float)
 df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] = np.nan
 
-# Add labels and mappings for the new feature
-categorical_label_map["RECENT_LIFE_TRANSITION"] = {1: "Yes", 0: "No"} # Flag is 1.0 or 0.0 (and nan)
+# %%
 
 # Collapse categories into their stable counterparts 
 # For Marital Status: Map 7->1 (Married), 8->2 (Widowed), 9->3 (Divorced), 10->4 (Separated)
@@ -1347,9 +1309,7 @@ df["MARRY31X_GRP"] = df["MARRY31X"].replace(marital_map)
 employment_map = {2: 4, 3: 4} 
 df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
 
-# Add labels and mappings for the new grouped features
-categorical_label_map["MARRY31X_GRP"] = categorical_label_map["MARRY31X"]
-categorical_label_map["EMPST31_GRP"] = categorical_label_map["EMPST31"]
+# %%
 
 # %%
 # Define input data type lists (for pipeline input)
@@ -1369,8 +1329,8 @@ input_all_features = input_numerical_features + input_categorical_features
 
 # %%
 # Verify results
-plot_categorical_distributions(df, input_nominal_features, input_ordinal_features, DISPLAY_LABELS, categorical_label_map, weights="PERWT23F")
-plot_binary_distributions(df, input_binary_features, DISPLAY_LABELS, categorical_label_map, weights="PERWT23F")
+plot_categorical_distributions(df, input_nominal_features, input_ordinal_features, DISPLAY_LABELS, CATEGORICAL_LABELS, weights="PERWT23F")
+plot_binary_distributions(df, input_binary_features, DISPLAY_LABELS, CATEGORICAL_LABELS, weights="PERWT23F")
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">

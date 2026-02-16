@@ -1,4 +1,4 @@
-# Mapping MEPS variable names to user-friendly display labels (for plots and web UI)
+# Mapping MEPS variable names to human-readable display labels (for EDA and UI)
 DISPLAY_LABELS = {
     # Target
     "TOTSLF23": "Out-of-Pocket Costs",
@@ -8,14 +8,12 @@ DISPLAY_LABELS = {
     "SEX": "Sex",
     "REGION23": "Region",
     "MARRY31X": "Marital Status",
-    "MARRY31X_GRP": "Marital Status",
     "FAMSZE23": "Family Size",
     
     # Socioeconomic
     "POVCAT23": "Poverty Category",
     "HIDEG": "Education",
     "EMPST31": "Employment",
-    "EMPST31_GRP": "Employment",
     
     # Insurance & Access
     "INSCOV23": "Insurance",
@@ -44,5 +42,52 @@ DISPLAY_LABELS = {
     "ASTHDX": "Asthma",
 
     # Feature Engineered
-    "RECENT_LIFE_TRANSITION": "Recent Life Transition"
+    "RECENT_LIFE_TRANSITION": "Recent Life Transition",
+    "MARRY31X_GRP": "Marital Status",
+    "EMPST31_GRP": "Employment"
+}
+
+# Mapping MEPS feature category codes to human-readable string labels (for EDA and UI)
+CATEGORICAL_LABELS = {
+    # Demographics
+    "SEX": {1: "Male", 2: "Female"},
+    "REGION23": {1: "Northeast", 2: "Midwest", 3: "South", 4: "West"},
+    "MARRY31X": {
+        1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married", 6: "Under 16", 
+        7: "Married in Round", 8: "Widowed in Round", 9: "Divorced in Round", 10: "Separated in Round"
+    },
+    
+    # Socioeconomic
+    "POVCAT23": {1: "Poor/Negative", 2: "Near Poor", 3: "Low Income", 4: "Middle Income", 5: "High Income"},
+    "HIDEG": {1: "No Degree", 2: "GED", 3: "HS Diploma", 4: "Bachelor's", 5: "Master's", 6: "Doctorate", 7: "Other", 8: "Under 16"},
+    "EMPST31": {1: "Employed", 2: "Job to Return To", 3: "Job in Ref Period", 4: "Not Employed"},
+    
+    # Insurance & Access
+    "INSCOV23": {1: "Any Private", 2: "Public Only", 3: "Uninsured"},
+    "HAVEUS42": {1: "Yes", 2: "No"},
+    
+    # Perceived Health & Lifestyle
+    "ADSMOK42": {1: "Yes", 2: "No"},
+    
+    # Limitations
+    "ADLHLP31": {1: "Yes", 2: "No"},
+    "IADLHP31": {1: "Yes", 2: "No"},
+    "WLKLIM31": {1: "Yes", 2: "No"},
+    "COGLIM31": {1: "Yes", 2: "No"},
+    "JTPAIN31_M18": {1: "Yes", 2: "No"},
+    
+    # Chronic Conditions
+    "HIBPDX": {1: "Yes", 2: "No"},
+    "CHOLDX": {1: "Yes", 2: "No"},
+    "DIABDX_M18": {1: "Yes", 2: "No"},
+    "CHDDX": {1: "Yes", 2: "No"},
+    "STRKDX": {1: "Yes", 2: "No"},
+    "CANCERDX": {1: "Yes", 2: "No"},
+    "ARTHDX": {1: "Yes", 2: "No"},
+    "ASTHDX": {1: "Yes", 2: "No"},
+
+    # Feature Engineered
+    "RECENT_LIFE_TRANSITION": {1: "Yes", 0: "No"},
+    "MARRY31X_GRP": {1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married", 6: "Under 16"},
+    "EMPST31_GRP": {1: "Employed", 4: "Not Employed"}
 }
