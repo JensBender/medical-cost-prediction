@@ -443,8 +443,8 @@ df.isnull().sum().sort_values(ascending=False)
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ <b>Phase 1: Discovery & Decision Support</b><br>
-#     Analyze univariate distributions using descriptive statistics and visualizations. This first EDA focuses on understanding raw feature distributions in their near-original state. The goal is to identify sparse categories, outliers, and data quality issues to inform subsequent data preprocessing and feature engineering strategies.
+#     ℹ️ <b>Phase 1 of EDA: Inform Decisions</b><br>
+#     Analyze univariate distributions using descriptive statistics and visualizations. Focus on understanding raw feature distributions and identify sparse categories, outliers, and data quality issues to inform subsequent data preprocessing and feature engineering strategies.
 # </div>
 
 # %% [markdown]
@@ -1229,7 +1229,7 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
     plt.show()
 
 
-# Plot sample distributions (unweighted) of categorical features (binary features in a separate plot)
+# Plot sample distributions (unweighted) of categorical features 
 plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, display_labels, categorical_label_map)  # save_to_file="../figures/eda/categorical_distributions_sample.png"
 
 # Plot population distributions (weighted) of categorical features
@@ -1361,9 +1361,9 @@ plot_binary_distributions(df, raw_binary_features, display_labels, categorical_l
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Recent Life Transition</strong><br>
-#     📌 Capture critical life transitions related to marital and employment status (e.g., recently divorced, lost job) into a unified <code>RECENT_LIFE_TRANSITION</code> indicator. This preserves the predictive signal of major "life shocks" while ensuring model robustness by mapping sparse status categories back to stable, well-populated categories.
+#     📌 Capture critical life transitions related to marital and employment status (e.g., recent divorce, job loss) into a unified <code>RECENT_LIFE_TRANSITION</code> indicator. This preserves the predictive signal of major "life shocks" while ensuring model robustness by mapping sparse status categories back to stable, well-populated categories.
 #     <br><br>
-#     <b>Note on Implementation:</b> In web app, add a question <em>"In the last 12 months, have you experienced a change in marital or employment status?"</em> with response options "Yes" and "No".
+#     <b>Note on Web App Implementation:</b> In web form, add a question <em>"In the last 12 months, have you experienced a change in marital or employment status?"</em> with response options "Yes" and "No".
 # </div>
 #
 # %%
