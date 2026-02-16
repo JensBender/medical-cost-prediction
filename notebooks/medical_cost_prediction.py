@@ -816,7 +816,7 @@ plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
 plt.tight_layout()
 
 # Save to file
-# plt.savefig("../assets/eda_lorenz_curve.png", bbox_inches="tight", dpi=200)
+# plt.savefig("../figures/eda/lorenz_curve.png", bbox_inches="tight", dpi=200)
 
 plt.show()
 
@@ -1113,10 +1113,10 @@ def plot_numerical_distributions(df, numerical_features, display_labels=None, we
 
 
 # Plot sample distributions (unweighted) of numerical features
-plot_numerical_distributions(df, raw_numerical_features, display_labels)  # save_to_file="../assets/eda_numerical_sample.png"
+plot_numerical_distributions(df, raw_numerical_features, display_labels)  # save_to_file="../figures/eda/numerical_distributions_sample.png"
 
 # Plot population distributions (weighted) of numerical features  
-plot_numerical_distributions(df, raw_numerical_features, display_labels, weights="PERWT23F")  # save_to_file="../assets/eda_numerical_population.png"
+plot_numerical_distributions(df, raw_numerical_features, display_labels, weights="PERWT23F")  # save_to_file="../figures/eda/numerical_distributions_population.png"
 
 
 # %% [markdown]
@@ -1230,10 +1230,10 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
 
 
 # Plot sample distributions (unweighted) of categorical features (binary features in a separate plot)
-plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, display_labels, categorical_label_map)  # save_to_file="../assets/eda_categorical_sample.png"
+plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, display_labels, categorical_label_map)  # save_to_file="../figures/eda/categorical_distributions_sample.png"
 
 # Plot population distributions (weighted) of categorical features
-plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, display_labels, categorical_label_map, weights="PERWT23F")   # save_to_file="../assets/eda_categorical_population.png"
+plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, display_labels, categorical_label_map, weights="PERWT23F")   # save_to_file="../figures/eda/categorical_distributions_population.png"
 
 
 # %% [markdown]
@@ -1327,10 +1327,10 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
 
 
 # Plot sample distributions (unweighted) of binary features 
-plot_binary_distributions(df, raw_binary_features, display_labels, categorical_label_map)  # save_to_file="../assets/eda_binary_sample.png"
+plot_binary_distributions(df, raw_binary_features, display_labels, categorical_label_map)  # save_to_file="../figures/eda/binary_distributions_sample.png"
 
 # Plot population distributions (weighted) of binary features
-plot_binary_distributions(df, raw_binary_features, display_labels, categorical_label_map, weights="PERWT23F")  # save_to_file="../assets/eda_binary_population.png"
+plot_binary_distributions(df, raw_binary_features, display_labels, categorical_label_map, weights="PERWT23F")  # save_to_file="../figures/eda/binary_distributions_population.png"
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">

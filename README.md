@@ -180,7 +180,7 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to account for the comp
 ### Target Variable: Out-of-Pocket Costs
 The distribution of annual out-of-pocket health care costs (`TOTSLF23`) exhibits severe right-skewness, zero-inflation, and an extremely heavy tail. While the majority of individuals incur minimal expenses, a small fraction faces extraordinary financial exposure, creating a highly concentrated cost distribution that requires robust modeling techniques.
 
-![Lorenz Curve](assets/eda_lorenz_curve.png)
+![Lorenz Curve](figures/eda/lorenz_curve.png)
 
 **Key Insights:**
 *   **Zero-Cost Prevalence:** More than **one in five** U.S. adults (**22.3%**, or an estimated 58 million people) incurred **no out-of-pocket costs** in 2023. This high zero-inflation necessitates models capable of handling a large mass of zero values.
@@ -220,11 +220,15 @@ The distribution of annual out-of-pocket health care costs (`TOTSLF23`) exhibits
 ├── data/                    # Raw and processed datasets (ignored by Git)
 │   └── h251.sas7bdat        # MEPS-HC 2023 dataset (SAS V9 format)
 │
-├── figures/                 # Generated figures (ignored by Git)
+├── figures/                 # Generated figures
 │   ├── eda/                 # Exploratory data analysis visualizations
-│   ├── training/            # Training curves and learning rates
-│   ├── evaluation/          # Model performance plots
-│   └── tuning/              # Hyperparameter tuning results
+│   │   ├── numerical_distributions_population.png
+│   │   ├── categorical_distributions_population.png
+│   │   ├── binary_distributions_population.png
+│   │   └── lorenz_curve.png
+│   ├── training/            # Training curves and learning rates (ignored by Git)
+│   ├── evaluation/          # Model performance plots (ignored by Git)
+│   └── tuning/              # Hyperparameter tuning results (ignored by Git)
 │
 ├── assets/                  # Images and other assets for README
 │   ├── header.png           # Header image
@@ -299,7 +303,7 @@ This project was made possible with the help of the following resources:
 <!-- APPENDIX -->
 ## 📎 Appendix
 ### Numerical Distributions
-![Numerical Distributions](assets/eda_numerical_population.png)
+![Numerical Distributions](figures/eda/numerical_distributions_population.png)
 
 Table of population statistics for all numerical features:
 | Feature         | Count       | Mean  | Std   | Min  | 25%  | 50%  | 75%  | Max  |
@@ -312,11 +316,11 @@ Table of population statistics for all numerical features:
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Categorical Distributions
-![Categorical Distributions](assets/eda_categorical_population.png)
+![Categorical Distributions](figures/eda/categorical_distributions_population.png)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Binary Distributions
-![Binary Distributions](assets/eda_binary_population.png)
+![Binary Distributions](figures/eda/binary_distributions_population.png)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
