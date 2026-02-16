@@ -6,9 +6,12 @@ import pandas as pd
 # --- Custom error classes --- 
 # For missing values in required columns of the X input DataFrame (in MissingValueChecker)
 class MissingValueError(ValueError):
-    pass
+    def __init__(self, message, missing_columns=None, failed_indices=None):
+        super().__init__(message)
+        self.missing_columns = missing_columns or []
+        self.failed_indices = failed_indices or []
 
-# For mismatch between expected and actual columns in X input DataFrame because of missing columns, unexpected columns, or wrong column order 
+# For mismatch between expected and actual columns in X input DataFrame (missing, unexpected, or wrong order)
 class ColumnMismatchError(ValueError):
     pass
 
@@ -55,40 +58,56 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
     def _check_missing_values(self, X):
         """Internal helper to identify missing values and either raise errors or print warnings."""
         # Required features 
-        n_missing_total_required = X[self.required_features].isnull().sum().sum()
-        n_missing_rows_required = X[self.required_features].isnull().any(axis=1).sum()
-        n_missing_by_column_required = X[self.required_features].isnull().sum().to_dict()
-
+        missing_mask_required = X[self.required_features].isnull()
+        n_missing_total_required = missing_mask_required.sum().sum()
+        
         if n_missing_total_required > 0:
-            values = "value" if n_missing_total_required == 1 else "values"
-            rows = "row" if n_missing_rows_required == 1 else "rows"
+            # Identify columns and row indices with missing values
+            failed_columns = missing_mask_required.columns[missing_mask_required.any()].tolist()
+            failed_indices = X.index[missing_mask_required.any(axis=1)].tolist()
+            n_missing_rows_required = len(failed_indices)
             
+            # Format row index report (truncate to top 5 for the message string)
+            truncated_indices = failed_indices[:5]
+            index_report = str(truncated_indices) + ("..." if n_missing_rows_required > 5 else "")
+            
+            # Grammatical helpers
+            values_word = "value" if n_missing_total_required == 1 else "values"
+            rows_word = "row" if n_missing_rows_required == 1 else "rows"
+            
+            # Craft detailed summary message
             msg = (
-                f"{n_missing_total_required} missing {values} found in required features "
-                f"across {n_missing_rows_required} {rows}. "
-                f"Missing values by column: {n_missing_by_column_required}"
+                f"Missing Value Error: {n_missing_total_required} missing {values_word} found in required features "
+                f"across {n_missing_rows_required} {rows_word}.\n"
+                f"Affected Features: {failed_columns}\n"
+                f"Affected Row Indices: {index_report}"
             )
             
             if self.strict:  
-                raise MissingValueError(msg + " Please provide missing values.")
+                raise MissingValueError(msg, missing_columns=failed_columns, failed_indices=failed_indices)
             else:
-                print(f"Warning: {msg} These will be imputed.")
+                print(f"Warning: {msg}\nThese will be imputed.")
 
         # Optional features
         if not self.optional_features:
             return
 
-        n_missing_total_optional = X[self.optional_features].isnull().sum().sum()        
-        n_missing_rows_optional = X[self.optional_features].isnull().any(axis=1).sum()
-        n_missing_by_column_optional = X[self.optional_features].isnull().sum().to_dict()
+        missing_mask_optional = X[self.optional_features].isnull()
+        n_missing_total_optional = missing_mask_optional.sum().sum()
 
         if n_missing_total_optional > 0:
-            values = "value" if n_missing_total_optional == 1 else "values"
-            rows = "row" if n_missing_rows_optional == 1 else "rows"
+            failed_columns_opt = missing_mask_optional.columns[missing_mask_optional.any()].tolist()
+            n_missing_rows_optional = missing_mask_optional.any(axis=1).sum()
+            
+            # Grammatical helpers
+            values_word = "value" if n_missing_total_optional == 1 else "values"
+            rows_word = "row" if n_missing_rows_optional == 1 else "rows"
+            
             print(
-                f"Warning: {n_missing_total_optional} missing {values} found in optional features "
-                f"across {n_missing_rows_optional} {rows}. Missing {values} will be imputed.\n"
-                f"Missing values by column: {n_missing_by_column_optional}"
+                f"Warning: {n_missing_total_optional} missing {values_word} found in optional features "
+                f"across {n_missing_rows_optional} {rows_word}.\n"
+                f"Affected Features: {failed_columns_opt}\n"
+                f"Missing values will be imputed."
             )
             
     def fit(self, X, y=None):
