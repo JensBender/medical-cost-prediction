@@ -5,6 +5,7 @@ notebooks/machine_learning_template.ipynb
 notebooks/loan_default_prediction.ipynb
 assets/header_*.png
 assets/header_*.jpg
+assets/linkedin_thumbnail.png
 figures/*_sample.png
 
 # Environment variables
