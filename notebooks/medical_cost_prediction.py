@@ -68,6 +68,7 @@ from sklearn.metrics import (
 )
 
 # Local imports
+from src.constants import DISPLAY_LABELS
 from src.pipeline import create_preprocessing_pipeline
 
 # Configuration
@@ -215,51 +216,6 @@ columns_to_keep = [
 
 # Drop all other columns (keeping 29 out of 1,374)
 df = df[columns_to_keep]
-
-# %%
-# Display labels of features and target for plotting
-display_labels = {
-    # Target
-    "TOTSLF23": "Out-of-Pocket Costs",
-    
-    # Demographics
-    "AGE23X": "Age",
-    "SEX": "Sex",
-    "REGION23": "Region",
-    "MARRY31X": "Marital Status",
-    "FAMSZE23": "Family Size",
-    
-    # Socioeconomic
-    "POVCAT23": "Poverty Category",
-    "HIDEG": "Education",
-    "EMPST31": "Employment",
-    
-    # Insurance & Access
-    "INSCOV23": "Insurance",
-    "HAVEUS42": "Usual Source of Care",
-    
-    # Perceived Health & Lifestyle
-    "RTHLTH31": "Physical Health",
-    "MNHLTH31": "Mental Health",
-    "ADSMOK42": "Smoker",
-    
-    # Limitations
-    "ADLHLP31": "ADL Help",
-    "IADLHP31": "IADL Help",
-    "WLKLIM31": "Walking Limitation",
-    "COGLIM31": "Cognitive Limitation",
-    "JTPAIN31_M18": "Joint Pain",
-    
-    # Chronic Conditions
-    "HIBPDX": "High Blood Pressure",
-    "CHOLDX": "High Cholesterol",
-    "DIABDX_M18": "Diabetes",
-    "CHDDX": "Coronary Heart Disease",
-    "STRKDX": "Stroke",
-    "CANCERDX": "Cancer",
-    "ARTHDX": "Arthritis",
-    "ASTHDX": "Asthma"
-}
 
 # %%
 # Categorical String Label Mappings
@@ -1113,10 +1069,10 @@ def plot_numerical_distributions(df, numerical_features, display_labels=None, we
 
 
 # Plot sample distributions (unweighted) of numerical features
-plot_numerical_distributions(df, raw_numerical_features, display_labels)  # save_to_file="../figures/eda/numerical_distributions_sample.png"
+plot_numerical_distributions(df, raw_numerical_features, DISPLAY_LABELS)  # save_to_file="../figures/eda/numerical_distributions_sample.png"
 
 # Plot population distributions (weighted) of numerical features  
-plot_numerical_distributions(df, raw_numerical_features, display_labels, weights="PERWT23F")  # save_to_file="../figures/eda/numerical_distributions_population.png"
+plot_numerical_distributions(df, raw_numerical_features, DISPLAY_LABELS, weights="PERWT23F")  # save_to_file="../figures/eda/numerical_distributions_population.png"
 
 
 # %% [markdown]
@@ -1230,10 +1186,10 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
 
 
 # Plot sample distributions (unweighted) of categorical features 
-plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, display_labels, categorical_label_map)  # save_to_file="../figures/eda/categorical_distributions_sample.png"
+plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, categorical_label_map)  # save_to_file="../figures/eda/categorical_distributions_sample.png"
 
 # Plot population distributions (weighted) of categorical features
-plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, display_labels, categorical_label_map, weights="PERWT23F")   # save_to_file="../figures/eda/categorical_distributions_population.png"
+plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, categorical_label_map, weights="PERWT23F")   # save_to_file="../figures/eda/categorical_distributions_population.png"
 
 
 # %% [markdown]
@@ -1327,10 +1283,10 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
 
 
 # Plot sample distributions (unweighted) of binary features 
-plot_binary_distributions(df, raw_binary_features, display_labels, categorical_label_map)  # save_to_file="../figures/eda/binary_distributions_sample.png"
+plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, categorical_label_map)  # save_to_file="../figures/eda/binary_distributions_sample.png"
 
 # Plot population distributions (weighted) of binary features
-plot_binary_distributions(df, raw_binary_features, display_labels, categorical_label_map, weights="PERWT23F")  # save_to_file="../figures/eda/binary_distributions_population.png"
+plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, categorical_label_map, weights="PERWT23F")  # save_to_file="../figures/eda/binary_distributions_population.png"
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -1378,7 +1334,6 @@ df["RECENT_LIFE_TRANSITION"] = (df["MARRY31X"].isin(marital_transitions) | df["E
 df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] = np.nan
 
 # Add labels and mappings for the new feature
-display_labels["RECENT_LIFE_TRANSITION"] = "Recent Life Transition"
 categorical_label_map["RECENT_LIFE_TRANSITION"] = {1: "Yes", 0: "No"} # Flag is 1.0 or 0.0 (and nan)
 
 # Collapse categories into their stable counterparts 
@@ -1393,8 +1348,6 @@ employment_map = {2: 4, 3: 4}
 df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
 
 # Add labels and mappings for the new grouped features
-display_labels["MARRY31X_GRP"] = display_labels["MARRY31X"]
-display_labels["EMPST31_GRP"] = display_labels["EMPST31"]
 categorical_label_map["MARRY31X_GRP"] = categorical_label_map["MARRY31X"]
 categorical_label_map["EMPST31_GRP"] = categorical_label_map["EMPST31"]
 
@@ -1416,8 +1369,8 @@ input_all_features = input_numerical_features + input_categorical_features
 
 # %%
 # Verify results
-plot_categorical_distributions(df, input_nominal_features, input_ordinal_features, display_labels, categorical_label_map, weights="PERWT23F")
-plot_binary_distributions(df, input_binary_features, display_labels, categorical_label_map, weights="PERWT23F")
+plot_categorical_distributions(df, input_nominal_features, input_ordinal_features, DISPLAY_LABELS, categorical_label_map, weights="PERWT23F")
+plot_binary_distributions(df, input_binary_features, DISPLAY_LABELS, categorical_label_map, weights="PERWT23F")
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
