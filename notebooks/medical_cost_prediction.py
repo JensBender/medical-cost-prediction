@@ -443,8 +443,8 @@ df.isnull().sum().sort_values(ascending=False)
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ <b>Phase 1 of EDA: Inform Decisions</b><br>
-#     Analyze univariate distributions using descriptive statistics and visualizations. Focus on understanding raw feature distributions and identify sparse categories, outliers, and data quality issues to inform subsequent data preprocessing and feature engineering strategies.
+#     ℹ️ Analyze univariate distributions using descriptive statistics and visualizations. Focus on understanding raw feature distributions to identify data quality issues (e.g., sparse categories) and inform decisions on subsequent data preprocessing and feature engineering. After each preprocessing or engineering step, conduct EDA again to confirm that transformations (like category collapsing) were successful and that the resulting distributions are robust for pipeline input.</li>
+#     </ul>
 # </div>
 
 # %% [markdown]
@@ -1654,28 +1654,28 @@ missing_value_df.sort_values("Training", ascending=False).style.format({
 
 # %%
 # Calculate median for each numerical feature from training data
-medians = X_train[final_numerical_features].median()
+medians = X_train[input_numerical_features].median()
 
 # Impute median in training, validation, and test data
-X_train[final_numerical_features] = X_train[final_numerical_features].fillna(medians)
-X_val[final_numerical_features] = X_val[final_numerical_features].fillna(medians)
-X_test[final_numerical_features] = X_test[final_numerical_features].fillna(medians)
+X_train[input_numerical_features] = X_train[input_numerical_features].fillna(medians)
+X_val[input_numerical_features] = X_val[input_numerical_features].fillna(medians)
+X_test[input_numerical_features] = X_test[input_numerical_features].fillna(medians)
 
 # Verify results
 pd.DataFrame({
-    "Training": X_train[final_numerical_features].isnull().sum(),
-    "Validation": X_val[final_numerical_features].isnull().sum(),
-    "Test": X_test[final_numerical_features].isnull().sum(),
+    "Training": X_train[input_numerical_features].isnull().sum(),
+    "Validation": X_val[input_numerical_features].isnull().sum(),
+    "Test": X_test[input_numerical_features].isnull().sum(),
 })
 
 # %%
 # Calculate mode for each categorical feature from training data
-modes = X_train[final_categorical_features].mode().loc[0]
+modes = X_train[input_categorical_features].mode().loc[0]
 
 # Impute mode in training, validation, and test data
-X_train[final_categorical_features] = X_train[final_categorical_features].fillna(modes)
-X_val[final_categorical_features] = X_val[final_categorical_features].fillna(modes)
-X_test[final_categorical_features] = X_test[final_categorical_features].fillna(modes)
+X_train[input_categorical_features] = X_train[input_categorical_features].fillna(modes)
+X_val[input_categorical_features] = X_val[input_categorical_features].fillna(modes)
+X_test[input_categorical_features] = X_test[input_categorical_features].fillna(modes)
 
 # Verify results
 pd.DataFrame({
@@ -1824,28 +1824,6 @@ outlier_remover_iqr.stats_.style.format({
     "n_outliers": "{:.0f}",
     "pct_outliers": "{:.1f}%"
 })
-
-# %% [markdown]
-# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h1 style="margin:0px">EDA 2</h1>
-# </div> 
-#
-# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ <b>Phase 2: Validation & Model Readiness</b><br> 
-#     Analyze univariate distributions after data preprocessing and feature engineering. This second EDA ensures the data is model-ready and reveals the impact of transformations (e.g., collapsed categories, imputation effects) on the final feature set using the training data which the model will be trained on.
-# </div>
-
-# %%
-# Plot distributions of model-ready numerical features (after imputation)
-plot_numerical_distributions(X_train, final_numerical_features, display_labels)
-
-# %%
-# Plot distributions of model-ready categorical features (after collapsing categories and imputation)
-plot_categorical_distributions(X_train, final_nominal_features, final_ordinal_features, display_labels, categorical_label_map)
-
-# %%
-# Plot distributions of model-ready binary features (after engineering and imputation)
-plot_binary_distributions(X_train, final_binary_features, display_labels, categorical_label_map)
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
