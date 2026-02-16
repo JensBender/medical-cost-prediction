@@ -16,7 +16,7 @@ class ColumnMismatchError(ValueError):
 # --- Custom transformer classes --- 
 # Custom transformer class to check missing values ---
 class MissingValueChecker(BaseEstimator, TransformerMixin):
-    def __init__(self, required_features, optional_features=None):
+    def __init__(self, required_features, optional_features=None, strict=True):
         # Default optional_features to an empty list if not provided
         if optional_features is None:
             optional_features = []
@@ -33,6 +33,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
 
         self.required_features = required_features
         self.optional_features = optional_features
+        self.strict = strict
     
     def _validate_input(self, X):
         # Ensure X input is DataFrame
@@ -52,34 +53,35 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             raise ColumnMismatchError(f"Input X contains the following columns that are neither defined in 'required_features' nor in 'optional_features': {', '.join(unexpected_columns)}.")
 
     def _check_missing_values(self, X):
-        # --- Required features ---
-        # Calculate total number of missing values  
+        """Internal helper to identify missing values and either raise errors or print warnings."""
+        # Required features 
         n_missing_total_required = X[self.required_features].isnull().sum().sum()
-        # Calculate number of rows with missing values  
         n_missing_rows_required = X[self.required_features].isnull().any(axis=1).sum()
-        # Create dictionary with number of missing values by column 
         n_missing_by_column_required = X[self.required_features].isnull().sum().to_dict()
-        # Raise error  
+
         if n_missing_total_required > 0:
             values = "value" if n_missing_total_required == 1 else "values"
             rows = "row" if n_missing_rows_required == 1 else "rows"
-            raise MissingValueError(
+            
+            msg = (
                 f"{n_missing_total_required} missing {values} found in required features "
-                f"across {n_missing_rows_required} {rows}. Please provide missing {values}.\n"
+                f"across {n_missing_rows_required} {rows}. "
                 f"Missing values by column: {n_missing_by_column_required}"
             )
+            
+            if self.strict:  
+                raise MissingValueError(msg + " Please provide missing values.")
+            else:
+                print(f"Warning: {msg} These will be imputed.")
 
-        # --- Optional features ---
+        # Optional features
         if not self.optional_features:
             return
 
-        # Calculate total number of missing values 
         n_missing_total_optional = X[self.optional_features].isnull().sum().sum()        
-        # Calculate number of rows with missing values 
         n_missing_rows_optional = X[self.optional_features].isnull().any(axis=1).sum()
-        # Create dictionary with number of missing values by column 
         n_missing_by_column_optional = X[self.optional_features].isnull().sum().to_dict()
-        # Display warning message
+
         if n_missing_total_optional > 0:
             values = "value" if n_missing_total_optional == 1 else "values"
             rows = "row" if n_missing_rows_optional == 1 else "rows"
@@ -93,13 +95,11 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         # Validate input 
         self._validate_input(X)  
 
-        # Check missing values
-        self._check_missing_values(X)
-
-        # Raise MissingValueError if an optional feature has only missing values
-        for optional_feature in self.optional_features:
-            if X[optional_feature].isnull().all():
-                raise MissingValueError(f"'{optional_feature}' cannot be only missing values. Please ensure at least one non-missing value.")
+        # Ensure no feature is 100% missing (imputer would fail)
+        all_features = self.required_features + self.optional_features
+        for feature in all_features:
+            if X[feature].isnull().all():
+                raise MissingValueError(f"'{feature}' contains only missing values. At least one non-missing value is required to fit the imputer.")
 
         # Store input feature number and names as learned attributes
         self.n_features_in_ = X.shape[1]
@@ -118,7 +118,9 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         if X.columns.tolist() != self.feature_names_in_:
             raise ColumnMismatchError("Feature names and feature order of input X must be the same as during .fit().")      
         
-        # Check missing values
+        # Check missing values 
         self._check_missing_values(X)
 
         return X
+
+
