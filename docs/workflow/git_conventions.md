@@ -23,15 +23,17 @@ Conventional structure of a commit message with a header, body, and footer:
     - `test`: Adding or refactoring tests.
     - `chore`: Build tasks, package manager configs, etc.
 - **Scope**: Describes **where** it changed, i.e. the specific section of the codebase. For this project, use:
-    - `data`: Data loading, preprocessing, cleaning, feature engineering, or dataset versioning.
+    - `data`: Data loading, data cleaning, handling duplicates, filtering rows, filtering columns, or handling data types.
+    - `transformer`: Custom scikit-learn transformers in `src/transformers.py`.
+    - `pipeline`: Pipeline definitions in `src/pipeline.py`.
     - `eda`: Exploratory data analysis.
     - `model`: Model architecture, training logic, or hyperparameter tuning.
     - `eval`: Model evaluation, metric calculations, feature importance or error analysis.
     - `notebook`: Jupyter Notebook.
-    - `ui`: Gradio user interface frontend.
+    - `ui`: Web app interface (Gradio).
     - `api`: FastAPI backend, prediction endpoint.
     - `deploy`: Deployment scripts, Dockerfiles, or serving code.
-    - `docs`: Files in the `docs/` directory.
+    - `docs`: Files in the `docs/` directory (excluding prd/tech-spec if using specific scopes).
     - `readme`: README.md file.
     - `prd`: Product Requirements Document.
     - `tech-spec`: Technical Specifications Document.
