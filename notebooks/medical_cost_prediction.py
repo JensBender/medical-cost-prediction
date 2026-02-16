@@ -353,7 +353,7 @@ df["DUPERSID"] = df["DUPERSID"].astype(str)
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 
-#     📌 Define semantic data types of features (numerical, binary, nominal, ordinal) for downstream tasks like EDA, further preprocessing steps, and machine learning.
+#     📌 Define semantic data types of features (numerical, binary, nominal, ordinal) for downstream tasks like EDA, further preprocessing steps, and machine learning. Distinguishes between <code>raw_</code> lists for discovery EDA and <code>input_</code> lists for validation of engineered features before they enter the preprocessing pipeline.
 # </div> 
 
 # %%
@@ -1399,25 +1399,25 @@ categorical_label_map["MARRY31X_GRP"] = categorical_label_map["MARRY31X"]
 categorical_label_map["EMPST31_GRP"] = categorical_label_map["EMPST31"]
 
 # %%
-# Define final data type lists (for model input)
-final_numerical_features = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
-final_binary_features = [
+# Define input data type lists (for pipeline input)
+input_numerical_features = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
+input_binary_features = [
     "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31", 
     "WLKLIM31", "COGLIM31", "JTPAIN31_M18", "HIBPDX", "CHOLDX", 
     "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX",
     "EMPST31_GRP", "RECENT_LIFE_TRANSITION"  # EMPST31_GRP is binary after collapsing categories
 ]
-final_nominal_features = ["REGION23", "MARRY31X_GRP", "INSCOV23"]
-final_ordinal_features = ["POVCAT23", "HIDEG"]
+input_nominal_features = ["REGION23", "MARRY31X_GRP", "INSCOV23"]
+input_ordinal_features = ["POVCAT23", "HIDEG"]
 
-# Final combined feature sets
-final_categorical_features = final_nominal_features + final_ordinal_features + final_binary_features
-final_all_features = final_numerical_features + final_categorical_features
+# Input combined feature sets
+input_categorical_features = input_nominal_features + input_ordinal_features + input_binary_features
+input_all_features = input_numerical_features + input_categorical_features
 
 # %%
 # Verify results
-plot_categorical_distributions(df, final_nominal_features, final_ordinal_features, display_labels, categorical_label_map, weights="PERWT23F")
-plot_binary_distributions(df, final_binary_features, display_labels, categorical_label_map, weights="PERWT23F")
+plot_categorical_distributions(df, input_nominal_features, input_ordinal_features, display_labels, categorical_label_map, weights="PERWT23F")
+plot_binary_distributions(df, input_binary_features, display_labels, categorical_label_map, weights="PERWT23F")
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -1679,9 +1679,9 @@ X_test[final_categorical_features] = X_test[final_categorical_features].fillna(m
 
 # Verify results
 pd.DataFrame({
-    "Training": X_train[final_categorical_features].isnull().sum(),
-    "Validation": X_val[final_categorical_features].isnull().sum(),
-    "Test": X_test[final_categorical_features].isnull().sum(),
+    "Training": X_train[input_categorical_features].isnull().sum(),
+    "Validation": X_val[input_categorical_features].isnull().sum(),
+    "Test": X_test[input_categorical_features].isnull().sum(),
 })
 
 
@@ -1742,7 +1742,7 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
 outlier_remover_3sd = OutlierRemover3SD()
 
 # Fit outlier remover to training data
-outlier_remover_3sd.fit(X_train, final_numerical_features)
+outlier_remover_3sd.fit(X_train, input_numerical_features)
 
 # Show outliers in training data
 print(f"Training Data: Identified {outlier_remover_3sd.outliers_} rows ({outlier_remover_3sd.outliers_ / len(outlier_remover_3sd.final_mask_) * 100:.1f}%) with outliers.\n")
