@@ -196,7 +196,12 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                 "actual_order": X.columns.tolist(),
                 "reason": "Column order mismatch or different set of columns"
             }
-            raise ColumnMismatchError("Feature names and feature order of input X must be the same as during .fit().", details=details)      
+            msg = (
+                "Feature names and feature order of input X must be the same as during .fit().\n"
+                f"Expected Order: {self.feature_names_in_}\n"
+                f"Actual Order: {X.columns.tolist()}"
+            )
+            raise ColumnMismatchError(msg, details=details)      
         
         # Check missing values 
         self._check_missing_values(X)
