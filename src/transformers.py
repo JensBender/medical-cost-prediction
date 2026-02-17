@@ -7,18 +7,18 @@ import pandas as pd
 # --- Custom error classes --- 
 # For missing values in required columns of the X input DataFrame (in MissingValueChecker)
 class MissingValueError(ValueError):
-    def __init__(self, message, missing_columns=None, failed_indices=None):
+    def __init__(self, message, missing_columns=None, missing_rows=None):
         super().__init__(message)
         self.missing_columns = missing_columns or []
-        self.failed_indices = failed_indices or []
+        self.missing_rows = missing_rows or []
 
-# For mismatch between expected and actual columns in X input DataFrame (missing, unexpected, or wrong order)
+# For mismatch between expected and actual columns in the X input DataFrame (missing, unexpected, or wrong order)
 class ColumnMismatchError(ValueError):
     pass
 
 
 # --- Custom transformer classes --- 
-# Custom transformer class to check missing values ---
+# Transformer class to check missing values ---
 class MissingValueChecker(BaseEstimator, TransformerMixin):
     def __init__(self, required_features, optional_features=None, strict=True):
         # Default optional_features to an empty list if not provided
@@ -60,9 +60,9 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         """Internal helper to identify missing values and either raise errors or print warnings."""
         # Required features 
         missing_mask_required = X[self.required_features].isnull()
-        n_missing_total_required = missing_mask_required.sum().sum()
+        n_missing_required = missing_mask_required.sum().sum()
         
-        if n_missing_total_required > 0:
+        if n_missing_required > 0:
             # Identify columns and row indices with missing values
             failed_columns = missing_mask_required.columns[missing_mask_required.any()].tolist()
             failed_indices = X.index[missing_mask_required.any(axis=1)].tolist()
@@ -73,7 +73,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             index_report = str(truncated_indices) + ("..." if n_missing_rows_required > 5 else "")
             
             # Grammatical helpers
-            values_word = "value" if n_missing_total_required == 1 else "values"
+            values_word = "value" if n_missing_required == 1 else "values"
             rows_word = "row" if n_missing_rows_required == 1 else "rows"
             
             # Identify display labels for failed columns
@@ -81,14 +81,14 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
 
             # Craft detailed summary message
             msg = (
-                f"Missing Value Error: {n_missing_total_required} missing {values_word} found in required features "
+                f"Missing Value Error: {n_missing_required} missing {values_word} found in required features "
                 f"across {n_missing_rows_required} {rows_word}.\n"
                 f"Affected Features: {failed_columns} ({failed_labels})\n"
                 f"Affected Row Indices: {index_report}"
             )
             
             if self.strict:  
-                raise MissingValueError(msg, missing_columns=failed_columns, failed_indices=failed_indices)
+                raise MissingValueError(msg, missing_columns=failed_columns, missing_rows=failed_indices)
             else:
                 print(f"Warning: {msg}\nThese will be imputed.")
 
@@ -97,24 +97,30 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             return
 
         missing_mask_optional = X[self.optional_features].isnull()
-        n_missing_total_optional = missing_mask_optional.sum().sum()
+        n_missing_optional = missing_mask_optional.sum().sum()
 
-        if n_missing_total_optional > 0:
+        if n_missing_optional > 0:
             failed_columns_opt = missing_mask_optional.columns[missing_mask_optional.any()].tolist()
-            n_missing_rows_optional = missing_mask_optional.any(axis=1).sum()
+            failed_indices_opt = X.index[missing_mask_optional.any(axis=1)].tolist()
+            n_missing_rows_optional = len(failed_indices_opt)
             
+            # Format row index report (truncate to top 5 for the message string)
+            truncated_indices_opt = failed_indices_opt[:5]
+            index_report_opt = str(truncated_indices_opt) + ("..." if n_missing_rows_optional > 5 else "")
+
             # Grammatical helpers
-            values_word = "value" if n_missing_total_optional == 1 else "values"
+            values_word = "value" if n_missing_optional == 1 else "values"
             rows_word = "row" if n_missing_rows_optional == 1 else "rows"
             
             # Identify display labels for categorical features
             failed_labels_opt = [DISPLAY_LABELS.get(col, col) for col in failed_columns_opt]
 
             print(
-                f"Warning: {n_missing_total_optional} missing {values_word} found in optional features "
+                f"Warning: {n_missing_optional} missing {values_word} found in optional features "
                 f"across {n_missing_rows_optional} {rows_word}.\n"
                 f"Affected Features: {failed_columns_opt} ({failed_labels_opt})\n"
-                f"Missing values will be imputed."
+                f"Affected Row Indices: {index_report_opt}\n"
+                f"These will be imputed."
             )
             
     def fit(self, X, y=None):
