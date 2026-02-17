@@ -44,7 +44,8 @@ Currently developing an end-to-end machine learning application to predict annua
   <li>
     <a href="#️-getting-started">Getting Started</a>
     <ul>
-      <li><a href="#-virtual-environments">Virtual Environments</a></li>
+      <li><a href="#installation-and-setup">Installation and Setup</a></li>
+      <li><a href="#production-deployment">Production Deployment</a></li>
     </ul>
   </li>
   <li>
@@ -263,22 +264,35 @@ The distribution of annual out-of-pocket health care costs (`TOTSLF23`) exhibits
 
 ## ⚙️ Getting Started
 
-### Virtual Environments
-This project uses two isolated environments to keep application dependencies lightweight for production deployment.
+### Installation and Setup
+This project uses two isolated virtual environments to keep application dependencies lightweight. **In both setups, the project is installed as a local package, ensuring that the `src/` module can be reliably imported from any folder.**
 
-**Training Environment** (`.venv-train`)
-- **Requirements File:** `requirements-train.txt`
-- **Purpose:** Model development (preprocessing, EDA, training, evaluation, tuning, selection)
-- **Key Libraries:** `jupyterlab`, `pandas`, `matplotlib`, `seaborn`, `scikit-learn`
+**1. Training Environment (`.venv-train`)**
+- **Purpose:** Model development (preprocessing, EDA, training, evaluation, tuning).
+- **Setup:**
+  ```bash
+  python -m venv .venv-train
+  source .venv-train/bin/activate  # or .venv-train\Scripts\activate on Windows
+  pip install -r requirements-train.txt
+  ```
+- **Import Logic:** This environment uses an **editable install** (`-e .[train]`). Changes you make to `src/` are instantly available in your notebooks without re-installation.
 
-**Application Environment** (`.venv-app`)
-- **Requirements Files:** 
-    - `requirements.txt`: Web application dependencies for production deployment (used by deployment platforms)
-    - `requirements-test.txt`: Inherits from `requirements.txt` and adds `pytest` for local testing
-- **Purpose:** Run and test the web application 
-- **Key Libraries:** `fastapi`, `gradio`, `scikit-learn`
+**2. Application Environment (`.venv-app`)**
+- **Purpose:** Run and test the web application.
+- **Setup:**
+  ```bash
+  python -m venv .venv-app
+  source .venv-app/bin/activate  # or .venv-app\Scripts\activate on Windows
+  pip install -r requirements.txt
+  ```
+- **Import Logic:** This environment installs the project as a **regular package** (`. [app]`). This mirrors the production environment, allowing the app to reliably import from `src/` regardless of where it is launched.
 
-**Note:** Both environments use the same version of `scikit-learn` to ensure model consistency across training and deployment.
+#### Production Deployment 
+The project is optimized for deployment. When you connect your repository to Hugging Face Spaces (or any platform using `requirements.txt`), it automatically runs:
+```bash
+pip install -r requirements.txt
+```
+Because `requirements.txt` contains `. [app]`, the platform installs the project itself as a package. This ensures your application can always find the `src` module regardless of the working directory.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
