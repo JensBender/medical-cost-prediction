@@ -1,6 +1,10 @@
 from sklearn.base import BaseEstimator, TransformerMixin 
 from sklearn.utils.validation import check_is_fitted
 import pandas as pd
+import logging
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 
 # --- Custom error classes --- 
@@ -129,7 +133,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                 }
                 raise MissingValueError(f"Missing Value Error: {msg}", details=details)
             else:
-                print(f"Missing Value Warning: {msg}\nThese missings will be imputed.")
+                logger.warning(f"Missing Value Warning: {msg}\nThese missings will be imputed.")
 
         # Optional features
         if not self.optional_features:
@@ -151,7 +155,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             values_word = "value" if n_missing_optional == 1 else "values"
             rows_word = "row" if n_missing_rows_optional == 1 else "rows"
             
-            print(
+            logger.warning(
                 f"Warning: {n_missing_optional} missing {values_word} found in optional features "
                 f"across {n_missing_rows_optional} {rows_word}.\n"
                 f"Affected Features: {failed_columns_opt}\n"
