@@ -5,16 +5,43 @@ import pandas as pd
 
 
 # --- Custom error classes --- 
-# For missing values in required columns of the X input DataFrame (in MissingValueChecker)
+# For missing values in required features of the X input DataFrame (in MissingValueChecker)
 class MissingValueError(ValueError):
-    def __init__(self, message, missing_columns=None, missing_rows=None):
+    """Custom error for missing values in required features.
+    
+    Attributes:
+        details (dict): Structured information about the error for API/programmatic usage.
+    """
+    def __init__(self, message, details=None):
         super().__init__(message)
-        self.missing_columns = missing_columns or []
-        self.missing_rows = missing_rows or []
+        self.details = details or {}
+
+    def to_dict(self):
+        """Returns a dictionary representation of the error for API responses."""
+        return {
+            "error_type": self.__class__.__name__,
+            "message": str(self),
+            "details": self.details
+        }
 
 # For mismatch between expected and actual columns in the X input DataFrame (missing, unexpected, or wrong order)
 class ColumnMismatchError(ValueError):
-    pass
+    """Custom error for mismatch between expected and actual columns.
+    
+    Attributes:
+        details (dict): Structured information about the mismatch for API/programmatic usage.
+    """
+    def __init__(self, message, details=None):
+        super().__init__(message)
+        self.details = details or {}
+
+    def to_dict(self):
+        """Returns a dictionary representation of the error for API responses."""
+        return {
+            "error_type": self.__class__.__name__,
+            "message": str(self),
+            "details": self.details
+        }
 
 
 # --- Custom transformer classes --- 
@@ -49,12 +76,22 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         expected_columns = set(self.required_features + self.optional_features)
         missing_columns = expected_columns - input_columns 
         if missing_columns:
-            raise ColumnMismatchError(f"Input X is missing the following columns: {', '.join(missing_columns)}.")
+            details = {
+                "missing_columns": list(missing_columns),
+                "expected_columns": list(expected_columns),
+                "actual_columns": list(input_columns)
+            }
+            raise ColumnMismatchError(f"Input X is missing the following columns: {', '.join(missing_columns)}.", details=details)
 
         # Ensure DataFrame has no unexpected columns
         unexpected_columns = input_columns - expected_columns
         if unexpected_columns:
-            raise ColumnMismatchError(f"Input X contains the following columns that are neither defined in 'required_features' nor in 'optional_features': {', '.join(unexpected_columns)}.")
+            details = {
+                "unexpected_columns": list(unexpected_columns),
+                "expected_columns": list(expected_columns),
+                "actual_columns": list(input_columns)
+            }
+            raise ColumnMismatchError(f"Input X contains the following columns that are neither defined in 'required_features' nor in 'optional_features': {', '.join(unexpected_columns)}.", details=details)
 
     def _check_missing_values(self, X):
         """Internal helper to identify missing values and either raise errors or print warnings."""
@@ -88,7 +125,14 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             )
             
             if self.strict:  
-                raise MissingValueError(msg, missing_columns=failed_columns, missing_rows=failed_indices)
+                details = {
+                    "total_missing_values": int(n_missing_required),
+                    "total_affected_rows": int(n_missing_rows_required),
+                    "affected_features": failed_columns,
+                    "affected_labels": failed_labels,
+                    "affected_row_indices": [str(idx) for idx in failed_indices]
+                }
+                raise MissingValueError(msg, details=details)
             else:
                 print(f"Warning: {msg}\nThese will be imputed.")
 
@@ -131,7 +175,15 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         all_features = self.required_features + self.optional_features
         for feature in all_features:
             if X[feature].isnull().all():
-                raise MissingValueError(f"'{feature}' contains only missing values. At least one non-missing value is required to fit the imputer.")
+                details = {
+                    "feature": feature,
+                    "label": DISPLAY_LABELS.get(feature, feature),
+                    "reason": "Column is 100% missing"
+                }
+                raise MissingValueError(
+                    f"'{feature}' contains only missing values. At least one non-missing value is required to fit the imputer.",
+                    details=details
+                )
 
         # Store input feature number and names as learned attributes
         self.n_features_in_ = X.shape[1]
@@ -148,7 +200,12 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         
         # Ensure input feature names and feature order is the same as during .fit()
         if X.columns.tolist() != self.feature_names_in_:
-            raise ColumnMismatchError("Feature names and feature order of input X must be the same as during .fit().")      
+            details = {
+                "expected_order": self.feature_names_in_,
+                "actual_order": X.columns.tolist(),
+                "reason": "Column order mismatch or different set of columns"
+            }
+            raise ColumnMismatchError("Feature names and feature order of input X must be the same as during .fit().", details=details)      
         
         # Check missing values 
         self._check_missing_values(X)
