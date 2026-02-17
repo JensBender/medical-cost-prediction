@@ -263,8 +263,9 @@ df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy()
 df.dtypes
 
 # %%
-# Convert ID to string
+# Convert ID to string and set as index
 df["DUPERSID"] = df["DUPERSID"].astype(str)
+df.set_index("DUPERSID", inplace=True)
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 
