@@ -91,3 +91,22 @@ CATEGORICAL_LABELS = {
     "MARRY31X_GRP": {1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married", 6: "Under 16"},
     "EMPST31_GRP": {1: "Employed", 4: "Not Employed"}
 }
+
+# List of Required Features
+# Note: Features selected based on subject matter expertise (known from prior healthcare research). 
+# Refine based on data (feature importance scores) after model training.
+REQUIRED_FEATURES = [
+    "AGE23X",    # Primary driver of medical utilization and costs
+    "SEX",       # Key driver of utilization frequency and spending disparities documented in healthcare literature
+    "INSCOV23",  # Critical for out-of-pocket cost prediction
+    "REGION23",  # Captures geographic variance in healthcare pricing
+    "RTHLTH31"   # Self-reported health is a powerful proxy for healthcare demand
+]
+
+# List of Optional Features (can be imputed if missing)
+OPTIONAL_FEATURES = [
+    "MARRY31X", "FAMSZE23", "POVCAT23", "HIDEG", "EMPST31",
+    "HAVEUS42", "MNHLTH31", "ADSMOK42",
+    "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
+    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
+]
