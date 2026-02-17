@@ -69,6 +69,7 @@ from sklearn.metrics import (
 
 # Local imports
 from src.constants import DISPLAY_LABELS, CATEGORICAL_LABELS
+from src.transformers import MissingValueChecker
 from src.pipeline import create_preprocessing_pipeline
 
 # Configuration
@@ -216,11 +217,6 @@ columns_to_keep = [
 
 # Drop all other columns (keeping 29 out of 1,374)
 df = df[columns_to_keep]
-
-# %%
-
-# %% [markdown]
-#
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
@@ -1296,8 +1292,6 @@ employment_transitions = [2, 3]
 df["RECENT_LIFE_TRANSITION"] = (df["MARRY31X"].isin(marital_transitions) | df["EMPST31"].isin(employment_transitions)).astype(float)
 df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] = np.nan
 
-# %%
-
 # Collapse categories into their stable counterparts 
 # For Marital Status: Map 7->1 (Married), 8->2 (Widowed), 9->3 (Divorced), 10->4 (Separated)
 marital_map = {7: 1, 8: 2, 9: 3, 10: 4}
@@ -1308,8 +1302,6 @@ df["MARRY31X_GRP"] = df["MARRY31X"].replace(marital_map)
 # Transitioner signal is preserved in RECENT_LIFE_TRANSITION.
 employment_map = {2: 4, 3: 4} 
 df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
-
-# %%
 
 # %%
 # Define input data type lists (for pipeline input)
@@ -1526,6 +1518,27 @@ split_verification_df.style.format("{:,.1f}") \
 #     <strong>Identification</strong> <br>
 #     📌 Identify missing values.
 # </div>
+
+# %%
+# Test Missing Value Checker
+required_features = [
+    "AGE23X",    # Primary driver of medical utilization and costs
+    "SEX",       # Key driver of utilization frequency and spending disparities documented in healthcare literature
+    "INSCOV23",  # Critical for out-of-pocket cost prediction
+    "REGION23",  # Captures geographic variance in healthcare pricing
+    "RTHLTH31"   # Self-reported health is a powerful proxy for healthcare demand
+]
+
+optional_features = [
+    "MARRY31X_GRP", "FAMSZE23", "POVCAT23", "HIDEG", "EMPST31_GRP", "RECENT_LIFE_TRANSITION",
+    "HAVEUS42", "MNHLTH31", "ADSMOK42",
+    "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
+    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
+]
+
+missing_value_checker = MissingValueChecker(required_features, optional_features)
+missing_value_checker.fit(X_train[input_all_features])
+missing_value_checker.transform(X_train[input_all_features])
 
 # %%
 # Create a summary table for missing values
