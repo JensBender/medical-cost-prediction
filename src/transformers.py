@@ -114,7 +114,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             
             # Craft detailed summary message
             msg = (
-                f"Missing Value Error: {n_missing_required} missing {values_word} found in required features "
+                f"{n_missing_required} missing {values_word} found in required features "
                 f"across {n_missing_rows_required} {rows_word}.\n"
                 f"Affected Features: {failed_columns}\n"
                 f"Affected Row Indices: {index_report}"
@@ -127,9 +127,9 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                     "affected_features": failed_columns,
                     "affected_row_indices": [str(idx) for idx in failed_indices]
                 }
-                raise MissingValueError(msg, details=details)
+                raise MissingValueError(f"Missing Value Error: {msg}", details=details)
             else:
-                print(f"Warning: {msg}\nThese will be imputed.")
+                print(f"Missing Value Warning: {msg}\nThese missings will be imputed.")
 
         # Optional features
         if not self.optional_features:
@@ -156,7 +156,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                 f"across {n_missing_rows_optional} {rows_word}.\n"
                 f"Affected Features: {failed_columns_opt}\n"
                 f"Affected Row Indices: {index_report_opt}\n"
-                f"These will be imputed."
+                f"These missings will be imputed."
             )
             
     def fit(self, X, y=None):
