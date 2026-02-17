@@ -1,6 +1,5 @@
 from sklearn.base import BaseEstimator, TransformerMixin 
 from sklearn.utils.validation import check_is_fitted
-from .constants import DISPLAY_LABELS
 import pandas as pd
 
 
@@ -113,14 +112,11 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             values_word = "value" if n_missing_required == 1 else "values"
             rows_word = "row" if n_missing_rows_required == 1 else "rows"
             
-            # Identify display labels for failed columns
-            failed_labels = [DISPLAY_LABELS.get(col, col) for col in failed_columns]
-
             # Craft detailed summary message
             msg = (
                 f"Missing Value Error: {n_missing_required} missing {values_word} found in required features "
                 f"across {n_missing_rows_required} {rows_word}.\n"
-                f"Affected Features: {failed_columns} ({failed_labels})\n"
+                f"Affected Features: {failed_columns}\n"
                 f"Affected Row Indices: {index_report}"
             )
             
@@ -129,7 +125,6 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                     "total_missing_values": int(n_missing_required),
                     "total_affected_rows": int(n_missing_rows_required),
                     "affected_features": failed_columns,
-                    "affected_labels": failed_labels,
                     "affected_row_indices": [str(idx) for idx in failed_indices]
                 }
                 raise MissingValueError(msg, details=details)
@@ -156,13 +151,10 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             values_word = "value" if n_missing_optional == 1 else "values"
             rows_word = "row" if n_missing_rows_optional == 1 else "rows"
             
-            # Identify display labels for categorical features
-            failed_labels_opt = [DISPLAY_LABELS.get(col, col) for col in failed_columns_opt]
-
             print(
                 f"Warning: {n_missing_optional} missing {values_word} found in optional features "
                 f"across {n_missing_rows_optional} {rows_word}.\n"
-                f"Affected Features: {failed_columns_opt} ({failed_labels_opt})\n"
+                f"Affected Features: {failed_columns_opt}\n"
                 f"Affected Row Indices: {index_report_opt}\n"
                 f"These will be imputed."
             )
@@ -177,7 +169,6 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             if X[feature].isnull().all():
                 details = {
                     "feature": feature,
-                    "label": DISPLAY_LABELS.get(feature, feature),
                     "reason": "Column is 100% missing"
                 }
                 raise MissingValueError(
