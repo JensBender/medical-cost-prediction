@@ -122,8 +122,8 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             
             if self.strict:  
                 details = {
-                    "total_missing_values": int(n_missing_required),
-                    "total_affected_rows": int(n_missing_rows_required),
+                    "n_missing": int(n_missing_required),
+                    "n_missing_rows": int(n_missing_rows_required),
                     "affected_features": failed_columns,
                     "affected_row_indices": [str(idx) for idx in failed_indices]
                 }
