@@ -48,8 +48,17 @@ class ColumnMismatchError(ValueError):
 
 
 # --- Custom transformer classes --- 
-# Transformer class to check missing values ---
 class MissingValueChecker(BaseEstimator, TransformerMixin):
+    """
+    Validates the presence of missing values across required and optional features.
+
+    In strict mode (default), any missing values in 'required_features' will raise a 
+    MissingValueError, making it suitable for production/deployment validation. 
+    In non-strict mode, these are instead logged as warnings, allowing the 
+    pipeline to continue (typically for training where imputation is acceptable).
+    Missing values in 'optional_features' always trigger a warning and are 
+    expected to be handled by downstream imputation.
+    """
     def __init__(self, required_features, optional_features=None, strict=True):
         # Default optional_features to an empty list if not provided
         if optional_features is None:
