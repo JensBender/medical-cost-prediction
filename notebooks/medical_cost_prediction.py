@@ -69,7 +69,7 @@ from sklearn.metrics import (
 
 # Local imports
 from src.constants import DISPLAY_LABELS, CATEGORICAL_LABELS
-from src.transformers import MissingValueChecker
+from src.transformers import MissingValueChecker, MissingValueError
 from src.pipeline import create_preprocessing_pipeline
 
 # Configuration
@@ -1305,7 +1305,7 @@ employment_map = {2: 4, 3: 4}
 df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
 
 # %%
-# Define input data type lists (for pipeline input)
+# Define feature lists for pipeline input 
 input_numerical_features = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
 input_binary_features = [
     "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31", 
@@ -1316,7 +1316,7 @@ input_binary_features = [
 input_nominal_features = ["REGION23", "MARRY31X_GRP", "INSCOV23"]
 input_ordinal_features = ["POVCAT23", "HIDEG"]
 
-# Input combined feature sets
+# Combined feature sets
 input_categorical_features = input_nominal_features + input_ordinal_features + input_binary_features
 input_all_features = input_numerical_features + input_categorical_features
 
@@ -1521,27 +1521,6 @@ split_verification_df.style.format("{:,.1f}") \
 # </div>
 
 # %%
-# Test Missing Value Checker
-required_features = [
-    "AGE23X",    # Primary driver of medical utilization and costs
-    "SEX",       # Key driver of utilization frequency and spending disparities documented in healthcare literature
-    "INSCOV23",  # Critical for out-of-pocket cost prediction
-    "REGION23",  # Captures geographic variance in healthcare pricing
-    "RTHLTH31"   # Self-reported health is a powerful proxy for healthcare demand
-]
-
-optional_features = [
-    "MARRY31X_GRP", "FAMSZE23", "POVCAT23", "HIDEG", "EMPST31_GRP", "RECENT_LIFE_TRANSITION",
-    "HAVEUS42", "MNHLTH31", "ADSMOK42",
-    "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
-    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
-]
-
-missing_value_checker = MissingValueChecker(required_features, optional_features)
-missing_value_checker.fit(X_train[input_all_features])
-missing_value_checker.transform(X_train[input_all_features])
-
-# %%
 # Create a summary table for missing values
 missing_value_df = pd.DataFrame({
     "Training": X_train.isnull().sum(),
@@ -1578,6 +1557,40 @@ missing_value_df.sort_values("Training", ascending=False).style.format({
 #     <strong>Imputation</strong> <br>
 #     📌 Impute missing values. Use the median for numerical features and the mode (most frequent value) for categorical features.
 # </div>
+
+# %%
+# Test Missing Value Checker
+required_features = [
+    "AGE23X",    # Primary driver of medical utilization and costs
+    "SEX",       # Key driver of utilization frequency and spending disparities documented in healthcare literature
+    "INSCOV23",  # Critical for out-of-pocket cost prediction
+    "REGION23",  # Captures geographic variance in healthcare pricing
+    "RTHLTH31"   # Self-reported physical health is a powerful proxy for healthcare demand
+]
+
+optional_features = [
+    "MARRY31X_GRP", "FAMSZE23", "POVCAT23", "HIDEG", "EMPST31_GRP", "RECENT_LIFE_TRANSITION",
+    "HAVEUS42", "MNHLTH31", "ADSMOK42",
+    "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
+    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
+]
+
+missing_value_checker = MissingValueChecker(required_features, optional_features, strict=False)
+missing_value_checker.fit(X_train[input_all_features])
+missing_value_checker.transform(X_train[input_all_features])
+
+# %%
+# Test preprocessing pipeline
+preprocessor = create_preprocessing_pipeline(
+    required_features, 
+    optional_features, 
+    input_numerical_features, 
+    input_categorical_features, 
+    strict=False
+)
+
+X_train_preprocessed = preprocessor.fit_transform(X_train)
+X_train_preprocessed
 
 # %%
 # Calculate median for each numerical feature from training data
