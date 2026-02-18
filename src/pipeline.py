@@ -24,6 +24,7 @@ def create_preprocessing_pipeline(required_features, optional_features, numerica
                 ("numerical_imputer", SimpleImputer(strategy="median"), numerical_features),
                 ("categorical_imputer", SimpleImputer(strategy="most_frequent"), categorical_features)
             ],
-            remainder="drop"
+            remainder="drop",
+            verbose_feature_names_out=False  # Preserves input column names instead of adding prefix 
         ))
     ])
