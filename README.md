@@ -265,7 +265,7 @@ The distribution of annual out-of-pocket health care costs (`TOTSLF23`) exhibits
 ## ⚙️ Getting Started
 
 ### Installation and Setup
-This project uses two isolated virtual environments to keep application dependencies lightweight. **In both setups, the project is installed as a local package, ensuring that the `src/` module can be reliably imported from any folder.**
+This project uses two isolated virtual environments to keep application dependencies lightweight. In both setups, the project is installed as a local package, ensuring that the `src/` module can be reliably imported from any folder.
 
 **1. Training Environment (`.venv-train`)**
 - **Purpose:** Model development (preprocessing, EDA, training, evaluation, tuning).
@@ -288,7 +288,7 @@ This project uses two isolated virtual environments to keep application dependen
 - **Import Logic:** This environment installs the project as a **regular package** (`. [app]`). This mirrors the production environment, allowing the app to reliably import from `src/` regardless of where it is launched.
 
 #### Production Deployment 
-The project is optimized for deployment. When you connect your repository to Hugging Face Spaces (or any platform using `requirements.txt`), it automatically runs:
+The project is optimized for deployment on Hugging Face. When you connect your repository to Hugging Face Spaces (or any platform using `requirements.txt`), it automatically runs:
 ```bash
 pip install -r requirements.txt
 ```
