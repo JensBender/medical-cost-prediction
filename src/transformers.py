@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 # --- Custom error classes --- 
-# For missing values in required features of the X input DataFrame (in MissingValueChecker)
+# For missing values in required features of the provided DataFrame (in MissingValueChecker)
 class MissingValueError(ValueError):
     """Custom error for missing values in required features.
     
@@ -27,7 +27,7 @@ class MissingValueError(ValueError):
             "details": self.details
         }
 
-# For missing columns in the X input DataFrame
+# For missing columns in the provided DataFrame
 class MissingColumnError(ValueError):
     """Custom error for missing columns.
     
@@ -81,7 +81,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
     def _validate_input(self, X):
         # Ensure X input is DataFrame
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("Input X must be a pandas DataFrame.")          
+            raise TypeError("The provided input X must be a pandas DataFrame.")          
         
         # Ensure DataFrame has no missing columns
         input_columns = set(X.columns)
@@ -93,13 +93,13 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                 "expected_columns": list(expected_columns),
                 "actual_columns": list(input_columns)
             }
-            raise MissingColumnError(f"Input X is missing the following columns: {', '.join(missing_columns)}.", details=details)
+            raise MissingColumnError(f"The provided DataFrame is missing the following columns: {', '.join(missing_columns)}.", details=details)
 
         # Log unexpected columns but do not raise an error 
         unexpected_columns = input_columns - expected_columns
         if unexpected_columns:
             logger.warning(
-                f"Input X contains unexpected columns that are not in the feature list and will be ignored.\n"
+                f"The provided DataFrame contains unexpected columns that are not in the feature list and will be ignored.\n"
                 f"Unexpected columns: {', '.join(unexpected_columns)}."
             )
 
