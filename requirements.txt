@@ -1,2 +1,2 @@
 # Deployment dependencies for Web App/API defined in pyproject.toml
-. [app]
+.[app]

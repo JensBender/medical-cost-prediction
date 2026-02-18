@@ -285,7 +285,7 @@ This project uses three isolated virtual environments to keep application depend
   source .venv-app/bin/activate  # or .venv-app\Scripts\activate on Windows
   pip install -r requirements.txt
   ```
-- **Import Logic:** This environment installs the project as a **regular package** (`. [app]`). This mirrors the production environment, allowing the app to reliably import from `src/` regardless of where it is launched.
+- **Import Logic:** This environment installs the project as a **regular package** (`.[app]`). This mirrors the production environment, allowing the app to reliably import from `src/` regardless of where it is launched.
 
 **3. Testing Environment (`.venv-test`)**
 - **Purpose:** Web App/API testing using unit, integration, and end-to-end tests with `pytest`.
