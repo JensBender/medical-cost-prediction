@@ -190,8 +190,6 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         self.n_features_in_ = X.shape[1]
         self.feature_names_in_ = X.columns.tolist()
 
-        return self 
-
     def transform(self, X):
         # Ensure .fit() happened before
         check_is_fitted(self)
@@ -202,4 +200,9 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         # Check missing values 
         self._check_missing_values(X)
 
+        return X
+
+    def fit_transform(self, X, y=None):
+        self.fit(X, y)
+        self._check_missing_values(X)
         return X
