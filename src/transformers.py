@@ -99,8 +99,8 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         unexpected_columns = input_columns - expected_columns
         if unexpected_columns:
             logger.warning(
-                f"The provided DataFrame contains unexpected columns that are not in the feature list and will be ignored.\n"
-                f"Unexpected columns: {', '.join(unexpected_columns)}."
+                f"Unexpected Column Warning: The provided DataFrame contains columns that are not in the feature list and will be ignored.\n"
+                f"Unexpected Columns: {', '.join(unexpected_columns)}.\n"
             )
 
     def _check_missing_values(self, X):
@@ -140,7 +140,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                 }
                 raise MissingValueError(f"Missing Value Error: {msg}", details=details)
             else:
-                logger.warning(f"Missing Value Warning: {msg}")
+                logger.warning(f"Missing Value Warning: {msg}\n")
 
         # Optional features
         if not self.optional_features:
@@ -166,7 +166,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                 f"Missing Value Warning: {n_missing_optional} missing {values_word} found in optional features "
                 f"across {n_missing_rows_optional} {rows_word}. These will be imputed.\n"
                 f"Affected Features: {failed_columns_opt_report}\n"
-                f"Affected Row Indices: {failed_indices_opt_report}"
+                f"Affected Row Indices: {failed_indices_opt_report}\n"
             )
 
     def fit(self, X, y=None):
