@@ -40,6 +40,11 @@ app = [
     "requests==2.32.5",
 ]
 
+# Dependencies for testing the Web App/API 
+test = [
+    "pytest"
+]
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["src*"]

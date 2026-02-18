@@ -1,0 +1,2 @@
+# Testing dependencies for Web App/API defined in pyproject.toml
+-e .[app,test]
