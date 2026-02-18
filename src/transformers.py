@@ -108,9 +108,9 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             failed_indices = X.index[missing_mask_required.any(axis=1)].tolist()
             n_missing_rows_required = len(failed_indices)
             
-            # Format row index report (truncate to top 5 for the message string)
-            truncated_indices = failed_indices[:5]
-            index_report = str(truncated_indices) + ("..." if n_missing_rows_required > 5 else "")
+            # Format failed columns and indices report (truncate to top 5 for the message string)
+            failed_columns_report = str(failed_columns[:5]) + ("..." if len(failed_columns) > 5 else "")
+            failed_indices_report = str(failed_indices[:5]) + ("..." if n_missing_rows_required > 5 else "")
             
             # Grammatical helpers
             values_word = "value" if n_missing_required == 1 else "values"
@@ -119,9 +119,9 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             # Craft detailed summary message
             msg = (
                 f"{n_missing_required} missing {values_word} found in required features "
-                f"across {n_missing_rows_required} {rows_word}.\n"
-                f"Affected Features: {failed_columns}\n"
-                f"Affected Row Indices: {index_report}"
+                f"across {n_missing_rows_required} {rows_word}. {'' if self.strict else 'These will be imputed.'}\n"
+                f"Affected Features: {failed_columns_report}\n"
+                f"Affected Row Indices: {failed_indices_report}"
             )
             
             if self.strict:  
@@ -133,7 +133,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                 }
                 raise MissingValueError(f"Missing Value Error: {msg}", details=details)
             else:
-                logger.warning(f"Missing Value Warning: {msg}\nThese missings will be imputed.")
+                logger.warning(f"Missing Value Warning: {msg}")
 
         # Optional features
         if not self.optional_features:
@@ -147,20 +147,19 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             failed_indices_opt = X.index[missing_mask_optional.any(axis=1)].tolist()
             n_missing_rows_optional = len(failed_indices_opt)
             
-            # Format row index report (truncate to top 5 for the message string)
-            truncated_indices_opt = failed_indices_opt[:5]
-            index_report_opt = str(truncated_indices_opt) + ("..." if n_missing_rows_optional > 5 else "")
+            # Format failed columns and indices report (truncate to top 5 for the message string)
+            failed_columns_opt_report = str(failed_columns_opt[:5]) + ("..." if len(failed_columns_opt) > 5 else "")
+            failed_indices_opt_report = str(failed_indices_opt[:5]) + ("..." if n_missing_rows_optional > 5 else "")
 
             # Grammatical helpers
             values_word = "value" if n_missing_optional == 1 else "values"
             rows_word = "row" if n_missing_rows_optional == 1 else "rows"
             
             logger.warning(
-                f"Warning: {n_missing_optional} missing {values_word} found in optional features "
-                f"across {n_missing_rows_optional} {rows_word}.\n"
-                f"Affected Features: {failed_columns_opt}\n"
-                f"Affected Row Indices: {index_report_opt}\n"
-                f"These missings will be imputed."
+                f"Missing Value Warning: {n_missing_optional} missing {values_word} found in optional features "
+                f"across {n_missing_rows_optional} {rows_word}. These will be imputed.\n"
+                f"Affected Features: {failed_columns_opt_report}\n"
+                f"Affected Row Indices: {failed_indices_opt_report}"
             )
             
     def fit(self, X, y=None):
