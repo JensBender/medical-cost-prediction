@@ -27,12 +27,12 @@ class MissingValueError(ValueError):
             "details": self.details
         }
 
-# For mismatch between expected and actual columns in the X input DataFrame (missing, unexpected, or wrong order)
-class ColumnMismatchError(ValueError):
-    """Custom error for mismatch between expected and actual columns.
+# For missing columns in the X input DataFrame
+class MissingColumnError(ValueError):
+    """Custom error for missing columns.
     
     Attributes:
-        details (dict): Structured information about the mismatch for API/programmatic usage.
+        details (dict): Structured information about the missing columns for API/programmatic usage.
     """
     def __init__(self, message, details=None):
         super().__init__(message)
@@ -93,17 +93,15 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                 "expected_columns": list(expected_columns),
                 "actual_columns": list(input_columns)
             }
-            raise ColumnMismatchError(f"Input X is missing the following columns: {', '.join(missing_columns)}.", details=details)
+            raise MissingColumnError(f"Input X is missing the following columns: {', '.join(missing_columns)}.", details=details)
 
-        # Ensure DataFrame has no unexpected columns
+        # Log unexpected columns but do not raise an error 
         unexpected_columns = input_columns - expected_columns
         if unexpected_columns:
-            details = {
-                "unexpected_columns": list(unexpected_columns),
-                "expected_columns": list(expected_columns),
-                "actual_columns": list(input_columns)
-            }
-            raise ColumnMismatchError(f"Input X contains the following columns that are neither defined in 'required_features' nor in 'optional_features': {', '.join(unexpected_columns)}.", details=details)
+            logger.warning(
+                f"Input X contains unexpected columns that are not in the feature list and will be ignored.\n"
+                f"Unexpected columns: {', '.join(unexpected_columns)}."
+            )
 
     def _check_missing_values(self, X):
         """Internal helper to identify missing values and either raise errors or print warnings."""
@@ -170,7 +168,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                 f"Affected Features: {failed_columns_opt_report}\n"
                 f"Affected Row Indices: {failed_indices_opt_report}"
             )
-            
+
     def fit(self, X, y=None):
         # Validate input 
         self._validate_input(X)  
@@ -201,23 +199,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         # Validate input 
         self._validate_input(X)    
         
-        # Ensure input feature names and feature order is the same as during .fit()
-        if X.columns.tolist() != self.feature_names_in_:
-            details = {
-                "expected_order": self.feature_names_in_,
-                "actual_order": X.columns.tolist(),
-                "reason": "Column order mismatch or different set of columns"
-            }
-            msg = (
-                "Feature names and feature order of input X must be the same as during .fit().\n"
-                f"Expected Order: {self.feature_names_in_}\n"
-                f"Actual Order: {X.columns.tolist()}"
-            )
-            raise ColumnMismatchError(msg, details=details)      
-        
         # Check missing values 
         self._check_missing_values(X)
 
         return X
-
-
