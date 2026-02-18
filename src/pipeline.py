@@ -1,38 +1,29 @@
+# Third-party library imports
 from sklearn.pipeline import Pipeline
 from sklearn import set_config
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
+
+# Local imports
+from src.transformers import MissingValueChecker
 
 # Ensure that the output of all scikit-learn transformers is a Pandas DataFrame
 set_config(transform_output="pandas")
 
 
 # Helper function to create the data preprocessing pipeline
-def create_preprocessing_pipeline(numerical_features, categorical_features):
+def create_preprocessing_pipeline(required_features, optional_features, numerical_features, categorical_features, strict=True):
     """
     Creates a scikit-learn pipeline for data preprocessing.
-    In this version, it only handles missing values by using a ColumnTransformer to impute the median 
-    for numerical features and the mode for categorical features.
+    In this version, it only handles missing values.
     """
-    
-    # Numerical transformer: Median imputation
-    numerical_transformer = Pipeline(steps=[
-        ("imputer", SimpleImputer(strategy="median"))
+    return Pipeline(steps=[
+        ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
+        ("missing_value_imputer", ColumnTransformer(
+            transformers=[
+                ("numerical_imputer", SimpleImputer(strategy="median"), numerical_features),
+                ("categorical_imputer", SimpleImputer(strategy="most_frequent"), categorical_features)
+            ],
+            remainder="drop"
+        ))
     ])
-    
-    # Categorical transformer: Mode imputation
-    categorical_transformer = Pipeline(steps=[
-        ("imputer", SimpleImputer(strategy="most_frequent"))
-    ])
-    
-    # Bundle preprocessing for numerical and categorical features
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ("num", numerical_transformer, numerical_features),
-            ("cat", categorical_transformer, categorical_features)
-        ],
-        remainder="drop" 
-    )
-    
-    return preprocessor
-
