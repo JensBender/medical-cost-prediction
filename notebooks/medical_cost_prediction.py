@@ -1559,28 +1559,7 @@ missing_value_df.sort_values("Training", ascending=False).style.format({
 # </div>
 
 # %%
-# Test Missing Value Checker
-required_features = [
-    "AGE23X",    # Primary driver of medical utilization and costs
-    "SEX",       # Key driver of utilization frequency and spending disparities documented in healthcare literature
-    "INSCOV23",  # Critical for out-of-pocket cost prediction
-    "REGION23",  # Captures geographic variance in healthcare pricing
-    "RTHLTH31"   # Self-reported physical health is a powerful proxy for healthcare demand
-]
-
-optional_features = [
-    "MARRY31X_GRP", "FAMSZE23", "POVCAT23", "HIDEG", "EMPST31_GRP", "RECENT_LIFE_TRANSITION",
-    "HAVEUS42", "MNHLTH31", "ADSMOK42",
-    "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
-    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
-]
-
-missing_value_checker = MissingValueChecker(required_features, optional_features, strict=False)
-missing_value_checker.fit(X_train[input_all_features])
-missing_value_checker.transform(X_train[input_all_features])
-
-# %%
-# Test preprocessing pipeline
+# Create preprocessing pipeline
 preprocessor = create_preprocessing_pipeline(
     required_features, 
     optional_features, 
@@ -1589,39 +1568,20 @@ preprocessor = create_preprocessing_pipeline(
     strict=False
 )
 
+# Preprocess training, validation, and test data
 X_train_preprocessed = preprocessor.fit_transform(X_train)
-X_train_preprocessed
+X_val_preprocessed = preprocessor.transform(X_val)
+X_test_preprocessed = preprocessor.transform(X_test)
 
 # %%
-# Calculate median for each numerical feature from training data
-medians = X_train[input_numerical_features].median()
-
-# Impute median in training, validation, and test data
-X_train[input_numerical_features] = X_train[input_numerical_features].fillna(medians)
-X_val[input_numerical_features] = X_val[input_numerical_features].fillna(medians)
-X_test[input_numerical_features] = X_test[input_numerical_features].fillna(medians)
-
-# Verify results
+# Verify results: Missing value counts of raw vs. preprocessed data
 pd.DataFrame({
-    "Training": X_train[input_numerical_features].isnull().sum(),
-    "Validation": X_val[input_numerical_features].isnull().sum(),
-    "Test": X_test[input_numerical_features].isnull().sum(),
-})
-
-# %%
-# Calculate mode for each categorical feature from training data
-modes = X_train[input_categorical_features].mode().loc[0]
-
-# Impute mode in training, validation, and test data
-X_train[input_categorical_features] = X_train[input_categorical_features].fillna(modes)
-X_val[input_categorical_features] = X_val[input_categorical_features].fillna(modes)
-X_test[input_categorical_features] = X_test[input_categorical_features].fillna(modes)
-
-# Verify results
-pd.DataFrame({
-    "Training": X_train[input_categorical_features].isnull().sum(),
-    "Validation": X_val[input_categorical_features].isnull().sum(),
-    "Test": X_test[input_categorical_features].isnull().sum(),
+    "Training": X_train[input_all_features].isnull().sum(),
+    "Training (Preprocessed)": X_train_preprocessed[input_all_features].isnull().sum(),
+    "Validation": X_val[input_all_features].isnull().sum(),
+    "Validation (Preprocessed)": X_val_preprocessed[input_all_features].isnull().sum(),
+    "Test": X_test[input_all_features].isnull().sum(),
+    "Test (Preprocessed)": X_test_preprocessed[input_all_features].isnull().sum(),
 })
 
 
