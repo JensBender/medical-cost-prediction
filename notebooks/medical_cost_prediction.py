@@ -1629,11 +1629,11 @@ pd.DataFrame({
 outlier_remover_3sd = OutlierRemover3SD()
 
 # Fit outlier remover to training data
-outlier_remover_3sd.fit(X_train, input_numerical_features)
+outlier_remover_3sd.fit(X_train_preprocessed, input_numerical_features)
 
 # Show outliers in training data
 print(f"Training Data: Identified {outlier_remover_3sd.outliers_} rows ({outlier_remover_3sd.outliers_ / len(outlier_remover_3sd.final_mask_) * 100:.1f}%) with outliers.\n")
-print("Outlier statistics by column:")
+print("Outliers by Column:")
 outlier_remover_3sd.stats_.style.format({
     "mean": "{:.2f}",
     "std": "{:.2f}",
@@ -1655,11 +1655,11 @@ outlier_remover_3sd.stats_.style.format({
 outlier_remover_iqr = OutlierRemoverIQR()
 
 # Fit outlier remover to training data
-outlier_remover_iqr.fit(X_train, input_numerical_features)
+outlier_remover_iqr.fit(X_train_preprocessed, input_numerical_features)
 
 # Show outliers by column for training data
 print(f"Training Data: Identified {outlier_remover_iqr.outliers_} rows ({outlier_remover_iqr.outliers_ / len(outlier_remover_iqr.final_mask_) * 100:.1f}%) with outliers.\n")
-print("Outliers statistics by column:")
+print("Outliers by Column:")
 outlier_remover_iqr.stats_.style.format({
     "Q1": "{:.1f}",
     "Q3": "{:.1f}",
