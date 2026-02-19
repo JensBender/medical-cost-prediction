@@ -1632,16 +1632,18 @@ outlier_remover_3sd = OutlierRemover3SD()
 outlier_remover_3sd.fit(X_train_preprocessed, input_numerical_features)
 
 # Show outliers in training data
-print(f"Training Data: Identified {outlier_remover_3sd.outliers_} rows ({outlier_remover_3sd.outliers_ / len(outlier_remover_3sd.final_mask_) * 100:.1f}%) with outliers.\n")
-print("Outliers by Column:")
-outlier_remover_3sd.stats_.style.format({
-    "mean": "{:.2f}",
-    "std": "{:.2f}",
-    "lower_cutoff": "{:.2f}",
-    "upper_cutoff": "{:.2f}",
-    "n_outliers": "{:.0f}",
-    "pct_outliers": "{:.1f}%"
-})
+summary_3sd = f"Training data contains {outlier_remover_3sd.outliers_} rows ({outlier_remover_3sd.outliers_ / len(outlier_remover_3sd.final_mask_) * 100:.1f}%) with outliers. Outliers by column below."
+outlier_remover_3sd.stats_.style \
+    .set_caption(f"<b>Outliers (3SD Method)</b> <br><span style='font-size:12px'>{summary_3sd}</span>") \
+    .set_table_styles([{"selector": "caption", "props": [("font-size", "14px"), ("text-align", "left")]}]) \
+    .format({
+        "mean": "{:.2f}",
+        "std": "{:.2f}",
+        "lower_cutoff": "{:.2f}",
+        "upper_cutoff": "{:.2f}",
+        "n_outliers": "{:.0f}",
+        "pct_outliers": "{:.1f}%"
+    })
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
@@ -1658,17 +1660,19 @@ outlier_remover_iqr = OutlierRemoverIQR()
 outlier_remover_iqr.fit(X_train_preprocessed, input_numerical_features)
 
 # Show outliers by column for training data
-print(f"Training Data: Identified {outlier_remover_iqr.outliers_} rows ({outlier_remover_iqr.outliers_ / len(outlier_remover_iqr.final_mask_) * 100:.1f}%) with outliers.\n")
-print("Outliers by Column:")
-outlier_remover_iqr.stats_.style.format({
-    "Q1": "{:.1f}",
-    "Q3": "{:.1f}",
-    "IQR": "{:.1f}",
-    "lower_cutoff": "{:.1f}",
-    "upper_cutoff": "{:.1f}",
-    "n_outliers": "{:.0f}",
-    "pct_outliers": "{:.1f}%"
-})
+summary_iqr = f"Training data contains {outlier_remover_iqr.outliers_} rows ({outlier_remover_iqr.outliers_ / len(outlier_remover_iqr.final_mask_) * 100:.1f}%) with outliers. Outliers by column below."
+outlier_remover_iqr.stats_.style \
+    .set_caption(f"<b>Outliers (1.5 IQR)</b> <br><span style='font-size:12px'>{summary_iqr}</span>") \
+    .set_table_styles([{"selector": "caption", "props": [("font-size", "14px"), ("text-align", "left")]}]) \
+    .format({
+        "Q1": "{:.1f}",
+        "Q3": "{:.1f}",
+        "IQR": "{:.1f}",
+        "lower_cutoff": "{:.1f}",
+        "upper_cutoff": "{:.1f}",
+        "n_outliers": "{:.0f}",
+        "pct_outliers": "{:.1f}%"
+    })
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
