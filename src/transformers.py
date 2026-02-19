@@ -100,7 +100,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         if unexpected_columns:
             logger.warning(
                 f"Unexpected Column Warning: The provided DataFrame contains columns that are not in the feature list and will be ignored.\n"
-                f"Unexpected Columns: {', '.join(unexpected_columns)}.\n"
+                f"- Unexpected Columns: {', '.join(unexpected_columns)}."
             )
 
     def _check_missing_values(self, X):
@@ -127,8 +127,8 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             msg = (
                 f"{n_missing_required} missing {values_word} found in required features "
                 f"across {n_missing_rows_required} {rows_word}. {'' if self.strict else 'These will be imputed.'}\n"
-                f"Affected Features: {failed_columns_report}\n"
-                f"Affected Row Indices: {failed_indices_report}"
+                f"- Affected Features: {failed_columns_report}\n"
+                f"- Affected Row Indices: {failed_indices_report}"
             )
             
             if self.strict:  
@@ -140,7 +140,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                 }
                 raise MissingValueError(f"Missing Value Error: {msg}", details=details)
             else:
-                logger.warning(f"Missing Value Warning: {msg}\n")
+                logger.warning(f"Missing Value Warning: {msg}")
 
         # Optional features
         if not self.optional_features:
@@ -165,8 +165,8 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             logger.warning(
                 f"Missing Value Warning: {n_missing_optional} missing {values_word} found in optional features "
                 f"across {n_missing_rows_optional} {rows_word}. These will be imputed.\n"
-                f"Affected Features: {failed_columns_opt_report}\n"
-                f"Affected Row Indices: {failed_indices_opt_report}\n"
+                f"- Affected Features: {failed_columns_opt_report}\n"
+                f"- Affected Row Indices: {failed_indices_opt_report}"
             )
 
     def fit(self, X, y=None):
