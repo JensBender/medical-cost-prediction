@@ -1670,12 +1670,35 @@ outlier_remover_iqr.stats_.style.format({
     "pct_outliers": "{:.1f}%"
 })
 
+# %%
+# Inspect Outliers: Compare descriptive statistics of normal vs. outlier 
+outlier_mask = X_train_preprocessed["FAMSZE23"] > outlier_remover_iqr.stats_["upper_cutoff"]["FAMSZE23"] 
+y_train.groupby(outlier_mask.map({False: "Normal", True: "Outlier"})).describe().T.style.format({
+    "count": "{:,.0f}",
+    "mean": "{:.2f}",
+    "std": "{:.2f}",
+    "min": "{:.1f}",
+    "25%": "{:.1f}",
+    "50%": "{:.1f}",
+    "75%": "{:.1f}",
+    "max": "{:.1f}"
+})
+
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insights: Use the 3SD method for outlier detection on this dataset.</b>
+#     💡 <b>Comparison of Outlier Handling Methods:</b> Use the 3SD method for this dataset. 
 #     <ul style="margin-top:10px; margin-bottom:0px">
 #         <li><b>1.5 IQR Method:</b> Yields a cutoff of 4.5 for <code>RTHLTH31</code>, causing all respondents who rated their health as "5 – Poor" to be flagged as outliers (3.6% of training data). These are not data errors — they are legitimate responses on a defined 1–5 scale and represent high-risk, high-cost patients. Quartiles are not meaningful for discrete features with a narrow value range like 1–5.</li>
 #         <li><b>3SD Method:</b> Is more appropriate for this data, because the it uses the full distribution (mean ± 3 standard deviations), so its cutoffs are naturally wider for discrete scales.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insight:</b> Do not remove outliers (family size > 7). They are a valid low-cost demographic.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Cost Pattern:</b> Large families (with 8+ family members) have a much lower cost, probably due to family out-of-pocket caps (once family-level maximum is reached, additional members effectively cost $0 individually).</li>
+#         <li><b>Decision:</b> These 110 rows reflect predictable insurance dynamics, not noise. Removing them would bias the model and ignore a real-world demographic.</li>
 #     </ul>
 # </div>
 
