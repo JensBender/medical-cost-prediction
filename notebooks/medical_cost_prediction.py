@@ -1507,8 +1507,10 @@ split_verification_df.style.format("{:,.1f}") \
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Perform feature engineering and preprocess the data for machine learning.
-# </div> 
+#     ℹ️ <b>Stateful Preprocessing:</b> Perform data preprocessing and feature engineering steps that are <i>stateful</i>, meaning they learn parameters from the data (e.g., medians for imputation, cutoff values for missing values). 
+#     <br><br>
+#     <b>⚠️ Prevent Data Leakage:</b> Data leakage happens when information from the test set accidentally leaks into the training process, creating a model that looks incredibly accurate in your notebook but fails completely in the real world. To prevent data leakage, you must always <code>.fit()</code> your transformers on the training data only, then apply those learned parameters to <code>.transform()</code> the validation and test data. 
+# </div>
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
