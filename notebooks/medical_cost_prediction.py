@@ -29,6 +29,11 @@
 # </div>
 
 # %%
+# Settings: Automatically reload local modules before each cell run (prevents having to restart kernel after changes)
+# %load_ext autoreload
+# %autoreload 2
+
+# %%
 # Data manipulation
 import pandas as pd
 import numpy as np
