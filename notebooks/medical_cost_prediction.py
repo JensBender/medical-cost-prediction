@@ -74,7 +74,12 @@ from sklearn.metrics import (
 
 # Local imports
 from src.constants import DISPLAY_LABELS, CATEGORICAL_LABELS
-from src.transformers import MissingValueChecker, MissingValueError
+from src.transformers import (
+    MissingValueChecker, 
+    MissingValueError,
+    OutlierRemover3SD,
+    OutlierRemoverIQR
+)
 from src.pipeline import create_preprocessing_pipeline
 
 # Configuration
@@ -1607,7 +1612,6 @@ pd.DataFrame({
     "Test (Preprocessed)": X_test_preprocessed[input_all_features].isnull().sum(),
 })
 
-
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Handling Outliers</h2>
@@ -1621,46 +1625,6 @@ pd.DataFrame({
 # <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 📌 Identify and remove univariate outliers in numerical columns by applying the 3 standard deviation rule (3SD). A data point is considered an outlier if it falls more than 3 standard deviations above or below the mean of the column.</p> 
 
 # %%
-# Custom scikit-learn transformer class to identify and remove outliers using the 3SD method
-class OutlierRemover3SD(BaseEstimator, TransformerMixin):
-    def fit(self, df, numerical_columns):
-        # Convert single column string to list
-        if isinstance(numerical_columns, str):
-            self.numerical_columns_ = [numerical_columns]
-        else:
-            self.numerical_columns_ = numerical_columns
-            
-        # Calculate statistics (mean, std, cutoff values) for each column
-        self.stats_ = pd.DataFrame(index=self.numerical_columns_)
-        self.stats_["mean"] = df[self.numerical_columns_].mean()
-        self.stats_["std"] = df[self.numerical_columns_].std()
-        self.stats_["lower_cutoff"] = self.stats_["mean"] - 3 * self.stats_["std"]
-        self.stats_["upper_cutoff"] = self.stats_["mean"] + 3 * self.stats_["std"]
-        
-        # Create masks for filtering outliers 
-        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
-        self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
-     
-        # Calculate number of outliers
-        self.stats_["n_outliers"] = (~self.masks_).sum()  # by column
-        self.stats_["pct_outliers"] = self.stats_["n_outliers"] / len(df) * 100  # by column
-        self.outliers_ = (~self.final_mask_).sum()  # across all columns
-        
-        return self
-
-    def transform(self, df):
-        # Create masks for df (can be a different df than during fit; e.g. X_train, X_test)
-        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
-        self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
-        
-        # Remove outliers based on the final mask
-        return df[self.final_mask_]
-
-    def fit_transform(self, df, numerical_columns):
-        # Perform both fit and transform 
-        return self.fit(df, numerical_columns).transform(df)
-
-
 # Initialize outlier remover 
 outlier_remover_3sd = OutlierRemover3SD()
 
@@ -1679,7 +1643,6 @@ outlier_remover_3sd.stats_.style.format({
     "pct_outliers": "{:.1f}%"
 })
 
-
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">1.5 IQR Method </h3>
@@ -1688,52 +1651,11 @@ outlier_remover_3sd.stats_.style.format({
 # <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 📌 Identify and remove univariate outliers in numerical columns using the 1.5 interquartile range (IQR) rule. A data point is considered an outlier if it falls more than 1.5 interquartile ranges above the third quartile (Q3) or below the first quartile (Q1) of the column.</p> 
 
 # %%
-# Custom scikit-learn transformer class to identify and remove outliers using the 1.5 IQR method
-class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
-    def fit(self, df, numerical_columns):
-        # Convert single column string to list
-        if isinstance(numerical_columns, str):
-            self.numerical_columns_ = [numerical_columns]
-        else:
-            self.numerical_columns_ = numerical_columns
-        
-        # Calculate statistics (quartiles, interquartile range, cutoff values) for each column
-        self.stats_ = pd.DataFrame(index=self.numerical_columns_)
-        self.stats_["Q1"] = df[self.numerical_columns_].quantile(0.25)
-        self.stats_["Q3"] = df[self.numerical_columns_].quantile(0.75)
-        self.stats_["IQR"] = self.stats_["Q3"] - self.stats_["Q1"]
-        self.stats_["lower_cutoff"] = self.stats_["Q1"] - 1.5 * self.stats_["IQR"]
-        self.stats_["upper_cutoff"] = self.stats_["Q3"] + 1.5 * self.stats_["IQR"]
-
-        # Create masks for filtering outliers 
-        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
-        self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
-
-        # Calculate number of outliers
-        self.stats_["n_outliers"] = (~self.masks_).sum()  # by column
-        self.stats_["pct_outliers"] = self.stats_["n_outliers"] / len(df) * 100  # by column
-        self.outliers_ = (~self.final_mask_).sum()  # across all columns
-               
-        return self
-
-    def transform(self, df):
-        # Create masks for df (can be a different df than during fit; e.g. X_train, X_test)
-        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
-        self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
-        
-        # Remove outliers based on the final mask
-        return df[self.final_mask_]
-
-    def fit_transform(self, df, numerical_columns):
-        # Perform both fit and transform
-        return self.fit(df, numerical_columns).transform(df)
-
-
 # Initialize outlier remover 
 outlier_remover_iqr = OutlierRemoverIQR()
 
 # Fit outlier remover to training data
-outlier_remover_iqr.fit(X_train, final_numerical_features)
+outlier_remover_iqr.fit(X_train, input_numerical_features)
 
 # Show outliers by column for training data
 print(f"Training Data: Identified {outlier_remover_iqr.outliers_} rows ({outlier_remover_iqr.outliers_ / len(outlier_remover_iqr.final_mask_) * 100:.1f}%) with outliers.\n")
