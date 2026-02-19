@@ -217,6 +217,17 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         else:
             self.numerical_columns_ = numerical_columns
             
+        # Warn if any missing values 
+        # NaN comparisons silently evaluate to False, which causes those rows to be counted as outliers
+        n_missing_by_column = df[self.numerical_columns_].isnull().sum()
+        n_missing_columns = n_missing_by_column[n_missing_by_column > 0]
+        if not n_missing_columns.empty:
+            missing_summary = ", ".join(f"{col} ({n})" for col, n in n_missing_columns.items())
+            logger.warning(
+                f"Missing Value Warning: The provided numerical features contain missing values. These will be counted as outliers. Handle missing values before calling fit() to ensure correct outlier handling.\n"
+                f"- Affected Features: {missing_summary}"
+            )
+        
         # Calculate statistics (mean, std, cutoff values) for each column
         self.stats_ = pd.DataFrame(index=self.numerical_columns_)
         self.stats_["mean"] = df[self.numerical_columns_].mean()
@@ -256,6 +267,17 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
             self.numerical_columns_ = [numerical_columns]
         else:
             self.numerical_columns_ = numerical_columns
+        
+        # Warn if any missing values 
+        # NaN comparisons silently evaluate to False, which causes those rows to be counted as outliers
+        n_missing_by_column = df[self.numerical_columns_].isnull().sum()
+        n_missing_columns = n_missing_by_column[n_missing_by_column > 0]
+        if not n_missing_columns.empty:
+            missing_summary = ", ".join(f"{col} ({n})" for col, n in n_missing_columns.items())
+            logger.warning(
+                f"Missing Value Warning: The provided numerical features contain missing values. These will be counted as outliers. Handle missing values before calling fit() to ensure correct outlier handling.\n"
+                f"- Affected Features: {missing_summary}"
+            )
         
         # Calculate statistics (quartiles, interquartile range, cutoff values) for each column
         self.stats_ = pd.DataFrame(index=self.numerical_columns_)
