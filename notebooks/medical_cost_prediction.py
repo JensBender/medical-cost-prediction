@@ -76,8 +76,8 @@ from src.pipeline import create_preprocessing_pipeline
 RANDOM_STATE = 42
 
 # Plotting Aesthetics
-POP_COLOR = "#084594"    # Deep Navy for Population
-SAMPLE_COLOR = "#14b8a6" # Vibrant Teal for Sample
+POP_COLOR = "#084594"    # deep navy for population
+SAMPLE_COLOR = "#14b8a6" # vibrant teal for sample
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -519,7 +519,7 @@ sns.histplot(
     stat="probability", 
     bins=50, 
     color=POP_COLOR, 
-    alpha=0.4,  # Increased alpha for richer color
+    alpha=0.4,  # increased alpha for richer color
     element="bars",
     edgecolor="white",
     linewidth=0.3
@@ -535,7 +535,7 @@ sns.histplot(
     alpha=1.0, 
     element="step",
     linewidth=2.0,
-    linestyle="--" # Dashed for comparison
+    linestyle="--" # dashed for comparison
 )
 
 # Add population mean and median lines for context
@@ -547,9 +547,9 @@ plt.title("Out-of-Pocket Costs", fontsize=14, fontweight="bold")
 plt.xlabel("")
 plt.ylabel("Share", fontsize=12)
 plt.grid(True, alpha=0.3)
-sns.despine()  # Removes top & right spines
-plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))  # Format X as dollars with comma thousand separator rounded to zero decimals
-plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))  # Format Y as percentages
+sns.despine()  # removes top & right spines
+plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))  # format X as dollars with comma thousand separator rounded to zero decimals
+plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))  # format Y as percentages
 plt.legend()
 
 plt.show()
@@ -575,7 +575,7 @@ sns.histplot(
     stat="probability", 
     bins=50, 
     color=POP_COLOR, 
-    alpha=0.3,  # Lighter filling for the background
+    alpha=0.3,  # lighter filling for the background
     element="bars",
     edgecolor="white",
     linewidth=0.5
@@ -588,9 +588,9 @@ sns.histplot(
     stat="probability", 
     bins=50, 
     color=SAMPLE_COLOR,
-    alpha=1.0,        # Full opacity for the line
+    alpha=1.0,        # full opacity for the line
     element="step",
-    linewidth=2.5     # Thicker line to stand out
+    linewidth=2.5     # thicker line to stand out
 )
 
 # Add population mean and median lines for context
@@ -602,9 +602,9 @@ plt.title("Typical Out-of-Pocket Costs (excluding zero costs and top 5%)", fonts
 plt.xlabel("")
 plt.ylabel("Share", fontsize=12)
 plt.grid(True, alpha=0.3)
-sns.despine()  # Removes top & right spines
-plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))  # Format X as dollars with thousand separator 
-plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))  # Format Y as percentages
+sns.despine()  # removes top & right spines
+plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))  # format X as dollars with thousand separator
+plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))  # format Y as percentages
 plt.legend()
 
 plt.show()
@@ -672,7 +672,7 @@ cum_pop_pct = lorenz_df["PERWT23F"].cumsum() / lorenz_df["PERWT23F"].sum() * 100
 cum_pop_costs = lorenz_df["pop_costs"].cumsum() / lorenz_df["pop_costs"].sum() * 100
 
 # Calculate the Gini Coefficient 
-# Note: Quantifies inequality (the higher the number, the more the cost is concentrated) 
+# note: quantifies inequality (the higher the number, the more the cost is concentrated)
 # Gini = A / (A + B), which simplifies to 1 - 2*B, where B is the area under the Lorenz Curve (calculated via the trapezoidal rule)
 def calculate_gini(pct, costs):
     return 1 - 2 * np.trapezoid(costs / 100, pct / 100)
@@ -1015,7 +1015,7 @@ def plot_numerical_distributions(df, numerical_features, display_labels=None, we
 
     # Hide unused subplots
     for j in range(i + 1, len(axes_flat)):
-        axes_flat[j].axis("off")  
+        axes_flat[j].axis("off")
 
     # Customize histogram matrix
     fig.suptitle(f"{'Population' if weights else 'Sample'} Distributions of Numerical Features", fontsize=16, fontweight="bold", y=1)
@@ -1117,12 +1117,12 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
         else:
             value_labels = [f"{pct:.1f}%\n({count:,})" for pct, count in zip(percentages, counts)]
         for container in ax.containers:
-            ax.bar_label(container, labels=value_labels, padding=3, fontsize=9 if len(value_labels) < 7 else 8, alpha=0.9)  # fontsize 9 for 1-6 categories; size 8 for 7+ categories
+            ax.bar_label(container, labels=value_labels, padding=3, fontsize=9 if len(value_labels) < 7 else 8, alpha=0.9)  # fontsize 9 for 1-6 categories; 8 for 7+
     
         # Customize current bar plot
         ax.set_title(display_labels.get(feature, feature), fontsize=14, fontweight="bold", pad=20)
         completion_rate_label = "100% Complete" if completion_rate >= 99.95 else f"{completion_rate:.1f}% Complete"
-        ax.annotate(  # Annotates completion rate under title
+        ax.annotate(  # annotates completion rate under title
             completion_rate_label, xy=(0.5, 1), xytext=(0, 5), xycoords="axes fraction", textcoords="offset points", 
             ha="center", va="bottom", fontsize=9, color="#666666"
         )
@@ -1133,7 +1133,7 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
 
     # Customize bar plot matrix
     for j in range(i + 1, len(axes_flat)):
-        axes_flat[j].axis("off")  # Hides unused subplots
+        axes_flat[j].axis("off")  # hides unused subplots
     fig.suptitle(f"{'Population' if weights else 'Sample'} Distributions of Categorical Features", fontsize=16, fontweight="bold", y=1)
     fig.tight_layout(h_pad=2.0, w_pad=4.0)  # Adjusts layout to prevent overlapping subplots
     
@@ -1188,7 +1188,7 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
             completion_rate = df[feature].count() / len(df) * 100
 
         # Sort categories
-        counts = counts.sort_index(ascending=False)  # Sorts "No" (2) before "Yes" (1)
+        counts = counts.sort_index(ascending=False)  # sorts "No" (2) before "Yes" (1)
         
         # Calculate percentages
         percentages = counts / counts.sum() * 100
@@ -1217,7 +1217,7 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
         # Customize current bar plot
         ax.set_title(display_labels.get(feature, feature), fontsize=12, fontweight="bold", pad=18)
         completion_rate_label = "100% Complete" if completion_rate >= 99.95 else f"{completion_rate:.1f}% Complete"
-        ax.annotate(  # Annotates completion rate under title
+        ax.annotate(  # annotates completion rate under title
             completion_rate_label, xy=(0.5, 1), xytext=(0, 4), xycoords="axes fraction", textcoords="offset points", 
             ha="center", va="bottom", fontsize=8, color="#666666"
         )
@@ -1434,8 +1434,8 @@ def create_stratification_bins(y):
     bins = [0, 0.5, 0.8, 0.95, 0.99, 0.999, 1.0]
     
     # Assign positive spenders to bins 1 through 5 
-    # Note: labels=False returns the bin indices (0-4) instead of Interval objects (e.g., [0, 150.5]). We add 1 to shift the indices to 1-5 with 0 being reserved for the zero cost bin.
-    # Note: duplicates="drop" avoids errors if multiple quantiles (e.g., 0.95 and 0.99) result in the same cost value.
+    # note: labels=False returns the bin indices (0-4) instead of Interval objects (e.g., [0, 150.5]). We add 1 to shift the indices to 1-5 with 0 being reserved for the zero cost bin.
+    # note: duplicates="drop" avoids errors if multiple quantiles (e.g., 0.95 and 0.99) result in the same cost value.
     strata[~is_zero] = pd.qcut(positive_y, q=bins, labels=False, duplicates="drop") + 1
     return strata
 
@@ -1561,6 +1561,22 @@ missing_value_df.sort_values("Training", ascending=False).style.format({
 # </div>
 
 # %%
+# Define required vs. optional features
+required_features = [
+    "AGE23X",    # Primary driver of medical utilization and costs
+    "SEX",       # Key driver of utilization frequency and spending disparities documented in healthcare literature  
+    "INSCOV23",  # Critical for out-of-pocket cost prediction
+    "REGION23",  # Captures geographic variance in healthcare pricing
+    "RTHLTH31"   # Self-reported physical health is a powerful proxy for healthcare demand
+]
+
+optional_features = [
+    "MARRY31X_GRP", "FAMSZE23", "POVCAT23", "HIDEG", "EMPST31_GRP", "RECENT_LIFE_TRANSITION",
+    "HAVEUS42", "MNHLTH31", "ADSMOK42",
+    "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
+    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
+]
+
 # Create preprocessing pipeline
 preprocessor = create_preprocessing_pipeline(
     required_features, 
