@@ -1670,20 +1670,6 @@ outlier_remover_iqr.stats_.style.format({
     "pct_outliers": "{:.1f}%"
 })
 
-# %%
-# Inspect Outliers: Compare descriptive statistics of normal vs. outlier 
-outlier_mask = X_train_preprocessed["FAMSZE23"] > outlier_remover_iqr.stats_["upper_cutoff"]["FAMSZE23"] 
-y_train.groupby(outlier_mask.map({False: "Normal", True: "Outlier"})).describe().T.style.format({
-    "count": "{:,.0f}",
-    "mean": "{:.2f}",
-    "std": "{:.2f}",
-    "min": "{:.1f}",
-    "25%": "{:.1f}",
-    "50%": "{:.1f}",
-    "75%": "{:.1f}",
-    "max": "{:.1f}"
-})
-
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Comparison of Outlier Handling Methods:</b> Use the 3SD method for this dataset. 
@@ -1693,11 +1679,28 @@ y_train.groupby(outlier_mask.map({False: "Normal", True: "Outlier"})).describe()
 #     </ul>
 # </div>
 
+# %%
+# Inspect Outliers: Compare out-of-pocket cost statistics for normal vs. outlier 
+y_train.groupby(outlier_remover_3sd.final_mask_.map({True: "Normal", False: "Outlier"})).describe().style \
+    .set_caption("Out-of-Pocket Costs") \
+    .set_table_styles([{"selector": "caption", "props": [("font-size", "14px"), ("font-weight", "bold"), ("text-align", "left")]}]) \
+    .format({
+        "count": "{:,.0f}",
+        "mean": "{:.2f}",
+        "std": "{:.2f}",
+        "min": "{:.1f}",
+        "25%": "{:.1f}",
+        "50%": "{:.1f}",
+        "75%": "{:.1f}",
+        "max": "{:.1f}"
+    })
+
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> Do not remove outliers (family size > 7). They are a valid low-cost demographic.
+#     💡 <b>Insight:</b> Do not remove outliers. They are a valid low-cost demographic.
 #     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>Cost Pattern:</b> Large families (with 8+ family members) have a much lower cost, probably due to family out-of-pocket caps (once family-level maximum is reached, additional members effectively cost $0 individually).</li>
+#         <li><b>Outlier Profile:</b> Identified 110 outliers where family size (8+ family members) is the sole driver of the outlier flag.</li>
+#         <li><b>Cost Pattern:</b> Large families (8+ members) have a much lower cost, probably due to family out-of-pocket insurance caps, where once family-level maximum is reached, additional members effectively cost $0 individually.</li>
 #         <li><b>Decision:</b> These 110 rows reflect predictable insurance dynamics, not noise. Removing them would bias the model and ignore a real-world demographic.</li>
 #     </ul>
 # </div>
