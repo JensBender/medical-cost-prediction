@@ -1787,8 +1787,12 @@ y_train.groupby(outlier_remover_3sd.final_mask_.map({True: "Normal", False: "Out
 #     <h3 style="margin:0px">Isolation Forest</h3>
 # </div> 
 #
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ An unsupervised learning algorithm that detects anomalies by "isolating" them. It builds an ensemble of random decision trees where outliers require fewer splits to isolate, resulting in shorter path lengths than normal data points.
+# </div>
+#
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Identify multivariate outliers using the isolation forest algorithm.
+#     📌 Identify multivariate outliers using an isolation forest.
 # </div> 
 
 # %%
