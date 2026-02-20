@@ -1811,6 +1811,16 @@ n_outliers_train = X_train_preprocessed["outlier"].value_counts()[-1]
 contamination_train = n_outliers_train / X_train_preprocessed["outlier"].value_counts().sum()
 print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_train:.1f}%) as multivariate outliers.")
 
+# %%
+# Visualize outliers with scatter plot matrix (use subsample for lower latency)
+X_train_subsample = X_train_preprocessed[input_numerical_features + ["outlier"]].sample(n=1000, random_state=RANDOM_STATE)
+sns.pairplot(
+    X_train_subsample.rename(columns=DISPLAY_LABELS), 
+    hue="outlier", 
+    palette={1: "#4F81BD", -1: "#D32F2F"}, 
+    plot_kws={"alpha":0.6, "s":40}
+)
+
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Summary</h1>
