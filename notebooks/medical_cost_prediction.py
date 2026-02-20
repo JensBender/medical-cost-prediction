@@ -1318,14 +1318,36 @@ plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORICAL_L
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Feature Engineering (Stateless)</h1>
 # </div> 
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h2 style="margin:0px">Binary Feature Standardization</h2>
+# </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Standardize all binary features to 0/1 encoding. This ensures interpretability for regression coefficients and compatibility with all models.
+# </div>
+
+# %%
+# Standardize all binary features to 0/1 encoding. In MEPS, binary features typically use 1 (Yes) and 2 (No).
+# Mapping 2 to 0 aligns with the standard format (1 = presence, 0 = absence).
+df[raw_binary_features] = df[raw_binary_features].replace({2: 0})
+
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h2 style="margin:0px">Feature Refinement</h2>
+# </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Refine features to enhance the predictive signal and improve model generalization. This involves category collapsing to fix sparse categories and ensure the model learns from stable, well-populated demographics.
+# </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Recent Life Transition</strong><br>
 #     📌 Capture critical life transitions related to marital and employment status (e.g., recent divorce, job loss) into a unified <code>RECENT_LIFE_TRANSITION</code> indicator. This preserves the predictive signal of major "life shocks" while ensuring model robustness by mapping sparse status categories back to stable, well-populated categories.
 #     <br><br>
-#     <b>Note on Web App Implementation:</b> In web form, add a question <em>"In the last 12 months, have you experienced a change in marital or employment status?"</em> with response options "Yes" and "No".
+#     Note on Web App Implementation: In web form, add a question <em>"In the last 12 months, have you experienced a change in marital or employment status?"</em> with response options "Yes" and "No".
 # </div>
-#
+
 # %%
 # Identify all "in round" transitions in marital and employment status
 # MARRY31X: 7-10 represent transitions (Married/Widowed/Divorced/Separated in Round)
@@ -1342,14 +1364,22 @@ df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] =
 marital_map = {7: 1, 8: 2, 9: 3, 10: 4}
 df["MARRY31X_GRP"] = df["MARRY31X"].replace(marital_map)
 
-# For Employment Status: Map 2, 3 to 4 (Not Employed)
+# For Employment Status: Map 2, 3, 4 to 0 (Not Employed). 1 remains 1 (Employed).
 # EMPST31: 1=Employed, 4=Not Employed. 2 and 3 are effectively "Not working now but attached". 
 # Transitioner signal is preserved in RECENT_LIFE_TRANSITION.
-employment_map = {2: 4, 3: 4} 
+employment_map = {2: 0, 3: 0, 4: 0} 
 df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
 
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h2 style="margin:0px">Feature Validation</h2>
+# </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Define feature lists for pipeline input.
+# </div>
+
 # %%
-# Define feature lists for pipeline input 
 input_numerical_features = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
 input_binary_features = [
     "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31", 
@@ -1364,8 +1394,12 @@ input_ordinal_features = ["POVCAT23", "HIDEG"]
 input_categorical_features = input_nominal_features + input_ordinal_features + input_binary_features
 input_all_features = input_numerical_features + input_categorical_features
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Verify feature engineering results.
+# </div>
+
 # %%
-# Verify results
 plot_categorical_distributions(df, input_nominal_features, input_ordinal_features, DISPLAY_LABELS, CATEGORICAL_LABELS, weights="PERWT23F")
 plot_binary_distributions(df, input_binary_features, DISPLAY_LABELS, CATEGORICAL_LABELS, weights="PERWT23F")
 
