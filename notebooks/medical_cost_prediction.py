@@ -1821,6 +1821,20 @@ sns.pairplot(
     plot_kws={"alpha":0.6, "s":40}
 )
 
+# %%
+# Outlier Diagnosis: Compare outliers vs. inliers on medical conditions prevalence
+outlier_diagnosis = X_train_preprocessed[input_binary_features + ["outlier"]].groupby("outlier").mean().T
+outlier_diagnosis.columns = ["Outliers", "Inliers"]
+outlier_diagnosis.index = outlier_diagnosis.index.map(lambda x: DISPLAY_LABELS.get(x, x))
+outlier_diagnosis["Difference"] = outlier_diagnosis["Outliers"] - outlier_diagnosis["Inliers"]
+
+# Display the top 10 features with the largest differences
+# For binary columns, this 'Difference' is the percentage point increase in 'Yes' frequency
+outlier_diagnosis.sort_values(by="Difference", ascending=False).head(10).style \
+    .pipe(add_caption, "Outlier Diagnosis: Prevalence of Medical Conditions") \
+    .format("{:.1%}") \
+    .background_gradient(cmap="viridis", subset=["Difference"])
+
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Summary</h1>
