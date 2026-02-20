@@ -70,7 +70,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, IsolationForest
 from sklearn.neural_network import MLPRegressor
 from xgboost import XGBRegressor 
 
@@ -1660,7 +1660,9 @@ pd.DataFrame({
 #     <h3 style="margin:0px">3SD Method</h3>
 # </div>
 #
-# <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 📌 Identify and remove univariate outliers in numerical columns by applying the 3 standard deviation rule (3SD). A data point is considered an outlier if it falls more than 3 standard deviations above or below the mean of the column.</p> 
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 
+#     📌 Identify univariate outliers in numerical columns by applying the 3 standard deviation rule (3SD). A data point is considered an outlier if it falls more than 3 standard deviations above or below the mean of the column.
+# </div> 
 
 # %%
 # Initialize outlier remover 
@@ -1687,7 +1689,9 @@ outlier_remover_3sd.stats_.style \
 #     <h3 style="margin:0px">1.5 IQR Method </h3>
 # </div> 
 #
-# <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 📌 Identify and remove univariate outliers in numerical columns using the 1.5 interquartile range (IQR) rule. A data point is considered an outlier if it falls more than 1.5 interquartile ranges above the third quartile (Q3) or below the first quartile (Q1) of the column.</p> 
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 
+#     📌 Identify univariate outliers in numerical columns using the 1.5 interquartile range (IQR) rule. A data point is considered an outlier if it falls more than 1.5 interquartile ranges above the third quartile (Q3) or below the first quartile (Q1) of the column.
+# </div> 
 
 # %%
 # Initialize outlier remover 
@@ -1743,6 +1747,31 @@ y_train.groupby(outlier_remover_3sd.final_mask_.map({True: "Normal", False: "Out
 #         <li><b>Decision:</b> These 110 rows reflect predictable insurance dynamics, not noise. Removing them would bias the model and ignore a real-world demographic.</li>
 #     </ul>
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Isolation Forest</h3>
+# </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Identify multivariate outliers using the isolation forest algorithm.
+# </div> 
+
+# %%
+# Initialize isolation forest
+isolation_forest = IsolationForest(contamination=0.05, random_state=RANDOM_STATE)
+
+# Fit isolation forest on training data
+isolation_forest.fit(X_train_preprocessed[input_numerical_features + input_binary_features])
+
+# Predict outliers on training data
+X_train_preprocessed["outlier"] = isolation_forest.predict(X_train_preprocessed[input_numerical_features + input_binary_features])
+X_train_preprocessed["outlier_score"] = isolation_forest.decision_function(X_train_preprocessed[input_numerical_features + input_binary_features])
+
+# Show number of outliers
+n_outliers_train = X_train_preprocessed["outlier"].value_counts()[-1]
+contamination_train = n_outliers_train / X_train_preprocessed["outlier"].value_counts().sum()
+print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_train:.1f}%) as multivariate outliers.")
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
