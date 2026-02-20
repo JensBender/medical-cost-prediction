@@ -27,9 +27,10 @@
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Setup</h1>
 # </div>
-
-# %% [markdown]
-# **Notebook Settings**
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     <strong>Notebook Settings</strong>
+# </div>
 
 # %%
 # Automatically reload local modules before each cell run (prevents having to restart kernel after changes)
@@ -37,7 +38,9 @@
 # %autoreload 2
 
 # %% [markdown]
-# **Imports**
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     <strong>Imports</strong>
+# </div>
 
 # %%
 # Data manipulation
@@ -89,7 +92,9 @@ from src.transformers import (
 from src.pipeline import create_preprocessing_pipeline
 
 # %% [markdown]
-# **Constants**
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     <strong>Constants & Helper Functions</strong>
+# </div>
 
 # %%
 # Configuration
@@ -98,6 +103,13 @@ RANDOM_STATE = 42
 # Plotting aesthetics
 POP_COLOR = "#084594"    # deep navy for population
 SAMPLE_COLOR = "#14b8a6" # vibrant teal for sample
+
+def add_caption(styler, caption, font_size="14px", font_weight="bold", text_align="left"):
+    """Adds a styled caption to a Pandas Styler object."""
+    return styler.set_caption(caption).set_table_styles([{
+        "selector": "caption", 
+        "props": [("font-size", font_size), ("font-weight", font_weight), ("text-align", text_align)]
+    }])
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -505,8 +517,7 @@ sample_vs_population_stats = pd.DataFrame({
 # Display table
 # Formatting: Comma thousand separator and rounded to zero decimals (sample sum in Millions, population sum in Billions with one decimal)
 sample_vs_population_stats.style \
-    .set_caption("Descriptive Statistics") \
-    .set_table_styles([{"selector": "caption", "props": [("font-size", "14px"), ("font-weight", "bold"), ("text-align", "left")]}]) \
+    .pipe(add_caption, "Descriptive Statistics") \
     .format("{:,.0f}") \
     .format(lambda x: f"${x/1e6:.1f}M", subset=("sum", "Sample (Unweighted)")) \
     .format(lambda x: f"${x/1e9:.1f}B", subset=("sum", "Population (Weighted)"))
@@ -659,8 +670,7 @@ zero_costs_df = pd.DataFrame({
 }, index=["Zero Costs", "Positive Costs"]).round(2)
 
 zero_costs_df.style \
-    .set_caption("Zero Costs Analysis") \
-    .set_table_styles([{"selector": "caption", "props": [("font-size", "14px"), ("font-weight", "bold"), ("text-align", "left")]}]) \
+    .pipe(add_caption, "Zero Costs Analysis") \
     .format({
         "Sample (Unweighted) Count": "{:,.0f}",
         "Population (Weighted) Count": "{:,.0f}",
@@ -811,8 +821,7 @@ cost_concentration_df = pd.DataFrame(stats).set_index("Top X%")
 
 # Show table with formatted values
 cost_concentration_df.style \
-    .set_caption("Cost Concentration Analysis") \
-    .set_table_styles([{"selector": "caption", "props": [("font-size", "14px"), ("font-weight", "bold"), ("text-align", "left")]}]) \
+    .pipe(add_caption, "Cost Concentration Analysis") \
     .format({
         "Threshold (Sample)": "${:,.0f}",
         "Threshold (Population)": "${:,.0f}",
@@ -875,8 +884,7 @@ top_1_df = pd.DataFrame({
 
 # Style the table
 top_1_df.style \
-    .set_caption("Top 1% Analysis") \
-    .set_table_styles([{"selector": "caption", "props": [("font-size", "14px"), ("font-weight", "bold"), ("text-align", "left")]}]) \
+    .pipe(add_caption, "Top 1% Analysis") \
     .format("${:,.0f}", subset=(["Top 0.1% Threshold", "Top 1% Threshold"], slice(None))) \
     .format("${:,.1f}M", subset=(["Top 0.1% Total Costs", "Top 1% Total Costs"], "Sample (Unweighted)")) \
     .format("${:,.1f}B", subset=(["Top 0.1% Total Costs", "Top 1% Total Costs"], "Population (Weighted)")) \
@@ -900,9 +908,7 @@ chronic_cols = ["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX",
 df["CHRONIC_COUNT"] = (df[chronic_cols] == 1).sum(axis=1)
 
 super_spenders = df[df["TOTSLF23"] >= pop_p999].sort_values("TOTSLF23", ascending=False)
-super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_COUNT"] + chronic_cols].style \
-    .set_caption("Super-Spenders") \
-    .set_table_styles([{"selector": "caption", "props": [("font-size", "14px"), ("font-weight", "bold"), ("text-align", "left")]}])
+super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_COUNT"] + chronic_cols].style.pipe(add_caption, "Super-Spenders")
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -933,8 +939,7 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 # %%
 # Sample statistics (unweighted) 
 df[raw_numerical_features].describe().T.style \
-    .set_caption("Descriptive Statistics (Sample)") \
-    .set_table_styles([{"selector": "caption", "props": [("font-size", "14px"), ("font-weight", "bold"), ("text-align", "left")]}]) \
+    .pipe(add_caption, "Descriptive Statistics (Sample)") \
     .format({
         "count": "{:,.0f}",
         "mean": "{:.2f}",
@@ -970,8 +975,7 @@ for feature in raw_numerical_features:
 # Show table of population statistics
 pop_stats_df = pd.DataFrame(pop_stats, index=raw_numerical_features)
 pop_stats_df.style \
-    .set_caption("Descriptive Statistics (Population)") \
-    .set_table_styles([{"selector": "caption", "props": [("font-size", "14px"), ("font-weight", "bold"), ("text-align", "left")]}]) \
+    .pipe(add_caption, "Descriptive Statistics (Population)") \
     .format({
         "count": "{:,.0f}",
         "mean": "{:.2f}",
@@ -1527,8 +1531,7 @@ del X_temp, y_temp, temp_strata, y_strata
 
 # Display the verification DataFrame (format for readability) 
 split_verification_df.style \
-    .set_caption("Stratified Split Verification") \
-    .set_table_styles([{"selector": "caption", "props": [("font-size", "14px"), ("font-weight", "bold"), ("text-align", "left")]}]) \
+    .pipe(add_caption, "Stratified Split Verification") \
     .format("{:,.1f}") \
     .format("{:,.0f}", subset=["Samples", "Max Cost"]) \
     .format("${:,.0f}", subset=["Mean Cost", "Median Cost", "Max Cost"]) \
@@ -1580,8 +1583,7 @@ missing_value_df.loc["TOTSLF23"] = [
 ]
 # Display table (sorted and with percentages)
 missing_value_df.sort_values("Training", ascending=False).style \
-    .set_caption("Missing Value Analysis") \
-    .set_table_styles([{"selector": "caption", "props": [("font-size", "14px"), ("font-weight", "bold"), ("text-align", "left")]}]) \
+    .pipe(add_caption, "Missing Value Analysis") \
     .format({
         "Training": lambda x: f"{x} ({x / len(X_train) * 100:.1f}%)",
         "Validation": lambda x: f"{x} ({x / len(X_val) * 100:.1f}%)",
@@ -1646,9 +1648,7 @@ pd.DataFrame({
     "Validation (Preprocessed)": X_val_preprocessed[input_all_features].isnull().sum(),
     "Test": X_test[input_all_features].isnull().sum(),
     "Test (Preprocessed)": X_test_preprocessed[input_all_features].isnull().sum(),
-}).style \
-    .set_caption("Verification of Missing Value Imputation") \
-    .set_table_styles([{"selector": "caption", "props": [("font-size", "14px"), ("font-weight", "bold"), ("text-align", "left")]}])
+}).style.pipe(add_caption, "Verification of Missing Value Imputation")
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
@@ -1724,8 +1724,7 @@ outlier_remover_iqr.stats_.style \
 # %%
 # Inspect Outliers: Compare out-of-pocket cost statistics for normal vs. outlier 
 y_train.groupby(outlier_remover_3sd.final_mask_.map({True: "Normal", False: "Outlier"})).describe().style \
-    .set_caption("Outlier Out-of-Pocket Cost Pattern") \
-    .set_table_styles([{"selector": "caption", "props": [("font-size", "14px"), ("font-weight", "bold"), ("text-align", "left")]}]) \
+    .pipe(add_caption, "Outlier Out-of-Pocket Cost Pattern") \
     .format({
         "count": "{:,.0f}",
         "mean": "{:.2f}",
