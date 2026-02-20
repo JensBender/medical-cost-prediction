@@ -25,13 +25,19 @@
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h1 style="margin:0px">Imports</h1>
+#     <h1 style="margin:0px">Setup</h1>
 # </div>
 
+# %% [markdown]
+# **Notebook Settings**
+
 # %%
-# Settings: Automatically reload local modules before each cell run (prevents having to restart kernel after changes)
+# Automatically reload local modules before each cell run (prevents having to restart kernel after changes)
 # %load_ext autoreload
 # %autoreload 2
+
+# %% [markdown]
+# **Imports**
 
 # %%
 # Data manipulation
@@ -82,10 +88,14 @@ from src.transformers import (
 )
 from src.pipeline import create_preprocessing_pipeline
 
+# %% [markdown]
+# **Constants**
+
+# %%
 # Configuration
 RANDOM_STATE = 42
 
-# Plotting Aesthetics
+# Plotting aesthetics
 POP_COLOR = "#084594"    # deep navy for population
 SAMPLE_COLOR = "#14b8a6" # vibrant teal for sample
 
