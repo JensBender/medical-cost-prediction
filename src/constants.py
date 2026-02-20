@@ -50,7 +50,7 @@ DISPLAY_LABELS = {
 # Mapping MEPS feature category codes to human-readable string labels (for EDA and UI)
 CATEGORICAL_LABELS = {
     # Demographics
-    "SEX": {1: "Male", 2: "Female"},
+    "SEX": {1: "Male", 2: "Female", 0: "Female"},
     "REGION23": {1: "Northeast", 2: "Midwest", 3: "South", 4: "West"},
     "MARRY31X": {
         1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married", 6: "Under 16", 
@@ -64,32 +64,32 @@ CATEGORICAL_LABELS = {
     
     # Insurance & Access
     "INSCOV23": {1: "Any Private", 2: "Public Only", 3: "Uninsured"},
-    "HAVEUS42": {1: "Yes", 2: "No"},
+    "HAVEUS42": {1: "Yes", 2: "No", 0: "No"},
     
     # Perceived Health & Lifestyle
-    "ADSMOK42": {1: "Yes", 2: "No"},
+    "ADSMOK42": {1: "Yes", 2: "No", 0: "No"},
     
     # Limitations
-    "ADLHLP31": {1: "Yes", 2: "No"},
-    "IADLHP31": {1: "Yes", 2: "No"},
-    "WLKLIM31": {1: "Yes", 2: "No"},
-    "COGLIM31": {1: "Yes", 2: "No"},
-    "JTPAIN31_M18": {1: "Yes", 2: "No"},
+    "ADLHLP31": {1: "Yes", 2: "No", 0: "No"},
+    "IADLHP31": {1: "Yes", 2: "No", 0: "No"},
+    "WLKLIM31": {1: "Yes", 2: "No", 0: "No"},
+    "COGLIM31": {1: "Yes", 2: "No", 0: "No"},
+    "JTPAIN31_M18": {1: "Yes", 2: "No", 0: "No"},
     
     # Chronic Conditions
-    "HIBPDX": {1: "Yes", 2: "No"},
-    "CHOLDX": {1: "Yes", 2: "No"},
-    "DIABDX_M18": {1: "Yes", 2: "No"},
-    "CHDDX": {1: "Yes", 2: "No"},
-    "STRKDX": {1: "Yes", 2: "No"},
-    "CANCERDX": {1: "Yes", 2: "No"},
-    "ARTHDX": {1: "Yes", 2: "No"},
-    "ASTHDX": {1: "Yes", 2: "No"},
+    "HIBPDX": {1: "Yes", 2: "No", 0: "No"},
+    "CHOLDX": {1: "Yes", 2: "No", 0: "No"},
+    "DIABDX_M18": {1: "Yes", 2: "No", 0: "No"},
+    "CHDDX": {1: "Yes", 2: "No", 0: "No"},
+    "STRKDX": {1: "Yes", 2: "No", 0: "No"},
+    "CANCERDX": {1: "Yes", 2: "No", 0: "No"},
+    "ARTHDX": {1: "Yes", 2: "No", 0: "No"},
+    "ASTHDX": {1: "Yes", 2: "No", 0: "No"},
 
     # Feature Engineered
     "RECENT_LIFE_TRANSITION": {1: "Yes", 0: "No"},
     "MARRY31X_GRP": {1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married", 6: "Under 16"},
-    "EMPST31_GRP": {1: "Employed", 4: "Not Employed"}
+    "EMPST31_GRP": {1: "Employed", 4: "Not Employed", 0: "Not Employed"}
 }
 
 # List of Required Features
