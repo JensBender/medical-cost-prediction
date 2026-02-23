@@ -1885,9 +1885,9 @@ outlier_analysis_costs.style \
 # - **Target Population Filtering**: Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
 # - **Handling Data Types**: Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models. Defined raw semantic data types for all features (numerical, binary, nominal, ordinal).
 # - **Standardizing Missing Values**: Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
-# - **Phase 1 EDA (Discovery)**: Analyzed raw feature distributions to identify sparse categories (e.g., in marital/employment status) and informed feature engineering decisions.
-# - **Feature Engineering**: Created a unified `RECENT_LIFE_TRANSITION` flag and collapsed sparse transitions into stable parent categories. Defined model-ready (`final_`) feature lists.
-# - **Train-Validation-Test Split**: Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and extreme tail of the target variable.
-# - **Data Preprocessing**: Imputed missing values using the median for numerical features and the mode for categorical features (fit on training data). 
-# - **Phase 2 EDA (Validation)**: Verified the distributions of model-ready features, confirming successful category collapsing and imputation.
-# - **Handling Outliers**: Developed custom transformers to detect univariate outliers using 3SD and 1.5 IQR methods.
+# - **Exploratory Data Analysis (EDA)**: Analyzed raw feature distributions to identify sparse categories (e.g., in marital/employment status) and inform feature engineering decisions.
+# - **Feature Engineering (Stateless)**: Created a unified `RECENT_LIFE_TRANSITION` flag and collapsed sparse categories into stable parent categories. Defined pipeline input feature lists.
+# - **Train-Validation-Test Split**: Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
+# - **Data Preprocessing (Stateful)**:
+#     - **Handling Missing Values:** Imputed missing values using the median for numerical and mode for categorical features, calculated from the training data. 
+#     - **Handling Outliers:** Used custom transformers to identify univariate outliers (3SD, 1.5 IQR methods) and an isolation forest for multivariate outliers. Confirmed that outliers represent legitimate high-risk cases (e.g, multiple medical conditions) rather than data noise, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
