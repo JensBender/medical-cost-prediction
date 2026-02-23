@@ -1823,15 +1823,37 @@ sns.pairplot(
 
 # %%
 # Outlier Analysis (binary features): Compare prevalence of medical conditions for outliers vs. inliers 
-outlier_diagnosis = X_train_preprocessed[input_binary_features + ["outlier"]].groupby("outlier").mean().T
-outlier_diagnosis.columns = ["Outliers", "Inliers"]
-outlier_diagnosis.index = outlier_diagnosis.index.map(lambda x: DISPLAY_LABELS.get(x, x))
-outlier_diagnosis["Difference"] = outlier_diagnosis["Outliers"] - outlier_diagnosis["Inliers"]
+outlier_analysis = X_train_preprocessed[input_binary_features + ["outlier"]].groupby("outlier").mean().T
+outlier_analysis.columns = ["Outliers", "Inliers"]
+outlier_analysis.index = outlier_diagnosis.index.map(lambda x: DISPLAY_LABELS.get(x, x))
+outlier_analysis["Difference"] = outlier_diagnosis["Outliers"] - outlier_diagnosis["Inliers"]
 
 # Display table (difference is the percentage point increase for outliers in 'Yes' frequency)
-outlier_diagnosis.sort_values(by="Difference", ascending=False).style \
-    .pipe(add_caption, "Outlier Diagnosis: Medical Condition Prevalence") \
+outlier_analysis.sort_values(by="Difference", ascending=False).style \
+    .pipe(add_caption, "Outlier Analysis: Medical Condition Prevalence") \
     .format("{:.1%}") 
+
+# %%
+# Outlier Analysis: Medical condition count and out-of-pocket costs
+chronic_conditions = ["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"]
+X_train_preprocessed["condition_count"] = X_train_preprocessed[chronic_conditions].sum(axis=1)
+
+# Comparison table of condition count and cost impact
+outlier_analysis_costs = pd.DataFrame({
+    "Mean Medical Conditions": X_train_preprocessed.groupby("outlier")["condition_count"].mean(),
+    "Median Medical Conditions": X_train_preprocessed.groupby("outlier")["condition_count"].median(),
+    "Mean Costs": y_train.groupby(X_train_preprocessed["outlier"]).mean(),
+    "Median Costs": y_train.groupby(X_train_preprocessed["outlier"]).median(),
+    "90th Percentile Cost": y_train.groupby(X_train_preprocessed["outlier"]).quantile(0.90),
+    "99th Percentile Cost": y_train.groupby(X_train_preprocessed["outlier"]).quantile(0.99)
+}).sort_index(ascending=True).T 
+outlier_analysis_costs.columns = ["Outliers", "Inliers"]
+
+# Display table
+outlier_analysis_costs.style \
+    .pipe(add_caption, "Outlier Analysis: Medical Condition Count and Cost Impact") \
+    .format("{:.2f}", subset=pd.IndexSlice[["Mean Medical Conditions", "Median Medical Conditions"], :]) \
+    .format("${:,.0f}", subset=pd.IndexSlice[["Mean Costs", "Median Costs", "90th Percentile Cost", "99th Percentile Cost"], :])
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
