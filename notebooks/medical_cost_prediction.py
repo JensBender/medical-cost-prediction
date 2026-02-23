@@ -1834,6 +1834,17 @@ outlier_diagnosis.sort_values(by="Difference", ascending=False).style \
     .format("{:.1%}") 
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insight:</b> The Isolation Forest identifies a "High Comorbidity" profile rather than data errors.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Multivariate Severity:</b> Outliers are characterized by the simultaneous presence of multiple chronic conditions. While individual conditions are common, their co-occurrence makes these individuals statistically easy to isolate.</li>
+#         <li><b>Functional Limitation as the Strongest Signal:</b> Physical and cognitive impairments (e.g., <code>Walking Limitation</code> +65.9%, <code>Cognitive Limitation</code> +56.7%) are the primary drivers of the outlier flag.</li>
+#         <li><b>Economic Exclusion:</b> There is a massive employment gap (-44.1%), indicating that these "anomalous" health profiles often prevent individuals from participating in the workforce.</li>
+#         <li><b>Decision: Keep Outliers.</b> These individuals represent the "Super Spenders" in the 99th percentile of healthcare costs. Removing them would hide the very financial risks the model is designed to predict.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Summary</h1>
 # </div> 
