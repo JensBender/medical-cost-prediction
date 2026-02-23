@@ -1869,7 +1869,8 @@ outlier_analysis_costs.style \
 #         <li><b>Concentrated Health Spending:</b> Outliers exhibit higher costs across all metrics (Mean: \$1,793 vs. \$1,132; Median: \$351 vs. \$271; 90th Percentile: \$4,321 vs. \$2,814). However, the true impact is in the extreme tail, where 99th percentile costs are nearly double those of inliers (\$22,464 vs. \$12,671).</li>
 #         <li><b>Functional Limitation as the Strongest Signal:</b> Physical and cognitive impairments (e.g., <code>Walking Limitation</code> +65.9%, <code>Cognitive Limitation</code> +56.7%) are the primary drivers of the outlier flag.</li>
 #         <li><b>Economic Exclusion:</b> There is a massive employment gap (-44.1%), indicating that these "anomalous" health profiles often prevent individuals from participating in the workforce.</li>
-#         <li><b>Decision: Keep Outliers.</b> These individuals represent the "Super Spenders" in the 99th percentile of healthcare costs. Removing them would hide the very financial risks the model is designed to predict.</li>
+#         <li><b>Comorbidity vs. Cost Outliers:</b> Surprisingly, the vast majority of extreme spenders are "Inliers" (e.g., 108 out of 121 Top 1% Spenders). Despite outliers being the most unhealthy subgroup, high comorbidity alone does not fully explain high spending. This suggests that "Super Spenders" are often individuals with otherwise "normal" health profiles who encounter high-cost acute events (e.g., major surgery) or specific high-cost treatments, rather than just the accumulation of chronic conditions.</li>
+#         <li><b>Decision: Keep Outliers.</b> These individuals represent "High Comorbidity" patients who are statistically anomalous due to their complex health profiles. While they don't capture all super-spenders, they represent a critical high-risk demographic that the model must learn to handle.</li>
 #     </ul>
 # </div>
 
