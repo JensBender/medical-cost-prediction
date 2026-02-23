@@ -1320,7 +1320,7 @@ plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORICAL_L
 # </div> 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h2 style="margin:0px">Binary Feature Standardization</h2>
+#     <h2 style="margin:0px">Standardizing Binary Features</h2>
 # </div> 
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
@@ -1879,15 +1879,18 @@ outlier_analysis_costs.style \
 #     <h1 style="margin:0px">Summary</h1>
 # </div> 
 #
-# - **Data Loading**: Imported MEPS-HC 2023 SAS data using `pandas` `read_sas`.
-# - **Handling Duplicates**: Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
-# - **Variable Selection**: Filtered 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
-# - **Target Population Filtering**: Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
-# - **Handling Data Types**: Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models. Defined raw semantic data types for all features (numerical, binary, nominal, ordinal).
-# - **Standardizing Missing Values**: Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
-# - **Exploratory Data Analysis (EDA)**: Analyzed raw feature distributions to identify sparse categories (e.g., in marital/employment status) and inform feature engineering decisions.
-# - **Feature Engineering (Stateless)**: Created a unified `RECENT_LIFE_TRANSITION` flag and collapsed sparse categories into stable parent categories. Defined pipeline input feature lists.
-# - **Train-Validation-Test Split**: Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
-# - **Data Preprocessing (Stateful)**:
+# - **Data Loading:** Imported MEPS-HC 2023 SAS data using `pandas` `read_sas`.
+# - **Handling Duplicates:** Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
+# - **Variable Selection:** Filtered 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
+# - **Target Population Filtering:** Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
+# - **Handling Data Types:** Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models. Defined raw semantic data types for all features (numerical, binary, nominal, ordinal).
+# - **Standardizing Missing Values:** Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
+# - **Exploratory Data Analysis (EDA):** Analyzed raw feature distributions to identify sparse categories (e.g., in marital/employment status) and inform feature engineering decisions.
+# - **Feature Engineering (Stateless):**
+#     - **Standardizing Binary Features:** Standardized binary features to 0/1 encoding.
+#     - **Feature Refinement:** Created a unified recent life transition flag and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
+#     - **Feature Validation:** Defined pipeline input feature lists and verified feature engineering results.
+# - **Train-Validation-Test Split:** Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
+# - **Data Preprocessing (Stateful):**
 #     - **Handling Missing Values:** Imputed missing values using the median for numerical and mode for categorical features, calculated from the training data. 
 #     - **Handling Outliers:** Used custom transformers to identify univariate outliers (3SD, 1.5 IQR methods) and an isolation forest for multivariate outliers. Confirmed that outliers represent legitimate high-risk cases (e.g, multiple medical conditions) rather than data noise, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
