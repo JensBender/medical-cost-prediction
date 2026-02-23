@@ -1812,7 +1812,7 @@ contamination_train = n_outliers_train / X_train_preprocessed["outlier"].value_c
 print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_train:.1f}%) as multivariate outliers.")
 
 # %%
-# Visualize outliers with scatter plot matrix (use subsample for lower latency)
+# Outlier Analysis (numerical features): Visualize outliers with scatter plot matrix (use subsample for lower latency) 
 X_train_subsample = X_train_preprocessed[input_numerical_features + ["outlier"]].sample(n=1000, random_state=RANDOM_STATE)
 sns.pairplot(
     X_train_subsample.rename(columns=DISPLAY_LABELS), 
@@ -1822,18 +1822,16 @@ sns.pairplot(
 )
 
 # %%
-# Outlier Diagnosis: Compare outliers vs. inliers on medical conditions prevalence
+# Outlier Analysis (binary features): Compare prevalence of medical conditions for outliers vs. inliers 
 outlier_diagnosis = X_train_preprocessed[input_binary_features + ["outlier"]].groupby("outlier").mean().T
 outlier_diagnosis.columns = ["Outliers", "Inliers"]
 outlier_diagnosis.index = outlier_diagnosis.index.map(lambda x: DISPLAY_LABELS.get(x, x))
 outlier_diagnosis["Difference"] = outlier_diagnosis["Outliers"] - outlier_diagnosis["Inliers"]
 
-# Display the top 10 features with the largest differences
-# For binary columns, this 'Difference' is the percentage point increase in 'Yes' frequency
-outlier_diagnosis.sort_values(by="Difference", ascending=False).head(10).style \
-    .pipe(add_caption, "Outlier Diagnosis: Prevalence of Medical Conditions") \
-    .format("{:.1%}") \
-    .background_gradient(cmap="viridis", subset=["Difference"])
+# Display table (difference is the percentage point increase for outliers in 'Yes' frequency)
+outlier_diagnosis.sort_values(by="Difference", ascending=False).style \
+    .pipe(add_caption, "Outlier Diagnosis: Medical Condition Prevalence") \
+    .format("{:.1%}") 
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
