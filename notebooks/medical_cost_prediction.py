@@ -1773,8 +1773,8 @@ outlier_remover_iqr.stats_.style \
 # </div>
 
 # %%
-# Inspect Outliers: Compare out-of-pocket cost statistics for normal vs. outlier 
-y_train.groupby(outlier_remover_3sd.final_mask_.map({True: "Normal", False: "Outlier"})).describe().style \
+# Outlier Profiling: Compare out-of-pocket cost statistics for outliers vs. inliers  
+y_train.groupby(outlier_remover_3sd.final_mask_.map({True: "Inliers", False: "Outliers"})).describe().style \
     .pipe(add_caption, "Outlier Out-of-Pocket Cost Pattern") \
     .format({
         "count": "{:,.0f}",
@@ -1827,7 +1827,19 @@ contamination_train = n_outliers_train / X_train_preprocessed["outlier"].value_c
 print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_train:.1f}%) as multivariate outliers.")
 
 # %%
-# Outlier Analysis (numerical features): Visualize outliers with scatter plot matrix (use subsample for lower latency) 
+# Outlier Profiling: Numerical Features and Target
+outlier_numeric_profile = X_train_preprocessed.groupby("outlier")[input_numerical_features].median().T
+outlier_numeric_profile.columns = ["Outlier Median", "Inlier Median"]
+outlier_numeric_profile.index = outlier_numeric_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
+outlier_numeric_profile["Median Difference"] = (outlier_numeric_profile["Outlier Median"] - outlier_numeric_profile["Inlier Median"]) 
+
+# Highlight the biggest drivers
+outlier_numeric_profile.sort_values(by="Median Difference", ascending=False).style \
+    .pipe(add_caption, "Outlier Numeric Profile") \
+    .format("{:.1f}") 
+
+# %%
+# Outlier Profiling (numerical features): Visualize outliers with scatter plot matrix (use subsample for lower latency) 
 X_train_subsample = X_train_preprocessed[input_numerical_features + ["outlier"]].sample(n=1000, random_state=RANDOM_STATE)
 sns.pairplot(
     X_train_subsample.rename(columns=DISPLAY_LABELS), 
@@ -1837,19 +1849,19 @@ sns.pairplot(
 )
 
 # %%
-# Outlier Analysis (binary features): Compare prevalence of medical conditions for outliers vs. inliers 
-outlier_analysis = X_train_preprocessed[input_binary_features + ["outlier"]].groupby("outlier").mean().T
-outlier_analysis.columns = ["Outliers", "Inliers"]
-outlier_analysis.index = outlier_analysis.index.map(lambda x: DISPLAY_LABELS.get(x, x))
-outlier_analysis["Difference"] = outlier_analysis["Outliers"] - outlier_analysis["Inliers"]
+# Outlier Profiling (binary features): Compare prevalence of medical conditions for outliers vs. inliers 
+outlier_profiling = X_train_preprocessed[input_binary_features + ["outlier"]].groupby("outlier").mean().T
+outlier_profiling.columns = ["Outliers", "Inliers"]
+outlier_profiling.index = outlier_analysis.index.map(lambda x: DISPLAY_LABELS.get(x, x))
+outlier_profiling["Difference"] = outlier_profiling["Outliers"] - outlier_profiling["Inliers"]
 
 # Display table (difference is the percentage point increase for outliers in 'Yes' frequency)
-outlier_analysis.sort_values(by="Difference", ascending=False).style \
-    .pipe(add_caption, "Outlier Analysis: Medical Condition Prevalence") \
+outlier_profiling.sort_values(by="Difference", ascending=False).style \
+    .pipe(add_caption, "Outlier Profiling: Medical Condition Prevalence") \
     .format("{:.1%}") 
 
 # %%
-# Outlier Analysis: Medical condition count and out-of-pocket costs
+# Outlier Profiling: Medical condition count and out-of-pocket costs
 chronic_conditions = ["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"]
 X_train_preprocessed["condition_count"] = X_train_preprocessed[chronic_conditions].sum(axis=1)
 
@@ -1857,7 +1869,7 @@ X_train_preprocessed["condition_count"] = X_train_preprocessed[chronic_condition
 total_super_spenders = (y_train >= pop_p999).sum()
 
 # Comparison table of condition count and cost impact
-outlier_analysis_costs = pd.DataFrame({
+outlier_profiling_costs = pd.DataFrame({
     "Mean Medical Conditions": X_train_preprocessed.groupby("outlier")["condition_count"].mean(),
     "Median Medical Conditions": X_train_preprocessed.groupby("outlier")["condition_count"].median(),
     "Mean Costs": y_train.groupby(X_train_preprocessed["outlier"]).mean(),
@@ -1867,11 +1879,11 @@ outlier_analysis_costs = pd.DataFrame({
     "Top 1% Spenders": (y_train >= pop_p99).groupby(X_train_preprocessed["outlier"]).sum(),
     "Super-Spenders": (y_train >= pop_p999).groupby(X_train_preprocessed["outlier"]).sum()
 }).sort_index(ascending=True).T 
-outlier_analysis_costs.columns = ["Outliers", "Inliers"]
+outlier_profiling_costs.columns = ["Outliers", "Inliers"]
 
 # Display table
-outlier_analysis_costs.style \
-    .pipe(add_caption, "Outlier Analysis: Medical Condition Count and Cost Impact") \
+outlier_profiling_costs.style \
+    .pipe(add_caption, "Outlier Profiling: Medical Condition Count and Cost Impact") \
     .format("{:.2f}", subset=pd.IndexSlice[["Mean Medical Conditions", "Median Medical Conditions"], :]) \
     .format("${:,.0f}", subset=pd.IndexSlice[["Mean Costs", "Median Costs", "90th Percentile Cost", "99th Percentile Cost"], :]) \
     .format("{:,.0f}", subset=pd.IndexSlice[["Top 1% Spenders", "Super-Spenders"], :]) 
