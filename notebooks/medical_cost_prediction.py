@@ -391,8 +391,7 @@ df.isnull().sum().sort_values(ascending=False)
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Analyze univariate distributions using descriptive statistics and visualizations. Focus on understanding raw feature distributions to identify data quality issues (e.g., sparse categories) and inform decisions on subsequent data preprocessing and feature engineering. After each preprocessing or engineering step, conduct EDA again to confirm that transformations (like category collapsing) were successful and that the resulting distributions are robust for pipeline input.</li>
-#     </ul>
+#     ℹ️ Analyze univariate distributions using descriptive statistics and visualizations. Focus on understanding raw feature distributions to identify data quality issues (e.g., sparse categories) and inform decisions on subsequent data preprocessing and feature engineering. After each preprocessing or engineering step, conduct EDA again to confirm that transformations (like category collapsing) were successful and that the resulting distributions are robust for pipeline input.
 # </div>
 
 # %% [markdown]
@@ -1687,6 +1686,15 @@ pd.DataFrame({
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Handling Outliers</h2>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <b>General Outlier Handling Strategy</b><br>
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Outlier Detection:</b> Use univariate methods (e.g., 3SD, 1.5 IQR) for individual features and multivariate methods (e.g., Isolation Forest) to detect anomalies driven by complex feature interactions.</li>
+#         <li><b>Outlier Profiling:</b> Compare feature and target distributions between inliers and outliers to identify the "driver" of the anomaly and to decide if a point is a data error or a valid extreme.</li>
+#         <li><b>Conclusion:</b> Categorize outliers as measurement errors (remove) or "Black Swans" (keep). In medical cost prediction, outliers often represent high-comorbidity "super-spenders" who are essential for accurate modeling.</li>
+#     </ul>
 # </div>
 
 # %% [markdown]
