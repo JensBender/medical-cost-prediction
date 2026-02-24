@@ -1825,8 +1825,8 @@ sns.pairplot(
 # Outlier Analysis (binary features): Compare prevalence of medical conditions for outliers vs. inliers 
 outlier_analysis = X_train_preprocessed[input_binary_features + ["outlier"]].groupby("outlier").mean().T
 outlier_analysis.columns = ["Outliers", "Inliers"]
-outlier_analysis.index = outlier_diagnosis.index.map(lambda x: DISPLAY_LABELS.get(x, x))
-outlier_analysis["Difference"] = outlier_diagnosis["Outliers"] - outlier_diagnosis["Inliers"]
+outlier_analysis.index = outlier_analysis.index.map(lambda x: DISPLAY_LABELS.get(x, x))
+outlier_analysis["Difference"] = outlier_analysis["Outliers"] - outlier_analysis["Inliers"]
 
 # Display table (difference is the percentage point increase for outliers in 'Yes' frequency)
 outlier_analysis.sort_values(by="Difference", ascending=False).style \
@@ -1880,12 +1880,17 @@ outlier_analysis_costs.style \
 # </div> 
 #
 # - **Data Loading:** Imported MEPS-HC 2023 SAS data using `pandas` `read_sas`.
-# - **Handling Duplicates:** Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
-# - **Variable Selection:** Filtered 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
-# - **Target Population Filtering:** Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
-# - **Handling Data Types:** Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models. Defined raw semantic data types for all features (numerical, binary, nominal, ordinal).
-# - **Standardizing Missing Values:** Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
-# - **Exploratory Data Analysis (EDA):** Analyzed raw feature distributions to identify sparse categories (e.g., in marital/employment status) and inform feature engineering decisions.
+# - **Data Preparation:**
+#     - **Handling Duplicates:** Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
+#     - **Variable Selection:** Filtered 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
+#     - **Target Population Filtering:** Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
+#     - **Handling Data Types:** Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models. Defined raw semantic data types for all features (numerical, binary, nominal, ordinal).
+#     - **Standardizing Missing Values:** Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
+# - **Exploratory Data Analysis (EDA):** Analyzed raw distributions to inform data preprocessing and feature engineering decisions.
+#     - **Sample Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
+#     - **Target Variable:** Identified a zero-inflated (22%) and extremely right-skewed distribution where the top 1% of spenders drive ~21% of costs.
+#     - **Numerical Features:** Analyzed distributions for age, family size, and self-reported health to inform robust median-based imputation.
+#     - **Categorical Features:** Identified oversampling of low socio-economic status and chronic conditions, requiring survey weight adjustments for modeling.
 # - **Feature Engineering (Stateless):**
 #     - **Standardizing Binary Features:** Standardized binary features to 0/1 encoding.
 #     - **Feature Refinement:** Created a unified recent life transition flag and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
