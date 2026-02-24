@@ -1893,9 +1893,9 @@ outlier_analysis_costs.style \
 #     - **Categorical Features:** Identified oversampling of low socio-economic status and chronic conditions, requiring survey weight adjustments for modeling.
 # - **Feature Engineering (Stateless):**
 #     - **Standardizing Binary Features:** Standardized binary features to 0/1 encoding.
-#     - **Feature Refinement:** Created a unified recent life transition flag and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
+#     - **Feature Refinement:** Created a recent life transition flag and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
 #     - **Feature Validation:** Defined pipeline input feature lists and verified feature engineering results.
 # - **Train-Validation-Test Split:** Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
 # - **Data Preprocessing (Stateful):**
 #     - **Handling Missing Values:** Imputed missing values using the median for numerical and mode for categorical features, calculated from the training data. 
-#     - **Handling Outliers:** Used custom transformers to identify univariate outliers (3SD, 1.5 IQR methods) and an isolation forest for multivariate outliers. Confirmed that outliers represent legitimate high-risk cases (e.g, multiple medical conditions) rather than data noise, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
+#     - **Handling Outliers:** Used custom transformers to identify univariate outliers (3SD, 1.5 IQR methods) and an isolation forest for multivariate outliers. Confirmed that outliers represent legitimate high-risk cases (e.g., high comorbidity) rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
