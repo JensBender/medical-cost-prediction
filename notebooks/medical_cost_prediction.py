@@ -1693,7 +1693,14 @@ pd.DataFrame({
 #     <ul style="margin-top:10px; margin-bottom:0px">
 #         <li><b>Outlier Detection:</b> Use univariate methods (e.g., 3SD, 1.5 IQR) for individual features and multivariate methods (e.g., Isolation Forest) to detect anomalies driven by complex feature interactions.</li>
 #         <li><b>Outlier Profiling:</b> Compare feature and target distributions between inliers and outliers to identify the "driver" of the anomaly and to decide if a point is a data error or a valid extreme.</li>
-#         <li><b>Conclusion:</b> Categorize outliers as measurement errors (remove) or "Black Swans" (keep). In medical cost prediction, outliers often represent high-comorbidity "super-spenders" who are essential for accurate modeling.</li>
+#         <li><b>Outlier Treatment:</b> Decision depends on the nature of the outlier:
+#             <ul style="margin-top:5px; margin-bottom:0px">
+#                 <li><b>Remove:</b> For <em>Measurement Errors</em> (e.g., negative age).</li>
+#                 <li><b>Keep (As-Is):</b> For <em>Representative Extremes</em> (e.g., family size of 10) when using robust models like XGBoost or Huber Regression.</li>
+#                 <li><b>Winsorize (Cap):</b> For <em>Valid but Disruptive Extremes</em> (e.g., a \$1M cost) when using sensitive models like OLS to prevent them from shifting the global mean.</li>
+#                 <li><b>Transform (Log):</b> For <em>Naturally Skewed Populations</em> (e.g., income or healthcare costs) to stabilize variance and normalize the distribution.</li>
+#             </ul>
+#         </li>
 #     </ul>
 # </div>
 
