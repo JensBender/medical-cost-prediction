@@ -1827,17 +1827,17 @@ contamination_train = n_outliers_train / X_train_preprocessed["outlier"].value_c
 print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_train:.1f}%) as multivariate outliers.")
 
 # %%
-# Outlier Profiling: Numerical Features and Target
+# Outlier Profiling: Numerical Features and Target Median
 outlier_numeric_profile = X_train_preprocessed.assign(TOTSLF23=y_train).groupby("outlier")[input_numerical_features + ["TOTSLF23"]].median().T
-outlier_numeric_profile.columns = ["Outlier Median", "Inlier Median"]
+outlier_numeric_profile.columns = ["Outliers", "Inliers"]
 outlier_numeric_profile.index = outlier_numeric_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
-outlier_numeric_profile["Median Difference"] = (outlier_numeric_profile["Outlier Median"] - outlier_numeric_profile["Inlier Median"]) 
+outlier_numeric_profile["Difference"] = (outlier_numeric_profile["Outliers"] - outlier_numeric_profile["Inliers"]) 
 
-# Highlight the biggest drivers
-outlier_numeric_profile.sort_values(by="Median Difference", ascending=False).style \
-    .pipe(add_caption, "Outlier Numeric Profile") \
+# Display table
+outlier_numeric_profile.sort_values(by="Difference", ascending=False).style \
+    .pipe(add_caption, "Outlier Numeric Profile: Median") \
     .format("{:.1f}") \
-    .set_properties(**{"font-weight": "bold"}, subset=["Median Difference"])
+    .set_properties(**{"font-weight": "bold"}, subset=["Difference"])
 
 # %%
 # Outlier Profiling (numerical features): Visualize outliers with scatter plot matrix (use subsample for lower latency) 
