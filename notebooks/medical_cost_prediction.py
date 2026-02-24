@@ -1826,6 +1826,11 @@ n_outliers_train = X_train_preprocessed["outlier"].value_counts()[-1]
 contamination_train = n_outliers_train / X_train_preprocessed["outlier"].value_counts().sum()
 print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_train:.1f}%) as multivariate outliers.")
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Outlier profiling.
+# </div> 
+
 # %%
 # Outlier Profiling: Numerical Features and Target Median
 outlier_numeric_profile = X_train_preprocessed.assign(TOTSLF23=y_train).groupby("outlier")[input_numerical_features + ["TOTSLF23"]].median().T
@@ -1838,6 +1843,39 @@ outlier_numeric_profile.sort_values(by="Difference", ascending=False).style \
     .pipe(add_caption, "Outlier Numeric Profile: Median") \
     .format("{:.1f}") \
     .set_properties(**{"font-weight": "bold"}, subset=["Difference"])
+
+# %%
+# Outlier Profiling: Overlapping KDE Plots of Top Numerical Drivers
+top_numeric_drivers = ["TOTSLF23", "AGE23X", "RTHLTH31", "MNHLTH31"] 
+fig, axes = plt.subplots(2, 2, figsize=(10, 7))
+axes_flat = axes.flatten()
+
+for i, numeric_driver in enumerate(top_numeric_drivers):
+    ax = axes_flat[i]
+    sns.kdeplot(
+        data=X_train_preprocessed.assign(
+            TOTSLF23=y_train, 
+            is_outlier=X_train_preprocessed["outlier"].map({1: "Inliers", -1: "Outliers"})
+        ), 
+        x=numeric_driver, 
+        hue="is_outlier", 
+        hue_order=["Inliers", "Outliers"],
+        fill=True, 
+        common_norm=False, 
+        ax=ax,
+        palette={"Inliers": "#4F81BD", "Outliers": "#D32F2F"}
+    )
+    ax.set_title(f"{DISPLAY_LABELS.get(numeric_driver, numeric_driver)}", fontsize=12, fontweight="bold")
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    
+    # Remove legend title 
+    if ax.get_legend():
+        ax.get_legend().set_title(None)
+
+fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold")
+fig.tight_layout()
+plt.show()
 
 # %%
 # Outlier Profiling (numerical features): Visualize outliers with scatter plot matrix (use subsample for lower latency) 
