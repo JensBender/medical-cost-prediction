@@ -1833,8 +1833,15 @@ print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_
 # </div> 
 
 # %%
+# Create outlier profiling dataFrame from training data
+outlier_profiling_df = X_train_preprocessed.assign(
+    TOTSLF23=y_train, 
+    outlier_display=X_train_preprocessed["outlier"].map({0: "Inliers", 1: "Outliers"})
+)
+
+# %%
 # Outlier Profiling: Median of Numerical Features and Target 
-outlier_numeric_profile = X_train_preprocessed.assign(TOTSLF23=y_train).groupby("outlier")[input_numerical_features + ["TOTSLF23"]].median().T
+outlier_numeric_profile = outlier_profiling_df.groupby("outlier")[input_numerical_features + ["TOTSLF23"]].median().T
 outlier_numeric_profile.columns = ["Inliers", "Outliers"]
 outlier_numeric_profile.index = outlier_numeric_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
 outlier_numeric_profile["Difference"] = (outlier_numeric_profile["Outliers"] - outlier_numeric_profile["Inliers"]) 
@@ -1854,10 +1861,7 @@ axes_flat = axes.flatten()
 for i, numeric_driver in enumerate(top_numeric_drivers):
     ax = axes_flat[i]
     sns.histplot(
-        data=X_train_preprocessed.assign(
-            TOTSLF23=y_train, 
-            outlier_display=X_train_preprocessed["outlier"].map({0: "Inliers", 1: "Outliers"})
-        ), 
+        data=outlier_profiling_df, 
         x=numeric_driver, 
         hue="outlier_display", 
         hue_order=["Inliers", "Outliers"],
@@ -1890,10 +1894,7 @@ axes_flat = axes.flatten()
 for i, numeric_driver in enumerate(top_numeric_drivers):
     ax = axes_flat[i]
     sns.kdeplot(
-        data=X_train_preprocessed.assign(
-            TOTSLF23=y_train, 
-            outlier_display=X_train_preprocessed["outlier"].map({0: "Inliers", 1: "Outliers"})
-        ), 
+        data=outlier_profiling_df, 
         x=numeric_driver, 
         hue="outlier_display", 
         hue_order=["Inliers", "Outliers"],
@@ -1917,16 +1918,12 @@ plt.show()
 
 # %%
 # Outlier Profiling: Pair Plot of Top Numerical Drivers 
-# Create subsample of training data for lower latency plotting
-train_subsample = X_train_preprocessed.assign(
-    TOTSLF23=y_train, 
-    outlier_display=X_train_preprocessed["outlier"].map({0: "Inliers", 1: "Outliers"})
-)
-train_subsample = train_subsample[top_numeric_drivers + ["outlier_display"]].sample(n=2000, random_state=RANDOM_STATE)
+# Create subsample for lower latency plotting
+outlier_profiling_subsample = outlier_profiling_df[top_numeric_drivers + ["outlier_display"]].sample(n=2000, random_state=RANDOM_STATE)
 
 # Create pair plot matrix
 grid = sns.pairplot(
-    train_subsample.rename(columns=DISPLAY_LABELS), 
+    outlier_profiling_subsample.rename(columns=DISPLAY_LABELS), 
     hue="outlier_display", 
     palette={"Inliers": "#4F81BD", "Outliers": "#D32F2F"}, 
     plot_kws={"alpha":0.6, "s":40}
@@ -1944,15 +1941,15 @@ grid.fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontw
 plt.show() 
 
 # %%
-# Outlier Profiling (binary features): Compare prevalence of medical conditions for outliers vs. inliers 
-outlier_profiling = X_train_preprocessed[input_binary_features + ["outlier"]].groupby("outlier").mean().T
-outlier_profiling.columns = ["Inliers", "Outliers"]
-outlier_profiling.index = outlier_profiling.index.map(lambda x: DISPLAY_LABELS.get(x, x))
-outlier_profiling["Difference"] = outlier_profiling["Outliers"] - outlier_profiling["Inliers"]
+# Outlier Profiling: Percentages of Medical Conditions 
+outlier_binary_profile = outlier_profiling_df[input_binary_features + ["outlier"]].groupby("outlier").mean().T
+outlier_binary_profile.columns = ["Inliers", "Outliers"]
+outlier_binary_profile.index = outlier_binary_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
+outlier_binary_profile["Difference"] = outlier_binary_profile["Outliers"] - outlier_binary_profile["Inliers"]
 
 # Display table (difference is the percentage point increase for outliers in 'Yes' frequency)
-outlier_profiling.sort_values(by="Difference", ascending=False).style \
-    .pipe(add_caption, "Outlier Profiling: Medical Condition Prevalence") \
+outlier_binary_profile.sort_values(by="Difference", ascending=False).style \
+    .pipe(add_caption, "Outlier Profiling: Medical Condition Frequencies") \
     .format("{:.1%}") 
 
 # %%
