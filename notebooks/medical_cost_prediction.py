@@ -1833,24 +1833,32 @@ print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_
 # </div> 
 
 # %%
-# Create outlier profiling dataFrame from training data
+# Create outlier profiling DataFrame from training data
 outlier_profiling_df = X_train_preprocessed.assign(
     TOTSLF23=y_train, 
     outlier_display=X_train_preprocessed["outlier"].map({0: "Inliers", 1: "Outliers"})
 )
 
 # %%
-# Outlier Profiling: Median of Numerical Features and Target 
+# Outlier Profiling: Median Differences for Numerical Features and Target 
 outlier_numeric_profile = outlier_profiling_df.groupby("outlier")[input_numerical_features + ["TOTSLF23"]].median().T
 outlier_numeric_profile.columns = ["Inliers", "Outliers"]
-outlier_numeric_profile.index = outlier_numeric_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
 outlier_numeric_profile["Difference"] = (outlier_numeric_profile["Outliers"] - outlier_numeric_profile["Inliers"]) 
 
+# Calculate interquartile range (IQR) (using inliers to provide a robust baseline of 'normal' variability)
+inlier_q1 = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, input_numerical_features + ["TOTSLF23"]].quantile(0.25)
+inlier_q3 = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, input_numerical_features + ["TOTSLF23"]].quantile(0.75)
+inlier_iqr = (inlier_q3 - inlier_q1)
+
+# Calculate how many IQRs the outlier median is different from the inlier median
+outlier_numeric_profile["IQR Difference"] = outlier_numeric_profile["Difference"] / inlier_iqr
+
 # Display table
+outlier_numeric_profile.index = outlier_numeric_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
 outlier_numeric_profile.sort_values(by="Difference", ascending=False).style \
-    .pipe(add_caption, "Outlier Numeric Profile: Median") \
+    .pipe(add_caption, "Outlier Numeric Profile: Median Differences") \
     .format("{:.1f}") \
-    .set_properties(**{"font-weight": "bold"}, subset=["Difference"])
+    .set_properties(**{"font-weight": "bold"}, subset=["Difference", "IQR Difference"])
 
 # %%
 # Outlier Profiling: Overlapping Histograms of Top Numerical Drivers
