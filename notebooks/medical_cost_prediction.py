@@ -2005,6 +2005,92 @@ outlier_profiling_costs.style \
     .format("${:,.0f}", subset=pd.IndexSlice[["Mean Costs", "Median Costs", "90th Percentile Cost", "99th Percentile Cost"], :]) \
     .format("{:,.0f}", subset=pd.IndexSlice[["Top 1% Spenders", "Super-Spenders"], :]) 
 
+# %%
+# Outlier Profiling: Overlapping Lorenz Curves 
+# Note: This plot compares cost concentration between outliers and inliers on the population-level (weighted).
+
+def get_lorenz_metrics(subset_df):
+    """Calculates Lorenz curve coordinates and Gini coefficient."""
+    # Create local copy and calculate population costs
+    l_df = subset_df[["TOTSLF23", "PERWT23F"]].sort_values("TOTSLF23").copy()
+    l_df["pop_costs"] = l_df["TOTSLF23"] * l_df["PERWT23F"]
+    
+    # Cumulative percentages (weighted)
+    cum_pop_pct = l_df["PERWT23F"].cumsum() / l_df["PERWT23F"].sum() * 100
+    cum_pop_costs = l_df["pop_costs"].cumsum() / l_df["pop_costs"].sum() * 100
+    
+    # Prepend origin
+    pct = np.insert(cum_pop_pct.values, 0, 0)
+    costs = np.insert(cum_pop_costs.values, 0, 0)
+    
+    # Gini Coefficient
+    gini = 1 - 2 * np.trapezoid(costs / 100, pct / 100)
+    
+    # Identify 80/20 point (Pareto)
+    idx_80 = (cum_pop_pct - 80).abs().idxmin()
+    x_80 = cum_pop_pct.loc[idx_80]
+    y_80 = cum_pop_costs.loc[idx_80]
+    
+    return pct, costs, gini, (x_80, y_80)
+
+# Add weights back to outlier_profiling_df for weighted analysis
+outlier_profiling_df["PERWT23F"] = X_train.loc[outlier_profiling_df.index, "PERWT23F"]
+
+# Calculate metrics for each group
+inlier_data = get_lorenz_metrics(outlier_profiling_df[outlier_profiling_df["outlier"] == 0])
+outlier_data = get_lorenz_metrics(outlier_profiling_df[outlier_profiling_df["outlier"] == 1])
+
+# Plotting
+plt.figure(figsize=(10, 8))
+
+# Line of Equality
+plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality", alpha=0.6)
+
+# Colors and Groups
+# Inliers: #4F81BD (blue), Outliers: #D32F2F (red)
+groups = [
+    {"data": inlier_data, "name": "Inliers", "color": "#4F81BD", "alpha_fill": 0.08},
+    {"data": outlier_data, "name": "Outliers", "color": "#D32F2F", "alpha_fill": 0.05}
+]
+
+for g in groups:
+    pct, costs, gini, pareto = g["data"]
+    
+    # Lorenz Curve
+    plt.plot(pct, costs, label=f"{g['name']} (Gini: {gini:.2f})", color=g["color"], lw=3)
+    plt.fill_between(pct, costs, pct, color=g["color"], alpha=g["alpha_fill"])
+    
+    # Pareto Point
+    plt.plot(pareto[0], pareto[1], 'o', color=g["color"], markersize=8)
+    
+    # Annotation for Pareto
+    top_20_share = 100 - pareto[1]
+    offset = 12 if g["name"] == "Inliers" else -25
+    plt.annotate(f"Top 20% of {g['name']} account\n for {top_20_share:.1f}% of costs", 
+                 xy=pareto, xytext=(pareto[0] - 35, pareto[1] + offset),
+                 arrowprops=dict(arrowstyle="->", color="black", alpha=0.5),
+                 fontsize=9, fontweight="bold", color=g["color"])
+
+# Highlight Zero-Cost Threshold (Total Training Population)
+total_zero_pct = (outlier_profiling_df.loc[outlier_profiling_df["TOTSLF23"] == 0, "PERWT23F"].sum() / outlier_profiling_df["PERWT23F"].sum()) * 100
+plt.plot(total_zero_pct, 0, 'o', color="#fb8500", markersize=8)
+plt.annotate(f"{total_zero_pct:.1f}% have $0 costs", 
+             xy=(total_zero_pct, 0), xytext=(total_zero_pct - 10, 10),
+             arrowprops=dict(arrowstyle="->", color="black", connectionstyle="arc3,rad=-0.2", alpha=0.8),
+             fontsize=10, fontweight="bold")
+
+# Customize
+plt.title("Lorenz Curve: Out-of-Pocket Cost Concentration (Inliers vs. Outliers)", fontsize=14, fontweight="bold", pad=20)
+plt.xlabel("Cumulative % of Population (Sorted from Lowest to Highest Cost)", fontsize=11)
+plt.ylabel("Cumulative % of Total Costs", fontsize=11)
+plt.legend(loc="upper left", fontsize=10)
+plt.grid(True, alpha=0.2)
+plt.xticks(range(0, 101, 10))
+plt.yticks(range(0, 101, 10))
+plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())
+plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
+plt.tight_layout()
+plt.show()
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insight:</b> The Isolation Forest identifies a "High Comorbidity" profile rather than data errors.
@@ -2014,6 +2100,7 @@ outlier_profiling_costs.style \
 #         <li><b>Functional Limitation as the Strongest Signal:</b> Physical and cognitive impairments (e.g., <code>Walking Limitation</code> +65.9%, <code>Cognitive Limitation</code> +56.7%) are the primary drivers of the outlier flag.</li>
 #         <li><b>Economic Exclusion:</b> There is a massive employment gap (-44.1%), indicating that these "anomalous" health profiles often prevent individuals from participating in the workforce.</li>
 #         <li><b>Comorbidity vs. Cost Outliers:</b> Surprisingly, the vast majority of extreme spenders are "Inliers" (e.g., 108 out of 121 Top 1% Spenders). Despite outliers being the most unhealthy subgroup, high comorbidity alone does not fully explain high spending. This suggests that "Super Spenders" are often individuals with otherwise "normal" health profiles who encounter high-cost acute events (e.g., major surgery) or specific high-cost treatments, rather than just the accumulation of chronic conditions.</li>
+#         <li><b>Cost Concentration:</b> Overlapping Lorenz curves reveal that costs are extremely concentrated in both groups, with the Top 20% of spenders in each group accounting for the vast majority of that group's total spending. However, the slightly "flatter" curve for outliers (in the tail) suggests their spending is more "predictably high" compared to the abrupt, extreme shocks seen in the inlier population.</li>
 #         <li><b>Decision: Keep Outliers.</b> These individuals represent "High Comorbidity" patients who are statistically anomalous due to their complex health profiles. While they don't capture all super-spenders, they represent a critical high-risk demographic that the model must learn to handle.</li>
 #     </ul>
 # </div>
@@ -2042,4 +2129,4 @@ outlier_profiling_costs.style \
 # - **Train-Validation-Test Split:** Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
 # - **Data Preprocessing (Stateful):**
 #     - **Handling Missing Values:** Imputed missing values using the median for numerical and mode for categorical features, calculated from the training data. 
-#     - **Handling Outliers:** Used custom transformers to identify univariate outliers (3SD, 1.5 IQR methods) and an isolation forest for multivariate outliers. Confirmed that outliers represent legitimate high-risk cases (e.g., high comorbidity) rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
+#     - **Handling Outliers:** Used custom transformers to identify univariate outliers (3SD, 1.5 IQR methods) and an isolation forest for multivariate outliers. Combined with Lorenz curve profiling, confirmed that outliers represent legitimate high-risk cases (e.g., high comorbidity) rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
