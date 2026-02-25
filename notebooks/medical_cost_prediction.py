@@ -1853,6 +1853,9 @@ inlier_iqr = (inlier_q3 - inlier_q1)
 # Calculate how many IQRs the outlier median is different from the inlier median
 outlier_numeric_profile["IQR Difference"] = outlier_numeric_profile["Difference"] / inlier_iqr
 
+# Identify the top 4 numerical columns that drive outliers (based on IQR difference)
+top_numeric_drivers = outlier_numeric_profile["IQR Difference"].abs().sort_values(ascending=False).head(4).index.tolist()
+
 # Display table
 outlier_numeric_profile.index = outlier_numeric_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
 outlier_numeric_profile.sort_values(by="Difference", ascending=False).style \
@@ -1862,7 +1865,6 @@ outlier_numeric_profile.sort_values(by="Difference", ascending=False).style \
 
 # %%
 # Outlier Profiling: Overlapping Histograms of Top Numerical Drivers
-top_numeric_drivers = ["TOTSLF23", "AGE23X", "RTHLTH31", "MNHLTH31"] 
 fig, axes = plt.subplots(2, 2, figsize=(10, 7))
 axes_flat = axes.flatten()
 
