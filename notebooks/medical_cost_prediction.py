@@ -1819,10 +1819,11 @@ isolation_forest.fit(X_train_preprocessed[input_numerical_features + input_binar
 
 # Predict outliers on training data
 X_train_preprocessed["outlier"] = isolation_forest.predict(X_train_preprocessed[input_numerical_features + input_binary_features])
+X_train_preprocessed["outlier"] = X_train_preprocessed["outlier"].map({1: 0, -1: 1})  # recode to 0/1 (outlier no/yes)
 X_train_preprocessed["outlier_score"] = isolation_forest.decision_function(X_train_preprocessed[input_numerical_features + input_binary_features])
 
 # Show number of outliers
-n_outliers_train = X_train_preprocessed["outlier"].value_counts()[-1]
+n_outliers_train = X_train_preprocessed["outlier"].value_counts()[1]
 contamination_train = n_outliers_train / X_train_preprocessed["outlier"].value_counts().sum()
 print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_train:.1f}%) as multivariate outliers.")
 
@@ -1834,7 +1835,7 @@ print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_
 # %%
 # Outlier Profiling: Numerical Features and Target Median
 outlier_numeric_profile = X_train_preprocessed.assign(TOTSLF23=y_train).groupby("outlier")[input_numerical_features + ["TOTSLF23"]].median().T
-outlier_numeric_profile.columns = ["Outliers", "Inliers"]
+outlier_numeric_profile.columns = ["Inliers", "Outliers"]
 outlier_numeric_profile.index = outlier_numeric_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
 outlier_numeric_profile["Difference"] = (outlier_numeric_profile["Outliers"] - outlier_numeric_profile["Inliers"]) 
 
@@ -1855,10 +1856,10 @@ for i, numeric_driver in enumerate(top_numeric_drivers):
     sns.kdeplot(
         data=X_train_preprocessed.assign(
             TOTSLF23=y_train, 
-            is_outlier=X_train_preprocessed["outlier"].map({1: "Inliers", -1: "Outliers"})
+            outlier_display=X_train_preprocessed["outlier"].map({0: "Inliers", 1: "Outliers"})
         ), 
         x=numeric_driver, 
-        hue="is_outlier", 
+        hue="outlier_display", 
         hue_order=["Inliers", "Outliers"],
         fill=True, 
         common_norm=False, 
@@ -1878,20 +1879,46 @@ fig.tight_layout()
 plt.show()
 
 # %%
-# Outlier Profiling (numerical features): Visualize outliers with scatter plot matrix (use subsample for lower latency) 
-X_train_subsample = X_train_preprocessed[input_numerical_features + ["outlier"]].sample(n=1000, random_state=RANDOM_STATE)
-sns.pairplot(
-    X_train_subsample.rename(columns=DISPLAY_LABELS), 
-    hue="outlier", 
-    palette={1: "#4F81BD", -1: "#D32F2F"}, 
+# Create subsample of training data for lower latency
+train_subsample = X_train_preprocessed.assign(
+    TOTSLF23=y_train, 
+    outlier_display=X_train_preprocessed["outlier"].map({0: "Inliers", 1: "Outliers"})
+)
+train_subsample = train_subsample[top_numeric_drivers + ["outlier_display"]].sample(n=1000, random_state=RANDOM_STATE)
+
+# %%
+# Outlier Profiling: Pair Plot of Top Numerical Drivers 
+# Create subsample of training data for lower latency plotting
+train_subsample = X_train_preprocessed.assign(
+    TOTSLF23=y_train, 
+    outlier_display=X_train_preprocessed["outlier"].map({0: "Inliers", 1: "Outliers"})
+)
+train_subsample = train_subsample[top_numeric_drivers + ["outlier_display"]].sample(n=1000, random_state=RANDOM_STATE)
+
+# Create pair plot matrix
+grid = sns.pairplot(
+    train_subsample.rename(columns=DISPLAY_LABELS), 
+    hue="outlier_display", 
+    palette={"Inliers": "#4F81BD", "Outliers": "#D32F2F"}, 
     plot_kws={"alpha":0.6, "s":40}
 )
+
+# Remove legend title and position it at the top center
+sns.move_legend(
+    grid, "lower center",
+    bbox_to_anchor=(0.5, 0.99), 
+    ncol=2, 
+    title=None 
+)
+
+grid.fig.suptitle("Outlier Profiling: Top Numerical Drivers", y=1.05)
+plt.show() 
 
 # %%
 # Outlier Profiling (binary features): Compare prevalence of medical conditions for outliers vs. inliers 
 outlier_profiling = X_train_preprocessed[input_binary_features + ["outlier"]].groupby("outlier").mean().T
-outlier_profiling.columns = ["Outliers", "Inliers"]
-outlier_profiling.index = outlier_analysis.index.map(lambda x: DISPLAY_LABELS.get(x, x))
+outlier_profiling.columns = ["Inliers", "Outliers"]
+outlier_profiling.index = outlier_profiling.index.map(lambda x: DISPLAY_LABELS.get(x, x))
 outlier_profiling["Difference"] = outlier_profiling["Outliers"] - outlier_profiling["Inliers"]
 
 # Display table (difference is the percentage point increase for outliers in 'Yes' frequency)
@@ -1918,7 +1945,7 @@ outlier_profiling_costs = pd.DataFrame({
     "Top 1% Spenders": (y_train >= pop_p99).groupby(X_train_preprocessed["outlier"]).sum(),
     "Super-Spenders": (y_train >= pop_p999).groupby(X_train_preprocessed["outlier"]).sum()
 }).sort_index(ascending=True).T 
-outlier_profiling_costs.columns = ["Outliers", "Inliers"]
+outlier_profiling_costs.columns = ["Inliers", "Outliers"]
 
 # Display table
 outlier_profiling_costs.style \
