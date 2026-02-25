@@ -2065,19 +2065,24 @@ for g in groups:
     
     # Annotation for Pareto
     top_20_share = 100 - pareto[1]
-    offset = 12 if g["name"] == "Inliers" else -25
+    offset = 12 if g["name"] == "Inliers" else 0
     plt.annotate(f"Top 20% of {g['name']} account\n for {top_20_share:.1f}% of costs", 
                  xy=pareto, xytext=(pareto[0] - 35, pareto[1] + offset),
                  arrowprops=dict(arrowstyle="->", color="black", alpha=0.5),
                  fontsize=9, fontweight="bold", color=g["color"])
 
-# Highlight Zero-Cost Threshold (Total Training Population)
-total_zero_pct = (outlier_profiling_df.loc[outlier_profiling_df["TOTSLF23"] == 0, "PERWT23F"].sum() / outlier_profiling_df["PERWT23F"].sum()) * 100
-plt.plot(total_zero_pct, 0, 'o', color="#fb8500", markersize=8)
-plt.annotate(f"{total_zero_pct:.1f}% have $0 costs", 
-             xy=(total_zero_pct, 0), xytext=(total_zero_pct - 10, 10),
-             arrowprops=dict(arrowstyle="->", color="black", connectionstyle="arc3,rad=-0.2", alpha=0.8),
-             fontsize=10, fontweight="bold")
+    # Highlight Zero-Cost Threshold for this group
+    group_df = outlier_profiling_df[outlier_profiling_df["outlier"] == (1 if g["name"] == "Outliers" else 0)]
+    group_zero_pct = (group_df.loc[group_df["TOTSLF23"] == 0, "PERWT23F"].sum() / group_df["PERWT23F"].sum()) * 100
+    
+    plt.plot(group_zero_pct, 0, 'o', color=g["color"], markersize=8)
+    
+    # Annotation for Zero Costs
+    y_offset = 13 if g["name"] == "Outliers" else 26
+    plt.annotate(f"{group_zero_pct:.1f}% of {g['name']}\nhave $0 costs", 
+                 xy=(group_zero_pct, 0), xytext=(group_zero_pct - 10, y_offset),
+                 arrowprops=dict(arrowstyle="->", color="black", alpha=0.5),
+                 fontsize=9, fontweight="bold", color=g["color"])
 
 # Customize
 plt.title("Lorenz Curve: Out-of-Pocket Cost Concentration (Inliers vs. Outliers)", fontsize=14, fontweight="bold", pad=20)
