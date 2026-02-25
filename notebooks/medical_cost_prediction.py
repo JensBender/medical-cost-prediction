@@ -1833,7 +1833,7 @@ print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_
 # </div> 
 
 # %%
-# Outlier Profiling: Numerical Features and Target Median
+# Outlier Profiling: Median of Numerical Features and Target 
 outlier_numeric_profile = X_train_preprocessed.assign(TOTSLF23=y_train).groupby("outlier")[input_numerical_features + ["TOTSLF23"]].median().T
 outlier_numeric_profile.columns = ["Inliers", "Outliers"]
 outlier_numeric_profile.index = outlier_numeric_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
@@ -1844,6 +1844,39 @@ outlier_numeric_profile.sort_values(by="Difference", ascending=False).style \
     .pipe(add_caption, "Outlier Numeric Profile: Median") \
     .format("{:.1f}") \
     .set_properties(**{"font-weight": "bold"}, subset=["Difference"])
+
+# %%
+# Outlier Profiling: Overlapping Histograms of Top Numerical Drivers
+top_numeric_drivers = ["TOTSLF23", "AGE23X", "RTHLTH31", "MNHLTH31"] 
+fig, axes = plt.subplots(2, 2, figsize=(10, 7))
+axes_flat = axes.flatten()
+
+for i, numeric_driver in enumerate(top_numeric_drivers):
+    ax = axes_flat[i]
+    sns.histplot(
+        data=X_train_preprocessed.assign(
+            TOTSLF23=y_train, 
+            outlier_display=X_train_preprocessed["outlier"].map({0: "Inliers", 1: "Outliers"})
+        ), 
+        x=numeric_driver, 
+        hue="outlier_display", 
+        hue_order=["Inliers", "Outliers"],
+        ax=ax,
+        palette={"Inliers": "#4F81BD", "Outliers": "#D32F2F"},
+        kde=True,
+        discrete=True if numeric_driver in ["RTHLTH31", "MNHLTH31"] else False
+    )
+    ax.set_title(f"{DISPLAY_LABELS.get(numeric_driver, numeric_driver)}", fontsize=12, fontweight="bold")
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    
+    # Remove legend title 
+    if ax.get_legend():
+        ax.get_legend().set_title(None)
+
+fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold")
+fig.tight_layout()
+plt.show()
 
 # %%
 # Outlier Profiling: Overlapping KDE Plots of Top Numerical Drivers
