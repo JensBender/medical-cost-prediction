@@ -1887,7 +1887,6 @@ plt.show()
 
 # %%
 # Outlier Profiling: Overlapping KDE Plots of Top Numerical Drivers
-top_numeric_drivers = ["TOTSLF23", "AGE23X", "RTHLTH31", "MNHLTH31"] 
 fig, axes = plt.subplots(2, 2, figsize=(10, 7))
 axes_flat = axes.flatten()
 
@@ -1917,16 +1916,17 @@ fig.tight_layout()
 plt.show()
 
 # %%
-# Outlier Profiling: Pair Plot of Top Numerical Drivers 
+# Outlier Profiling: Pairwise Plot of Top Numerical Drivers 
 # Create subsample for lower latency plotting
-outlier_profiling_subsample = outlier_profiling_df[top_numeric_drivers + ["outlier_display"]].sample(n=2000, random_state=RANDOM_STATE)
+outlier_profiling_subsample = outlier_profiling_df[top_numeric_drivers + ["outlier_display"]].sample(n=5000, random_state=RANDOM_STATE)
 
 # Create pair plot matrix
 grid = sns.pairplot(
     outlier_profiling_subsample.rename(columns=DISPLAY_LABELS), 
     hue="outlier_display", 
     palette={"Inliers": "#4F81BD", "Outliers": "#D32F2F"}, 
-    plot_kws={"alpha":0.6, "s":40}
+    plot_kws={"alpha":0.6, "s":40},
+    diag_kws={"common_norm": False}
 )
 
 # Remove legend title and position it at the top center
