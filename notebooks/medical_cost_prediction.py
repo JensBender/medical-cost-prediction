@@ -1863,7 +1863,10 @@ for i, numeric_driver in enumerate(top_numeric_drivers):
         hue_order=["Inliers", "Outliers"],
         ax=ax,
         palette={"Inliers": "#4F81BD", "Outliers": "#D32F2F"},
-        kde=True,
+        stat="density",  # Changes y-axis to density
+        common_norm=False,  # Normalizes each group
+        kde=True, 
+        element="step",  # Shows outlines of bars only (shape like steps)
         discrete=True if numeric_driver in ["RTHLTH31", "MNHLTH31"] else False
     )
     ax.set_title(f"{DISPLAY_LABELS.get(numeric_driver, numeric_driver)}", fontsize=12, fontweight="bold")
