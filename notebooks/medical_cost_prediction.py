@@ -1864,7 +1864,8 @@ for i, numeric_driver in enumerate(top_numeric_drivers):
         fill=True, 
         common_norm=False, 
         ax=ax,
-        palette={"Inliers": "#4F81BD", "Outliers": "#D32F2F"}
+        palette={"Inliers": "#4F81BD", "Outliers": "#D32F2F"},
+        cut=0  # Truncates curve on min and max
     )
     ax.set_title(f"{DISPLAY_LABELS.get(numeric_driver, numeric_driver)}", fontsize=12, fontweight="bold")
     ax.set_xlabel("")
@@ -1879,21 +1880,13 @@ fig.tight_layout()
 plt.show()
 
 # %%
-# Create subsample of training data for lower latency
-train_subsample = X_train_preprocessed.assign(
-    TOTSLF23=y_train, 
-    outlier_display=X_train_preprocessed["outlier"].map({0: "Inliers", 1: "Outliers"})
-)
-train_subsample = train_subsample[top_numeric_drivers + ["outlier_display"]].sample(n=1000, random_state=RANDOM_STATE)
-
-# %%
 # Outlier Profiling: Pair Plot of Top Numerical Drivers 
 # Create subsample of training data for lower latency plotting
 train_subsample = X_train_preprocessed.assign(
     TOTSLF23=y_train, 
     outlier_display=X_train_preprocessed["outlier"].map({0: "Inliers", 1: "Outliers"})
 )
-train_subsample = train_subsample[top_numeric_drivers + ["outlier_display"]].sample(n=1000, random_state=RANDOM_STATE)
+train_subsample = train_subsample[top_numeric_drivers + ["outlier_display"]].sample(n=2000, random_state=RANDOM_STATE)
 
 # Create pair plot matrix
 grid = sns.pairplot(
@@ -1911,7 +1904,7 @@ sns.move_legend(
     title=None 
 )
 
-grid.fig.suptitle("Outlier Profiling: Top Numerical Drivers", y=1.05)
+grid.fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold", y=1.05)
 plt.show() 
 
 # %%
