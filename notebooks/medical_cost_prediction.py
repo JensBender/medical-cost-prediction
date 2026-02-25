@@ -1857,6 +1857,8 @@ outlier_numeric_profile["IQR Difference"] = outlier_numeric_profile["Difference"
 
 # Identify the top 4 numerical columns that drive outliers (based on IQR difference)
 top_numeric_drivers = outlier_numeric_profile["IQR Difference"].abs().sort_values(ascending=False).head(4).index.tolist()
+# Use log-scaled out-of-pocket costs for visualizations
+top_numeric_drivers_viz = [col if col != "TOTSLF23" else "TOTSLF23_LOG" for col in top_numeric_drivers]  
 
 # Display table
 outlier_numeric_profile.index = outlier_numeric_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
@@ -1871,14 +1873,13 @@ fig, axes = plt.subplots(2, 2, figsize=(10, 7))
 axes_flat = axes.flatten()
 
 # Iterate over each numerical driver
-for i, numeric_driver in enumerate(top_numeric_drivers):
+for i, numeric_driver in enumerate(top_numeric_drivers_viz):
     ax = axes_flat[i]
-    x_col = "TOTSLF23_LOG" if numeric_driver == "TOTSLF23" else numeric_driver  # use log-scaled costs for plot
 
-    # Create histogram
+    # Create histogram for current numerical driver
     sns.histplot(
         data=outlier_profiling_df, 
-        x=x_col, 
+        x=numeric_driver, 
         hue="outlier_display", 
         hue_order=["Inliers", "Outliers"],
         ax=ax,
@@ -1890,8 +1891,8 @@ for i, numeric_driver in enumerate(top_numeric_drivers):
         discrete=True if numeric_driver in ["RTHLTH31", "MNHLTH31"] else False
     )
 
-    # Customize
-    ax.set_title(f"{DISPLAY_LABELS.get(x_col, x_col)}", fontsize=12, fontweight="bold")
+    # Customize current histogram
+    ax.set_title(f"{DISPLAY_LABELS.get(numeric_driver, numeric_driver)}", fontsize=12, fontweight="bold")
     ax.set_xlabel("")
     ax.set_ylabel("")
     
@@ -1899,6 +1900,7 @@ for i, numeric_driver in enumerate(top_numeric_drivers):
     if ax.get_legend():
         ax.get_legend().set_title(None)
 
+# Customize histogram matrix
 fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold")
 fig.tight_layout()
 plt.show()
@@ -1908,8 +1910,10 @@ plt.show()
 fig, axes = plt.subplots(2, 2, figsize=(10, 7))
 axes_flat = axes.flatten()
 
-for i, numeric_driver in enumerate(top_numeric_drivers):
+for i, numeric_driver in enumerate(top_numeric_drivers_viz):
     ax = axes_flat[i]
+
+    # Create KDE plot for current numerical driver
     sns.kdeplot(
         data=outlier_profiling_df, 
         x=numeric_driver, 
@@ -1921,6 +1925,8 @@ for i, numeric_driver in enumerate(top_numeric_drivers):
         palette={"Inliers": "#4F81BD", "Outliers": "#D32F2F"},
         cut=0  # Truncates curve on min and max
     )
+
+    # Customize current KDE plot
     ax.set_title(f"{DISPLAY_LABELS.get(numeric_driver, numeric_driver)}", fontsize=12, fontweight="bold")
     ax.set_xlabel("")
     ax.set_ylabel("")
@@ -1929,6 +1935,7 @@ for i, numeric_driver in enumerate(top_numeric_drivers):
     if ax.get_legend():
         ax.get_legend().set_title(None)
 
+# Customize KDE plot matrix
 fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold")
 fig.tight_layout()
 plt.show()
@@ -1936,7 +1943,7 @@ plt.show()
 # %%
 # Outlier Profiling: Pairwise Plot of Top Numerical Drivers 
 # Create subsample for lower latency plotting
-outlier_profiling_subsample = outlier_profiling_df[top_numeric_drivers + ["outlier_display"]].sample(n=5000, random_state=RANDOM_STATE)
+outlier_profiling_subsample = outlier_profiling_df[top_numeric_drivers_viz + ["outlier_display"]].sample(n=5000, random_state=RANDOM_STATE)
 
 # Create pair plot matrix
 grid = sns.pairplot(
