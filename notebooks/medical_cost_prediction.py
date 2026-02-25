@@ -1838,6 +1838,8 @@ outlier_profiling_df = X_train_preprocessed.assign(
     TOTSLF23=y_train, 
     outlier_display=X_train_preprocessed["outlier"].map({0: "Inliers", 1: "Outliers"})
 )
+# Log-scale out-of-pocket costs for plotting
+outlier_profiling_df["TOTSLF23_LOG"] = np.log1p(outlier_profiling_df["TOTSLF23"])
 
 # %%
 # Outlier Profiling: Median Differences for Numerical Features and Target 
@@ -1868,11 +1870,15 @@ outlier_numeric_profile.sort_values(by="Difference", ascending=False).style \
 fig, axes = plt.subplots(2, 2, figsize=(10, 7))
 axes_flat = axes.flatten()
 
+# Iterate over each numerical driver
 for i, numeric_driver in enumerate(top_numeric_drivers):
     ax = axes_flat[i]
+    x_col = "TOTSLF23_LOG" if numeric_driver == "TOTSLF23" else numeric_driver  # use log-scaled costs for plot
+
+    # Create histogram
     sns.histplot(
         data=outlier_profiling_df, 
-        x=numeric_driver, 
+        x=x_col, 
         hue="outlier_display", 
         hue_order=["Inliers", "Outliers"],
         ax=ax,
@@ -1883,7 +1889,9 @@ for i, numeric_driver in enumerate(top_numeric_drivers):
         element="step",  # Shows outlines of bars only (shape like steps)
         discrete=True if numeric_driver in ["RTHLTH31", "MNHLTH31"] else False
     )
-    ax.set_title(f"{DISPLAY_LABELS.get(numeric_driver, numeric_driver)}", fontsize=12, fontweight="bold")
+
+    # Customize
+    ax.set_title(f"{DISPLAY_LABELS.get(x_col, x_col)}", fontsize=12, fontweight="bold")
     ax.set_xlabel("")
     ax.set_ylabel("")
     

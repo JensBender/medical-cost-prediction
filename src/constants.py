@@ -2,6 +2,7 @@
 DISPLAY_LABELS = {
     # Target
     "TOTSLF23": "Out-of-Pocket Costs",
+    "TOTSLF23_LOG": "Out-of-Pocket Costs (Log-Scaled)",
     
     # Demographics
     "AGE23X": "Age",
