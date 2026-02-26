@@ -1833,7 +1833,7 @@ print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Compare the distributions of the target variable and features between outliers and inliers.
+#     ℹ️ Compare the distributions of the target variable and features between outliers and inliers. To ensure findings are representative of the U.S. adult population, all visualizations and central tendency metrics (medians, IQRs) in this section are calculated using population-level weighted statistics.
 # </div>
 
 # %%
@@ -1892,25 +1892,30 @@ for i, numeric_driver in enumerate(top_numeric_drivers_viz):
         x=numeric_driver, 
         hue="outlier_display", 
         hue_order=["Inliers", "Outliers"],
+        weights="PERWT23F", # Use sample weights for population-level density
         ax=ax,
         palette=colors,
         stat="density",  # Changes y-axis to density
         common_norm=False,  # Normalizes each group
         kde=True, 
+        bins=20, 
         element="step",  # Shows outlines of bars only (shape like steps)
         discrete=True if numeric_driver in ["RTHLTH31", "MNHLTH31"] else False
     )
 
-    # Calculate medians and difference
-    median_inliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, numeric_driver].median()
-    median_outliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 1, numeric_driver].median()
+    # Calculate population-level (weighted) medians and differences 
+    inliers_df = outlier_profiling_df[outlier_profiling_df["outlier"] == 0]
+    outliers_df = outlier_profiling_df[outlier_profiling_df["outlier"] == 1]
+    
+    median_inliers = weighted_quantile(inliers_df[numeric_driver], inliers_df["PERWT23F"], 0.5)
+    median_outliers = weighted_quantile(outliers_df[numeric_driver], outliers_df["PERWT23F"], 0.5)
     median_diff = median_outliers - median_inliers
     
-    # Calculate standardized difference 
-    q1_inliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, numeric_driver].quantile(0.25)
-    q3_inliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, numeric_driver].quantile(0.75)
-    iqr_inliers = q3_inliers - q1_inliers
-    iqr_text = f" ({median_diff/iqr_inliers:+.1f} IQR)" if iqr_inliers > 0 else ""  # Safeguard against zero division
+    # Calculate standardized difference (using IQR of inliers)
+    q1_in = weighted_quantile(inliers_df[numeric_driver], inliers_df["PERWT23F"], 0.25)
+    q3_in = weighted_quantile(inliers_df[numeric_driver], inliers_df["PERWT23F"], 0.75)
+    iqr_in = q3_in - q1_in
+    iqr_text = f" ({median_diff/iqr_in:+.1f} IQR)" if iqr_in > 0 else ""
 
     # Add vertical median lines
     ax.axvline(median_inliers, color=colors["Inliers"], linestyle="--", lw=1.5, alpha=0.8)
@@ -1959,6 +1964,7 @@ for i, numeric_driver in enumerate(top_numeric_drivers_viz):
         x=numeric_driver, 
         hue="outlier_display", 
         hue_order=["Inliers", "Outliers"],
+        weights="PERWT23F", # Use sample weights for population-level density
         fill=True, 
         common_norm=False, 
         ax=ax,
@@ -1966,16 +1972,19 @@ for i, numeric_driver in enumerate(top_numeric_drivers_viz):
         cut=0  # Truncates curve on min and max
     )
 
-    # Calculate medians and difference
-    median_inliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, numeric_driver].median()
-    median_outliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 1, numeric_driver].median()
+    # Calculate population-level (weighted) medians and differences 
+    inliers_df = outlier_profiling_df[outlier_profiling_df["outlier"] == 0]
+    outliers_df = outlier_profiling_df[outlier_profiling_df["outlier"] == 1]
+    
+    median_inliers = weighted_quantile(inliers_df[numeric_driver], inliers_df["PERWT23F"], 0.5)
+    median_outliers = weighted_quantile(outliers_df[numeric_driver], outliers_df["PERWT23F"], 0.5)
     median_diff = median_outliers - median_inliers
     
-    # Calculate standardized difference 
-    q1_inliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, numeric_driver].quantile(0.25)
-    q3_inliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, numeric_driver].quantile(0.75)
-    iqr_inliers = q3_inliers - q1_inliers
-    iqr_text = f" ({median_diff/iqr_inliers:+.1f} IQR)" if iqr_inliers > 0 else ""  # Safeguard against zero division
+    # Calculate standardized difference using weighted IQR of inliers
+    q1_in = weighted_quantile(inliers_df[numeric_driver], inliers_df["PERWT23F"], 0.25)
+    q3_in = weighted_quantile(inliers_df[numeric_driver], inliers_df["PERWT23F"], 0.75)
+    iqr_in = q3_in - q1_in
+    iqr_text = f" ({median_diff/iqr_in:+.1f} IQR)" if iqr_in > 0 else ""
 
     # Add vertical median lines
     ax.axvline(median_inliers, color=colors["Inliers"], linestyle="--", lw=1.5, alpha=0.8)
