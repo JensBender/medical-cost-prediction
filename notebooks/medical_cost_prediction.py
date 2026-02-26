@@ -2031,15 +2031,22 @@ plt.show()
 
 # %%
 # Outlier Numeric Profile: Pairwise Plot of Top Numerical Drivers 
-# Create subsample for lower latency plotting
-outlier_profiling_subsample = outlier_profiling_df[top_numeric_drivers_viz + ["outlier_display"]].sample(n=5000, random_state=RANDOM_STATE)
+# Create a population-representative subsample using weighted bootstrap resampling. 
+# Since sns.pairplot does not natively support weights, this approach 'bakes' the survey weights directly into the subsample's density. 
+# Setting replace=True ensures that high-weight respondents are proportionally represented as multiple 'virtual' individuals in the plot.
+outlier_profiling_subsample = outlier_profiling_df[top_numeric_drivers_viz + ["outlier_display", "PERWT23F"]].sample(
+    n=5000, 
+    weights="PERWT23F", 
+    replace=True, 
+    random_state=RANDOM_STATE
+).drop(columns="PERWT23F")
 
 # Create pair plot matrix
 grid = sns.pairplot(
     outlier_profiling_subsample.rename(columns=DISPLAY_LABELS), 
     hue="outlier_display", 
     palette={"Inliers": "#4F81BD", "Outliers": "#D32F2F"}, 
-    plot_kws={"alpha":0.6, "s":40},
+    plot_kws={"alpha":0.4, "s":30}, 
     diag_kws={"common_norm": False}
 )
 
