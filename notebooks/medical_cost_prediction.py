@@ -1880,6 +1880,8 @@ outlier_numeric_profile.sort_values(by="Difference", ascending=False).style \
 fig, axes = plt.subplots(2, 2, figsize=(10, 7))
 axes_flat = axes.flatten()
 
+colors = {"Inliers": "#4F81BD", "Outliers": "#D32F2F"}
+
 # Iterate over each numerical driver
 for i, numeric_driver in enumerate(top_numeric_drivers_viz):
     ax = axes_flat[i]
@@ -1891,7 +1893,7 @@ for i, numeric_driver in enumerate(top_numeric_drivers_viz):
         hue="outlier_display", 
         hue_order=["Inliers", "Outliers"],
         ax=ax,
-        palette={"Inliers": "#4F81BD", "Outliers": "#D32F2F"},
+        palette=colors,
         stat="density",  # Changes y-axis to density
         common_norm=False,  # Normalizes each group
         kde=True, 
@@ -1899,14 +1901,42 @@ for i, numeric_driver in enumerate(top_numeric_drivers_viz):
         discrete=True if numeric_driver in ["RTHLTH31", "MNHLTH31"] else False
     )
 
-    # Customize current histogram
-    ax.set_title(f"{DISPLAY_LABELS.get(numeric_driver, numeric_driver)}", fontsize=12, fontweight="bold")
-    ax.set_xlabel("")
-    ax.set_ylabel("")
+    # Calculate medians and difference
+    median_inliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, numeric_driver].median()
+    median_outliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 1, numeric_driver].median()
+    median_diff = median_outliers - median_inliers
     
-    # Remove legend title 
+    # Calculate standardized difference 
+    q1_inliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, numeric_driver].quantile(0.25)
+    q3_inliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, numeric_driver].quantile(0.75)
+    iqr_inliers = q3_inliers - q1_inliers
+    iqr_text = f" ({median_diff/iqr_inliers:+.1f} IQR)" if iqr_inliers > 0 else ""  # Safeguard against zero division
+
+    # Add vertical median lines
+    ax.axvline(median_inliers, color=colors["Inliers"], linestyle="--", lw=1.5, alpha=0.8)
+    ax.axvline(median_outliers, color=colors["Outliers"], linestyle="--", lw=1.5, alpha=0.8)
+
+    # Add median labels 
+    ylim = ax.get_ylim()[1]
+    ax.text(median_inliers, ylim * 0.7, f"M={median_inliers:.1f}", color=colors["Inliers"], 
+            fontweight="bold", ha="right", va="center", fontsize=9,
+            bbox=dict(facecolor="white", alpha=0.8, edgecolor="none", pad=2))
+    ax.text(median_outliers, ylim * 0.7, f"M={median_outliers:.1f}", color=colors["Outliers"], 
+            fontweight="bold", ha="left", va="center", fontsize=9,
+            bbox=dict(facecolor="white", alpha=0.8, edgecolor="none", pad=2))
+
+    # Add title
+    ax.set_title(DISPLAY_LABELS.get(numeric_driver, numeric_driver), fontsize=12, fontweight="bold", pad=20)
+    
+    # Add subtitle (median difference)
+    ax.text(0.5, 1.03, fr"$\Delta$ Median: {median_diff:+.1f}{iqr_text}", 
+            transform=ax.transAxes, fontsize=10, ha="center", fontweight="normal")
+
+    # Customize axis labels and legend
+    ax.set_xlabel("")
+    ax.set_ylabel("")     
     if ax.get_legend():
-        ax.get_legend().set_title(None)
+        ax.get_legend().set_title(None)  # Removes legend title
 
 # Customize histogram matrix
 fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold")
