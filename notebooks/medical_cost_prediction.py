@@ -1936,16 +1936,22 @@ for i, numeric_driver in enumerate(top_numeric_drivers_viz):
         cut=0  # Truncates curve on min and max
     )
 
-    # Calculate Medians 
+    # Calculate medians and difference
     median_inliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, numeric_driver].median()
     median_outliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 1, numeric_driver].median()
     median_diff = median_outliers - median_inliers
+    
+    # Calculate standardized difference 
+    q1_inliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, numeric_driver].quantile(0.25)
+    q3_inliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, numeric_driver].quantile(0.75)
+    iqr_inliers = q3_inliers - q1_inliers
+    iqr_text = f" ({median_diff/iqr_inliers:+.1f} IQR)" if iqr_inliers > 0 else ""  # Safeguard against zero division
 
-    # Add Vertical Median Lines
+    # Add vertical median lines
     ax.axvline(median_inliers, color=colors["Inliers"], linestyle="--", lw=1.5, alpha=0.8)
     ax.axvline(median_outliers, color=colors["Outliers"], linestyle="--", lw=1.5, alpha=0.8)
 
-    # Add Median Labels 
+    # Add median labels 
     ylim = ax.get_ylim()[1]
     ax.text(median_inliers, ylim * 0.7, f"M={median_inliers:.1f}", color=colors["Inliers"], 
             fontweight="bold", ha="right", va="center", fontsize=9,
@@ -1958,7 +1964,8 @@ for i, numeric_driver in enumerate(top_numeric_drivers_viz):
     ax.set_title(DISPLAY_LABELS.get(numeric_driver, numeric_driver), fontsize=12, fontweight="bold", pad=20)
     
     # Add subtitle (median difference)
-    ax.text(0.5, 1.03, fr"$\Delta$ Median: {median_diff:+.1f}", transform=ax.transAxes, fontsize=10, ha="center", fontweight="normal")
+    ax.text(0.5, 1.03, fr"$\Delta$ Median: {median_diff:+.1f}{iqr_text}", 
+            transform=ax.transAxes, fontsize=10, ha="center", fontweight="normal")
 
     # Customize axis labels and legend
     ax.set_xlabel("")
