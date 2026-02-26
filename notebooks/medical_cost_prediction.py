@@ -1836,10 +1836,9 @@ print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_
 # Create outlier profiling DataFrame from training data
 outlier_profiling_df = X_train_preprocessed.assign(
     TOTSLF23=y_train, 
-    outlier_display=X_train_preprocessed["outlier"].map({0: "Inliers", 1: "Outliers"})
+    TOTSLF23_LOG=lambda df: np.log1p(df["TOTSLF23"]),  # Log-scale out-of-pocket costs for plotting
+    outlier_display=lambda df: df["outlier"].map({0: "Inliers", 1: "Outliers"})
 )
-# Log-scale out-of-pocket costs for plotting
-outlier_profiling_df["TOTSLF23_LOG"] = np.log1p(outlier_profiling_df["TOTSLF23"])
 
 # %%
 # Outlier Profiling: Median Differences for Numerical Features and Target 
