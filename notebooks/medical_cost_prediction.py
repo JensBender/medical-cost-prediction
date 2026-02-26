@@ -2152,7 +2152,7 @@ plt.show()
 # %%
 # Outlier Profiling: Cost Concentration
 # This analysis shows what percentage of each group (Inliers vs. Outliers) falls into the top population-wide spending brackets.
-percentiles = [0.99, 0.95, 0.9, 0.8, 0.5]
+percentiles = [0.999, 0.99, 0.95, 0.9, 0.8, 0.5]
 benchmarks = []
 
 # Pre-calculate group populations (weighted) for efficiency
@@ -2168,7 +2168,7 @@ for p in percentiles:
     rep_outliers = (outlier_profiling_df.loc[(outlier_profiling_df["outlier"] == 1) & (outlier_profiling_df["TOTSLF23"] >= threshold), "PERWT23F"].sum() / outliers_pop) * 100
     
     benchmarks.append({
-        "Benchmark": f"Top {(1-p)*100:.0f}% (>= ${threshold:,.0f})",
+        "Benchmark": f"Top {(1-p)*100:.0f}% (>= ${threshold:,.0f})" if p != 0.999 else f"Top 0.1% (>= ${threshold:,.0f})",
         "Inliers": rep_inliers,
         "Outliers": rep_outliers,
         "Outlier/Inlier Ratio": rep_outliers / rep_inliers
@@ -2200,32 +2200,21 @@ outlier_binary_profile.sort_values(by="Difference", ascending=False).style \
     .format("{:.1%}") 
 
 # %%
-# Outlier Binary Profile: Medical condition count and out-of-pocket costs
+# Outlier Binary Profile: Medical Conditions 
 chronic_conditions = ["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"]
 X_train_preprocessed["condition_count"] = X_train_preprocessed[chronic_conditions].sum(axis=1)
 
-# Calculate total count of super-spenders (using population threshold)
-total_super_spenders = (y_train >= pop_p999).sum()
-
 # Comparison table of condition count and cost impact
 outlier_profiling_costs = pd.DataFrame({
-    "Mean Medical Conditions": X_train_preprocessed.groupby("outlier")["condition_count"].mean(),
-    "Median Medical Conditions": X_train_preprocessed.groupby("outlier")["condition_count"].median(),
-    "Mean Costs": y_train.groupby(X_train_preprocessed["outlier"]).mean(),
-    "Median Costs": y_train.groupby(X_train_preprocessed["outlier"]).median(),
-    "90th Percentile Cost": y_train.groupby(X_train_preprocessed["outlier"]).quantile(0.90),
-    "99th Percentile Cost": y_train.groupby(X_train_preprocessed["outlier"]).quantile(0.99),
-    "Top 1% Spenders": (y_train >= pop_p99).groupby(X_train_preprocessed["outlier"]).sum(),
-    "Super-Spenders": (y_train >= pop_p999).groupby(X_train_preprocessed["outlier"]).sum()
+    "Mean": X_train_preprocessed.groupby("outlier")["condition_count"].mean(),
+    "Median": X_train_preprocessed.groupby("outlier")["condition_count"].median(),
 }).sort_index(ascending=True).T 
 outlier_profiling_costs.columns = ["Inliers", "Outliers"]
 
 # Display table
 outlier_profiling_costs.style \
-    .pipe(add_caption, "Outlier Profiling: Medical Condition Count and Cost Impact") \
-    .format("{:.2f}", subset=pd.IndexSlice[["Mean Medical Conditions", "Median Medical Conditions"], :]) \
-    .format("${:,.0f}", subset=pd.IndexSlice[["Mean Costs", "Median Costs", "90th Percentile Cost", "99th Percentile Cost"], :]) \
-    .format("{:,.0f}", subset=pd.IndexSlice[["Top 1% Spenders", "Super-Spenders"], :]) 
+    .pipe(add_caption, "Outlier Profiling: Medical Conditions") \
+    .format("{:.2f}", subset=pd.IndexSlice[["Mean", "Median"], :]) 
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
