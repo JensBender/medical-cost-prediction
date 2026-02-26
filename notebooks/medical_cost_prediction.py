@@ -2064,8 +2064,6 @@ plt.show()
 
 # %%
 # Outlier Profiling: Overlapping Lorenz Curves 
-# Note: This plot compares cost concentration between outliers and inliers on the population-level (weighted).
-
 def get_lorenz_metrics(subset_df):
     """Calculates Lorenz curve coordinates and Gini coefficient."""
     # Create local copy and calculate population costs
@@ -2139,7 +2137,7 @@ for g in groups:
                  fontsize=9, fontweight="bold", color=g["color"])
 
 # Customize
-plt.title("Lorenz Curve: Out-of-Pocket Cost Concentration (Inliers vs. Outliers)", fontsize=14, fontweight="bold", pad=20)
+plt.title("Outlier Profiling: Out-of-Pocket Costs Lorenz Curves", fontsize=14, fontweight="bold", pad=20)
 plt.xlabel("Cumulative % of Population (Sorted from Lowest to Highest Cost)", fontsize=11)
 plt.ylabel("Cumulative % of Total Costs", fontsize=11)
 plt.legend(loc="upper left", fontsize=10)
