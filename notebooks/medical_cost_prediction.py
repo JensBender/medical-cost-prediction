@@ -2210,7 +2210,7 @@ plot_df = outlier_binary_profile.reset_index().melt(
 )
 
 # Visualize: Horizontal Grouped Bar Plot
-plt.figure(figsize=(10, 8))
+plt.figure(figsize=(10, 12))
 sns.barplot(
     data=plot_df, 
     y="index", 
@@ -2223,13 +2223,13 @@ sns.barplot(
 
 # Annotate bars with percentages
 for container in plt.gca().containers:
-    plt.gca().bar_label(container, fmt="{:.1%}", padding=3, fontsize=9)
+    plt.gca().bar_label(container, fmt="{:.0%}", padding=3, fontsize=9)
 
 # Customize
 plt.title("Outlier Profiling: Binary Features (Population)", fontsize=14, fontweight="bold", pad=20)
 plt.xlabel("Population Prevalence", fontsize=12)
 plt.ylabel("")
-plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter(1.0, decimals=0))
 plt.grid(True, axis="x", alpha=0.3)
 plt.legend(title=None)
 sns.despine(left=True)
@@ -2275,17 +2275,21 @@ for i, feature in enumerate(input_nominal_features + input_ordinal_features):
     
     # Grouped Bar Plot
     sns.barplot(
-        data=plot_data, y="display_label", x="Percentage", hue="Group", 
+        data=plot_data, 
+        y="display_label", 
+        x="Percentage", 
+        hue="Group", 
         hue_order=["Outliers", "Inliers"], 
         palette={"Outliers": "#D32F2F", "Inliers": "#4F81BD"},
-        ax=ax, alpha=0.8
+        ax=ax, 
+        alpha=0.8
     )
     
     # Customize Subplot
     ax.set_title(DISPLAY_LABELS.get(feature, feature), fontsize=12, fontweight="bold", pad=10)
     ax.set_xlabel("")
     ax.set_ylabel("")
-    ax.xaxis.set_major_formatter(mtick.PercentFormatter())
+    ax.xaxis.set_major_formatter(mtick.PercentFormatter(decimals=0))
     ax.legend().set_visible(False)
     ax.grid(True, axis="x", alpha=0.2)
     sns.despine(ax=ax, left=True)
@@ -2300,10 +2304,10 @@ for j in range(i + 1, len(axes_flat)):
 
 # Global Title and Legend
 handles, labels = axes_flat[0].get_legend_handles_labels()
-fig.legend(handles, labels, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 0.99), frameon=False)
-fig.suptitle("Outlier Profiling: Categorical Distributions (Population)", fontsize=16, fontweight="bold", y=1.01)
+fig.legend(handles, labels, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 0.98), frameon=False)
+fig.suptitle("Outlier Profiling: Categorical Distributions (Population)", fontsize=16, fontweight="bold", y=1.0)
 
-plt.tight_layout()
+plt.tight_layout(h_pad=2.0, w_pad=3.0)
 plt.show()
 
 # %%
