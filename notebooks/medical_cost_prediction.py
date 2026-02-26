@@ -2188,19 +2188,55 @@ benchmark_df.style \
 # </div> 
 
 # %%
-# Outlier Binary Profile: Percentages of Medical Conditions 
-outlier_binary_profile = outlier_profiling_df[input_binary_features + ["outlier"]].groupby("outlier").mean().T
-outlier_binary_profile.columns = ["Inliers", "Outliers"]
+# Outlier Binary Profile: Population Prevalence of Medical Conditions (Weighted)
+outlier_binary_profile = pd.DataFrame(index=input_binary_features, columns=["Inliers", "Outliers"])
+
+for group, mask in [("Inliers", outlier_profiling_df["outlier"] == 0), ("Outliers", outlier_profiling_df["outlier"] == 1)]:
+    subset = outlier_profiling_df[mask]
+    for col in input_binary_features:
+        # Weighted avg of 0/1 columns = population prevalence
+        outlier_binary_profile.loc[col, group] = np.average(subset[col], weights=subset["PERWT23F"])
+
+outlier_binary_profile = outlier_binary_profile.astype(float)
 outlier_binary_profile.index = outlier_binary_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
 outlier_binary_profile["Difference"] = outlier_binary_profile["Outliers"] - outlier_binary_profile["Inliers"]
 
-# Display table (difference is the percentage point increase for outliers in 'Yes' frequency)
-outlier_binary_profile.sort_values(by="Difference", ascending=False).style \
-    .pipe(add_caption, "Outlier Profiling: Medical Condition Frequencies") \
-    .format("{:.1%}") 
+# Sort by difference for better visualization
+outlier_binary_profile = outlier_binary_profile.sort_values(by="Difference", ascending=False)
+
+# Prepare data for plotting
+plot_df = outlier_binary_profile.reset_index().melt(
+    id_vars="index", value_vars=["Inliers", "Outliers"], var_name="Group", value_name="Prevalence"
+)
+
+# Visualize: Horizontal Grouped Bar Plot
+plt.figure(figsize=(10, 8))
+sns.barplot(
+    data=plot_df, 
+    y="index", 
+    x="Prevalence", 
+    hue="Group", 
+    hue_order=["Outliers", "Inliers"],
+    palette={"Outliers": "#D32F2F", "Inliers": "#4F81BD"},
+    alpha=0.8
+)
+
+# Annotate bars with percentages
+for container in plt.gca().containers:
+    plt.gca().bar_label(container, fmt="{:.1%}", padding=3, fontsize=9)
+
+# Customize
+plt.title("Outlier Profiling: Binary Features", fontsize=14, fontweight="bold", pad=20)
+plt.xlabel("Population Prevalence", fontsize=12)
+plt.ylabel("")
+plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+plt.grid(True, axis="x", alpha=0.3)
+plt.legend(title=None)
+sns.despine(left=True)
+plt.show()
 
 # %%
-# Outlier Binary Profile: Medical Conditions 
+# Outlier Binary Profile: Number of Medical Conditions 
 chronic_conditions = ["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"]
 X_train_preprocessed["condition_count"] = X_train_preprocessed[chronic_conditions].sum(axis=1)
 
