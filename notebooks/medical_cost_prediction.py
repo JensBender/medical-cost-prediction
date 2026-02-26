@@ -1847,7 +1847,7 @@ outlier_profiling_df = X_train_preprocessed.assign(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Outlier profiling: Numerical features and target.
+#     📌 <strong>Outlier Profiling: Numerical features and target</strong>
 # </div> 
 
 # %%
@@ -2184,11 +2184,11 @@ benchmark_df.style \
     .format("{:.1f}x", subset="Outlier/Inlier Ratio")
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Outlier profiling: Categorical features
+#     📌 <strong>Outlier Profiling: Categorical Features</strong>
 # </div> 
 
 # %%
-# Outlier Binary Profile: Population Prevalence of Medical Conditions (Weighted)
+# Outlier Profile: Binary Features (Population)
 outlier_binary_profile = pd.DataFrame(index=input_binary_features, columns=["Inliers", "Outliers"])
 
 for group, mask in [("Inliers", outlier_profiling_df["outlier"] == 0), ("Outliers", outlier_profiling_df["outlier"] == 1)]:
@@ -2226,13 +2226,84 @@ for container in plt.gca().containers:
     plt.gca().bar_label(container, fmt="{:.1%}", padding=3, fontsize=9)
 
 # Customize
-plt.title("Outlier Profiling: Binary Features", fontsize=14, fontweight="bold", pad=20)
+plt.title("Outlier Profiling: Binary Features (Population)", fontsize=14, fontweight="bold", pad=20)
 plt.xlabel("Population Prevalence", fontsize=12)
 plt.ylabel("")
 plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
 plt.grid(True, axis="x", alpha=0.3)
 plt.legend(title=None)
 sns.despine(left=True)
+plt.show()
+
+# %%
+# Outlier Profile: Categorical Features (Population)
+n_features = len(input_nominal_features + input_ordinal_features)
+n_cols = 2
+n_rows = math.ceil(n_features / n_cols)
+
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 4))
+axes_flat = axes.flatten()
+
+for i, feature in enumerate(input_nominal_features + input_ordinal_features):
+    ax = axes_flat[i]
+    
+    # Calculate weighted distribution for each group
+    # Pivot table handles sum of weights across categories
+    ct = outlier_profiling_df.pivot_table(
+        index=feature, 
+        columns="outlier_display", 
+        values="PERWT23F", 
+        aggfunc="sum"
+    )
+    # Normalize within each group to get percentages
+    ct = (ct / ct.sum()) * 100
+    
+    # Prepare for plotting
+    plot_data = ct.reset_index().melt(id_vars=feature, var_name="Group", value_name="Percentage")
+    
+    # Ordering logic: Ordinals maintain index order; Nominals sort by Inlier prevalence
+    if feature in input_ordinal_features:
+        plot_data = plot_data.sort_values(by=feature)
+    else:
+        sort_order = ct["Inliers"].sort_values(ascending=False).index
+        plot_data[feature] = pd.Categorical(plot_data[feature], categories=sort_order, ordered=True)
+        plot_data = plot_data.sort_values(by=feature)
+
+    # Map integer codes to human-readable labels
+    label_map = CATEGORICAL_LABELS.get(feature, {})
+    plot_data["display_label"] = plot_data[feature].map(lambda x: label_map.get(x, x))
+    
+    # Grouped Bar Plot
+    sns.barplot(
+        data=plot_data, y="display_label", x="Percentage", hue="Group", 
+        hue_order=["Outliers", "Inliers"], 
+        palette={"Outliers": "#D32F2F", "Inliers": "#4F81BD"},
+        ax=ax, alpha=0.8
+    )
+    
+    # Customize Subplot
+    ax.set_title(DISPLAY_LABELS.get(feature, feature), fontsize=12, fontweight="bold", pad=10)
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    ax.xaxis.set_major_formatter(mtick.PercentFormatter())
+    ax.legend().set_visible(False)
+    ax.grid(True, axis="x", alpha=0.2)
+    sns.despine(ax=ax, left=True)
+    
+    # Add annotations
+    for container in ax.containers:
+        ax.bar_label(container, fmt="%.0f%%", padding=3, fontsize=8)
+
+# Hide unused subplots
+for j in range(i + 1, len(axes_flat)):
+    axes_flat[j].axis("off")
+
+# Global Title and Legend
+handles, labels = axes_flat[0].get_legend_handles_labels()
+fig.legend(handles, labels, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 0.99), frameon=False)
+fig.suptitle("Outlier Profiling: Categorical Distributions (Population)", fontsize=16, fontweight="bold", y=1.01)
+
+plt.tight_layout()
 plt.show()
 
 # %%
