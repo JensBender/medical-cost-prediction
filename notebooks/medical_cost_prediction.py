@@ -2150,36 +2150,38 @@ plt.tight_layout()
 plt.show()
 
 # %%
-# Outlier Profiling: Cost Concentration Analysis (Inliers vs. Outliers)
-# This table quantifies the Pareto-effect (80/20 rule) within each subgroup at the population level.
+# Outlier Profiling: Cost Concentration
+# This analysis shows what percentage of each group (Inliers vs. Outliers) falls into the top population-wide spending brackets.
 percentiles = [0.99, 0.95, 0.9, 0.8, 0.5]
-concentration_benchmarks = []
+benchmarks = []
 
-for group in ["Inliers", "Outliers"]:
-    subset = outlier_profiling_df[outlier_profiling_df["outlier_display"] == group]
-    total_weighted_costs = (subset["TOTSLF23"] * subset["PERWT23F"]).sum()
+# Pre-calculate group populations (weighted) for efficiency
+inliers_pop = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, "PERWT23F"].sum()
+outliers_pop = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 1, "PERWT23F"].sum()
+
+for p in percentiles:
+    # Calculate global (population-wide) threshold
+    threshold = weighted_quantile(outlier_profiling_df["TOTSLF23"], outlier_profiling_df["PERWT23F"], p)
     
-    for p in percentiles:
-        threshold = weighted_quantile(subset["TOTSLF23"], subset["PERWT23F"], p)
-        top_mask = subset["TOTSLF23"] >= threshold
-        top_weighted_costs = (subset.loc[top_mask, "TOTSLF23"] * subset.loc[top_mask, "PERWT23F"]).sum()
-        
-        concentration_benchmarks.append({
-            "Metric": f"Top {(1-p)*100:.0f}%",
-            "Group": group,
-            "Threshold": threshold,
-            "Cost Share": (top_weighted_costs / total_weighted_costs) * 100
-        })
+    # Calculate representation within each subgroup
+    rep_inliers = (outlier_profiling_df.loc[(outlier_profiling_df["outlier"] == 0) & (outlier_profiling_df["TOTSLF23"] >= threshold), "PERWT23F"].sum() / inliers_pop) * 100
+    rep_outliers = (outlier_profiling_df.loc[(outlier_profiling_df["outlier"] == 1) & (outlier_profiling_df["TOTSLF23"] >= threshold), "PERWT23F"].sum() / outliers_pop) * 100
+    
+    benchmarks.append({
+        "Benchmark": f"Top {(1-p)*100:.0f}% (>= ${threshold:,.0f})",
+        "Inliers": rep_inliers,
+        "Outliers": rep_outliers,
+        "Outlier/Inlier Ratio": rep_outliers / rep_inliers
+    })
 
-# Create comparison table
-concentration_df = pd.DataFrame(concentration_benchmarks).pivot(index="Metric", columns="Group", values=["Threshold", "Cost Share"])
-concentration_df = concentration_df.reindex([f"Top {(1-p)*100:.0f}%" for p in percentiles]) # Maintain logical sort order
+# Create comparison table directly
+benchmark_df = pd.DataFrame(benchmarks).set_index("Benchmark")
 
 # Display table
-concentration_df.style \
+benchmark_df.style \
     .pipe(add_caption, "Outlier Profiling: Cost Concentration") \
-    .format("${:,.0f}", subset=pd.IndexSlice[:, ("Threshold", slice(None))]) \
-    .format("{:.1f}%", subset=pd.IndexSlice[:, ("Cost Share", slice(None))]) 
+    .format("{:.1f}%", subset=["Inliers", "Outliers"]) \
+    .format("{:.1f}x", subset="Outlier/Inlier Ratio")
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Outlier profiling: Categorical features
@@ -2227,15 +2229,13 @@ outlier_profiling_costs.style \
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> The Isolation Forest identifies a "High Comorbidity" profile rather than data errors.
+#     💡 <b>Insight:</b> The Isolation Forest identifies a clinically and financially high-risk "High Comorbidity" profile.
 #     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>Multivariate Severity:</b> Outliers are characterized by the simultaneous presence of multiple chronic conditions. They suffer from nearly 3x the average number of chronic conditions (3.96 vs. 1.42), with 50% managing 4 or more conditions simultaneously. While individual conditions are common, their co-occurrence makes these profiles statistically easy to isolate.</li>
-#         <li><b>Concentrated Health Spending:</b> Outliers exhibit higher costs across all metrics (Mean: \$1,793 vs. \$1,132; Median: \$351 vs. \$271; 90th Percentile: \$4,321 vs. \$2,814). However, the true impact is in the extreme tail, where 99th percentile costs are nearly double those of inliers (\$22,464 vs. \$12,671).</li>
-#         <li><b>Functional Limitation as the Strongest Signal:</b> Physical and cognitive impairments (e.g., <code>Walking Limitation</code> +65.9%, <code>Cognitive Limitation</code> +56.7%) are the primary drivers of the outlier flag.</li>
-#         <li><b>Economic Exclusion:</b> There is a massive employment gap (-44.1%), indicating that these "anomalous" health profiles often prevent individuals from participating in the workforce.</li>
-#         <li><b>Comorbidity vs. Cost Outliers:</b> Surprisingly, the vast majority of extreme spenders are "Inliers" (e.g., 108 out of 121 Top 1% Spenders). Despite outliers being the most unhealthy subgroup, high comorbidity alone does not fully explain high spending. This suggests that "Super Spenders" are often individuals with otherwise "normal" health profiles who encounter high-cost acute events (e.g., major surgery) or specific high-cost treatments, rather than just the accumulation of chronic conditions.</li>
-#         <li><b>Cost Concentration:</b> Overlapping Lorenz curves reveal that costs are extremely concentrated in both groups, with the Top 20% of spenders in each group accounting for the vast majority of that group's total spending. However, the slightly "flatter" curve for outliers (in the tail) suggests their spending is more "predictably high" compared to the abrupt, extreme shocks seen in the inlier population.</li>
-#         <li><b>Decision: Keep Outliers.</b> These individuals represent "High Comorbidity" patients who are statistically anomalous due to their complex health profiles. While they don't capture all super-spenders, they represent a critical high-risk demographic that the model must learn to handle.</li>
+#         <li><b>Multivariate Severity:</b> Outliers suffer from nearly 3x the average number of chronic conditions (3.9 vs. 1.4), with 50% managing 4 or more conditions simultaneously. Their "anomalous" status is a clinical reality driven by complex co-morbidities.</li>
+#         <li><b>Extreme Risk Representation:</b> Outliers are 3.4x more likely than inliers to be in the Top 1% of population-wide spenders (>$12,885). This risk ratio escalates from 1.1x at the median to 3.4x at the tail, confirming the model flags peak financial liability.</li>
+#         <li><b>Functional Drivers:</b> Limitations in walking (+66%) and cognitive function (+57%) are the strongest statistical signals for outlier status, often correlating with the observed massive employment gap (-44%).</li>
+#         <li><b>Spend Concentration:</b> Both groups show extreme cost inequality (as seen in Lorenz curves). However, the disproportionate concentration of outliers in the highest cost tiers verifies them as a critical demographic for the model to learn.</li>
+#         <li><b>Decision: Keep Outliers.</b> These individuals represent high-risk, complex patients who are statistically anomalous due to their health profiles. They are not data errors, but essential tail-risk cases for robust cost prediction.</li>
 #     </ul>
 # </div>
 
