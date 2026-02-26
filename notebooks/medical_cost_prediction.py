@@ -2226,12 +2226,12 @@ for container in plt.gca().containers:
     plt.gca().bar_label(container, fmt="{:.0%}", padding=3, fontsize=9)
 
 # Customize
-plt.title("Outlier Profiling: Binary Features (Population)", fontsize=14, fontweight="bold", pad=20)
+plt.title("Outlier Profiling: Binary Features (Population)", fontsize=14, fontweight="bold", pad=30)
 plt.xlabel("Population Prevalence", fontsize=12)
 plt.ylabel("")
 plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter(1.0, decimals=0))
 plt.grid(True, axis="x", alpha=0.3)
-plt.legend(title=None)
+plt.legend(loc="upper center", ncol=2, bbox_to_anchor=(0.5, 1.04), frameon=False)
 sns.despine(left=True)
 plt.show()
 
