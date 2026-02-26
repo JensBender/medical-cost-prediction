@@ -2148,6 +2148,38 @@ plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())
 plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
 plt.tight_layout()
 plt.show()
+
+# %%
+# Outlier Profiling: Cost Concentration Analysis (Inliers vs. Outliers)
+# This table quantifies the Pareto-effect (80/20 rule) within each subgroup at the population level.
+percentiles = [0.99, 0.95, 0.9, 0.8, 0.5]
+concentration_benchmarks = []
+
+for group in ["Inliers", "Outliers"]:
+    subset = outlier_profiling_df[outlier_profiling_df["outlier_display"] == group]
+    total_weighted_costs = (subset["TOTSLF23"] * subset["PERWT23F"]).sum()
+    
+    for p in percentiles:
+        threshold = weighted_quantile(subset["TOTSLF23"], subset["PERWT23F"], p)
+        top_mask = subset["TOTSLF23"] >= threshold
+        top_weighted_costs = (subset.loc[top_mask, "TOTSLF23"] * subset.loc[top_mask, "PERWT23F"]).sum()
+        
+        concentration_benchmarks.append({
+            "Metric": f"Top {(1-p)*100:.0f}%",
+            "Group": group,
+            "Threshold": threshold,
+            "Cost Share": (top_weighted_costs / total_weighted_costs) * 100
+        })
+
+# Create comparison table
+concentration_df = pd.DataFrame(concentration_benchmarks).pivot(index="Metric", columns="Group", values=["Threshold", "Cost Share"])
+concentration_df = concentration_df.reindex([f"Top {(1-p)*100:.0f}%" for p in percentiles]) # Maintain logical sort order
+
+# Display table
+concentration_df.style \
+    .pipe(add_caption, "Outlier Profiling: Cost Concentration") \
+    .format("${:,.0f}", subset=pd.IndexSlice[:, ("Threshold", slice(None))]) \
+    .format("{:.1f}%", subset=pd.IndexSlice[:, ("Cost Share", slice(None))]) 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Outlier profiling: Categorical features
