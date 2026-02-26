@@ -1918,6 +1918,8 @@ plt.show()
 fig, axes = plt.subplots(2, 2, figsize=(10, 7))
 axes_flat = axes.flatten()
 
+colors = {"Inliers": "#4F81BD", "Outliers": "#D32F2F"}
+
 for i, numeric_driver in enumerate(top_numeric_drivers_viz):
     ax = axes_flat[i]
 
@@ -1930,18 +1932,41 @@ for i, numeric_driver in enumerate(top_numeric_drivers_viz):
         fill=True, 
         common_norm=False, 
         ax=ax,
-        palette={"Inliers": "#4F81BD", "Outliers": "#D32F2F"},
+        palette=colors,
         cut=0  # Truncates curve on min and max
     )
 
-    # Customize current KDE plot
-    ax.set_title(f"{DISPLAY_LABELS.get(numeric_driver, numeric_driver)}", fontsize=12, fontweight="bold")
-    ax.set_xlabel("")
-    ax.set_ylabel("")
+
+    # Calculate Medians 
+    median_inliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, numeric_driver].median()
+    median_outliers = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 1, numeric_driver].median()
+    median_diff = median_outliers - median_inliers
+
+    # Add Vertical Median Lines
+    ax.axvline(median_inliers, color=colors["Inliers"], linestyle="--", lw=1.5, alpha=0.8)
+    ax.axvline(median_outliers, color=colors["Outliers"], linestyle="--", lw=1.5, alpha=0.8)
+
+    # Add Median Labels 
+    ylim = ax.get_ylim()[1]
+    ax.text(median_inliers, ylim * 0.7, f"M={median_inliers:.1f}", color=colors["Inliers"], 
+            fontweight='bold', ha='right', va='center', fontsize=9,
+            bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=2))
+    ax.text(median_outliers, ylim * 0.7, f"M={median_outliers:.1f}", color=colors["Outliers"], 
+            fontweight='bold', ha='left', va='center', fontsize=9,
+            bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=2))
+
+    # Add title
+    ax.set_title(DISPLAY_LABELS.get(numeric_driver, numeric_driver), fontsize=12, fontweight="bold", pad=20)
     
-    # Remove legend title 
+    # Add subtitle (median difference)
+    ax.text(0.5, 1.03, f"Median Difference: {median_diff:+.1f}", 
+            transform=ax.transAxes, fontsize=10, ha="center", fontweight="normal")
+
+    # Customize axis labels and legend
+    ax.set_xlabel("")
+    ax.set_ylabel("")     
     if ax.get_legend():
-        ax.get_legend().set_title(None)
+        ax.get_legend().set_title(None)  # Removes legend title
 
 # Customize KDE plot matrix
 fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold")
