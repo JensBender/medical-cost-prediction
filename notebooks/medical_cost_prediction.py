@@ -1841,7 +1841,8 @@ print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_
 outlier_profiling_df = X_train_preprocessed.assign(
     TOTSLF23=y_train, 
     TOTSLF23_LOG=lambda df: np.log1p(df["TOTSLF23"]),  # Log-scale out-of-pocket costs for plotting
-    outlier_display=lambda df: df["outlier"].map({0: "Inliers", 1: "Outliers"})
+    outlier_display=lambda df: df["outlier"].map({0: "Inliers", 1: "Outliers"}),
+    PERWT23F=X_train.loc[X_train_preprocessed.index, "PERWT23F"] # Pass sample weights for population-level stats
 )
 
 # %% [markdown]
@@ -1850,18 +1851,29 @@ outlier_profiling_df = X_train_preprocessed.assign(
 # </div> 
 
 # %%
-# Outlier Numeric Profile: Median Differences 
-outlier_numeric_profile = outlier_profiling_df.groupby("outlier")[input_numerical_features + ["TOTSLF23"]].median().T
-outlier_numeric_profile.columns = ["Inliers", "Outliers"]
-outlier_numeric_profile["Difference"] = (outlier_numeric_profile["Outliers"] - outlier_numeric_profile["Inliers"]) 
+# Outlier Numeric Profile: Median Differences (Population-Level)
+outlier_profile_numeric_columns = input_numerical_features + ["TOTSLF23"]
+inliers_df = outlier_profiling_df[outlier_profiling_df["outlier"] == 0]
+outliers_df = outlier_profiling_df[outlier_profiling_df["outlier"] == 1]
 
-# Calculate interquartile range (IQR) (using inliers to provide a robust baseline of 'normal' variability)
-inlier_q1 = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, input_numerical_features + ["TOTSLF23"]].quantile(0.25)
-inlier_q3 = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, input_numerical_features + ["TOTSLF23"]].quantile(0.75)
-inlier_iqr = (inlier_q3 - inlier_q1)
+# Calculate weighted medians for each feature/target
+outlier_numeric_profile = pd.DataFrame(index=outlier_profile_numeric_columns, columns=["Inliers", "Outliers"])
+for col in outlier_profile_numeric_columns:
+    outlier_numeric_profile.loc[col, "Inliers"] = weighted_quantile(inliers_df[col], inliers_df["PERWT23F"], 0.5)
+    outlier_numeric_profile.loc[col, "Outliers"] = weighted_quantile(outliers_df[col], outliers_df["PERWT23F"], 0.5)
+
+# Calculate difference
+outlier_numeric_profile["Difference"] = (outlier_numeric_profile["Outliers"] - outlier_numeric_profile["Inliers"]).astype(float)
+
+# Calculate weighted interquartile range (IQR) of inliers for standardization
+inlier_iqrs = pd.Series(index=outlier_profile_numeric_columns, dtype=float)
+for col in outlier_profile_numeric_columns:
+    q1 = weighted_quantile(inliers_df[col], inliers_df["PERWT23F"], 0.25)
+    q3 = weighted_quantile(inliers_df[col], inliers_df["PERWT23F"], 0.75)
+    inlier_iqrs[col] = q3 - q1
 
 # Calculate how many IQRs the outlier median is different from the inlier median
-outlier_numeric_profile["IQR Difference"] = outlier_numeric_profile["Difference"] / inlier_iqr
+outlier_numeric_profile["IQR Difference"] = outlier_numeric_profile["Difference"] / inlier_iqrs
 
 # Identify the top 4 numerical columns that drive outliers (based on IQR difference)
 top_numeric_drivers = outlier_numeric_profile["IQR Difference"].abs().sort_values(ascending=False).head(4).index.tolist()
@@ -2070,9 +2082,6 @@ def get_lorenz_metrics(subset_df):
     y_80 = cum_pop_costs.loc[idx_80]
     
     return pct, costs, gini, (x_80, y_80)
-
-# Add weights back to outlier_profiling_df for weighted analysis
-outlier_profiling_df["PERWT23F"] = X_train.loc[outlier_profiling_df.index, "PERWT23F"]
 
 # Calculate metrics for each group
 inlier_data = get_lorenz_metrics(outlier_profiling_df[outlier_profiling_df["outlier"] == 0])
