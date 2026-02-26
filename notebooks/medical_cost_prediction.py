@@ -1828,9 +1828,13 @@ contamination_train = n_outliers_train / X_train_preprocessed["outlier"].value_c
 print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_train:.1f}%) as multivariate outliers.")
 
 # %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Outlier profiling.
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Outlier Profiling</h3>
 # </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Compare the distributions of the target variable and features between outliers and inliers.
+# </div>
 
 # %%
 # Create outlier profiling DataFrame from training data
@@ -1840,8 +1844,13 @@ outlier_profiling_df = X_train_preprocessed.assign(
     outlier_display=lambda df: df["outlier"].map({0: "Inliers", 1: "Outliers"})
 )
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Outlier profiling: Numerical features and target.
+# </div> 
+
 # %%
-# Outlier Profiling: Median Differences for Numerical Features and Target 
+# Outlier Numeric Profile: Median Differences 
 outlier_numeric_profile = outlier_profiling_df.groupby("outlier")[input_numerical_features + ["TOTSLF23"]].median().T
 outlier_numeric_profile.columns = ["Inliers", "Outliers"]
 outlier_numeric_profile["Difference"] = (outlier_numeric_profile["Outliers"] - outlier_numeric_profile["Inliers"]) 
@@ -1867,7 +1876,7 @@ outlier_numeric_profile.sort_values(by="Difference", ascending=False).style \
     .set_properties(**{"font-weight": "bold"}, subset=["Difference", "IQR Difference"])
 
 # %%
-# Outlier Profiling: Overlapping Histograms of Top Numerical Drivers
+# Outlier Numeric Profile: Overlapping Histograms of Top Numerical Drivers
 fig, axes = plt.subplots(2, 2, figsize=(10, 7))
 axes_flat = axes.flatten()
 
@@ -1905,7 +1914,7 @@ fig.tight_layout()
 plt.show()
 
 # %%
-# Outlier Profiling: Overlapping KDE Plots of Top Numerical Drivers
+# Outlier Numeric Profile: Overlapping KDE Plots of Top Numerical Drivers
 fig, axes = plt.subplots(2, 2, figsize=(10, 7))
 axes_flat = axes.flatten()
 
@@ -1940,7 +1949,7 @@ fig.tight_layout()
 plt.show()
 
 # %%
-# Outlier Profiling: Pairwise Plot of Top Numerical Drivers 
+# Outlier Numeric Profile: Pairwise Plot of Top Numerical Drivers 
 # Create subsample for lower latency plotting
 outlier_profiling_subsample = outlier_profiling_df[top_numeric_drivers_viz + ["outlier_display"]].sample(n=5000, random_state=RANDOM_STATE)
 
@@ -1964,45 +1973,6 @@ sns.move_legend(
 grid.fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold", y=1.05)
 plt.show() 
 
-# %%
-# Outlier Profiling: Percentages of Medical Conditions 
-outlier_binary_profile = outlier_profiling_df[input_binary_features + ["outlier"]].groupby("outlier").mean().T
-outlier_binary_profile.columns = ["Inliers", "Outliers"]
-outlier_binary_profile.index = outlier_binary_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
-outlier_binary_profile["Difference"] = outlier_binary_profile["Outliers"] - outlier_binary_profile["Inliers"]
-
-# Display table (difference is the percentage point increase for outliers in 'Yes' frequency)
-outlier_binary_profile.sort_values(by="Difference", ascending=False).style \
-    .pipe(add_caption, "Outlier Profiling: Medical Condition Frequencies") \
-    .format("{:.1%}") 
-
-# %%
-# Outlier Profiling: Medical condition count and out-of-pocket costs
-chronic_conditions = ["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"]
-X_train_preprocessed["condition_count"] = X_train_preprocessed[chronic_conditions].sum(axis=1)
-
-# Calculate total count of super-spenders (using population threshold)
-total_super_spenders = (y_train >= pop_p999).sum()
-
-# Comparison table of condition count and cost impact
-outlier_profiling_costs = pd.DataFrame({
-    "Mean Medical Conditions": X_train_preprocessed.groupby("outlier")["condition_count"].mean(),
-    "Median Medical Conditions": X_train_preprocessed.groupby("outlier")["condition_count"].median(),
-    "Mean Costs": y_train.groupby(X_train_preprocessed["outlier"]).mean(),
-    "Median Costs": y_train.groupby(X_train_preprocessed["outlier"]).median(),
-    "90th Percentile Cost": y_train.groupby(X_train_preprocessed["outlier"]).quantile(0.90),
-    "99th Percentile Cost": y_train.groupby(X_train_preprocessed["outlier"]).quantile(0.99),
-    "Top 1% Spenders": (y_train >= pop_p99).groupby(X_train_preprocessed["outlier"]).sum(),
-    "Super-Spenders": (y_train >= pop_p999).groupby(X_train_preprocessed["outlier"]).sum()
-}).sort_index(ascending=True).T 
-outlier_profiling_costs.columns = ["Inliers", "Outliers"]
-
-# Display table
-outlier_profiling_costs.style \
-    .pipe(add_caption, "Outlier Profiling: Medical Condition Count and Cost Impact") \
-    .format("{:.2f}", subset=pd.IndexSlice[["Mean Medical Conditions", "Median Medical Conditions"], :]) \
-    .format("${:,.0f}", subset=pd.IndexSlice[["Mean Costs", "Median Costs", "90th Percentile Cost", "99th Percentile Cost"], :]) \
-    .format("{:,.0f}", subset=pd.IndexSlice[["Top 1% Spenders", "Super-Spenders"], :]) 
 
 # %%
 # Outlier Profiling: Overlapping Lorenz Curves 
@@ -2095,6 +2065,51 @@ plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())
 plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
 plt.tight_layout()
 plt.show()
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Outlier profiling: Categorical features
+# </div> 
+
+# %%
+# Outlier Binary Profile: Percentages of Medical Conditions 
+outlier_binary_profile = outlier_profiling_df[input_binary_features + ["outlier"]].groupby("outlier").mean().T
+outlier_binary_profile.columns = ["Inliers", "Outliers"]
+outlier_binary_profile.index = outlier_binary_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
+outlier_binary_profile["Difference"] = outlier_binary_profile["Outliers"] - outlier_binary_profile["Inliers"]
+
+# Display table (difference is the percentage point increase for outliers in 'Yes' frequency)
+outlier_binary_profile.sort_values(by="Difference", ascending=False).style \
+    .pipe(add_caption, "Outlier Profiling: Medical Condition Frequencies") \
+    .format("{:.1%}") 
+
+# %%
+# Outlier Binary Profile: Medical condition count and out-of-pocket costs
+chronic_conditions = ["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"]
+X_train_preprocessed["condition_count"] = X_train_preprocessed[chronic_conditions].sum(axis=1)
+
+# Calculate total count of super-spenders (using population threshold)
+total_super_spenders = (y_train >= pop_p999).sum()
+
+# Comparison table of condition count and cost impact
+outlier_profiling_costs = pd.DataFrame({
+    "Mean Medical Conditions": X_train_preprocessed.groupby("outlier")["condition_count"].mean(),
+    "Median Medical Conditions": X_train_preprocessed.groupby("outlier")["condition_count"].median(),
+    "Mean Costs": y_train.groupby(X_train_preprocessed["outlier"]).mean(),
+    "Median Costs": y_train.groupby(X_train_preprocessed["outlier"]).median(),
+    "90th Percentile Cost": y_train.groupby(X_train_preprocessed["outlier"]).quantile(0.90),
+    "99th Percentile Cost": y_train.groupby(X_train_preprocessed["outlier"]).quantile(0.99),
+    "Top 1% Spenders": (y_train >= pop_p99).groupby(X_train_preprocessed["outlier"]).sum(),
+    "Super-Spenders": (y_train >= pop_p999).groupby(X_train_preprocessed["outlier"]).sum()
+}).sort_index(ascending=True).T 
+outlier_profiling_costs.columns = ["Inliers", "Outliers"]
+
+# Display table
+outlier_profiling_costs.style \
+    .pipe(add_caption, "Outlier Profiling: Medical Condition Count and Cost Impact") \
+    .format("{:.2f}", subset=pd.IndexSlice[["Mean Medical Conditions", "Median Medical Conditions"], :]) \
+    .format("${:,.0f}", subset=pd.IndexSlice[["Mean Costs", "Median Costs", "90th Percentile Cost", "99th Percentile Cost"], :]) \
+    .format("{:,.0f}", subset=pd.IndexSlice[["Top 1% Spenders", "Super-Spenders"], :]) 
+
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insight:</b> The Isolation Forest identifies a "High Comorbidity" profile rather than data errors.
