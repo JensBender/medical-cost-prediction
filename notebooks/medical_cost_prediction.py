@@ -1969,19 +1969,23 @@ plt.savefig("../figures/eda/outlier_numeric_profile.png", bbox_inches="tight", d
 plt.show()
 
 # %%
-# Outlier Numeric Profile: Overlapping KDE Plots of Top Numerical Drivers
-fig, axes = plt.subplots(2, 2, figsize=(10, 7))
+# Outlier Numeric Profile: Overlapping KDE Plots of Numerical Features and Target
+n_features = len(outlier_num_cols_viz)
+n_cols = 2
+n_rows = math.ceil(n_features / n_cols)
+
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 4))
 axes_flat = axes.flatten()
 
 colors = {"Inliers": "#4F81BD", "Outliers": "#D32F2F"}
 
-for i, numeric_driver in enumerate(outlier_num_drivers_viz):
+for i, numeric_column in enumerate(outlier_num_cols_viz):
     ax = axes_flat[i]
 
-    # Create KDE plot for current numerical driver
+    # Create KDE plot for current numerical column
     sns.kdeplot(
         data=outlier_df, 
-        x=numeric_driver, 
+        x=numeric_column, 
         hue="outlier_display", 
         hue_order=["Inliers", "Outliers"],
         weights="PERWT23F", # Use sample weights for population-level density
@@ -1993,13 +1997,13 @@ for i, numeric_driver in enumerate(outlier_num_drivers_viz):
     )
 
     # Calculate population-level (weighted) medians and differences 
-    median_inliers = weighted_quantile(outlier_in_df[numeric_driver], outlier_in_df["PERWT23F"], 0.5)
-    median_outliers = weighted_quantile(outlier_out_df[numeric_driver], outlier_out_df["PERWT23F"], 0.5)
+    median_inliers = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df["PERWT23F"], 0.5)
+    median_outliers = weighted_quantile(outlier_out_df[numeric_column], outlier_out_df["PERWT23F"], 0.5)
     median_diff = median_outliers - median_inliers
     
     # Calculate standardized difference using weighted IQR of inliers
-    q1_in = weighted_quantile(outlier_in_df[numeric_driver], outlier_in_df["PERWT23F"], 0.25)
-    q3_in = weighted_quantile(outlier_in_df[numeric_driver], outlier_in_df["PERWT23F"], 0.75)
+    q1_in = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df["PERWT23F"], 0.25)
+    q3_in = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df["PERWT23F"], 0.75)
     iqr_in = q3_in - q1_in
     iqr_text = f" ({median_diff/iqr_in:+.1f} IQR)" if iqr_in > 0 else ""
 
@@ -2017,7 +2021,7 @@ for i, numeric_driver in enumerate(outlier_num_drivers_viz):
             bbox=dict(facecolor="white", alpha=0.8, edgecolor="none", pad=2))
 
     # Add title
-    ax.set_title(DISPLAY_LABELS.get(numeric_driver, numeric_driver), fontsize=12, fontweight="bold", pad=20)
+    ax.set_title(DISPLAY_LABELS.get(numeric_column, numeric_column), fontsize=12, fontweight="bold", pad=20)
     
     # Add subtitle (median difference)
     ax.text(0.5, 1.03, fr"$\Delta$ Median: {median_diff:+.1f}{iqr_text}", 
@@ -2029,9 +2033,13 @@ for i, numeric_driver in enumerate(outlier_num_drivers_viz):
     if ax.get_legend():
         ax.get_legend().set_title(None)  # Removes legend title
 
+# Hide unused subplots
+for j in range(i + 1, len(axes_flat)):
+    axes_flat[j].axis("off")
+
 # Customize KDE plot matrix
-fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold")
-fig.tight_layout()
+fig.suptitle("Outlier Profiling: Numerical Features and Target", fontsize=14, fontweight="bold", y=0.99)
+fig.tight_layout(h_pad=1.5, w_pad=2.0)
 plt.show()
 
 # %%
