@@ -1833,7 +1833,7 @@ print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Compare the distributions of the target variable and features between outliers and inliers. To ensure findings are representative of the U.S. adult population, all visualizations and central tendency metrics (medians, IQRs) in this section are calculated using population-level weighted statistics.
+#     ℹ️ Compare the feature and target distributions between outliers and inliers identified with the isolation forest. To ensure findings are representative of the U.S. adult population, all statistics (medians, IQRs) and visualizations in this section are calculated using population-level weighted estimates.
 # </div>
 
 # %%
@@ -1847,7 +1847,7 @@ outlier_df = X_train_preprocessed.assign(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 <strong>Outlier Profiling: Numerical features and target</strong>
+#     📌 <strong>Outlier Profile for Numerical Features and Target</strong>
 # </div> 
 
 # %%
@@ -2178,7 +2178,7 @@ benchmark_df.style \
     .format("{:.1f}x", subset="Outlier/Inlier Ratio")
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 <strong>Outlier Profiling: Categorical Features</strong>
+#     📌 <strong>Outlier Profile for Binary Features</strong>
 # </div> 
 
 # %%
@@ -2234,6 +2234,11 @@ plt.grid(True, axis="x", alpha=0.3)
 plt.legend(loc="upper center", ncol=2, bbox_to_anchor=(0.5, 1.04), frameon=False)
 sns.despine(left=True)
 plt.show()
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 <strong>Outlier Profile for Categorical Features</strong>
+# </div> 
 
 # %%
 # Outlier Profile: Categorical Features (Population)
