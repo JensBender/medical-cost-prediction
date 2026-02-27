@@ -1841,6 +1841,7 @@ print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_
 outlier_df = X_train_preprocessed.assign(
     TOTSLF23=y_train, 
     TOTSLF23_LOG=lambda df: np.log1p(df["TOTSLF23"]),  # Log-scale out-of-pocket costs for plotting
+    condition_count=lambda df: df[["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"]].sum(axis=1),
     outlier_display=lambda df: df["outlier"].map({0: "Inliers", 1: "Outliers"}),
     PERWT23F=X_train.loc[X_train_preprocessed.index, "PERWT23F"] # Pass sample weights for population-level stats
 )
@@ -1852,7 +1853,8 @@ outlier_df = X_train_preprocessed.assign(
 
 # %%
 # Outlier Numeric Profile: Median Differences (Population)
-outlier_num_cols = input_numerical_features + ["TOTSLF23"]
+# Include condition_count as a numerical metric for profiling
+outlier_num_cols = input_numerical_features + ["condition_count", "TOTSLF23"]
 outlier_in_df = outlier_df[outlier_df["outlier"] == 0]
 outlier_out_df = outlier_df[outlier_df["outlier"] == 1]
 
@@ -2314,23 +2316,6 @@ fig.suptitle("Outlier Profiling: Categorical Distributions (Population)", fontsi
 
 plt.tight_layout(h_pad=2.0, w_pad=3.0)
 plt.show()
-
-# %%
-# Outlier Binary Profile: Number of Medical Conditions 
-chronic_conditions = ["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"]
-X_train_preprocessed["condition_count"] = X_train_preprocessed[chronic_conditions].sum(axis=1)
-
-# Comparison table of condition count and cost impact
-outlier_profiling_costs = pd.DataFrame({
-    "Mean": X_train_preprocessed.groupby("outlier")["condition_count"].mean(),
-    "Median": X_train_preprocessed.groupby("outlier")["condition_count"].median(),
-}).sort_index(ascending=True).T 
-outlier_profiling_costs.columns = ["Inliers", "Outliers"]
-
-# Display table
-outlier_profiling_costs.style \
-    .pipe(add_caption, "Outlier Profiling: Medical Conditions") \
-    .format("{:.2f}", subset=pd.IndexSlice[["Mean", "Median"], :]) 
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
