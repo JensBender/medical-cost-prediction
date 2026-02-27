@@ -1,7 +1,11 @@
-# Prompts for AI image generators to create header image (use 3:1 aspect ratio, since 4:1 and 5:1 is not supported by most AI image generators)
+# Prompts for AI image generators to create header image 
 
-# Prompt for Nana Banana Pro & ChatGPT Image 1.5
+# Nana Banana Pro & ChatGPT Image 1.5 (use 3:1 aspect ratio, since 4:1 and 5:1 is not natively supported)
 A header image with 3:1 aspect ratio for a web app to help everyone predict their annual out-of-pocket healthcare costs. Only text is the app name "Medical Cost Planner".
 
-# Nano Banana 2 (allows 4:1 and 8:1 aspect ratio)
+# Nano Banana 2 (allows 4:1 and 8:1 aspect ratio) 
+# Prompt 1
 A header image with 4:1 aspect ratio for a web app to help everyone predict their annual out-of-pocket healthcare costs. Only text is the app name "Medical Cost Planner".
+
+# Prompt 2
+A header image with 4:1 aspect ratio for a "Medical Cost Planner" web app to help everyone predict their annual out-of-pocket healthcare costs. A personalized forecasting tool based on easily accessible inputs. Users simply enter demographic and health details such as age, insurance status, and chronic conditions to receive a cost estimate for the upcoming year. This empowers users to make data-driven decisions for FSA/HSA contributions and emergency planning.
