@@ -1,3 +1,7 @@
-# Prompts for AI image generators to create header image for medical cost planner project (use a 3:1 aspect ratio, since 4:1 and 5:1 is not supported by most AI image generators)
+# Prompts for AI image generators to create header image (use 3:1 aspect ratio, since 4:1 and 5:1 is not supported by most AI image generators)
+
+# Prompt for Nana Banana Pro & ChatGPT Image 1.5
 A header image with 3:1 aspect ratio for a web app to help everyone predict their annual out-of-pocket healthcare costs. Only text is the app name "Medical Cost Planner".
-A header image with ultrawide 21:9 aspect ratio for a web app to help everyone predict their annual out-of-pocket healthcare costs. Only text is the app name "Medical Cost Planner".
+
+# Nano Banana 2 (allows 4:1 and 8:1 aspect ratio)
+A header image with 4:1 aspect ratio for a web app to help everyone predict their annual out-of-pocket healthcare costs. Only text is the app name "Medical Cost Planner".
