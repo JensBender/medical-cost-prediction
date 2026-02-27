@@ -349,12 +349,12 @@ Table of population statistics for all numerical features:
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Outlier Analysis
-**Outlier Detection:** Utilized an Isolation Forest (5% contamination) to identify multivariate outliers on the training data.  
+**Outlier Detection:** Utilized an Isolation Forest (5% contamination) to identify multivariate outliers in training data.  
 **Outlier Profiling:** Compared the numerical, binary, and categorical distributions of outliers with inliers.
+**Outlier Treatment:** Decided to keep outliers as they are not data errors, but high-risk health profiles that are essential for robust out-of-pocket cost prediction.
 ![Outlier Profile for Numerical Features and Target](figures/eda/outlier_numeric_profile.png)
 ![Outlier Profile for Binary Features](figures/eda/outlier_binary_profile.png)
 ![Outlier Profile for Categorical Features](figures/eda/outlier_categorical_profile.png)
-**Outlier Treatment:** Decided to keep outliers as they are not data errors, but high-risk health profiles that are essential for robust out-of-pocket cost prediction.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
