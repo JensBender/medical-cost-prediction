@@ -1841,8 +1841,8 @@ print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_
 outlier_df = X_train_preprocessed.assign(
     TOTSLF23=y_train, 
     TOTSLF23_LOG=lambda df: np.log1p(df["TOTSLF23"]),  # Log-scale out-of-pocket costs for plotting
-    condition_count=lambda df: df[["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"]].sum(axis=1),
     outlier_display=lambda df: df["outlier"].map({0: "Inliers", 1: "Outliers"}),
+    condition_count=lambda df: df[["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"]].sum(axis=1),
     PERWT23F=X_train.loc[X_train_preprocessed.index, "PERWT23F"] # Pass sample weights for population-level stats
 )
 
@@ -1957,6 +1957,7 @@ for i, numeric_driver in enumerate(outlier_num_drivers_viz):
 # Customize histogram matrix
 fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold")
 fig.tight_layout()
+plt.savefig("../figures/eda/outlier_numeric_profile.png", bbox_inches="tight", dpi=200)
 plt.show()
 
 # %%
@@ -2235,6 +2236,7 @@ plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter(1.0, decimals=0))
 plt.grid(True, axis="x", alpha=0.3)
 plt.legend(loc="upper center", ncol=2, bbox_to_anchor=(0.5, 1.04), frameon=False)
 sns.despine(left=True)
+plt.savefig("../figures/eda/outlier_binary_profile.png", bbox_inches="tight", dpi=200)
 plt.show()
 
 # %% [markdown]
@@ -2315,6 +2317,7 @@ fig.legend(handles, labels, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 0.9
 fig.suptitle("Outlier Profiling: Categorical Distributions (Population)", fontsize=16, fontweight="bold", y=1.0)
 
 plt.tight_layout(h_pad=2.0, w_pad=3.0)
+plt.savefig("../figures/eda/outlier_categorical_profile.png", bbox_inches="tight", dpi=200)
 plt.show()
 
 # %% [markdown]
