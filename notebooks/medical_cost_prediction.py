@@ -1838,7 +1838,7 @@ print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_
 
 # %%
 # Create outlier profiling DataFrame from training data
-outlier_profiling_df = X_train_preprocessed.assign(
+outlier_df = X_train_preprocessed.assign(
     TOTSLF23=y_train, 
     TOTSLF23_LOG=lambda df: np.log1p(df["TOTSLF23"]),  # Log-scale out-of-pocket costs for plotting
     outlier_display=lambda df: df["outlier"].map({0: "Inliers", 1: "Outliers"}),
@@ -1851,38 +1851,38 @@ outlier_profiling_df = X_train_preprocessed.assign(
 # </div> 
 
 # %%
-# Outlier Numeric Profile: Median Differences (Population-Level)
-outlier_profile_numeric_columns = input_numerical_features + ["TOTSLF23"]
-inliers_df = outlier_profiling_df[outlier_profiling_df["outlier"] == 0]
-outliers_df = outlier_profiling_df[outlier_profiling_df["outlier"] == 1]
+# Outlier Numeric Profile: Median Differences (Population)
+outlier_num_cols = input_numerical_features + ["TOTSLF23"]
+outlier_in_df = outlier_df[outlier_df["outlier"] == 0]
+outlier_out_df = outlier_df[outlier_df["outlier"] == 1]
 
-# Calculate weighted medians for each feature/target
-outlier_numeric_profile = pd.DataFrame(index=outlier_profile_numeric_columns, columns=["Inliers", "Outliers"])
-for col in outlier_profile_numeric_columns:
-    outlier_numeric_profile.loc[col, "Inliers"] = weighted_quantile(inliers_df[col], inliers_df["PERWT23F"], 0.5)
-    outlier_numeric_profile.loc[col, "Outliers"] = weighted_quantile(outliers_df[col], outliers_df["PERWT23F"], 0.5)
+# Calculate population medians (weighted) for each feature/target
+outlier_stats_num = pd.DataFrame(index=outlier_num_cols, columns=["Inliers", "Outliers"])
+for col in outlier_num_cols:
+    outlier_stats_num.loc[col, "Inliers"] = weighted_quantile(outlier_in_df[col], outlier_in_df["PERWT23F"], 0.5)
+    outlier_stats_num.loc[col, "Outliers"] = weighted_quantile(outlier_out_df[col], outlier_out_df["PERWT23F"], 0.5)
 
-# Calculate difference
-outlier_numeric_profile["Difference"] = (outlier_numeric_profile["Outliers"] - outlier_numeric_profile["Inliers"]).astype(float)
+# Calculate median difference
+outlier_stats_num["Difference"] = (outlier_stats_num["Outliers"] - outlier_stats_num["Inliers"]).astype(float)
 
-# Calculate weighted interquartile range (IQR) of inliers for standardization
-inlier_iqrs = pd.Series(index=outlier_profile_numeric_columns, dtype=float)
-for col in outlier_profile_numeric_columns:
-    q1 = weighted_quantile(inliers_df[col], inliers_df["PERWT23F"], 0.25)
-    q3 = weighted_quantile(inliers_df[col], inliers_df["PERWT23F"], 0.75)
+# Calculate population interquartile range (IQR) of inliers for standardization
+inlier_iqrs = pd.Series(index=outlier_num_cols, dtype=float)
+for col in outlier_num_cols:
+    q1 = weighted_quantile(outlier_in_df[col], outlier_in_df["PERWT23F"], 0.25)
+    q3 = weighted_quantile(outlier_in_df[col], outlier_in_df["PERWT23F"], 0.75)
     inlier_iqrs[col] = q3 - q1
 
 # Calculate how many IQRs the outlier median is different from the inlier median
-outlier_numeric_profile["IQR Difference"] = outlier_numeric_profile["Difference"] / inlier_iqrs
+outlier_stats_num["IQR Difference"] = outlier_stats_num["Difference"] / inlier_iqrs
 
 # Identify the top 4 numerical columns that drive outliers (based on IQR difference)
-top_numeric_drivers = outlier_numeric_profile["IQR Difference"].abs().sort_values(ascending=False).head(4).index.tolist()
+outlier_num_drivers = outlier_stats_num["IQR Difference"].abs().sort_values(ascending=False).head(4).index.tolist()
 # Use log-scaled out-of-pocket costs for visualizations
-top_numeric_drivers_viz = [col if col != "TOTSLF23" else "TOTSLF23_LOG" for col in top_numeric_drivers]  
+outlier_num_drivers_viz = [col if col != "TOTSLF23" else "TOTSLF23_LOG" for col in outlier_num_drivers]  
 
 # Display table
-outlier_numeric_profile.index = outlier_numeric_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
-outlier_numeric_profile.sort_values(by="Difference", ascending=False).style \
+outlier_stats_num.index = outlier_stats_num.index.map(lambda x: DISPLAY_LABELS.get(x, x))
+outlier_stats_num.sort_values(by="Difference", ascending=False).style \
     .pipe(add_caption, "Outlier Numeric Profile: Median Differences") \
     .format("{:.1f}") \
     .set_properties(**{"font-weight": "bold"}, subset=["Difference", "IQR Difference"])
@@ -1895,12 +1895,12 @@ axes_flat = axes.flatten()
 colors = {"Inliers": "#4F81BD", "Outliers": "#D32F2F"}
 
 # Iterate over each numerical driver
-for i, numeric_driver in enumerate(top_numeric_drivers_viz):
+for i, numeric_driver in enumerate(outlier_num_drivers_viz):
     ax = axes_flat[i]
 
     # Create histogram for current numerical driver
     sns.histplot(
-        data=outlier_profiling_df, 
+        data=outlier_df, 
         x=numeric_driver, 
         hue="outlier_display", 
         hue_order=["Inliers", "Outliers"],
@@ -1916,16 +1916,13 @@ for i, numeric_driver in enumerate(top_numeric_drivers_viz):
     )
 
     # Calculate population-level (weighted) medians and differences 
-    inliers_df = outlier_profiling_df[outlier_profiling_df["outlier"] == 0]
-    outliers_df = outlier_profiling_df[outlier_profiling_df["outlier"] == 1]
-    
-    median_inliers = weighted_quantile(inliers_df[numeric_driver], inliers_df["PERWT23F"], 0.5)
-    median_outliers = weighted_quantile(outliers_df[numeric_driver], outliers_df["PERWT23F"], 0.5)
+    median_inliers = weighted_quantile(outlier_in_df[numeric_driver], outlier_in_df["PERWT23F"], 0.5)
+    median_outliers = weighted_quantile(outlier_out_df[numeric_driver], outlier_out_df["PERWT23F"], 0.5)
     median_diff = median_outliers - median_inliers
     
     # Calculate standardized difference (using IQR of inliers)
-    q1_in = weighted_quantile(inliers_df[numeric_driver], inliers_df["PERWT23F"], 0.25)
-    q3_in = weighted_quantile(inliers_df[numeric_driver], inliers_df["PERWT23F"], 0.75)
+    q1_in = weighted_quantile(outlier_in_df[numeric_driver], outlier_in_df["PERWT23F"], 0.25)
+    q3_in = weighted_quantile(outlier_in_df[numeric_driver], outlier_in_df["PERWT23F"], 0.75)
     iqr_in = q3_in - q1_in
     iqr_text = f" ({median_diff/iqr_in:+.1f} IQR)" if iqr_in > 0 else ""
 
@@ -1967,12 +1964,12 @@ axes_flat = axes.flatten()
 
 colors = {"Inliers": "#4F81BD", "Outliers": "#D32F2F"}
 
-for i, numeric_driver in enumerate(top_numeric_drivers_viz):
+for i, numeric_driver in enumerate(outlier_num_drivers_viz):
     ax = axes_flat[i]
 
     # Create KDE plot for current numerical driver
     sns.kdeplot(
-        data=outlier_profiling_df, 
+        data=outlier_df, 
         x=numeric_driver, 
         hue="outlier_display", 
         hue_order=["Inliers", "Outliers"],
@@ -1985,16 +1982,13 @@ for i, numeric_driver in enumerate(top_numeric_drivers_viz):
     )
 
     # Calculate population-level (weighted) medians and differences 
-    inliers_df = outlier_profiling_df[outlier_profiling_df["outlier"] == 0]
-    outliers_df = outlier_profiling_df[outlier_profiling_df["outlier"] == 1]
-    
-    median_inliers = weighted_quantile(inliers_df[numeric_driver], inliers_df["PERWT23F"], 0.5)
-    median_outliers = weighted_quantile(outliers_df[numeric_driver], outliers_df["PERWT23F"], 0.5)
+    median_inliers = weighted_quantile(outlier_in_df[numeric_driver], outlier_in_df["PERWT23F"], 0.5)
+    median_outliers = weighted_quantile(outlier_out_df[numeric_driver], outlier_out_df["PERWT23F"], 0.5)
     median_diff = median_outliers - median_inliers
     
     # Calculate standardized difference using weighted IQR of inliers
-    q1_in = weighted_quantile(inliers_df[numeric_driver], inliers_df["PERWT23F"], 0.25)
-    q3_in = weighted_quantile(inliers_df[numeric_driver], inliers_df["PERWT23F"], 0.75)
+    q1_in = weighted_quantile(outlier_in_df[numeric_driver], outlier_in_df["PERWT23F"], 0.25)
+    q3_in = weighted_quantile(outlier_in_df[numeric_driver], outlier_in_df["PERWT23F"], 0.75)
     iqr_in = q3_in - q1_in
     iqr_text = f" ({median_diff/iqr_in:+.1f} IQR)" if iqr_in > 0 else ""
 
@@ -2034,7 +2028,7 @@ plt.show()
 # Create a population-representative subsample using weighted bootstrap resampling. 
 # Since sns.pairplot does not natively support weights, this approach 'bakes' the survey weights directly into the subsample's density. 
 # Setting replace=True ensures that high-weight respondents are proportionally represented as multiple 'virtual' individuals in the plot.
-outlier_profiling_subsample = outlier_profiling_df[top_numeric_drivers_viz + ["outlier_display", "PERWT23F"]].sample(
+outlier_subsample = outlier_df[outlier_num_drivers_viz + ["outlier_display", "PERWT23F"]].sample(
     n=5000, 
     weights="PERWT23F", 
     replace=True, 
@@ -2043,7 +2037,7 @@ outlier_profiling_subsample = outlier_profiling_df[top_numeric_drivers_viz + ["o
 
 # Create pair plot matrix
 grid = sns.pairplot(
-    outlier_profiling_subsample.rename(columns=DISPLAY_LABELS), 
+    outlier_subsample.rename(columns=DISPLAY_LABELS), 
     hue="outlier_display", 
     palette={"Inliers": "#4F81BD", "Outliers": "#D32F2F"}, 
     plot_kws={"alpha":0.4, "s":30}, 
@@ -2089,8 +2083,8 @@ def get_lorenz_metrics(subset_df):
     return pct, costs, gini, (x_80, y_80)
 
 # Calculate metrics for each group
-inlier_data = get_lorenz_metrics(outlier_profiling_df[outlier_profiling_df["outlier"] == 0])
-outlier_data = get_lorenz_metrics(outlier_profiling_df[outlier_profiling_df["outlier"] == 1])
+outlier_in_lorenz = get_lorenz_metrics(outlier_in_df)
+outlier_out_lorenz = get_lorenz_metrics(outlier_out_df)
 
 # Plotting
 plt.figure(figsize=(10, 8))
@@ -2101,8 +2095,8 @@ plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equali
 # Colors and Groups
 # Inliers: #4F81BD (blue), Outliers: #D32F2F (red)
 groups = [
-    {"data": inlier_data, "name": "Inliers", "color": "#4F81BD", "alpha_fill": 0.08},
-    {"data": outlier_data, "name": "Outliers", "color": "#D32F2F", "alpha_fill": 0.05}
+    {"data": outlier_in_lorenz, "name": "Inliers", "color": "#4F81BD", "alpha_fill": 0.08},
+    {"data": outlier_out_lorenz, "name": "Outliers", "color": "#D32F2F", "alpha_fill": 0.05}
 ]
 
 for g in groups:
@@ -2124,7 +2118,7 @@ for g in groups:
                  fontsize=9, fontweight="bold", color=g["color"])
 
     # Highlight Zero-Cost Threshold for this group
-    group_df = outlier_profiling_df[outlier_profiling_df["outlier"] == (1 if g["name"] == "Outliers" else 0)]
+    group_df = outlier_out_df if g["name"] == "Outliers" else outlier_in_df
     group_zero_pct = (group_df.loc[group_df["TOTSLF23"] == 0, "PERWT23F"].sum() / group_df["PERWT23F"].sum()) * 100
     
     plt.plot(group_zero_pct, 0, 'o', color=g["color"], markersize=8)
@@ -2156,22 +2150,22 @@ percentiles = [0.999, 0.99, 0.95, 0.9, 0.8, 0.5]
 benchmarks = []
 
 # Pre-calculate group populations (weighted) for efficiency
-inliers_pop = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 0, "PERWT23F"].sum()
-outliers_pop = outlier_profiling_df.loc[outlier_profiling_df["outlier"] == 1, "PERWT23F"].sum()
+outlier_in_pop = outlier_in_df["PERWT23F"].sum()
+outlier_out_pop = outlier_out_df["PERWT23F"].sum()
 
 for p in percentiles:
     # Calculate global (population-wide) threshold
-    threshold = weighted_quantile(outlier_profiling_df["TOTSLF23"], outlier_profiling_df["PERWT23F"], p)
+    threshold = weighted_quantile(outlier_df["TOTSLF23"], outlier_df["PERWT23F"], p)
     
     # Calculate representation within each subgroup
-    rep_inliers = (outlier_profiling_df.loc[(outlier_profiling_df["outlier"] == 0) & (outlier_profiling_df["TOTSLF23"] >= threshold), "PERWT23F"].sum() / inliers_pop) * 100
-    rep_outliers = (outlier_profiling_df.loc[(outlier_profiling_df["outlier"] == 1) & (outlier_profiling_df["TOTSLF23"] >= threshold), "PERWT23F"].sum() / outliers_pop) * 100
+    outlier_in_rep = (outlier_in_df.loc[outlier_in_df["TOTSLF23"] >= threshold, "PERWT23F"].sum() / outlier_in_pop) * 100
+    outlier_out_rep = (outlier_out_df.loc[outlier_out_df["TOTSLF23"] >= threshold, "PERWT23F"].sum() / outlier_out_pop) * 100
     
     benchmarks.append({
         "Benchmark": f"Top {(1-p)*100:.0f}% (>= ${threshold:,.0f})" if p != 0.999 else f"Top 0.1% (>= ${threshold:,.0f})",
-        "Inliers": rep_inliers,
-        "Outliers": rep_outliers,
-        "Outlier/Inlier Ratio": rep_outliers / rep_inliers
+        "Inliers": outlier_in_rep,
+        "Outliers": outlier_out_rep,
+        "Outlier/Inlier Ratio": outlier_out_rep / outlier_in_rep
     })
 
 # Create comparison table directly
@@ -2189,23 +2183,29 @@ benchmark_df.style \
 
 # %%
 # Outlier Profile: Binary Features (Population)
-outlier_binary_profile = pd.DataFrame(index=input_binary_features, columns=["Inliers", "Outliers"])
+outlier_stats_bin = pd.DataFrame(index=input_binary_features, columns=["Inliers", "Outliers"])
 
-for group, mask in [("Inliers", outlier_profiling_df["outlier"] == 0), ("Outliers", outlier_profiling_df["outlier"] == 1)]:
-    subset = outlier_profiling_df[mask]
+for group, mask in [("Inliers", outlier_df["outlier"] == 0), ("Outliers", outlier_df["outlier"] == 1)]:
+    subset = outlier_df[mask]
     for col in input_binary_features:
         # Weighted avg of 0/1 columns = population prevalence
-        outlier_binary_profile.loc[col, group] = np.average(subset[col], weights=subset["PERWT23F"])
+        outlier_stats_bin.loc[col, group] = np.average(subset[col], weights=subset["PERWT23F"])
 
-outlier_binary_profile = outlier_binary_profile.astype(float)
-outlier_binary_profile.index = outlier_binary_profile.index.map(lambda x: DISPLAY_LABELS.get(x, x))
-outlier_binary_profile["Difference"] = outlier_binary_profile["Outliers"] - outlier_binary_profile["Inliers"]
+outlier_stats_bin = outlier_stats_bin.astype(float)
+
+# Map to display labels
+# Since prevalence of a 0/1 variable reflects the '1' category, names should reflect that category.
+binary_plot_remap = {"Sex": "Male", "Employment": "Employed"}
+outlier_stats_bin.index = outlier_stats_bin.index.map(lambda x: DISPLAY_LABELS.get(x, x))
+outlier_stats_bin.index = outlier_stats_bin.index.map(lambda x: binary_plot_remap.get(x, x))
+
+outlier_stats_bin["Difference"] = outlier_stats_bin["Outliers"] - outlier_stats_bin["Inliers"]
 
 # Sort by difference for better visualization
-outlier_binary_profile = outlier_binary_profile.sort_values(by="Difference", ascending=False)
+outlier_stats_bin = outlier_stats_bin.sort_values(by="Difference", ascending=False)
 
 # Prepare data for plotting
-plot_df = outlier_binary_profile.reset_index().melt(
+plot_df = outlier_stats_bin.reset_index().melt(
     id_vars="index", value_vars=["Inliers", "Outliers"], var_name="Group", value_name="Prevalence"
 )
 
@@ -2249,7 +2249,7 @@ for i, feature in enumerate(input_nominal_features + input_ordinal_features):
     
     # Calculate weighted distribution for each group
     # Pivot table handles sum of weights across categories
-    ct = outlier_profiling_df.pivot_table(
+    ct = outlier_df.pivot_table(
         index=feature, 
         columns="outlier_display", 
         values="PERWT23F", 
