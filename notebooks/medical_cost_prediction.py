@@ -1922,7 +1922,7 @@ for i, numeric_column in enumerate(outlier_num_cols_viz):
         kde=True, 
         bins=20, 
         element="step",  # Shows outlines of bars only (shape like steps)
-        discrete=True if numeric_column in ["RTHLTH31", "MNHLTH31"] else False
+        discrete=True if numeric_column in ["RTHLTH31", "MNHLTH31", "FAMSZE23", "condition_count"] else False
     )
 
     # Calculate population-level (weighted) medians and differences 
