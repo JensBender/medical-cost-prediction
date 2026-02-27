@@ -60,6 +60,7 @@ Currently developing an end-to-end machine learning application to predict annua
       <li><a href="#numerical-distributions">Numerical Distributions</a></li>      
       <li><a href="#categorical-distributions">Categorical Distributions</a></li>      
       <li><a href="#binary-distributions">Binary Distributions</a></li>      
+      <li><a href="#outlier-analysis">Outlier Analysis</a></li>      
     </ul>
   </li>
 </ol>
@@ -345,6 +346,16 @@ Table of population statistics for all numerical features:
 
 ### Binary Distributions
 ![Binary Distributions](figures/eda/binary_distributions_population.png)
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Outlier Analysis
+**Outlier Detection:** Utilized an Isolation Forest (5% contamination) to identify multivariate outliers on the training data.  
+**Outlier Profiling:** Compared the numerical, binary, and categorical distributions of outliers with inliers.
+![Outlier Profile for Numerical Features and Target](figures/eda/outlier_numeric_profile.png)
+![Outlier Profile for Binary Features](figures/eda/outlier_binary_profile.png)
+![Outlier Profile for Categorical Features](figures/eda/outlier_categorical_profile.png)
+**Outlier Treatment:** Decided to keep outliers as they are not data errors, but high-risk health profiles that are essential for robust out-of-pocket cost prediction.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
