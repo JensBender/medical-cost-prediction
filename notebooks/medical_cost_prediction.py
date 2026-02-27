@@ -1877,22 +1877,29 @@ for col in outlier_num_cols:
 # Calculate how many IQRs the outlier median is different from the inlier median
 outlier_stats_num["IQR Difference"] = outlier_stats_num["Difference"] / inlier_iqrs
 
-# Identify the top 4 numerical columns that drive outliers (based on IQR difference)
-outlier_num_drivers = outlier_stats_num["IQR Difference"].abs().sort_values(ascending=False).head(4).index.tolist()
+# Get all numerical columns sorted by absolute impact (IQR Difference) for profiling
+outlier_num_cols_sorted = outlier_stats_num["IQR Difference"].abs().sort_values(ascending=False).index.tolist()
 
-# Use log-scaled out-of-pocket costs for visualizations
-outlier_num_drivers_viz = [col if col != "TOTSLF23" else "TOTSLF23_LOG" for col in outlier_num_drivers]  
-outlier_num_cols_viz = [col if col != "TOTSLF23" else "TOTSLF23_LOG" for col in outlier_num_cols] 
+# Identify the top 4 numerical drivers (for pairwise plot)
+outlier_num_drivers = outlier_num_cols_sorted[:4]
+
+# Create lists for visualization (mapping TOTSLF23 to its log-scaled version)
+outlier_num_cols_viz = [col if col != "TOTSLF23" else "TOTSLF23_LOG" for col in outlier_num_cols_sorted]
+outlier_num_drivers_viz = [col if col != "TOTSLF23" else "TOTSLF23_LOG" for col in outlier_num_drivers] 
 
 # Display table (Renaming the index only for the view to keep the DF's raw IDs intact)
-outlier_stats_num.rename(index=DISPLAY_LABELS).sort_values(by="Difference", ascending=False).style \
+outlier_stats_num.rename(index=DISPLAY_LABELS).sort_values(by="IQR Difference", ascending=False).style \
     .pipe(add_caption, "Outlier Numeric Profile: Median Differences") \
     .format("{:.1f}") \
     .set_properties(**{"font-weight": "bold"}, subset=["Difference", "IQR Difference"])
 
 # %%
 # Outlier Numeric Profile: Overlapping Histograms of Numerical Features and Target
-fig, axes = plt.subplots(3, 2, figsize=(10, 12))
+n_features = len(outlier_num_cols_viz)
+n_cols = 2
+n_rows = math.ceil(n_features / n_cols)
+
+fig, axes = plt.subplots(3, 2, figsize=(n_cols * 5, n_rows * 4))
 axes_flat = axes.flatten()
 
 colors = {"Inliers": "#4F81BD", "Outliers": "#D32F2F"}
