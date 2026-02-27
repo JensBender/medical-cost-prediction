@@ -45,7 +45,8 @@ DISPLAY_LABELS = {
     # Feature Engineered
     "RECENT_LIFE_TRANSITION": "Recent Life Transition",
     "MARRY31X_GRP": "Marital Status",
-    "EMPST31_GRP": "Employment"
+    "EMPST31_GRP": "Employment",
+    "condition_count": "Medical Conditions"
 }
 
 # Mapping MEPS feature category codes to human-readable string labels (for EDA and UI)
