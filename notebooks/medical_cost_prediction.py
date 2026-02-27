@@ -1879,31 +1879,32 @@ outlier_stats_num["IQR Difference"] = outlier_stats_num["Difference"] / inlier_i
 
 # Identify the top 4 numerical columns that drive outliers (based on IQR difference)
 outlier_num_drivers = outlier_stats_num["IQR Difference"].abs().sort_values(ascending=False).head(4).index.tolist()
+
 # Use log-scaled out-of-pocket costs for visualizations
 outlier_num_drivers_viz = [col if col != "TOTSLF23" else "TOTSLF23_LOG" for col in outlier_num_drivers]  
+outlier_num_cols_viz = [col if col != "TOTSLF23" else "TOTSLF23_LOG" for col in outlier_num_cols] 
 
-# Display table
-outlier_stats_num.index = outlier_stats_num.index.map(lambda x: DISPLAY_LABELS.get(x, x))
-outlier_stats_num.sort_values(by="Difference", ascending=False).style \
+# Display table (Renaming the index only for the view to keep the DF's raw IDs intact)
+outlier_stats_num.rename(index=DISPLAY_LABELS).sort_values(by="Difference", ascending=False).style \
     .pipe(add_caption, "Outlier Numeric Profile: Median Differences") \
     .format("{:.1f}") \
     .set_properties(**{"font-weight": "bold"}, subset=["Difference", "IQR Difference"])
 
 # %%
-# Outlier Numeric Profile: Overlapping Histograms of Top Numerical Drivers
-fig, axes = plt.subplots(2, 2, figsize=(10, 7))
+# Outlier Numeric Profile: Overlapping Histograms of Numerical Features and Target
+fig, axes = plt.subplots(3, 2, figsize=(10, 12))
 axes_flat = axes.flatten()
 
 colors = {"Inliers": "#4F81BD", "Outliers": "#D32F2F"}
 
-# Iterate over each numerical driver
-for i, numeric_driver in enumerate(outlier_num_drivers_viz):
+# Iterate over each numerical column
+for i, numeric_column in enumerate(outlier_num_cols_viz):
     ax = axes_flat[i]
 
-    # Create histogram for current numerical driver
+    # Create histogram for current numerical column
     sns.histplot(
         data=outlier_df, 
-        x=numeric_driver, 
+        x=numeric_column, 
         hue="outlier_display", 
         hue_order=["Inliers", "Outliers"],
         weights="PERWT23F", # Use sample weights for population-level density
@@ -1914,17 +1915,17 @@ for i, numeric_driver in enumerate(outlier_num_drivers_viz):
         kde=True, 
         bins=20, 
         element="step",  # Shows outlines of bars only (shape like steps)
-        discrete=True if numeric_driver in ["RTHLTH31", "MNHLTH31"] else False
+        discrete=True if numeric_column in ["RTHLTH31", "MNHLTH31"] else False
     )
 
     # Calculate population-level (weighted) medians and differences 
-    median_inliers = weighted_quantile(outlier_in_df[numeric_driver], outlier_in_df["PERWT23F"], 0.5)
-    median_outliers = weighted_quantile(outlier_out_df[numeric_driver], outlier_out_df["PERWT23F"], 0.5)
+    median_inliers = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df["PERWT23F"], 0.5)
+    median_outliers = weighted_quantile(outlier_out_df[numeric_column], outlier_out_df["PERWT23F"], 0.5)
     median_diff = median_outliers - median_inliers
     
     # Calculate standardized difference (using IQR of inliers)
-    q1_in = weighted_quantile(outlier_in_df[numeric_driver], outlier_in_df["PERWT23F"], 0.25)
-    q3_in = weighted_quantile(outlier_in_df[numeric_driver], outlier_in_df["PERWT23F"], 0.75)
+    q1_in = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df["PERWT23F"], 0.25)
+    q3_in = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df["PERWT23F"], 0.75)
     iqr_in = q3_in - q1_in
     iqr_text = f" ({median_diff/iqr_in:+.1f} IQR)" if iqr_in > 0 else ""
 
@@ -1942,7 +1943,7 @@ for i, numeric_driver in enumerate(outlier_num_drivers_viz):
             bbox=dict(facecolor="white", alpha=0.8, edgecolor="none", pad=2))
 
     # Add title
-    ax.set_title(DISPLAY_LABELS.get(numeric_driver, numeric_driver), fontsize=12, fontweight="bold", pad=20)
+    ax.set_title(DISPLAY_LABELS.get(numeric_column, numeric_column), fontsize=12, fontweight="bold", pad=20)
     
     # Add subtitle (median difference)
     ax.text(0.5, 1.03, fr"$\Delta$ Median: {median_diff:+.1f}{iqr_text}", 
@@ -1955,8 +1956,8 @@ for i, numeric_driver in enumerate(outlier_num_drivers_viz):
         ax.get_legend().set_title(None)  # Removes legend title
 
 # Customize histogram matrix
-fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold")
-fig.tight_layout()
+fig.suptitle("Outlier Profiling: Numerical Features and Target", fontsize=14, fontweight="bold", y=0.99)
+fig.tight_layout(h_pad=1.5, w_pad=2.0)
 plt.savefig("../figures/eda/outlier_numeric_profile.png", bbox_inches="tight", dpi=200)
 plt.show()
 
