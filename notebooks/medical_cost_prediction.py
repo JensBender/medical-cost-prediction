@@ -2414,12 +2414,12 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> The Isolation Forest identifies a clinically and financially high-risk "High Comorbidity" profile.
+#     💡 <b>Insight:</b> The Isolation Forest identifies outliers that represent a clinically vulnerable, high-cost population essential for modeling tail-risk.
 #     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>High Comorbidity:</b> A typical outlier suffers from 4x the number of medical conditions than a typical inlier (median 4.0 vs. 1.0). Chronic multi-morbidity (e.g., HTN, Diabetes, Arthritis) and functional limitations are significantly more prevalent in this group.</li>
-#         <li><b>Risk Escalation:</b> The "Outlier/Inlier Ratio" confirms the model isolates tail-risk. Outliers are only 1.1x more likely to be above the median spend, but 3.4x more likely to be in the Top 1% of spenders (>\$12,885). Additionally, outliers are 2.4x more likely to incur some cost (zero spenders: 9.7% of outliers vs. 22.9% of inliers). </li>
-#         <li><b>Structural Inequality:</b> Outliers and inliers show near-identical Gini coefficients (~0.78) and Lorenz curves. This suggests that cost concentration is a fundamental property of healthcare data that persists even within high-risk subgroups.</li>
-#         <li><b>Decision: Keep Outliers.</b> These individuals are essential tail-risk cases, not noise. Their identical cost structure (Gini) and escalating risk ratios justify keeping them in the global training set to ensure the model learns high-impact outcomes.</li>
+#         <li><b>Clinical Profile:</b> Outliers are characterized by "High Comorbidity," typically suffering from 4x more medical conditions than inliers (median 4 vs. 1). Chronic diseases (HTN, Diabetes, Arthritis) and functional limitations (e.g., 75% walking limitation) are significantly more prevalent.</li>
+#         <li><b>Risk Escalation:</b> While only 1.1x more likely to exceed the median spend, outliers are 3.4x more likely to be in the Top 1% of spenders. They are also 2.4x more likely to incur some cost (zero-spenders: 9.7% vs 22.9%).</li>
+#         <li><b>Structural Equality:</b> Both groups show near-identical Gini coefficients (~0.78). This confirms that cost concentration is a fundamental property of healthcare data that persists even within high-risk subgroups.</li>
+#         <li><b>Decision: Keep Outliers.</b> These are valid tail-risk cases, not noise. Keeping them ensures the model learns the drivers of high-impact outcomes and correctly identifies the "High Comorbidity" spenders.</li>
 #     </ul>
 # </div>
 
