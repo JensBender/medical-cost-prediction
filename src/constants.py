@@ -46,6 +46,8 @@ DISPLAY_LABELS = {
     "RECENT_LIFE_TRANSITION": "Recent Life Transition",
     "MARRY31X_GRP": "Marital Status",
     "EMPST31_GRP": "Employment",
+    "CHRONIC_COUNT": "Chronic Conditions Count",
+    "LIMITATION_COUNT": "Limitations Count",
     "condition_count": "Medical Conditions"
 }
 
