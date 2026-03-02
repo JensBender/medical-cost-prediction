@@ -5,7 +5,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 
 # Local imports
-from src.transformers import MissingValueChecker
+from src.transformers import MissingValueChecker, MedicalFeatureDeriver
 
 # Ensure that the output of all scikit-learn transformers is a Pandas DataFrame
 set_config(transform_output="pandas")
@@ -15,7 +15,6 @@ set_config(transform_output="pandas")
 def create_preprocessing_pipeline(required_features, optional_features, numerical_features, categorical_features, strict=True):
     """
     Creates a scikit-learn pipeline for data preprocessing.
-    In this version, it only handles missing values.
     """
     return Pipeline(steps=[
         ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
@@ -26,5 +25,6 @@ def create_preprocessing_pipeline(required_features, optional_features, numerica
             ],
             remainder="drop",
             verbose_feature_names_out=False  # Preserves input column names instead of adding prefix 
-        ))
+        )),
+        ("medical_feature_deriver", MedicalFeatureDeriver())
     ])
