@@ -1876,7 +1876,6 @@ outlier_df = X_train_preprocessed.assign(
     TOTSLF23=y_train, 
     TOTSLF23_LOG=lambda df: np.log1p(df["TOTSLF23"]),  # Log-scale out-of-pocket costs for plotting
     outlier_display=lambda df: df["outlier"].map({0: "Inliers", 1: "Outliers"}),
-    condition_count=lambda df: df[["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"]].sum(axis=1),
     PERWT23F=X_train.loc[X_train_preprocessed.index, "PERWT23F"] # Pass sample weights for population-level stats
 )
 
@@ -1888,7 +1887,7 @@ outlier_df = X_train_preprocessed.assign(
 # %%
 # Outlier Numeric Profile: Median Differences (Population)
 # Include condition_count as a numerical metric for profiling
-outlier_num_cols = input_numerical_features + ["condition_count", "TOTSLF23"]
+outlier_num_cols = input_numerical_features + ["TOTSLF23"]
 outlier_in_df = outlier_df[outlier_df["outlier"] == 0]
 outlier_out_df = outlier_df[outlier_df["outlier"] == 1]
 
@@ -1933,7 +1932,7 @@ n_features = len(outlier_num_cols_viz)
 n_cols = 2
 n_rows = math.ceil(n_features / n_cols)
 
-fig, axes = plt.subplots(3, 2, figsize=(n_cols * 5, n_rows * 4))
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 4))
 axes_flat = axes.flatten()
 
 colors = {"Inliers": "#4F81BD", "Outliers": "#D32F2F"}
@@ -1956,7 +1955,7 @@ for i, numeric_column in enumerate(outlier_num_cols_viz):
         kde=True, 
         bins=20, 
         element="step",  # Shows outlines of bars only (shape like steps)
-        discrete=True if numeric_column in ["RTHLTH31", "MNHLTH31", "FAMSZE23", "condition_count"] else False
+        discrete=True if numeric_column in ["RTHLTH31", "MNHLTH31", "FAMSZE23", "CHRONIC_COUNT", "LIMITATION_COUNT"] else False
     )
 
     # Calculate population-level (weighted) medians and differences 
@@ -1996,11 +1995,18 @@ for i, numeric_column in enumerate(outlier_num_cols_viz):
     if ax.get_legend():
         ax.get_legend().set_title(None)  # Removes legend title
 
+# Hide unused subplots
+for j in range(i + 1, len(axes_flat)):
+    axes_flat[j].axis("off")
+
 # Customize histogram matrix
-fig.suptitle("Population-Level Outlier Profiling: Numerical Features and Target", fontsize=14, fontweight="bold", y=0.98)
+fig.suptitle("Outlier Profiling: Numerical Features and Target", fontsize=14, fontweight="bold", y=0.98)
 
 # Adjust layout 
-fig.tight_layout(h_pad=1.5, w_pad=2.0)
+fig.tight_layout(rect=[0, 0.02, 1, 0.99], h_pad=1.5, w_pad=2.0)
+
+# Add footnote
+fig.text(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
 
 plt.savefig("../figures/eda/outlier_numeric_profile.png", bbox_inches="tight", dpi=200)
 plt.show()
@@ -2075,10 +2081,13 @@ for j in range(i + 1, len(axes_flat)):
     axes_flat[j].axis("off")
 
 # Customize KDE plot matrix
-fig.suptitle("Population-Level Outlier Profiling: Numerical Features and Target", fontsize=14, fontweight="bold", y=0.99)
+fig.suptitle("Outlier Profiling: Numerical Features and Target", fontsize=14, fontweight="bold", y=0.99)
 
 # Adjust layout
-fig.tight_layout(h_pad=1.5, w_pad=2.0)
+fig.tight_layout(rect=[0, 0.02, 1, 1], h_pad=1.5, w_pad=2.0)
+
+# Add footnote
+fig.text(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
 
 plt.show()
 
@@ -2112,10 +2121,13 @@ sns.move_legend(
 )
 
 # Add title
-grid.fig.suptitle("Population-Level Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold", y=1.03)
+grid.fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold", y=1.03)
 
 # Adjust layout
-grid.fig.tight_layout()
+grid.fig.tight_layout(rect=[0, 0.03, 1, 1])
+
+# Add footnote
+grid.fig.text(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
 
 plt.show() 
 
@@ -2195,7 +2207,7 @@ for g in groups:
                  fontsize=9, fontweight="bold", color=g["color"])
 
 # Customize
-plt.title("Population-Level Outlier Profiling: Lorenz Curves for Out-of-Pocket Costs", fontsize=14, fontweight="bold", pad=15)
+plt.title("Outlier Profiling: Lorenz Curves for Out-of-Pocket Costs", fontsize=14, fontweight="bold", pad=15)
 plt.xlabel("Cumulative % of Population (Sorted from Lowest to Highest Cost)", fontsize=11)
 plt.ylabel("Cumulative % of Total Costs", fontsize=11)
 plt.legend(loc="upper left", fontsize=10)
@@ -2206,7 +2218,10 @@ plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())
 plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
 
 # Adjust layout
-plt.tight_layout()
+plt.tight_layout(rect=[0, 0.02, 1, 1])
+
+# Add footnote
+plt.figtext(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
 
 plt.savefig("../figures/eda/outlier_lorenz_curve.png", bbox_inches="tight", dpi=200)
 plt.show()
@@ -2294,7 +2309,7 @@ for container in plt.gca().containers:
     plt.gca().bar_label(container, fmt="{:.0%}", padding=3, fontsize=9)
 
 # Customize
-plt.title("Population-Level Outlier Profiling: Binary Features", fontsize=14, fontweight="bold", pad=30)
+plt.title("Outlier Profiling: Binary Features", fontsize=14, fontweight="bold", pad=30)
 plt.xlabel("Population Prevalence", fontsize=12)
 plt.ylabel("")
 plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter(1.0, decimals=0))
@@ -2303,7 +2318,10 @@ plt.legend(loc="upper center", ncol=2, bbox_to_anchor=(0.5, 1.04), frameon=False
 sns.despine(left=True)
 
 # Adjust layout 
-plt.tight_layout()
+plt.tight_layout(rect=[0, 0.02, 1, 0.99])
+
+# Add footnote
+plt.figtext(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
 
 plt.savefig("../figures/eda/outlier_binary_profile.png", bbox_inches="tight", dpi=200)
 plt.show()
@@ -2383,10 +2401,13 @@ for j in range(i + 1, len(axes_flat)):
 # Global Title and Legend
 handles, labels = axes_flat[0].get_legend_handles_labels()
 fig.legend(handles, labels, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 0.98), frameon=False)
-fig.suptitle("Population-Level Outlier Profiling: Categorical Features", fontsize=16, fontweight="bold", y=1.0)
+fig.suptitle("Outlier Profiling: Categorical Features", fontsize=16, fontweight="bold", y=1.0)
 
 # Adjust layout
-fig.tight_layout(h_pad=2.0, w_pad=3.0)
+fig.tight_layout(rect=[0, 0.02, 1, 1], h_pad=2.0, w_pad=3.0)
+
+# Add footnote
+fig.text(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
 
 plt.savefig("../figures/eda/outlier_categorical_profile.png", bbox_inches="tight", dpi=200)
 plt.show()
