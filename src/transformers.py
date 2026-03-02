@@ -309,3 +309,40 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
     def fit_transform(self, df, numerical_columns):
         # Perform both fit and transform
         return self.fit(df, numerical_columns).transform(df)
+
+
+# Custom scikit-learn transformer class to derive new features based on medical domain logic
+class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
+    """
+    Derives new clinical features (CHRONIC_COUNT, LIMITATION_COUNT) based 
+    on medical domain logic defined within this class.
+    
+    This transformer is placed AFTER imputation in the pipeline to ensure 
+    deterministic derivation from clean data.
+    """
+    
+    # Define input features used to derive new features
+    CHRONIC_CONDITION_FEATURES = [
+        "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
+    ]
+
+    FUNCTIONAL_LIMITATION_FEATURES = [
+        "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18"
+    ]
+
+    def fit(self, X, y=None):
+        # Store output feature names
+        self.feature_names_out_ = X.columns.tolist() + ["CHRONIC_COUNT", "LIMITATION_COUNT"]
+        return self
+
+    def transform(self, X):
+        X = X.copy()
+        
+        # Derive Chronic Conditions Count
+        X["CHRONIC_COUNT"] = X[self.CHRONIC_CONDITION_FEATURES].sum(axis=1)
+        
+        # Derive Functional Limitations Count
+        X["LIMITATION_COUNT"] = X[self.FUNCTIONAL_LIMITATION_FEATURES].sum(axis=1)
+            
+        return X
+
