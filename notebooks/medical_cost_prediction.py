@@ -585,6 +585,12 @@ plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))  # fo
 plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))  # format Y as percentages
 plt.legend()
 
+# Adjust layout to make room for the footnote
+plt.tight_layout(rect=[0, 0.02, 1, 1])
+
+# Add footnote
+plt.figtext(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
+
 plt.show()
 
 # %% [markdown]
@@ -639,6 +645,12 @@ sns.despine()  # removes top & right spines
 plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))  # format X as dollars with thousand separator
 plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1.0))  # format Y as percentages
 plt.legend()
+
+# Adjust layout to make room for the footnote
+plt.tight_layout(rect=[0, 0.02, 1, 1])
+
+# Add footnote
+plt.figtext(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
 
 plt.show()
 
@@ -764,7 +776,12 @@ plt.xticks(range(0, 101, 10))
 plt.yticks(range(0, 101, 10))
 plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())
 plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
-plt.tight_layout()
+
+# Adjust layout to make room for the footnote
+plt.tight_layout(rect=[0, 0.02, 1, 1])
+
+# Add footnote
+plt.figtext(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
 
 # Save to file
 # plt.savefig("../figures/eda/lorenz_curve.png", bbox_inches="tight", dpi=200)
@@ -1062,7 +1079,14 @@ def plot_numerical_distributions(df, numerical_features, display_labels=None, we
 
     # Customize histogram matrix
     fig.suptitle(f"{'Population' if weights else 'Sample'} Distributions of Numerical Features", fontsize=16, fontweight="bold", y=1)
-    fig.tight_layout(h_pad=2.0)
+    
+    # Adjust layout to make room for the footnote if weighted
+    if weights:
+        fig.tight_layout(rect=[0, 0.02, 1, 0.98], h_pad=2.0)
+        # Add footnote
+        fig.text(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
+    else:
+        fig.tight_layout(h_pad=2.0)
 
     # Save to file
     if save_to_file:
@@ -1178,7 +1202,14 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
     for j in range(i + 1, len(axes_flat)):
         axes_flat[j].axis("off")  # hides unused subplots
     fig.suptitle(f"{'Population' if weights else 'Sample'} Distributions of Categorical Features", fontsize=16, fontweight="bold", y=1)
-    fig.tight_layout(h_pad=2.0, w_pad=4.0)  # Adjusts layout to prevent overlapping subplots
+    
+    # Adjust layout to make room for the footnote if weighted
+    if weights:
+        fig.tight_layout(rect=[0, 0.02, 1, 0.98], h_pad=2.0, w_pad=4.0)
+        # Add footnote
+        fig.text(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
+    else:
+        fig.tight_layout(h_pad=2.0, w_pad=4.0)
     
     # Save to file
     if save_to_file:
@@ -1275,7 +1306,14 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
 
     # Customize bar plot matrix
     fig.suptitle(f"{'Population' if weights else 'Sample'} Distributions of Binary Features", fontsize=16, fontweight="bold", y=1)
-    fig.tight_layout(h_pad=3.0, w_pad=8.0)  # Adjusts layout to prevent overlapping subplots
+    
+    # Adjust layout to make room for the footnote if weighted
+    if weights:
+        fig.tight_layout(rect=[0, 0.02, 1, 0.98], h_pad=3.0, w_pad=8.0)
+        # Add footnote
+        fig.text(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
+    else:
+        fig.tight_layout(h_pad=3.0, w_pad=8.0)
     
     # Save to file
     if save_to_file:
@@ -2045,7 +2083,13 @@ for j in range(i + 1, len(axes_flat)):
 
 # Customize KDE plot matrix
 fig.suptitle("Outlier Profiling: Numerical Features and Target", fontsize=14, fontweight="bold", y=0.99)
-fig.tight_layout(h_pad=1.5, w_pad=2.0)
+
+# Adjust layout to make room for the footnote
+fig.tight_layout(rect=[0, 0.02, 1, 1], h_pad=1.5, w_pad=2.0)
+
+# Add footnote
+fig.text(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
+
 plt.show()
 
 # %%
@@ -2072,12 +2116,20 @@ grid = sns.pairplot(
 # Remove legend title and position it at the top center
 sns.move_legend(
     grid, "lower center",
-    bbox_to_anchor=(0.5, 0.99), 
+    bbox_to_anchor=(0.5, 0.97), 
     ncol=2, 
     title=None 
 )
 
-grid.fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold", y=1.05)
+# Add title
+grid.fig.suptitle("Outlier Profiling: Top Numerical Drivers", fontsize=14, fontweight="bold", y=1.03)
+
+# Adjust layout to make room for the footnote
+grid.fig.tight_layout(rect=[0, 0.03, 1, 1])
+
+# Add footnote
+grid.fig.text(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
+
 plt.show() 
 
 
@@ -2156,7 +2208,7 @@ for g in groups:
                  fontsize=9, fontweight="bold", color=g["color"])
 
 # Customize
-plt.title("Outlier Profiling: Out-of-Pocket Costs Lorenz Curves", fontsize=14, fontweight="bold", pad=20)
+plt.title("Outlier Profiling: Lorenz Curves for Out-of-Pocket Costs", fontsize=14, fontweight="bold", pad=15)
 plt.xlabel("Cumulative % of Population (Sorted from Lowest to Highest Cost)", fontsize=11)
 plt.ylabel("Cumulative % of Total Costs", fontsize=11)
 plt.legend(loc="upper left", fontsize=10)
@@ -2165,7 +2217,13 @@ plt.xticks(range(0, 101, 10))
 plt.yticks(range(0, 101, 10))
 plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())
 plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
-plt.tight_layout()
+
+# Adjust layout to make room for the footnote
+plt.tight_layout(rect=[0, 0.02, 1, 1])
+
+# Add footnote
+plt.figtext(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
+
 plt.show()
 
 # %%
@@ -2251,13 +2309,20 @@ for container in plt.gca().containers:
     plt.gca().bar_label(container, fmt="{:.0%}", padding=3, fontsize=9)
 
 # Customize
-plt.title("Outlier Profiling: Binary Features (Population)", fontsize=14, fontweight="bold", pad=30)
+plt.title("Outlier Profiling: Binary Features", fontsize=14, fontweight="bold", pad=30)
 plt.xlabel("Population Prevalence", fontsize=12)
 plt.ylabel("")
 plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter(1.0, decimals=0))
 plt.grid(True, axis="x", alpha=0.3)
 plt.legend(loc="upper center", ncol=2, bbox_to_anchor=(0.5, 1.04), frameon=False)
 sns.despine(left=True)
+
+# Adjust layout to make room for the footnote
+plt.tight_layout(rect=[0, 0.02, 1, 0.99])
+
+# Add footnote
+plt.figtext(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
+
 plt.savefig("../figures/eda/outlier_binary_profile.png", bbox_inches="tight", dpi=200)
 plt.show()
 
@@ -2336,9 +2401,14 @@ for j in range(i + 1, len(axes_flat)):
 # Global Title and Legend
 handles, labels = axes_flat[0].get_legend_handles_labels()
 fig.legend(handles, labels, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 0.98), frameon=False)
-fig.suptitle("Outlier Profiling: Categorical Distributions (Population)", fontsize=16, fontweight="bold", y=1.0)
+fig.suptitle("Outlier Profiling: Categorical Distributions", fontsize=16, fontweight="bold", y=1.0)
 
-plt.tight_layout(h_pad=2.0, w_pad=3.0)
+# Adjust layout
+fig.tight_layout(rect=[0, 0.02, 1, 1], h_pad=2.0, w_pad=3.0)
+
+# Add footnote
+fig.text(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
+
 plt.savefig("../figures/eda/outlier_categorical_profile.png", bbox_inches="tight", dpi=200)
 plt.show()
 
