@@ -2224,6 +2224,7 @@ plt.tight_layout(rect=[0, 0.02, 1, 1])
 # Add footnote
 plt.figtext(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
 
+plt.savefig("../figures/eda/outlier_lorenz_curve.png", bbox_inches="tight", dpi=200)
 plt.show()
 
 # %%
@@ -2401,7 +2402,7 @@ for j in range(i + 1, len(axes_flat)):
 # Global Title and Legend
 handles, labels = axes_flat[0].get_legend_handles_labels()
 fig.legend(handles, labels, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 0.98), frameon=False)
-fig.suptitle("Outlier Profiling: Categorical Distributions", fontsize=16, fontweight="bold", y=1.0)
+fig.suptitle("Outlier Profiling: Categorical Features", fontsize=16, fontweight="bold", y=1.0)
 
 # Adjust layout
 fig.tight_layout(rect=[0, 0.02, 1, 1], h_pad=2.0, w_pad=3.0)
