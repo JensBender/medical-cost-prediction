@@ -350,9 +350,13 @@ Table of population statistics for all numerical features:
 
 ### Outlier Analysis
 **1. Outlier Detection:** Utilized an Isolation Forest (5% contamination) to identify multivariate outliers in training data.  
-**2. Outlier Profiling:** Compared the numerical, binary, and categorical distributions of outliers with inliers.  
-**3. Outlier Treatment:** Decided to keep outliers as they are not data errors, but high-risk health profiles that are essential for robust out-of-pocket cost prediction.
+**2. Outlier Profiling:** Compared out-of-pocket costs and feature distributions between inliers and outliers.  
+**3. Outlier Treatment:** Retained all outliers as legitimate "High Comorbidity" health profiles essential for robust tail-risk prediction.
 
+**Cost Concentration**  
+While outliers are only 1.1x more likely to cross the median cost threshold, they are **3.4x more likely** to be in the Top 1% of spenders.
+
+![Outlier Lorenz Curves](figures/eda/outlier_lorenz_curve.png)
 ![Outlier Profile for Numerical Features and Target](figures/eda/outlier_numeric_profile.png)
 ![Outlier Profile for Binary Features](figures/eda/outlier_binary_profile.png)
 ![Outlier Profile for Categorical Features](figures/eda/outlier_categorical_profile.png)
