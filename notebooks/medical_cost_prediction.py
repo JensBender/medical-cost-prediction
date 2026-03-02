@@ -1408,6 +1408,26 @@ employment_map = {2: 0, 3: 0, 4: 0}
 df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
 
 # %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Chronic Condition Count</strong><br>
+#     📌 Sum up the number of chronic medical conditions (e.g., Diabetes, Hypertension, Heart Disease, Cancer) into a <code>CHRONIC_COUNT</code> feature.
+# </div>
+
+# %%
+# Create chronic condition count feature
+df["CHRONIC_COUNT"] = df[["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"]].sum(axis=1)
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     <strong>Limitations Count</strong><br>
+#     📌 Sum up the number of functional limitations and symptoms (ADL Help, IADL Help, Walking Limitations, Cognitive Limitations, Joint Pain) into a <code>LIMITATION_COUNT</code> feature.
+# </div>
+
+# %%
+# Create functional limitations and symptoms count feature
+df["LIMITATION_COUNT"] = df[["ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18"]].sum(axis=1)
+
+# %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h2 style="margin:0px">Feature Validation</h2>
 # </div> 
@@ -1417,7 +1437,7 @@ df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
 # </div>
 
 # %%
-input_numerical_features = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
+input_numerical_features = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31", "CHRONIC_COUNT", "LIMITATION_COUNT"]
 input_binary_features = [
     "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31", 
     "WLKLIM31", "COGLIM31", "JTPAIN31_M18", "HIBPDX", "CHOLDX", 
