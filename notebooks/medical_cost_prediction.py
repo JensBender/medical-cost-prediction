@@ -1963,8 +1963,14 @@ for i, numeric_column in enumerate(outlier_num_cols_viz):
         ax.get_legend().set_title(None)  # Removes legend title
 
 # Customize histogram matrix
-fig.suptitle("Outlier Profiling: Numerical Features and Target", fontsize=14, fontweight="bold", y=0.99)
-fig.tight_layout(h_pad=1.5, w_pad=2.0)
+fig.suptitle("Outlier Profiling: Numerical Features and Target", fontsize=14, fontweight="bold", y=0.98)
+
+# Adjust layout 
+fig.tight_layout(rect=[0, 0.02, 1, 0.99], h_pad=1.5, w_pad=2.0)
+
+# Add footnote
+fig.text(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
+
 plt.savefig("../figures/eda/outlier_numeric_profile.png", bbox_inches="tight", dpi=200)
 plt.show()
 
