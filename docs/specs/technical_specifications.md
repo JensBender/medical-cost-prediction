@@ -169,7 +169,14 @@ The following MEPS variables have been identified as candidate features for the 
 | **Arthritis** | `ARTHDX` | Binary (Int) | Diagnosed with arthritis. | ⚠️ Drives Rx/therapy costs. |
 | **Asthma** | `ASTHDX` | Binary (Int) | Diagnosed with asthma. | ⚠️ Chronic condition with ongoing costs. |
 
-**Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). Chronic conditions and limitations/symptoms should be grouped into multi-select checklists to minimize cognitive load (~12–14 total UI interactions).
+**Engineered Features**
+| Feature | Variable Name | Data Type | Description | Rationale |
+| :--- | :--- | :--- | :--- | :--- |
+| **Chronic Conditions Count** | `CHRONIC_COUNT` | Numerical (Int) | Sum of the 8 diagnosed chronic conditions. | ✅ Captures cumulative comorbidity burden; highly predictive of recurring cost intensity. |
+| **Limitations Count** | `LIMITATION_COUNT` | Numerical (Int) | Sum of 4 functional limitations + Joint Pain. | ✅ Proxies for "functional severity"; critical predictor of high-intensity care and tail-risk costs. |
+| **Recent Life Transition** | `RECENT_LIFE_TRANSITION` | Binary (Int) | Indicator for recent change in marital or employment status. | ⚠️ Preserves signal of major "life shocks" while ensuring model robustness by collapsing sparse categories. |
+
+**Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). The count features allow the model to capture complex health profiles efficiently. In the UI, individual chronic conditions and limitations/symptoms are presented as multi-select checklists to minimize cognitive load (~12–14 total UI interactions).
 
 #### Income Mapping Table (POVCAT23)
 To ensure stigma-free and accurate income reporting, the UI displays dynamic income ranges based on the user's reported family size. These ranges map directly to the `POVCAT23` categories used in training, based on 2023 Federal Poverty Level (FPL) thresholds.
