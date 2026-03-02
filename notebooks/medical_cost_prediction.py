@@ -1879,17 +1879,151 @@ outlier_df = X_train_preprocessed.assign(
     PERWT23F=X_train.loc[X_train_preprocessed.index, "PERWT23F"] # Pass sample weights for population-level stats
 )
 
+# Create outliers and inliers DataFrames 
+outlier_in_df = outlier_df[outlier_df["outlier"] == 0]
+outlier_out_df = outlier_df[outlier_df["outlier"] == 1]
+
+
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 <strong>Outlier Profile for Numerical Features and Target</strong>
+#     📌 <strong>Outlier Profile for Target Variable</strong>
+# </div> 
+
+# %%
+# Outlier Profiling: Overlapping Lorenz Curves 
+def get_lorenz_metrics(subset_df):
+    """Calculates Lorenz curve coordinates and Gini coefficient."""
+    # Create local copy and calculate population costs
+    l_df = subset_df[["TOTSLF23", "PERWT23F"]].sort_values("TOTSLF23").copy()
+    l_df["pop_costs"] = l_df["TOTSLF23"] * l_df["PERWT23F"]
+    
+    # Cumulative percentages (weighted)
+    cum_pop_pct = l_df["PERWT23F"].cumsum() / l_df["PERWT23F"].sum() * 100
+    cum_pop_costs = l_df["pop_costs"].cumsum() / l_df["pop_costs"].sum() * 100
+    
+    # Prepend origin
+    pct = np.insert(cum_pop_pct.values, 0, 0)
+    costs = np.insert(cum_pop_costs.values, 0, 0)
+    
+    # Gini Coefficient
+    gini = 1 - 2 * np.trapezoid(costs / 100, pct / 100)
+    
+    # Identify 80/20 point (Pareto)
+    idx_80 = (cum_pop_pct - 80).abs().idxmin()
+    x_80 = cum_pop_pct.loc[idx_80]
+    y_80 = cum_pop_costs.loc[idx_80]
+    
+    return pct, costs, gini, (x_80, y_80)
+
+# Calculate metrics for each group
+outlier_in_lorenz = get_lorenz_metrics(outlier_in_df)
+outlier_out_lorenz = get_lorenz_metrics(outlier_out_df)
+
+# Plotting
+plt.figure(figsize=(10, 8))
+
+# Line of Equality
+plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality", alpha=0.6)
+
+# Colors and Groups
+# Inliers: #4F81BD (blue), Outliers: #D32F2F (red)
+groups = [
+    {"data": outlier_in_lorenz, "name": "Inliers", "color": "#4F81BD", "alpha_fill": 0.08},
+    {"data": outlier_out_lorenz, "name": "Outliers", "color": "#D32F2F", "alpha_fill": 0.05}
+]
+
+for g in groups:
+    pct, costs, gini, pareto = g["data"]
+    
+    # Lorenz Curve
+    plt.plot(pct, costs, label=f"{g['name']} (Gini: {gini:.2f})", color=g["color"], lw=3)
+    plt.fill_between(pct, costs, pct, color=g["color"], alpha=g["alpha_fill"])
+    
+    # Pareto Point
+    plt.plot(pareto[0], pareto[1], 'o', color=g["color"], markersize=8)
+    
+    # Annotation for Pareto
+    top_20_share = 100 - pareto[1]
+    offset = 12 if g["name"] == "Inliers" else 0
+    plt.annotate(f"Top 20% of {g['name']} account\n for {top_20_share:.1f}% of costs", 
+                 xy=pareto, xytext=(pareto[0] - 35, pareto[1] + offset),
+                 arrowprops=dict(arrowstyle="->", color="black", alpha=0.5),
+                 fontsize=9, fontweight="bold", color=g["color"])
+
+    # Highlight Zero-Cost Threshold for this group
+    group_df = outlier_out_df if g["name"] == "Outliers" else outlier_in_df
+    group_zero_pct = (group_df.loc[group_df["TOTSLF23"] == 0, "PERWT23F"].sum() / group_df["PERWT23F"].sum()) * 100
+    
+    plt.plot(group_zero_pct, 0, 'o', color=g["color"], markersize=8)
+    
+    # Annotation for Zero Costs
+    y_offset = 13 if g["name"] == "Outliers" else 26
+    plt.annotate(f"{group_zero_pct:.1f}% of {g['name']}\nhave $0 costs", 
+                 xy=(group_zero_pct, 0), xytext=(group_zero_pct - 10, y_offset),
+                 arrowprops=dict(arrowstyle="->", color="black", alpha=0.5),
+                 fontsize=9, fontweight="bold", color=g["color"])
+
+# Customize
+plt.title("Outlier Profiling: Lorenz Curves for Out-of-Pocket Costs", fontsize=14, fontweight="bold", pad=15)
+plt.xlabel("Cumulative % of Population (Sorted from Lowest to Highest Cost)", fontsize=11)
+plt.ylabel("Cumulative % of Total Costs", fontsize=11)
+plt.legend(loc="upper left", fontsize=10)
+plt.grid(True, alpha=0.2)
+plt.xticks(range(0, 101, 10))
+plt.yticks(range(0, 101, 10))
+plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())
+plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
+
+# Adjust layout
+plt.tight_layout(rect=[0, 0.02, 1, 1])
+
+# Add footnote
+plt.figtext(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
+
+plt.savefig("../figures/eda/outlier_lorenz_curve.png", bbox_inches="tight", dpi=200)
+plt.show()
+
+# %%
+# Outlier Profiling: Cost Concentration
+# This analysis shows what percentage of each group (Inliers vs. Outliers) falls into the top population-wide spending brackets.
+percentiles = [0.999, 0.99, 0.95, 0.9, 0.8, 0.5]
+benchmarks = []
+
+# Pre-calculate group populations (weighted) for efficiency
+outlier_in_pop = outlier_in_df["PERWT23F"].sum()
+outlier_out_pop = outlier_out_df["PERWT23F"].sum()
+
+for p in percentiles:
+    # Calculate global (population-wide) threshold
+    threshold = weighted_quantile(outlier_df["TOTSLF23"], outlier_df["PERWT23F"], p)
+    
+    # Calculate representation within each subgroup
+    outlier_in_rep = (outlier_in_df.loc[outlier_in_df["TOTSLF23"] >= threshold, "PERWT23F"].sum() / outlier_in_pop) * 100
+    outlier_out_rep = (outlier_out_df.loc[outlier_out_df["TOTSLF23"] >= threshold, "PERWT23F"].sum() / outlier_out_pop) * 100
+    
+    benchmarks.append({
+        "Benchmark": f"Top {(1-p)*100:.0f}% (>= ${threshold:,.0f})" if p != 0.999 else f"Top 0.1% (>= ${threshold:,.0f})",
+        "Inliers": outlier_in_rep,
+        "Outliers": outlier_out_rep,
+        "Outlier/Inlier Ratio": outlier_out_rep / outlier_in_rep
+    })
+
+# Create comparison table directly
+benchmark_df = pd.DataFrame(benchmarks).set_index("Benchmark")
+
+# Display table
+benchmark_df.style \
+    .pipe(add_caption, "Outlier Profiling: Cost Concentration") \
+    .format("{:.1f}%", subset=["Inliers", "Outliers"]) \
+    .format("{:.1f}x", subset="Outlier/Inlier Ratio")
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 <strong>Outlier Profile for Numerical Features</strong>
 # </div> 
 
 # %%
 # Outlier Numeric Profile: Median Differences (Population)
-# Include condition_count as a numerical metric for profiling
 outlier_num_cols = input_numerical_features + ["TOTSLF23"]
-outlier_in_df = outlier_df[outlier_df["outlier"] == 0]
-outlier_out_df = outlier_df[outlier_df["outlier"] == 1]
 
 # Calculate population medians (weighted) for each feature/target
 outlier_stats_num = pd.DataFrame(index=outlier_num_cols, columns=["Inliers", "Outliers"])
@@ -2131,134 +2265,6 @@ grid.fig.text(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fon
 
 plt.show() 
 
-
-# %%
-# Outlier Profiling: Overlapping Lorenz Curves 
-def get_lorenz_metrics(subset_df):
-    """Calculates Lorenz curve coordinates and Gini coefficient."""
-    # Create local copy and calculate population costs
-    l_df = subset_df[["TOTSLF23", "PERWT23F"]].sort_values("TOTSLF23").copy()
-    l_df["pop_costs"] = l_df["TOTSLF23"] * l_df["PERWT23F"]
-    
-    # Cumulative percentages (weighted)
-    cum_pop_pct = l_df["PERWT23F"].cumsum() / l_df["PERWT23F"].sum() * 100
-    cum_pop_costs = l_df["pop_costs"].cumsum() / l_df["pop_costs"].sum() * 100
-    
-    # Prepend origin
-    pct = np.insert(cum_pop_pct.values, 0, 0)
-    costs = np.insert(cum_pop_costs.values, 0, 0)
-    
-    # Gini Coefficient
-    gini = 1 - 2 * np.trapezoid(costs / 100, pct / 100)
-    
-    # Identify 80/20 point (Pareto)
-    idx_80 = (cum_pop_pct - 80).abs().idxmin()
-    x_80 = cum_pop_pct.loc[idx_80]
-    y_80 = cum_pop_costs.loc[idx_80]
-    
-    return pct, costs, gini, (x_80, y_80)
-
-# Calculate metrics for each group
-outlier_in_lorenz = get_lorenz_metrics(outlier_in_df)
-outlier_out_lorenz = get_lorenz_metrics(outlier_out_df)
-
-# Plotting
-plt.figure(figsize=(10, 8))
-
-# Line of Equality
-plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality", alpha=0.6)
-
-# Colors and Groups
-# Inliers: #4F81BD (blue), Outliers: #D32F2F (red)
-groups = [
-    {"data": outlier_in_lorenz, "name": "Inliers", "color": "#4F81BD", "alpha_fill": 0.08},
-    {"data": outlier_out_lorenz, "name": "Outliers", "color": "#D32F2F", "alpha_fill": 0.05}
-]
-
-for g in groups:
-    pct, costs, gini, pareto = g["data"]
-    
-    # Lorenz Curve
-    plt.plot(pct, costs, label=f"{g['name']} (Gini: {gini:.2f})", color=g["color"], lw=3)
-    plt.fill_between(pct, costs, pct, color=g["color"], alpha=g["alpha_fill"])
-    
-    # Pareto Point
-    plt.plot(pareto[0], pareto[1], 'o', color=g["color"], markersize=8)
-    
-    # Annotation for Pareto
-    top_20_share = 100 - pareto[1]
-    offset = 12 if g["name"] == "Inliers" else 0
-    plt.annotate(f"Top 20% of {g['name']} account\n for {top_20_share:.1f}% of costs", 
-                 xy=pareto, xytext=(pareto[0] - 35, pareto[1] + offset),
-                 arrowprops=dict(arrowstyle="->", color="black", alpha=0.5),
-                 fontsize=9, fontweight="bold", color=g["color"])
-
-    # Highlight Zero-Cost Threshold for this group
-    group_df = outlier_out_df if g["name"] == "Outliers" else outlier_in_df
-    group_zero_pct = (group_df.loc[group_df["TOTSLF23"] == 0, "PERWT23F"].sum() / group_df["PERWT23F"].sum()) * 100
-    
-    plt.plot(group_zero_pct, 0, 'o', color=g["color"], markersize=8)
-    
-    # Annotation for Zero Costs
-    y_offset = 13 if g["name"] == "Outliers" else 26
-    plt.annotate(f"{group_zero_pct:.1f}% of {g['name']}\nhave $0 costs", 
-                 xy=(group_zero_pct, 0), xytext=(group_zero_pct - 10, y_offset),
-                 arrowprops=dict(arrowstyle="->", color="black", alpha=0.5),
-                 fontsize=9, fontweight="bold", color=g["color"])
-
-# Customize
-plt.title("Outlier Profiling: Lorenz Curves for Out-of-Pocket Costs", fontsize=14, fontweight="bold", pad=15)
-plt.xlabel("Cumulative % of Population (Sorted from Lowest to Highest Cost)", fontsize=11)
-plt.ylabel("Cumulative % of Total Costs", fontsize=11)
-plt.legend(loc="upper left", fontsize=10)
-plt.grid(True, alpha=0.2)
-plt.xticks(range(0, 101, 10))
-plt.yticks(range(0, 101, 10))
-plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())
-plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
-
-# Adjust layout
-plt.tight_layout(rect=[0, 0.02, 1, 1])
-
-# Add footnote
-plt.figtext(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
-
-plt.savefig("../figures/eda/outlier_lorenz_curve.png", bbox_inches="tight", dpi=200)
-plt.show()
-
-# %%
-# Outlier Profiling: Cost Concentration
-# This analysis shows what percentage of each group (Inliers vs. Outliers) falls into the top population-wide spending brackets.
-percentiles = [0.999, 0.99, 0.95, 0.9, 0.8, 0.5]
-benchmarks = []
-
-# Pre-calculate group populations (weighted) for efficiency
-outlier_in_pop = outlier_in_df["PERWT23F"].sum()
-outlier_out_pop = outlier_out_df["PERWT23F"].sum()
-
-for p in percentiles:
-    # Calculate global (population-wide) threshold
-    threshold = weighted_quantile(outlier_df["TOTSLF23"], outlier_df["PERWT23F"], p)
-    
-    # Calculate representation within each subgroup
-    outlier_in_rep = (outlier_in_df.loc[outlier_in_df["TOTSLF23"] >= threshold, "PERWT23F"].sum() / outlier_in_pop) * 100
-    outlier_out_rep = (outlier_out_df.loc[outlier_out_df["TOTSLF23"] >= threshold, "PERWT23F"].sum() / outlier_out_pop) * 100
-    
-    benchmarks.append({
-        "Benchmark": f"Top {(1-p)*100:.0f}% (>= ${threshold:,.0f})" if p != 0.999 else f"Top 0.1% (>= ${threshold:,.0f})",
-        "Inliers": outlier_in_rep,
-        "Outliers": outlier_out_rep,
-        "Outlier/Inlier Ratio": outlier_out_rep / outlier_in_rep
-    })
-
-# Create comparison table directly
-benchmark_df = pd.DataFrame(benchmarks).set_index("Benchmark")
-
-# Display table
-benchmark_df.style \
-    .pipe(add_caption, "Outlier Profiling: Cost Concentration") \
-    .format("{:.1f}%", subset=["Inliers", "Outliers"]) \
-    .format("{:.1f}x", subset="Outlier/Inlier Ratio")
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 <strong>Outlier Profile for Binary Features</strong>
