@@ -247,6 +247,9 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, df):
+        # Ensure .fit() happened before
+        check_is_fitted(self)
+        
         # Create masks for df (can be a different df than during fit; e.g. X_train, X_test)
         self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
         self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
@@ -299,6 +302,9 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, df):
+        # Ensure .fit() happened before
+        check_is_fitted(self)
+
         # Create masks for df (can be a different df than during fit; e.g. X_train, X_test)
         self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
         self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
