@@ -311,14 +311,22 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         return self.fit(df, numerical_columns).transform(df)
 
 
-# Custom scikit-learn transformer class to derive new features based on medical domain logic
 class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
     """
-    Derives new clinical features (CHRONIC_COUNT, LIMITATION_COUNT) based 
-    on medical domain logic defined within this class.
-    
-    This transformer is placed AFTER imputation in the pipeline to ensure 
-    deterministic derivation from clean data.
+    Derives clinical features based on medical domain logic.
+
+    This transformer calculates aggregate counts of chronic conditions and 
+    functional limitations. It is designed to be placed AFTER imputation in 
+    the pipeline to ensure a deterministic derivation from complete data.
+
+    Generated Features:
+    - `CHRONIC_COUNT`: Sum of binary flags for conditions like high blood pressure, 
+      cholesterol, diabetes, etc.
+    - `LIMITATION_COUNT`: Sum of binary flags for functional limitations (ADL, IADL, etc.).
+
+    Input Requirements:
+    All source features used for derivation must be present and contain no missing 
+    values at transformation time.
     """
     
     # Define input features used to derive new features
@@ -330,14 +338,37 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
         "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18"
     ]
 
+    def _validate_input(self, X):
+        # Ensure X input is DataFrame
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("The provided input X must be a pandas DataFrame.")          
+        
+        # Ensure DataFrame has no missing columns
+        input_columns = set(X.columns)
+        expected_columns = set(self.CHRONIC_CONDITION_FEATURES + self.FUNCTIONAL_LIMITATION_FEATURES)
+        missing_columns = expected_columns - input_columns 
+        if missing_columns:
+            details = {
+                "missing_columns": list(missing_columns),
+                "expected_columns": list(expected_columns),
+                "actual_columns": list(input_columns)
+            }
+            raise MissingColumnError(f"The provided DataFrame is missing the following columns: {', '.join(missing_columns)}.", details=details)
+
     def fit(self, X, y=None):
+        # Validate input 
+        self._validate_input(X)
+        
         # Store output feature names
         self.feature_names_out_ = X.columns.tolist() + ["CHRONIC_COUNT", "LIMITATION_COUNT"]
         return self
 
     def transform(self, X):
         X = X.copy()
-        
+
+        # Validate input 
+        self._validate_input(X)
+
         # Derive Chronic Conditions Count
         X["CHRONIC_COUNT"] = X[self.CHRONIC_CONDITION_FEATURES].sum(axis=1)
         
