@@ -228,6 +228,11 @@ The distribution of annual out-of-pocket health care costs (`TOTSLF23`) exhibits
 │   │   ├── categorical_distributions_population.png
 │   │   ├── binary_distributions_population.png
 │   │   └── lorenz_curve.png
+│   ├── outliers/            # Outlier analysis and profiling 
+│   │   ├── outlier_lorenz_curve.png
+│   │   ├── outlier_numeric_profile.png
+│   │   ├── outlier_binary_profile.png
+│   │   └── outlier_categorical_profile.png
 │   ├── training/            # Training curves and learning rates (ignored by Git)
 │   ├── evaluation/          # Model performance plots (ignored by Git)
 │   └── tuning/              # Hyperparameter tuning results (ignored by Git)
@@ -356,10 +361,10 @@ Table of population statistics for all numerical features:
 **Cost Concentration**  
 While outliers are only 1.1x more likely to cross the median cost threshold, they are **3.4x more likely** to be in the Top 1% of spenders.
 
-![Outlier Lorenz Curves](figures/eda/outlier_lorenz_curve.png)
-![Outlier Profile for Numerical Features and Target](figures/eda/outlier_numeric_profile.png)
-![Outlier Profile for Binary Features](figures/eda/outlier_binary_profile.png)
-![Outlier Profile for Categorical Features](figures/eda/outlier_categorical_profile.png)
+![Outlier Lorenz Curves](figures/outliers/outlier_lorenz_curve.png)
+![Outlier Profile for Numerical Features and Target](figures/outliers/outlier_numeric_profile.png)
+![Outlier Profile for Binary Features](figures/outliers/outlier_binary_profile.png)
+![Outlier Profile for Categorical Features](figures/outliers/outlier_categorical_profile.png)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

@@ -1963,7 +1963,7 @@ plt.tight_layout(rect=[0, 0.02, 1, 1])
 # Add footnote
 plt.figtext(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
 
-plt.savefig("../figures/eda/outlier_lorenz_curve.png", bbox_inches="tight", dpi=200)
+plt.savefig("../figures/outliers/outlier_lorenz_curve.png", bbox_inches="tight", dpi=200)
 plt.show()
 
 # %%
@@ -2125,7 +2125,7 @@ fig.tight_layout(rect=[0, 0.02, 1, 0.99], h_pad=1.5, w_pad=2.0)
 # Add footnote
 fig.text(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
 
-plt.savefig("../figures/eda/outlier_numeric_profile.png", bbox_inches="tight", dpi=200)
+plt.savefig("../figures/outliers/outlier_numeric_profile.png", bbox_inches="tight", dpi=200)
 plt.show()
 
 # %%
@@ -2312,7 +2312,7 @@ plt.tight_layout(rect=[0, 0.02, 1, 0.99])
 # Add footnote
 plt.figtext(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
 
-plt.savefig("../figures/eda/outlier_binary_profile.png", bbox_inches="tight", dpi=200)
+plt.savefig("../figures/outliers/outlier_binary_profile.png", bbox_inches="tight", dpi=200)
 plt.show()
 
 # %% [markdown]
@@ -2398,7 +2398,7 @@ fig.tight_layout(rect=[0, 0.02, 1, 1], h_pad=2.0, w_pad=3.0)
 # Add footnote
 fig.text(0.01, 0.01, "Note: Population-weighted estimates.", ha="left", fontsize=9, style="italic", color="#555555")
 
-plt.savefig("../figures/eda/outlier_categorical_profile.png", bbox_inches="tight", dpi=200)
+plt.savefig("../figures/outliers/outlier_categorical_profile.png", bbox_inches="tight", dpi=200)
 plt.show()
 
 # %% [markdown]
