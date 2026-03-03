@@ -392,16 +392,16 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        X = X.copy()
-
+        # Ensure .fit() happened before
+        check_is_fitted(self)
+        
         # Validate input 
         self._validate_input(X)
-
-        # Derive Chronic Conditions Count
-        X["CHRONIC_COUNT"] = X[self.CHRONIC_CONDITION_FEATURES].sum(axis=1)
-        
-        # Derive Functional Limitations Count
-        X["LIMITATION_COUNT"] = X[self.FUNCTIONAL_LIMITATION_FEATURES].sum(axis=1)
             
-        return X
+        return X.assign(
+            # Derive Chronic Conditions Count
+            CHRONIC_COUNT=X[self.CHRONIC_CONDITION_FEATURES].sum(axis=1),
+            # Derive Functional Limitations Count
+            LIMITATION_COUNT=X[self.FUNCTIONAL_LIMITATION_FEATURES].sum(axis=1)
+        )
 
