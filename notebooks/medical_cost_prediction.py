@@ -82,7 +82,10 @@ from sklearn.metrics import (
 )
 
 # Local imports
-from src.constants import DISPLAY_LABELS, CATEGORICAL_LABELS
+from src.constants import (
+    DISPLAY_LABELS, 
+    CATEGORICAL_LABELS
+)
 from src.transformers import (
     MissingValueChecker, 
     MissingValueError,
@@ -90,7 +93,10 @@ from src.transformers import (
     OutlierRemoverIQR,
     MedicalFeatureDeriver
 )
-from src.pipeline import create_preprocessing_pipeline, create_missing_value_handling_pipeline
+from src.pipeline import (
+    create_preprocessing_pipeline, 
+    create_missing_value_handling_pipeline
+)
 
 # %% [markdown]
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
@@ -1702,6 +1708,27 @@ pd.DataFrame({
     "Test": X_test[input_all_features].isnull().sum(),
     "Test (Preprocessed)": X_test_preprocessed[input_all_features].isnull().sum(),
 }).style.pipe(add_caption, "Verification of Missing Value Imputation")
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Derive Medical Features</h2>
+# </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Derive medical features from raw indicators based on medical domain knowledge. Calculate aggregate counts of chronic conditions (<code>CHRONIC_COUNT</code>) and functional limitations (<code>LIMITATION_COUNT</code>). Designed to be placed AFTER imputation to ensure a deterministic derivation from complete data.
+# </div>
+
+# %%
+# Initialize  
+medical_feature_deriver = MedicalFeatureDeriver()
+
+# Fit on training data
+medical_feature_deriver.fit(X_train_preprocessed)
+
+# Transform on training, validation, and test data
+X_train_preprocessed = medical_feature_deriver.transform(X_train_preprocessed)
+X_val_preprocessed = medical_feature_deriver.transform(X_val)
+X_test_preprocessed = medical_feature_deriver.transform(X_test)
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
