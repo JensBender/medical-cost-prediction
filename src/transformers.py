@@ -208,8 +208,30 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         return X
 
 
-# Custom scikit-learn transformer class to identify and remove outliers using the 3SD method
 class OutlierRemover3SD(BaseEstimator, TransformerMixin):
+    """
+    Identifies and removes outliers based on the 3 Standard Deviations (3SD) rule.
+
+    This transformer calculates the mean and standard deviation for specified 
+    numerical columns during `fit`. In `transform`, it filters out rows where 
+    any of the specified columns contain a value more than 3 standard 
+    deviations away from the mean.
+
+    Detection Logic:
+    A value is considered an outlier if:
+    abs(value - mean) > 3 * std
+
+    Attributes:
+        stats_ (pd.DataFrame): Statistics (mean, std, cutoffs, and outlier counts) 
+          calculated for each column during `fit`.
+        outliers_ (int): Total number of rows identified as outliers across all 
+          specified columns during the last operation.
+
+    Note:
+        This transformer removes entire rows from the DataFrame. Missing values 
+        (NaNs) are treated as outliers and will be removed. It is recommended 
+        to handle missing values before applying this transformer.
+    """
     def fit(self, df, numerical_columns):
         # Convert single column string to list
         if isinstance(numerical_columns, str):
@@ -262,8 +284,31 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         return self.fit(df, numerical_columns).transform(df)
 
 
-# Custom scikit-learn transformer class to identify and remove outliers using the 1.5 IQR method
 class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
+    """
+    Identifies and removes outliers based on the Interquartile Range (IQR) method.
+
+    This transformer calculates the lower and upper bounds for specified numerical 
+    columns during `fit` using the formula: Q1 - 1.5*IQR and Q3 + 1.5*IQR. In 
+    `transform`, it filters out rows where any of the specified columns contain 
+    a value outside these bounds.
+
+    Detection Logic:
+    1. Calculate Q1 (25th percentile) and Q3 (75th percentile).
+    2. Calculate IQR = Q3 - Q1.
+    3. Bounds: [Q1 - 1.5 * IQR, Q3 + 1.5 * IQR].
+    
+    Attributes:
+        stats_ (pd.DataFrame): Statistics (quartiles, IQR, cutoffs, and outlier counts) 
+          calculated for each column during `fit`.
+        outliers_ (int): Total number of rows identified as outliers across all 
+          specified columns during the last operation.
+
+    Note:
+        This transformer removes entire rows from the DataFrame. Missing values 
+        (NaNs) are treated as outliers and will be removed. It is recommended 
+        to handle missing values before applying this transformer.
+    """
     def fit(self, df, numerical_columns):
         # Convert single column string to list
         if isinstance(numerical_columns, str):
