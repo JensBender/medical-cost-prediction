@@ -1727,8 +1727,11 @@ medical_feature_deriver.fit(X_train_preprocessed)
 
 # Transform on training, validation, and test data
 X_train_preprocessed = medical_feature_deriver.transform(X_train_preprocessed)
-X_val_preprocessed = medical_feature_deriver.transform(X_val)
-X_test_preprocessed = medical_feature_deriver.transform(X_test)
+X_val_preprocessed = medical_feature_deriver.transform(X_val_preprocessed)
+X_test_preprocessed = medical_feature_deriver.transform(X_test_preprocessed)
+
+# Inspect distributions of new derived features
+plot_numerical_distributions(X_train_preprocessed, ["CHRONIC_COUNT", "LIMITATION_COUNT"], DISPLAY_LABELS)
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
