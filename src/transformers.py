@@ -1,5 +1,5 @@
 from sklearn.base import BaseEstimator, TransformerMixin 
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils import validation as sklearn_validation
 import pandas as pd
 import logging
 
@@ -192,7 +192,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         # Ensure .fit() happened before
-        check_is_fitted(self)
+        sklearn_validation.check_is_fitted(self)
         
         # Validate input 
         self._validate_input(X)    
@@ -270,7 +270,7 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
 
     def transform(self, df):
         # Ensure .fit() happened before
-        check_is_fitted(self)
+        sklearn_validation.check_is_fitted(self)
         
         # Create masks for df (can be a different df than during fit; e.g. X_train, X_test)
         self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
@@ -348,7 +348,7 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
 
     def transform(self, df):
         # Ensure .fit() happened before
-        check_is_fitted(self)
+        sklearn_validation.check_is_fitted(self)
 
         # Create masks for df (can be a different df than during fit; e.g. X_train, X_test)
         self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
@@ -448,7 +448,7 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         # Ensure .fit() happened before
-        check_is_fitted(self)
+        sklearn_validation.check_is_fitted(self)
         
         # Validate input 
         self._validate_input(X)
