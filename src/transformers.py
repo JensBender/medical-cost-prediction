@@ -138,7 +138,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                     "affected_features": failed_columns,
                     "affected_row_indices": [str(idx) for idx in failed_indices]
                 }
-                raise MissingValueError(f"Missing Value Error: {msg}", details=details)
+                raise MissingValueError(msg, details=details)
             else:
                 logger.warning(f"Missing Value Warning: {msg}")
 
@@ -424,7 +424,7 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
             missing_rows_msg = str(missing_rows[:5]) + ("..." if n_missing_rows > 5 else "")
             values_word = "value" if n_missing == 1 else "values"
             msg = (
-                f"MedicalFeatureDeriver found {n_missing} missing {values_word}. This transformer requires complete data for the input features used to derive medical features. Ensure it is placed AFTER an imputation step.\n"
+                f"MedicalFeatureDeriver found {n_missing} missing {values_word}, but requires complete data for all source features used to derive new features. Make sure to handle missing values first.\n"
                 f"- Affected Features: {missing_features_msg}\n"
                 f"- Affected Row Indices: {missing_rows_msg}"
             )    
@@ -436,7 +436,7 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
                 "affected_row_indices": [str(idx) for idx in missing_rows]
             }
 
-            raise MissingValueError(f"Missing Value Error: {msg}", details=details)
+            raise MissingValueError(msg, details=details)
 
     def fit(self, X, y=None):
         # Validate input 
