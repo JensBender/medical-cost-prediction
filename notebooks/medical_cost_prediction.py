@@ -1731,7 +1731,10 @@ X_val_preprocessed = medical_feature_deriver.transform(X_val_preprocessed)
 X_test_preprocessed = medical_feature_deriver.transform(X_test_preprocessed)
 
 # Inspect distributions of new derived features
-plot_numerical_distributions(X_train_preprocessed, ["CHRONIC_COUNT", "LIMITATION_COUNT"], DISPLAY_LABELS)
+X_train_inspect  = X_train_preprocessed.assign(
+    PERWT23F=X_train.loc[X_train_preprocessed.index, "PERWT23F"]  # Temporarily attach weights for population analysis
+) 
+plot_numerical_distributions(X_train_inspect, ["CHRONIC_COUNT", "LIMITATION_COUNT"], DISPLAY_LABELS, weights="PERWT23F")
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
