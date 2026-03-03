@@ -355,6 +355,34 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
             }
             raise MissingColumnError(f"The provided DataFrame is missing the following columns: {', '.join(missing_columns)}.", details=details)
 
+        # Ensure input features have no missing values
+        missing_mask = X[list(expected_columns)].isnull()
+        n_missing = missing_mask.sum().sum()
+        if n_missing > 0:
+            # Identify input features and row indices with missing values
+            missing_features = missing_mask.columns[missing_mask.any()].tolist()
+            missing_rows = X.index[missing_mask.any(axis=1)].tolist()
+            n_missing_rows = len(missing_rows)
+            
+            # Create error message (truncate to top 5 features and rows for the message string)
+            missing_features_msg = str(missing_features[:5]) + ("..." if len(missing_features) > 5 else "")
+            missing_rows_msg = str(missing_rows[:5]) + ("..." if n_missing_rows > 5 else "")
+            values_word = "value" if n_missing == 1 else "values"
+            msg = (
+                f"MedicalFeatureDeriver found {n_missing} missing {values_word}. This transformer requires complete data for the input features used to derive medical features. Ensure it is placed AFTER an imputation step.\n"
+                f"- Affected Features: {missing_features_msg}\n"
+                f"- Affected Row Indices: {missing_rows_msg}"
+            )    
+
+            # Create error detail        
+            details = {
+                "n_missing": int(n_missing),
+                "affected_features": missing_features,
+                "affected_row_indices": [str(idx) for idx in missing_rows]
+            }
+
+            raise MissingValueError(f"Missing Value Error: {msg}", details=details)
+
     def fit(self, X, y=None):
         # Validate input 
         self._validate_input(X)
