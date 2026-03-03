@@ -2042,7 +2042,7 @@ benchmark_df.style \
 
 # %%
 # Outlier Numeric Profile: Median Differences (Population)
-outlier_num_cols = input_numerical_features + ["TOTSLF23"]
+outlier_num_cols = input_numerical_features + ["CHRONIC_COUNT", "LIMITATION_COUNT"] + ["TOTSLF23"]
 
 # Calculate population medians (weighted) for each feature/target
 outlier_stats_num = pd.DataFrame(index=outlier_num_cols, columns=["Inliers", "Outliers"])
