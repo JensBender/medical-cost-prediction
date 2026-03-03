@@ -319,20 +319,24 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
 
 class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
     """
-    Derives clinical features based on medical domain logic.
+    Derives medical features from raw indicators based on medical domain knowledge.
 
     This transformer calculates aggregate counts of chronic conditions and 
     functional limitations. It is designed to be placed AFTER imputation in 
     the pipeline to ensure a deterministic derivation from complete data.
 
     Generated Features:
-    - `CHRONIC_COUNT`: Sum of binary flags for conditions like high blood pressure, 
-      cholesterol, diabetes, etc.
-    - `LIMITATION_COUNT`: Sum of binary flags for functional limitations (ADL, IADL, etc.).
+    - `CHRONIC_COUNT`: Integer sum of binary flags for chronic conditions
+      (e.g., Blood Pressure, Cholesterol, Diabetes, etc.).
+    - `LIMITATION_COUNT`: Integer sum of binary flags for functional 
+      limitations (e.g., ADL, IADL, Cognitive limitations).
 
-    Input Requirements:
-    All source features used for derivation must be present and contain no missing 
-    values at transformation time.
+    Validation Logic:
+    This transformer performs strict input validation during both `fit` and `transform`:
+    - Raises `TypeError` if the input is not a pandas DataFrame.
+    - Raises `MissingColumnError` if any source features are missing from the input.
+    - Raises `MissingValueError` if any source features contain NaNs, ensuring
+      deterministic and non-biased feature derivation.
     """
     
     # Define input features used to derive new features
