@@ -28,3 +28,34 @@ def create_preprocessing_pipeline(required_features, optional_features, numerica
         )),
         ("medical_feature_deriver", MedicalFeatureDeriver())
     ])
+
+# Helper function to create the missing value handling pipeline (component/sub-pipeline of the data preprocessing pipeline)
+def create_missing_value_handling_pipeline(required_features, optional_features, numerical_features, categorical_features, strict=True):
+    """
+    Creates a scikit-learn pipeline for missing value handling with two stages:
+    1. Validation: Checks for missing values using `MissingValueChecker`.
+       It raises a `MissingValueError` for required columns and logs a warning for optional columns.
+    2. Imputation: Replaces missing values using a `ColumnTransformer`. 
+       It uses the median for numerical columns and the mode (most frequent value) for categorical columns.
+
+    Args:
+        required_features (list): Columns that must not contain missing values.
+        optional_features (list): Columns where missing values are tolerated and then imputed.
+        numerical_features (list): Names of numerical columns for median imputation.
+        categorical_features (list): Names of categorical columns for mode imputation.
+        strict (bool, optional): If True, ensures strict validation. Defaults to True.
+
+    Returns:
+        sklearn.pipeline.Pipeline: A pipeline configured for missing value handling.
+    """
+    return Pipeline(steps=[
+        ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
+        ("missing_value_imputer", ColumnTransformer(
+            transformers=[
+                ("numerical_imputer", SimpleImputer(strategy="median"), numerical_features),
+                ("categorical_imputer", SimpleImputer(strategy="most_frequent"), categorical_features)
+            ],
+            remainder="drop",
+            verbose_feature_names_out=False  # Preserves input column names instead of adding prefix 
+        ))
+    ])
