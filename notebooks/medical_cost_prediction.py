@@ -1384,7 +1384,10 @@ df["MARRY31X_GRP"] = df["MARRY31X"].replace(marital_map)
 employment_map = {2: 0, 3: 0, 4: 0} 
 df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
 
-# Note: CHRONIC_COUNT and LIMITATION_COUNT are derived inside the preprocessing pipeline using the MedicalFeatureDeriver transformer
+# %% [markdown]
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <code>CHRONIC_COUNT</code> (total number of diagnosed chronic conditions) and <code>LIMITATION_COUNT</code> (total number of functional limitations) are derived using the <code>MedicalFeatureDeriver</code> transformer inside the preprocessing pipeline after handling missing value. This architectural choice ensures that counts are calculated from clean, imputed data.
+# </div>
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
