@@ -90,7 +90,7 @@ from src.transformers import (
     OutlierRemoverIQR,
     MedicalFeatureDeriver
 )
-from src.pipeline import create_preprocessing_pipeline
+from src.pipeline import create_preprocessing_pipeline, create_missing_value_handling_pipeline
 
 # %% [markdown]
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
@@ -1678,8 +1678,8 @@ optional_features = [
     "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
 ]
 
-# Create preprocessing pipeline
-preprocessor = create_preprocessing_pipeline(
+# Create missing value handling pipeline
+missing_value_handling_pipeline = create_missing_value_handling_pipeline(
     required_features, 
     optional_features, 
     input_numerical_features, 
@@ -1687,10 +1687,10 @@ preprocessor = create_preprocessing_pipeline(
     strict=False
 )
 
-# Preprocess training, validation, and test data
-X_train_preprocessed = preprocessor.fit_transform(X_train)
-X_val_preprocessed = preprocessor.transform(X_val)
-X_test_preprocessed = preprocessor.transform(X_test)
+# Handle missing values in training, validation, and test data
+X_train_preprocessed = missing_value_handling_pipeline.fit_transform(X_train)
+X_val_preprocessed = missing_value_handling_pipeline.transform(X_val)
+X_test_preprocessed = missing_value_handling_pipeline.transform(X_test)
 
 # %%
 # Verify results: Missing value counts of raw vs. preprocessed data
