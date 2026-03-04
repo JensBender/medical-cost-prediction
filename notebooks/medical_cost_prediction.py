@@ -1831,9 +1831,17 @@ outlier_remover_iqr.stats_.style \
 # </div>
 
 # %%
-# Outlier Profiling: Compare out-of-pocket cost statistics for outliers vs. inliers  
-y_train.groupby(outlier_remover_3sd.final_mask_.map({True: "Inliers", False: "Outliers"})).describe().style \
-    .pipe(add_caption, "Outlier Out-of-Pocket Cost Pattern") \
+# Outlier Profiling: Compare out-of-pocket costs for outliers vs. inliers  
+# Create outlier profiling DataFrame from training data
+outlier_df = X_train_preprocessed.assign(
+    TOTSLF23=y_train, 
+    outlier=outlier_remover_3sd.final_mask_,
+    PERWT23F=X_train.loc[X_train_preprocessed.index, "PERWT23F"] # Pass sample weights for population-level stats
+)
+
+# Outlier cost profile 
+outlier_df.groupby(outlier_df["outlier"].map({True: "Inliers", False: "Outliers"}))["TOTSLF23"].describe().style \
+    .pipe(add_caption, "Univariate Outlier Profiling: Out-of-Pocket Costs") \
     .format({
         "count": "{:,.0f}",
         "mean": "{:.2f}",
