@@ -1696,7 +1696,6 @@ X_train_preprocessed = missing_value_handling_pipeline.fit_transform(X_train)
 X_val_preprocessed = missing_value_handling_pipeline.transform(X_val)
 X_test_preprocessed = missing_value_handling_pipeline.transform(X_test)
 
-# %%
 # Verify results: Missing value counts of raw vs. preprocessed data
 pd.DataFrame({
     "Training": X_train[input_all_features].isnull().sum(),
@@ -2508,6 +2507,23 @@ preprocessor = create_preprocessing_pipeline(
 X_train_preprocessed = preprocessor.fit_transform(X_train)
 X_val_preprocessed = preprocessor.transform(X_val)
 X_test_preprocessed = preprocessor.transform(X_test)
+
+# %%
+# --- Verify results ---
+# Verification of feature scaling: Descriptive statistics of raw vs. preprocessed numerical features
+preprocessor_verify_scaling = {}
+for feature in input_numerical_features:
+    preprocessor_verify_scaling[feature] = X_train[feature].describe()
+    preprocessor_verify_scaling[f"{feature} (preprocessed)"] = X_train_preprocessed[feature].describe()
+preprocessor_verify_scaling = pd.DataFrame(preprocessor_verify_scaling)
+preprocessor_verify_scaling.style \
+    .pipe(add_caption, "Verification of Feature Scaling") \
+    .format("{:.2f}") \
+    .format("{:.0f}", subset=pd.IndexSlice["count", :]) 
+
+# %%
+output_numerical_features = preprocessor.named_steps["feature_transformer"].named_transformers_["numerical_scaler"].get_feature_names_out()
+X_train_preprocessed[output_numerical_features].describe()
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
