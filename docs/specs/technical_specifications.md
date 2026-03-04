@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Project scoping |
 | **Created** | 2025-12-12 |
-| **Last Updated** | 2026-01-07 |
+| **Last Updated** | 2026-03-04 |
 
 **Note:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
 
@@ -227,7 +227,7 @@ Implemented via `ColumnTransformer`. Exact columns depend on final feature selec
 
 | Feature Type | Example Columns | Transformer | Notes |
 | :--- | :--- | :--- | :--- |
-| Numerical | `AGE23X` | `StandardScaler` | Age in years |
+| Numerical | `AGE23X`, `FAMSZE23`, `RTHLTH31`, `MNHLTH31`, `CHRONIC_COUNT`, `LIMITATION_COUNT` | `StandardScaler` | Standardizes all continuous and count-based features. Applied to all models for pipeline consistency. |
 | Ordinal | `POVCAT23`, `HIDEG` | `OrdinalEncoder` | Preserve ordering (Low < Middle < High) |
 | Nominal | `SEX`, `REGION23`, `INSCOV23`, `MARRY31X`, `EMPST31` | `OneHotEncoder` | Drop first to avoid multicollinearity |
 | Binary | `DIABDX_M18`, `HIBPDX`, `CHDDX`, etc. | passthrough | Already 0/1 encoded |
