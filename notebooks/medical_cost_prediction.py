@@ -1839,27 +1839,47 @@ outlier_df = X_train_preprocessed.assign(
     PERWT23F=X_train.loc[X_train_preprocessed.index, "PERWT23F"] # Pass sample weights for population-level stats
 )
 
-# Outlier cost profile 
-outlier_df.groupby(outlier_df["outlier"].map({True: "Inliers", False: "Outliers"}))["TOTSLF23"].describe().style \
-    .pipe(add_caption, "Univariate Outlier Profiling: Out-of-Pocket Costs") \
-    .format({
-        "count": "{:,.0f}",
-        "mean": "{:.2f}",
-        "std": "{:.2f}",
-        "min": "{:.1f}",
-        "25%": "{:.1f}",
-        "50%": "{:.1f}",
-        "75%": "{:.1f}",
-        "max": "{:.1f}"
+# Outlier Profiling: Cost Concentration
+# This analysis shows what percentage of each group (Inliers vs. Outliers) falls into the top population-wide spending brackets.
+outlier_in_df = outlier_df[outlier_df["outlier"] == True]
+outlier_out_df = outlier_df[outlier_df["outlier"] == False]
+
+percentiles = [0.999, 0.99, 0.95, 0.9, 0.8, 0.5]
+benchmarks = []
+
+# Pre-calculate group populations (weighted) for efficiency
+outlier_in_pop = outlier_in_df["PERWT23F"].sum()
+outlier_out_pop = outlier_out_df["PERWT23F"].sum()
+
+for p in percentiles:
+    # Calculate global (population-wide) threshold
+    threshold = weighted_quantile(outlier_df["TOTSLF23"], outlier_df["PERWT23F"], p)
+    
+    # Calculate representation within each subgroup
+    outlier_in_rep = (outlier_in_df.loc[outlier_in_df["TOTSLF23"] >= threshold, "PERWT23F"].sum() / outlier_in_pop) * 100
+    outlier_out_rep = (outlier_out_df.loc[outlier_out_df["TOTSLF23"] >= threshold, "PERWT23F"].sum() / outlier_out_pop) * 100
+    
+    benchmarks.append({
+        "Benchmark": f"Top {(1-p)*100:.0f}% (>= ${threshold:,.0f})" if p != 0.999 else f"Top 0.1% (>= ${threshold:,.0f})",
+        "Inliers": outlier_in_rep,
+        "Outliers": outlier_out_rep,
+        "Outlier/Inlier Ratio": outlier_out_rep / outlier_in_rep if outlier_in_rep > 0 else np.nan
     })
+
+# Create comparison table and display
+benchmark_df = pd.DataFrame(benchmarks).set_index("Benchmark")
+benchmark_df.style \
+    .pipe(add_caption, "Univariate Outlier Profiling: Cost Concentration") \
+    .format("{:.1f}%", subset=["Inliers", "Outliers"]) \
+    .format("{:.1f}x", subset="Outlier/Inlier Ratio")
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> Do not remove univariate outliers. They represent critical high-risk and high-variance demographics.
+#     💡 <b>Insight:</b> Do not remove univariate outliers. They represent a critical high-risk demographic.
 #     <ul style="margin-top:10px; margin-bottom:0px">
 #         <li><b>Outlier Profile:</b> The 412 outliers are primarily driven by extreme values in limitations count (4+), family size (8+), and chronic conditions count (7+).</li>
-#         <li><b>Cost Pattern:</b> Outliers have a higher mean cost (\$1,873 vs. \$1,139) and higher volatility, yet a lower median cost (\$223 vs. \$276). The lower median may be explainable by the family insurance cap, where members of very large households often incur \$0 costs once the family-level maximum is met. The higher mean suggests these individuals are higher risk.</li>
-#         <li><b>Decision:</b> These rows reflect predictable demographic and insurance dynamics, not data errors. Removing them would lead to a biased and less robust model.</li>
+#         <li><b>Cost Concentration:</b> Outliers are significantly over-represented in the high-cost tail. They are 4.8x more likely to fall into the Top 1% of spenders and 2.8x more likely to be in the Top 0.1% compared to inliers.</li>
+#         <li><b>Decision:</b> Outliers reflect valid demographic and insurance dynamics, not noise. Removing them would "sanitize" the data of critical high-cost cases, leading to a biased model that fails to predict financial catastrophes.</li>
 #     </ul>
 # </div>
 
