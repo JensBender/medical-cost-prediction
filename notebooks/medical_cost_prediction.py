@@ -19,7 +19,7 @@
 #     <p style="text-align:center; font-size:14px; font-weight:normal; color:#4A4A4A; margin-top:12px;">
 #         Author: Jens Bender <br> 
 #         Created: December 2025<br>
-#         Last updated: February 2026
+#         Last updated: March 2026
 #     </p>
 # </div>
 
@@ -1685,7 +1685,9 @@ missing_value_handling_pipeline = create_missing_value_handling_pipeline(
     required_features, 
     optional_features, 
     input_numerical_features, 
-    input_categorical_features, 
+    ordinal_features=input_ordinal_features,
+    nominal_features=input_nominal_features,
+    binary_features=input_binary_features,
     strict=False
 )
 
@@ -2496,7 +2498,9 @@ preprocessor = create_preprocessing_pipeline(
     required_features, 
     optional_features, 
     input_numerical_features, 
-    input_categorical_features, 
+    ordinal_features=input_ordinal_features,
+    nominal_features=input_nominal_features,
+    binary_features=input_binary_features,
     strict=False
 )
 
