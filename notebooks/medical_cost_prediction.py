@@ -2510,21 +2510,12 @@ X_test_preprocessed = preprocessor.transform(X_test)
 
 # %%
 # --- Verify results ---
-# Verification of feature scaling: Descriptive statistics of raw vs. preprocessed numerical features
-preprocessor_verify_scaling = {}
-for feature in input_numerical_features:
-    preprocessor_verify_scaling[feature] = X_train[feature].describe()
-    preprocessor_verify_scaling[f"{feature} (preprocessed)"] = X_train_preprocessed[feature].describe()
-preprocessor_verify_scaling = pd.DataFrame(preprocessor_verify_scaling)
+# Verification of feature scaling
+output_numerical_features = preprocessor.named_steps["feature_transformer"].named_transformers_["numerical_scaler"].get_feature_names_out()
+preprocessor_verify_scaling = X_train_preprocessed[output_numerical_features].describe().loc[["mean", "std", "min", "max"]]
 preprocessor_verify_scaling.style \
     .pipe(add_caption, "Verification of Feature Scaling") \
-    .format("{:.2f}") \
-    .format("{:.0f}", subset=pd.IndexSlice["count", :]) 
-
-# %%
-output_numerical_features = preprocessor.named_steps["feature_transformer"].named_transformers_["numerical_scaler"].get_feature_names_out()
-X_train_preprocessed[output_numerical_features].describe()
-
+    .format("{:.2f}")
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Summary</h1>
