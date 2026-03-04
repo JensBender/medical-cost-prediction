@@ -393,6 +393,9 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
         "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18"
     ]
 
+    # Features created by this transformer
+    OUTPUT_FEATURES = ["CHRONIC_COUNT", "LIMITATION_COUNT"]
+
     def _validate_input(self, X):
         # Ensure X input is DataFrame
         if not isinstance(X, pd.DataFrame):
