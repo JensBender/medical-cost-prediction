@@ -1685,9 +1685,9 @@ missing_value_handling_pipeline = create_missing_value_handling_pipeline(
     required_features, 
     optional_features, 
     input_numerical_features, 
-    ordinal_features=input_ordinal_features,
-    nominal_features=input_nominal_features,
-    binary_features=input_binary_features,
+    input_ordinal_features,
+    input_nominal_features,
+    input_binary_features,
     strict=False
 )
 
@@ -2498,9 +2498,9 @@ preprocessor = create_preprocessing_pipeline(
     required_features, 
     optional_features, 
     input_numerical_features, 
-    ordinal_features=input_ordinal_features,
-    nominal_features=input_nominal_features,
-    binary_features=input_binary_features,
+    input_ordinal_features,
+    input_nominal_features,
+    input_binary_features,
     strict=False
 )
 

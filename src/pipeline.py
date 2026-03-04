@@ -21,9 +21,9 @@ def create_preprocessing_pipeline(
     required_features, 
     optional_features, 
     numerical_features, 
-    ordinal_features=None, 
-    nominal_features=None, 
-    binary_features=None, 
+    ordinal_features, 
+    nominal_features, 
+    binary_features, 
     strict=True
 ):
     """
@@ -45,17 +45,17 @@ def create_preprocessing_pipeline(
     Args:
         required_features (list): Columns that must not contain missing values.
         optional_features (list): Columns where missing values are tolerated and then imputed.
-        numerical_features (list): Names of numerical columns for median imputation.
-        ordinal_features (list, optional): Numerical columns for ordinal encoding.
-        nominal_features (list, optional): Columns for one-hot encoding.
-        binary_features (list, optional): Columns to pass through (already 0/1).
+        numerical_features (list): Numerical column names for median imputation and scaling.
+        ordinal_features (list): Ordinal column names for mode imputation and ordinal encoding.
+        nominal_features (list): Nominal column names for mode imputation and one-hot encoding.
+        binary_features (list): Binary column names for mode imputation and to pass through encoder (already 0/1).
         strict (bool, optional): If True, pipeline raises error for missing required values. Defaults to True.
 
     Returns:
         sklearn.pipeline.Pipeline: A complete data preprocessing pipeline.
     """
     # Combine categorical features for imputation
-    categorical_features = (ordinal_features or []) + (nominal_features or []) + (binary_features or [])
+    categorical_features = ordinal_features + nominal_features + binary_features
 
     return Pipeline(steps=[
         ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
@@ -71,9 +71,9 @@ def create_preprocessing_pipeline(
         ("feature_transformer", ColumnTransformer(
             transformers=[
                 ("numerical_scaler", StandardScaler(), numerical_features + MedicalFeatureDeriver.OUTPUT_FEATURES),
-                ("ordinal_encoder", OrdinalEncoder(), ordinal_features or []),
-                ("nominal_encoder", OneHotEncoder(drop="first", sparse_output=False), nominal_features or []),
-                ("binary_passthrough", "passthrough", binary_features or [])
+                ("ordinal_encoder", OrdinalEncoder(), ordinal_features),
+                ("nominal_encoder", OneHotEncoder(drop="first", sparse_output=False), nominal_features),
+                ("binary_passthrough", "passthrough", binary_features)
             ],
             remainder="drop",
             verbose_feature_names_out=False
@@ -86,9 +86,9 @@ def create_missing_value_handling_pipeline(
     required_features, 
     optional_features, 
     numerical_features, 
-    ordinal_features=None, 
-    nominal_features=None, 
-    binary_features=None, 
+    ordinal_features, 
+    nominal_features, 
+    binary_features, 
     strict=True
 ):
     """
@@ -102,17 +102,17 @@ def create_missing_value_handling_pipeline(
     Args:
         required_features (list): Columns that must not contain missing values.
         optional_features (list): Columns where missing values are tolerated and then imputed.
-        numerical_features (list): Names of numerical columns for median imputation.
-        ordinal_features (list, optional): Ordinal columns for mode imputation.
-        nominal_features (list, optional): Nominal columns for mode imputation.
-        binary_features (list, optional): Binary columns for mode imputation.
+        numerical_features (list): Numerical columns for median imputation.
+        ordinal_features (list): Ordinal columns for mode imputation.
+        nominal_features (list): Nominal columns for mode imputation.
+        binary_features (list): Binary columns for mode imputation.
         strict (bool, optional): If True, pipeline raises error for missing required values. Defaults to True.
 
     Returns:
         sklearn.pipeline.Pipeline: A pipeline configured for missing value handling.
     """
     # Combine categorical features for imputation
-    categorical_features = (ordinal_features or []) + (nominal_features or []) + (binary_features or [])
+    categorical_features = ordinal_features + nominal_features + binary_features
     return Pipeline(steps=[
         ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
         ("missing_value_imputer", ColumnTransformer(
