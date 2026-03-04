@@ -89,9 +89,9 @@ from src.constants import (
 from src.transformers import (
     MissingValueChecker, 
     MissingValueError,
+    MedicalFeatureDeriver,
     OutlierRemover3SD,
-    OutlierRemoverIQR,
-    MedicalFeatureDeriver
+    OutlierRemoverIQR
 )
 from src.pipeline import (
     create_preprocessing_pipeline, 
@@ -2475,11 +2475,35 @@ plt.show()
 #     💡 <b>Insight:</b> The Isolation Forest identifies outliers that represent a clinically vulnerable, high-cost population essential for modeling tail-risk.
 #     <ul style="margin-top:10px; margin-bottom:0px">
 #         <li><b>Clinical Profile:</b> Outliers are characterized by functional limitations and high comorbidity. They typically have 3 limitations compared with 0 for inliers and 4x more medical conditions (median 4 vs. 1). This "High-Needs" profile, often involving seniors (median age 66 vs. 47), is the primary driver of their outlier status.</li>
-#         <li><b>Risk Escalation:</b> While only 1.1x more likely to exceed the median spend, outliers are 3.4x more likely to be in the Top 1% of spenders. They are also 2.4x more likely to incur some cost (zero-spenders: 9.7% vs 22.9%).</li>
+#         <li><b>Risk Escalation:</b> While only 1.2x more likely to exceed the median spend, outliers are 3.9x more likely to be in the Top 1% of spenders. They are also 2.5x more likely to incur some cost (zero-spenders: 9.2% vs 22.9%).</li>
 #         <li><b>Structural Equality:</b> Both groups show near-identical Gini coefficients (~0.78). This confirms that cost concentration is a fundamental property of healthcare data that persists even within high-risk subgroups.</li>
 #         <li><b>Decision: Keep Outliers.</b> These are valid tail-risk cases, not noise. Keeping them ensures the model learns the drivers of high-impact outcomes and correctly identifies the "High Comorbidity" spenders.</li>
 #     </ul>
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Pipeline</h2>
+# </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Use the complete data preprocessing pipeline to create preprocessed from raw data sets (overwrite the preprocessed DataFrames created during earlier steps).
+# </div>
+
+# %%
+# Create data preprocessing pipeline
+preprocessor = create_preprocessing_pipeline(
+    required_features, 
+    optional_features, 
+    input_numerical_features, 
+    input_categorical_features, 
+    strict=False
+)
+
+# Preprocess training, validation, and test data
+X_train_preprocessed = preprocessor.fit_transform(X_train)
+X_val_preprocessed = preprocessor.transform(X_val)
+X_test_preprocessed = preprocessor.transform(X_test)
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
