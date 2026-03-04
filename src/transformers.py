@@ -321,7 +321,7 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
         self._validate_input(X)
         
         # Store output feature names
-        self.feature_names_out_ = X.columns.tolist() + ["CHRONIC_COUNT", "LIMITATION_COUNT"]
+        self.feature_names_out_ = X.columns.tolist() + self.OUTPUT_FEATURES
         return self
 
     def transform(self, X):
