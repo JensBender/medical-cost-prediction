@@ -1,5 +1,6 @@
 from sklearn.base import BaseEstimator, TransformerMixin 
 from sklearn.utils import validation as sklearn_validation
+from sklearn.impute import SimpleImputer
 import pandas as pd
 import logging
 
@@ -206,6 +207,27 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         self.fit(X, y)
         self._check_missing_values(X)
         return X
+
+
+class RobustSimpleImputer(SimpleImputer):
+    """
+    Identifies and handles empty DataFrames by passing them through directly
+    instead of raising a ValueError (default behavior of SimpleImputer).
+
+    This wrapper is particularly useful in production pipelines where 
+    batch processing or dynamic filtering might produce zero-row outputs. 
+    By returning the empty DataFrame as is, it allows subsequent steps 
+    to handle the execution gracefully.
+
+    Note:
+        During transform(), if 'X' is empty (X.empty is True), the original 
+        input is returned without imputation.
+    """
+    def transform(self, X):
+        if X.empty:
+            return X
+        else:
+            return super().transform(X)
 
 
 class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
