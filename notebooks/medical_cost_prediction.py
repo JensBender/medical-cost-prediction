@@ -1401,21 +1401,17 @@ df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
 # </div> 
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Define feature lists for pipeline input.
+#     📌 Define the lists of features that enter the pipeline.
 # </div>
 
 # %%
-input_numerical_features = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
-input_binary_features = [
-    "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31", 
-    "WLKLIM31", "COGLIM31", "JTPAIN31_M18", "HIBPDX", "CHOLDX", 
-    "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX",
-    "EMPST31_GRP", "RECENT_LIFE_TRANSITION"  # EMPST31_GRP is binary after collapsing categories
-]
-input_nominal_features = ["REGION23", "MARRY31X_GRP", "INSCOV23"]
-input_ordinal_features = ["POVCAT23", "HIDEG"]
+# Pipeline Input Features
+input_numerical_features = raw_numerical_features.copy()
+input_ordinal_features = raw_ordinal_features.copy()
+input_binary_features = raw_binary_features + ["RECENT_LIFE_TRANSITION", "EMPST31_GRP"]  # employment is binary after collapsing categories
+input_nominal_features = ["REGION23", "MARRY31X_GRP", "INSCOV23"] 
 
-# Combined feature sets
+# Combined pipeline feature sets
 input_categorical_features = input_nominal_features + input_ordinal_features + input_binary_features
 input_all_features = input_numerical_features + input_categorical_features
 
@@ -1730,11 +1726,14 @@ X_train_preprocessed = medical_feature_deriver.transform(X_train_preprocessed)
 X_val_preprocessed = medical_feature_deriver.transform(X_val_preprocessed)
 X_test_preprocessed = medical_feature_deriver.transform(X_test_preprocessed)
 
+# Derived feature List
+derived_numerical_features = MedicalFeatureDeriver.OUTPUT_FEATURES
+
 # Inspect distributions of new derived features
 X_train_inspect  = X_train_preprocessed.assign(
     PERWT23F=X_train.loc[X_train_preprocessed.index, "PERWT23F"]  # Temporarily attach weights for population analysis
 ) 
-plot_numerical_distributions(X_train_inspect, ["CHRONIC_COUNT", "LIMITATION_COUNT"], DISPLAY_LABELS, weights="PERWT23F")
+plot_numerical_distributions(X_train_inspect, derived_numerical_features, DISPLAY_LABELS, weights="PERWT23F")
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
@@ -1771,7 +1770,7 @@ plot_numerical_distributions(X_train_inspect, ["CHRONIC_COUNT", "LIMITATION_COUN
 outlier_remover_3sd = OutlierRemover3SD()
 
 # Fit outlier remover to training data
-outlier_remover_3sd.fit(X_train_preprocessed, input_numerical_features)
+outlier_remover_3sd.fit(X_train_preprocessed, input_numerical_features + derived_numerical_features)
 
 # Show outliers in training data
 summary_3sd = f"Training data contains {outlier_remover_3sd.outliers_} rows ({outlier_remover_3sd.outliers_ / len(outlier_remover_3sd.final_mask_) * 100:.1f}%) with outliers. Outliers by column below."
@@ -1800,7 +1799,7 @@ outlier_remover_3sd.stats_.style \
 outlier_remover_iqr = OutlierRemoverIQR()
 
 # Fit outlier remover to training data
-outlier_remover_iqr.fit(X_train_preprocessed, input_numerical_features)
+outlier_remover_iqr.fit(X_train_preprocessed, input_numerical_features + derived_numerical_features)
 
 # Show outliers by column for training data
 summary_iqr = f"Training data contains {outlier_remover_iqr.outliers_} rows ({outlier_remover_iqr.outliers_ / len(outlier_remover_iqr.final_mask_) * 100:.1f}%) with outliers. Outliers by column below."
@@ -1867,13 +1866,13 @@ y_train.groupby(outlier_remover_3sd.final_mask_.map({True: "Inliers", False: "Ou
 # Initialize isolation forest
 isolation_forest = IsolationForest(contamination=0.05, random_state=RANDOM_STATE)
 
-# Fit isolation forest on training data
-isolation_forest.fit(X_train_preprocessed[input_numerical_features + input_binary_features])
+# Fit isolation forest on training data (include pipeline input features and derived features)
+isolation_forest.fit(X_train_preprocessed[input_numerical_features + input_binary_features + derived_numerical_features])
 
 # Predict outliers on training data
-X_train_preprocessed["outlier"] = isolation_forest.predict(X_train_preprocessed[input_numerical_features + input_binary_features])
+X_train_preprocessed["outlier"] = isolation_forest.predict(X_train_preprocessed[input_numerical_features + input_binary_features + derived_numerical_features])
 X_train_preprocessed["outlier"] = X_train_preprocessed["outlier"].map({1: 0, -1: 1})  # recode to 0/1 (outlier no/yes)
-X_train_preprocessed["outlier_score"] = isolation_forest.decision_function(X_train_preprocessed[input_numerical_features + input_binary_features])
+X_train_preprocessed["outlier_score"] = isolation_forest.decision_function(X_train_preprocessed[input_numerical_features + input_binary_features + derived_numerical_features])
 
 # Show number of outliers
 n_outliers_train = X_train_preprocessed["outlier"].value_counts()[1]
@@ -2042,7 +2041,7 @@ benchmark_df.style \
 
 # %%
 # Outlier Numeric Profile: Median Differences (Population)
-outlier_num_cols = input_numerical_features + ["CHRONIC_COUNT", "LIMITATION_COUNT"] + ["TOTSLF23"]
+outlier_num_cols = input_numerical_features + derived_numerical_features + ["TOTSLF23"]
 
 # Calculate population medians (weighted) for each feature/target
 outlier_stats_num = pd.DataFrame(index=outlier_num_cols, columns=["Inliers", "Outliers"])
