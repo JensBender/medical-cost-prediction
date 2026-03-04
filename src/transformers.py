@@ -211,23 +211,30 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
 
 class RobustSimpleImputer(SimpleImputer):
     """
-    Identifies and handles empty DataFrames by passing them through directly
-    instead of raising a ValueError (default behavior of SimpleImputer).
+    A wrapper for SimpleImputer that handles empty DataFrames gracefully.
 
-    This wrapper is particularly useful in production pipelines where 
-    batch processing or dynamic filtering might produce zero-row outputs. 
-    By returning the empty DataFrame as is, it allows subsequent steps 
-    to handle the execution gracefully.
+    Instead of raising a ValueError (SimpleImputer's default behavior) when 
+    encountering an empty DataFrame during .transform(), this class returns 
+    the empty DataFrame as-is. This is useful for production pipelines where 
+    batch processing might produce zero-row outputs.
+
+    Validation Logic:
+    Consistent with other transformers in this pipeline, this class requires 
+    input 'X' to be a pandas DataFrame and will raise a TypeError otherwise.
 
     Note:
         During transform(), if 'X' is empty (X.empty is True), the original 
         input is returned without imputation.
     """
+    def _validate_input(self, X):
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("The provided input X must be a pandas DataFrame.")
+
     def transform(self, X):
+        self._validate_input(X)
         if X.empty:
             return X
-        else:
-            return super().transform(X)
+        return super().transform(X)
 
 
 class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
