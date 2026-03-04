@@ -208,6 +208,108 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         return X
 
 
+class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
+    """
+    Derives medical features from raw indicators based on medical domain knowledge.
+
+    This transformer calculates aggregate counts of chronic conditions and 
+    functional limitations. It is designed to be placed AFTER imputation in 
+    the pipeline to ensure a deterministic derivation from complete data.
+
+    Generated Features:
+    - `CHRONIC_COUNT`: Integer sum of binary flags for chronic conditions
+      (e.g., Blood Pressure, Cholesterol, Diabetes, etc.).
+    - `LIMITATION_COUNT`: Integer sum of binary flags for functional 
+      limitations (e.g., ADL, IADL, Cognitive limitations).
+
+    Validation Logic:
+    This transformer performs strict input validation during both `fit` and `transform`:
+    - Raises `TypeError` if the input is not a pandas DataFrame.
+    - Raises `MissingColumnError` if any source features are missing from the input.
+    - Raises `MissingValueError` if any source features contain NaNs, ensuring
+      deterministic and non-biased feature derivation.
+    """
+    
+    # Define input features used to derive new features
+    CHRONIC_CONDITION_FEATURES = [
+        "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
+    ]
+
+    FUNCTIONAL_LIMITATION_FEATURES = [
+        "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18"
+    ]
+
+    # Features created by this transformer
+    OUTPUT_FEATURES = ["CHRONIC_COUNT", "LIMITATION_COUNT"]
+
+    def _validate_input(self, X):
+        # Ensure X input is DataFrame
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("The provided input X must be a pandas DataFrame.")          
+        
+        # Ensure DataFrame has no missing columns
+        input_columns = set(X.columns)
+        expected_columns = set(self.CHRONIC_CONDITION_FEATURES + self.FUNCTIONAL_LIMITATION_FEATURES)
+        missing_columns = expected_columns - input_columns 
+        if missing_columns:
+            details = {
+                "missing_columns": list(missing_columns),
+                "expected_columns": list(expected_columns),
+                "actual_columns": list(input_columns)
+            }
+            raise MissingColumnError(f"The provided DataFrame is missing the following columns: {', '.join(missing_columns)}.", details=details)
+
+        # Ensure input features have no missing values
+        missing_mask = X[list(expected_columns)].isnull()
+        n_missing = missing_mask.sum().sum()
+        if n_missing > 0:
+            # Identify input features and row indices with missing values
+            missing_features = missing_mask.columns[missing_mask.any()].tolist()
+            missing_rows = X.index[missing_mask.any(axis=1)].tolist()
+            n_missing_rows = len(missing_rows)
+            
+            # Create error message (truncate to top 5 features and rows for the message string)
+            missing_features_msg = str(missing_features[:5]) + ("..." if len(missing_features) > 5 else "")
+            missing_rows_msg = str(missing_rows[:5]) + ("..." if n_missing_rows > 5 else "")
+            values_word = "value" if n_missing == 1 else "values"
+            msg = (
+                f"MedicalFeatureDeriver found {n_missing} missing {values_word}, but requires complete data for all source features used to derive new features. Make sure to handle missing values first.\n"
+                f"- Affected Features: {missing_features_msg}\n"
+                f"- Affected Row Indices: {missing_rows_msg}"
+            )    
+
+            # Create error detail        
+            details = {
+                "n_missing": int(n_missing),
+                "affected_features": missing_features,
+                "affected_row_indices": [str(idx) for idx in missing_rows]
+            }
+
+            raise MissingValueError(msg, details=details)
+
+    def fit(self, X, y=None):
+        # Validate input 
+        self._validate_input(X)
+        
+        # Store output feature names
+        self.feature_names_out_ = X.columns.tolist() + ["CHRONIC_COUNT", "LIMITATION_COUNT"]
+        return self
+
+    def transform(self, X):
+        # Ensure .fit() happened before
+        sklearn_validation.check_is_fitted(self)
+        
+        # Validate input 
+        self._validate_input(X)
+            
+        return X.assign(
+            # Derive Chronic Conditions Count
+            CHRONIC_COUNT=X[self.CHRONIC_CONDITION_FEATURES].sum(axis=1),
+            # Derive Functional Limitations Count
+            LIMITATION_COUNT=X[self.FUNCTIONAL_LIMITATION_FEATURES].sum(axis=1)
+        )
+
+
 class OutlierRemover3SD(BaseEstimator, TransformerMixin):
     """
     Identifies and removes outliers based on the 3 Standard Deviations (3SD) rule.
@@ -360,106 +462,3 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
     def fit_transform(self, df, numerical_columns):
         # Perform both fit and transform
         return self.fit(df, numerical_columns).transform(df)
-
-
-class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
-    """
-    Derives medical features from raw indicators based on medical domain knowledge.
-
-    This transformer calculates aggregate counts of chronic conditions and 
-    functional limitations. It is designed to be placed AFTER imputation in 
-    the pipeline to ensure a deterministic derivation from complete data.
-
-    Generated Features:
-    - `CHRONIC_COUNT`: Integer sum of binary flags for chronic conditions
-      (e.g., Blood Pressure, Cholesterol, Diabetes, etc.).
-    - `LIMITATION_COUNT`: Integer sum of binary flags for functional 
-      limitations (e.g., ADL, IADL, Cognitive limitations).
-
-    Validation Logic:
-    This transformer performs strict input validation during both `fit` and `transform`:
-    - Raises `TypeError` if the input is not a pandas DataFrame.
-    - Raises `MissingColumnError` if any source features are missing from the input.
-    - Raises `MissingValueError` if any source features contain NaNs, ensuring
-      deterministic and non-biased feature derivation.
-    """
-    
-    # Define input features used to derive new features
-    CHRONIC_CONDITION_FEATURES = [
-        "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
-    ]
-
-    FUNCTIONAL_LIMITATION_FEATURES = [
-        "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18"
-    ]
-
-    # Features created by this transformer
-    OUTPUT_FEATURES = ["CHRONIC_COUNT", "LIMITATION_COUNT"]
-
-    def _validate_input(self, X):
-        # Ensure X input is DataFrame
-        if not isinstance(X, pd.DataFrame):
-            raise TypeError("The provided input X must be a pandas DataFrame.")          
-        
-        # Ensure DataFrame has no missing columns
-        input_columns = set(X.columns)
-        expected_columns = set(self.CHRONIC_CONDITION_FEATURES + self.FUNCTIONAL_LIMITATION_FEATURES)
-        missing_columns = expected_columns - input_columns 
-        if missing_columns:
-            details = {
-                "missing_columns": list(missing_columns),
-                "expected_columns": list(expected_columns),
-                "actual_columns": list(input_columns)
-            }
-            raise MissingColumnError(f"The provided DataFrame is missing the following columns: {', '.join(missing_columns)}.", details=details)
-
-        # Ensure input features have no missing values
-        missing_mask = X[list(expected_columns)].isnull()
-        n_missing = missing_mask.sum().sum()
-        if n_missing > 0:
-            # Identify input features and row indices with missing values
-            missing_features = missing_mask.columns[missing_mask.any()].tolist()
-            missing_rows = X.index[missing_mask.any(axis=1)].tolist()
-            n_missing_rows = len(missing_rows)
-            
-            # Create error message (truncate to top 5 features and rows for the message string)
-            missing_features_msg = str(missing_features[:5]) + ("..." if len(missing_features) > 5 else "")
-            missing_rows_msg = str(missing_rows[:5]) + ("..." if n_missing_rows > 5 else "")
-            values_word = "value" if n_missing == 1 else "values"
-            msg = (
-                f"MedicalFeatureDeriver found {n_missing} missing {values_word}, but requires complete data for all source features used to derive new features. Make sure to handle missing values first.\n"
-                f"- Affected Features: {missing_features_msg}\n"
-                f"- Affected Row Indices: {missing_rows_msg}"
-            )    
-
-            # Create error detail        
-            details = {
-                "n_missing": int(n_missing),
-                "affected_features": missing_features,
-                "affected_row_indices": [str(idx) for idx in missing_rows]
-            }
-
-            raise MissingValueError(msg, details=details)
-
-    def fit(self, X, y=None):
-        # Validate input 
-        self._validate_input(X)
-        
-        # Store output feature names
-        self.feature_names_out_ = X.columns.tolist() + ["CHRONIC_COUNT", "LIMITATION_COUNT"]
-        return self
-
-    def transform(self, X):
-        # Ensure .fit() happened before
-        sklearn_validation.check_is_fitted(self)
-        
-        # Validate input 
-        self._validate_input(X)
-            
-        return X.assign(
-            # Derive Chronic Conditions Count
-            CHRONIC_COUNT=X[self.CHRONIC_CONDITION_FEATURES].sum(axis=1),
-            # Derive Functional Limitations Count
-            LIMITATION_COUNT=X[self.FUNCTIONAL_LIMITATION_FEATURES].sum(axis=1)
-        )
-
