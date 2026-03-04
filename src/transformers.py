@@ -226,12 +226,10 @@ class RobustSimpleImputer(SimpleImputer):
         During transform(), if 'X' is empty (X.empty is True), the original 
         input is returned without imputation.
     """
-    def _validate_input(self, X):
+    def transform(self, X):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("The provided input X must be a pandas DataFrame.")
-
-    def transform(self, X):
-        self._validate_input(X)
+        
         if X.empty:
             return X
         return super().transform(X)
