@@ -2,22 +2,26 @@
 from sklearn.pipeline import Pipeline
 from sklearn import set_config
 from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
 
 # Local imports
-from src.transformers import MissingValueChecker, MedicalFeatureDeriver
+from src.transformers import (
+    MissingValueChecker, 
+    RobustSimpleImputer,
+    MedicalFeatureDeriver
+)
 
 # Ensure that the output of all scikit-learn transformers is a Pandas DataFrame
 set_config(transform_output="pandas")
 
 
-# Helper function to create the data preprocessing pipeline
+# --- Helper functions to create pipelines ---
+# Data preprocessing pipeline 
 def create_preprocessing_pipeline(required_features, optional_features, numerical_features, categorical_features, strict=True):
     """
     Creates a scikit-learn pipeline for data preprocessing with three steps:
     1. Missing Value Check: Identifies missing values using `MissingValueChecker`.
        It raises a `MissingValueError` for required columns and logs a warning for optional columns.
-    2. Missing Value Imputation: Replaces missing values using a `ColumnTransformer` with `SimpleImputer`. 
+    2. Missing Value Imputation: Replaces missing values using a `ColumnTransformer` with `RobustSimpleImputer`. 
        - Median imputation for numerical features.
        - Mode imputation for categorical features.
     3. Feature Engineering: Uses `MedicalFeatureDeriver` to create new domain-specific features.
@@ -36,8 +40,8 @@ def create_preprocessing_pipeline(required_features, optional_features, numerica
         ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
         ("missing_value_imputer", ColumnTransformer(
             transformers=[
-                ("numerical_imputer", SimpleImputer(strategy="median"), numerical_features),
-                ("categorical_imputer", SimpleImputer(strategy="most_frequent"), categorical_features)
+                ("numerical_imputer", RobustSimpleImputer(strategy="median"), numerical_features),
+                ("categorical_imputer", RobustSimpleImputer(strategy="most_frequent"), categorical_features)
             ],
             remainder="drop",
             verbose_feature_names_out=False  # Preserves input column names instead of adding prefix 
@@ -45,13 +49,14 @@ def create_preprocessing_pipeline(required_features, optional_features, numerica
         ("medical_feature_deriver", MedicalFeatureDeriver())
     ])
 
-# Helper function to create the missing value handling pipeline (component/sub-pipeline of the data preprocessing pipeline)
+
+# Missing value handling pipeline (component/sub-pipeline of the data preprocessing pipeline)
 def create_missing_value_handling_pipeline(required_features, optional_features, numerical_features, categorical_features, strict=True):
     """
     Creates a scikit-learn pipeline for missing value handling with two steps:
     1. Missing Value Check: Identifies missing values using `MissingValueChecker`.
        It raises a `MissingValueError` for required columns and logs a warning for optional columns.
-    2. Imputation: Replaces missing values using a `ColumnTransformer` with `SimpleImputer`. 
+    2. Imputation: Replaces missing values using a `ColumnTransformer` with `RobustSimpleImputer`. 
        - Median imputation for numerical features.
        - Mode imputation for categorical features.
 
@@ -69,8 +74,8 @@ def create_missing_value_handling_pipeline(required_features, optional_features,
         ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
         ("missing_value_imputer", ColumnTransformer(
             transformers=[
-                ("numerical_imputer", SimpleImputer(strategy="median"), numerical_features),
-                ("categorical_imputer", SimpleImputer(strategy="most_frequent"), categorical_features)
+                ("numerical_imputer", RobustSimpleImputer(strategy="median"), numerical_features),
+                ("categorical_imputer", RobustSimpleImputer(strategy="most_frequent"), categorical_features)
             ],
             remainder="drop",
             verbose_feature_names_out=False  # Preserves input column names instead of adding prefix 
