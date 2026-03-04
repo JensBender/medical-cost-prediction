@@ -33,7 +33,14 @@ def create_preprocessing_pipeline(
     2. Missing Value Imputation: Replaces missing values using a `ColumnTransformer` with `RobustSimpleImputer`. 
        - Median imputation for numerical features.
        - Mode imputation for categorical features.
-    3. Feature Engineering: Uses `MedicalFeatureDeriver` to create new domain-specific features.
+    3. Feature Engineering: Uses `MedicalFeatureDeriver` to aggregate binary indicators into counts:
+       - `CHRONIC_COUNT`: Sum of chronic medical condition flags.
+       - `LIMITATION_COUNT`: Sum of functional limitation flags.
+    4. Feature Scaling and Encoding: Transforms all features into a model-ready format:
+       - `StandardScaler`: Scales numerical features (raw and engineered) to mean 0 and variance 1.
+       - `OneHotEncoder`: Converts nominal features into binary dummy variables (dropping first).
+       - `OrdinalEncoder`: Encodes ordinal features while preserving their inherent order.
+       - Binary Passthrough: Preserves original binary features without modification.
 
     Args:
         required_features (list): Columns that must not contain missing values.
