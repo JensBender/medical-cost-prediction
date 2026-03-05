@@ -57,13 +57,13 @@ CATEGORICAL_LABELS = {
     "SEX": {1: "Male", 2: "Female", 0: "Female"},
     "REGION23": {1: "Northeast", 2: "Midwest", 3: "South", 4: "West"},
     "MARRY31X": {
-        1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married", 6: "Under 16", 
+        1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married",
         7: "Married in Round", 8: "Widowed in Round", 9: "Divorced in Round", 10: "Separated in Round"
     },
     
     # Socioeconomic
     "POVCAT23": {1: "Poor/Negative", 2: "Near Poor", 3: "Low Income", 4: "Middle Income", 5: "High Income"},
-    "HIDEG": {1: "No Degree", 2: "GED", 3: "HS Diploma", 4: "Bachelor's", 5: "Master's", 6: "Doctorate", 7: "Other", 8: "Under 16"},
+    "HIDEG": {1: "No Degree", 2: "GED", 3: "HS Diploma", 4: "Bachelor's", 5: "Master's", 6: "Doctorate", 7: "Other"},
     "EMPST31": {1: "Employed", 2: "Job to Return To", 3: "Job in Ref Period", 4: "Not Employed"},
     
     # Insurance & Access
@@ -92,7 +92,7 @@ CATEGORICAL_LABELS = {
 
     # Feature Engineered
     "RECENT_LIFE_TRANSITION": {1: "Yes", 0: "No"},
-    "MARRY31X_GRP": {1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married", 6: "Under 16"},
+    "MARRY31X_GRP": {1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married"},
     "EMPST31_GRP": {1: "Employed", 4: "Not Employed", 0: "Not Employed"}
 }
 
@@ -117,13 +117,13 @@ OPTIONAL_FEATURES = [
 
 # Define the categories for the nominal features (for OneHotEncoder)
 NOMINAL_CATEGORIES = [
-    list(CATEGORICAL_LABELS["REGION23"].values()),
-    list(CATEGORICAL_LABELS["MARRY31X_GRP"].values()),
-    list(CATEGORICAL_LABELS["INSCOV23"].values())
+    list(dict.fromkeys(CATEGORICAL_LABELS["REGION23"].values())),     # 1st
+    list(dict.fromkeys(CATEGORICAL_LABELS["MARRY31X_GRP"].values())), # 2nd
+    list(dict.fromkeys(CATEGORICAL_LABELS["INSCOV23"].values()))      # 3rd
 ]
 
 # Define the categories for the ordinal features ordered from lowest to highest (for OrdinalEncoder)
 ORDINAL_CATEGORIES = [
-    ["Poor/Negative", "Near Poor", "Low Income", "Middle Income", "High Income"], # POVCAT23
-    ["No Degree", "GED", "HS Diploma", "Bachelor's", "Master's", "Doctorate", "Other"] # HIDEG 
+    list(dict.fromkeys(CATEGORICAL_LABELS["POVCAT23"].values())), # POVCAT23
+    list(dict.fromkeys(CATEGORICAL_LABELS["HIDEG"].values()))     # HIDEG 
 ]
