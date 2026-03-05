@@ -2488,7 +2488,7 @@ plt.show()
 # </div> 
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Use the complete data preprocessing pipeline to create preprocessed from raw data sets (overwrite the preprocessed DataFrames created during earlier steps).
+#     📌 Use the complete data preprocessing pipeline to create preprocessed data sets from raw data.
 # </div>
 
 # %%
@@ -2503,15 +2503,36 @@ preprocessor = create_preprocessing_pipeline(
     strict=False
 )
 
-# Preprocess training, validation, and test data
+# Preprocess training, validation, and test data 
+# Note: Overwrite the preprocessed DataFrames created during earlier steps
 X_train_preprocessed = preprocessor.fit_transform(X_train)
 X_val_preprocessed = preprocessor.transform(X_val)
 X_test_preprocessed = preprocessor.transform(X_test)
 
 # %%
 # --- Verify results ---
-# Verification of feature scaling
-output_numerical_features = preprocessor.named_steps["feature_transformer"].named_transformers_["numerical_scaler"].get_feature_names_out()
+# Verify absence of missing values and numeric types only in preprocessed data, and matching row counts between raw and processed data
+datasets = {
+    "Train": (X_train, X_train_preprocessed),
+    "Val": (X_val, X_val_preprocessed),
+    "Test": (X_test, X_test_preprocessed)
+}
+print("--- Preprocessing Pipeline Sanity Checks ---")
+for name, (raw, processed) in datasets.items():
+    # Check row counts (should match since no outlier removal)
+    rows_match = "✅" if len(raw) == len(processed) else "❌"
+    
+    # Check for any remaining missing values
+    null_count = processed.isnull().sum().sum()
+    nulls_status = f"✅" if null_count == 0 else f"❌ ({null_count})"
+    
+    # Check if all columns are now numeric (floats/ints)
+    all_numeric = "✅" if processed.apply(pd.api.types.is_numeric_dtype).all() else "❌"
+    
+    print(f"{name:5}: Rows Match: {rows_match} | No NaNs: {nulls_status} | All Numeric: {all_numeric} | Raw Shape: {raw.shape} | Processed Shape: {processed.shape}")
+
+# Verify feature scaling
+output_numerical_features = preprocessor.named_steps["feature_scaler_encoder"].named_transformers_["numerical_scaler"].get_feature_names_out()
 preprocessor_verify_scaling = X_train_preprocessed[output_numerical_features].describe().loc[["mean", "std", "min", "max"]]
 preprocessor_verify_scaling.style \
     .pipe(add_caption, "Verification of Feature Scaling") \
