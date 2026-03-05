@@ -6,7 +6,7 @@ notebooks/loan_default_prediction.ipynb
 assets/header_*.png
 assets/header_*.jpg
 assets/linkedin_thumbnail.png
-assets/*pipeline*.svg
+assets/*pipeline_*.svg
 figures/*_sample.png
 
 # Environment variables
