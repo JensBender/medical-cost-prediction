@@ -103,35 +103,27 @@
     <path d="M 300,560 L 300,610 L 500,610 L 500,640" class="flow-line" />
     <path d="M 700,560 L 700,610 L 500,610 L 500,640" class="flow-line flow-line-cat" />
 
-    <!-- Step 3 to Step 4 -->
-    <path d="M 500,760 L 500,820" class="base-line" />
-    <path d="M 500,760 L 500,820" class="flow-line" />
-
     <!-- Step 4 Split (Top) -->
-    <path d="M 500,855 L 500,865 L 162.5,865 L 162.5,870" class="base-line" />
-    <path d="M 500,855 L 500,865 L 387.5,865 L 387.5,870" class="base-line" />
-    <path d="M 500,855 L 500,865 L 612.5,865 L 612.5,870" class="base-line" />
-    <path d="M 500,855 L 500,865 L 837.5,865 L 837.5,870" class="base-line" />
-    
-    <path d="M 500,855 L 500,865 L 162.5,865 L 162.5,870" class="flow-line" />
-    <path d="M 500,855 L 500,865 L 387.5,865 L 387.5,870" class="flow-line flow-line-cat" />
-    <path d="M 500,855 L 500,865 L 612.5,865 L 612.5,870" class="flow-line flow-line-nom" />
-    <path d="M 500,855 L 500,865 L 837.5,865 L 837.5,870" class="flow-line flow-line-bin" />
+    <path d="M 500,760 L 500,790 L 162.5,790 L 162.5,870" class="base-line" />
+    <path d="M 500,760 L 500,790 L 387.5,790 L 387.5,870" class="base-line" />
+    <path d="M 500,760 L 500,790 L 612.5,790 L 612.5,870" class="base-line" />
+    <path d="M 500,760 L 500,790 L 837.5,790 L 837.5,870" class="base-line" />
+
+    <path d="M 500,760 L 500,790 L 162.5,790 L 162.5,870" class="flow-line" />
+    <path d="M 500,760 L 500,790 L 387.5,790 L 387.5,870" class="flow-line flow-line-cat" />
+    <path d="M 500,760 L 500,790 L 612.5,790 L 612.5,870" class="flow-line flow-line-nom" />
+    <path d="M 500,760 L 500,790 L 837.5,790 L 837.5,870" class="flow-line flow-line-bin" />
 
     <!-- Step 4 Merge (Bottom) -->
-    <path d="M 162.5,1020 L 162.5,1030 L 500,1030 L 500,1040" class="base-line" />
-    <path d="M 387.5,1020 L 387.5,1030 L 500,1030 L 500,1040" class="base-line" />
-    <path d="M 612.5,1020 L 612.5,1030 L 500,1030 L 500,1040" class="base-line" />
-    <path d="M 837.5,1020 L 837.5,1030 L 500,1030 L 500,1040" class="base-line" />
+    <path d="M 162.5,1020 L 162.5,1070 L 500,1070 L 500,1100" class="base-line" />
+    <path d="M 387.5,1020 L 387.5,1070 L 500,1070 L 500,1100" class="base-line" />
+    <path d="M 612.5,1020 L 612.5,1070 L 500,1070 L 500,1100" class="base-line" />
+    <path d="M 837.5,1020 L 837.5,1070 L 500,1070 L 500,1100" class="base-line" />
 
-    <path d="M 162.5,1020 L 162.5,1030 L 500,1030 L 500,1040" class="flow-line" />
-    <path d="M 387.5,1020 L 387.5,1030 L 500,1030 L 500,1040" class="flow-line flow-line-cat" />
-    <path d="M 612.5,1020 L 612.5,1030 L 500,1030 L 500,1040" class="flow-line flow-line-nom" />
-    <path d="M 837.5,1020 L 837.5,1030 L 500,1030 L 500,1040" class="flow-line flow-line-bin" />
-
-    <!-- Step 4 to Output -->
-    <path d="M 500,1040 L 500,1100" class="base-line" />
-    <path d="M 500,1040 L 500,1100" class="flow-line" />
+    <path d="M 162.5,1020 L 162.5,1070 L 500,1070 L 500,1100" class="flow-line" />
+    <path d="M 387.5,1020 L 387.5,1070 L 500,1070 L 500,1100" class="flow-line flow-line-cat" />
+    <path d="M 612.5,1020 L 612.5,1070 L 500,1070 L 500,1100" class="flow-line flow-line-nom" />
+    <path d="M 837.5,1020 L 837.5,1070 L 500,1070 L 500,1100" class="flow-line flow-line-bin" />
   </g>
 
   <!-- ============================================== NODES ============================================== -->
@@ -290,13 +282,13 @@
   </g>
 
   <!-- Output Data -->
-  <g id="output-data" transform="translate(300, 1100)">
-    <rect width="400" height="80" class="box-outer pulse-out" style="fill: #1e293b; stroke: #818cf8; stroke-width: 3;" filter="url(#glow)" />
-    <text x="200" y="32" class="text-title" style="fill: #ffffff;">Model-Ready Data</text>
-    <text x="200" y="55" class="text-desc" style="fill: #c7d2fe;">Fully Imputed, Engineered, Scaled &amp; Encoded</text>
+  <g id="output-data" transform="translate(250, 1100)">
+    <rect width="500" height="80" class="box-outer pulse-out" style="fill: #1e293b; stroke: #818cf8; stroke-width: 3;" filter="url(#glow)" />
+    <text x="250" y="32" class="text-title" style="fill: #ffffff;">Output Data (Model-Ready Features)</text>
+    <text x="250" y="55" class="text-desc" style="fill: #c7d2fe;">Fully Imputed, Engineered, Scaled &amp; Encoded</text>
     
     <!-- Little decorative checkmarks or stars -->
     <path d="M 50,40 L 60,50 L 80,30" stroke="#4ade80" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M 350,40 L 360,50 L 380,30" stroke="#4ade80" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 420,40 L 430,50 L 450,30" stroke="#4ade80" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
 </svg>
