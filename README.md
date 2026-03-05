@@ -174,6 +174,9 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to account for the comp
 - **Standardizing Missing Values**: Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
 - **Train-Validation-Test Split**: Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and extreme tail of the target variable.
 
+Developed a fully automated, robust data preprocessing pipeline using custom scikit-learn transformers to handle missing values, engineer medical features, scale, encode, and prepare features for model training and production deployment.
+![Data Preprocessing Pipeline](/assets/pipeline.svg)
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
