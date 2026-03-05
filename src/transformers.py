@@ -191,6 +191,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         # Store input feature number and names as learned attributes
         self.n_features_in_ = X.shape[1]
         self.feature_names_in_ = X.columns.tolist()
+        return self
 
     def transform(self, X):
         # Ensure .fit() happened before
@@ -203,6 +204,11 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         self._check_missing_values(X)
 
         return X
+
+    def get_feature_names_out(self, input_features=None):
+        sklearn_validation.check_is_fitted(self)
+        # Returns the input feature names
+        return self.feature_names_in_
 
     def fit_transform(self, X, y=None):
         self.fit(X, y)
@@ -336,6 +342,11 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
             # Derive Functional Limitations Count
             LIMITATION_COUNT=X[self.FUNCTIONAL_LIMITATION_FEATURES].sum(axis=1)
         )
+
+    def get_feature_names_out(self, input_features=None):
+        sklearn_validation.check_is_fitted(self)
+        # Return the output feature names, including derived ones
+        return self.feature_names_out_
 
 
 class RobustStandardScaler(StandardScaler):
@@ -474,6 +485,9 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         self.stats_["pct_outliers"] = self.stats_["n_outliers"] / len(df) * 100  # by column
         self.outliers_ = (~self.final_mask_).sum()  # across all columns
         
+        # Store feature names
+        self.feature_names_in_ = df.columns.tolist()
+        
         return self
 
     def transform(self, df):
@@ -486,6 +500,11 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         
         # Remove outliers based on the final mask
         return df[self.final_mask_]
+
+    def get_feature_names_out(self, input_features=None):
+        sklearn_validation.check_is_fitted(self)
+        # Return the input feature names
+        return self.feature_names_in_
 
     def fit_transform(self, df, numerical_columns):
         # Perform both fit and transform 
@@ -552,6 +571,9 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         self.stats_["pct_outliers"] = self.stats_["n_outliers"] / len(df) * 100  # by column
         self.outliers_ = (~self.final_mask_).sum()  # across all columns
                
+        # Store feature names
+        self.feature_names_in_ = df.columns.tolist()
+
         return self
 
     def transform(self, df):
@@ -564,6 +586,11 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         
         # Remove outliers based on the final mask
         return df[self.final_mask_]
+
+    def get_feature_names_out(self, input_features=None):
+        sklearn_validation.check_is_fitted(self)
+        # Return the input feature names
+        return self.feature_names_in_
 
     def fit_transform(self, df, numerical_columns):
         # Perform both fit and transform
