@@ -4,6 +4,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn import set_config
 
 # Local imports
+from src.constants import NOMINAL_CATEGORIES, ORDINAL_CATEGORIES
 from src.transformers import (
     MissingValueChecker, 
     RobustSimpleImputer,
@@ -72,8 +73,8 @@ def create_preprocessing_pipeline(
         ("feature_scaler_encoder", ColumnTransformer(
             transformers=[
                 ("numerical_scaler", RobustStandardScaler(), numerical_features + MedicalFeatureDeriver.OUTPUT_FEATURES),
-                ("ordinal_encoder", RobustOrdinalEncoder(), ordinal_features),
-                ("nominal_encoder", RobustOneHotEncoder(drop="first", sparse_output=False), nominal_features),
+                ("ordinal_encoder", RobustOrdinalEncoder(categories=ORDINAL_CATEGORIES), ordinal_features),
+                ("nominal_encoder", RobustOneHotEncoder(drop="first", sparse_output=False, categories=NOMINAL_CATEGORIES), nominal_features),
                 ("binary_passthrough", "passthrough", binary_features)
             ],
             remainder="drop",
