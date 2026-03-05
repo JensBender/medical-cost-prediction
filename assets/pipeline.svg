@@ -157,7 +157,7 @@
   <g id="step-1" transform="translate(200, 240)">
     <rect width="600" height="100" class="box-outer pulse-1" />
     <text x="300" y="25" class="text-title">
-      1. <tspan class="hl-class">MissingValueChecker</tspan>
+      1. <tspan class="hl-class">Missing Value Checker</tspan>
     </text>
     
     <!-- Step 1 Left Inner -->
@@ -183,14 +183,14 @@
   <g id="step-2" transform="translate(100, 400)">
     <rect width="800" height="180" class="box-outer pulse-2" />
     <text x="400" y="25" class="text-title">
-      2. <tspan class="hl-class">ColumnTransformer</tspan> (missing_value_imputer)
+      2. <tspan class="hl-class">Missing Value Imputer</tspan> (ColumnTransformer)
     </text>
 
     <!-- Step 2 Inner 1 (Numerical) -->
     <g transform="translate(30, 50)">
       <rect width="340" height="110" class="box-inner" />
       <rect width="5" height="110" fill="#38bdf8" rx="2.5" />
-      <text x="170" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">numerical_imputer</text>
+      <text x="170" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Numerical Imputer</text>
       <text x="170" y="50" class="text-code">
         <tspan class="hl-class">RobustSimpleImputer</tspan>(
       </text>
@@ -204,7 +204,7 @@
     <g transform="translate(430, 50)">
       <rect width="340" height="110" class="box-inner" />
       <rect width="5" height="110" fill="#4ade80" rx="2.5" />
-      <text x="170" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">categorical_imputer</text>
+      <text x="170" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Categorical Imputer</text>
       <text x="170" y="50" class="text-code">
         <tspan class="hl-class">RobustSimpleImputer</tspan>(
       </text>
@@ -219,23 +219,23 @@
   <g id="step-3" transform="translate(200, 640)">
     <rect width="600" height="120" class="box-outer pulse-3" />
     <text x="300" y="25" class="text-title">
-      3. <tspan class="hl-class">MedicalFeatureDeriver</tspan>
+      3. <tspan class="hl-class">Medical Feature Deriver</tspan>
     </text>
-    <text x="300" y="50" class="text-desc">Aggregates specific binary indicators into engineered risk counts</text>
+    <text x="300" y="50" class="text-desc">Aggregates specific binary indicators into counts</text>
 
     <!-- Inner feature blocks -->
     <g transform="translate(80, 65)">
       <rect width="210" height="40" class="box-inner" style="fill: #1e293b;" />
       <rect width="4" height="40" fill="#f9a8d4" rx="2" />
       <text x="105" y="18" class="text-code hl-eng" style="font-weight: bold;">CHRONIC_COUNT</text>
-      <text x="105" y="32" class="text-code" style="font-size: 10px;">Σ chronic condition flags</text>
+      <text x="105" y="32" class="text-code" style="font-size: 10px;">Sum of chronic condition flags</text>
     </g>
     
     <g transform="translate(310, 65)">
       <rect width="210" height="40" class="box-inner" style="fill: #1e293b;" />
       <rect width="4" height="40" fill="#f9a8d4" rx="2" />
       <text x="105" y="18" class="text-code hl-eng" style="font-weight: bold;">LIMITATION_COUNT</text>
-      <text x="105" y="32" class="text-code" style="font-size: 10px;">Σ functional limits flags</text>
+      <text x="105" y="32" class="text-code" style="font-size: 10px;">Sum of functional limits flags</text>
     </g>
   </g>
 
@@ -243,14 +243,14 @@
   <g id="step-4" transform="translate(40, 820)">
     <rect width="920" height="220" class="box-outer pulse-4" />
     <text x="460" y="25" class="text-title">
-      4. <tspan class="hl-class">ColumnTransformer</tspan> (feature_transformer)
+      4. <tspan class="hl-class">Feature Scaler &amp; Encoder</tspan> (ColumnTransformer)
     </text>
 
     <!-- Step 4 Inner 1 (Numerical + Engineered) -->
     <g transform="translate(20, 50)">
       <rect width="205" height="150" class="box-inner" />
       <rect width="5" height="150" fill="#38bdf8" rx="2.5" />
-      <text x="102.5" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">numerical_scaler</text>
+      <text x="102.5" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Numerical Scaler</text>
       <text x="102.5" y="55" class="text-code hl-class">RobustStandardScaler()</text>
       <text x="102.5" y="90" class="text-desc">Transforms to:</text>
       <text x="102.5" y="105" class="text-code" style="font-size: 11px;">mean=0, variance=1</text>
@@ -262,7 +262,7 @@
     <g transform="translate(245, 50)">
       <rect width="205" height="150" class="box-inner" />
       <rect width="5" height="150" fill="#34d399" rx="2.5" />
-      <text x="102.5" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">ordinal_encoder</text>
+      <text x="102.5" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Ordinal Encoder</text>
       <text x="102.5" y="55" class="text-code hl-class">RobustOrdinalEncoder()</text>
       <text x="102.5" y="90" class="text-desc">Preserves internal</text>
       <text x="102.5" y="105" class="text-desc">categorical order</text>
@@ -273,7 +273,7 @@
     <g transform="translate(470, 50)">
       <rect width="205" height="150" class="box-inner" />
       <rect width="5" height="150" fill="#facc15" rx="2.5" />
-      <text x="102.5" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">nominal_encoder</text>
+      <text x="102.5" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Nominal Encoder</text>
       <text x="102.5" y="50" class="text-code hl-class">RobustOneHotEncoder(</text>
       <text x="102.5" y="65" class="text-code">
         <tspan class="hl-kw">drop</tspan>=<tspan class="hl-string">"first"</tspan>,
@@ -289,7 +289,7 @@
     <g transform="translate(695, 50)">
       <rect width="205" height="150" class="box-inner" />
       <rect width="5" height="150" fill="#d8b4fe" rx="2.5" />
-      <text x="102.5" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">binary_passthrough</text>
+      <text x="102.5" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Binary Passthrough</text>
       <text x="102.5" y="55" class="text-code hl-string">"passthrough"</text>
       <text x="102.5" y="90" class="text-desc">Passes through unchanged</text>
       <text x="102.5" y="105" class="text-desc">(Already 0/1 coded)</text>
@@ -300,8 +300,8 @@
   <!-- Output Data -->
   <g id="output-data" transform="translate(300, 1100)">
     <rect width="400" height="80" class="box-outer pulse-out" style="fill: #1e293b; stroke: #818cf8; stroke-width: 3;" filter="url(#glow)" />
-    <text x="200" y="32" class="text-title" style="fill: #ffffff;">Model-Ready Dataset</text>
-    <text x="200" y="55" class="text-desc" style="fill: #c7d2fe;">Fully Imputed, Scaled, Encoded &amp; Augmented</text>
+    <text x="200" y="32" class="text-title" style="fill: #ffffff;">Model-Ready Data</text>
+    <text x="200" y="55" class="text-desc" style="fill: #c7d2fe;">Fully Imputed, Engineered, Scaled &amp; Encoded</text>
     
     <!-- Little decorative checkmarks or stars -->
     <path d="M 50,40 L 60,50 L 80,30" stroke="#4ade80" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
