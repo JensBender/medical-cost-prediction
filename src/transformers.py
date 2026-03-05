@@ -1,6 +1,7 @@
 from sklearn.base import BaseEstimator, TransformerMixin 
-from sklearn.utils import validation as sklearn_validation
 from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, OrdinalEncoder
+from sklearn.utils import validation as sklearn_validation
 import pandas as pd
 import logging
 
@@ -335,6 +336,32 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
             # Derive Functional Limitations Count
             LIMITATION_COUNT=X[self.FUNCTIONAL_LIMITATION_FEATURES].sum(axis=1)
         )
+
+
+class RobustStandardScaler(StandardScaler):
+    """
+    A wrapper for StandardScaler that handles empty DataFrames gracefully.
+
+    Instead of raising a ValueError (StandardScaler's default behavior) when 
+    encountering an empty DataFrame during .transform(), this class returns 
+    the empty DataFrame as-is. This is useful for production pipelines where 
+    batch processing might produce zero-row outputs.
+
+    Validation Logic:
+    Consistent with other transformers in this pipeline, this class requires 
+    input 'X' to be a pandas DataFrame and will raise a TypeError otherwise.
+
+    Note:
+        During transform(), if 'X' is empty (X.empty is True), the original 
+        input is returned without scaling.
+    """
+    def transform(self, X):
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("The provided input X must be a pandas DataFrame.")
+    
+        if X.empty:
+            return X
+        return super().transform(X)
 
 
 class OutlierRemover3SD(BaseEstimator, TransformerMixin):
