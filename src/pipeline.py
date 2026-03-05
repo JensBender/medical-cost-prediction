@@ -1,7 +1,7 @@
 # Third-party library imports
 from sklearn.pipeline import Pipeline
-from sklearn import set_config
 from sklearn.compose import ColumnTransformer
+from sklearn import set_config
 
 # Local imports
 from src.transformers import (
@@ -56,7 +56,6 @@ def create_preprocessing_pipeline(
     Returns:
         sklearn.pipeline.Pipeline: A complete data preprocessing pipeline.
     """
-    # Combine categorical features for imputation
     categorical_features = ordinal_features + nominal_features + binary_features
 
     return Pipeline(steps=[
@@ -70,7 +69,7 @@ def create_preprocessing_pipeline(
             verbose_feature_names_out=False
         )),
         ("medical_feature_deriver", MedicalFeatureDeriver()),
-        ("feature_transformer", ColumnTransformer(
+        ("feature_scaler_encoder", ColumnTransformer(
             transformers=[
                 ("numerical_scaler", RobustStandardScaler(), numerical_features + MedicalFeatureDeriver.OUTPUT_FEATURES),
                 ("ordinal_encoder", RobustOrdinalEncoder(), ordinal_features),
