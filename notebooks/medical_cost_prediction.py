@@ -385,6 +385,9 @@ df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2
 # Joint Pain: Convert -1 to 1 (Yes) only if they have Arthritis 
 df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
 
+# Convert remaining MEPS missing codes to np.nan
+df.replace(missing_codes, np.nan, inplace=True)
+
 # Verify results
 df.isnull().sum().sort_values(ascending=False)
 
