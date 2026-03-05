@@ -319,8 +319,8 @@ raw_binary_features = [
     "WLKLIM31", "COGLIM31", "JTPAIN31_M18", "HIBPDX", "CHOLDX", 
     "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
 ]
-raw_nominal_features = ["REGION23", "MARRY31X", "EMPST31", "INSCOV23"]
-raw_ordinal_features = ["POVCAT23", "HIDEG"]
+raw_nominal_features = ["REGION23", "MARRY31X", "EMPST31", "INSCOV23", "HIDEG"]
+raw_ordinal_features = ["POVCAT23"]
 
 # Combined raw feature sets
 raw_categorical_features = raw_nominal_features + raw_ordinal_features + raw_binary_features
@@ -1408,7 +1408,7 @@ df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
 input_numerical_features = raw_numerical_features.copy()
 input_ordinal_features = raw_ordinal_features.copy()
 input_binary_features = raw_binary_features + ["RECENT_LIFE_TRANSITION", "EMPST31_GRP"]  # employment is binary after collapsing categories
-input_nominal_features = ["REGION23", "MARRY31X_GRP", "INSCOV23"] 
+input_nominal_features = ["REGION23", "MARRY31X_GRP", "INSCOV23", "HIDEG"] 
 
 # Combined pipeline feature sets
 input_categorical_features = input_nominal_features + input_ordinal_features + input_binary_features

@@ -119,11 +119,11 @@ OPTIONAL_FEATURES = [
 NOMINAL_CATEGORIES = [
     list(dict.fromkeys(CATEGORICAL_LABELS["REGION23"].values())),     # 1st
     list(dict.fromkeys(CATEGORICAL_LABELS["MARRY31X_GRP"].values())), # 2nd
-    list(dict.fromkeys(CATEGORICAL_LABELS["INSCOV23"].values()))      # 3rd
+    list(dict.fromkeys(CATEGORICAL_LABELS["INSCOV23"].values())),     # 3rd
+    list(dict.fromkeys(CATEGORICAL_LABELS["HIDEG"].values()))         # 4th
 ]
 
 # Define the categories for the ordinal features ordered from lowest to highest (for OrdinalEncoder)
 ORDINAL_CATEGORIES = [
-    list(dict.fromkeys(CATEGORICAL_LABELS["POVCAT23"].values())), # POVCAT23
-    list(dict.fromkeys(CATEGORICAL_LABELS["HIDEG"].values()))     # HIDEG 
+    list(dict.fromkeys(CATEGORICAL_LABELS["POVCAT23"].values()))  # POVCAT23
 ]
