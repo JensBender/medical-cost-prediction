@@ -385,10 +385,6 @@ df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2
 # Joint Pain: Convert -1 to 1 (Yes) only if they have Arthritis 
 df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
 
-# %%
-# Convert all MEPS missing codes to np.nan
-df = df.replace(missing_codes, np.nan)
-
 # Verify results
 df.isnull().sum().sort_values(ascending=False)
 
@@ -2492,6 +2488,13 @@ plt.show()
 # </div>
 
 # %%
+# Convert nominal and ordinal features from numeric codes to descriptive string labels
+# Note: This ensures pipeline generates human-readable feature names out (e.g., REGION23_Midwest not REGION23_2.0)
+for subset in [X_train, X_val, X_test]:
+    for feature in (input_nominal_features + input_ordinal_features):
+        if feature in subset.columns:
+            subset[feature] = subset[feature].map(CATEGORICAL_LABELS[feature])
+            
 # Create data preprocessing pipeline
 preprocessor = create_preprocessing_pipeline(
     required_features, 
@@ -2537,6 +2540,10 @@ preprocessor_verify_scaling = X_train_preprocessed[output_numerical_features].de
 preprocessor_verify_scaling.style \
     .pipe(add_caption, "Verification of Feature Scaling") \
     .format("{:.2f}")
+# %%
+# Check feature names of pipeline output
+preprocessor.get_feature_names_out()
+
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Summary</h1>
