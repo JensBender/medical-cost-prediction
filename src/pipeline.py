@@ -2,13 +2,15 @@
 from sklearn.pipeline import Pipeline
 from sklearn import set_config
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, OrdinalEncoder
 
 # Local imports
 from src.transformers import (
     MissingValueChecker, 
     RobustSimpleImputer,
-    MedicalFeatureDeriver
+    MedicalFeatureDeriver,
+    RobustStandardScaler,
+    RobustOneHotEncoder,
+    RobustOrdinalEncoder
 )
 
 # Ensure that the output of all scikit-learn transformers is a Pandas DataFrame
@@ -37,9 +39,9 @@ def create_preprocessing_pipeline(
        - `CHRONIC_COUNT`: Sum of chronic medical condition flags.
        - `LIMITATION_COUNT`: Sum of functional limitation flags.
     4. Feature Scaling and Encoding: Transforms all features into a model-ready format:
-       - `StandardScaler`: Scales numerical features (raw and engineered) to mean 0 and variance 1.
-       - `OneHotEncoder`: Converts nominal features into binary dummy variables (dropping first).
-       - `OrdinalEncoder`: Encodes ordinal features while preserving their inherent order.
+       - `RobustStandardScaler`: Scales numerical features (raw and engineered) to mean 0 and variance 1.
+       - `RobustOneHotEncoder`: Converts nominal features into binary dummy variables (dropping first).
+       - `RobustOrdinalEncoder`: Encodes ordinal features while preserving their inherent order.
        - Binary Passthrough: Preserves original binary features without modification.
 
     Args:
@@ -70,9 +72,9 @@ def create_preprocessing_pipeline(
         ("medical_feature_deriver", MedicalFeatureDeriver()),
         ("feature_transformer", ColumnTransformer(
             transformers=[
-                ("numerical_scaler", StandardScaler(), numerical_features + MedicalFeatureDeriver.OUTPUT_FEATURES),
-                ("ordinal_encoder", OrdinalEncoder(), ordinal_features),
-                ("nominal_encoder", OneHotEncoder(drop="first", sparse_output=False), nominal_features),
+                ("numerical_scaler", RobustStandardScaler(), numerical_features + MedicalFeatureDeriver.OUTPUT_FEATURES),
+                ("ordinal_encoder", RobustOrdinalEncoder(), ordinal_features),
+                ("nominal_encoder", RobustOneHotEncoder(drop="first", sparse_output=False), nominal_features),
                 ("binary_passthrough", "passthrough", binary_features)
             ],
             remainder="drop",
