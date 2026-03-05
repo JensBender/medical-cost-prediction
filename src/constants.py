@@ -114,3 +114,16 @@ OPTIONAL_FEATURES = [
     "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
     "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
 ]
+
+# Define the categories for the nominal features (for OneHotEncoder)
+NOMINAL_CATEGORIES = [
+    list(CATEGORICAL_LABELS["REGION23"].values()),
+    list(CATEGORICAL_LABELS["MARRY31X_GRP"].values()),
+    list(CATEGORICAL_LABELS["INSCOV23"].values())
+]
+
+# Define the categories for the ordinal features ordered from lowest to highest (for OrdinalEncoder)
+ORDINAL_CATEGORIES = [
+    ["Poor/Negative", "Near Poor", "Low Income", "Middle Income", "High Income"], # POVCAT23
+    ["No Degree", "GED", "HS Diploma", "Bachelor's", "Master's", "Doctorate", "Other"] # HIDEG 
+]
