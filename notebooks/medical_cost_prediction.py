@@ -53,14 +53,6 @@ import matplotlib.ticker as mtick  # to format axis ticks
 import seaborn as sns
 import math  # to calculate n_rows in subplot matrix
 
-# Data preprocessing (scikit-learn)
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import (
-    StandardScaler, 
-    OneHotEncoder, 
-    OrdinalEncoder
-)
-
 # Model selection
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from scipy.stats import randint, uniform  # for random hyperparameter values
@@ -87,9 +79,6 @@ from src.constants import (
     CATEGORICAL_LABELS
 )
 from src.transformers import (
-    MissingValueChecker, 
-    MissingValueError,
-    MedicalFeatureDeriver,
     OutlierRemover3SD,
     OutlierRemoverIQR
 )
