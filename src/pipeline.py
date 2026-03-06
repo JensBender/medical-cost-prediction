@@ -6,16 +6,14 @@ from sklearn import set_config
 # Local imports
 from src.constants import (
     NOMINAL_CATEGORIES,
-    NOMINAL_DROP_CATEGORIES, 
-    ORDINAL_CATEGORIES
+    NOMINAL_DROP_CATEGORIES 
 )
 from src.transformers import (
     MissingValueChecker, 
     RobustSimpleImputer,
     MedicalFeatureDeriver,
     RobustStandardScaler,
-    RobustOneHotEncoder,
-    RobustOrdinalEncoder
+    RobustOneHotEncoder
 )
 
 # Ensure that the output of all scikit-learn transformers is a Pandas DataFrame
@@ -28,7 +26,6 @@ def create_preprocessing_pipeline(
     required_features, 
     optional_features, 
     numerical_features, 
-    ordinal_features, 
     nominal_features, 
     binary_features, 
     strict=True
@@ -38,22 +35,20 @@ def create_preprocessing_pipeline(
     1. Missing Value Check: Identifies missing values using `MissingValueChecker`.
        It raises a `MissingValueError` for required columns and logs a warning for optional columns.
     2. Missing Value Imputation: Replaces missing values using a `ColumnTransformer` with `RobustSimpleImputer`. 
-       - Median imputation for numerical features.
+       - Median imputation for numerical features (including ordinal).
        - Mode imputation for categorical features.
     3. Feature Engineering: Uses `MedicalFeatureDeriver` to aggregate binary indicators into counts:
        - `CHRONIC_COUNT`: Sum of chronic medical condition flags.
        - `LIMITATION_COUNT`: Sum of functional limitation flags.
     4. Feature Scaling and Encoding: Transforms all features into a model-ready format:
-       - `RobustStandardScaler`: Scales numerical features (raw and engineered) to mean 0 and variance 1.
-       - `RobustOneHotEncoder`: Converts nominal features into binary dummy variables (dropping first).
-       - `RobustOrdinalEncoder`: Encodes ordinal features while preserving their inherent order.
+       - `RobustStandardScaler`: Scales numerical features (raw, ordinal, and engineered) to mean 0 and variance 1.
+       - `RobustOneHotEncoder`: Converts nominal features into binary dummy variables (dropping preferred baselines).
        - Binary Passthrough: Preserves original binary features without modification.
 
     Args:
         required_features (list): Columns that must not contain missing values.
         optional_features (list): Columns where missing values are tolerated and then imputed.
-        numerical_features (list): Numerical column names for median imputation and scaling.
-        ordinal_features (list): Ordinal column names for mode imputation and ordinal encoding.
+        numerical_features (list): Numerical and ordinal column names for median imputation and scaling.
         nominal_features (list): Nominal column names for mode imputation and one-hot encoding.
         binary_features (list): Binary column names for mode imputation and to pass through encoder (already 0/1).
         strict (bool, optional): If True, pipeline raises error for missing required values. Defaults to True.
@@ -61,7 +56,7 @@ def create_preprocessing_pipeline(
     Returns:
         sklearn.pipeline.Pipeline: A complete data preprocessing pipeline.
     """
-    categorical_features = ordinal_features + nominal_features + binary_features
+    categorical_features = nominal_features + binary_features
 
     return Pipeline(steps=[
         ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
@@ -77,7 +72,6 @@ def create_preprocessing_pipeline(
         ("feature_scaler_encoder", ColumnTransformer(
             transformers=[
                 ("numerical_scaler", RobustStandardScaler(), numerical_features + MedicalFeatureDeriver.OUTPUT_FEATURES),
-                ("ordinal_encoder", RobustOrdinalEncoder(categories=ORDINAL_CATEGORIES), ordinal_features),
                 ("nominal_encoder", RobustOneHotEncoder(drop=NOMINAL_DROP_CATEGORIES, categories=NOMINAL_CATEGORIES, sparse_output=False), nominal_features),
                 ("binary_passthrough", "passthrough", binary_features)
             ],
@@ -92,7 +86,6 @@ def create_missing_value_handling_pipeline(
     required_features, 
     optional_features, 
     numerical_features, 
-    ordinal_features, 
     nominal_features, 
     binary_features, 
     strict=True
@@ -108,8 +101,7 @@ def create_missing_value_handling_pipeline(
     Args:
         required_features (list): Columns that must not contain missing values.
         optional_features (list): Columns where missing values are tolerated and then imputed.
-        numerical_features (list): Numerical columns for median imputation.
-        ordinal_features (list): Ordinal columns for mode imputation.
+        numerical_features (list): Numerical columns (including ordinal) for median imputation.
         nominal_features (list): Nominal columns for mode imputation.
         binary_features (list): Binary columns for mode imputation.
         strict (bool, optional): If True, pipeline raises error for missing required values. Defaults to True.
@@ -118,7 +110,7 @@ def create_missing_value_handling_pipeline(
         sklearn.pipeline.Pipeline: A pipeline configured for missing value handling.
     """
     # Combine categorical features for imputation
-    categorical_features = ordinal_features + nominal_features + binary_features
+    categorical_features = nominal_features + binary_features
     return Pipeline(steps=[
         ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
         ("missing_value_imputer", ColumnTransformer(
