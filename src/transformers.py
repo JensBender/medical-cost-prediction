@@ -239,7 +239,15 @@ class RobustSimpleImputer(SimpleImputer):
         
         if X.empty:
             return X
-        return super().transform(X)
+            
+        # Perform imputation
+        # Note: strategy="most_frequent" with mixed categorical column types (strings and numbers) in same imputer converts numeric dtypes to object
+        result = super().transform(X)
+        
+        # Restore numeric dtypes where possible
+        if isinstance(result, pd.DataFrame):
+            return result.apply(pd.to_numeric, errors="ignore")  # ignore leaves non-numeric columns unchanged, even if column has only a single non-numeric value 
+        return result
 
 
 class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
@@ -335,12 +343,16 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
         
         # Validate input 
         self._validate_input(X)
+        
+        # Performance optimization: Ensure binary indicators are treated as floats before summation. 
+        # This prevents the overhead computation if columns were converted from float to object by a previous step.
+        feature_subset = X[self.CHRONIC_CONDITION_FEATURES + self.FUNCTIONAL_LIMITATION_FEATURES].apply(pd.to_numeric, errors="coerce")
             
         return X.assign(
             # Derive Chronic Conditions Count
-            CHRONIC_COUNT=X[self.CHRONIC_CONDITION_FEATURES].sum(axis=1),
+            CHRONIC_COUNT=feature_subset[self.CHRONIC_CONDITION_FEATURES].sum(axis=1),
             # Derive Functional Limitations Count
-            LIMITATION_COUNT=X[self.FUNCTIONAL_LIMITATION_FEATURES].sum(axis=1)
+            LIMITATION_COUNT=feature_subset[self.FUNCTIONAL_LIMITATION_FEATURES].sum(axis=1)
         )
 
     def get_feature_names_out(self, input_features=None):
