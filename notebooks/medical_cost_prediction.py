@@ -79,6 +79,7 @@ from src.constants import (
     CATEGORICAL_LABELS
 )
 from src.transformers import (
+    MedicalFeatureDeriver,
     OutlierRemover3SD,
     OutlierRemoverIQR
 )
@@ -1394,14 +1395,9 @@ df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
 
 # %%
 # Pipeline Input Features
-input_numerical_features = raw_numerical_features.copy()
-input_ordinal_features = raw_ordinal_features.copy()
+input_numerical_features = raw_numerical_features.copy() + raw_ordinal_features.copy()  # combine raw numerical and ordinal features for pipeline to apply median imputation and Z-score scaling 
 input_binary_features = raw_binary_features + ["RECENT_LIFE_TRANSITION", "EMPST31_GRP"]  # employment is binary after collapsing categories
 input_nominal_features = ["REGION23", "MARRY31X_GRP", "INSCOV23", "HIDEG"] 
-
-# Combined pipeline feature sets
-input_categorical_features = input_nominal_features + input_ordinal_features + input_binary_features
-input_all_features = input_numerical_features + input_categorical_features
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
@@ -1409,7 +1405,7 @@ input_all_features = input_numerical_features + input_categorical_features
 # </div>
 
 # %%
-plot_categorical_distributions(df, input_nominal_features, input_ordinal_features, DISPLAY_LABELS, CATEGORICAL_LABELS, weights="PERWT23F")
+plot_categorical_distributions(df, input_nominal_features, ["POVCAT23"], DISPLAY_LABELS, CATEGORICAL_LABELS, weights="PERWT23F")
 plot_binary_distributions(df, input_binary_features, DISPLAY_LABELS, CATEGORICAL_LABELS, weights="PERWT23F")
 
 # %% [markdown]
@@ -1673,7 +1669,6 @@ missing_value_handling_pipeline = create_missing_value_handling_pipeline(
     required_features, 
     optional_features, 
     input_numerical_features, 
-    input_ordinal_features,
     input_nominal_features,
     input_binary_features,
     strict=False
@@ -1686,12 +1681,12 @@ X_test_preprocessed = missing_value_handling_pipeline.transform(X_test)
 
 # Verify results: Missing value counts of raw vs. preprocessed data
 pd.DataFrame({
-    "Training": X_train[input_all_features].isnull().sum(),
-    "Training (Preprocessed)": X_train_preprocessed[input_all_features].isnull().sum(),
-    "Validation": X_val[input_all_features].isnull().sum(),
-    "Validation (Preprocessed)": X_val_preprocessed[input_all_features].isnull().sum(),
-    "Test": X_test[input_all_features].isnull().sum(),
-    "Test (Preprocessed)": X_test_preprocessed[input_all_features].isnull().sum(),
+    "Training": X_train[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
+    "Training (Preprocessed)": X_train_preprocessed[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
+    "Validation": X_val[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
+    "Validation (Preprocessed)": X_val_preprocessed[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
+    "Test": X_test[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
+    "Test (Preprocessed)": X_test_preprocessed[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
 }).style.pipe(add_caption, "Verification of Missing Value Imputation")
 
 # %% [markdown]
@@ -1886,16 +1881,20 @@ benchmark_df.style \
 # </div> 
 
 # %%
+# Define features to be used for multivariate outlier detection
+# Note: Include numerical and binary features from both pipeline input and derived, exclude ordinal features (POVCAT23)
+mutlivariate_outlier_features = [feat for feat in input_numerical_features if feat != "POVCAT23"] + input_binary_features + derived_numerical_features
+
 # Initialize isolation forest
 isolation_forest = IsolationForest(contamination=0.05, random_state=RANDOM_STATE)
 
-# Fit isolation forest on training data (include pipeline input features and derived features)
-isolation_forest.fit(X_train_preprocessed[input_numerical_features + input_binary_features + derived_numerical_features])
+# Fit isolation forest on training data 
+isolation_forest.fit(X_train_preprocessed[mutlivariate_outlier_features])
 
 # Predict outliers on training data
-X_train_preprocessed["outlier"] = isolation_forest.predict(X_train_preprocessed[input_numerical_features + input_binary_features + derived_numerical_features])
+X_train_preprocessed["outlier"] = isolation_forest.predict(X_train_preprocessed[mutlivariate_outlier_features])
 X_train_preprocessed["outlier"] = X_train_preprocessed["outlier"].map({1: 0, -1: 1})  # recode to 0/1 (outlier no/yes)
-X_train_preprocessed["outlier_score"] = isolation_forest.decision_function(X_train_preprocessed[input_numerical_features + input_binary_features + derived_numerical_features])
+X_train_preprocessed["outlier_score"] = isolation_forest.decision_function(X_train_preprocessed[mutlivariate_outlier_features])
 
 # Show number of outliers
 n_outliers_train = X_train_preprocessed["outlier"].value_counts()[1]
@@ -2064,7 +2063,7 @@ benchmark_df.style \
 
 # %%
 # Outlier Numeric Profile: Median Differences (Population)
-outlier_num_cols = input_numerical_features + derived_numerical_features + ["TOTSLF23"]
+outlier_num_cols = [feat for feat in input_numerical_features if feat != "POVCAT23"] + derived_numerical_features + ["TOTSLF23"]
 
 # Calculate population medians (weighted) for each feature/target
 outlier_stats_num = pd.DataFrame(index=outlier_num_cols, columns=["Inliers", "Outliers"])
@@ -2380,14 +2379,14 @@ plt.show()
 
 # %%
 # Outlier Profile: Categorical Features (Population)
-n_features = len(input_nominal_features + input_ordinal_features)
+n_features = len(input_nominal_features + ["POVCAT23"])
 n_cols = 2
 n_rows = math.ceil(n_features / n_cols)
 
 fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 4))
 axes_flat = axes.flatten()
 
-for i, feature in enumerate(input_nominal_features + input_ordinal_features):
+for i, feature in enumerate(input_nominal_features + ["POVCAT23"]):
     ax = axes_flat[i]
     
     # Calculate weighted distribution for each group
@@ -2405,7 +2404,7 @@ for i, feature in enumerate(input_nominal_features + input_ordinal_features):
     plot_data = ct.reset_index().melt(id_vars=feature, var_name="Group", value_name="Percentage")
     
     # Ordering logic: Ordinals maintain index order; Nominals sort by Inlier prevalence
-    if feature in input_ordinal_features:
+    if feature == "POVCAT23":
         plot_data = plot_data.sort_values(by=feature)
     else:
         sort_order = ct["Inliers"].sort_values(ascending=False).index
@@ -2483,7 +2482,7 @@ plt.show()
 # Convert nominal and ordinal features from numeric codes to descriptive string labels
 # Note: This ensures pipeline generates human-readable feature names out (e.g., REGION23_Midwest not REGION23_2.0)
 for subset in [X_train, X_val, X_test]:
-    for feature in (input_nominal_features + input_ordinal_features):
+    for feature in input_nominal_features:
         if feature in subset.columns:
             subset[feature] = subset[feature].map(CATEGORICAL_LABELS[feature])
             
@@ -2492,7 +2491,6 @@ preprocessor = create_preprocessing_pipeline(
     required_features, 
     optional_features, 
     input_numerical_features, 
-    input_ordinal_features,
     input_nominal_features,
     input_binary_features,
     strict=False
@@ -2524,7 +2522,7 @@ for name, (raw, processed) in datasets.items():
     # Check if all columns are now numeric (floats/ints)
     all_numeric = "✅" if processed.apply(pd.api.types.is_numeric_dtype).all() else "❌"
     
-    print(f"{name:5}: Rows Match: {rows_match} | No NaNs: {nulls_status} | All Numeric: {all_numeric} | Raw Shape: {raw.shape} | Processed Shape: {processed.shape}")
+    print(f"{name:5}: Rows Match: {rows_match} | No Missing Values: {nulls_status} | All Numeric: {all_numeric} | Raw Shape: {raw.shape} | Processed Shape: {processed.shape}")
 
 # Verify feature scaling
 output_numerical_features = preprocessor.named_steps["feature_scaler_encoder"].named_transformers_["numerical_scaler"].get_feature_names_out()
@@ -2534,7 +2532,7 @@ preprocessor_verify_scaling.style \
     .format("{:.2f}")
 # %%
 # Check feature names of pipeline output
-preprocessor.get_feature_names_out()
+preprocessor.named_steps["feature_scaler_encoder"].named_transformers_["nominal_encoder"].get_feature_names_out()
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
