@@ -81,8 +81,8 @@
 
   <!-- Global Header -->
   <g transform="translate(500, 45)">
-    <text class="text-title" style="font-size: 24px;">Data Preprocessing Pipeline (scikit-learn)</text>
-    <text y="25" class="text-subtitle" style="font-size: 14px; fill: #38bdf8;">Robust data preprocessing with missing value handling, medical feature engineering, feature scaling &amp; encoding</text>
+    <text class="text-title" style="font-size: 24px;">Data Preprocessing Pipeline</text>
+    <text y="25" class="text-subtitle" style="font-size: 14px; fill: #38bdf8;">Missing value handling, medical feature engineering, feature scaling &amp; encoding (scikit-learn)</text>
   </g>
 
   <!-- ============================================== PATHS (Connections) ============================================== -->
@@ -127,7 +127,7 @@
   <!-- Input Data -->
   <g id="input-data" transform="translate(200, 100)">
     <rect width="600" height="60" class="box-outer" style="fill: #0b0f19; border: 1px dashed #475569;" />
-    <text x="300" y="25" class="text-title" style="fill: #e2e8f0;">Input Data (Features)</text>
+    <text x="300" y="25" class="text-title" style="fill: #e2e8f0;">Input Data (Raw Features)</text>
     <text x="300" y="45" class="text-code">
       <tspan fill="#94a3b8">Expects: </tspan><tspan class="hl-class">pandas.DataFrame</tspan>
     </text>
@@ -235,7 +235,7 @@
       <text x="102.5" y="90" class="text-desc">Transforms to:</text>
       <text x="102.5" y="105" class="text-code" style="font-size: 11px;">mean=0, variance=1</text>
       <text x="102.5" y="130" class="text-code hl-num" style="font-weight: 600;">[numerical_features]</text>
-      <text x="102.5" y="145" class="text-code hl-eng" style="font-weight: 600;">+[OUTPUT_FEATURES]</text>
+      <text x="102.5" y="145" class="text-code hl-eng" style="font-weight: 600;">+ [derived_features]</text>
     </g>
 
     <!-- Step 4 Inner 2 (Nominal) -->
