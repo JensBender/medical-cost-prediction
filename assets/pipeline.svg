@@ -88,38 +88,38 @@
   <!-- ============================================== PATHS (Connections) ============================================== -->
   <g id="data-connections">
     <!-- Input to Step 1 -->
-    <path d="M 500,160 L 500,240" class="base-line" />
-    <path d="M 500,160 L 500,240" class="flow-line" />
+    <path d="M 500,160 L 500,230" class="base-line" />
+    <path d="M 500,160 L 500,230" class="flow-line" />
 
     <!-- Step 1 to Step 2 Split (Top) -->
-    <path d="M 500,340 L 500,370 L 300,370 L 300,450" class="base-line" />
-    <path d="M 500,340 L 500,370 L 700,370 L 700,450" class="base-line" />
-    <path d="M 500,340 L 500,370 L 300,370 L 300,450" class="flow-line" />
-    <path d="M 500,340 L 500,370 L 700,370 L 700,450" class="flow-line flow-line-cat" />
+    <path d="M 500,340 L 500,375 L 300,375 L 300,460" class="base-line" />
+    <path d="M 500,340 L 500,375 L 700,375 L 700,460" class="base-line" />
+    <path d="M 500,340 L 500,375 L 300,375 L 300,460" class="flow-line" />
+    <path d="M 500,340 L 500,375 L 700,375 L 700,460" class="flow-line flow-line-cat" />
 
     <!-- Step 2 Merge (Bottom) to Step 3 -->
-    <path d="M 300,560 L 300,610 L 500,610 L 500,640" class="base-line" />
-    <path d="M 700,560 L 700,610 L 500,610 L 500,640" class="base-line" />
-    <path d="M 300,560 L 300,610 L 500,610 L 500,640" class="flow-line" />
-    <path d="M 700,560 L 700,610 L 500,610 L 500,640" class="flow-line flow-line-cat" />
+    <path d="M 300,570 L 300,615 L 500,615 L 500,660" class="base-line" />
+    <path d="M 700,570 L 700,615 L 500,615 L 500,660" class="base-line" />
+    <path d="M 300,570 L 300,615 L 500,615 L 500,660" class="flow-line" />
+    <path d="M 700,570 L 700,615 L 500,615 L 500,660" class="flow-line flow-line-cat" />
 
     <!-- Step 4 Split (Top) -->
-    <path d="M 500,760 L 500,790 L 250,790 L 250,870" class="base-line" />
-    <path d="M 500,760 L 500,790 L 500,790 L 500,870" class="base-line" />
-    <path d="M 500,760 L 500,790 L 750,790 L 750,870" class="base-line" />
+    <path d="M 500,790 L 500,825 L 250,825 L 250,910" class="base-line" />
+    <path d="M 500,790 L 500,825 L 500,825 L 500,910" class="base-line" />
+    <path d="M 500,790 L 500,825 L 750,825 L 750,910" class="base-line" />
 
-    <path d="M 500,760 L 500,790 L 250,790 L 250,870" class="flow-line" />
-    <path d="M 500,760 L 500,790 L 500,790 L 500,870" class="flow-line flow-line-nom" />
-    <path d="M 500,760 L 500,790 L 750,790 L 750,870" class="flow-line flow-line-bin" />
+    <path d="M 500,790 L 500,825 L 250,825 L 250,910" class="flow-line" />
+    <path d="M 500,790 L 500,825 L 500,825 L 500,910" class="flow-line flow-line-nom" />
+    <path d="M 500,790 L 500,825 L 750,825 L 750,910" class="flow-line flow-line-bin" />
 
     <!-- Step 4 Merge (Bottom) -->
-    <path d="M 250,1020 L 250,1070 L 500,1070 L 500,1100" class="base-line" />
-    <path d="M 500,1020 L 500,1070 L 500,1070 L 500,1100" class="base-line" />
-    <path d="M 750,1020 L 750,1070 L 500,1070 L 500,1100" class="base-line" />
+    <path d="M 250,1060 L 250,1115 L 500,1115 L 500,1150" class="base-line" />
+    <path d="M 500,1060 L 500,1115 L 500,1115 L 500,1150" class="base-line" />
+    <path d="M 750,1060 L 750,1115 L 500,1115 L 500,1150" class="base-line" />
 
-    <path d="M 250,1020 L 250,1070 L 500,1070 L 500,1100" class="flow-line" />
-    <path d="M 500,1020 L 500,1070 L 500,1070 L 500,1100" class="flow-line flow-line-nom" />
-    <path d="M 750,1020 L 750,1070 L 500,1070 L 500,1100" class="flow-line flow-line-bin" />
+    <path d="M 250,1060 L 250,1115 L 500,1115 L 500,1150" class="flow-line" />
+    <path d="M 500,1060 L 500,1115 L 500,1115 L 500,1150" class="flow-line flow-line-nom" />
+    <path d="M 750,1060 L 750,1115 L 500,1115 L 500,1150" class="flow-line flow-line-bin" />
   </g>
 
   <!-- ============================================== NODES ============================================== -->
@@ -134,14 +134,14 @@
   </g>
 
   <!-- Step 1: Missing Value Checker -->
-  <g id="step-1" transform="translate(200, 240)">
-    <rect width="600" height="100" class="box-outer pulse-1" />
+  <g id="step-1" transform="translate(200, 230)">
+    <rect width="600" height="110" class="box-outer pulse-1" />
     <text x="300" y="25" class="text-title">
       1. <tspan class="hl-class">Missing Value Checker</tspan>
     </text>
     
     <!-- Step 1 Left Inner -->
-    <g transform="translate(20, 40)">
+    <g transform="translate(20, 45)">
       <rect width="270" height="45" class="box-inner" />
       <rect width="4" height="45" fill="#ef4444" rx="2" />
       <text x="135" y="18" class="text-subtitle" style="fill: #f1f5f9;">Required Features</text>
@@ -151,7 +151,7 @@
     </g>
 
     <!-- Step 1 Right Inner -->
-    <g transform="translate(310, 40)">
+    <g transform="translate(310, 45)">
       <rect width="270" height="45" class="box-inner" />
       <rect width="4" height="45" fill="#f97316" rx="2" />
       <text x="135" y="18" class="text-subtitle" style="fill: #f1f5f9;">Optional Features</text>
@@ -160,7 +160,7 @@
   </g>
 
   <!-- Step 2: Missing Value Imputation -->
-  <g id="step-2" transform="translate(100, 400)">
+  <g id="step-2" transform="translate(100, 410)">
     <rect width="800" height="180" class="box-outer pulse-2" />
     <text x="400" y="25" class="text-title">
       2. <tspan class="hl-class">Missing Value Imputer</tspan> (ColumnTransformer)
@@ -196,22 +196,22 @@
   </g>
 
   <!-- Step 3: Medical Feature Deriver -->
-  <g id="step-3" transform="translate(200, 640)">
-    <rect width="600" height="120" class="box-outer pulse-3" />
+  <g id="step-3" transform="translate(200, 660)">
+    <rect width="600" height="130" class="box-outer pulse-3" />
     <text x="300" y="25" class="text-title">
       3. <tspan class="hl-class">Medical Feature Deriver</tspan>
     </text>
     <text x="300" y="50" class="text-desc">Aggregates specific binary indicators into counts</text>
 
     <!-- Inner feature blocks -->
-    <g transform="translate(80, 65)">
+    <g transform="translate(80, 70)">
       <rect width="210" height="40" class="box-inner" style="fill: #1e293b;" />
       <rect width="4" height="40" fill="#f9a8d4" rx="2" />
       <text x="105" y="18" class="text-code hl-eng" style="font-weight: bold;">CHRONIC_COUNT</text>
       <text x="105" y="32" class="text-code" style="font-size: 10px;">Sum of chronic condition flags</text>
     </g>
     
-    <g transform="translate(310, 65)">
+    <g transform="translate(310, 70)">
       <rect width="210" height="40" class="box-inner" style="fill: #1e293b;" />
       <rect width="4" height="40" fill="#f9a8d4" rx="2" />
       <text x="105" y="18" class="text-code hl-eng" style="font-weight: bold;">LIMITATION_COUNT</text>
@@ -220,7 +220,7 @@
   </g>
 
   <!-- Step 4: Feature Scaling and Encoding -->
-  <g id="step-4" transform="translate(40, 820)">
+  <g id="step-4" transform="translate(40, 860)">
     <rect width="920" height="220" class="box-outer pulse-4" />
     <text x="460" y="25" class="text-title">
       4. <tspan class="hl-class">Feature Scaler &amp; Encoder</tspan> (ColumnTransformer)
@@ -267,7 +267,7 @@
   </g>
 
   <!-- Output Data -->
-  <g id="output-data" transform="translate(250, 1100)">
+  <g id="output-data" transform="translate(250, 1150)">
     <rect width="500" height="80" class="box-outer pulse-out" style="fill: #1e293b; stroke: #818cf8; stroke-width: 3;" filter="url(#glow)" />
     <text x="250" y="32" class="text-title" style="fill: #ffffff;">Output Data (Model-Ready Features)</text>
     <text x="250" y="55" class="text-desc" style="fill: #c7d2fe;">Fully Imputed, Engineered, Scaled &amp; Encoded</text>
