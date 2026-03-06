@@ -126,8 +126,3 @@ NOMINAL_CATEGORIES = [
 # Define the nominal categories to drop for one-hot encoder (must be in same order as NOMINAL_CATEGORIES)
 # Rationale: (1) Allow meaningful comparisons to other categories and (2) often the most frequent category (thus more robust baseline than sparse categories)
 NOMINAL_DROP_CATEGORIES = ["South", "Married", "Any Private", "HS Diploma"]
-
-# Define the categories for the ordinal features ordered from lowest to highest (for OrdinalEncoder)
-ORDINAL_CATEGORIES = [
-    list(dict.fromkeys(CATEGORICAL_LABELS["POVCAT23"].values()))  # POVCAT23
-]
