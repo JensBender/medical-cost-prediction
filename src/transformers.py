@@ -1,6 +1,6 @@
 from sklearn.base import BaseEstimator, TransformerMixin 
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, OrdinalEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.utils import validation as sklearn_validation
 import pandas as pd
 import logging
@@ -403,32 +403,6 @@ class RobustOneHotEncoder(OneHotEncoder):
     Note:
         During transform(), if 'X' is empty (X.empty is True), the original 
         input is returned without one-hot encoding.
-    """
-    def transform(self, X):
-        if not isinstance(X, pd.DataFrame):
-            raise TypeError("The provided input X must be a pandas DataFrame.")
-    
-        if X.empty:
-            return X
-        return super().transform(X)
-
-
-class RobustOrdinalEncoder(OrdinalEncoder):
-    """
-    A wrapper for OrdinalEncoder that handles empty DataFrames gracefully.
-
-    Instead of raising a ValueError (OrdinalEncoder's default behavior) when 
-    encountering an empty DataFrame during .transform(), this class returns 
-    the empty DataFrame as-is. This is useful for production pipelines where 
-    batch processing might produce zero-row outputs.
-
-    Validation Logic:
-    Consistent with other transformers in this pipeline, this class requires 
-    input 'X' to be a pandas DataFrame and will raise a TypeError otherwise.
-
-    Note:
-        During transform(), if 'X' is empty (X.empty is True), the original 
-        input is returned without ordinal encoding.
     """
     def transform(self, X):
         if not isinstance(X, pd.DataFrame):
