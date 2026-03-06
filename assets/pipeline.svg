@@ -243,12 +243,9 @@
       <rect width="205" height="150" class="box-inner" />
       <rect width="5" height="150" fill="#facc15" rx="2.5" />
       <text x="102.5" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Nominal Encoder</text>
-      <text x="102.5" y="50" class="text-code hl-class">RobustOneHotEncoder(</text>
-      <text x="102.5" y="65" class="text-code">
-        <tspan class="hl-kw">drop</tspan>=<tspan class="hl-string">"first"</tspan>,
-      </text>
-      <text x="102.5" y="80" class="text-code">
-        <tspan class="hl-kw">sparse_output</tspan>=<tspan class="hl-bool">False</tspan>)
+      <text x="102.5" y="55" class="text-code hl-class">RobustOneHotEncoder(</text>
+      <text x="102.5" y="75" class="text-code">
+        <tspan class="hl-kw">drop</tspan>=custom_list)
       </text>
       <text x="102.5" y="105" class="text-desc">Creates binary dummies</text>
       <text x="102.5" y="138" class="text-code hl-nom" style="font-weight: 600;">[nominal_features]</text>
