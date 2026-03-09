@@ -89,42 +89,42 @@
   <!-- ============================================== PATHS (Connections) ============================================== -->
   <g id="data-connections">
     <!-- Input to Step 1 -->
-    <path d="M 500,160 L 500,230" class="base-line" />
-    <path d="M 500,160 L 500,230" class="flow-line" />
+    <path d="M 500,160 L 500,200" class="base-line" />
+    <path d="M 500,160 L 500,200" class="flow-line" />
 
     <!-- Step 1 to Step 2 -->
-    <path d="M 500,340 L 500,380" class="base-line" />
-    <path d="M 500,340 L 500,380" class="flow-line" />
+    <path d="M 500,310 L 500,350" class="base-line" />
+    <path d="M 500,310 L 500,350" class="flow-line" />
 
     <!-- Step 2 to Step 3 Split (Top) -->
-    <path d="M 500,490 L 500,525 L 300,525 L 300,560" class="base-line" />
-    <path d="M 500,490 L 500,525 L 700,525 L 700,560" class="base-line" />
-    <path d="M 500,490 L 500,525 L 300,525 L 300,560" class="flow-line" />
-    <path d="M 500,490 L 500,525 L 700,525 L 700,560" class="flow-line flow-line-cat" />
+    <path d="M 500,460 L 500,495 L 300,495 L 300,530" class="base-line" />
+    <path d="M 500,460 L 500,495 L 700,495 L 700,530" class="base-line" />
+    <path d="M 500,460 L 500,495 L 300,495 L 300,530" class="flow-line" />
+    <path d="M 500,460 L 500,495 L 700,495 L 700,530" class="flow-line flow-line-cat" />
 
     <!-- Step 3 Merge (Bottom) to Step 4 -->
-    <path d="M 300,740 L 300,775 L 500,775 L 500,810" class="base-line" />
-    <path d="M 700,740 L 700,775 L 500,775 L 500,810" class="base-line" />
-    <path d="M 300,740 L 300,775 L 500,775 L 500,810" class="flow-line" />
-    <path d="M 700,740 L 700,775 L 500,775 L 500,810" class="flow-line flow-line-cat" />
+    <path d="M 300,710 L 300,745 L 500,745 L 500,780" class="base-line" />
+    <path d="M 700,710 L 700,745 L 500,745 L 500,780" class="base-line" />
+    <path d="M 300,710 L 300,745 L 500,745 L 500,780" class="flow-line" />
+    <path d="M 700,710 L 700,745 L 500,745 L 500,780" class="flow-line flow-line-cat" />
 
     <!-- Step 4 to Step 5 Split (Top) -->
-    <path d="M 500,940 L 500,975 L 250,975 L 250,1010" class="base-line" />
-    <path d="M 500,940 L 500,975 L 500,975 L 500,1010" class="base-line" />
-    <path d="M 500,940 L 500,975 L 750,975 L 750,1010" class="base-line" />
+    <path d="M 500,910 L 500,945 L 250,945 L 250,980" class="base-line" />
+    <path d="M 500,910 L 500,945 L 500,945 L 500,980" class="base-line" />
+    <path d="M 500,910 L 500,945 L 750,945 L 750,980" class="base-line" />
 
-    <path d="M 500,940 L 500,975 L 250,975 L 250,1010" class="flow-line" />
-    <path d="M 500,940 L 500,975 L 500,975 L 500,1010" class="flow-line flow-line-nom" />
-    <path d="M 500,940 L 500,975 L 750,975 L 750,1010" class="flow-line flow-line-bin" />
+    <path d="M 500,910 L 500,945 L 250,945 L 250,980" class="flow-line" />
+    <path d="M 500,910 L 500,945 L 500,945 L 500,980" class="flow-line flow-line-nom" />
+    <path d="M 500,910 L 500,945 L 750,945 L 750,980" class="flow-line flow-line-bin" />
 
     <!-- Step 5 Merge (Bottom) to Output -->
-    <path d="M 250,1230 L 250,1265 L 500,1265 L 500,1300" class="base-line" />
-    <path d="M 500,1230 L 500,1265 L 500,1265 L 500,1300" class="base-line" />
-    <path d="M 750,1230 L 750,1265 L 500,1265 L 500,1300" class="base-line" />
+    <path d="M 250,1200 L 250,1235 L 500,1235 L 500,1270" class="base-line" />
+    <path d="M 500,1200 L 500,1235 L 500,1235 L 500,1270" class="base-line" />
+    <path d="M 750,1200 L 750,1235 L 500,1235 L 500,1270" class="base-line" />
 
-    <path d="M 250,1230 L 250,1265 L 500,1265 L 500,1300" class="flow-line" />
-    <path d="M 500,1230 L 500,1265 L 500,1265 L 500,1300" class="flow-line flow-line-nom" />
-    <path d="M 750,1230 L 750,1265 L 500,1265 L 500,1300" class="flow-line flow-line-bin" />
+    <path d="M 250,1200 L 250,1235 L 500,1235 L 500,1270" class="flow-line" />
+    <path d="M 500,1200 L 500,1235 L 500,1235 L 500,1270" class="flow-line flow-line-nom" />
+    <path d="M 750,1200 L 750,1235 L 500,1235 L 500,1270" class="flow-line flow-line-bin" />
   </g>
 
   <!-- ============================================== NODES ============================================== -->
@@ -139,7 +139,7 @@
   </g>
 
   <!-- Step 1: Categorical Label Standardizer -->
-  <g id="step-1" transform="translate(200, 230)">
+  <g id="step-1" transform="translate(200, 200)">
     <rect width="600" height="110" class="box-outer pulse-1" />
     <text x="300" y="25" class="text-title">
       1. <tspan class="hl-class">Categorical Label Standardizer</tspan>
@@ -163,7 +163,7 @@
   </g>
 
   <!-- Step 2: Missing Value Checker -->
-  <g id="step-2" transform="translate(200, 380)">
+  <g id="step-2" transform="translate(200, 350)">
     <rect width="600" height="110" class="box-outer pulse-2" />
     <text x="300" y="25" class="text-title">
       2. <tspan class="hl-class">Missing Value Checker</tspan>
@@ -189,7 +189,7 @@
   </g>
 
   <!-- Step 3: Missing Value Imputation -->
-  <g id="step-3" transform="translate(100, 560)">
+  <g id="step-3" transform="translate(100, 530)">
     <rect width="800" height="180" class="box-outer pulse-3" />
     <text x="400" y="25" class="text-title">
       3. <tspan class="hl-class">Missing Value Imputer</tspan> (ColumnTransformer)
@@ -225,7 +225,7 @@
   </g>
 
   <!-- Step 4: Medical Feature Deriver -->
-  <g id="step-4" transform="translate(200, 810)">
+  <g id="step-4" transform="translate(200, 780)">
     <rect width="600" height="130" class="box-outer pulse-4" />
     <text x="300" y="25" class="text-title">
       4. <tspan class="hl-class">Medical Feature Deriver</tspan>
@@ -249,7 +249,7 @@
   </g>
 
   <!-- Step 5: Feature Scaling and Encoding -->
-  <g id="step-5" transform="translate(40, 1010)">
+  <g id="step-5" transform="translate(40, 980)">
     <rect width="920" height="220" class="box-outer pulse-5" />
     <text x="460" y="25" class="text-title">
       5. <tspan class="hl-class">Feature Scaler &amp; Encoder</tspan> (ColumnTransformer)
@@ -293,7 +293,7 @@
   </g>
 
   <!-- Output Data -->
-  <g id="output-data" transform="translate(250, 1300)">
+  <g id="output-data" transform="translate(250, 1270)">
     <rect width="500" height="80" class="box-outer pulse-out" style="fill: #1e293b; stroke: #818cf8; stroke-width: 3;" filter="url(#glow)" />
     <text x="250" y="32" class="text-title" style="fill: #ffffff;">Output Data (Model-Ready Features)</text>
     <text x="250" y="55" class="text-desc" style="fill: #c7d2fe;">Fully Imputed, Engineered, Scaled &amp; Encoded</text>
