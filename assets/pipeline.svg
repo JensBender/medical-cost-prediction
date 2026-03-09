@@ -19,31 +19,34 @@
       .text-code { font-family: 'Fira Code', monospace; font-size: 12px; fill: #cbd5e1; text-anchor: middle; }
       .text-desc { font-family: 'Inter', system-ui, sans-serif; font-size: 12px; fill: #94a3b8; text-anchor: middle; }
       
-      /* Syntax Highlighting */
+      /* Semantic Type Colors */
       .hl-class { fill: #c084fc; font-weight: 600; }
       .hl-string { fill: #fdba74; }
       .hl-bool { fill: #5eead4; }
       .hl-kw { fill: #7dd3fc; }
-      .hl-num { fill: #38bdf8; }
-      .hl-cat { fill: #4ade80; }
-      .hl-ord { fill: #34d399; }
-      .hl-nom { fill: #facc15; }
-      .hl-bin { fill: #d8b4fe; }
-      .hl-eng { fill: #f9a8d4; }
+      
+      .hl-num { fill: #38bdf8; font-weight: 600; }
+      .hl-nom { fill: #facc15; font-weight: 600; }
+      .hl-bin { fill: #d8b4fe; font-weight: 600; }
+      .hl-cat { fill: #4ade80; font-weight: 600; }
+      .hl-eng { fill: #f9a8d4; font-weight: 600; }
       
       /* Path Lines */
       .base-line { stroke: #1e293b; stroke-width: 6; fill: none; stroke-linejoin: round; }
       .flow-line { 
-        stroke: #38bdf8; 
+        stroke: #94a3b8; 
         stroke-width: 2.5; 
         fill: none; 
         stroke-dasharray: 10 10; 
         stroke-linejoin: round;
         animation: flow 1.5s linear infinite; 
       }
-      .flow-line-cat { stroke: #4ade80; }
-      .flow-line-nom { stroke: #facc15; }
-      .flow-line-bin { stroke: #d8b4fe; }
+      /* Path Arrow Colors */
+      .flow-num { stroke: #38bdf8; }
+      .flow-nom { stroke: #facc15; }
+      .flow-bin { stroke: #d8b4fe; }
+      .flow-cat { stroke: #4ade80; }
+      .flow-eng { stroke: #f9a8d4; }
 
       /* Animations */
       @keyframes flow {
@@ -74,6 +77,11 @@
       <feGaussianBlur stdDeviation="5" result="blur" />
       <feComposite in="SourceGraphic" in2="blur" operator="over" />
     </filter>
+    
+    <!-- Marker for Path Arrows (Optional improvement) -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8" />
+    </marker>
   </defs>
 
   <!-- Background -->
@@ -99,32 +107,32 @@
     <!-- Step 2 to Step 3 Split (Top) -->
     <path d="M 500,460 L 500,500 L 305,500 L 305,540" class="base-line" />
     <path d="M 500,460 L 500,500 L 695,500 L 695,540" class="base-line" />
-    <path d="M 500,460 L 500,500 L 305,500 L 305,540" class="flow-line" />
-    <path d="M 500,460 L 500,500 L 695,500 L 695,540" class="flow-line flow-line-cat" />
+    <path d="M 500,460 L 500,500 L 305,500 L 305,540" class="flow-line flow-num" />
+    <path d="M 500,460 L 500,500 L 695,500 L 695,540" class="flow-line flow-cat" />
 
     <!-- Step 3 Merge (Bottom) to Step 4 -->
     <path d="M 305,690 L 305,730 L 500,730 L 500,770" class="base-line" />
     <path d="M 695,690 L 695,730 L 500,730 L 500,770" class="base-line" />
-    <path d="M 305,690 L 305,730 L 500,730 L 500,770" class="flow-line" />
-    <path d="M 695,690 L 695,730 L 500,730 L 500,770" class="flow-line flow-line-cat" />
+    <path d="M 305,690 L 305,730 L 500,730 L 500,770" class="flow-line flow-num" />
+    <path d="M 695,690 L 695,730 L 500,730 L 500,770" class="flow-line flow-cat" />
 
     <!-- Step 4 to Step 5 Split (Top) -->
     <path d="M 500,900 L 500,940 L 200,940 L 200,980" class="base-line" />
     <path d="M 500,900 L 500,940 L 500,940 L 500,980" class="base-line" />
     <path d="M 500,900 L 500,940 L 800,940 L 800,980" class="base-line" />
 
-    <path d="M 500,900 L 500,940 L 200,940 L 200,980" class="flow-line" />
-    <path d="M 500,900 L 500,940 L 500,940 L 500,980" class="flow-line flow-line-nom" />
-    <path d="M 500,900 L 500,940 L 800,940 L 800,980" class="flow-line flow-line-bin" />
+    <path d="M 500,900 L 500,940 L 200,940 L 200,980" class="flow-line flow-num" />
+    <path d="M 500,900 L 500,940 L 500,940 L 500,980" class="flow-line flow-nom" />
+    <path d="M 500,900 L 500,940 L 800,940 L 800,980" class="flow-line flow-bin" />
 
     <!-- Step 5 Merge (Bottom) to Output -->
     <path d="M 200,1160 L 200,1200 L 500,1200 L 500,1240" class="base-line" />
     <path d="M 500,1160 L 500,1200 L 500,1200 L 500,1240" class="base-line" />
     <path d="M 800,1160 L 800,1200 L 500,1200 L 500,1240" class="base-line" />
 
-    <path d="M 200,1160 L 200,1200 L 500,1200 L 500,1240" class="flow-line" />
-    <path d="M 500,1160 L 500,1200 L 500,1200 L 500,1240" class="flow-line flow-line-nom" />
-    <path d="M 800,1160 L 800,1200 L 500,1200 L 500,1240" class="flow-line flow-line-bin" />
+    <path d="M 200,1160 L 200,1200 L 500,1200 L 500,1240" class="flow-line flow-num" />
+    <path d="M 500,1160 L 500,1200 L 500,1200 L 500,1240" class="flow-line flow-nom" />
+    <path d="M 800,1160 L 800,1200 L 500,1200 L 500,1240" class="flow-line flow-bin" />
   </g>
 
   <!-- ============================================== NODES ============================================== -->
@@ -134,7 +142,7 @@
     <rect width="600" height="60" class="box-outer" style="fill: #0b0f19; border: 1px dashed #475569;" />
     <text x="300" y="25" class="text-title" style="fill: #e2e8f0;">Input Data (Raw Features)</text>
     <text x="300" y="45" class="text-code">
-      <tspan fill="#94a3b8">Expects: </tspan><tspan class="hl-class">pandas.DataFrame</tspan>
+      <tspan class="hl-num">Numerical</tspan> | <tspan class="hl-nom">Nominal</tspan> | <tspan class="hl-bin">Binary</tspan>
     </text>
   </g>
 
@@ -149,16 +157,16 @@
     <g transform="translate(20, 45)">
       <rect width="270" height="45" class="box-inner" />
       <rect width="4" height="45" fill="#facc15" rx="2" />
-      <text x="135" y="18" class="text-subtitle" style="fill: #f1f5f9;">Nominal Features</text>
-      <text x="135" y="35" class="text-code">Map to descriptive strings</text>
+      <text x="135" y="18" class="text-subtitle" style="fill: #facc15;">Nominal Features</text>
+      <text x="135" y="35" class="text-desc">Map to descriptive strings</text>
     </g>
 
     <!-- Step 1 Right Inner -->
     <g transform="translate(310, 45)">
       <rect width="270" height="45" class="box-inner" />
       <rect width="4" height="45" fill="#d8b4fe" rx="2" />
-      <text x="135" y="18" class="text-subtitle" style="fill: #f1f5f9;">Binary Features</text>
-      <text x="135" y="35" class="text-code">Recode to 0/1</text>
+      <text x="135" y="18" class="text-subtitle" style="fill: #d8b4fe;">Binary Features</text>
+      <text x="135" y="35" class="text-desc">Recode to 0/1</text>
     </g>
   </g>
 
@@ -192,25 +200,25 @@
   <g id="step-3" transform="translate(100, 540)">
     <rect width="800" height="150" class="box-outer pulse-3" />
     <text x="400" y="25" class="text-title">
-      3. <tspan class="hl-class">Missing Value Imputer</tspan> (ColumnTransformer)
+      3. <tspan class="hl-class">Missing Value Imputer</tspan>
     </text>
 
     <!-- Step 3 Inner 1 (Numerical) -->
     <g transform="translate(20, 45)">
       <rect width="370" height="90" class="box-inner" />
       <rect width="5" height="90" fill="#38bdf8" rx="2.5" />
-      <text x="185" y="22" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Numerical Imputer</text>
+      <text x="185" y="22" class="text-subtitle" style="fill: #38bdf8;">Numerical Imputer</text>
       <text x="185" y="47" class="text-code hl-class">RobustSimpleImputer()</text>
-      <text x="185" y="72" class="text-desc">Median imputation for numerical features</text>
+      <text x="185" y="72" class="text-desc">Median for <tspan class="hl-num">numerical features</tspan></text>
     </g>
 
     <!-- Step 3 Inner 2 (Categorical) -->
     <g transform="translate(410, 45)">
       <rect width="370" height="90" class="box-inner" />
       <rect width="5" height="90" fill="#4ade80" rx="2.5" />
-      <text x="185" y="22" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Categorical Imputer</text>
+      <text x="185" y="22" class="text-subtitle" style="fill: #4ade80;">Categorical Imputer</text>
       <text x="185" y="47" class="text-code hl-class">RobustSimpleImputer()</text>
-      <text x="185" y="72" class="text-desc">Mode imputation for nominal &amp; binary</text>
+      <text x="185" y="72" class="text-desc">Mode for <tspan class="hl-nom">nominal</tspan> &amp; <tspan class="hl-bin">binary features</tspan></text>
     </g>
   </g>
 
@@ -224,17 +232,17 @@
 
     <!-- Inner feature blocks -->
     <g transform="translate(80, 70)">
-      <rect width="210" height="40" class="box-inner" style="fill: #1e293b;" />
+      <rect width="210" height="40" class="box-inner" />
       <rect width="4" height="40" fill="#f9a8d4" rx="2" />
-      <text x="105" y="18" class="text-code hl-eng" style="font-weight: bold;">CHRONIC_COUNT</text>
-      <text x="105" y="32" class="text-code" style="font-size: 10px;">Sum of chronic condition flags</text>
+      <text x="105" y="18" class="text-code hl-eng">CHRONIC_COUNT</text>
+      <text x="105" y="32" class="text-code" style="font-size: 10px;">Sum of chronic conditions</text>
     </g>
     
     <g transform="translate(310, 70)">
-      <rect width="210" height="40" class="box-inner" style="fill: #1e293b;" />
+      <rect width="210" height="40" class="box-inner" />
       <rect width="4" height="40" fill="#f9a8d4" rx="2" />
-      <text x="105" y="18" class="text-code hl-eng" style="font-weight: bold;">LIMITATION_COUNT</text>
-      <text x="105" y="32" class="text-code" style="font-size: 10px;">Sum of functional limits flags</text>
+      <text x="105" y="18" class="text-code hl-eng">LIMITATION_COUNT</text>
+      <text x="105" y="32" class="text-code" style="font-size: 10px;">Sum of functional limitations</text>
     </g>
   </g>
 
@@ -242,36 +250,36 @@
   <g id="step-5" transform="translate(40, 980)">
     <rect width="920" height="180" class="box-outer pulse-5" />
     <text x="460" y="25" class="text-title">
-      5. <tspan class="hl-class">Feature Scaler &amp; Encoder</tspan> (ColumnTransformer)
+      5. <tspan class="hl-class">Feature Scaler &amp; Encoder</tspan>
     </text>
 
     <!-- Step 5 Inner 1 (Numerical + Engineered) -->
     <g transform="translate(20, 50)">
       <rect width="280" height="110" class="box-inner" />
       <rect width="5" height="110" fill="#38bdf8" rx="2.5" />
-      <text x="140" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Numerical Scaler</text>
+      <text x="140" y="25" class="text-subtitle" style="fill: #38bdf8;">Numerical Scaler</text>
       <text x="140" y="50" class="text-code hl-class">RobustStandardScaler()</text>
-      <text x="140" y="75" class="text-desc">Scales raw &amp; derived numerical</text>
-      <text x="140" y="90" class="text-desc">features to mean=0, variance=1</text>
+      <text x="140" y="75" class="text-desc">Scales <tspan class="hl-num">raw</tspan> &amp; <tspan class="hl-eng">derived features</tspan></text>
+      <text x="140" y="90" class="text-desc">to mean=0, variance=1</text>
     </g>
 
     <!-- Step 5 Inner 2 (Nominal) -->
     <g transform="translate(320, 50)">
       <rect width="280" height="110" class="box-inner" />
       <rect width="5" height="110" fill="#facc15" rx="2.5" />
-      <text x="140" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Nominal Encoder</text>
+      <text x="140" y="25" class="text-subtitle" style="fill: #facc15;">Nominal Encoder</text>
       <text x="140" y="50" class="text-code hl-class">RobustOneHotEncoder()</text>
-      <text x="140" y="75" class="text-desc">Creates binary dummies for nominal</text>
-      <text x="140" y="90" class="text-desc">features &amp; drops designated baseline</text>
+      <text x="140" y="75" class="text-desc">Creates binary dummies for <tspan class="hl-nom">nominal</tspan></text>
+      <text x="140" y="90" class="text-desc"><tspan class="hl-nom">features</tspan> &amp; drops designated baseline</text>
     </g>
 
     <!-- Step 5 Inner 3 (Binary) -->
     <g transform="translate(620, 50)">
       <rect width="280" height="110" class="box-inner" />
       <rect width="5" height="110" fill="#d8b4fe" rx="2.5" />
-      <text x="140" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Binary Passthrough</text>
+      <text x="140" y="25" class="text-subtitle" style="fill: #d8b4fe;">Binary Passthrough</text>
       <text x="140" y="50" class="text-code hl-string">"passthrough"</text>
-      <text x="140" y="75" class="text-desc">Passes through binary features</text>
+      <text x="140" y="75" class="text-desc">Passes through <tspan class="hl-bin">binary features</tspan></text>
       <text x="140" y="90" class="text-desc">unchanged (already 0/1 coded)</text>
     </g>
   </g>
@@ -280,10 +288,6 @@
   <g id="output-data" transform="translate(250, 1240)">
     <rect width="500" height="80" class="box-outer pulse-out" style="fill: #1e293b; stroke: #818cf8; stroke-width: 3;" filter="url(#glow)" />
     <text x="250" y="32" class="text-title" style="fill: #ffffff;">Output Data (Model-Ready Features)</text>
-    <text x="250" y="50" class="text-desc" style="fill: #c7d2fe;">Fully Imputed, Engineered, Scaled &amp; Encoded</text>
-    
-    <!-- Little decorative checkmarks or stars -->
-    <path d="M 50,40 L 60,50 L 80,30" stroke="#4ade80" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M 420,40 L 430,50 L 450,30" stroke="#4ade80" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="250" y="55" class="text-desc">Fully Standardized, Imputed, Engineered, Scaled &amp; Encoded</text>
   </g>
 </svg>
