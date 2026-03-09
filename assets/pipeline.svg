@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1450" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1360" width="100%" height="100%">
   <defs>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;display=swap');
@@ -97,34 +97,34 @@
     <path d="M 500,310 L 500,350" class="flow-line" />
 
     <!-- Step 2 to Step 3 Split (Top) -->
-    <path d="M 500,460 L 500,495 L 305,495 L 305,530" class="base-line" />
-    <path d="M 500,460 L 500,495 L 695,495 L 695,530" class="base-line" />
-    <path d="M 500,460 L 500,495 L 305,495 L 305,530" class="flow-line" />
-    <path d="M 500,460 L 500,495 L 695,495 L 695,530" class="flow-line flow-line-cat" />
+    <path d="M 500,460 L 500,500 L 305,500 L 305,540" class="base-line" />
+    <path d="M 500,460 L 500,500 L 695,500 L 695,540" class="base-line" />
+    <path d="M 500,460 L 500,500 L 305,500 L 305,540" class="flow-line" />
+    <path d="M 500,460 L 500,500 L 695,500 L 695,540" class="flow-line flow-line-cat" />
 
     <!-- Step 3 Merge (Bottom) to Step 4 -->
-    <path d="M 305,680 L 305,730 L 500,730 L 500,780" class="base-line" />
-    <path d="M 695,680 L 695,730 L 500,730 L 500,780" class="base-line" />
-    <path d="M 305,680 L 305,730 L 500,730 L 500,780" class="flow-line" />
-    <path d="M 695,680 L 695,730 L 500,730 L 500,780" class="flow-line flow-line-cat" />
+    <path d="M 305,690 L 305,730 L 500,730 L 500,770" class="base-line" />
+    <path d="M 695,690 L 695,730 L 500,730 L 500,770" class="base-line" />
+    <path d="M 305,690 L 305,730 L 500,730 L 500,770" class="flow-line" />
+    <path d="M 695,690 L 695,730 L 500,730 L 500,770" class="flow-line flow-line-cat" />
 
     <!-- Step 4 to Step 5 Split (Top) -->
-    <path d="M 500,910 L 500,945 L 200,945 L 200,980" class="base-line" />
-    <path d="M 500,910 L 500,945 L 500,945 L 500,980" class="base-line" />
-    <path d="M 500,910 L 500,945 L 800,945 L 800,980" class="base-line" />
+    <path d="M 500,900 L 500,940 L 200,940 L 200,980" class="base-line" />
+    <path d="M 500,900 L 500,940 L 500,940 L 500,980" class="base-line" />
+    <path d="M 500,900 L 500,940 L 800,940 L 800,980" class="base-line" />
 
-    <path d="M 500,910 L 500,945 L 200,945 L 200,980" class="flow-line" />
-    <path d="M 500,910 L 500,945 L 500,945 L 500,980" class="flow-line flow-line-nom" />
-    <path d="M 500,910 L 500,945 L 800,945 L 800,980" class="flow-line flow-line-bin" />
+    <path d="M 500,900 L 500,940 L 200,940 L 200,980" class="flow-line" />
+    <path d="M 500,900 L 500,940 L 500,940 L 500,980" class="flow-line flow-line-nom" />
+    <path d="M 500,900 L 500,940 L 800,940 L 800,980" class="flow-line flow-line-bin" />
 
     <!-- Step 5 Merge (Bottom) to Output -->
-    <path d="M 200,1160 L 200,1215 L 500,1215 L 500,1270" class="base-line" />
-    <path d="M 500,1160 L 500,1215 L 500,1215 L 500,1270" class="base-line" />
-    <path d="M 800,1160 L 800,1215 L 500,1215 L 500,1270" class="base-line" />
+    <path d="M 200,1160 L 200,1200 L 500,1200 L 500,1240" class="base-line" />
+    <path d="M 500,1160 L 500,1200 L 500,1200 L 500,1240" class="base-line" />
+    <path d="M 800,1160 L 800,1200 L 500,1200 L 500,1240" class="base-line" />
 
-    <path d="M 200,1160 L 200,1215 L 500,1215 L 500,1270" class="flow-line" />
-    <path d="M 500,1160 L 500,1215 L 500,1215 L 500,1270" class="flow-line flow-line-nom" />
-    <path d="M 800,1160 L 800,1215 L 500,1215 L 500,1270" class="flow-line flow-line-bin" />
+    <path d="M 200,1160 L 200,1200 L 500,1200 L 500,1240" class="flow-line" />
+    <path d="M 500,1160 L 500,1200 L 500,1200 L 500,1240" class="flow-line flow-line-nom" />
+    <path d="M 800,1160 L 800,1200 L 500,1200 L 500,1240" class="flow-line flow-line-bin" />
   </g>
 
   <!-- ============================================== NODES ============================================== -->
@@ -189,7 +189,7 @@
   </g>
 
   <!-- Step 3: Missing Value Imputation -->
-  <g id="step-3" transform="translate(100, 530)">
+  <g id="step-3" transform="translate(100, 540)">
     <rect width="800" height="150" class="box-outer pulse-3" />
     <text x="400" y="25" class="text-title">
       3. <tspan class="hl-class">Missing Value Imputer</tspan> (ColumnTransformer)
@@ -215,7 +215,7 @@
   </g>
 
   <!-- Step 4: Medical Feature Deriver -->
-  <g id="step-4" transform="translate(200, 780)">
+  <g id="step-4" transform="translate(200, 770)">
     <rect width="600" height="130" class="box-outer pulse-4" />
     <text x="300" y="25" class="text-title">
       4. <tspan class="hl-class">Medical Feature Deriver</tspan>
@@ -277,7 +277,7 @@
   </g>
 
   <!-- Output Data -->
-  <g id="output-data" transform="translate(250, 1270)">
+  <g id="output-data" transform="translate(250, 1240)">
     <rect width="500" height="80" class="box-outer pulse-out" style="fill: #1e293b; stroke: #818cf8; stroke-width: 3;" filter="url(#glow)" />
     <text x="250" y="32" class="text-title" style="fill: #ffffff;">Output Data (Model-Ready Features)</text>
     <text x="250" y="50" class="text-desc" style="fill: #c7d2fe;">Fully Imputed, Engineered, Scaled &amp; Encoded</text>
