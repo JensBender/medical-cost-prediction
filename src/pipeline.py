@@ -5,11 +5,13 @@ from sklearn import set_config
 
 # Local imports
 from src.constants import (
+    CATEGORY_LABELS_PIPELINE,
     NOMINAL_CATEGORIES,
     NOMINAL_DROP_CATEGORIES 
 )
 from src.transformers import (
     MissingValueChecker, 
+    CategoricalLabelStandardizer,
     RobustSimpleImputer,
     MedicalFeatureDeriver,
     RobustStandardScaler,
@@ -31,16 +33,19 @@ def create_preprocessing_pipeline(
     strict=True
 ):
     """
-    Creates a scikit-learn pipeline for data preprocessing with four steps:
-    1. Missing Value Check: Identifies missing values using `MissingValueChecker`.
+    Creates a scikit-learn pipeline for data preprocessing with five steps:
+    1. Categorical Label Standardization: Uses `CategoricalLabelStandardizer` to normalize 
+       inputs (accepts both numeric codes and string labels) and ensures 
+       nominal features use descriptive strings for human-readable encoded names. 
+    2. Missing Value Check: Identifies missing values using `MissingValueChecker`.
        It raises a `MissingValueError` for required columns and logs a warning for optional columns.
-    2. Missing Value Imputation: Replaces missing values using a `ColumnTransformer` with `RobustSimpleImputer`. 
+    3. Missing Value Imputation: Replaces missing values using a `ColumnTransformer` with `RobustSimpleImputer`. 
        - Median imputation for numerical features (including ordinal).
        - Mode imputation for categorical features.
-    3. Feature Engineering: Uses `MedicalFeatureDeriver` to aggregate binary indicators into counts:
+    4. Feature Engineering: Uses `MedicalFeatureDeriver` to aggregate binary indicators into counts:
        - `CHRONIC_COUNT`: Sum of chronic medical condition flags.
        - `LIMITATION_COUNT`: Sum of functional limitation flags.
-    4. Feature Scaling and Encoding: Transforms all features into a model-ready format:
+    5. Feature Scaling and Encoding: Transforms all features into a model-ready format:
        - `RobustStandardScaler`: Scales numerical features (raw, ordinal, and engineered) to mean 0 and variance 1.
        - `RobustOneHotEncoder`: Converts nominal features into binary dummy variables (dropping preferred baselines).
        - Binary Passthrough: Preserves original binary features without modification.
@@ -59,6 +64,7 @@ def create_preprocessing_pipeline(
     categorical_features = nominal_features + binary_features
 
     return Pipeline(steps=[
+        ("categorical_label_standardizer", CategoricalLabelStandardizer(binary_features, nominal_features, category_label_map=CATEGORY_LABELS_PIPELINE)),
         ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
         ("missing_value_imputer", ColumnTransformer(
             transformers=[
@@ -91,10 +97,12 @@ def create_missing_value_handling_pipeline(
     strict=True
 ):
     """
-    Creates a scikit-learn pipeline for missing value handling with two steps:
-    1. Missing Value Check: Identifies missing values using `MissingValueChecker`.
+    Creates a scikit-learn pipeline for missing value handling with three steps:
+    1. Categorical Label Standardization: Uses `CategoricalLabelStandardizer` to normalize 
+       inputs into string labels for nominal features and numeric codes for binary. 
+    2. Missing Value Check: Identifies missing values using `MissingValueChecker`.
        It raises a `MissingValueError` for required columns and logs a warning for optional columns.
-    2. Imputation: Replaces missing values using a `ColumnTransformer` with `RobustSimpleImputer`. 
+    3. Imputation: Replaces missing values using a `ColumnTransformer` with `RobustSimpleImputer`. 
        - Median imputation for numerical features.
        - Mode imputation for categorical features.
 
@@ -112,6 +120,7 @@ def create_missing_value_handling_pipeline(
     # Combine categorical features for imputation
     categorical_features = nominal_features + binary_features
     return Pipeline(steps=[
+        ("categorical_label_standardizer", CategoricalLabelStandardizer(binary_features, nominal_features, category_label_map=CATEGORY_LABELS_PIPELINE)),
         ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
         ("missing_value_imputer", ColumnTransformer(
             transformers=[
