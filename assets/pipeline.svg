@@ -97,16 +97,16 @@
     <path d="M 500,310 L 500,350" class="flow-line" />
 
     <!-- Step 2 to Step 3 Split (Top) -->
-    <path d="M 500,460 L 500,495 L 300,495 L 300,530" class="base-line" />
-    <path d="M 500,460 L 500,495 L 700,495 L 700,530" class="base-line" />
-    <path d="M 500,460 L 500,495 L 300,495 L 300,530" class="flow-line" />
-    <path d="M 500,460 L 500,495 L 700,495 L 700,530" class="flow-line flow-line-cat" />
+    <path d="M 500,460 L 500,495 L 305,495 L 305,530" class="base-line" />
+    <path d="M 500,460 L 500,495 L 695,495 L 695,530" class="base-line" />
+    <path d="M 500,460 L 500,495 L 305,495 L 305,530" class="flow-line" />
+    <path d="M 500,460 L 500,495 L 695,495 L 695,530" class="flow-line flow-line-cat" />
 
     <!-- Step 3 Merge (Bottom) to Step 4 -->
-    <path d="M 300,710 L 300,745 L 500,745 L 500,780" class="base-line" />
-    <path d="M 700,710 L 700,745 L 500,745 L 500,780" class="base-line" />
-    <path d="M 300,710 L 300,745 L 500,745 L 500,780" class="flow-line" />
-    <path d="M 700,710 L 700,745 L 500,745 L 500,780" class="flow-line flow-line-cat" />
+    <path d="M 305,680 L 305,730 L 500,730 L 500,780" class="base-line" />
+    <path d="M 695,680 L 695,730 L 500,730 L 500,780" class="base-line" />
+    <path d="M 305,680 L 305,730 L 500,730 L 500,780" class="flow-line" />
+    <path d="M 695,680 L 695,730 L 500,730 L 500,780" class="flow-line flow-line-cat" />
 
     <!-- Step 4 to Step 5 Split (Top) -->
     <path d="M 500,910 L 500,945 L 200,945 L 200,980" class="base-line" />
@@ -190,31 +190,27 @@
 
   <!-- Step 3: Missing Value Imputation -->
   <g id="step-3" transform="translate(100, 530)">
-    <rect width="800" height="180" class="box-outer pulse-3" />
+    <rect width="800" height="150" class="box-outer pulse-3" />
     <text x="400" y="25" class="text-title">
       3. <tspan class="hl-class">Missing Value Imputer</tspan> (ColumnTransformer)
     </text>
 
     <!-- Step 3 Inner 1 (Numerical) -->
-    <g transform="translate(30, 50)">
-      <rect width="340" height="110" class="box-inner" />
-      <rect width="5" height="110" fill="#38bdf8" rx="2.5" />
-      <text x="170" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Numerical Imputer</text>
-      <text x="170" y="50" class="text-code">
-        <tspan class="hl-class">RobustSimpleImputer</tspan>()
-      </text>
-      <text x="170" y="75" class="text-code" style="font-weight: 600;">Median imputation for numerical features</text>
+    <g transform="translate(20, 45)">
+      <rect width="370" height="90" class="box-inner" />
+      <rect width="5" height="90" fill="#38bdf8" rx="2.5" />
+      <text x="185" y="22" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Numerical Imputer</text>
+      <text x="185" y="47" class="text-code hl-class">RobustSimpleImputer()</text>
+      <text x="185" y="72" class="text-desc">Median imputation for numerical features</text>
     </g>
 
     <!-- Step 3 Inner 2 (Categorical) -->
-    <g transform="translate(430, 50)">
-      <rect width="340" height="110" class="box-inner" />
-      <rect width="5" height="110" fill="#4ade80" rx="2.5" />
-      <text x="170" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Categorical Imputer</text>
-      <text x="170" y="50" class="text-code">
-        <tspan class="hl-class">RobustSimpleImputer</tspan>()
-      </text>
-      <text x="170" y="75" class="text-code" style="font-weight: 600;">Mode imputation for nominal &amp; binary features</text>
+    <g transform="translate(410, 45)">
+      <rect width="370" height="90" class="box-inner" />
+      <rect width="5" height="90" fill="#4ade80" rx="2.5" />
+      <text x="185" y="22" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Categorical Imputer</text>
+      <text x="185" y="47" class="text-code hl-class">RobustSimpleImputer()</text>
+      <text x="185" y="72" class="text-desc">Mode imputation for nominal &amp; binary</text>
     </g>
   </g>
 
