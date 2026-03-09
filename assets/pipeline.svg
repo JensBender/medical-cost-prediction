@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1250" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1450" width="100%" height="100%">
   <defs>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;display=swap');
@@ -56,11 +56,12 @@
         50% { stroke: #38bdf8; filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4)); }
       }
 
-      .pulse-1 { animation: pulse-box 7.5s infinite; animation-delay: 0s; }
-      .pulse-2 { animation: pulse-box 7.5s infinite; animation-delay: 1.5s; }
-      .pulse-3 { animation: pulse-box 7.5s infinite; animation-delay: 3.0s; }
-      .pulse-4 { animation: pulse-box 7.5s infinite; animation-delay: 4.5s; }
-      .pulse-out { animation: pulse-box 7.5s infinite; animation-delay: 6.0s; }
+      .pulse-1 { animation: pulse-box 9s infinite; animation-delay: 0s; }
+      .pulse-2 { animation: pulse-box 9s infinite; animation-delay: 1.5s; }
+      .pulse-3 { animation: pulse-box 9s infinite; animation-delay: 3s; }
+      .pulse-4 { animation: pulse-box 9s infinite; animation-delay: 4.5s; }
+      .pulse-5 { animation: pulse-box 9s infinite; animation-delay: 6s; }
+      .pulse-out { animation: pulse-box 9s infinite; animation-delay: 7.5s; }
     </style>
 
     <!-- Grid Pattern -->
@@ -82,7 +83,7 @@
   <!-- Global Header -->
   <g transform="translate(500, 45)">
     <text class="text-title" style="font-size: 24px;">Data Preprocessing Pipeline</text>
-    <text y="25" class="text-subtitle" style="font-size: 14px; fill: #38bdf8;">Missing value handling, medical feature engineering, feature scaling &amp; encoding (scikit-learn)</text>
+    <text y="25" class="text-subtitle" style="font-size: 14px; fill: #38bdf8;">Standardization, validation, imputation, medical engineering, scaling &amp; encoding</text>
   </g>
 
   <!-- ============================================== PATHS (Connections) ============================================== -->
@@ -91,35 +92,39 @@
     <path d="M 500,160 L 500,230" class="base-line" />
     <path d="M 500,160 L 500,230" class="flow-line" />
 
-    <!-- Step 1 to Step 2 Split (Top) -->
-    <path d="M 500,340 L 500,375 L 300,375 L 300,460" class="base-line" />
-    <path d="M 500,340 L 500,375 L 700,375 L 700,460" class="base-line" />
-    <path d="M 500,340 L 500,375 L 300,375 L 300,460" class="flow-line" />
-    <path d="M 500,340 L 500,375 L 700,375 L 700,460" class="flow-line flow-line-cat" />
+    <!-- Step 1 to Step 2 -->
+    <path d="M 500,340 L 500,380" class="base-line" />
+    <path d="M 500,340 L 500,380" class="flow-line" />
 
-    <!-- Step 2 Merge (Bottom) to Step 3 -->
-    <path d="M 300,570 L 300,615 L 500,615 L 500,660" class="base-line" />
-    <path d="M 700,570 L 700,615 L 500,615 L 500,660" class="base-line" />
-    <path d="M 300,570 L 300,615 L 500,615 L 500,660" class="flow-line" />
-    <path d="M 700,570 L 700,615 L 500,615 L 500,660" class="flow-line flow-line-cat" />
+    <!-- Step 2 to Step 3 Split (Top) -->
+    <path d="M 500,490 L 500,525 L 300,525 L 300,560" class="base-line" />
+    <path d="M 500,490 L 500,525 L 700,525 L 700,560" class="base-line" />
+    <path d="M 500,490 L 500,525 L 300,525 L 300,560" class="flow-line" />
+    <path d="M 500,490 L 500,525 L 700,525 L 700,560" class="flow-line flow-line-cat" />
 
-    <!-- Step 4 Split (Top) -->
-    <path d="M 500,790 L 500,825 L 250,825 L 250,910" class="base-line" />
-    <path d="M 500,790 L 500,825 L 500,825 L 500,910" class="base-line" />
-    <path d="M 500,790 L 500,825 L 750,825 L 750,910" class="base-line" />
+    <!-- Step 3 Merge (Bottom) to Step 4 -->
+    <path d="M 300,740 L 300,775 L 500,775 L 500,810" class="base-line" />
+    <path d="M 700,740 L 700,775 L 500,775 L 500,810" class="base-line" />
+    <path d="M 300,740 L 300,775 L 500,775 L 500,810" class="flow-line" />
+    <path d="M 700,740 L 700,775 L 500,775 L 500,810" class="flow-line flow-line-cat" />
 
-    <path d="M 500,790 L 500,825 L 250,825 L 250,910" class="flow-line" />
-    <path d="M 500,790 L 500,825 L 500,825 L 500,910" class="flow-line flow-line-nom" />
-    <path d="M 500,790 L 500,825 L 750,825 L 750,910" class="flow-line flow-line-bin" />
+    <!-- Step 4 to Step 5 Split (Top) -->
+    <path d="M 500,940 L 500,975 L 250,975 L 250,1010" class="base-line" />
+    <path d="M 500,940 L 500,975 L 500,975 L 500,1010" class="base-line" />
+    <path d="M 500,940 L 500,975 L 750,975 L 750,1010" class="base-line" />
 
-    <!-- Step 4 Merge (Bottom) -->
-    <path d="M 250,1060 L 250,1115 L 500,1115 L 500,1150" class="base-line" />
-    <path d="M 500,1060 L 500,1115 L 500,1115 L 500,1150" class="base-line" />
-    <path d="M 750,1060 L 750,1115 L 500,1115 L 500,1150" class="base-line" />
+    <path d="M 500,940 L 500,975 L 250,975 L 250,1010" class="flow-line" />
+    <path d="M 500,940 L 500,975 L 500,975 L 500,1010" class="flow-line flow-line-nom" />
+    <path d="M 500,940 L 500,975 L 750,975 L 750,1010" class="flow-line flow-line-bin" />
 
-    <path d="M 250,1060 L 250,1115 L 500,1115 L 500,1150" class="flow-line" />
-    <path d="M 500,1060 L 500,1115 L 500,1115 L 500,1150" class="flow-line flow-line-nom" />
-    <path d="M 750,1060 L 750,1115 L 500,1115 L 500,1150" class="flow-line flow-line-bin" />
+    <!-- Step 5 Merge (Bottom) to Output -->
+    <path d="M 250,1230 L 250,1265 L 500,1265 L 500,1300" class="base-line" />
+    <path d="M 500,1230 L 500,1265 L 500,1265 L 500,1300" class="base-line" />
+    <path d="M 750,1230 L 750,1265 L 500,1265 L 500,1300" class="base-line" />
+
+    <path d="M 250,1230 L 250,1265 L 500,1265 L 500,1300" class="flow-line" />
+    <path d="M 500,1230 L 500,1265 L 500,1265 L 500,1300" class="flow-line flow-line-nom" />
+    <path d="M 750,1230 L 750,1265 L 500,1265 L 500,1300" class="flow-line flow-line-bin" />
   </g>
 
   <!-- ============================================== NODES ============================================== -->
@@ -133,24 +138,48 @@
     </text>
   </g>
 
-  <!-- Step 1: Missing Value Checker -->
+  <!-- Step 1: Categorical Label Standardizer -->
   <g id="step-1" transform="translate(200, 230)">
     <rect width="600" height="110" class="box-outer pulse-1" />
     <text x="300" y="25" class="text-title">
-      1. <tspan class="hl-class">Missing Value Checker</tspan>
+      1. <tspan class="hl-class">Categorical Label Standardizer</tspan>
     </text>
     
     <!-- Step 1 Left Inner -->
     <g transform="translate(20, 45)">
       <rect width="270" height="45" class="box-inner" />
-      <rect width="4" height="45" fill="#ef4444" rx="2" />
-      <text x="135" y="18" class="text-subtitle" style="fill: #f1f5f9;">Required Features</text>
-      <text x="135" y="35" class="text-code">
-        <tspan class="hl-kw">strict</tspan>=<tspan class="hl-bool">True</tspan> → <tspan fill="#fca5a5">Raise MissingValueError</tspan>
-      </text>
+      <rect width="4" height="45" fill="#facc15" rx="2" />
+      <text x="135" y="18" class="text-subtitle" style="fill: #f1f5f9;">Nominal Features</text>
+      <text x="135" y="35" class="text-code">Map to descriptive strings</text>
     </g>
 
     <!-- Step 1 Right Inner -->
+    <g transform="translate(310, 45)">
+      <rect width="270" height="45" class="box-inner" />
+      <rect width="4" height="45" fill="#d8b4fe" rx="2" />
+      <text x="135" y="18" class="text-subtitle" style="fill: #f1f5f9;">Binary Features</text>
+      <text x="135" y="35" class="text-code">Recode to 0/1</text>
+    </g>
+  </g>
+
+  <!-- Step 2: Missing Value Checker -->
+  <g id="step-2" transform="translate(200, 380)">
+    <rect width="600" height="110" class="box-outer pulse-2" />
+    <text x="300" y="25" class="text-title">
+      2. <tspan class="hl-class">Missing Value Checker</tspan>
+    </text>
+    
+    <!-- Step 2 Left Inner -->
+    <g transform="translate(20, 45)">
+      <rect width="270" height="45" class="box-inner" />
+      <rect width="4" height="45" fill="#ef4444" rx="2" />
+      <text x="135" y="18" class="text-subtitle" style="fill: #f1f5f9;">Required Features</text>
+      <text x="135" y="35" class="text-code">
+        <tspan class="hl-kw">strict</tspan>=<tspan class="hl-bool">True</tspan> → <tspan fill="#fca5a5">Raise Error</tspan>
+      </text>
+    </g>
+
+    <!-- Step 2 Right Inner -->
     <g transform="translate(310, 45)">
       <rect width="270" height="45" class="box-inner" />
       <rect width="4" height="45" fill="#f97316" rx="2" />
@@ -159,14 +188,14 @@
     </g>
   </g>
 
-  <!-- Step 2: Missing Value Imputation -->
-  <g id="step-2" transform="translate(100, 410)">
-    <rect width="800" height="180" class="box-outer pulse-2" />
+  <!-- Step 3: Missing Value Imputation -->
+  <g id="step-3" transform="translate(100, 560)">
+    <rect width="800" height="180" class="box-outer pulse-3" />
     <text x="400" y="25" class="text-title">
-      2. <tspan class="hl-class">Missing Value Imputer</tspan> (ColumnTransformer)
+      3. <tspan class="hl-class">Missing Value Imputer</tspan> (ColumnTransformer)
     </text>
 
-    <!-- Step 2 Inner 1 (Numerical) -->
+    <!-- Step 3 Inner 1 (Numerical) -->
     <g transform="translate(30, 50)">
       <rect width="340" height="110" class="box-inner" />
       <rect width="5" height="110" fill="#38bdf8" rx="2.5" />
@@ -180,7 +209,7 @@
       <text x="170" y="95" class="text-code hl-num" style="font-weight: 600;">[numerical_features]</text>
     </g>
 
-    <!-- Step 2 Inner 2 (Categorical) -->
+    <!-- Step 3 Inner 2 (Categorical) -->
     <g transform="translate(430, 50)">
       <rect width="340" height="110" class="box-inner" />
       <rect width="5" height="110" fill="#4ade80" rx="2.5" />
@@ -195,11 +224,11 @@
     </g>
   </g>
 
-  <!-- Step 3: Medical Feature Deriver -->
-  <g id="step-3" transform="translate(200, 660)">
-    <rect width="600" height="130" class="box-outer pulse-3" />
+  <!-- Step 4: Medical Feature Deriver -->
+  <g id="step-4" transform="translate(200, 810)">
+    <rect width="600" height="130" class="box-outer pulse-4" />
     <text x="300" y="25" class="text-title">
-      3. <tspan class="hl-class">Medical Feature Deriver</tspan>
+      4. <tspan class="hl-class">Medical Feature Deriver</tspan>
     </text>
     <text x="300" y="50" class="text-desc">Aggregates specific binary indicators into counts</text>
 
@@ -219,14 +248,14 @@
     </g>
   </g>
 
-  <!-- Step 4: Feature Scaling and Encoding -->
-  <g id="step-4" transform="translate(40, 860)">
-    <rect width="920" height="220" class="box-outer pulse-4" />
+  <!-- Step 5: Feature Scaling and Encoding -->
+  <g id="step-5" transform="translate(40, 1010)">
+    <rect width="920" height="220" class="box-outer pulse-5" />
     <text x="460" y="25" class="text-title">
-      4. <tspan class="hl-class">Feature Scaler &amp; Encoder</tspan> (ColumnTransformer)
+      5. <tspan class="hl-class">Feature Scaler &amp; Encoder</tspan> (ColumnTransformer)
     </text>
 
-    <!-- Step 4 Inner 1 (Numerical + Engineered) -->
+    <!-- Step 5 Inner 1 (Numerical + Engineered) -->
     <g transform="translate(107.5, 50)">
       <rect width="205" height="150" class="box-inner" />
       <rect width="5" height="150" fill="#38bdf8" rx="2.5" />
@@ -238,7 +267,7 @@
       <text x="102.5" y="145" class="text-code hl-eng" style="font-weight: 600;">+ [derived_features]</text>
     </g>
 
-    <!-- Step 4 Inner 2 (Nominal) -->
+    <!-- Step 5 Inner 2 (Nominal) -->
     <g transform="translate(357.5, 50)">
       <rect width="205" height="150" class="box-inner" />
       <rect width="5" height="150" fill="#facc15" rx="2.5" />
@@ -251,7 +280,7 @@
       <text x="102.5" y="138" class="text-code hl-nom" style="font-weight: 600;">[nominal_features]</text>
     </g>
 
-    <!-- Step 4 Inner 3 (Binary) -->
+    <!-- Step 5 Inner 3 (Binary) -->
     <g transform="translate(607.5, 50)">
       <rect width="205" height="150" class="box-inner" />
       <rect width="5" height="150" fill="#d8b4fe" rx="2.5" />
@@ -264,7 +293,7 @@
   </g>
 
   <!-- Output Data -->
-  <g id="output-data" transform="translate(250, 1150)">
+  <g id="output-data" transform="translate(250, 1300)">
     <rect width="500" height="80" class="box-outer pulse-out" style="fill: #1e293b; stroke: #818cf8; stroke-width: 3;" filter="url(#glow)" />
     <text x="250" y="32" class="text-title" style="fill: #ffffff;">Output Data (Model-Ready Features)</text>
     <text x="250" y="55" class="text-desc" style="fill: #c7d2fe;">Fully Imputed, Engineered, Scaled &amp; Encoded</text>
