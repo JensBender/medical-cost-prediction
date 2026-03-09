@@ -201,12 +201,9 @@
       <rect width="5" height="110" fill="#38bdf8" rx="2.5" />
       <text x="170" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Numerical Imputer</text>
       <text x="170" y="50" class="text-code">
-        <tspan class="hl-class">RobustSimpleImputer</tspan>(
+        <tspan class="hl-class">RobustSimpleImputer</tspan>()
       </text>
-      <text x="170" y="70" class="text-code">
-        <tspan class="hl-kw">strategy</tspan>=<tspan class="hl-string">"median"</tspan>)
-      </text>
-      <text x="170" y="95" class="text-code hl-num" style="font-weight: 600;">[numerical_features]</text>
+      <text x="170" y="75" class="text-code" style="font-weight: 600;">Median imputation for numerical features</text>
     </g>
 
     <!-- Step 3 Inner 2 (Categorical) -->
@@ -215,12 +212,9 @@
       <rect width="5" height="110" fill="#4ade80" rx="2.5" />
       <text x="170" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Categorical Imputer</text>
       <text x="170" y="50" class="text-code">
-        <tspan class="hl-class">RobustSimpleImputer</tspan>(
+        <tspan class="hl-class">RobustSimpleImputer</tspan>()
       </text>
-      <text x="170" y="70" class="text-code">
-        <tspan class="hl-kw">strategy</tspan>=<tspan class="hl-string">"most_frequent"</tspan>)
-      </text>
-      <text x="170" y="95" class="text-code hl-cat" style="font-weight: 600;">[nominal + binary]</text>
+      <text x="170" y="75" class="text-code" style="font-weight: 600;">Mode imputation for nominal &amp; binary features</text>
     </g>
   </g>
 
