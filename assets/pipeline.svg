@@ -109,22 +109,22 @@
     <path d="M 700,710 L 700,745 L 500,745 L 500,780" class="flow-line flow-line-cat" />
 
     <!-- Step 4 to Step 5 Split (Top) -->
-    <path d="M 500,910 L 500,945 L 250,945 L 250,980" class="base-line" />
+    <path d="M 500,910 L 500,945 L 200,945 L 200,980" class="base-line" />
     <path d="M 500,910 L 500,945 L 500,945 L 500,980" class="base-line" />
-    <path d="M 500,910 L 500,945 L 750,945 L 750,980" class="base-line" />
+    <path d="M 500,910 L 500,945 L 800,945 L 800,980" class="base-line" />
 
-    <path d="M 500,910 L 500,945 L 250,945 L 250,980" class="flow-line" />
+    <path d="M 500,910 L 500,945 L 200,945 L 200,980" class="flow-line" />
     <path d="M 500,910 L 500,945 L 500,945 L 500,980" class="flow-line flow-line-nom" />
-    <path d="M 500,910 L 500,945 L 750,945 L 750,980" class="flow-line flow-line-bin" />
+    <path d="M 500,910 L 500,945 L 800,945 L 800,980" class="flow-line flow-line-bin" />
 
     <!-- Step 5 Merge (Bottom) to Output -->
-    <path d="M 250,1200 L 250,1235 L 500,1235 L 500,1270" class="base-line" />
-    <path d="M 500,1200 L 500,1235 L 500,1235 L 500,1270" class="base-line" />
-    <path d="M 750,1200 L 750,1235 L 500,1235 L 500,1270" class="base-line" />
+    <path d="M 200,1160 L 200,1215 L 500,1215 L 500,1270" class="base-line" />
+    <path d="M 500,1160 L 500,1215 L 500,1215 L 500,1270" class="base-line" />
+    <path d="M 800,1160 L 800,1215 L 500,1215 L 500,1270" class="base-line" />
 
-    <path d="M 250,1200 L 250,1235 L 500,1235 L 500,1270" class="flow-line" />
-    <path d="M 500,1200 L 500,1235 L 500,1235 L 500,1270" class="flow-line flow-line-nom" />
-    <path d="M 750,1200 L 750,1235 L 500,1235 L 500,1270" class="flow-line flow-line-bin" />
+    <path d="M 200,1160 L 200,1215 L 500,1215 L 500,1270" class="flow-line" />
+    <path d="M 500,1160 L 500,1215 L 500,1215 L 500,1270" class="flow-line flow-line-nom" />
+    <path d="M 800,1160 L 800,1215 L 500,1215 L 500,1270" class="flow-line flow-line-bin" />
   </g>
 
   <!-- ============================================== NODES ============================================== -->
@@ -244,45 +244,39 @@
 
   <!-- Step 5: Feature Scaling and Encoding -->
   <g id="step-5" transform="translate(40, 980)">
-    <rect width="920" height="220" class="box-outer pulse-5" />
+    <rect width="920" height="180" class="box-outer pulse-5" />
     <text x="460" y="25" class="text-title">
       5. <tspan class="hl-class">Feature Scaler &amp; Encoder</tspan> (ColumnTransformer)
     </text>
 
     <!-- Step 5 Inner 1 (Numerical + Engineered) -->
-    <g transform="translate(107.5, 50)">
-      <rect width="205" height="150" class="box-inner" />
-      <rect width="5" height="150" fill="#38bdf8" rx="2.5" />
-      <text x="102.5" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Numerical Scaler</text>
-      <text x="102.5" y="55" class="text-code hl-class">RobustStandardScaler()</text>
-      <text x="102.5" y="90" class="text-desc">Transforms to:</text>
-      <text x="102.5" y="105" class="text-code" style="font-size: 11px;">mean=0, variance=1</text>
-      <text x="102.5" y="130" class="text-code hl-num" style="font-weight: 600;">[numerical_features]</text>
-      <text x="102.5" y="145" class="text-code hl-eng" style="font-weight: 600;">+ [derived_features]</text>
+    <g transform="translate(20, 50)">
+      <rect width="280" height="110" class="box-inner" />
+      <rect width="5" height="110" fill="#38bdf8" rx="2.5" />
+      <text x="140" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Numerical Scaler</text>
+      <text x="140" y="50" class="text-code hl-class">RobustStandardScaler()</text>
+      <text x="140" y="75" class="text-desc">Scales raw &amp; derived numerical</text>
+      <text x="140" y="90" class="text-desc">features to mean=0, variance=1</text>
     </g>
 
     <!-- Step 5 Inner 2 (Nominal) -->
-    <g transform="translate(357.5, 50)">
-      <rect width="205" height="150" class="box-inner" />
-      <rect width="5" height="150" fill="#facc15" rx="2.5" />
-      <text x="102.5" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Nominal Encoder</text>
-      <text x="102.5" y="55" class="text-code hl-class">RobustOneHotEncoder(</text>
-      <text x="102.5" y="75" class="text-code">
-        <tspan class="hl-kw">drop</tspan>=custom_list)
-      </text>
-      <text x="102.5" y="105" class="text-desc">Creates binary dummies</text>
-      <text x="102.5" y="138" class="text-code hl-nom" style="font-weight: 600;">[nominal_features]</text>
+    <g transform="translate(320, 50)">
+      <rect width="280" height="110" class="box-inner" />
+      <rect width="5" height="110" fill="#facc15" rx="2.5" />
+      <text x="140" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Nominal Encoder</text>
+      <text x="140" y="50" class="text-code hl-class">RobustOneHotEncoder()</text>
+      <text x="140" y="75" class="text-desc">Creates binary dummies for nominal</text>
+      <text x="140" y="90" class="text-desc">features &amp; drops designated baseline</text>
     </g>
 
     <!-- Step 5 Inner 3 (Binary) -->
-    <g transform="translate(607.5, 50)">
-      <rect width="205" height="150" class="box-inner" />
-      <rect width="5" height="150" fill="#d8b4fe" rx="2.5" />
-      <text x="102.5" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Binary Passthrough</text>
-      <text x="102.5" y="55" class="text-code hl-string">"passthrough"</text>
-      <text x="102.5" y="90" class="text-desc">Passes through unchanged</text>
-      <text x="102.5" y="105" class="text-desc">(Already 0/1 coded)</text>
-      <text x="102.5" y="138" class="text-code hl-bin" style="font-weight: 600;">[binary_features]</text>
+    <g transform="translate(620, 50)">
+      <rect width="280" height="110" class="box-inner" />
+      <rect width="5" height="110" fill="#d8b4fe" rx="2.5" />
+      <text x="140" y="25" class="text-subtitle" style="font-weight: 700; fill: #e2e8f0;">Binary Passthrough</text>
+      <text x="140" y="50" class="text-code hl-string">"passthrough"</text>
+      <text x="140" y="75" class="text-desc">Passes through binary features</text>
+      <text x="140" y="90" class="text-desc">unchanged (already 0/1 coded)</text>
     </g>
   </g>
 
@@ -290,7 +284,7 @@
   <g id="output-data" transform="translate(250, 1270)">
     <rect width="500" height="80" class="box-outer pulse-out" style="fill: #1e293b; stroke: #818cf8; stroke-width: 3;" filter="url(#glow)" />
     <text x="250" y="32" class="text-title" style="fill: #ffffff;">Output Data (Model-Ready Features)</text>
-    <text x="250" y="55" class="text-desc" style="fill: #c7d2fe;">Fully Imputed, Engineered, Scaled &amp; Encoded</text>
+    <text x="250" y="50" class="text-desc" style="fill: #c7d2fe;">Fully Imputed, Engineered, Scaled &amp; Encoded</text>
     
     <!-- Little decorative checkmarks or stars -->
     <path d="M 50,40 L 60,50 L 80,30" stroke="#4ade80" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
