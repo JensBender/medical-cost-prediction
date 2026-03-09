@@ -331,7 +331,12 @@ class RobustSimpleImputer(SimpleImputer):
         
         # Restore numeric dtypes where possible
         if isinstance(result, pd.DataFrame):
-            return result.apply(pd.to_numeric, errors="ignore")  # ignore leaves non-numeric columns unchanged, even if column has only a single non-numeric value 
+            for col in result.columns:
+                try:
+                    result[col] = pd.to_numeric(result[col])
+                except (ValueError, TypeError):
+                    continue  # Keep as object/string if non-numeric (e.g., nominal labels)
+            return result
         return result
 
 
