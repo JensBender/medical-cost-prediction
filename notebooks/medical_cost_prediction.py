@@ -76,7 +76,7 @@ from sklearn.metrics import (
 # Local imports
 from src.constants import (
     DISPLAY_LABELS, 
-    CATEGORICAL_LABELS
+    CATEGORY_LABELS_EDA
 )
 from src.transformers import (
     MedicalFeatureDeriver,
@@ -1197,10 +1197,10 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
 
 
 # Plot sample distributions (unweighted) of categorical features 
-plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, CATEGORICAL_LABELS)  # save_to_file="../figures/eda/categorical_distributions_sample.png"
+plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA)  # save_to_file="../figures/eda/categorical_distributions_sample.png"
 
 # Plot population distributions (weighted) of categorical features
-plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, CATEGORICAL_LABELS, weights="PERWT23F")   # save_to_file="../figures/eda/categorical_distributions_population.png"
+plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F")   # save_to_file="../figures/eda/categorical_distributions_population.png"
 
 
 # %% [markdown]
@@ -1296,10 +1296,10 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
 
 
 # Plot sample distributions (unweighted) of binary features 
-plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORICAL_LABELS)  # save_to_file="../figures/eda/binary_distributions_sample.png"
+plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA)  # save_to_file="../figures/eda/binary_distributions_sample.png"
 
 # Plot population distributions (weighted) of binary features
-plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORICAL_LABELS, weights="PERWT23F")  # save_to_file="../figures/eda/binary_distributions_population.png"
+plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F")  # save_to_file="../figures/eda/binary_distributions_population.png"
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -1405,8 +1405,8 @@ input_nominal_features = ["REGION23", "MARRY31X_GRP", "INSCOV23", "HIDEG"]
 # </div>
 
 # %%
-plot_categorical_distributions(df, input_nominal_features, ["POVCAT23"], DISPLAY_LABELS, CATEGORICAL_LABELS, weights="PERWT23F")
-plot_binary_distributions(df, input_binary_features, DISPLAY_LABELS, CATEGORICAL_LABELS, weights="PERWT23F")
+plot_categorical_distributions(df, input_nominal_features, ["POVCAT23"], DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F")
+plot_binary_distributions(df, input_binary_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F")
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -2412,7 +2412,7 @@ for i, feature in enumerate(input_nominal_features + ["POVCAT23"]):
         plot_data = plot_data.sort_values(by=feature)
 
     # Map integer codes to human-readable labels
-    label_map = CATEGORICAL_LABELS.get(feature, {})
+    label_map = CATEGORY_LABELS_EDA.get(feature, {})
     plot_data["display_label"] = plot_data[feature].map(lambda x: label_map.get(x, x))
     
     # Grouped Bar Plot
@@ -2479,12 +2479,12 @@ plt.show()
 # </div>
 
 # %%
-# Convert nominal and ordinal features from numeric codes to descriptive string labels
-# Note: This ensures pipeline generates human-readable feature names out (e.g., REGION23_Midwest not REGION23_2.0)
+# Convert nominal features from numeric codes to descriptive string labels
+# Note: This ensures human-readable feature names out of pipeline (e.g., REGION23_Midwest not REGION23_2.0)
 for subset in [X_train, X_val, X_test]:
     for feature in input_nominal_features:
         if feature in subset.columns:
-            subset[feature] = subset[feature].map(CATEGORICAL_LABELS[feature])
+            subset[feature] = subset[feature].map(CATEGORY_LABELS_EDA[feature])
             
 # Create data preprocessing pipeline
 preprocessor = create_preprocessing_pipeline(
