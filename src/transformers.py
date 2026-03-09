@@ -1,15 +1,9 @@
-# Standard library imports
-import logging
-
-# Third-party library imports
 from sklearn.base import BaseEstimator, TransformerMixin 
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.utils import validation as sklearn_validation
 import pandas as pd
-
-# Local imports
-from constants import CATEGORY_LABELS_PIPELINE
+import logging
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -222,7 +216,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         return X
 
 
-class CategoryLabelStandardizer(BaseEstimator, TransformerMixin):
+class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
     """
     Standardizes categorical feature labels to ensure pipeline robustness and interpretability.
 
@@ -244,10 +238,10 @@ class CategoryLabelStandardizer(BaseEstimator, TransformerMixin):
     - Maintains original values (or NaNs) if no mapping is found.
     - Raises `TypeError` if the provided input is not a pandas DataFrame.
     """
-    def __init__(self, binary_features=None, nominal_features=None, category_label_map=CATEGORY_LABELS_PIPELINE):
+    def __init__(self, binary_features=None, nominal_features=None, category_label_map=None):
         self.binary_features = binary_features or []
         self.nominal_features = nominal_features or []
-        self.label_map = category_label_map
+        self.category_label_map = category_label_map
 
     def fit(self, X, y=None):
         # Store input feature names
@@ -259,10 +253,13 @@ class CategoryLabelStandardizer(BaseEstimator, TransformerMixin):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("The provided input X must be a pandas DataFrame.")
         
+        # Use provided map or empty dict as fallback
+        label_map = self.category_label_map or {}
+        
         X = X.copy()
         for col in X.columns:
-            if col in self.label_map:
-                mapping = self.label_map[col]
+            if col in label_map:
+                mapping = label_map[col]
                 
                 if col in self.binary_features:
                     # Binary features: Ensure 0/1 numeric codes
