@@ -190,19 +190,15 @@
     <!-- Step 2 Left Inner -->
     <g transform="translate(20, 45)">
       <rect width="270" height="45" class="box-inner" />
-      <rect width="4" height="45" fill="#ef4444" rx="2" />
       <text x="135" y="18" class="text-subtitle" style="fill: #f1f5f9;">Required Features</text>
-      <text x="135" y="35" class="text-code">
-        <tspan class="hl-kw">strict</tspan>=<tspan class="hl-bool">True</tspan> → <tspan fill="#fca5a5">Raise Error</tspan>
-      </text>
+      <text x="135" y="35" class="text-desc">strict=True → Raise Error</text>
     </g>
 
     <!-- Step 2 Right Inner -->
     <g transform="translate(310, 45)">
       <rect width="270" height="45" class="box-inner" />
-      <rect width="4" height="45" fill="#f97316" rx="2" />
       <text x="135" y="18" class="text-subtitle" style="fill: #f1f5f9;">Optional Features</text>
-      <text x="135" y="35" class="text-code">If missing → <tspan fill="#fdba74">Log Warning</tspan></text>
+      <text x="135" y="35" class="text-desc">If missing → Log Warning</text>
     </g>
   </g>
 
