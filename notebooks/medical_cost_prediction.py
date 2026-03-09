@@ -2479,13 +2479,6 @@ plt.show()
 # </div>
 
 # %%
-# Convert nominal features from numeric codes to descriptive string labels
-# Note: This ensures human-readable feature names out of pipeline (e.g., REGION23_Midwest not REGION23_2.0)
-for subset in [X_train, X_val, X_test]:
-    for feature in input_nominal_features:
-        if feature in subset.columns:
-            subset[feature] = subset[feature].map(CATEGORY_LABELS_EDA[feature])
-            
 # Create data preprocessing pipeline
 preprocessor = create_preprocessing_pipeline(
     required_features, 
@@ -2531,8 +2524,14 @@ preprocessor_verify_scaling.style \
     .pipe(add_caption, "Verification of Feature Scaling") \
     .format("{:.2f}")
 # %%
-# Check feature names of pipeline output
-preprocessor.named_steps["feature_scaler_encoder"].named_transformers_["nominal_encoder"].get_feature_names_out()
+# Check feature names of pipeline output to verify human-readable encoding
+# Note: Should show names like 'REGION23_South' instead of 'REGION23_3.0'
+nominal_feature_names = preprocessor.named_steps["categorical_label_standardizer"].nominal_features
+encoded_feature_names = preprocessor.named_steps["feature_scaler_encoder"].named_transformers_["nominal_encoder"].get_feature_names_out(nominal_feature_names)
+print(f"--- Nominal Feature Names (Pipeline Input) ---")
+print(nominal_feature_names)
+print(f"\n--- Encoded Nominal Feature Names (Pipeline Output) ---")
+print(encoded_feature_names)
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
