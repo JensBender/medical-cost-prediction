@@ -64,7 +64,7 @@ def create_preprocessing_pipeline(
     categorical_features = nominal_features + binary_features
 
     return Pipeline(steps=[
-        ("categorical_label_standardizer", CategoricalLabelStandardizer(binary_features, nominal_features, category_label_map=CATEGORY_LABELS_PIPELINE)),
+        ("categorical_label_standardizer", CategoricalLabelStandardizer(binary_features, nominal_features, categorical_label_map=CATEGORY_LABELS_PIPELINE)),
         ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
         ("missing_value_imputer", ColumnTransformer(
             transformers=[
@@ -120,7 +120,7 @@ def create_missing_value_handling_pipeline(
     # Combine categorical features for imputation
     categorical_features = nominal_features + binary_features
     return Pipeline(steps=[
-        ("categorical_label_standardizer", CategoricalLabelStandardizer(binary_features, nominal_features, category_label_map=CATEGORY_LABELS_PIPELINE)),
+        ("categorical_label_standardizer", CategoricalLabelStandardizer(binary_features, nominal_features, categorical_label_map=CATEGORY_LABELS_PIPELINE)),
         ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
         ("missing_value_imputer", ColumnTransformer(
             transformers=[
