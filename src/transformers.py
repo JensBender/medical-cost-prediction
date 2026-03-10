@@ -108,6 +108,14 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
         # Store input feature number and names as learned attributes
         self.n_features_in_ = X.shape[1]
         self.feature_names_in_ = X.columns.tolist()
+
+        # Create reverse label map
+        self.reverse_label_map_ = {}
+        label_map = self.categorical_label_map or {}
+        for col in self.binary_features:
+            if col in label_map:
+                # Create reverse mapping (String -> Int)
+                self.reverse_label_map_[col] = {str(v).lower(): k for k, v in label_map[col].items()}
         
         return self
 
@@ -133,8 +141,7 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
                 
                 if col in self.binary_features:
                     # Binary features: Ensure 0/1 numeric codes
-                    # Create reverse mapping (String -> Int)
-                    rev_map = {str(v).lower(): k for k, v in mapping.items()}
+                    rev_map = self.reverse_label_map_.get(col, {})
                     
                     def standardize_binary(val):
                         if pd.isna(val):
