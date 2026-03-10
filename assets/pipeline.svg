@@ -222,7 +222,7 @@
       <rect width="5" height="90" fill="#4ade80" rx="2.5" />
       <text x="185" y="22" class="text-subtitle" style="fill: #4ade80;">Categorical Imputer</text>
       <text x="185" y="47" class="text-code hl-class">RobustSimpleImputer()</text>
-      <text x="185" y="72" class="text-desc">Mode for <tspan class="hl-nom">nominal</tspan> &amp; <tspan class="hl-bin">binary features</tspan></text>
+      <text x="185" y="72" class="text-desc">Mode for <tspan class="hl-nom">nominal &amp;</tspan> <tspan class="hl-bin">binary features</tspan></text>
     </g>
   </g>
 
@@ -259,7 +259,7 @@
       <rect width="5" height="110" fill="#38bdf8" rx="2.5" />
       <text x="140" y="25" class="text-subtitle" style="fill: #38bdf8;">Numerical Scaler</text>
       <text x="140" y="50" class="text-code hl-class">RobustStandardScaler()</text>
-      <text x="140" y="75" class="text-desc">Scales <tspan class="hl-num">raw</tspan> &amp; <tspan class="hl-eng">derived features</tspan></text>
+      <text x="140" y="75" class="text-desc">Scales <tspan class="hl-num">raw &amp;</tspan> <tspan class="hl-eng">derived features</tspan></text>
       <text x="140" y="90" class="text-desc">to mean=0, variance=1</text>
     </g>
 
@@ -278,7 +278,7 @@
       <rect width="280" height="110" class="box-inner" />
       <rect width="5" height="110" fill="#d8b4fe" rx="2.5" />
       <text x="140" y="25" class="text-subtitle" style="fill: #d8b4fe;">Binary Passthrough</text>
-      <text x="140" y="50" class="text-code hl-string">"passthrough"</text>
+      <text x="140" y="50" class="text-desc">"passthrough"</text>
       <text x="140" y="75" class="text-desc">Passes through <tspan class="hl-bin">binary features</tspan></text>
       <text x="140" y="90" class="text-desc">unchanged (already 0/1 coded)</text>
     </g>
