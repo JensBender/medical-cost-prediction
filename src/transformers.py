@@ -82,7 +82,8 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("The provided input X must be a pandas DataFrame.")
         
-        # Store input feature names
+        # Store input feature number and names as learned attributes
+        self.n_features_in_ = X.shape[1]
         self.feature_names_in_ = X.columns.tolist()
         return self
 
@@ -427,6 +428,10 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
         # Validate input 
         self._validate_input(X)
         
+        # Store input feature number and names as learned attributes
+        self.n_features_in_ = X.shape[1]
+        self.feature_names_in_ = X.columns.tolist()
+
         # Store output feature names
         self.feature_names_out_ = X.columns.tolist() + self.OUTPUT_FEATURES
         return self
@@ -531,7 +536,11 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         (NaNs) are treated as outliers and will be removed. It is recommended 
         to handle missing values before applying this transformer.
     """
-    def fit(self, df, numerical_columns):
+    def fit(self, X, numerical_columns):
+        # Ensure input is a DataFrame
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("The provided input X must be a pandas DataFrame.")
+
         # Convert single column string to list
         if isinstance(numerical_columns, str):
             self.numerical_columns_ = [numerical_columns]
@@ -540,7 +549,7 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
             
         # Warn if any missing values 
         # NaN comparisons silently evaluate to False, which causes those rows to be counted as outliers
-        n_missing_by_column = df[self.numerical_columns_].isnull().sum()
+        n_missing_by_column = X[self.numerical_columns_].isnull().sum()
         n_missing_columns = n_missing_by_column[n_missing_by_column > 0]
         if not n_missing_columns.empty:
             missing_summary = ", ".join(f"{col} ({n})" for col, n in n_missing_columns.items())
@@ -551,44 +560,49 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         
         # Calculate statistics (mean, std, cutoff values) for each column
         self.stats_ = pd.DataFrame(index=self.numerical_columns_)
-        self.stats_["mean"] = df[self.numerical_columns_].mean()
-        self.stats_["std"] = df[self.numerical_columns_].std()
+        self.stats_["mean"] = X[self.numerical_columns_].mean()
+        self.stats_["std"] = X[self.numerical_columns_].std()
         self.stats_["lower_cutoff"] = self.stats_["mean"] - 3 * self.stats_["std"]
         self.stats_["upper_cutoff"] = self.stats_["mean"] + 3 * self.stats_["std"]
         
         # Create masks for filtering outliers 
-        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
+        self.masks_ = (X[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (X[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
         self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
      
         # Calculate number of outliers
         self.stats_["n_outliers"] = (~self.masks_).sum()  # by column
-        self.stats_["pct_outliers"] = self.stats_["n_outliers"] / len(df) * 100  # by column
+        self.stats_["pct_outliers"] = self.stats_["n_outliers"] / len(X) * 100  # by column
         self.outliers_ = (~self.final_mask_).sum()  # across all columns
         
-        # Store feature names
-        self.feature_names_in_ = df.columns.tolist()
+        # Store input feature number and names as learned attributes
+        self.n_features_in_ = X.shape[1]
+        self.feature_names_in_ = X.columns.tolist()
         
         return self
 
-    def transform(self, df):
+    def transform(self, X):
         # Ensure .fit() happened before
         sklearn_validation.check_is_fitted(self)
         
-        # Create masks for df (can be a different df than during fit; e.g. X_train, X_test)
-        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
+        # Ensure input is a DataFrame
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("The provided input X must be a pandas DataFrame.")
+
+        # Create masks for X (can be a different X than during fit; e.g. X_train, X_test)
+        self.masks_ = (X[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (X[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
         self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
         
         # Remove outliers based on the final mask
-        return df[self.final_mask_]
+        return X[self.final_mask_]
 
     def get_feature_names_out(self, input_features=None):
         sklearn_validation.check_is_fitted(self)
         # Return the input feature names
         return self.feature_names_in_
 
-    def fit_transform(self, df, numerical_columns):
+    def fit_transform(self, X, numerical_columns):
         # Perform both fit and transform 
-        return self.fit(df, numerical_columns).transform(df)
+        return self.fit(X, numerical_columns).transform(X)
 
 
 class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
@@ -616,7 +630,11 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         (NaNs) are treated as outliers and will be removed. It is recommended 
         to handle missing values before applying this transformer.
     """
-    def fit(self, df, numerical_columns):
+    def fit(self, X, numerical_columns):
+        # Ensure input is a DataFrame
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("The provided input X must be a pandas DataFrame.")
+
         # Convert single column string to list
         if isinstance(numerical_columns, str):
             self.numerical_columns_ = [numerical_columns]
@@ -625,7 +643,7 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         
         # Warn if any missing values 
         # NaN comparisons silently evaluate to False, which causes those rows to be counted as outliers
-        n_missing_by_column = df[self.numerical_columns_].isnull().sum()
+        n_missing_by_column = X[self.numerical_columns_].isnull().sum()
         n_missing_columns = n_missing_by_column[n_missing_by_column > 0]
         if not n_missing_columns.empty:
             missing_summary = ", ".join(f"{col} ({n})" for col, n in n_missing_columns.items())
@@ -636,42 +654,47 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         
         # Calculate statistics (quartiles, interquartile range, cutoff values) for each column
         self.stats_ = pd.DataFrame(index=self.numerical_columns_)
-        self.stats_["Q1"] = df[self.numerical_columns_].quantile(0.25)
-        self.stats_["Q3"] = df[self.numerical_columns_].quantile(0.75)
+        self.stats_["Q1"] = X[self.numerical_columns_].quantile(0.25)
+        self.stats_["Q3"] = X[self.numerical_columns_].quantile(0.75)
         self.stats_["IQR"] = self.stats_["Q3"] - self.stats_["Q1"]
         self.stats_["lower_cutoff"] = self.stats_["Q1"] - 1.5 * self.stats_["IQR"]
         self.stats_["upper_cutoff"] = self.stats_["Q3"] + 1.5 * self.stats_["IQR"]
 
         # Create masks for filtering outliers 
-        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
+        self.masks_ = (X[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (X[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
         self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
 
         # Calculate number of outliers
         self.stats_["n_outliers"] = (~self.masks_).sum()  # by column
-        self.stats_["pct_outliers"] = self.stats_["n_outliers"] / len(df) * 100  # by column
+        self.stats_["pct_outliers"] = self.stats_["n_outliers"] / len(X) * 100  # by column
         self.outliers_ = (~self.final_mask_).sum()  # across all columns
                
-        # Store feature names
-        self.feature_names_in_ = df.columns.tolist()
+        # Store input feature number and names as learned attributes
+        self.n_features_in_ = X.shape[1]
+        self.feature_names_in_ = X.columns.tolist()
 
         return self
 
-    def transform(self, df):
+    def transform(self, X):
         # Ensure .fit() happened before
         sklearn_validation.check_is_fitted(self)
 
-        # Create masks for df (can be a different df than during fit; e.g. X_train, X_test)
-        self.masks_ = (df[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (df[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
+        # Ensure input is a DataFrame
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("The provided input X must be a pandas DataFrame.")
+
+        # Create masks for X (can be a different X than during fit; e.g. X_train, X_test)
+        self.masks_ = (X[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (X[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
         self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
         
         # Remove outliers based on the final mask
-        return df[self.final_mask_]
+        return X[self.final_mask_]
 
     def get_feature_names_out(self, input_features=None):
         sklearn_validation.check_is_fitted(self)
         # Return the input feature names
         return self.feature_names_in_
 
-    def fit_transform(self, df, numerical_columns):
+    def fit_transform(self, X, numerical_columns):
         # Perform both fit and transform
-        return self.fit(df, numerical_columns).transform(df)
+        return self.fit(X, numerical_columns).transform(X)
