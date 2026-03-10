@@ -80,7 +80,7 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         # Ensure input is a DataFrame
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("The provided input X must be a pandas DataFrame.")
+            raise TypeError("CategoricalLabelStandardizer: The provided input X must be a pandas DataFrame.")
 
         # Ensure binary_features and nominal_features are lists
         if not isinstance(self.binary_features, list):
@@ -109,7 +109,7 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
     def transform(self, X):
         # Ensure input is a DataFrame
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("The provided input X must be a pandas DataFrame.")
+            raise TypeError("CategoricalLabelStandardizer: The provided input X must be a pandas DataFrame.")
         
         if X.empty:
             return X
@@ -180,13 +180,13 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
 
         # Ensure "required_features" and "optional_features" are lists
         if not isinstance(required_features, list):
-            raise TypeError("'required_features' must be a list of feature names.")
+            raise TypeError("MissingValueChecker: 'required_features' must be a list of feature names.")
         if not isinstance(optional_features, list):
-            raise TypeError("'optional_features' must be a list of feature names.")
+            raise TypeError("MissingValueChecker: 'optional_features' must be a list of feature names.")
 
         # Ensure required features list is not empty
         if not required_features:
-            raise ValueError("'required_features' cannot be an empty list. It must specify the names of the required features.")
+            raise ValueError("MissingValueChecker: 'required_features' cannot be an empty list. It must specify the names of the required features.")
 
         self.required_features = required_features
         self.optional_features = optional_features
@@ -195,7 +195,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
     def _validate_input(self, X):
         # Ensure X input is DataFrame
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("The provided input X must be a pandas DataFrame.")          
+            raise TypeError("MissingValueChecker: The provided input X must be a pandas DataFrame.")          
         
         # Ensure DataFrame has no missing columns
         input_columns = set(X.columns)
@@ -207,13 +207,13 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                 "expected_columns": list(expected_columns),
                 "actual_columns": list(input_columns)
             }
-            raise MissingColumnError(f"The provided DataFrame is missing the following columns: {', '.join(missing_columns)}.", details=details)
+            raise MissingColumnError(f"MissingValueChecker: The provided DataFrame is missing the following columns: {', '.join(missing_columns)}.", details=details)
 
         # Log unexpected columns but do not raise an error 
         unexpected_columns = input_columns - expected_columns
         if unexpected_columns:
             logger.warning(
-                f"Unexpected Column Warning: The provided DataFrame contains columns that are not in the feature list and will be ignored.\n"
+                f"MissingValueChecker: Unexpected Column Warning: The provided DataFrame contains columns that are not in the feature list and will be ignored.\n"
                 f"- Unexpected Columns: {', '.join(unexpected_columns)}."
             )
 
@@ -239,7 +239,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             
             # Craft detailed summary message
             msg = (
-                f"{n_missing_required} missing {values_word} found in required features "
+                f"MissingValueChecker: {n_missing_required} missing {values_word} found in required features "
                 f"across {n_missing_rows_required} {rows_word}. {'' if self.strict else 'These will be imputed.'}\n"
                 f"- Affected Features: {failed_columns_report}\n"
                 f"- Affected Row Indices: {failed_indices_report}"
@@ -254,7 +254,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                 }
                 raise MissingValueError(msg, details=details)
             else:
-                logger.warning(f"Missing Value Warning: {msg}")
+                logger.warning(f"MissingValueChecker: Missing Value Warning: {msg}")
 
         # Optional features
         if not self.optional_features:
@@ -277,7 +277,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
             rows_word = "row" if n_missing_rows_optional == 1 else "rows"
             
             logger.warning(
-                f"Missing Value Warning: {n_missing_optional} missing {values_word} found in optional features "
+                f"MissingValueChecker: Missing Value Warning: {n_missing_optional} missing {values_word} found in optional features "
                 f"across {n_missing_rows_optional} {rows_word}. These will be imputed.\n"
                 f"- Affected Features: {failed_columns_opt_report}\n"
                 f"- Affected Row Indices: {failed_indices_opt_report}"
@@ -296,7 +296,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
                     "reason": "Column is 100% missing"
                 }
                 raise MissingValueError(
-                    f"'{feature}' contains only missing values. At least one non-missing value is required to fit the imputer.",
+                    f"MissingValueChecker: '{feature}' contains only missing values. At least one non-missing value is required to fit the imputer.",
                     details=details
                 )
 
@@ -350,7 +350,7 @@ class RobustSimpleImputer(SimpleImputer):
     """
     def transform(self, X):
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("The provided input X must be a pandas DataFrame.")
+            raise TypeError("RobustSimpleImputer: The provided input X must be a pandas DataFrame.")
         
         if X.empty:
             return X
@@ -407,7 +407,7 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
     def _validate_input(self, X):
         # Ensure X input is DataFrame
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("The provided input X must be a pandas DataFrame.")          
+            raise TypeError("MedicalFeatureDeriver: The provided input X must be a pandas DataFrame.")          
         
         # Ensure DataFrame has no missing columns
         input_columns = set(X.columns)
@@ -419,7 +419,7 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
                 "expected_columns": list(expected_columns),
                 "actual_columns": list(input_columns)
             }
-            raise MissingColumnError(f"The provided DataFrame is missing the following columns: {', '.join(missing_columns)}.", details=details)
+            raise MissingColumnError(f"MedicalFeatureDeriver: The provided DataFrame is missing the following columns: {', '.join(missing_columns)}.", details=details)
 
         # Ensure input features have no missing values
         missing_mask = X[list(expected_columns)].isnull()
@@ -435,7 +435,7 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
             missing_rows_msg = str(missing_rows[:5]) + ("..." if n_missing_rows > 5 else "")
             values_word = "value" if n_missing == 1 else "values"
             msg = (
-                f"MedicalFeatureDeriver found {n_missing} missing {values_word}, but requires complete data for all source features used to derive new features. Make sure to handle missing values first.\n"
+                f"MedicalFeatureDeriver: Found {n_missing} missing {values_word}, but requires complete data for all source features used to derive new features. Make sure to handle missing values first.\n"
                 f"- Affected Features: {missing_features_msg}\n"
                 f"- Affected Row Indices: {missing_rows_msg}"
             )    
@@ -507,7 +507,7 @@ class RobustStandardScaler(StandardScaler):
     """
     def transform(self, X):
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("The provided input X must be a pandas DataFrame.")
+            raise TypeError("RobustStandardScaler: The provided input X must be a pandas DataFrame.")
     
         if X.empty:
             return X
@@ -533,7 +533,7 @@ class RobustOneHotEncoder(OneHotEncoder):
     """
     def transform(self, X):
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("The provided input X must be a pandas DataFrame.")
+            raise TypeError("RobustOneHotEncoder: The provided input X must be a pandas DataFrame.")
     
         if X.empty:
             return X
@@ -567,7 +567,7 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
     def fit(self, X, numerical_columns):
         # Ensure input is a DataFrame
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("The provided input X must be a pandas DataFrame.")
+            raise TypeError("OutlierRemover3SD: The provided input X must be a pandas DataFrame.")
 
         # Convert single column string to list
         if isinstance(numerical_columns, str):
@@ -582,7 +582,7 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         if not n_missing_columns.empty:
             missing_summary = ", ".join(f"{col} ({n})" for col, n in n_missing_columns.items())
             logger.warning(
-                f"Missing Value Warning: The provided numerical features contain missing values. These will be counted as outliers. Handle missing values before calling fit() to ensure correct outlier handling.\n"
+                f"OutlierRemover3SD: Missing Value Warning: The provided numerical features contain missing values. These will be counted as outliers. Handle missing values before calling fit() to ensure correct outlier handling.\n"
                 f"- Affected Features: {missing_summary}"
             )
         
@@ -614,7 +614,7 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         
         # Ensure input is a DataFrame
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("The provided input X must be a pandas DataFrame.")
+            raise TypeError("OutlierRemover3SD: The provided input X must be a pandas DataFrame.")
 
         if X.empty:
             return X
@@ -664,7 +664,7 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
     def fit(self, X, numerical_columns):
         # Ensure input is a DataFrame
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("The provided input X must be a pandas DataFrame.")
+            raise TypeError("OutlierRemoverIQR: The provided input X must be a pandas DataFrame.")
 
         # Convert single column string to list
         if isinstance(numerical_columns, str):
@@ -679,7 +679,7 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         if not n_missing_columns.empty:
             missing_summary = ", ".join(f"{col} ({n})" for col, n in n_missing_columns.items())
             logger.warning(
-                f"Missing Value Warning: The provided numerical features contain missing values. These will be counted as outliers. Handle missing values before calling fit() to ensure correct outlier handling.\n"
+                f"OutlierRemoverIQR: Missing Value Warning: The provided numerical features contain missing values. These will be counted as outliers. Handle missing values before calling fit() to ensure correct outlier handling.\n"
                 f"- Affected Features: {missing_summary}"
             )
         
@@ -712,7 +712,7 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
 
         # Ensure input is a DataFrame
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("The provided input X must be a pandas DataFrame.")
+            raise TypeError("OutlierRemoverIQR: The provided input X must be a pandas DataFrame.")
 
         if X.empty:
             return X
