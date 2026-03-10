@@ -105,7 +105,7 @@
   <!-- Global Header -->
   <g transform="translate(500, 45)">
     <text class="text-title" style="font-size: 24px;">Data Preprocessing Pipeline</text>
-    <text y="25" class="text-subtitle" style="font-size: 14px; fill: #ffffff;">Standardization, validation, imputation, medical engineering, scaling &amp; encoding</text>
+    <text y="25" class="text-subtitle" style="font-size: 14px; fill: #ffffff;">Standardization, Validation, Imputation, Medical Feature Engineering, Scaling &amp; Encoding</text>
   </g>
 
   <!-- ============================================== PATHS (Connections) ============================================== -->
@@ -191,7 +191,7 @@
     <g transform="translate(20, 45)">
       <rect width="270" height="45" class="box-inner" />
       <text x="135" y="18" class="text-subtitle" style="fill: #f1f5f9;">Required Features</text>
-      <text x="135" y="35" class="text-desc">strict=True → Raise Error</text>
+      <text x="135" y="35" class="text-desc">If missing → Raise Error</text>
     </g>
 
     <!-- Step 2 Right Inner -->
@@ -213,7 +213,7 @@
       <rect width="5" height="90" fill="#38bdf8" rx="2.5" />
       <text x="185" y="22" class="text-subtitle" style="fill: #38bdf8;">Numerical Imputer</text>
       <text x="185" y="47" class="text-code hl-class">RobustSimpleImputer()</text>
-      <text x="185" y="72" class="text-desc">Median for <tspan class="hl-num">numerical features</tspan></text>
+      <text x="185" y="72" class="text-desc"><tspan style="font-weight: 600; fill: #38bdf8;">Median</tspan> for <tspan class="hl-num">numerical features</tspan></text>
     </g>
 
     <!-- Step 3 Inner 2 (Categorical) -->
@@ -222,7 +222,7 @@
       <rect width="5" height="90" fill="#4ade80" rx="2.5" />
       <text x="185" y="22" class="text-subtitle" style="fill: #4ade80;">Categorical Imputer</text>
       <text x="185" y="47" class="text-code hl-class">RobustSimpleImputer()</text>
-      <text x="185" y="72" class="text-desc">Mode for <tspan class="hl-nom">nominal &amp;</tspan> <tspan class="hl-bin">binary features</tspan></text>
+      <text x="185" y="72" class="text-desc"><tspan style="font-weight: 600; fill: #4ade80;">Mode</tspan> for <tspan class="hl-nom">nominal &amp;</tspan> <tspan class="hl-bin">binary features</tspan></text>
     </g>
   </g>
 
