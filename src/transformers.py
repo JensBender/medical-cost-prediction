@@ -85,12 +85,16 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
         # Store input feature number and names as learned attributes
         self.n_features_in_ = X.shape[1]
         self.feature_names_in_ = X.columns.tolist()
+        
         return self
 
     def transform(self, X):
         # Ensure input is a DataFrame
         if not isinstance(X, pd.DataFrame):
             raise TypeError("The provided input X must be a pandas DataFrame.")
+        
+        if X.empty:
+            return X
         
         # Use provided map or empty dict as fallback
         label_map = self.categorical_label_map or {}
@@ -290,6 +294,9 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         # Validate input 
         self._validate_input(X)    
         
+        if X.empty:
+            return X
+            
         # Check missing values 
         self._check_missing_values(X)
 
@@ -443,6 +450,9 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
         # Validate input 
         self._validate_input(X)
         
+        if X.empty:
+            return X
+            
         # Performance optimization: Ensure binary indicators are treated as floats before summation. 
         # This prevents the overhead computation if columns were converted from float to object by a previous step.
         feature_subset = X[self.CHRONIC_CONDITION_FEATURES + self.FUNCTIONAL_LIMITATION_FEATURES].apply(pd.to_numeric, errors="coerce")
@@ -588,6 +598,9 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("The provided input X must be a pandas DataFrame.")
 
+        if X.empty:
+            return X
+
         # Create masks for X (can be a different X than during fit; e.g. X_train, X_test)
         self.masks_ = (X[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (X[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
         self.final_mask_ = self.masks_.all(axis=1)  # single mask across all columns
@@ -682,6 +695,9 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         # Ensure input is a DataFrame
         if not isinstance(X, pd.DataFrame):
             raise TypeError("The provided input X must be a pandas DataFrame.")
+
+        if X.empty:
+            return X
 
         # Create masks for X (can be a different X than during fit; e.g. X_train, X_test)
         self.masks_ = (X[self.numerical_columns_] >= self.stats_["lower_cutoff"]) & (X[self.numerical_columns_] <= self.stats_["upper_cutoff"])  # masks by column
