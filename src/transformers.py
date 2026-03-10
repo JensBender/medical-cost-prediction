@@ -50,6 +50,95 @@ class MissingColumnError(ValueError):
 
 
 # --- Custom transformer classes --- 
+class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
+    """
+    Standardizes categorical feature labels to ensure pipeline robustness and interpretability.
+
+    This transformer acts as a "normalization layer" for categorical inputs, enabling 
+    flexible input formats (both numeric codes and string labels) for pipeline users. 
+    Standardization is applied based on categorical type:
+    
+    - Binary Features: Standardizes to numeric 0/1 codes. This allows these 
+      features to be passed through the feature scaler and encoder downstream 
+      in the pipeline without further transformation.
+    - Nominal Features: Standardizes to descriptive string labels. This ensures 
+      that the one-hot encoder generates human-readable feature names (e.g., 
+      'REGION23_Midwest' instead of 'REGION23_2.0').
+    
+    Validation Logic:
+    - Performs case-insensitive matching for string-to-numeric conversion of 
+      binary features.
+    - Preserves categorical values that already match the target format.
+    - Maintains original values (or NaNs) if no mapping is found.
+    - Raises `TypeError` if the provided input is not a pandas DataFrame.
+    """
+    def __init__(self, binary_features=None, nominal_features=None, categorical_label_map=None):
+        self.binary_features = binary_features or []
+        self.nominal_features = nominal_features or []
+        self.categorical_label_map = categorical_label_map
+
+    def fit(self, X, y=None):
+        # Ensure input is a DataFrame
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("The provided input X must be a pandas DataFrame.")
+        
+        # Store input feature names
+        self.feature_names_in_ = X.columns.tolist()
+        return self
+
+    def transform(self, X):
+        # Ensure input is a DataFrame
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("The provided input X must be a pandas DataFrame.")
+        
+        # Use provided map or empty dict as fallback
+        label_map = self.categorical_label_map or {}
+        
+        X = X.copy()
+        for col in X.columns:
+            if col in label_map:
+                mapping = label_map[col]
+                
+                if col in self.binary_features:
+                    # Binary features: Ensure 0/1 numeric codes
+                    # Create reverse mapping (String -> Int)
+                    rev_map = {str(v).lower(): k for k, v in mapping.items()}
+                    
+                    def standardize_binary(val):
+                        if pd.isna(val):
+                            return val
+                        # Try string lookup first (case-insensitive)
+                        str_val = str(val).lower()
+                        if str_val in rev_map:
+                            return rev_map[str_val]
+                        # Otherwise assume it's already a numeric code
+                        try:
+                            return float(val)
+                        except (ValueError, TypeError):
+                            return val
+
+                    X[col] = X[col].map(standardize_binary)
+                
+                elif col in self.nominal_features:
+                    # Nominal features: Ensure descriptive string labels
+                    def standardize_nominal(val):
+                        if pd.isna(val):
+                            return val
+                        # If it's already a string in our mapping values, keep it
+                        if val in mapping.values():
+                            return val
+                        # Otherwise try to map from numeric code
+                        return mapping.get(val, val)
+
+                    X[col] = X[col].map(standardize_nominal)
+        
+        return X
+
+    def get_feature_names_out(self, input_features=None):
+        sklearn_validation.check_is_fitted(self)
+        return self.feature_names_in_
+
+
 class MissingValueChecker(BaseEstimator, TransformerMixin):
     """
     Validates the presence of missing values across required and optional features.
@@ -214,91 +303,6 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         self.fit(X, y)
         self._check_missing_values(X)
         return X
-
-
-class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
-    """
-    Standardizes categorical feature labels to ensure pipeline robustness and interpretability.
-
-    This transformer acts as a "normalization layer" for categorical inputs, enabling 
-    flexible input formats (both numeric codes and string labels) for pipeline users. 
-    Standardization is applied based on categorical type:
-    
-    - Binary Features: Standardizes to numeric 0/1 codes. This allows these 
-      features to be passed through the feature scaler and encoder downstream 
-      in the pipeline without further transformation.
-    - Nominal Features: Standardizes to descriptive string labels. This ensures 
-      that the one-hot encoder generates human-readable feature names (e.g., 
-      'REGION23_Midwest' instead of 'REGION23_2.0').
-    
-    Validation Logic:
-    - Performs case-insensitive matching for string-to-numeric conversion of 
-      binary features.
-    - Preserves categorical values that already match the target format.
-    - Maintains original values (or NaNs) if no mapping is found.
-    - Raises `TypeError` if the provided input is not a pandas DataFrame.
-    """
-    def __init__(self, binary_features=None, nominal_features=None, category_label_map=None):
-        self.binary_features = binary_features or []
-        self.nominal_features = nominal_features or []
-        self.category_label_map = category_label_map
-
-    def fit(self, X, y=None):
-        # Store input feature names
-        self.feature_names_in_ = X.columns.tolist()
-        return self
-
-    def transform(self, X):
-        # Ensure input is a DataFrame
-        if not isinstance(X, pd.DataFrame):
-            raise TypeError("The provided input X must be a pandas DataFrame.")
-        
-        # Use provided map or empty dict as fallback
-        label_map = self.category_label_map or {}
-        
-        X = X.copy()
-        for col in X.columns:
-            if col in label_map:
-                mapping = label_map[col]
-                
-                if col in self.binary_features:
-                    # Binary features: Ensure 0/1 numeric codes
-                    # Create reverse mapping (String -> Int)
-                    rev_map = {str(v).lower(): k for k, v in mapping.items()}
-                    
-                    def standardize_binary(val):
-                        if pd.isna(val):
-                            return val
-                        # Try string lookup first (case-insensitive)
-                        str_val = str(val).lower()
-                        if str_val in rev_map:
-                            return rev_map[str_val]
-                        # Otherwise assume it's already a numeric code
-                        try:
-                            return float(val)
-                        except (ValueError, TypeError):
-                            return val
-
-                    X[col] = X[col].map(standardize_binary)
-                
-                elif col in self.nominal_features:
-                    # Nominal features: Ensure descriptive string labels
-                    def standardize_nominal(val):
-                        if pd.isna(val):
-                            return val
-                        # If it's already a string in our mapping values, keep it
-                        if val in mapping.values():
-                            return val
-                        # Otherwise try to map from numeric code
-                        return mapping.get(val, val)
-
-                    X[col] = X[col].map(standardize_nominal)
-        
-        return X
-
-    def get_feature_names_out(self, input_features=None):
-        sklearn_validation.check_is_fitted(self)
-        return self.feature_names_in_
 
 
 class RobustSimpleImputer(SimpleImputer):
