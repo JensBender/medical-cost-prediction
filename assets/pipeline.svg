@@ -36,7 +36,7 @@
       .base-line { stroke: #1e293b; stroke-width: 6; fill: none; stroke-linejoin: round; }
       .flow-line { 
         stroke: #94a3b8; 
-        stroke-width: 3; 
+        stroke-width: 3.5; 
         fill: none; 
         stroke-dasharray: 10 10; 
         stroke-linejoin: round;
@@ -119,34 +119,34 @@
     <path d="M 500,310 L 500,350" class="flow-line" marker-end="url(#arrow-def)" />
 
     <!-- Step 2 to Step 3 Split (Top) -->
-    <path d="M 500,460 L 500,500 L 305,500 L 305,540" class="base-line" />
-    <path d="M 500,460 L 500,500 L 695,500 L 695,540" class="base-line" />
-    <path d="M 500,460 L 500,500 L 305,500 L 305,540" class="flow-line flow-num" marker-end="url(#arrow-num)" />
-    <path d="M 500,460 L 500,500 L 695,500 L 695,540" class="flow-line flow-cat" marker-end="url(#arrow-cat)" />
+    <path d="M 500,460 C 500,500 305,480 305,540" class="base-line" />
+    <path d="M 500,460 C 500,500 695,480 695,540" class="base-line" />
+    <path d="M 500,460 C 500,500 305,480 305,540" class="flow-line flow-num" marker-end="url(#arrow-num)" />
+    <path d="M 500,460 C 500,500 695,480 695,540" class="flow-line flow-cat" marker-end="url(#arrow-cat)" />
 
     <!-- Step 3 Merge (Bottom) to Step 4 -->
-    <path d="M 305,690 L 305,730 L 500,730 L 500,770" class="base-line" />
-    <path d="M 695,690 L 695,730 L 500,730 L 500,770" class="base-line" />
-    <path d="M 305,690 L 305,730 L 500,730 L 500,770" class="flow-line flow-num" marker-end="url(#arrow-num)" />
-    <path d="M 695,690 L 695,730 L 500,730 L 500,770" class="flow-line flow-cat" marker-end="url(#arrow-cat)" />
+    <path d="M 305,690 C 305,750 500,710 500,770" class="base-line" />
+    <path d="M 695,690 C 695,750 500,710 500,770" class="base-line" />
+    <path d="M 305,690 C 305,750 500,710 500,770" class="flow-line flow-num" marker-end="url(#arrow-num)" />
+    <path d="M 695,690 C 695,750 500,710 500,770" class="flow-line flow-cat" marker-end="url(#arrow-cat)" />
 
     <!-- Step 4 to Step 5 Split (Top) -->
-    <path d="M 500,900 L 500,940 L 200,940 L 200,980" class="base-line" />
-    <path d="M 500,900 L 500,940 L 500,940 L 500,980" class="base-line" />
-    <path d="M 500,900 L 500,940 L 800,940 L 800,980" class="base-line" />
+    <path d="M 500,900 C 500,940 200,920 200,980" class="base-line" />
+    <path d="M 500,900 L 500,980" class="base-line" />
+    <path d="M 500,900 C 500,940 800,920 800,980" class="base-line" />
 
-    <path d="M 500,900 L 500,940 L 200,940 L 200,980" class="flow-line flow-num" marker-end="url(#arrow-num)" />
-    <path d="M 500,900 L 500,940 L 500,940 L 500,980" class="flow-line flow-nom" marker-end="url(#arrow-nom)" />
-    <path d="M 500,900 L 500,940 L 800,940 L 800,980" class="flow-line flow-bin" marker-end="url(#arrow-bin)" />
+    <path d="M 500,900 C 500,940 200,920 200,980" class="flow-line flow-num" marker-end="url(#arrow-num)" />
+    <path d="M 500,900 L 500,980" class="flow-line flow-nom" marker-end="url(#arrow-nom)" />
+    <path d="M 500,900 C 500,940 800,920 800,980" class="flow-line flow-bin" marker-end="url(#arrow-bin)" />
 
     <!-- Step 5 Merge (Bottom) to Output -->
-    <path d="M 200,1160 L 200,1200 L 500,1200 L 500,1240" class="base-line" />
-    <path d="M 500,1160 L 500,1200 L 500,1200 L 500,1240" class="base-line" />
-    <path d="M 800,1160 L 800,1200 L 500,1200 L 500,1240" class="base-line" />
+    <path d="M 200,1160 C 200,1220 500,1180 500,1240" class="base-line" />
+    <path d="M 500,1160 L 500,1240" class="base-line" />
+    <path d="M 800,1160 C 800,1220 500,1180 500,1240" class="base-line" />
 
-    <path d="M 200,1160 L 200,1200 L 500,1200 L 500,1240" class="flow-line flow-num" marker-end="url(#arrow-def)" />
-    <path d="M 500,1160 L 500,1200 L 500,1200 L 500,1240" class="flow-line flow-nom" marker-end="url(#arrow-def)" />
-    <path d="M 800,1160 L 800,1200 L 500,1200 L 500,1240" class="flow-line flow-bin" marker-end="url(#arrow-def)" />
+    <path d="M 200,1160 C 200,1220 500,1180 500,1240" class="flow-line flow-num" marker-end="url(#arrow-def)" />
+    <path d="M 500,1160 L 500,1240" class="flow-line flow-nom" marker-end="url(#arrow-def)" />
+    <path d="M 800,1160 C 800,1220 500,1180 500,1240" class="flow-line flow-bin" marker-end="url(#arrow-def)" />
   </g>
 
   <!-- ============================================== NODES ============================================== -->
