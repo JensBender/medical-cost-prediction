@@ -358,9 +358,16 @@ class RobustSimpleImputer(SimpleImputer):
         During transform(), if 'X' is empty (X.empty is True), the original 
         input is returned without imputation.
     """
-    def transform(self, X):
+    def _validate_input(self, X):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("RobustSimpleImputer: The provided input X must be a pandas DataFrame.")
+
+    def fit(self, X, y=None):
+        self._validate_input(X)
+        return super().fit(X, y)
+
+    def transform(self, X):
+        self._validate_input(X)
         
         # Pass through empty DataFrame
         if X.empty:
@@ -517,9 +524,16 @@ class RobustStandardScaler(StandardScaler):
         During transform(), if 'X' is empty (X.empty is True), the original 
         input is returned without scaling.
     """
-    def transform(self, X):
+    def _validate_input(self, X):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("RobustStandardScaler: The provided input X must be a pandas DataFrame.")
+
+    def fit(self, X, y=None):
+        self._validate_input(X)
+        return super().fit(X, y)
+
+    def transform(self, X):
+        self._validate_input(X)
     
         if X.empty:
             return X
@@ -543,9 +557,16 @@ class RobustOneHotEncoder(OneHotEncoder):
         During transform(), if 'X' is empty (X.empty is True), the original 
         input is returned without one-hot encoding.
     """
-    def transform(self, X):
+    def _validate_input(self, X):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("RobustOneHotEncoder: The provided input X must be a pandas DataFrame.")
+
+    def fit(self, X, y=None):
+        self._validate_input(X)
+        return super().fit(X, y)
+
+    def transform(self, X):
+        self._validate_input(X)
     
         # Pass through empty DataFrame
         if X.empty:
@@ -577,10 +598,12 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         (NaNs) are treated as outliers and will be removed. It is recommended 
         to handle missing values before applying this transformer.
     """
-    def fit(self, X, numerical_columns):
-        # Ensure input is a DataFrame
+    def _validate_input(self, X):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("OutlierRemover3SD: The provided input X must be a pandas DataFrame.")
+
+    def fit(self, X, numerical_columns):
+        self._validate_input(X)
 
         # Convert single column string to list
         if isinstance(numerical_columns, str):
@@ -625,9 +648,7 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         # Ensure .fit() happened before
         sklearn_validation.check_is_fitted(self)
         
-        # Ensure input is a DataFrame
-        if not isinstance(X, pd.DataFrame):
-            raise TypeError("OutlierRemover3SD: The provided input X must be a pandas DataFrame.")
+        self._validate_input(X)
 
         # Pass through empty DataFrame
         if X.empty:
@@ -675,10 +696,12 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         (NaNs) are treated as outliers and will be removed. It is recommended 
         to handle missing values before applying this transformer.
     """
-    def fit(self, X, numerical_columns):
-        # Ensure input is a DataFrame
+    def _validate_input(self, X):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("OutlierRemoverIQR: The provided input X must be a pandas DataFrame.")
+
+    def fit(self, X, numerical_columns):
+        self._validate_input(X)
 
         # Convert single column string to list
         if isinstance(numerical_columns, str):
@@ -724,9 +747,7 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         # Ensure .fit() happened before
         sklearn_validation.check_is_fitted(self)
 
-        # Ensure input is a DataFrame
-        if not isinstance(X, pd.DataFrame):
-            raise TypeError("OutlierRemoverIQR: The provided input X must be a pandas DataFrame.")
+        self._validate_input(X)
 
         # Pass through empty DataFrame
         if X.empty:
