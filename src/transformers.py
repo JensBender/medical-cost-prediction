@@ -66,10 +66,10 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
       'REGION23_Midwest' instead of 'REGION23_2.0').
     
     Validation Logic:
-    - Performs case-insensitive matching for string-to-numeric conversion of 
-      binary features.
+    - Performs case-insensitive matching for both binary and nominal categorical features.
     - Preserves categorical values that already match the target format.
-    - Maintains original values (or NaNs) if no mapping is found.
+    - Passes through missing values (NaNs) and unknown string labels to allow 
+      downstream imputers and encoders to handle them gracefully.
     - Raises `TypeError` if the provided input is not a pandas DataFrame.
     """
     def __init__(self, binary_features=None, nominal_features=None, categorical_label_map=None):
@@ -78,7 +78,7 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
         self.categorical_label_map = categorical_label_map
 
     def _validate_input(self, X):
-        # Ensue X input is a DataFrame
+        # Ensure X input is a DataFrame
         if not isinstance(X, pd.DataFrame):
             raise TypeError("CategoricalLabelStandardizer: The provided input X must be a pandas DataFrame.")
 
@@ -109,13 +109,20 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
         self.n_features_in_ = X.shape[1]
         self.feature_names_in_ = X.columns.tolist()
 
-        # Create reverse label map
-        self.reverse_label_map_ = {}
+        # Create reverse label maps 
+        self.reverse_binary_label_map_ = {}
+        self.nominal_label_map_ = {}  # for case-insensitive matching
         label_map = self.categorical_label_map or {}
+        
         for col in self.binary_features:
             if col in label_map:
                 # Create reverse mapping (String -> Int)
-                self.reverse_label_map_[col] = {str(v).lower(): k for k, v in label_map[col].items()}
+                self.reverse_binary_label_map_[col] = {str(v).lower(): k for k, v in label_map[col].items()}
+                
+        for col in self.nominal_features:
+            if col in label_map:
+                # Create reverse mapping (String -> Correctly Cased String)
+                self.nominal_label_map_[col] = {str(v).lower(): v for v in label_map[col].values()}
         
         return self
 
@@ -141,11 +148,11 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
                 
                 if col in self.binary_features:
                     # Binary features: Ensure 0/1 numeric codes
-                    rev_map = self.reverse_label_map_.get(col, {})
+                    rev_map = self.reverse_binary_label_map_.get(col, {})
                     
                     def standardize_binary(val):
                         if pd.isna(val):
-                            return val
+                            return val  # pass through missing values
                         # Try string lookup first (case-insensitive)
                         str_val = str(val).lower()
                         if str_val in rev_map:
@@ -160,14 +167,19 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
                 
                 elif col in self.nominal_features:
                     # Nominal features: Ensure descriptive string labels
+                    nom_map = self.nominal_label_map_.get(col, {})
+                    
                     def standardize_nominal(val):
                         if pd.isna(val):
-                            return val
-                        # If it's already a string in our mapping values, keep it
-                        if val in mapping.values():
-                            return val
+                            return val  # pass through missing values
+                            
+                        # Try string lookup first (case-insensitive)
+                        str_val = str(val).lower()
+                        if str_val in nom_map:
+                            return nom_map[str_val]
+                            
                         # Otherwise try to map from numeric code
-                        return mapping.get(val, val)
+                        return mapping.get(val, val)  # pass through unknown values
 
                     X[col] = X[col].map(standardize_nominal)
         
