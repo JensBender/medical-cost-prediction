@@ -77,7 +77,7 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
         self.nominal_features = nominal_features or []
         self.categorical_label_map = categorical_label_map
 
-    def _validate_input(self, X):
+    def _validate_df(self, X):
         # Ensure X input is a DataFrame
         if not isinstance(X, pd.DataFrame):
             raise TypeError("CategoricalLabelStandardizer: The provided input X must be a pandas DataFrame.")
@@ -102,7 +102,7 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
             raise ValueError(f"CategoricalLabelStandardizer: 'categorical_label_map' is missing mappings. Provide the label map for the following features: {missing_mappings}")
 
     def fit(self, X, y=None):
-        self._validate_input(X)
+        self._validate_df(X)
         self._validate_params()
 
         # Store input feature number and names as learned attributes
@@ -131,7 +131,7 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
         sklearn_validation.check_is_fitted(self)
         
         # Validate input 
-        self._validate_input(X)    
+        self._validate_df(X)    
         
         # Pass through empty DataFrame
         if X.empty:
@@ -220,7 +220,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         self.optional_features = optional_features
         self.strict = strict
     
-    def _validate_input(self, X):
+    def _validate_df(self, X):
         # Ensure X input is DataFrame
         if not isinstance(X, pd.DataFrame):
             raise TypeError("MissingValueChecker: The provided input X must be a pandas DataFrame.")          
@@ -313,7 +313,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         # Validate input 
-        self._validate_input(X)  
+        self._validate_df(X)  
 
         # Ensure no feature is 100% missing (imputer would fail)
         all_features = self.required_features + self.optional_features
@@ -338,7 +338,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         sklearn_validation.check_is_fitted(self)
         
         # Validate input 
-        self._validate_input(X)    
+        self._validate_df(X)    
         
         # Pass through empty DataFrame
         if X.empty:
@@ -377,16 +377,16 @@ class RobustSimpleImputer(SimpleImputer):
         During transform(), if 'X' is empty (X.empty is True), the original 
         input is returned without imputation.
     """
-    def _validate_input(self, X):
+    def _validate_df(self, X):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("RobustSimpleImputer: The provided input X must be a pandas DataFrame.")
 
     def fit(self, X, y=None):
-        self._validate_input(X)
+        self._validate_df(X)
         return super().fit(X, y)
 
     def transform(self, X):
-        self._validate_input(X)
+        self._validate_df(X)
         
         # Pass through empty DataFrame
         if X.empty:
@@ -441,7 +441,7 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
     # Features created by this transformer
     OUTPUT_FEATURES = ["CHRONIC_COUNT", "LIMITATION_COUNT"]
 
-    def _validate_input(self, X):
+    def _validate_df(self, X):
         # Ensure X input is DataFrame
         if not isinstance(X, pd.DataFrame):
             raise TypeError("MedicalFeatureDeriver: The provided input X must be a pandas DataFrame.")          
@@ -488,7 +488,7 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         # Validate input 
-        self._validate_input(X)
+        self._validate_df(X)
         
         # Store input feature number and names as learned attributes
         self.n_features_in_ = X.shape[1]
@@ -503,7 +503,7 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
         sklearn_validation.check_is_fitted(self)
         
         # Validate input 
-        self._validate_input(X)
+        self._validate_df(X)
         
         # Pass through empty DataFrame
         if X.empty:
@@ -543,16 +543,16 @@ class RobustStandardScaler(StandardScaler):
         During transform(), if 'X' is empty (X.empty is True), the original 
         input is returned without scaling.
     """
-    def _validate_input(self, X):
+    def _validate_df(self, X):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("RobustStandardScaler: The provided input X must be a pandas DataFrame.")
 
     def fit(self, X, y=None):
-        self._validate_input(X)
+        self._validate_df(X)
         return super().fit(X, y)
 
     def transform(self, X):
-        self._validate_input(X)
+        self._validate_df(X)
     
         if X.empty:
             return X
@@ -576,16 +576,16 @@ class RobustOneHotEncoder(OneHotEncoder):
         During transform(), if 'X' is empty (X.empty is True), the original 
         input is returned without one-hot encoding.
     """
-    def _validate_input(self, X):
+    def _validate_df(self, X):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("RobustOneHotEncoder: The provided input X must be a pandas DataFrame.")
 
     def fit(self, X, y=None):
-        self._validate_input(X)
+        self._validate_df(X)
         return super().fit(X, y)
 
     def transform(self, X):
-        self._validate_input(X)
+        self._validate_df(X)
     
         # Pass through empty DataFrame
         if X.empty:
@@ -617,12 +617,12 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         (NaNs) are treated as outliers and will be removed. It is recommended 
         to handle missing values before applying this transformer.
     """
-    def _validate_input(self, X):
+    def _validate_df(self, X):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("OutlierRemover3SD: The provided input X must be a pandas DataFrame.")
 
     def fit(self, X, numerical_columns):
-        self._validate_input(X)
+        self._validate_df(X)
 
         # Convert single column string to list
         if isinstance(numerical_columns, str):
@@ -667,7 +667,7 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         # Ensure .fit() happened before
         sklearn_validation.check_is_fitted(self)
         
-        self._validate_input(X)
+        self._validate_df(X)
 
         # Pass through empty DataFrame
         if X.empty:
@@ -715,12 +715,12 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         (NaNs) are treated as outliers and will be removed. It is recommended 
         to handle missing values before applying this transformer.
     """
-    def _validate_input(self, X):
+    def _validate_df(self, X):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("OutlierRemoverIQR: The provided input X must be a pandas DataFrame.")
 
     def fit(self, X, numerical_columns):
-        self._validate_input(X)
+        self._validate_df(X)
 
         # Convert single column string to list
         if isinstance(numerical_columns, str):
@@ -766,7 +766,7 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         # Ensure .fit() happened before
         sklearn_validation.check_is_fitted(self)
 
-        self._validate_input(X)
+        self._validate_df(X)
 
         # Pass through empty DataFrame
         if X.empty:
