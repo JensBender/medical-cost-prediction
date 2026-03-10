@@ -87,6 +87,13 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
         if overlapping_features:
             raise ValueError(f"CategoricalLabelStandardizer: Features cannot be both binary and nominal. Affected Features: {overlapping_features}")
         
+        # Ensure no missing mappings
+        label_map = self.categorical_label_map or {}  # Fallback to handle None
+        categorical_features = set(self.binary_features + self.nominal_features)
+        missing_mappings = categorical_features - set(label_map.keys())
+        if missing_mappings:
+            raise ValueError(f"CategoricalLabelStandardizer: Label map missing for the following features: {missing_mappings}")
+
         # Store input feature number and names as learned attributes
         self.n_features_in_ = X.shape[1]
         self.feature_names_in_ = X.columns.tolist()
