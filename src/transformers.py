@@ -77,12 +77,13 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
         self.nominal_features = nominal_features or []
         self.categorical_label_map = categorical_label_map
 
-    def fit(self, X, y=None):
-        # Ensure input is a DataFrame
+    def _validate_input(self, X):
+        # Ensue X input is a DataFrame
         if not isinstance(X, pd.DataFrame):
             raise TypeError("CategoricalLabelStandardizer: The provided input X must be a pandas DataFrame.")
 
-        # Ensure binary_features and nominal_features are lists
+    def _validate_params(self):
+        # Ensure "binary_features" and "nominal_features" parameters are lists
         if not isinstance(self.binary_features, list):
             raise TypeError("CategoricalLabelStandardizer: 'binary_features' must be a list of feature names.")
         if not isinstance(self.nominal_features, list):
@@ -98,7 +99,11 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
         categorical_features = set(self.binary_features + self.nominal_features)
         missing_mappings = categorical_features - set(label_map.keys())
         if missing_mappings:
-            raise ValueError(f"CategoricalLabelStandardizer: Label map missing for the following features: {missing_mappings}")
+            raise ValueError(f"CategoricalLabelStandardizer: 'categorical_label_map' is missing mappings. Provide the label map for the following features: {missing_mappings}")
+
+    def fit(self, X, y=None):
+        self._validate_input(X)
+        self._validate_params()
 
         # Store input feature number and names as learned attributes
         self.n_features_in_ = X.shape[1]
@@ -107,9 +112,7 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        # Ensure input is a DataFrame
-        if not isinstance(X, pd.DataFrame):
-            raise TypeError("CategoricalLabelStandardizer: The provided input X must be a pandas DataFrame.")
+        self._validate_input(X)
         
         if X.empty:
             return X
