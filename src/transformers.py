@@ -81,6 +81,12 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
         # Ensure input is a DataFrame
         if not isinstance(X, pd.DataFrame):
             raise TypeError("The provided input X must be a pandas DataFrame.")
+
+        # Ensure binary_features and nominal_features are lists
+        if not isinstance(self.binary_features, list):
+            raise TypeError("CategoricalLabelStandardizer: 'binary_features' must be a list of feature names.")
+        if not isinstance(self.nominal_features, list):
+            raise TypeError("CategoricalLabelStandardizer: 'nominal_features' must be a list of feature names.")
         
         # Ensure binary and nominal features don't overlap
         overlapping_features = set(self.binary_features) & set(self.nominal_features)
