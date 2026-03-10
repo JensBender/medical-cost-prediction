@@ -112,11 +112,17 @@ class CategoricalLabelStandardizer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        self._validate_input(X)
+        # Ensure .fit() happened before
+        sklearn_validation.check_is_fitted(self)
         
+        # Validate input 
+        self._validate_input(X)    
+        
+        # Pass through empty DataFrame
         if X.empty:
-            return X
+            return X       
         
+        # --- Standardize Categorical Labels ---
         # Use provided map or empty dict as fallback
         label_map = self.categorical_label_map or {}
         
@@ -315,6 +321,7 @@ class MissingValueChecker(BaseEstimator, TransformerMixin):
         # Validate input 
         self._validate_input(X)    
         
+        # Pass through empty DataFrame
         if X.empty:
             return X
             
@@ -355,6 +362,7 @@ class RobustSimpleImputer(SimpleImputer):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("RobustSimpleImputer: The provided input X must be a pandas DataFrame.")
         
+        # Pass through empty DataFrame
         if X.empty:
             return X
             
@@ -471,6 +479,7 @@ class MedicalFeatureDeriver(BaseEstimator, TransformerMixin):
         # Validate input 
         self._validate_input(X)
         
+        # Pass through empty DataFrame
         if X.empty:
             return X
             
@@ -538,6 +547,7 @@ class RobustOneHotEncoder(OneHotEncoder):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("RobustOneHotEncoder: The provided input X must be a pandas DataFrame.")
     
+        # Pass through empty DataFrame
         if X.empty:
             return X
         return super().transform(X)
@@ -619,6 +629,7 @@ class OutlierRemover3SD(BaseEstimator, TransformerMixin):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("OutlierRemover3SD: The provided input X must be a pandas DataFrame.")
 
+        # Pass through empty DataFrame
         if X.empty:
             return X
 
@@ -717,6 +728,7 @@ class OutlierRemoverIQR(BaseEstimator, TransformerMixin):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("OutlierRemoverIQR: The provided input X must be a pandas DataFrame.")
 
+        # Pass through empty DataFrame
         if X.empty:
             return X
 
