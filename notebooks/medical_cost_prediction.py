@@ -1695,7 +1695,9 @@ pd.DataFrame({
 # </div> 
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Derive medical features from raw indicators based on medical domain knowledge. Calculate aggregate counts of chronic conditions (<code>CHRONIC_COUNT</code>) and functional limitations (<code>LIMITATION_COUNT</code>). Designed to be placed AFTER imputation to ensure a deterministic derivation from complete data.
+#     📌 Derive medical features from raw indicators based on medical domain knowledge. Calculate aggregate counts of chronic conditions (<code>CHRONIC_COUNT</code>) and functional limitations (<code>LIMITATION_COUNT</code>).
+#     <br><br>
+#     Note: Even though this is a stateless feature engineering step, it is placed AFTER imputation to ensure a deterministic derivation from complete data.
 # </div>
 
 # %%
