@@ -1366,33 +1366,38 @@ def plot_correlation_heatmap(df, numerical_columns, save_to_file=None):
     # Create correlation matrix and round to 2 decimals
     correlation_matrix = round(df[numerical_columns].corr(method="spearman"), 2) 
     
-    # Mask upper triangle and diagonal (k=0) to show only the lower triangle
-    mask = np.triu(np.ones(correlation_matrix.shape), k=0).astype(bool) 
+    # Mask upper triangle (k=1 keeps diagonal so self-correlations are visible)
+    mask = np.triu(np.ones(correlation_matrix.shape), k=1).astype(bool) 
     correlation_matrix[mask] = np.nan
 
     # Create display labels for readability
     display_labels = [DISPLAY_LABELS[column] for column in correlation_matrix.columns]
 
     # Set the figure size
-    plt.figure(figsize=(12, 10))
+    fig, ax = plt.subplots(figsize=(12, 10))
+    
+    # Color NaN cells (upper triangle) light grey so the triangle shape reads cleanly
+    ax.set_facecolor("#f0f0f0")
 
     # Create heatmap
     sns.heatmap(
         correlation_matrix, 
-        cmap="viridis",  # Colorblind-friendly colormap (other options: "cividis", "magma", "YlOrBr", "RdBu") 
-        vmin=-1, vmax=1,  # Fix colour scale to full [-1, 1] range so mid-colour = zero correlation
+        cmap="RdBu_r",  # Diverging colormap: red = negative, white = zero, blue = positive
+        vmin=-1, vmax=1,  # Fix colour scale to full [-1, 1] range so white = zero correlation
         annot=True,  # Annotate correlation values
         annot_kws={"size": 8},  # Format font size of values 
         fmt=".2f",  # Format values with 2 decimals
         linewidth=0.5,  # Thin white lines between cells
         square=True,  # Force square cell shape for a cleaner look
-        cbar=False,  # Remove colorbar on the side
+        cbar=True,  # Show colorbar: now meaningful since color encodes direction (sign)
+        cbar_kws={"shrink": 0.6, "label": "Spearman ρ"},  # Compact colorbar with axis label
         xticklabels=display_labels,
-        yticklabels=display_labels
+        yticklabels=display_labels,
+        ax=ax
     )
 
     # Customize 
-    plt.title("Spearman Rank Correlation Heatmap", fontsize=14)
+    plt.title("Spearman Rank Correlation Heatmap", fontsize=14, pad=12)
     plt.xticks(rotation=45, ha="right", fontsize=9)  
     plt.yticks(fontsize=9)
     
