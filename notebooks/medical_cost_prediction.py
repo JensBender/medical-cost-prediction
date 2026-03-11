@@ -1362,9 +1362,9 @@ plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABE
 
 # %%
 # Helper Function: Plot Correlation Heatmap 
-def plot_correlation_heatmap(df, numerical_columns, save_to_file=None):
+def plot_correlation_heatmap(df, columns, method, save_to_file=None):
     # Create correlation matrix and round to 2 decimals
-    correlation_matrix = round(df[numerical_columns].corr(method="spearman"), 2) 
+    correlation_matrix = round(df[columns].corr(method=method), 2) 
     
     # Mask upper triangle (k=1 keeps diagonal so self-correlations are visible)
     mask = np.triu(np.ones(correlation_matrix.shape), k=1).astype(bool) 
@@ -1396,7 +1396,12 @@ def plot_correlation_heatmap(df, numerical_columns, save_to_file=None):
     )
 
     # Customize 
-    plt.title("Spearman Rank Correlation Heatmap", fontsize=14, pad=12)
+    method_titles = {
+        "pearson": "Pearson",
+        "spearman": "Spearman Rank",
+        "kendall": "Kendall Rank"
+    }
+    plt.title(f"{method_titles.get(method, method.title())} Correlation Heatmap", fontsize=14, pad=12)
     plt.xticks(rotation=45, ha="right", fontsize=9)  
     plt.yticks(fontsize=9)
     
@@ -1414,7 +1419,8 @@ def plot_correlation_heatmap(df, numerical_columns, save_to_file=None):
 # Plot the Spearman correlation heatmap for the target variable and all numerical, ordinal, and binary features
 plot_correlation_heatmap(
     df, 
-    ["TOTSLF23"] + raw_numerical_features + raw_ordinal_features + raw_binary_features, 
+    columns=["TOTSLF23"] + raw_numerical_features + raw_ordinal_features + raw_binary_features, 
+    method="spearman",
     save_to_file="../figures/eda/correlation_heatmap.png"
 )
 
