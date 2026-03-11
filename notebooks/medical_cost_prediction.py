@@ -1379,11 +1379,12 @@ def plot_correlation_heatmap(df, numerical_columns, save_to_file=None):
     plt.figure(figsize=(10, 8))
 
     # Create heatmap
-    ax = sns.heatmap(
+    sns.heatmap(
         correlation_matrix, 
         cmap="viridis",  # Colorblind-friendly colormap (other options: "cividis", "magma", "YlOrBr", "RdBu") 
-        annot=True,  # Show correlation values
-        fmt=".2f",  # Ensure uniform decimal formatting
+        annot=True,  # Annotate correlation values
+        annot_kws={"size": 8},  # Format font size of values 
+        fmt=".2f",  # Format values with 2 decimals
         linewidth=0.5,  # Thin white lines between cells
         xticklabels=display_labels,
         yticklabels=display_labels
