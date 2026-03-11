@@ -1389,8 +1389,7 @@ def plot_correlation_heatmap(df, numerical_columns, save_to_file=None):
         fmt=".2f",  # Format values with 2 decimals
         linewidth=0.5,  # Thin white lines between cells
         square=True,  # Force square cell shape for a cleaner look
-        cbar=True,  # Show colorbar: now meaningful since color encodes direction (sign)
-        cbar_kws={"shrink": 0.6, "label": "Spearman ρ"},  # Compact colorbar with axis label
+        cbar=False,  # Remove colorbar
         xticklabels=display_labels,
         yticklabels=display_labels,
         ax=ax
@@ -1412,8 +1411,12 @@ def plot_correlation_heatmap(df, numerical_columns, save_to_file=None):
     plt.show()
 
     
-# Plot the correlation heatmap for the target variable and all numerical and binary features
-plot_correlation_heatmap(df, ["TOTSLF23"] + raw_numerical_features + raw_binary_features, save_to_file="../figures/eda/correlation_heatmap.png")
+# Plot the Spearman correlation heatmap for the target variable and all numerical, ordinal, and binary features
+plot_correlation_heatmap(
+    df, 
+    ["TOTSLF23"] + raw_numerical_features + raw_ordinal_features + raw_binary_features, 
+    save_to_file="../figures/eda/correlation_heatmap.png"
+)
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
