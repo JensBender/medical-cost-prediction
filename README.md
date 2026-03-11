@@ -28,6 +28,7 @@ Currently developing an end-to-end machine learning application to predict annua
     <a href="#-exploratory-data-analysis-eda">Exploratory Data Analysis (EDA)</a>
     <ul>
       <li><a href="#target-variable-out-of-pocket-costs">Target Variable</a></li>
+      <li><a href="#correlations">Correlations</a></li>
     </ul>
   </li>
   <li>
@@ -193,6 +194,11 @@ The distribution of annual out-of-pocket health care costs (`TOTSLF23`) exhibits
 *   **Extreme Concentration:** With a **Gini coefficient of 0.77**, healthcare cost concentration is extraordinary. For context, this far exceeds typical measures of U.S. income inequality (~0.45).
 *   **The Top 1% Phenomenon:** The top 1% of spenders (spending over **$12,868**) account for **20.6%** of all costs—nearly **ten times** the amount of the bottom 50% combined (which account for 2.4% of all costs).
 *   **Impact of "Super-Spenders":** The maximum individual cost reached **$104,652**. These "Black Swan" events can disproportionately skew training, requiring robust regression or target transformations to ensure model stability.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Correlations
+![Correlation Heatmap](figures/eda/correlation_heatmap.png)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
