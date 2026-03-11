@@ -1354,6 +1354,18 @@ plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABE
 #         <li><b>Skew-robustness:</b> Spearman measures monotonic rank association, making it immune to the heavy right-skew of <code>TOTSLF23</code> without requiring any transformation.</li>
 #         <li><b>Unified measure:</b> Spearman works identically for numerical, ordinal, and binary (0/1) features, allowing all feature types to appear in one consistent heatmap.</li>
 #     </ul>
+#     <br>
+#     <b>Interpretation Rule of Thumb:</b>
+#     <table style="margin-top:8px; margin-bottom:0px; margin-left: 0; margin-right: auto;">
+#         <tr>
+#             <th style="background-color:#f5ecda; padding:4px 10px;">|ρ|</th>
+#             <th style="background-color:#f5ecda; padding:4px 10px;">Strength</th>
+#         </tr>
+#         <tr><td style="padding:3px 10px;">&lt; 0.1</td><td style="padding:3px 10px;">Negligible</td></tr>
+#         <tr><td style="padding:3px 10px;">0.1 – 0.3</td><td style="padding:3px 10px;">Weak</td></tr>
+#         <tr><td style="padding:3px 10px;">0.3 – 0.5</td><td style="padding:3px 10px;">Moderate</td></tr>
+#         <tr><td style="padding:3px 10px;">&gt; 0.5</td><td style="padding:3px 10px;">Strong</td></tr>
+#     </table>
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
