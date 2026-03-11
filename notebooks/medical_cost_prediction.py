@@ -1390,8 +1390,8 @@ def plot_correlation_heatmap(df, columns, method, save_to_file=None):
     # Create correlation matrix and round to 2 decimals
     correlation_matrix = round(df[columns].corr(method=method), 2) 
     
-    # Mask upper triangle (k=1 keeps diagonal so self-correlations are visible)
-    mask = np.triu(np.ones(correlation_matrix.shape), k=1).astype(bool) 
+    # Mask upper triangle (k=0 removes diagonal with self-correlations)
+    mask = np.triu(np.ones(correlation_matrix.shape), k=0).astype(bool) 
     correlation_matrix[mask] = np.nan
 
     # Create display labels for readability
