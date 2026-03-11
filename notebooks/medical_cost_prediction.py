@@ -1310,6 +1310,7 @@ plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABE
 # Plot population distributions (weighted) of binary features
 plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F")  # save_to_file="../figures/eda/binary_distributions_population.png"
 
+
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> Categorical distributions reveal key socio-economic drivers and the critical impact of survey weighting.
@@ -1358,6 +1359,47 @@ plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABE
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Correlation heatmap of the target variable and all numerical and binary features. 
 # </div>
+
+# %%
+# Helper Function: Plot Correlation Heatmap 
+def plot_correlation_heatmap(df, numerical_columns, save_to_file=None):
+    # Create correlation matrix and round to 2 decimals
+    correlation_matrix = round(df[numerical_columns].corr(method="spearman"), 2) 
+    
+    # Create upper triangle mask (k=1 excludes diagonal)
+    mask = np.triu(np.ones(correlation_matrix.shape), k=1).astype(bool) 
+    
+    # Set upper triangle to NaN to avoid redundancy
+    correlation_matrix[mask] = np.nan
+
+    # Set the figure size
+    plt.figure(figsize=(10, 8))
+
+    # Create heatmap
+    ax = sns.heatmap(
+        correlation_matrix, 
+        cmap="viridis",  # Colorblind-friendly colormap (other options: "cividis", "magma", "YlOrBr", "RdBu") 
+        annot=True,  # Show correlation values
+        fmt=".2f",  # Ensure uniform decimal formatting
+        linewidth=0.5  # Thin white lines between cells
+    )
+
+    # Customize 
+    plt.title("Correlation Heatmap", fontsize=14)
+    
+    # Adjust layout to prevent overlap
+    plt.tight_layout()
+    
+    # Save to file
+    if save_to_file:
+        plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
+        
+    # Show heatmap
+    plt.show()
+
+    
+# Plot the correlation heatmap for the target variable and all numerical and binary features
+plot_correlation_heatmap(df, ["TOTSLF23"] + raw_numerical_features + raw_binary_features, save_to_file="../figures/eda/correlation_heatmap.png")
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
