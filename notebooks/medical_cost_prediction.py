@@ -383,6 +383,20 @@ df.isnull().sum().sort_values(ascending=False)
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h2 style="margin:0px">Standardizing Binary Features</h2>
+# </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Standardize all binary features to 0/1 encoding. This ensures interpretability for regression coefficients and compatibility with all models.
+# </div>
+
+# %%
+# Standardize all binary features to 0/1 encoding. In MEPS, binary features typically use 1 (Yes) and 2 (No).
+# Mapping 2 to 0 aligns with the standard format (1 = presence, 0 = absence).
+df[raw_binary_features] = df[raw_binary_features].replace({2: 0})
+
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Exploratory Data Analysis (EDA)</h1>
 # </div>
 #
@@ -1470,20 +1484,6 @@ plot_correlation_heatmap(
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Feature Engineering (Stateless)</h1>
 # </div> 
-# %% [markdown]
-# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h2 style="margin:0px">Standardizing Binary Features</h2>
-# </div> 
-#
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Standardize all binary features to 0/1 encoding. This ensures interpretability for regression coefficients and compatibility with all models.
-# </div>
-
-# %%
-# Standardize all binary features to 0/1 encoding. In MEPS, binary features typically use 1 (Yes) and 2 (No).
-# Mapping 2 to 0 aligns with the standard format (1 = presence, 0 = absence).
-df[raw_binary_features] = df[raw_binary_features].replace({2: 0})
-
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h2 style="margin:0px">Feature Refinement</h2>
