@@ -392,8 +392,17 @@ df.isnull().sum().sort_values(ascending=False)
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h2 style="margin:0px">Sample Weights</h1>
+#     <h2 style="margin:0px">Univariate EDA</h2>
 # </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Analyze the distribution of a single column using descriptive statistics and visualizations.
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Sample Weights</h3>
+# </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Examine descriptive statistics and visualize the distribution of the sample weights. 
@@ -427,9 +436,9 @@ plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("{x:,.0f}"))
 
 # %% [markdown]
 # <a id="target-variable" name="target-variable"></a>
-# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h2 style="margin:0px">Target Variable</h1>
-# </div> 
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Target Variable</h3>
+# </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Examine descriptive statistics and visualize the distribution of total annual out-of-pocket healthcare costs.
@@ -925,9 +934,9 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 # </div>
 
 # %% [markdown]
-# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h2 style="margin:0px">Numerical Features</h1>
-# </div> 
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Numerical Features</h3>
+# </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Examine descriptive statistics and visualize the distributions of all numerical features, both on sample-level and population-level.
@@ -1096,9 +1105,9 @@ plot_numerical_distributions(df, raw_numerical_features, DISPLAY_LABELS, weights
 # </div>
 
 # %% [markdown]
-# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h2 style="margin:0px">Categorical Features</h1>
-# </div> 
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Categorical Features</h3>
+# </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Visualize the distributions of all categorical features, both on sample-level and population-level. Use one plot for nominal and ordinal features and a separate plot for binary features.
@@ -1323,6 +1332,15 @@ plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABE
 #     </ul>
 # </div>
 #
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h2 style="margin:0px">Bivariate EDA</h2>
+# </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Analyze the relationship between two columns using correlations or group-wise statistics and visualize the relationships using scatter plots, bar plots, or grouped box plots.
+# </div>
+
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Feature Engineering (Stateless)</h1>
