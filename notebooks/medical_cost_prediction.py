@@ -1363,6 +1363,18 @@ plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABE
 # %%
 # Helper Function: Plot Correlation Heatmap 
 def plot_correlation_heatmap(df, columns, method, save_to_file=None):
+    """Plot a lower-triangle correlation heatmap with annotated values.
+
+    Args:
+        df:            DataFrame containing the columns to correlate.
+        columns:       Ordered list of column names to include. Only numerical,
+                       ordinal, and binary (0/1) columns are valid. Nominal
+                       columns (unordered codes) must be excluded as their
+                       numeric codes carry no rank meaning.
+        method:        Correlation method passed to DataFrame.corr():
+                       'pearson', 'spearman', or 'kendall'.
+        save_to_file:  Optional file path to save the figure (e.g. '.png').
+    """
     # Create correlation matrix and round to 2 decimals
     correlation_matrix = round(df[columns].corr(method=method), 2) 
     
