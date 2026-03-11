@@ -1366,32 +1366,35 @@ def plot_correlation_heatmap(df, numerical_columns, save_to_file=None):
     # Create correlation matrix and round to 2 decimals
     correlation_matrix = round(df[numerical_columns].corr(method="spearman"), 2) 
     
-    # Create upper triangle mask (k=1 excludes diagonal)
-    mask = np.triu(np.ones(correlation_matrix.shape), k=1).astype(bool) 
-    
-    # Set upper triangle to NaN to avoid redundancy
+    # Mask upper triangle and diagonal (k=0) to show only the lower triangle
+    mask = np.triu(np.ones(correlation_matrix.shape), k=0).astype(bool) 
     correlation_matrix[mask] = np.nan
 
     # Create display labels for readability
     display_labels = [DISPLAY_LABELS[column] for column in correlation_matrix.columns]
 
     # Set the figure size
-    plt.figure(figsize=(10, 8))
+    plt.figure(figsize=(12, 10))
 
     # Create heatmap
     sns.heatmap(
         correlation_matrix, 
         cmap="viridis",  # Colorblind-friendly colormap (other options: "cividis", "magma", "YlOrBr", "RdBu") 
+        vmin=-1, vmax=1,  # Fix colour scale to full [-1, 1] range so mid-colour = zero correlation
         annot=True,  # Annotate correlation values
         annot_kws={"size": 8},  # Format font size of values 
         fmt=".2f",  # Format values with 2 decimals
         linewidth=0.5,  # Thin white lines between cells
+        square=True,  # Force square cell shape for a cleaner look
+        cbar=False,  # Remove colorbar on the side
         xticklabels=display_labels,
         yticklabels=display_labels
     )
 
     # Customize 
-    plt.title("Correlation Heatmap", fontsize=14)
+    plt.title("Spearman Rank Correlation Heatmap", fontsize=14)
+    plt.xticks(rotation=45, ha="right", fontsize=9)  
+    plt.yticks(fontsize=9)
     
     # Adjust layout to prevent overlap
     plt.tight_layout()
