@@ -1372,6 +1372,9 @@ def plot_correlation_heatmap(df, numerical_columns, save_to_file=None):
     # Set upper triangle to NaN to avoid redundancy
     correlation_matrix[mask] = np.nan
 
+    # Create display labels for readability
+    display_labels = [DISPLAY_LABELS[column] for column in correlation_matrix.columns]
+
     # Set the figure size
     plt.figure(figsize=(10, 8))
 
@@ -1381,7 +1384,9 @@ def plot_correlation_heatmap(df, numerical_columns, save_to_file=None):
         cmap="viridis",  # Colorblind-friendly colormap (other options: "cividis", "magma", "YlOrBr", "RdBu") 
         annot=True,  # Show correlation values
         fmt=".2f",  # Ensure uniform decimal formatting
-        linewidth=0.5  # Thin white lines between cells
+        linewidth=0.5,  # Thin white lines between cells
+        xticklabels=display_labels,
+        yticklabels=display_labels
     )
 
     # Customize 
