@@ -1346,6 +1346,15 @@ plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABE
 #     <h3 style="margin:0px">Correlations</h3>
 # </div>
 #
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <b>Spearman Rank Correlation</b> is used instead of Pearson or Pearson on log-transformed costs for three reasons:
+#     <ul style="margin-bottom:0px">
+#         <li><b>Zero-inflation:</b> ~22% of respondents have $0 costs. <code>log(0)</code> is undefined, making log-transformation require either dropping zeros (biasing the population) or using <code>log(x+1)</code> (an arbitrary shift that distorts low-cost relationships).</li>
+#         <li><b>Skew-robustness:</b> Spearman measures monotonic rank association, making it immune to the heavy right-skew of <code>TOTSLF23</code> without requiring any transformation.</li>
+#         <li><b>Unified measure:</b> Spearman works identically for numerical, ordinal, and binary (0/1) features, allowing all feature types to appear in one consistent heatmap.</li>
+#     </ul>
+# </div>
+#
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Correlation heatmap of the target variable and all numerical and binary features. 
 # </div>
