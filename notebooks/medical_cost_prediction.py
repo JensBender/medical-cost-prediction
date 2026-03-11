@@ -1342,6 +1342,33 @@ plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABE
 # </div>
 
 # %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Correlations</h3>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Correlation heatmap of the target variable and all numerical and binary features. 
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Numerical Features vs. Target</h3>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Visualize the pairwise relationships between the target variable and each numerical feature using scatter plots. 
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Categorical Features vs. Target</h3>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Visualize the pairwise relationships between the target variable and each categorical feature using grouped box plots. 
+# </div>
+
+# %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Feature Engineering (Stateless)</h1>
 # </div> 
