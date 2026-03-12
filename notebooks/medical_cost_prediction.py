@@ -730,20 +730,21 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
         weights:       Optional name of the weight column.
         save_to_file:  Optional file path to save the figure (e.g., 'lorenz_curve.png').
     """
-    # Create local copy sorted by column
+    # Create DataFrame copy, sorted by column and reset index to ensure alignment
     lorenz_df = df[[column]].copy()
     if weights:
         lorenz_df[weights] = df[weights]
-        lorenz_df = lorenz_df.sort_values(column)
-        
+    
+    lorenz_df = lorenz_df.sort_values(column).reset_index(drop=True)
+    
+    if weights:
         # Cumulative percentage and costs of population (weighted)
         cum_pct = lorenz_df[weights].cumsum() / lorenz_df[weights].sum() * 100
         pop_costs = lorenz_df[column] * lorenz_df[weights]
         cum_costs = pop_costs.cumsum() / pop_costs.sum() * 100
     else:
-        lorenz_df = lorenz_df.sort_values(column)
         # Cumulative percentage and costs of sample (unweighted)
-        cum_pct = np.arange(1, len(lorenz_df) + 1) / len(lorenz_df) * 100
+        cum_pct = pd.Series(np.arange(1, len(lorenz_df) + 1) / len(lorenz_df) * 100)
         cum_costs = lorenz_df[column].cumsum() / lorenz_df[column].sum() * 100
 
     # Calculate Gini Coefficient
@@ -756,15 +757,15 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
     plt.figure(figsize=(10, 8))  
 
     # Line of Equality (with label)
-    plt.plot([0, 100], [0, 100], linestyle="--", color="gray", alpha=0.4)
+    plt.plot([0, 100], [0, 100], linestyle="--", color="gray", alpha=0.6)
     plt.text(50, 49, "Line of Equality", rotation=38, color="gray", 
-             fontsize=9, ha="center", va="bottom")
+             fontsize=10, ha="center", va="bottom")
 
     # Lorenz Curve
     plt.plot(cum_pct, cum_costs, color=POP_COLOR, lw=3)
 
     # Add Gini Coefficient (in text box)
-    plt.text(2, 98, f"Gini: {gini:.2f}", fontsize=12, fontweight="bold",
+    plt.text(4, 96, f"Gini Coefficient: {gini:.2f}", fontsize=12, fontweight="bold",
              va="top", bbox={"facecolor": "white", "alpha": 0.7, "edgecolor": "none", "boxstyle": "round,pad=0.4"})
 
     # Highlight Pareto Point (80/20 Rule) 
@@ -778,6 +779,18 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
                  xy=(x_80, y_80), xytext=(x_80 - 30, y_80 + 10),
                  arrowprops={"arrowstyle": "->", "color": "black", "connectionstyle": "arc3,rad=-0.2", "alpha": 0.8},
                  fontsize=10, fontweight="bold")
+
+    # Highlight Top 1%
+    idx_99 = (cum_pct - 99).abs().idxmin()
+    x_99 = cum_pct.loc[idx_99]
+    y_99 = cum_costs.loc[idx_99]
+    top_1_share = 100 - y_99
+
+    plt.plot(x_99, y_99, "o", color="#fb8500", markersize=8)
+    plt.annotate(f"Top 1% account for\n{top_1_share:.1f}% of costs", 
+                 xy=(x_99, y_99), xytext=(x_99 - 8, y_99 - 15),
+                 arrowprops={"arrowstyle": "->", "color": "black", "connectionstyle": "arc3,rad=-0.2", "alpha": 0.8},
+                 fontsize=10, fontweight="bold", ha="right")
 
     # Highlight Zero-Cost Threshold
     zero_mask = df[column].eq(0)
@@ -797,8 +810,8 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
 
     # Customize
     plt.title(f"Lorenz Curve: Concentration of {DISPLAY_LABELS.get(column, column)}", fontsize=14, fontweight="bold", pad=12)
-    plt.xlabel(f"Cumulative % of {'U.S. Population' if weights else 'Sample'} (Lowest to Highest Cost)", fontsize=11)
-    plt.ylabel("Cumulative % of Total Costs", fontsize=11)
+    plt.xlabel(f"Cumulative % of {'U.S. Population' if weights else 'Sample'} (Lowest to Highest Cost)", fontsize=12, labelpad=10)
+    plt.ylabel("Cumulative % of Total Costs", fontsize=12)
     plt.grid(True, alpha=0.2)
     plt.xticks(range(0, 101, 10))
     plt.yticks(range(0, 101, 10))
@@ -813,13 +826,11 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
     plt.show()
 
 
+# Plot sample Lorenz curve of out-of-pocket costs
+plot_lorenz_curve(df, column="TOTSLF23")
+
 # Plot population Lorenz curve of out-of-pocket costs
-plot_lorenz_curve(
-    df, 
-    column="TOTSLF23", 
-    weights="PERWT23F",
-    save_to_file="../figures/eda/lorenz_curve.png"
-)
+plot_lorenz_curve(df, column="TOTSLF23", weights="PERWT23F", save_to_file="../figures/eda/lorenz_curve.png")
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
