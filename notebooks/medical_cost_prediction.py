@@ -762,7 +762,7 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
              fontsize=10, ha="center", va="bottom")
 
     # Lorenz Curve
-    plt.plot(cum_pct, cum_costs, color=POP_COLOR, lw=3)
+    plt.plot(cum_pct, cum_costs, color=POP_COLOR if weights else SAMPLE_COLOR, lw=3)
 
     # Add Gini Coefficient (in text box)
     plt.text(4, 96, f"Gini Coefficient: {gini:.2f}", fontsize=12, fontweight="bold",
@@ -795,7 +795,7 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
     # Highlight Zero-Cost Threshold
     zero_mask = df[column].eq(0)
     if weights:
-        zero_pct = (df.loc[zero_mask, weights].sum() / df[weights].sum()) * 100
+        zero_pct = (np.sum(df.loc[zero_mask, weights]) / np.sum(df[weights])) * 100
     else:
         zero_pct = len(df[df[column] == 0]) / len(df) * 100
         
@@ -806,7 +806,7 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
                  fontsize=10, fontweight="bold")
 
     # Fill for emphasis (The "Inequality Gap")
-    plt.fill_between(cum_pct, cum_costs, cum_pct, color=POP_COLOR, alpha=0.08)
+    plt.fill_between(cum_pct, cum_costs, cum_pct, color=POP_COLOR if weights else SAMPLE_COLOR, alpha=0.08)
 
     # Customize
     plt.title(f"Lorenz Curve: Concentration of {DISPLAY_LABELS.get(column, column)}", fontsize=14, fontweight="bold", pad=12)
