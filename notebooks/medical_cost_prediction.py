@@ -1629,7 +1629,7 @@ def plot_numerical_feature_target_relationships(df, features, target, weights=No
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 4))
     axes_flat = axes.flatten()
     
-    plot_df = df.copy()
+    plot_df = df.reset_index(drop=True)
     y_col = target
     
     if log_scale:
@@ -1649,8 +1649,11 @@ def plot_numerical_feature_target_relationships(df, features, target, weights=No
             y=y_col,
             ax=ax,
             alpha=0.1,
-            color=SAMPLE_COLOR,
-            s=10
+            color=POP_COLOR if weights else SAMPLE_COLOR,
+            size=weights if weights else None,
+            sizes=(2, 50) if weights else None,
+            s=10 if not weights else None,
+            legend=False
         )
         
         # Calculate population correlation for the title
@@ -1678,13 +1681,16 @@ def plot_numerical_feature_target_relationships(df, features, target, weights=No
         plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
     plt.show()
 
-# Visualize relationships for raw numerical and ordinal features (weighted)
+# Visualize sample numerical feature-target relationships
+plot_numerical_feature_target_relationships(df, features=raw_numerical_features + raw_ordinal_features, target="TOTSLF23")
+
+# Visualize population numerical feature-target relationships
 plot_numerical_feature_target_relationships(
     df, 
-    raw_numerical_features + raw_ordinal_features, 
-    "TOTSLF23", 
+    features= raw_numerical_features + raw_ordinal_features, 
+    target="TOTSLF23", 
     weights="PERWT23F", 
-    # save_to_file="../figures/eda/numerical_feature_target_relationships.png"
+    save_to_file="../figures/eda/numerical_feature_target_relationships.png"
 )
 
 # %% [markdown]
