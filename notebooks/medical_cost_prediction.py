@@ -1635,9 +1635,9 @@ def plot_numerical_feature_target_relationships(df, features, target, weights=No
     if log_scale:
         y_col = f"{target}_LOG"
         plot_df[y_col] = np.log1p(plot_df[target])
-        y_label = f"Log({target} + 1)"
+        y_label = "Out-of-Pocket Costs (Log-Scaled)"
     else:
-        y_label = f"Out-of-Pocket Costs (${target})"
+        y_label = "Out-of-Pocket Costs"
 
     for i, feature in enumerate(features):
         ax = axes_flat[i]
@@ -1662,16 +1662,16 @@ def plot_numerical_feature_target_relationships(df, features, target, weights=No
             corr = df[[feature, target]].corr(method="spearman").iloc[0, 1]
             corr_label = f" (ρ = {corr:.2f})"
 
-        ax.set_title(f"{DISPLAY_LABELS.get(feature, feature)} vs. Target{corr_label}", fontsize=12, fontweight="bold")
-        ax.set_xlabel(DISPLAY_LABELS.get(feature, feature))
-        ax.set_ylabel(y_label)
+        ax.set_title(f"{DISPLAY_LABELS.get(feature, feature)} {corr_label}", fontsize=12, fontweight="bold")
+        ax.set_xlabel("")
+        ax.set_ylabel(y_label if i % n_cols == 0 else "", fontsize=12)
         sns.despine(ax=ax)
 
     # Hide unused subplots
     for j in range(i + 1, len(axes_flat)):
         axes_flat[j].axis("off")
         
-    fig.suptitle(f"{'Population' if weights else 'Sample'} Numerical Features vs. {'Log-' if log_scale else ''}Costs", fontsize=16, fontweight="bold", y=1.02)
+    fig.suptitle(f"{'Population' if weights else 'Sample'} Numerical Feature-Target Relationships", fontsize=16, fontweight="bold", y=1.0)
     plt.tight_layout()
     
     if save_to_file:
@@ -1684,7 +1684,7 @@ plot_numerical_feature_target_relationships(
     raw_numerical_features + raw_ordinal_features, 
     "TOTSLF23", 
     weights="PERWT23F", 
-    # save_to_file="../figures/eda/numerical_vs_target.png"
+    # save_to_file="../figures/eda/numerical_feature_target_relationships.png"
 )
 
 # %% [markdown]
