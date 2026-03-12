@@ -1593,6 +1593,17 @@ plot_correlation_heatmap(
 )
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Primary Drivers:</b> Age (0.30) and Poverty Category (0.26) show the strongest correlation with out-of-pocket spending.</li>
+#         <li><b>Chronic Engine:</b> Arthritis (0.23) and High Cholesterol (0.22) are the top medical drivers, suggesting steady prescription and specialist costs.</li>
+#         <li><b>Demographic Shift:</b> Family Size (-0.22) is negatively correlated, likely reflecting the lower healthcare costs associated with children in larger households.</li>
+#         <li><b>Feature Redundancy:</b> High overlap between ADL/IADL (0.60) and Arthritis/Joint Pain (0.56) indicates potential multicollinearity.</li>
+#         <li><b>Objective vs. Subjective:</b> Diagnosed conditions show stronger cost correlations than subjective health ratings, likely because clinical diagnoses directly drive billing events.</li>
+#     </ul>
+# </div>
+# %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">Numerical Features vs. Target</h3>
 # </div>
