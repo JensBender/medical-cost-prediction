@@ -480,6 +480,7 @@ def weighted_std(variable, weights):
     weighted_variance = np.average((variable - weighted_mean)**2, weights=weights)
     return np.sqrt(weighted_variance)
 
+
 # Calculate population statistics (weighted)
 pop_mean = np.average(df["TOTSLF23"], weights=df["PERWT23F"])
 pop_std = weighted_std(df["TOTSLF23"], weights=df["PERWT23F"])
@@ -1387,22 +1388,108 @@ plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABE
 # </div>
 
 # %%
+# Helper Function: Calculate Population-Weighted Correlation Matrix (using numpy; not available in pandas)
+def calculate_weighted_correlations(df, columns, weights, method="pearson"):
+    """Calculate a population-weighted correlation matrix (Pearson or Spearman).
+
+    This function computes correlations that account for survey weights, ensuring
+    estimates are representative of the target population.
+
+    Methodology:
+    - Weighted Pearson: Calculates the weighted covariance matrix using weighted means
+      and centered data.
+    - Weighted Spearman: Transforms variables into weighted ranks (sum of weights of
+      smaller values + 0.5 * current weight) and averages ranks for tied values,
+      then applies the weighted Pearson calculation to these ranks.
+
+    Args:
+        df:       DataFrame containing the columns to correlate and the weights.
+        columns:  List of numerical, ordinal, or binary column names to include.
+        weights:  Name of the column containing population weights.
+        method:   Correlation method to use ('pearson' or 'spearman').
+
+    Returns:
+        pd.DataFrame: Population-weighted correlation matrix.
+    """
+    w = df[weights].values
+    
+    if method == "pearson":
+        X = df[columns].values
+    elif method == "spearman":
+        # Calculate weighted ranks for each column
+        X = np.zeros((len(df), len(columns)))
+        for i, col in enumerate(columns):
+            x = df[col].values
+            # Sort x and get indices
+            idx = np.argsort(x)
+            x_sorted = x[idx]
+            w_sorted = w[idx]
+            
+            # Cumulative weights
+            cum_w = np.cumsum(w_sorted)
+            # Weighted ranks: sum of weights before + 0.5 * current weight
+            ranks_sorted = cum_w - 0.5 * w_sorted
+            
+            # Handle ties: average ranks for tied values
+            unique_vals, first_indices, counts = np.unique(x_sorted, return_index=True, return_counts=True)
+            if len(unique_vals) < len(x_sorted):
+                for start_idx, count in zip(first_indices, counts):
+                    if count > 1:
+                        avg_rank = np.mean(ranks_sorted[start_idx : start_idx + count])
+                        ranks_sorted[start_idx : start_idx + count] = avg_rank
+            
+            # Invert sorting to match original order
+            inv_idx = np.empty_like(idx)
+            inv_idx[idx] = np.arange(len(idx))
+            X[:, i] = ranks_sorted[inv_idx]
+    else:
+        raise ValueError("Only 'pearson' and 'spearman' are supported for weighted correlation.")
+
+    # Calculate weighted Pearson correlation on the data (or weighted ranks)
+    # 1. Calculate weighted mean
+    m = np.average(X, axis=0, weights=w)
+    
+    # 2. Center the data
+    X_c = X - m
+    
+    # 3. Calculate weighted covariance matrix
+    # Cov = (X_c.T * w) @ X_c / sum(w)
+    cov = (X_c.T * w) @ X_c / np.sum(w)
+    
+    # 4. Calculate weighted correlation matrix
+    # Corr_ij = Cov_ij / sqrt(Cov_ii * Cov_jj)
+    std = np.sqrt(np.diag(cov))
+    corr = cov / np.outer(std, std)
+    
+    return pd.DataFrame(corr, index=columns, columns=columns)
+
+
 # Helper Function: Plot Correlation Heatmap 
-def plot_correlation_heatmap(df, columns, method, save_to_file=None):
-    """Plot a lower-triangle correlation heatmap with annotated values.
+def plot_correlation_heatmap(df, columns, method, weights=None, save_to_file=None):
+    """Plot a correlation heatmap with annotated values.
+
+    This function visualizes the relationship between columns using a masked
+    heatmap in the lower-triangle. It supports both standard sample correlations 
+    and population-weighted correlations for survey data.
 
     Args:
         df:            DataFrame containing the columns to correlate.
-        columns:       Ordered list of column names to include. Only numerical,
-                       ordinal, and binary (0/1) columns are valid. Nominal
-                       columns (unordered codes) must be excluded as their
-                       numeric codes carry no rank meaning.
-        method:        Correlation method passed to DataFrame.corr():
-                       'pearson', 'spearman', or 'kendall'.
-        save_to_file:  Optional file path to save the figure (e.g. '.png').
+        columns:       Ordered list of column names to include. Features must be
+                       numerical, ordinal, or binary (0/1). Nominal columns must
+                       be excluded as their numeric codes lack rank meaning.
+        method:        Correlation method: 'pearson', 'spearman', or 'kendall'.
+        weights:       Optional name of the weight column for population-weighted
+                       correlations.
+        save_to_file:  Optional file path to save the figure (e.g., '.png').
     """
     # Create correlation matrix and round to 2 decimals
-    correlation_matrix = round(df[columns].corr(method=method), 2) 
+    if weights:
+        correlation_matrix = calculate_weighted_correlations(df, columns, weights, method=method)
+    else:
+        correlation_matrix = df[columns].corr(method=method)
+    
+    # Round to 2 decimals
+    correlation_matrix = round(correlation_matrix, 2)
     
     # Mask upper triangle (k=0 removes diagonal with self-correlations)
     mask = np.triu(np.ones(correlation_matrix.shape), k=0).astype(bool) 
@@ -1459,6 +1546,7 @@ plot_correlation_heatmap(
     df, 
     columns=["TOTSLF23"] + raw_numerical_features + raw_ordinal_features + raw_binary_features, 
     method="spearman",
+    weights="PERWT23F",
     save_to_file="../figures/eda/correlation_heatmap.png"
 )
 
