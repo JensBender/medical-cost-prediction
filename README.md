@@ -233,9 +233,9 @@ The distribution of annual out-of-pocket health care costs (`TOTSLF23`) exhibits
 │
 ├── figures/                 # Generated figures
 │   ├── eda/                 # Exploratory data analysis visualizations
-│   │   ├── numerical_distributions_population.png
-│   │   ├── categorical_distributions_population.png
-│   │   ├── binary_distributions_population.png
+│   │   ├── numerical_distributions.png
+│   │   ├── categorical_distributions.png
+│   │   ├── binary_distributions.png
 │   │   └── lorenz_curve.png
 │   ├── outliers/            # Outlier analysis and profiling 
 │   │   ├── outlier_lorenz_curve.png
@@ -342,7 +342,7 @@ This project was made possible with the help of the following resources:
 <!-- APPENDIX -->
 ## 📎 Appendix
 ### Numerical Distributions
-![Numerical Distributions](figures/eda/numerical_distributions_population.png)
+![Numerical Distributions](figures/eda/numerical_distributions.png)
 
 Table of population statistics for all numerical features:
 | Feature         | Count       | Mean  | Std   | Min  | 25%  | 50%  | 75%  | Max  |
@@ -355,11 +355,11 @@ Table of population statistics for all numerical features:
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Categorical Distributions
-![Categorical Distributions](figures/eda/categorical_distributions_population.png)
+![Categorical Distributions](figures/eda/categorical_distributions.png)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Binary Distributions
-![Binary Distributions](figures/eda/binary_distributions_population.png)
+![Binary Distributions](figures/eda/binary_distributions.png)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Outlier Analysis

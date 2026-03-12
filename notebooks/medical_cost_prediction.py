@@ -1138,7 +1138,7 @@ def plot_numerical_distributions(df, numerical_features, display_labels=None, we
 plot_numerical_distributions(df, raw_numerical_features, DISPLAY_LABELS)  # save_to_file="../figures/eda/numerical_distributions_sample.png"
 
 # Plot population distributions (weighted) of numerical features  
-plot_numerical_distributions(df, raw_numerical_features, DISPLAY_LABELS, weights="PERWT23F")  # save_to_file="../figures/eda/numerical_distributions_population.png"
+plot_numerical_distributions(df, raw_numerical_features, DISPLAY_LABELS, weights="PERWT23F", save_to_file="../figures/eda/numerical_distributions.png")
 
 
 # %% [markdown]
@@ -1257,7 +1257,7 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
 plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA)  # save_to_file="../figures/eda/categorical_distributions_sample.png"
 
 # Plot population distributions (weighted) of categorical features
-plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F")   # save_to_file="../figures/eda/categorical_distributions_population.png"
+plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F", save_to_file="../figures/eda/categorical_distributions.png")
 
 
 # %% [markdown]
@@ -1356,7 +1356,7 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
 plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA)  # save_to_file="../figures/eda/binary_distributions_sample.png"
 
 # Plot population distributions (weighted) of binary features
-plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F")  # save_to_file="../figures/eda/binary_distributions_population.png"
+plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F", save_to_file="../figures/eda/binary_distributions.png")
 
 
 # %% [markdown]
