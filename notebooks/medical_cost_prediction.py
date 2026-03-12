@@ -1526,7 +1526,8 @@ def plot_correlation_heatmap(df, columns, method, weights=None, save_to_file=Non
         "spearman": "Spearman Rank",
         "kendall": "Kendall Rank"
     }
-    plt.title(f"{method_titles.get(method, method.title())} Correlation Heatmap", fontsize=14, pad=12)
+    title = f"{'Population' if weights else 'Sample'} {method_titles.get(method, method.title())} Correlations"
+    plt.title(title, fontsize=14, fontweight="bold")
     plt.xticks(rotation=45, ha="right", fontsize=9)  
     plt.yticks(fontsize=9)
     
@@ -1541,7 +1542,7 @@ def plot_correlation_heatmap(df, columns, method, weights=None, save_to_file=Non
     plt.show()
 
     
-# Plot the Spearman correlation heatmap for the target variable and all numerical, ordinal, and binary features
+# Plot the population Spearman rank correlations for the target variable and all numerical, ordinal, and binary features
 plot_correlation_heatmap(
     df, 
     columns=["TOTSLF23"] + raw_numerical_features + raw_ordinal_features + raw_binary_features, 
