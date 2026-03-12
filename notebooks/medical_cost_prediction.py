@@ -1609,8 +1609,83 @@ plot_correlation_heatmap(
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Visualize the pairwise relationships between the target variable and each numerical feature using scatter plots. 
+#     📌 Visualize the pairwise relationships between the target variable and each numerical feature. 
+#     <br><br>
+#     Note: Use log-transformation of out-of-pocket costs to handle the extremely right-skewed and zero-inflated distribution. This "stretches" the low-cost range and "squeezes" the extreme tail, making the relationship with numerical features (like Age and Physical Health) much more visible. 
 # </div>
+
+# %%
+# Helper Function: Plot Numerical Feature-Target Relationships
+def plot_numerical_feature_target_relationships(df, features, target, weights=None, log_scale=True, save_to_file=None):
+    """Visualize the bivariate relationship between numerical features and the target.
+    
+    Uses scatterplots with optional log-transformation of the target to spread out 
+    the heavy-tailed cost distribution.
+    """
+    n_plots = len(features)
+    n_cols = 2
+    n_rows = math.ceil(n_plots / n_cols)
+    
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 4))
+    axes_flat = axes.flatten()
+    
+    plot_df = df.copy()
+    y_col = target
+    
+    if log_scale:
+        y_col = f"{target}_LOG"
+        plot_df[y_col] = np.log1p(plot_df[target])
+        y_label = f"Log({target} + 1)"
+    else:
+        y_label = f"Out-of-Pocket Costs (${target})"
+
+    for i, feature in enumerate(features):
+        ax = axes_flat[i]
+        
+        # Use scatterplot to visualize the relationship and handle density with alpha
+        sns.scatterplot(
+            data=plot_df,
+            x=feature,
+            y=y_col,
+            ax=ax,
+            alpha=0.1,
+            color=SAMPLE_COLOR,
+            s=10
+        )
+        
+        # Calculate population correlation for the title
+        if weights:
+            # We use spearman here for consistency with the heatmap
+            corr = calculate_weighted_correlations(df, [feature, target], weights, method="spearman").iloc[0, 1]
+            corr_label = f" (ρ = {corr:.2f})"
+        else:
+            corr = df[[feature, target]].corr(method="spearman").iloc[0, 1]
+            corr_label = f" (ρ = {corr:.2f})"
+
+        ax.set_title(f"{DISPLAY_LABELS.get(feature, feature)} vs. Target{corr_label}", fontsize=12, fontweight="bold")
+        ax.set_xlabel(DISPLAY_LABELS.get(feature, feature))
+        ax.set_ylabel(y_label)
+        sns.despine(ax=ax)
+
+    # Hide unused subplots
+    for j in range(i + 1, len(axes_flat)):
+        axes_flat[j].axis("off")
+        
+    fig.suptitle(f"{'Population' if weights else 'Sample'} Numerical Features vs. {'Log-' if log_scale else ''}Costs", fontsize=16, fontweight="bold", y=1.02)
+    plt.tight_layout()
+    
+    if save_to_file:
+        plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
+    plt.show()
+
+# Visualize relationships for raw numerical and ordinal features (weighted)
+plot_numerical_feature_target_relationships(
+    df, 
+    raw_numerical_features + raw_ordinal_features, 
+    "TOTSLF23", 
+    weights="PERWT23F", 
+    # save_to_file="../figures/eda/numerical_vs_target.png"
+)
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
