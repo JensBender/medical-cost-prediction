@@ -1575,6 +1575,9 @@ def plot_correlation_heatmap(df, columns, method, weights=None, save_to_file=Non
     plt.show()
 
     
+# Plot the sample Spearman rank correlations for the target variable and all numerical, ordinal, and binary features
+plot_correlation_heatmap(df, columns=["TOTSLF23"] + raw_numerical_features + raw_ordinal_features + raw_binary_features, method="spearman")
+
 # Plot the population Spearman rank correlations for the target variable and all numerical, ordinal, and binary features
 plot_correlation_heatmap(
     df, 
