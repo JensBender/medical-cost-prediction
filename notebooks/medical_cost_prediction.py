@@ -720,84 +720,101 @@ zero_costs_df.style \
 # </div>
 
 # %%
-# Lorenz Curve
-# Create DataFrame for plotting the Lorenz Curve sorted by cost 
-lorenz_df = df[["TOTSLF23", "PERWT23F", "pop_costs"]].sort_values("TOTSLF23").copy()
+# Helper Function: Plot Lorenz Curve
+def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
+    """Plot a Lorenz Curve to visualize concentration and inequality.
 
-# Cumulative percentage and costs of sample (unweighted) 
-cum_sample_pct = np.arange(1, len(lorenz_df) + 1) / len(lorenz_df) * 100
-cum_sample_costs = lorenz_df["TOTSLF23"].cumsum() / lorenz_df["TOTSLF23"].sum() * 100
+    Args:
+        df:            DataFrame containing the data.
+        column:        Column name of the variable.
+        weights:       Optional name of the weight column.
+        save_to_file:  Optional file path to save the figure (e.g., 'lorenz_curve.png').
+    """
+    # Create local copy sorted by column
+    lorenz_df = df[[column]].copy()
+    if weights:
+        lorenz_df[weights] = df[weights]
+        lorenz_df = lorenz_df.sort_values(column)
+        
+        # Cumulative percentage and costs of population (weighted)
+        cum_pct = lorenz_df[weights].cumsum() / lorenz_df[weights].sum() * 100
+        pop_costs = lorenz_df[column] * lorenz_df[weights]
+        cum_costs = pop_costs.cumsum() / pop_costs.sum() * 100
+    else:
+        lorenz_df = lorenz_df.sort_values(column)
+        # Cumulative percentage and costs of sample (unweighted)
+        cum_pct = np.arange(1, len(lorenz_df) + 1) / len(lorenz_df) * 100
+        cum_costs = lorenz_df[column].cumsum() / lorenz_df[column].sum() * 100
 
-# Cumulative percentage and costs of population (weighted)
-cum_pop_pct = lorenz_df["PERWT23F"].cumsum() / lorenz_df["PERWT23F"].sum() * 100
-cum_pop_costs = lorenz_df["pop_costs"].cumsum() / lorenz_df["pop_costs"].sum() * 100
+    # Calculate Gini Coefficient
+    def calculate_gini(pct, costs):
+        return 1 - 2 * np.trapezoid(costs / 100, pct / 100)
+    
+    gini = calculate_gini(cum_pct, cum_costs)
 
-# Calculate the Gini Coefficient 
-# note: quantifies inequality (the higher the number, the more the cost is concentrated)
-# Gini = A / (A + B), which simplifies to 1 - 2*B, where B is the area under the Lorenz Curve (calculated via the trapezoidal rule)
-def calculate_gini(pct, costs):
-    return 1 - 2 * np.trapezoid(costs / 100, pct / 100)
+    # Plotting
+    plt.figure(figsize=(10, 8))  
 
-gini_sample = calculate_gini(cum_sample_pct, cum_sample_costs)
-gini_pop = calculate_gini(cum_pop_pct, cum_pop_costs)
+    # Line of Equality
+    plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality", alpha=0.6)
 
-# Plotting
-plt.figure(figsize=(10, 8))  
+    # Lorenz Curve
+    context = "U.S. Population" if weights else "Sample"
+    plt.plot(cum_pct, cum_costs, 
+             label=f"{context} (Gini: {gini:.2f})", 
+             color=POP_COLOR, lw=3)
 
-# Line of Equality
-plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality", alpha=0.6)
+    # Highlight Pareto Point (80/20 Rule) 
+    idx_80 = (cum_pct - 80).abs().idxmin()
+    x_80 = cum_pct.loc[idx_80]
+    y_80 = cum_costs.loc[idx_80]
+    top_20_share = 100 - y_80
 
-# Population Lorenz Curve
-plt.plot(cum_pop_pct, cum_pop_costs, 
-         label=f"Population (Gini: {gini_pop:.2f})", 
-         color=POP_COLOR, lw=3)
+    plt.plot(x_80, y_80, "o", color="#fb8500", markersize=8)
+    plt.annotate(f"Top 20% account for\n{top_20_share:.1f}% of costs", 
+                 xy=(x_80, y_80), xytext=(x_80 - 30, y_80 + 10),
+                 arrowprops={"arrowstyle": "->", "color": "black", "connectionstyle": "arc3,rad=-0.2", "alpha": 0.8},
+                 fontsize=10, fontweight="bold")
 
-# Sample Lorenz Curve
-plt.plot(cum_sample_pct, cum_sample_costs, 
-         label=f"Sample (Gini: {gini_sample:.2f})", 
-         color=SAMPLE_COLOR, lw=2, linestyle="--")
+    # Highlight Zero-Cost Threshold
+    zero_mask = df[column].eq(0)
+    if weights:
+        zero_pct = (df.loc[zero_mask, weights].sum() / df[weights].sum()) * 100
+    else:
+        zero_pct = np.sum(zero_mask) / len(df) * 100
+        
+    plt.plot(zero_pct, 0, "o", color="#fb8500", markersize=8)
+    plt.annotate(f"{zero_pct:.1f}% have $0 costs", 
+                 xy=(zero_pct, 0), xytext=(zero_pct - 7, 10),
+                 arrowprops={"arrowstyle": "->", "color": "black", "connectionstyle": "arc3,rad=-0.2", "alpha": 0.8},
+                 fontsize=10, fontweight="bold")
 
-# Highlight Pareto Point (80/20 Rule) 
-idx_80 = (cum_pop_pct - 80).abs().idxmin()  # find the index label closest to the 80th percentile of the population
-x_80 = cum_pop_pct.loc[idx_80]
-y_80 = cum_pop_costs.loc[idx_80]
-top_20_share = 100 - y_80
+    # Fill for emphasis
+    plt.fill_between(cum_pct, cum_costs, cum_pct, color=POP_COLOR, alpha=0.08)
 
-plt.plot(x_80, y_80, 'o', color="#fb8500", markersize=8)
-plt.annotate(f"Top 20% account for\n{top_20_share:.1f}% of costs", 
-             xy=(x_80, y_80), xytext=(x_80 - 30, y_80 + 10),
-             arrowprops=dict(arrowstyle="->", color="black", connectionstyle="arc3,rad=-0.2", alpha=0.8),
-             fontsize=10, fontweight="bold")
+    # Customize
+    plt.title(f"Lorenz Curve: Concentration of {column}", fontsize=14, fontweight="bold", pad=12)
+    plt.xlabel(f"Cumulative % of {context} (Lowest to Highest Cost)", fontsize=11)
+    plt.ylabel("Cumulative % of Total Costs", fontsize=11)
+    plt.legend(loc="upper left", fontsize=10)
+    plt.grid(True, alpha=0.2)
+    plt.xticks(range(0, 101, 10))
+    plt.yticks(range(0, 101, 10))
+    plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())
+    plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
 
-# Highlight Zero-Cost Threshold (the point where costs begin to rise)
-pop_zero_pct = (df.loc[df["TOTSLF23"] == 0, "PERWT23F"].sum() / df["PERWT23F"].sum()) * 100
-plt.plot(pop_zero_pct, 0, 'o', color="#fb8500", markersize=8)
-plt.annotate(f"{pop_zero_pct:.1f}% have $0 costs", 
-             xy=(pop_zero_pct, 0), xytext=(pop_zero_pct - 7, 10),
-             arrowprops=dict(arrowstyle="->", color="black", connectionstyle="arc3,rad=-0.2", alpha=0.8),
-             fontsize=10, fontweight="bold")
+    plt.tight_layout()
+    if save_to_file:
+        plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
+    plt.show()
 
-# Fill for emphasis
-plt.fill_between(cum_pop_pct, cum_pop_costs, cum_pop_pct, color=POP_COLOR, alpha=0.08)
 
-# Customize
-plt.title("Lorenz Curve: Concentration of Out-of-Pocket Costs", fontsize=14, pad=15)
-plt.xlabel("Cumulative % of U.S. Adults (Sorted from Lowest to Highest Cost)", fontsize=11)
-plt.ylabel("Cumulative % of Total Costs", fontsize=11)
-plt.legend(loc="upper left", fontsize=10)
-plt.grid(True, alpha=0.2)
-plt.xticks(range(0, 101, 10))
-plt.yticks(range(0, 101, 10))
-plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())
-plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
-
-# Adjust layout 
-plt.tight_layout()
-
-# Save to file
-# plt.savefig("../figures/eda/lorenz_curve.png", bbox_inches="tight", dpi=200)
-
-plt.show()
+plot_lorenz_curve(
+    df, 
+    column="TOTSLF23", 
+    weights="PERWT23F",
+    save_to_file="../figures/eda/lorenz_curve.png"
+)
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -1527,7 +1544,7 @@ def plot_correlation_heatmap(df, columns, method, weights=None, save_to_file=Non
         "kendall": "Kendall Rank"
     }
     title = f"{'Population' if weights else 'Sample'} {method_titles.get(method, method.title())} Correlations"
-    plt.title(title, fontsize=14, fontweight="bold")
+    plt.title(title, fontsize=14, fontweight="bold", pad=12)
     plt.xticks(rotation=45, ha="right", fontsize=9)  
     plt.yticks(fontsize=9)
     
