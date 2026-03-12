@@ -1538,11 +1538,15 @@ def plot_correlation_heatmap(df, columns, method, weights=None, save_to_file=Non
     # Color NaN cells (upper triangle) light grey so the triangle shape reads cleanly
     ax.set_facecolor("#f0f0f0")
 
+    # Create a custom color palette: Navy (Negative) -> White -> Orange (Positive)
+    custom_cmap = sns.diverging_palette(250, 25, s=90, l=50, as_cmap=True)
+
     # Create heatmap
     sns.heatmap(
         correlation_matrix, 
-        cmap="RdBu_r",  # Diverging colormap: red = negative, white = zero, blue = positive
-        vmin=-1, vmax=1,  # Fix colour scale to full [-1, 1] range so white = zero correlation
+        cmap=custom_cmap, 
+        vmin=-1, vmax=1,
+        center=0,
         annot=True,  # Annotate correlation values
         annot_kws={"size": 8},  # Format font size of values 
         fmt=".2f",  # Format values with 2 decimals
