@@ -1529,7 +1529,8 @@ def plot_correlation_heatmap(df, columns, method, weights=None, save_to_file=Non
     correlation_matrix[mask] = np.nan
 
     # Create display labels for readability
-    display_labels = [DISPLAY_LABELS[column] for column in correlation_matrix.columns]
+    display_labels = [DISPLAY_LABELS.get(col, col) for col in correlation_matrix.columns]
+    display_labels = [label.replace("Coronary Heart Disease", "Heart Disease") for label in display_labels]
 
     # Set the figure size
     fig, ax = plt.subplots(figsize=(12, 10))
