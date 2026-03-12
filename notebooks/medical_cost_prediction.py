@@ -755,14 +755,17 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
     # Plotting
     plt.figure(figsize=(10, 8))  
 
-    # Line of Equality
-    plt.plot([0, 100], [0, 100], linestyle="--", color="gray", label="Line of Equality", alpha=0.6)
+    # Line of Equality (with label)
+    plt.plot([0, 100], [0, 100], linestyle="--", color="gray", alpha=0.4)
+    plt.text(50, 49, "Line of Equality", rotation=38, color="gray", 
+             fontsize=9, ha="center", va="bottom")
 
     # Lorenz Curve
-    context = "U.S. Population" if weights else "Sample"
-    plt.plot(cum_pct, cum_costs, 
-             label=f"{context} (Gini: {gini:.2f})", 
-             color=POP_COLOR, lw=3)
+    plt.plot(cum_pct, cum_costs, color=POP_COLOR, lw=3)
+
+    # Add Gini Coefficient (in text box)
+    plt.text(2, 98, f"Gini: {gini:.2f}", fontsize=12, fontweight="bold",
+             va="top", bbox={"facecolor": "white", "alpha": 0.7, "edgecolor": "none", "boxstyle": "round,pad=0.4"})
 
     # Highlight Pareto Point (80/20 Rule) 
     idx_80 = (cum_pct - 80).abs().idxmin()
@@ -781,7 +784,7 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
     if weights:
         zero_pct = (df.loc[zero_mask, weights].sum() / df[weights].sum()) * 100
     else:
-        zero_pct = np.sum(zero_mask) / len(df) * 100
+        zero_pct = len(df[df[column] == 0]) / len(df) * 100
         
     plt.plot(zero_pct, 0, "o", color="#fb8500", markersize=8)
     plt.annotate(f"{zero_pct:.1f}% have $0 costs", 
@@ -789,17 +792,18 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
                  arrowprops={"arrowstyle": "->", "color": "black", "connectionstyle": "arc3,rad=-0.2", "alpha": 0.8},
                  fontsize=10, fontweight="bold")
 
-    # Fill for emphasis
+    # Fill for emphasis (The "Inequality Gap")
     plt.fill_between(cum_pct, cum_costs, cum_pct, color=POP_COLOR, alpha=0.08)
 
     # Customize
-    plt.title(f"Lorenz Curve: Concentration of {column}", fontsize=14, fontweight="bold", pad=12)
-    plt.xlabel(f"Cumulative % of {context} (Lowest to Highest Cost)", fontsize=11)
+    plt.title(f"Lorenz Curve: Concentration of {DISPLAY_LABELS.get(column, column)}", fontsize=14, fontweight="bold", pad=12)
+    plt.xlabel(f"Cumulative % of {'U.S. Population' if weights else 'Sample'} (Lowest to Highest Cost)", fontsize=11)
     plt.ylabel("Cumulative % of Total Costs", fontsize=11)
-    plt.legend(loc="upper left", fontsize=10)
     plt.grid(True, alpha=0.2)
     plt.xticks(range(0, 101, 10))
     plt.yticks(range(0, 101, 10))
+    plt.xlim(-3, 103)  # Adds space around the curve so no overlap with axis
+    plt.ylim(-3, 103)
     plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())
     plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter())
 
@@ -809,6 +813,7 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
     plt.show()
 
 
+# Plot population Lorenz curve of out-of-pocket costs
 plot_lorenz_curve(
     df, 
     column="TOTSLF23", 
