@@ -1731,8 +1731,9 @@ plot_numerical_feature_target_relationships(
 # </div>
 
 # %%
-def plot_categorical_feature_target_relationships(df, features, target, log_scale=False, weights=None, save_to_file=None):
+def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_features, target, log_scale=False, weights=None, save_to_file=None):
     """Visualize relationships between categorical features and target using Boxen plots."""
+    features = nominal_features + ordinal_features
     n_plots = len(features)
     n_cols = 2
     n_rows = math.ceil(n_plots / n_cols)
@@ -1771,11 +1772,20 @@ def plot_categorical_feature_target_relationships(df, features, target, log_scal
         categorical_labels = CATEGORY_LABELS_EDA.get(feature, {})
         x_col = plot_df[feature].map(categorical_labels) if categorical_labels else plot_df[feature]
 
+        # Order categories
+        if feature in ordinal_features:
+            # Sort ordinal features by inherent order (defined in CATEGORY_LABELS_EDA)
+            order = [label for label in categorical_labels.values() if label in x_col.unique()]
+        else:
+            # Sort nominal features by frequency (most common first)
+            order = x_col.value_counts().index.tolist()
+
         # Create Boxen plot for current feature
         sns.boxenplot(
             x=x_col, 
             y=plot_df[y_col], 
             ax=ax,
+            order=order,
             color=POP_COLOR if weights else SAMPLE_COLOR, 
             alpha=0.7
         )
@@ -1808,7 +1818,8 @@ def plot_categorical_feature_target_relationships(df, features, target, log_scal
 # Visualize sample categorical feature-target relationships
 plot_categorical_feature_target_relationships(
     df, 
-    features=raw_nominal_features + raw_ordinal_features, 
+    nominal_features=raw_nominal_features,
+    ordinal_features=raw_ordinal_features,
     target="TOTSLF23", 
     log_scale=True
 )
@@ -1816,7 +1827,8 @@ plot_categorical_feature_target_relationships(
 # Visualize population categorical feature-target relationships
 plot_categorical_feature_target_relationships(
     df, 
-    features=raw_nominal_features + raw_ordinal_features, 
+    nominal_features=raw_nominal_features,
+    ordinal_features=raw_ordinal_features,
     target="TOTSLF23", 
     log_scale=True,
     weights="PERWT23F", 
