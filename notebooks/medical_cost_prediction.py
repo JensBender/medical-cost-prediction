@@ -1732,7 +1732,22 @@ plot_numerical_feature_target_relationships(
 
 # %%
 def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_features, target, plot_type="boxen", log_scale=False, weights=None, save_to_file=None):
-    """Visualize relationships between categorical features and target using Boxen or Box plots."""
+    """
+    Visualize relationship between categorical features and target.
+    
+    Creates a grid of Boxen or standard Box plots. Handles nominal and 
+    ordinal features with distinct sorting strategies (Frequency vs. Inherent).
+    Args:
+        df (pd.DataFrame): The input dataset.
+        nominal_features (list): Names of nominal columns.
+        ordinal_features (list): Names of ordinal columns.
+        target (str): Name of the target variable column.
+        plot_type (str, optional): Type of plot ('boxen' or 'box'). Defaults to "boxen".
+        log_scale (bool, optional): Whether to log-transform the target. Defaults to False.
+        weights (str, optional): Column name for survey weights. If provided, 
+            triggers weighted bootstrap resampling. Defaults to None.
+        save_to_file (str, optional): File path to save the figure. Defaults to None.
+    """
     features = nominal_features + ordinal_features
     n_plots = len(features)
     n_cols = 2
