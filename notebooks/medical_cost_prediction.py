@@ -1387,7 +1387,7 @@ plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABE
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Analyze the relationship between two columns using correlations or group-wise statistics and visualize the relationships using scatter plots, bar plots, or grouped box plots.
+#     ℹ️ Analyze the relationship between two columns using correlations or group-wise statistics and visualize the relationships using scatter plots.
 # </div>
 
 # %% [markdown]
@@ -1713,12 +1713,13 @@ plot_numerical_feature_target_relationships(df, features=raw_numerical_features,
 # Visualize population numerical feature-target relationships
 plot_numerical_feature_target_relationships(
     df, 
-    features= raw_numerical_features, 
+    features=raw_numerical_features, 
     target="TOTSLF23", 
     log_scale=True,
     weights="PERWT23F", 
     save_to_file="../figures/eda/numerical_feature_target_relationships.png"
 )
+
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
@@ -1726,7 +1727,94 @@ plot_numerical_feature_target_relationships(
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Visualize the pairwise relationships between the target variable and each categorical feature using grouped box plots. 
+#     📌 Visualize the pairwise relationships between the target variable and each nominal and ordinal feature. 
+# </div>
+
+# %%
+def plot_categorical_feature_target_relationships(df, features, target, log_scale=False, weights=None, save_to_file=None):
+    """Visualize relationships between categorical features and target using Boxen plots."""
+    n_plots = len(features)
+    n_cols = 2
+    n_rows = math.ceil(n_plots / n_cols)
+    
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 4))
+    axes_flat = axes.flatten()
+
+    # Create DataFrame for plotting
+    plot_df = df.reset_index(drop=True)
+
+    # Log-transformation of target
+    y_col = target
+    if log_scale:
+        y_col = f"{target}_LOG"
+        plot_df[y_col] = np.log1p(plot_df[target])
+        y_label = "Out-of-Pocket Costs (Log-Scaled)"
+    else:
+        y_label = "Out-of-Pocket Costs"
+
+    # Iterate over features
+    for i, feature in enumerate(features):
+        ax = axes_flat[i]
+        
+        # Get categorical string labels for current feature
+        categorical_labels = CATEGORY_LABELS_EDA.get(feature, {})
+        x_col = plot_df[feature].map(categorical_labels) if categorical_labels else plot_df[feature]
+
+        # Create Boxen plot for current feature
+        sns.boxenplot(
+            x=x_col, 
+            y=plot_df[y_col], 
+            ax=ax,
+            color=POP_COLOR if weights else SAMPLE_COLOR, 
+            alpha=0.7
+        )
+
+        # Customize
+        ax.set_title(DISPLAY_LABELS.get(feature, feature), fontsize=12, fontweight="bold")
+        ax.set_xlabel("")
+        ax.set_ylabel(y_label if i % n_cols == 0 else "", fontsize=12)
+        plt.setp(ax.get_xticklabels(), rotation=20, ha="right", fontsize=9)
+        sns.despine(ax=ax)
+
+    # Hide unused subplots
+    for j in range(i + 1, len(axes_flat)): 
+        axes_flat[j].axis("off")
+
+    # Add super title
+    super_title = f"{'Population' if weights else 'Sample'} Categorical Feature-Target Relationships"
+    fig.suptitle(super_title, fontsize=16, fontweight="bold", y=1.0)
+
+    # Adjust layout 
+    plt.tight_layout(h_pad=2.0)
+
+    # Save to file
+    if save_to_file:
+        plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
+    
+    plt.show()
+
+
+# Visualize sample categorical feature-target relationships
+plot_categorical_feature_target_relationships(
+    df, 
+    features=raw_nominal_features + raw_ordinal_features, 
+    target="TOTSLF23", 
+    log_scale=True
+)
+
+# Visualize population categorical feature-target relationships
+plot_categorical_feature_target_relationships(
+    df, 
+    features=raw_nominal_features + raw_ordinal_features, 
+    target="TOTSLF23", 
+    log_scale=True,
+    weights="PERWT23F", 
+    # save_to_file="../figures/eda/categorical_feature_target_relationships.png"
+)
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Visualize the pairwise relationships between the target variable and each binary feature. 
 # </div>
 
 # %% [markdown]
