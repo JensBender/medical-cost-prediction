@@ -1820,6 +1820,23 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
             )
         else:
             raise ValueError("plot_type must be 'boxen' or 'box'")
+
+        # Annotate the median 
+        # Map labels to the dataframe temporarily to match 'order' contents
+        plot_df_temp = plot_df.copy()
+        plot_df_temp[feature] = plot_df_temp[feature].map(categorical_labels) if categorical_labels else plot_df_temp[feature]    
+        medians = plot_df_temp.groupby(feature)[y_col].median()
+        for j, label in enumerate(order):
+            if label in medians:
+                m_val = medians[label]
+                # Format display value (convert back from log if needed)
+                display_val = f"${np.expm1(m_val):,.0f}" if log_scale else f"${m_val:,.0f}"              
+                ax.text(
+                    j, m_val, display_val, 
+                    ha="center", va="center", 
+                    fontsize=8, fontweight="bold", color="white",
+                    bbox=dict(facecolor='black', alpha=0.6, edgecolor='none', boxstyle='round,pad=0.3')
+                )
            
         # Customize
         ax.set_title(DISPLAY_LABELS.get(feature, feature), fontsize=12, fontweight="bold")
