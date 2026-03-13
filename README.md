@@ -62,6 +62,7 @@ Currently developing an end-to-end machine learning application to predict annua
       <li><a href="#categorical-distributions">Categorical Distributions</a></li>      
       <li><a href="#binary-distributions">Binary Distributions</a></li>      
       <li><a href="#numerical-feature-target-relationships">Numerical Feature-Target Relationships</a></li>      
+      <li><a href="#categorical-feature-target-relationships">Categorical Feature-Target Relationships</a></li>      
       <li><a href="#outlier-analysis">Outlier Analysis</a></li>      
     </ul>
   </li>
@@ -365,6 +366,10 @@ Table of population statistics for all numerical features:
 
 ### Numerical Feature-Target Relationships
 ![Numerical Feature-Target Relationships](figures/eda/numerical_feature_target_relationships.png)
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Categorical Feature-Target Relationships
+![Categorical Feature-Target Relationships](figures/eda/categorical_feature_target_relationships.png)
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Outlier Analysis
