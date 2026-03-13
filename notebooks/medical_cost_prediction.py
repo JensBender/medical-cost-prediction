@@ -1815,6 +1815,7 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
                 **plot_kwargs, 
                 width=0.6, 
                 linewidth=1.2, 
+                whis=[1, 99],  # Use the 1st and 99th percentiles for the whiskers
                 boxprops=dict(alpha=0.7),
                 flierprops={"markersize": 3, "alpha": 0.3}
             )
@@ -1878,7 +1879,7 @@ plot_categorical_feature_target_relationships(
     plot_type="boxen",
     log_scale=True,
     weights="PERWT23F", 
-    # save_to_file="../figures/eda/categorical_feature_target_relationships.png"
+    save_to_file="../figures/eda/categorical_feature_target_relationships_boxen.png"
 )
 
 # Visualize population categorical feature-target relationships using box plots
@@ -1890,7 +1891,7 @@ plot_categorical_feature_target_relationships(
     plot_type="box",
     log_scale=True,
     weights="PERWT23F", 
-    # save_to_file="../figures/eda/categorical_feature_target_relationships.png"
+    save_to_file="../figures/eda/categorical_feature_target_relationships_box.png"
 )
 
 # %% [markdown]
