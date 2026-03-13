@@ -1742,6 +1742,17 @@ def plot_categorical_feature_target_relationships(df, features, target, log_scal
 
     # Create DataFrame for plotting
     plot_df = df.reset_index(drop=True)
+ 
+    # Create a population-representative subsample using weighted bootstrap resampling 
+    # Since sns.boxenplot does not natively support weights, this approach 'bakes' the survey weights directly into the subsample's density. 
+    # Setting replace=True ensures that high-weight respondents are proportionally represented as multiple 'virtual' individuals in the plot.
+    if weights:
+        plot_df = plot_df.sample(
+            n=len(plot_df), 
+            weights=weights, 
+            replace=True, 
+            random_state=RANDOM_STATE
+        ).reset_index(drop=True)        
 
     # Log-transformation of target
     y_col = target
@@ -1768,7 +1779,7 @@ def plot_categorical_feature_target_relationships(df, features, target, log_scal
             color=POP_COLOR if weights else SAMPLE_COLOR, 
             alpha=0.7
         )
-
+           
         # Customize
         ax.set_title(DISPLAY_LABELS.get(feature, feature), fontsize=12, fontweight="bold")
         ax.set_xlabel("")
