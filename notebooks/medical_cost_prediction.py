@@ -1901,6 +1901,15 @@ plot_categorical_feature_target_relationships(
 )
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Insurance Type:</b>  "Any Private" insurance holders face the highest medians (~\$399), reflecting higher cost-sharing (deductibles) compared to "Public Only" (~\$111). Uninsured individuals show a median out-of-pocket cost of \$0. This may reflect a major barrier to care rather than better health, as this group likely avoids utilization until absolutely necessary.</li>
+#         <li><b>Poverty Status:</b> Higher income is related to higher spending. High-income individuals have a median cost (\$502) nearly 20x higher than those in the poor/negative category (\$27), highlighting how the ability to pay drives utilization.</li>
+#         <li><b>Life Transitions:</b> Recent marital transitions (e.g., "Married in Round" at \$788) show significantly higher costs than stable categories, validating the need for a recent life transition feature.</li>
+#     </ul>
+# </div>
+# %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Visualize the pairwise relationships between the target variable and each binary feature. 
 # </div>
