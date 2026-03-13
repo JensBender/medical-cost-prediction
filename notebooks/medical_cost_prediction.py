@@ -1611,16 +1611,16 @@ plot_correlation_heatmap(
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Visualize the pairwise relationships between the target variable and each numerical feature. 
 #     <br><br>
-#     Note: Use log-transformation of out-of-pocket costs to handle the extremely right-skewed and zero-inflated distribution. This "stretches" the low-cost range and "squeezes" the extreme tail, making the relationship with numerical features (like Age and Physical Health) much more visible. 
+#     Note: Apply log-transformation to out-of-pocket costs to handle the extremely right-skewed and zero-inflated distribution. This "stretches" the low-cost range and "squeezes" the extreme tail, making the relationship with numerical features (like Age and Physical Health) more visible. 
 # </div>
 
 # %%
 # Helper Function: Plot Numerical Feature-Target Relationships
-def plot_numerical_feature_target_relationships(df, features, target, weights=None, log_scale=True, save_to_file=None):
-    """Visualize the bivariate relationship between numerical features and the target.
+def plot_numerical_feature_target_relationships(df, features, target, log_scale=False, weights=None, save_to_file=None):
+    """Visualize the bivariate relationships between numerical features and the target using scatterplots.
     
-    Uses scatterplots with optional log-transformation of the target to spread out 
-    the heavy-tailed cost distribution.
+    Supports optional log-transformation of the target to handle heavy-tailed distributions.
+    Supports weights to apply larger size of data points for larger weights.
     """
     n_plots = len(features)
     n_cols = 2
@@ -1642,13 +1642,13 @@ def plot_numerical_feature_target_relationships(df, features, target, weights=No
     for i, feature in enumerate(features):
         ax = axes_flat[i]
         
-        # Use scatterplot to visualize the relationship and handle density with alpha
+        # Create scatterplot between current feature and target 
         sns.scatterplot(
             data=plot_df,
             x=feature,
             y=y_col,
             ax=ax,
-            alpha=0.1,
+            alpha=0.1,  # handle density with alpha
             color=POP_COLOR if weights else SAMPLE_COLOR,
             size=weights if weights else None,
             sizes=(2, 50) if weights else None,
@@ -1656,15 +1656,15 @@ def plot_numerical_feature_target_relationships(df, features, target, weights=No
             legend=False
         )
         
-        # Calculate population correlation for the title
+        # Calculate Spearman rank correlation (for title)
         if weights:
-            # We use spearman here for consistency with the heatmap
             corr = calculate_weighted_correlations(df, [feature, target], weights, method="spearman").iloc[0, 1]
-            corr_label = f" (ρ = {corr:.2f})"
+            corr_label = f"(ρ={corr:.2f})"
         else:
             corr = df[[feature, target]].corr(method="spearman").iloc[0, 1]
-            corr_label = f" (ρ = {corr:.2f})"
+            corr_label = f"(ρ={corr:.2f})"
 
+        # Customize
         ax.set_title(f"{DISPLAY_LABELS.get(feature, feature)} {corr_label}", fontsize=12, fontweight="bold")
         ax.set_xlabel("")
         ax.set_ylabel(y_label if i % n_cols == 0 else "", fontsize=12)
@@ -1673,22 +1673,33 @@ def plot_numerical_feature_target_relationships(df, features, target, weights=No
     # Hide unused subplots
     for j in range(i + 1, len(axes_flat)):
         axes_flat[j].axis("off")
-        
+
+    # Add super title 
     fig.suptitle(f"{'Population' if weights else 'Sample'} Numerical Feature-Target Relationships", fontsize=16, fontweight="bold", y=1.0)
+
+    # Adjust layout to prevent overlap
     plt.tight_layout()
-    
+
+    # Save to file
     if save_to_file:
         plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
+    
     plt.show()
 
 # Visualize sample numerical feature-target relationships
-plot_numerical_feature_target_relationships(df, features=raw_numerical_features + raw_ordinal_features, target="TOTSLF23")
+plot_numerical_feature_target_relationships(
+    df, 
+    features=raw_numerical_features + raw_ordinal_features, 
+    target="TOTSLF23", 
+    log_scale=True
+)
 
 # Visualize population numerical feature-target relationships
 plot_numerical_feature_target_relationships(
     df, 
     features= raw_numerical_features + raw_ordinal_features, 
     target="TOTSLF23", 
+    log_scale=True,
     weights="PERWT23F", 
     save_to_file="../figures/eda/numerical_feature_target_relationships.png"
 )
