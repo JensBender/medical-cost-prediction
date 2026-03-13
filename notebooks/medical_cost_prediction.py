@@ -1617,10 +1617,22 @@ plot_correlation_heatmap(
 # %%
 # Helper Function: Plot Numerical Feature-Target Relationships
 def plot_numerical_feature_target_relationships(df, features, target, log_scale=False, weights=None, save_to_file=None):
-    """Visualize the bivariate relationships between numerical features and the target using scatterplots.
-    
-    Supports optional log-transformation of the target to handle heavy-tailed distributions.
-    Supports weights to apply larger size of data points for larger weights.
+    """Visualize the bivariate relationships between numerical features and the target.
+
+    This function creates a grid of scatterplots to examine how numerical features 
+    relate to out-of-pocket costs. To handle discrete features with few values, 
+    horizontal jitter is applied to reveal the underlying data density. Spearman 
+    rank correlations are calculated and displayed in each subplot title.
+
+    Args:
+        df:            DataFrame containing the features and target.
+        features:      List of numerical feature names to plot.
+        target:        The name of the target variable column.
+        log_scale:     Boolean; if True, applies np.log1p transformation to the 
+                       target to handle heavily right-skewed distributions.
+        weights:       Optional name of the weight column. If provided, point 
+                       sizes are scaled by population weights.
+        save_to_file:  Optional file path to save the resulting figure.
     """
     n_plots = len(features)
     n_cols = 2
@@ -1645,7 +1657,7 @@ def plot_numerical_feature_target_relationships(df, features, target, log_scale=
     for i, feature in enumerate(features):
         ax = axes_flat[i]
 
-        # Apply jitter if feature is discrete
+        # Apply jitter if feature is discrete (15 or less unique values)
         x_col = plot_df[feature]
         if x_col.nunique() <= 15:
             x_col = x_col + np.random.uniform(-0.3, 0.3, size=len(x_col))
@@ -1656,9 +1668,9 @@ def plot_numerical_feature_target_relationships(df, features, target, log_scale=
             x=x_col,
             y=y_col,
             ax=ax,
-            alpha=0.1,  # handle density with alpha
+            alpha=0.2,  # Handles point density with alpha
             color=POP_COLOR if weights else SAMPLE_COLOR,
-            size=weights if weights else None,
+            size=weights if weights else None,  # Scales point sizes by population weights 
             sizes=(2, 50) if weights else None,
             s=10 if not weights else None,
             legend=False
