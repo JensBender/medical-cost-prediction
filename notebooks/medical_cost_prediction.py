@@ -1794,7 +1794,13 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
         ax.set_title(DISPLAY_LABELS.get(feature, feature), fontsize=12, fontweight="bold")
         ax.set_xlabel("")
         ax.set_ylabel(y_label if i % n_cols == 0 else "", fontsize=12)
-        plt.setp(ax.get_xticklabels(), rotation=20, ha="right", fontsize=9)
+
+        # Rotate categorical labels if more than 4
+        rotation = 20 if len(order) > 4 else 0
+        alignment = "right" if len(order) > 4 else "center"
+        plt.setp(ax.get_xticklabels(), rotation=rotation, ha=alignment, fontsize=9)
+
+        # Remove right and upper plot border 
         sns.despine(ax=ax)
 
     # Hide unused subplots
