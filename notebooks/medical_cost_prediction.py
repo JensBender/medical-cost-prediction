@@ -1725,7 +1725,6 @@ plot_numerical_feature_target_relationships(
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">Categorical Features vs. Target</h3>
 # </div>
-#
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Visualize the pairwise relationships between the target variable and each nominal and ordinal feature. 
 # </div>
@@ -1816,7 +1815,7 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
                 width=0.6, 
                 linewidth=1.2, 
                 whis=[1, 99],  # Use the 1st and 99th percentiles for the whiskers
-                boxprops=dict(alpha=0.7),
+                boxprops={"alpha": 0.7},
                 flierprops={"markersize": 3, "alpha": 0.3}
             )
         else:
@@ -1836,7 +1835,7 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
                     j, m_val, display_val, 
                     ha="center", va="center", 
                     fontsize=8, fontweight="bold", color="white",
-                    bbox=dict(facecolor='black', alpha=0.6, edgecolor='none', boxstyle='round,pad=0.3')
+                    bbox={"facecolor": "black", "alpha": 0.6, "edgecolor": "none", "boxstyle": "round,pad=0.3"}
                 )
            
         # Customize
@@ -1860,8 +1859,19 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
     super_title = f"{'Population' if weights else 'Sample'} Categorical Feature-Target Relationships"
     fig.suptitle(super_title, fontsize=16, fontweight="bold", y=1.0)
 
+    # Add footnote
+    footnote_parts = []
+    if plot_type == "box":
+        footnote_parts.append("Whiskers represent 1st and 99th percentiles.")  
+    if weights:
+        footnote_parts.append("Population-weighted estimates via bootstrap resampling.")
+    else:
+        footnote_parts.append("Sample estimates.")      
+    footnote = f"Note: {' '.join(footnote_parts)}"
+    plt.figtext(0.01, 0.01, footnote, ha="left", fontsize=9, style="italic", color="#555555")
+
     # Adjust layout 
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0.02, 1, 1])
 
     # Save to file
     if save_to_file:
