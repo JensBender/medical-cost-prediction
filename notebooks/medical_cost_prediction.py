@@ -1731,7 +1731,7 @@ plot_numerical_feature_target_relationships(
 # </div>
 
 # %%
-def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_features, target, plot_type="boxen", log_scale=False, weights=None, save_to_file=None):
+def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_features, target, plot_type="box", log_scale=False, weights=None, save_to_file=None):
     """
     Visualize relationship between categorical features and target.
     
@@ -1742,7 +1742,7 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
         nominal_features (list): Names of nominal columns.
         ordinal_features (list): Names of ordinal columns.
         target (str): Name of the target variable column.
-        plot_type (str, optional): Type of plot ('boxen' or 'box'). Defaults to "boxen".
+        plot_type (str, optional): Type of plot ('boxen' or 'box'). Defaults to "box".
         log_scale (bool, optional): Whether to log-transform the target. Defaults to False.
         weights (str, optional): Column name for survey weights. If provided, 
             triggers weighted bootstrap resampling. Defaults to None.
@@ -1870,28 +1870,24 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
     plt.show()
 
 
-# Visualize population categorical feature-target relationships using boxen plots
+# Visualize sample categorical feature-target relationships 
 plot_categorical_feature_target_relationships(
     df, 
     nominal_features=raw_nominal_features,
     ordinal_features=raw_ordinal_features,
     target="TOTSLF23", 
-    plot_type="boxen",
-    log_scale=True,
-    weights="PERWT23F", 
-    save_to_file="../figures/eda/categorical_feature_target_relationships_boxen.png"
+    log_scale=True
 )
 
-# Visualize population categorical feature-target relationships using box plots
+# Visualize population categorical feature-target relationships 
 plot_categorical_feature_target_relationships(
     df, 
     nominal_features=raw_nominal_features,
     ordinal_features=raw_ordinal_features,
     target="TOTSLF23", 
-    plot_type="box",
     log_scale=True,
     weights="PERWT23F", 
-    save_to_file="../figures/eda/categorical_feature_target_relationships_box.png"
+    save_to_file="../figures/eda/categorical_feature_target_relationships.png"
 )
 
 # %% [markdown]
