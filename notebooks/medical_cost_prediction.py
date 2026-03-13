@@ -1806,9 +1806,18 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
 
         # Create plot based on plot_type
         if plot_type == "boxen":
-            sns.boxenplot(**plot_kwargs, alpha=0.7)
+            sns.boxenplot(
+                **plot_kwargs, 
+                alpha=0.7
+            )
         elif plot_type == "box":
-            sns.boxplot(**plot_kwargs, width=0.6, linewidth=1.2, flierprops={"markersize": 3, "alpha": 0.3})
+            sns.boxplot(
+                **plot_kwargs, 
+                width=0.6, 
+                linewidth=1.2, 
+                boxprops=dict(alpha=0.7),
+                flierprops={"markersize": 3, "alpha": 0.3}
+            )
         else:
             raise ValueError("plot_type must be 'boxen' or 'box'")
            
