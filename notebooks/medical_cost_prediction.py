@@ -1841,6 +1841,106 @@ plot_categorical_feature_target_relationships(
     # save_to_file="../figures/eda/categorical_feature_target_relationships.png"
 )
 
+
+# %%
+def plot_categorical_feature_target_boxplot(df, nominal_features, ordinal_features, target, log_scale=False, weights=None, save_to_file=None):
+    """Visualize relationships between categorical features and target using standard Box plots."""
+    features = nominal_features + ordinal_features
+    n_plots = len(features)
+    n_cols = 2
+    n_rows = math.ceil(n_plots / n_cols)
+    
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 4))
+    axes_flat = axes.flatten()
+
+    # Create DataFrame for plotting
+    plot_df = df.reset_index(drop=True)
+ 
+    # Create a population-representative subsample using weighted bootstrap resampling 
+    if weights:
+        plot_df = plot_df.sample(
+            n=len(plot_df), 
+            weights=weights, 
+            replace=True, 
+            random_state=RANDOM_STATE
+        ).reset_index(drop=True)        
+
+    # Log-transformation of target
+    y_col = target
+    if log_scale:
+        y_col = f"{target}_LOG"
+        plot_df[y_col] = np.log1p(plot_df[target])
+        y_label = "Out-of-Pocket Costs (Log-Scaled)"
+    else:
+        y_label = "Out-of-Pocket Costs"
+
+    # Iterate over features
+    for i, feature in enumerate(features):
+        ax = axes_flat[i]
+        
+        # Get categorical string labels for current feature
+        categorical_labels = CATEGORY_LABELS_EDA.get(feature, {})
+        x_col = plot_df[feature].map(categorical_labels) if categorical_labels else plot_df[feature]
+
+        # Order categories
+        if feature in ordinal_features:
+            order = [label for label in categorical_labels.values() if label in x_col.unique()]
+        else:
+            order = x_col.value_counts().index.tolist()
+
+        # Create standard Box plot for current feature
+        sns.boxplot(
+            x=x_col, 
+            y=plot_df[y_col], 
+            ax=ax,
+            order=order,
+            color=POP_COLOR if weights else SAMPLE_COLOR, 
+            width=0.6,
+            linewidth=1.2,
+            flierprops={"markersize": 3, "alpha": 0.3}
+        )
+           
+        # Customize
+        ax.set_title(DISPLAY_LABELS.get(feature, feature), fontsize=12, fontweight="bold")
+        ax.set_xlabel("")
+        ax.set_ylabel(y_label if i % n_cols == 0 else "", fontsize=12)
+
+        # Rotate categorical labels if more than 4
+        rotation = 20 if len(order) > 4 else 0
+        alignment = "right" if len(order) > 4 else "center"
+        plt.setp(ax.get_xticklabels(), rotation=rotation, ha=alignment, fontsize=9)
+
+        # Remove right and upper plot border 
+        sns.despine(ax=ax)
+
+    # Hide unused subplots
+    for j in range(i + 1, len(axes_flat)): 
+        axes_flat[j].axis("off")
+
+    # Add super title
+    super_title = f"{'Population' if weights else 'Sample'} Categorical Feature-Target Relationships"
+    fig.suptitle(super_title, fontsize=16, fontweight="bold", y=1.0)
+
+    # Adjust layout 
+    plt.tight_layout()
+
+    # Save to file
+    if save_to_file:
+        plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
+    
+    plt.show()
+
+
+# Visualize population categorical feature-target relationships  
+plot_categorical_feature_target_boxplot(
+    df, 
+    nominal_features=raw_nominal_features,
+    ordinal_features=raw_ordinal_features,
+    target="TOTSLF23", 
+    log_scale=True,
+    weights="PERWT23F"
+)
+
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Visualize the pairwise relationships between the target variable and each binary feature. 
