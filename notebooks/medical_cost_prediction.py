@@ -1629,9 +1629,11 @@ def plot_numerical_feature_target_relationships(df, features, target, log_scale=
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 4))
     axes_flat = axes.flatten()
     
+    # Create DataFrame for plotting
     plot_df = df.reset_index(drop=True)
+
+    # Log-transformation of target
     y_col = target
-    
     if log_scale:
         y_col = f"{target}_LOG"
         plot_df[y_col] = np.log1p(plot_df[target])
@@ -1639,13 +1641,19 @@ def plot_numerical_feature_target_relationships(df, features, target, log_scale=
     else:
         y_label = "Out-of-Pocket Costs"
 
+    # Iterate over features
     for i, feature in enumerate(features):
         ax = axes_flat[i]
+
+        # Apply jitter if feature is discrete
+        x_col = plot_df[feature]
+        if x_col.nunique() <= 15:
+            x_col = x_col + np.random.uniform(-0.3, 0.3, size=len(x_col))
         
         # Create scatterplot between current feature and target 
         sns.scatterplot(
             data=plot_df,
-            x=feature,
+            x=x_col,
             y=y_col,
             ax=ax,
             alpha=0.1,  # handle density with alpha
@@ -1656,7 +1664,7 @@ def plot_numerical_feature_target_relationships(df, features, target, log_scale=
             legend=False
         )
         
-        # Calculate Spearman rank correlation (for title)
+        # Calculate Spearman rank correlation (add in title)
         if weights:
             corr = calculate_weighted_correlations(df, [feature, target], weights, method="spearman").iloc[0, 1]
             corr_label = f"(ρ={corr:.2f})"
@@ -1674,11 +1682,12 @@ def plot_numerical_feature_target_relationships(df, features, target, log_scale=
     for j in range(i + 1, len(axes_flat)):
         axes_flat[j].axis("off")
 
-    # Add super title 
-    fig.suptitle(f"{'Population' if weights else 'Sample'} Numerical Feature-Target Relationships", fontsize=16, fontweight="bold", y=1.0)
+    # Add super title
+    super_title = f"{'Population' if weights else 'Sample'} Numerical Feature-Target Relationships"
+    fig.suptitle(super_title, fontsize=16, fontweight="bold", y=1.0)
 
-    # Adjust layout to prevent overlap
-    plt.tight_layout()
+    # Adjust layout 
+    plt.tight_layout(h_pad=2.0)
 
     # Save to file
     if save_to_file:
@@ -1687,17 +1696,12 @@ def plot_numerical_feature_target_relationships(df, features, target, log_scale=
     plt.show()
 
 # Visualize sample numerical feature-target relationships
-plot_numerical_feature_target_relationships(
-    df, 
-    features=raw_numerical_features + raw_ordinal_features, 
-    target="TOTSLF23", 
-    log_scale=True
-)
+plot_numerical_feature_target_relationships(df, features=raw_numerical_features, target="TOTSLF23", log_scale=True)
 
 # Visualize population numerical feature-target relationships
 plot_numerical_feature_target_relationships(
     df, 
-    features= raw_numerical_features + raw_ordinal_features, 
+    features= raw_numerical_features, 
     target="TOTSLF23", 
     log_scale=True,
     weights="PERWT23F", 
