@@ -1980,19 +1980,22 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
     for i, feature in enumerate(features):
         ax = axes_flat[i]
         
-        # Get categorical string labels for current feature
-        categorical_labels = CATEGORY_LABELS_EDA.get(feature, {})
-        x_col = plot_df[feature].map(categorical_labels) if categorical_labels else plot_df[feature]
-
-        # Define order: Use unique values from categorical_labels that are in the data (usually 'Yes', then 'No')
-        order = [label for label in dict.fromkeys(categorical_labels.values()) if label in x_col.unique()]   
+        # Define mapping: Standard 0/1 is 'No'/'Yes', but 'SEX' is 'Female'/'Male'
+        if feature == "SEX":
+            mapping = {0: "Female", 1: "Male"}
+            order = ["Female", "Male"]
+        else:
+            mapping = {0: "No", 1: "Yes"}
+            order = ["No", "Yes"]
+            
+        x_col = plot_df[feature].map(mapping)
 
         # Define plot keyword arguments (for both boxen and box plots)
         plot_kwargs = {
             "x": x_col, 
             "y": plot_df[y_col], 
             "ax": ax,
-            "order": order,
+            "order": [o for o in order if o in x_col.unique()],
             "color": POP_COLOR if weights else SAMPLE_COLOR
         }
 
@@ -2015,13 +2018,10 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
             raise ValueError("plot_type must be 'boxen' or 'box'")
 
         # Annotate the median 
-        # Map labels to the dataframe temporarily to match 'order' contents
-        plot_df_temp = plot_df.copy()
-        plot_df_temp[feature] = plot_df_temp[feature].map(categorical_labels) if categorical_labels else plot_df_temp[feature]    
-        medians = plot_df_temp.groupby(feature)[y_col].median()
-        for j, label in enumerate(order):
-            if label in medians:
-                m_val = medians[label]
+        medians = plot_df.groupby(feature)[y_col].median()
+        for j, val in enumerate([0, 1]):
+            if val in medians:
+                m_val = medians[val]
                 # Format display value (convert back from log if needed)
                 display_val = f"${np.expm1(m_val):,.0f}" if log_scale else f"${m_val:,.0f}"              
                 ax.text(
@@ -2032,7 +2032,7 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
                 )
            
         # Customize
-        ax.set_title(DISPLAY_LABELS.get(feature, feature), fontsize=12, fontweight="bold", pad=12)
+        ax.set_title(DISPLAY_LABELS.get(feature, feature), fontsize=12, fontweight="bold", pad=15)
         ax.set_xlabel("")
         ax.set_ylabel(y_label if i % n_cols == 0 else "", fontsize=10)
         ax.tick_params(axis="x", labelsize=9)
@@ -2045,7 +2045,7 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
             corr = df[[feature, target]].corr(method="spearman").iloc[0, 1]
             corr_label = f"ρ={corr:.2f}" 
         ax.annotate(  
-            corr_label, xy=(0.5, 0.93), xytext=(0, 4), xycoords="axes fraction", textcoords="offset points", 
+            corr_label, xy=(0.5, 0.95), xytext=(0, 4), xycoords="axes fraction", textcoords="offset points", 
             ha="center", va="bottom", fontsize=9, color="#666666"
         )
 
