@@ -2182,6 +2182,19 @@ plot_categorical_distributions(df, input_nominal_features, ["POVCAT23"], DISPLAY
 plot_binary_distributions(df, input_binary_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F")
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Why not more feature engineering?</b><br>
+#     The bivariate EDA was reviewed for additional feature engineering opportunities. The following were considered but discarded:
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Polynomial Age (<code>AGE_SQUARED</code>):</b> The Age–Cost scatter plot shows a broad, continuous upward trend without a sharp breakpoint. Tree-based models (XGBoost, Random Forest) discover non-linear age splits natively. Only beneficial for linear models — deferred to baseline comparison.</li>
+#         <li><b>Age × Chronic Count Interaction:</b> Super-spender analysis revealed two distinct profiles (elderly multi-morbid vs. young acute-shock), but tree models learn interactions through recursive splitting without explicit features.</li>
+#         <li><b>Any Chronic Condition Flag (<code>HAS_ANY_CHRONIC</code>):</b> Redundant — the condition <code>CHRONIC_COUNT ≥ 1</code> is trivially derivable from the existing count feature by any model.</li>
+#         <li><b>Smoker × Age Interaction:</b> The "Smoker Paradox" (ρ=−0.04, lower median for smokers) reflects confounding with younger age and care avoidance, not a learnable interaction. Engineering would amplify the confound.</li>
+#         <li><b>Log-Transform of Family Size:</b> Moderate right-skew (max=16, 95th ≈ 5–6) on a discrete integer is already handled by <code>StandardScaler</code>. Marginal gain from log-transforming is negligible.</li>
+#         <li><b>Zero-Cost Indicator (<code>IS_ZERO_COST</code>):</b> Would use the target variable to engineer a feature — classic data leakage. If the 22% zero-inflation proves problematic, the correct approach is a Two-Part (Hurdle) Model architecture, not a derived feature.</li>
+#     </ul>
+# </div>
+# %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Train-Validation-Test Split</h1>
 # </div>
