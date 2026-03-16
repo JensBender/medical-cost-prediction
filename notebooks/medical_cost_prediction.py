@@ -1985,15 +1985,7 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
         x_col = plot_df[feature].map(categorical_labels) if categorical_labels else plot_df[feature]
 
         # Define order: Use unique values from categorical_labels that are in the data (usually 'Yes', then 'No')
-        order = [label for label in dict.fromkeys(categorical_labels.values()) if label in x_col.unique()]
-
-        # Calculate Spearman rank correlation (add in title)
-        if weights:
-            corr = calculate_weighted_correlations(df, [feature, target], weights, method="spearman").iloc[0, 1]
-            corr_label = f"(ρ={corr:.2f})"
-        else:
-            corr = df[[feature, target]].corr(method="spearman").iloc[0, 1]
-            corr_label = f"(ρ={corr:.2f})"    
+        order = [label for label in dict.fromkeys(categorical_labels.values()) if label in x_col.unique()]   
 
         # Define plot keyword arguments (for both boxen and box plots)
         plot_kwargs = {
@@ -2040,10 +2032,22 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
                 )
            
         # Customize
-        ax.set_title(f"{DISPLAY_LABELS.get(feature, feature)} {corr_label}", fontsize=12, fontweight="bold")
+        ax.set_title(DISPLAY_LABELS.get(feature, feature), fontsize=12, fontweight="bold", pad=12)
         ax.set_xlabel("")
         ax.set_ylabel(y_label if i % n_cols == 0 else "", fontsize=10)
         ax.tick_params(axis="x", labelsize=9)
+        
+        # Annotate Spearman rank correlation
+        if weights:
+            corr = calculate_weighted_correlations(df, [feature, target], weights, method="spearman").iloc[0, 1]
+            corr_label = f"ρ={corr:.2f}"
+        else:
+            corr = df[[feature, target]].corr(method="spearman").iloc[0, 1]
+            corr_label = f"ρ={corr:.2f}" 
+        ax.annotate(  
+            corr_label, xy=(0.5, 0.93), xytext=(0, 4), xycoords="axes fraction", textcoords="offset points", 
+            ha="center", va="bottom", fontsize=9, color="#666666"
+        )
 
         # Remove right and upper plot border 
         sns.despine(ax=ax)
@@ -2068,7 +2072,7 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
     plt.figtext(0.01, 0.01, footnote, ha="left", fontsize=9, style="italic", color="#555555")
 
     # Adjust layout 
-    plt.tight_layout(rect=[0, 0.02, 1, 1])
+    plt.tight_layout(rect=[0, 0.02, 1, 1], h_pad=2.0, w_pad=4.0)
 
     # Save to file
     if save_to_file:
