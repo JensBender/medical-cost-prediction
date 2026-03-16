@@ -2034,7 +2034,7 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
         # Customize
         ax.set_title(DISPLAY_LABELS.get(feature, feature), fontsize=12, fontweight="bold", pad=15)
         ax.set_xlabel("")
-        ax.set_ylabel(y_label if i % n_cols == 0 else "", fontsize=10)
+        ax.set_ylabel(y_label if i % n_cols == 0 else "", fontsize=9)
         ax.tick_params(axis="x", labelsize=9)
         
         # Annotate Spearman rank correlation
@@ -2045,8 +2045,8 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
             corr = df[[feature, target]].corr(method="spearman").iloc[0, 1]
             corr_label = f"ρ={corr:.2f}" 
         ax.annotate(  
-            corr_label, xy=(0.5, 0.95), xytext=(0, 4), xycoords="axes fraction", textcoords="offset points", 
-            ha="center", va="bottom", fontsize=9, color="#666666"
+            corr_label, xy=(0.5, 0.96), xytext=(0, 4), xycoords="axes fraction", textcoords="offset points", 
+            ha="center", va="bottom", fontsize=9
         )
 
         # Remove right and upper plot border 
