@@ -2103,10 +2103,11 @@ plot_binary_feature_target_relationships(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> 
 #     <ul style="margin-top:8px; margin-bottom:0px">
-#         <li><b>Chronic Cost Drivers:</b> Arthritis ($\rho=0.23$) and Joint Pain ($\rho=0.22$) are the strongest binary predictors, while Cancer maintains the highest absolute median cost (\$801).</li>
-#         <li><b>The Usage Gatekeeper:</b> Having a "Usual Source of Care" is a massive determinant of spending (\$414 vs. \$44 median), indicating that cost is primarily triggered by healthcare system engagement.</li>
-#         <li><b>Gender Gap:</b> Women face a significantly higher out-of-pocket burden, with median costs (\$357) nearly double those of men (\$190).</li>
-#         <li><b>Mobility Impact:</b> Walking Limitations (\$666 median) are more powerful cost predictors than rare, severe functional dependencies like ADL help (\$420).</li>
+#         <li><b>Prevalence vs. Severity:</b> Arthritis ($\rho=0.23$) and Joint Pain ($\rho=0.22$) are the strongest population-level predictors. While Cancer has the highest median cost jump (\$801), its lower correlation ($\rho=0.17$) reflects its low prevalence. This highlights why the model needs both "global drivers" (high prevalence) and "local triggers" (high severity) to capture the full cost distribution.</li>
+#         <li><b>The Usage Gatekeeper:</b> Having a "Usual Source of Care" is a massive determinant of spending (\$414 vs. \$44 median), indicating that cost is primarily gated by healthcare system engagement. Those without a regular doctor likely avoid costs by avoiding the system entirely, creating a significant "utilization hurdle" in the data signal.</li>
+#         <li><b>The Gender Burden:</b> Women face a significantly higher out-of-pocket burden, with median costs (\$357) nearly double those of men (\$190). This structural disparity confirms Sex as a critical demographic feature for capturing differences in utilization frequency and preventative care spending.</li>
+#         <li><b>The Mobility Gradient:</b> Walking Limitations (\$666 median) are more powerful annual cost predictors than severe but rarer functional dependencies like ADL help (\$420).</li>
+#         <li><b>The Smoker Paradox:</b> Surprisingly, smokers exhibit a lower median cost (\$147) compared to non-smokers (\$276) with a weak negative correlation ($\rho=-0.04$). This counter-intuitive signal may stem from confounding factors—such as smokers skewed toward younger age brackets or exhibiting higher rates of care avoidance.</li>
 #     </ul>
 # </div>
 # %% [markdown]
