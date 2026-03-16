@@ -1786,12 +1786,22 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
         categorical_labels = CATEGORY_LABELS_EDA.get(feature, {})
         x_col = plot_df[feature].map(categorical_labels) if categorical_labels else plot_df[feature]
 
-        # Order categories
+        # For ordinal features: Sort categories and add rank correlation
+        corr_label = ""
         if feature in ordinal_features:
+            # Calculate Spearman rank correlation (add in title)
+            if weights:
+                corr = calculate_weighted_correlations(df, [feature, target], weights, method="spearman").iloc[0, 1]
+                corr_label = f"(ρ={corr:.2f})"
+            else:
+                corr = df[[feature, target]].corr(method="spearman").iloc[0, 1]
+                corr_label = f"(ρ={corr:.2f})"    
+            
             # Sort ordinal features by inherent order (defined in CATEGORY_LABELS_EDA)
             order = [label for label in categorical_labels.values() if label in x_col.unique()]
+        
+        # For nominal features: Sort categories by frequency (most common first)
         else:
-            # Sort nominal features by frequency (most common first)
             order = x_col.value_counts().index.tolist()
 
         # Define plot keyword arguments (for both boxen and box plots)
@@ -1839,7 +1849,7 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
                 )
            
         # Customize
-        ax.set_title(DISPLAY_LABELS.get(feature, feature), fontsize=12, fontweight="bold")
+        ax.set_title(f"{DISPLAY_LABELS.get(feature, feature)} {corr_label}", fontsize=12, fontweight="bold")
         ax.set_xlabel("")
         ax.set_ylabel(y_label if i % n_cols == 0 else "", fontsize=12)
 
