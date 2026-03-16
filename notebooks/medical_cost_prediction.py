@@ -2109,11 +2109,70 @@ plot_binary_feature_target_relationships(
 #         <li><b>The Mobility Gradient:</b> Walking Limitations (\$666 median) are more powerful annual cost predictors than severe but rarer functional dependencies like ADL help (\$420).</li>
 #         <li><b>The Smoker Paradox:</b> Surprisingly, smokers exhibit a lower median cost (\$147) compared to non-smokers (\$276) with a weak negative correlation ($\rho=-0.04$). This counter-intuitive signal may stem from confounding factors—such as smokers skewed toward younger age brackets or exhibiting higher rates of care avoidance.</li>
 #     </ul>
-# </div>
+# </div> 
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h2 style="margin:0px">Modeling Strategy</h2>
+# </div> 
+#
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>EDA-Driven Insights for Feature Engineering and Modeling</b> 
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li style="margin-bottom:10px;"><b>1. Handling the Cost Distribution (Univariate Spec)</b>
+#             <ul style="margin-top:5px;">
+#                 <li><b>The Challenge:</b> Extreme 80/20 concentration (Gini=0.81) and a 22.3% zero-cost hurdle.</li>
+#                 <li><b>The Solution:</b> Primary evaluation via <b>Median Absolute Error (MdAE)</b> and use of a <b>High-Resolution Stratified Split</b> ($0, 50, 80, 95, 99, 99.9\%$). This guarantees the validation set is a perfect financial mirror of the training population.</li>
+#             </ul>
+#         </li>
+#         <li style="margin-bottom:10px;"><b>2. Capturing Predictor Signal (Bivariate Spec)</b>
+#             <ul style="margin-top:5px;">
+#                 <li><b>Utilization "Gatekeepers":</b> Features like <code>HAVEUS42</code> and <code>INSCOV23</code> act as binary switches for cost entry and must be prioritized.</li>
+#                 <li><b>Demographic Anchors:</b> <code>AGE23X</code> and <code>SEX</code> are our strongest global drivers, while <code>REGION23</code> and <code>POVCAT23</code> provide critical geographic and socioeconomic context.</li>
+#                 <li><b>Medical Burden:</b> Individual chronic conditions tell a shared story of system utilization, favoring aggregate counts (comorbidity burden) over individual sparse flags.</li>
+#             </ul>
+#         </li>
+#         <li><b>3. Engineering & Modeling Blueprint</b>
+#             <table style="width:100%; border-collapse:collapse; margin-top:10px; border: 1px solid #e0f0e0;">
+#                 <thead>
+#                     <tr style="background-color:#f1f8f1;">
+#                         <th style="border: 1px solid #e0f0e0; padding: 8px; text-align: left;">Category</th>
+#                         <th style="border: 1px solid #e0f0e0; padding: 8px; text-align: left;">Technique</th>
+#                         <th style="border: 1px solid #e0f0e0; padding: 8px; text-align: left;">Strategic Mapping</th>
+#                     </tr>
+#                 </thead>
+#                 <tbody>
+#                     <tr>
+#                         <td style="border: 1px solid #e0f0e0; padding: 8px;"><b>Feature Refinement</b></td>
+#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Aggregation & Mapping</td>
+#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Consolidate <b>sparse transitions</b> and <b>multicollinear conditions</b> to maximize predictive stability.</td>
+#                     </tr>
+#                     <tr>
+#                         <td style="border: 1px solid #e0f0e0; padding: 8px;"><b>Native Learning</b></td>
+#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Core "Lean" Pipeline</td>
+#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Default for <b>XGBoost, RF, SVM & MLP</b>. Relies on models to learn non-linearities natively.</td>
+#                     </tr>
+#                     <tr>
+#                         <td style="border: 1px solid #e0f0e0; padding: 8px;"><b>Simulated Complexity</b></td>
+#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Polynomial Induction</td>
+#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Explicit crossing for <b>Linear/Elastic Net</b> models to capture synergistic spending effects.</td>
+#                     </tr>
+#                     <tr>
+#                         <td style="border: 1px solid #e0f0e0; padding: 8px;"><b>Omitted Rationale</b></td>
+#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Intentional Exclusion</td>
+#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Avoid <b>data leakage</b> or variables with high confounding noise (e.g., Smoker interactions).</td>
+#                     </tr>
+#                 </tbody>
+#             </table>
+#         </li>
+#     </ul>
+# </div> 
+
+
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Feature Engineering (Stateless)</h1>
-# </div> 
+# </div>
+
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h2 style="margin:0px">Feature Refinement</h2>
@@ -2125,9 +2184,7 @@ plot_binary_feature_target_relationships(
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     <strong>Recent Life Transition</strong><br>
-#     📌 Capture critical life transitions related to marital and employment status (e.g., recent divorce, job loss) into a unified <code>RECENT_LIFE_TRANSITION</code> indicator. This preserves the predictive signal of major "life shocks" while ensuring model robustness by mapping sparse status categories back to stable, well-populated categories.
-#     <br><br>
-#     Note on Web App Implementation: In web form, add a question <em>"In the last 12 months, have you experienced a change in marital or employment status?"</em> with response options "Yes" and "No".
+#     📌 Capture critical life transitions related to marital and employment status (e.g., recent divorce, job loss) into a unified <code>RECENT_LIFE_TRANSITION</code> indicator. Note on Web App Implementation: In the web form, add a simple "Yes/No" question regarding marital or employment status changes in the last 12 months.
 # </div>
 
 # %%
@@ -2181,19 +2238,7 @@ input_nominal_features = ["REGION23", "MARRY31X_GRP", "INSCOV23", "HIDEG"]
 plot_categorical_distributions(df, input_nominal_features, ["POVCAT23"], DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F")
 plot_binary_distributions(df, input_binary_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F")
 
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Why not more feature engineering?</b><br>
-#     The bivariate EDA was reviewed for additional feature engineering opportunities. The following were considered but discarded:
-#     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>Polynomial Age (<code>AGE_SQUARED</code>):</b> The Age–Cost scatter plot shows a broad, continuous upward trend without a sharp breakpoint. Tree-based models (XGBoost, Random Forest) discover non-linear age splits natively. Only beneficial for linear models — deferred to baseline comparison.</li>
-#         <li><b>Age × Chronic Count Interaction:</b> Super-spender analysis revealed two distinct profiles (elderly multi-morbid vs. young acute-shock), but tree models learn interactions through recursive splitting without explicit features.</li>
-#         <li><b>Any Chronic Condition Flag (<code>HAS_ANY_CHRONIC</code>):</b> Redundant — the condition <code>CHRONIC_COUNT ≥ 1</code> is trivially derivable from the existing count feature by any model.</li>
-#         <li><b>Smoker × Age Interaction:</b> The "Smoker Paradox" (ρ=−0.04, lower median for smokers) reflects confounding with younger age and care avoidance, not a learnable interaction. Engineering would amplify the confound.</li>
-#         <li><b>Log-Transform of Family Size:</b> Moderate right-skew (max=16, 95th ≈ 5–6) on a discrete integer is already handled by <code>StandardScaler</code>. Marginal gain from log-transforming is negligible.</li>
-#         <li><b>Zero-Cost Indicator (<code>IS_ZERO_COST</code>):</b> Would use the target variable to engineer a feature — classic data leakage. If the 22% zero-inflation proves problematic, the correct approach is a Two-Part (Hurdle) Model architecture, not a derived feature.</li>
-#     </ul>
-# </div>
+
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Train-Validation-Test Split</h1>
@@ -3305,12 +3350,129 @@ for name, (raw, processed) in datasets.items():
     
     print(f"{name:5}: Rows Match: {rows_match} | No Missing Values: {nulls_status} | All Numeric: {all_numeric} | Raw Shape: {raw.shape} | Processed Shape: {processed.shape}")
 
-# Verify feature scaling
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Model Training</h1>
+# </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 This phase focuses on establishing a robust performance baseline and identifying the most promising model architectures for medical cost prediction.
+# </div>
+#
+# %% [markdown]
+# ## Baseline Modeling Strategy
+#
+# Following the **Strategic Synthesis**, we will evaluate two distinct pipeline architectures across a variety of model families:
+#
+# 1.  **Lean Pipeline:** Uses the core preprocessing (standard scaling, one-hot encoding, and engineered counts). Best for models that learn non-linearities natively.
+# 2.  **Polynomial Pipeline:** Wraps the lean pipeline with explicit second-order interactions ($x^2, x \times y$). Used to provide Linear models with the "simulated complexity" needed to capture medical spending shocks.
+#
+# ### Evaluation Protocol
+# *   **Primary Metric:** Median Absolute Error (**MdAE**) - robust to the extreme skew of medical costs.
+# *   **Secondary Metrics:** Mean Absolute Error (**MAE**) and Coefficient of Determination (**$R^2$**).
+# *   **Target Transformation:** For models assuming homoscedasticity (Linear, MLP, KNN, SVR), we will train on **$log(y+1)$** to stabilize variance.
+# *   **Sample Weights:** All models are trained using population weights (`PERWT23F`) to ensure the results generalize to the U.S. civilian noninstitutionalized population.
+#
+# %%
+from sklearn.linear_model import LinearRegression, ElasticNet
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.neural_network import MLPRegressor
+from sklearn.svm import SVR
+from xgboost import XGBRegressor
+from sklearn.compose import TransformedTargetRegressor
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.metrics import median_absolute_error, mean_absolute_error, r2_score
+from sklearn.pipeline import Pipeline # Added this import as it was missing in the provided snippet
+
+# Define helper for evaluation
+def evaluate_model(y_true, y_pred, weights=None, model_name="Model"):
+    mdae = median_absolute_error(y_true, y_pred, sample_weight=weights)
+    mae = mean_absolute_error(y_true, y_pred, sample_weight=weights)
+    r2 = r2_score(y_true, y_pred, sample_weight=weights)
+    
+    return {
+        "Model": model_name,
+        "MdAE": mdae,
+        "MAE": mae,
+        "R2": r2
+    }
+
+# %%
+# Define models and their configurations (pipelines will be built dynamically)
+baseline_configs = [
+    {"name": "Linear Regression", "model": LinearRegression(), "use_poly": True, "use_log": True},
+    {"name": "Elastic Net", "model": ElasticNet(random_state=RANDOM_STATE), "use_poly": True, "use_log": True},
+    {"name": "MLP Regressor", "model": MLPRegressor(random_state=RANDOM_STATE, max_iter=500), "use_poly": False, "use_log": True},
+    {"name": "KNN Regressor", "model": KNeighborsRegressor(), "use_poly": False, "use_log": True},
+    {"name": "SVR", "model": SVR(kernel='rbf'), "use_poly": False, "use_log": True},
+    {"name": "Random Forest", "model": RandomForestRegressor(random_state=RANDOM_STATE, n_jobs=-1), "use_poly": False, "use_log": False},
+    {"name": "XGBoost", "model": XGBRegressor(random_state=RANDOM_STATE, objective='reg:tweedie', n_jobs=-1), "use_poly": False, "use_log": False}
+]
+
+# Define sample weights for training and validation
+y_train_weights = X_train["PERWT23F"]
+y_val_weights = X_val["PERWT23F"]
+
+# Train and evaluate all baseline models
+baseline_results = []
+
+for config in baseline_configs:
+    print(f"Training {config['name']}...")
+    
+    # 1. Start with the core preprocessor
+    steps = [("preprocessor", preprocessor)]
+    
+    # 2. Add Polynomial Features if configured
+    if config["use_poly"]:
+        steps.append(("polynomial", PolynomialFeatures(degree=2, interaction_only=True, include_bias=False)))
+    
+    # 3. Handle Target Transformation (log scale) if configured
+    if config["use_log"]:
+        # Wrap the model in a TransformedTargetRegressor
+        regressor = TransformedTargetRegressor(
+            regressor=config["model"],
+            func=np.log1p,
+            inverse_func=np.expm1
+        )
+    else:
+        regressor = config["model"]
+    
+    # 4. Add the regressor step
+    steps.append(("regressor", regressor))
+    
+    # 5. Create the final pipeline
+    model_pipeline = Pipeline(steps=steps)
+    
+    # 6. Fit the model (using sample weights if the regressor supports it)
+    # Note: Regressors wrapped in TransformedTargetRegressor pass sample_weight down
+    model_pipeline.fit(X_train, y_train, regressor__sample_weight=y_train_weights)
+    
+    # 7. Predict on validation set
+    y_pred = model_pipeline.predict(X_val)
+    
+    # 8. Evaluate
+    res = evaluate_model(y_val, y_pred, weights=y_val_weights, model_name=config["name"])
+    baseline_results.append(res)
+
+# Create results summary table
+baseline_df = pd.DataFrame(baseline_results).sort_values(by="MdAE")
+
+# Display results
+baseline_df.style \
+    .pipe(add_caption, "Baseline Model Evaluation (Validation Set)") \
+    .format({"MdAE": "${:,.2f}", "MAE": "${:,.2f}", "R2": "{:.4f}"}) \
+    .highlight_min(subset=["MdAE", "MAE"], color="lightgreen") \
+    .highlight_max(subset=["R2"], color="lightgreen")
+
+# %%
+# Verify feature scaling on training data
 output_numerical_features = preprocessor.named_steps["feature_scaler_encoder"].named_transformers_["numerical_scaler"].get_feature_names_out()
 preprocessor_verify_scaling = X_train_preprocessed[output_numerical_features].describe().loc[["mean", "std", "min", "max"]]
 preprocessor_verify_scaling.style \
     .pipe(add_caption, "Verification of Feature Scaling") \
     .format("{:.2f}")
+
 # %%
 # Check feature names of pipeline output to verify human-readable encoding
 # Note: Should show names like 'REGION23_South' instead of 'REGION23_3.0'
