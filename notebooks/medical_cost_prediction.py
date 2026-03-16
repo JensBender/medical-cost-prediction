@@ -2118,51 +2118,25 @@ plot_binary_feature_target_relationships(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>EDA-Driven Insights for Feature Engineering and Modeling</b> 
 #     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li style="margin-bottom:10px;"><b>1. Handling the Cost Distribution (Univariate Spec)</b>
+#         <li style="margin-bottom:10px;"><b>1. Handling the Cost Distribution (Univariate)</b>
 #             <ul style="margin-top:5px;">
 #                 <li><b>The Challenge:</b> Extreme 80/20 concentration (Gini=0.81) and a 22.3% zero-cost hurdle.</li>
-#                 <li><b>The Solution:</b> Primary evaluation via <b>Median Absolute Error (MdAE)</b> and use of a <b>High-Resolution Stratified Split</b> ($0, 50, 80, 95, 99, 99.9\%$). This guarantees the validation set is a perfect financial mirror of the training population.</li>
+#                 <li><b>The Solution:</b> Primary evaluation via <b>Median Absolute Error (MdAE)</b> and use of a <b>High-Resolution Stratified Split</b> ($0, 50, 80, 95, 99, 99.9\%$). This guarantees the validation and test sets accurately mirror the cost distribution of the training set.</li>
 #             </ul>
 #         </li>
-#         <li style="margin-bottom:10px;"><b>2. Capturing Predictor Signal (Bivariate Spec)</b>
+#         <li style="margin-bottom:10px;"><b>2. Capturing Predictor Signal (Bivariate)</b>
 #             <ul style="margin-top:5px;">
 #                 <li><b>Utilization "Gatekeepers":</b> Features like <code>HAVEUS42</code> and <code>INSCOV23</code> act as binary switches for cost entry and must be prioritized.</li>
 #                 <li><b>Demographic Anchors:</b> <code>AGE23X</code> and <code>SEX</code> are our strongest global drivers, while <code>REGION23</code> and <code>POVCAT23</code> provide critical geographic and socioeconomic context.</li>
-#                 <li><b>Medical Burden:</b> Individual chronic conditions tell a shared story of system utilization, favoring aggregate counts (comorbidity burden) over individual sparse flags.</li>
+#                 <li><b>Medical Burden:</b> Individual chronic conditions tell a shared story of utilization, favoring aggregate counts (comorbidity burden) over individual sparse flags.</li>
 #             </ul>
 #         </li>
-#         <li><b>3. Engineering & Modeling Blueprint</b>
-#             <table style="width:100%; border-collapse:collapse; margin-top:10px; border: 1px solid #e0f0e0;">
-#                 <thead>
-#                     <tr style="background-color:#f1f8f1;">
-#                         <th style="border: 1px solid #e0f0e0; padding: 8px; text-align: left;">Category</th>
-#                         <th style="border: 1px solid #e0f0e0; padding: 8px; text-align: left;">Technique</th>
-#                         <th style="border: 1px solid #e0f0e0; padding: 8px; text-align: left;">Strategic Mapping</th>
-#                     </tr>
-#                 </thead>
-#                 <tbody>
-#                     <tr>
-#                         <td style="border: 1px solid #e0f0e0; padding: 8px;"><b>Feature Refinement</b></td>
-#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Aggregation & Mapping</td>
-#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Consolidate <b>sparse transitions</b> and <b>multicollinear conditions</b> to maximize predictive stability.</td>
-#                     </tr>
-#                     <tr>
-#                         <td style="border: 1px solid #e0f0e0; padding: 8px;"><b>Native Learning</b></td>
-#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Core "Lean" Pipeline</td>
-#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Default for <b>XGBoost, RF, SVM & MLP</b>. Relies on models to learn non-linearities natively.</td>
-#                     </tr>
-#                     <tr>
-#                         <td style="border: 1px solid #e0f0e0; padding: 8px;"><b>Simulated Complexity</b></td>
-#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Polynomial Induction</td>
-#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Explicit crossing for <b>Linear/Elastic Net</b> models to capture synergistic spending effects.</td>
-#                     </tr>
-#                     <tr>
-#                         <td style="border: 1px solid #e0f0e0; padding: 8px;"><b>Omitted Rationale</b></td>
-#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Intentional Exclusion</td>
-#                         <td style="border: 1px solid #e0f0e0; padding: 8px;">Avoid <b>data leakage</b> or variables with high confounding noise (e.g., Smoker interactions).</td>
-#                     </tr>
-#                 </tbody>
-#             </table>
+#         <li style="margin-bottom:10px;"><b>3. Modeling Implications</b>
+#             <ul style="margin-top:5px;">
+#                 <li><b>Tree-Based Models (XGBoost, Random Forest, Decision Tree) and Neural Network (MLP) and Support Vector Machine (SVM):</b> Will use the core "lean" pipeline, relying on their native ability to capture non-linear relationships and interactions (via kernel for SVM)</li>
+#                 <li><b>Regression-Based Models (Linear, Elastic Net):</b> To compete with tree models, these require "simulated complexity" via explicit polynomial features to capture non-linear relationships and interaction effects.</li>
+#                 <li><b>KNN:</b> Will use the core "lean" pipeline. Using the polynomial pipeline would degrade performance due to the resulting high-dimensional features space ("curse of dimensionality").</li>
+#             </ul>
 #         </li>
 #     </ul>
 # </div> 
@@ -3508,3 +3482,8 @@ print(encoded_feature_names)
 # - **Data Preprocessing (Stateful):**
 #     - **Handling Missing Values:** Imputed missing values using the median for numerical and mode for categorical features, calculated from the training data. 
 #     - **Handling Outliers:** Detected univariate outliers with 3SD and 1.5 IQR methods and identified multivariate outliers with an isolation forest. Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
+#     - **Preprocessing Pipeline:** Integrated all refined preprocessing and engineering steps into a robust scikit-learn pipeline for consistent training and inference.
+# - **Model Training (Baseline):**
+#     - **Evaluation Framework:** Established a robust evaluation protocol using Median Absolute Error (MdAE) as the primary metric, supplemented by MAE and R².
+#     - **Architectural Benchmarking:** Evaluated multiple model families (Linear, Tree-based, Neural Networks) across "Lean" and "Polynomial" pipeline architectures.
+#     - **Variance Stabilization:** Implemented target transformations (log-shift) for linear models to address the extreme right-skew of medical costs.
