@@ -1801,7 +1801,7 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
                 corr_label = f"(ρ={corr:.2f})"    
             
             # Sort ordinal features by inherent order (defined in CATEGORY_LABELS_EDA)
-            order = [label for label in categorical_labels.values() if label in x_col.unique()]
+            order = [label for label in dict.fromkeys(categorical_labels.values()) if label in x_col.unique()]
         
         # For nominal features: Sort categories by frequency (most common first)
         else:
@@ -1933,7 +1933,7 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
     """Visualize the bivariate relationships between binary features and the target.
 
     This function creates a grid of boxen or standard box plots to examine how binary
-    features relate to the target variabe. It includes correlations in the titles.
+    features relate to the target variable. It includes correlations in the titles.
 
     Args:
         df:                DataFrame containing the features and target.
@@ -1984,8 +1984,10 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
         categorical_labels = CATEGORY_LABELS_EDA.get(feature, {})
         x_col = plot_df[feature].map(categorical_labels) if categorical_labels else plot_df[feature]
 
+        # Define order: Use unique values from categorical_labels that are in the data (usually 'Yes', then 'No')
+        order = [label for label in dict.fromkeys(categorical_labels.values()) if label in x_col.unique()]
+
         # Calculate Spearman rank correlation (add in title)
-        corr_label = ""
         if weights:
             corr = calculate_weighted_correlations(df, [feature, target], weights, method="spearman").iloc[0, 1]
             corr_label = f"(ρ={corr:.2f})"
@@ -1998,6 +2000,7 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
             "x": x_col, 
             "y": plot_df[y_col], 
             "ax": ax,
+            "order": order,
             "color": POP_COLOR if weights else SAMPLE_COLOR
         }
 
@@ -2020,8 +2023,11 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
             raise ValueError("plot_type must be 'boxen' or 'box'")
 
         # Annotate the median 
-        medians = plot_df.groupby(feature)[y_col].median()
-        for j, label in enumerate(categorical_labels):
+        # Map labels to the dataframe temporarily to match 'order' contents
+        plot_df_temp = plot_df.copy()
+        plot_df_temp[feature] = plot_df_temp[feature].map(categorical_labels) if categorical_labels else plot_df_temp[feature]    
+        medians = plot_df_temp.groupby(feature)[y_col].median()
+        for j, label in enumerate(order):
             if label in medians:
                 m_val = medians[label]
                 # Format display value (convert back from log if needed)
@@ -2036,7 +2042,7 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
         # Customize
         ax.set_title(f"{DISPLAY_LABELS.get(feature, feature)} {corr_label}", fontsize=12, fontweight="bold")
         ax.set_xlabel("")
-        ax.set_ylabel(y_label if i % n_cols == 0 else "", fontsize=12)
+        ax.set_ylabel(y_label if i % n_cols == 0 else "", fontsize=10)
         ax.tick_params(axis="x", labelsize=9)
 
         # Remove right and upper plot border 
