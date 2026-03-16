@@ -1918,7 +1918,7 @@ plot_categorical_feature_target_relationships(
 #     💡 <b>Insights:</b> 
 #     <ul style="margin-top:8px; margin-bottom:0px">
 #         <li><b>The Insurance Paradox:</b> "Any Private" insurance holders face the highest medians (~\$399), significantly higher than "Public Only" (~\$111). While counter-intuitive at first glance, this reflects the prevalence of high-deductible plans in the private market, whereas public programs (like Medicaid) often have minimal co-pays. The \$0 median for the Uninsured may reflect a major barrier to care rather than better health, as this group likely avoids utilization until absolutely necessary.</li>
-#         <li><b>The Ability-to-Pay Staircase:</b> Higher income is related to higher spending. High-income individuals have a median cost (\$502) nearly 20x higher than those in the poor/negative category (\$27), highlighting how out-of-pocket demand is heavily constrained by disposable income.</li>
+#         <li><b>The Socioeconomic Spending Gradient:</b> Both income and education exhibit a clear "staircase" relationship with costs. High-income individuals have a median cost (\$502) nearly 20x higher than those in the poor/negative category ($27), with educational attainment following an identical upward trend. This confirms that out-of-pocket spending is as much a measure of financial capacity as it is a measure of medical need.</li>
 #         <li><b>Life Transition Signal:</b> Recent marital transitions (e.g., "Married in Round" at \$788) show significantly higher costs than stable categories, strongly validating the creation of a <code>RECENT_LIFE_TRANSITION</code> feature to capture the financial volatility caused by major "life shocks".</li>
 #     </ul>
 # </div>
