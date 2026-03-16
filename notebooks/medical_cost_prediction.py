@@ -1734,7 +1734,7 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
     """Visualize the bivariate relationships between categorical features and the target.
 
     This function creates a grid of boxen or standard box plots to examine how nominal
-    and ordinal features relate to out-of-pocket costs. It handles feature types 
+    and ordinal features relate to the target variable. It handles feature types 
     with distinct sorting strategies (nominal by frequency vs. ordinal by inherent order) 
     and includes rank correlations in the titles for ordinal features.
 
@@ -1913,6 +1913,7 @@ plot_categorical_feature_target_relationships(
     save_to_file="../figures/eda/categorical_feature_target_relationships.png"
 )
 
+
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> 
@@ -1926,6 +1927,167 @@ plot_categorical_feature_target_relationships(
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Visualize the pairwise relationships between the target variable and each binary feature. 
 # </div>
+
+# %%
+def plot_binary_feature_target_relationships(df, features, target, plot_type="box", log_scale=False, weights=None, save_to_file=None):
+    """Visualize the bivariate relationships between binary features and the target.
+
+    This function creates a grid of boxen or standard box plots to examine how binary
+    features relate to the target variabe. It includes correlations in the titles.
+
+    Args:
+        df:                DataFrame containing the features and target.
+        features:          List of binary feature names.
+        target:            The name of the target variable column.
+        plot_type:         Type of plot to use: 'boxen' or 'box'.
+        log_scale:         Boolean; if True, applies np.log1p transformation to the 
+                           target to handle heavily right-skewed distributions.
+        weights:           Optional name of the weight column. If provided, triggers 
+                           weighted bootstrap resampling for representative plots.
+        save_to_file:      Optional file path to save the resulting figure.
+    """
+    n_plots = len(features)
+    n_cols = 4
+    n_rows = math.ceil(n_plots / n_cols)
+    
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2.5, n_rows * 3))
+    axes_flat = axes.flatten()
+
+    # Create DataFrame for plotting
+    plot_df = df.reset_index(drop=True)
+ 
+    # Create a population-representative subsample using weighted bootstrap resampling 
+    # Since seaborn plots do not natively support weights, this approach 'bakes' the survey weights directly into the subsample's density. 
+    # Setting replace=True ensures that high-weight respondents are proportionally represented as multiple 'virtual' individuals in the plot.
+    if weights:
+        plot_df = plot_df.sample(
+            n=len(plot_df), 
+            weights=weights, 
+            replace=True, 
+            random_state=RANDOM_STATE
+        ).reset_index(drop=True)        
+
+    # Log-transformation of target
+    y_col = target
+    if log_scale:
+        y_col = f"{target}_LOG"
+        plot_df[y_col] = np.log1p(plot_df[target])
+        y_label = "Out-of-Pocket Costs (Log-Scaled)"
+    else:
+        y_label = "Out-of-Pocket Costs"
+
+    # Iterate over features
+    for i, feature in enumerate(features):
+        ax = axes_flat[i]
+        
+        # Get categorical string labels for current feature
+        categorical_labels = CATEGORY_LABELS_EDA.get(feature, {})
+        x_col = plot_df[feature].map(categorical_labels) if categorical_labels else plot_df[feature]
+
+        # Calculate Spearman rank correlation (add in title)
+        corr_label = ""
+        if weights:
+            corr = calculate_weighted_correlations(df, [feature, target], weights, method="spearman").iloc[0, 1]
+            corr_label = f"(ρ={corr:.2f})"
+        else:
+            corr = df[[feature, target]].corr(method="spearman").iloc[0, 1]
+            corr_label = f"(ρ={corr:.2f})"    
+
+        # Define plot keyword arguments (for both boxen and box plots)
+        plot_kwargs = {
+            "x": x_col, 
+            "y": plot_df[y_col], 
+            "ax": ax,
+            "color": POP_COLOR if weights else SAMPLE_COLOR
+        }
+
+        # Create plot based on plot_type
+        if plot_type == "boxen":
+            sns.boxenplot(
+                **plot_kwargs, 
+                alpha=0.7
+            )
+        elif plot_type == "box":
+            sns.boxplot(
+                **plot_kwargs, 
+                width=0.6, 
+                linewidth=1.2, 
+                whis=[1, 99],  # Use the 1st and 99th percentiles for the whiskers
+                boxprops={"alpha": 0.7},
+                flierprops={"markersize": 3, "alpha": 0.3}
+            )
+        else:
+            raise ValueError("plot_type must be 'boxen' or 'box'")
+
+        # Annotate the median 
+        medians = plot_df.groupby(feature)[y_col].median()
+        for j, label in enumerate(categorical_labels):
+            if label in medians:
+                m_val = medians[label]
+                # Format display value (convert back from log if needed)
+                display_val = f"${np.expm1(m_val):,.0f}" if log_scale else f"${m_val:,.0f}"              
+                ax.text(
+                    j, m_val, display_val, 
+                    ha="center", va="center", 
+                    fontsize=8, fontweight="bold", color="white",
+                    bbox={"facecolor": "black", "alpha": 0.6, "edgecolor": "none", "boxstyle": "round,pad=0.3"}
+                )
+           
+        # Customize
+        ax.set_title(f"{DISPLAY_LABELS.get(feature, feature)} {corr_label}", fontsize=12, fontweight="bold")
+        ax.set_xlabel("")
+        ax.set_ylabel(y_label if i % n_cols == 0 else "", fontsize=12)
+        ax.tick_params(axis="x", labelsize=9)
+
+        # Remove right and upper plot border 
+        sns.despine(ax=ax)
+
+    # Hide unused subplots
+    for j in range(i + 1, len(axes_flat)): 
+        axes_flat[j].axis("off")
+
+    # Add super title
+    super_title = f"{'Population' if weights else 'Sample'} Binary Feature-Target Relationships"
+    fig.suptitle(super_title, fontsize=16, fontweight="bold", y=1.0)
+
+    # Add footnote
+    footnote_parts = []
+    if plot_type == "box":
+        footnote_parts.append("Whiskers represent 1st and 99th percentiles.")  
+    if weights:
+        footnote_parts.append("Population-weighted estimates via bootstrap resampling.")
+    else:
+        footnote_parts.append("Sample estimates.")      
+    footnote = f"Note: {' '.join(footnote_parts)}"
+    plt.figtext(0.01, 0.01, footnote, ha="left", fontsize=9, style="italic", color="#555555")
+
+    # Adjust layout 
+    plt.tight_layout(rect=[0, 0.02, 1, 1])
+
+    # Save to file
+    if save_to_file:
+        plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
+    
+    plt.show()
+
+
+# Visualize sample binary feature-target relationships 
+plot_binary_feature_target_relationships(
+    df, 
+    features=raw_binary_features,
+    target="TOTSLF23", 
+    log_scale=True
+)
+
+# Visualize population binary feature-target relationships 
+plot_binary_feature_target_relationships(
+    df, 
+    features=raw_binary_features,
+    target="TOTSLF23", 
+    log_scale=True,
+    weights="PERWT23F", 
+    save_to_file="../figures/eda/binary_feature_target_relationships.png"
+)
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
