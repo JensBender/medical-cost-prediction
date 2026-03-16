@@ -1649,7 +1649,7 @@ def plot_numerical_feature_target_relationships(df, features, target, log_scale=
     if log_scale:
         y_col = f"{target}_LOG"
         plot_df[y_col] = np.log1p(plot_df[target])
-        y_label = "Out-of-Pocket Costs (Log-Scaled)"
+        y_label = "Out-of-Pocket Costs (Log)"
     else:
         y_label = "Out-of-Pocket Costs"
 
@@ -1777,7 +1777,7 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
     if log_scale:
         y_col = f"{target}_LOG"
         plot_df[y_col] = np.log1p(plot_df[target])
-        y_label = "Out-of-Pocket Costs (Log-Scaled)"
+        y_label = "Out-of-Pocket Costs (Log)"
     else:
         y_label = "Out-of-Pocket Costs"
 
@@ -1950,7 +1950,7 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
     n_cols = 4
     n_rows = math.ceil(n_plots / n_cols)
     
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2.5, n_rows * 3))
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2.5, n_rows * 2.5))
     axes_flat = axes.flatten()
 
     # Create DataFrame for plotting
@@ -1972,7 +1972,7 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
     if log_scale:
         y_col = f"{target}_LOG"
         plot_df[y_col] = np.log1p(plot_df[target])
-        y_label = "Out-of-Pocket Costs (Log-Scaled)"
+        y_label = "Out-of-Pocket Costs (Log)"
     else:
         y_label = "Out-of-Pocket Costs"
 
