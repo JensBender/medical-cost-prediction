@@ -1731,21 +1731,24 @@ plot_numerical_feature_target_relationships(
 
 # %%
 def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_features, target, plot_type="box", log_scale=False, weights=None, save_to_file=None):
-    """
-    Visualize relationship between categorical features and target.
-    
-    Creates a grid of Boxen or standard Box plots. Handles nominal and 
-    ordinal features with distinct sorting strategies (Frequency vs. Inherent).
+    """Visualize the bivariate relationships between categorical features and the target.
+
+    This function creates a grid of boxen or standard box plots to examine how nominal
+    and ordinal features relate to out-of-pocket costs. It handles feature types 
+    with distinct sorting strategies (nominal by frequency vs. ordinal by inherent order) 
+    and includes rank correlations in the titles for ordinal features.
+
     Args:
-        df (pd.DataFrame): The input dataset.
-        nominal_features (list): Names of nominal columns.
-        ordinal_features (list): Names of ordinal columns.
-        target (str): Name of the target variable column.
-        plot_type (str, optional): Type of plot ('boxen' or 'box'). Defaults to "box".
-        log_scale (bool, optional): Whether to log-transform the target. Defaults to False.
-        weights (str, optional): Column name for survey weights. If provided, 
-            triggers weighted bootstrap resampling. Defaults to None.
-        save_to_file (str, optional): File path to save the figure. Defaults to None.
+        df:                DataFrame containing the features and target.
+        nominal_features:  List of nominal feature names.
+        ordinal_features:  List of ordinal feature names.
+        target:            The name of the target variable column.
+        plot_type:         Type of plot to use: 'boxen' or 'box'.
+        log_scale:         Boolean; if True, applies np.log1p transformation to the 
+                           target to handle heavily right-skewed distributions.
+        weights:           Optional name of the weight column. If provided, triggers 
+                           weighted bootstrap resampling for representative plots.
+        save_to_file:      Optional file path to save the resulting figure.
     """
     features = nominal_features + ordinal_features
     n_plots = len(features)
