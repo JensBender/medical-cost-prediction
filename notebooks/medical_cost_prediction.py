@@ -2100,6 +2100,16 @@ plot_binary_feature_target_relationships(
 )
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul style="margin-top:8px; margin-bottom:0px">
+#         <li><b>Chronic Cost Drivers:</b> Arthritis ($\rho=0.23$) and Joint Pain ($\rho=0.22$) are the strongest binary predictors, while Cancer maintains the highest absolute median cost (\$801).</li>
+#         <li><b>The Usage Gatekeeper:</b> Having a "Usual Source of Care" is a massive determinant of spending (\$414 vs. \$44 median), indicating that cost is primarily triggered by healthcare system engagement.</li>
+#         <li><b>Gender Gap:</b> Women face a significantly higher out-of-pocket burden, with median costs (\$357) nearly double those of men (\$190).</li>
+#         <li><b>Mobility Impact:</b> Walking Limitations (\$666 median) are more powerful cost predictors than rare, severe functional dependencies like ADL help (\$420).</li>
+#     </ul>
+# </div>
+# %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Feature Engineering (Stateless)</h1>
 # </div> 
