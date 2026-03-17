@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Project scoping |
 | **Created** | 2025-12-12 |
-| **Last Updated** | 2026-03-04 |
+| **Last Updated** | 2026-03-17 |
 
 **Note:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
 
@@ -175,6 +175,7 @@ The following MEPS variables have been identified as candidate features for the 
 | **Chronic Conditions Count** | `CHRONIC_COUNT` | Numerical (Int) | Sum of the 8 diagnosed chronic conditions. | ✅ Captures cumulative comorbidity burden; highly predictive of recurring cost intensity. |
 | **Limitations Count** | `LIMITATION_COUNT` | Numerical (Int) | Sum of 4 functional limitations + Joint Pain. | ✅ Proxies for "functional severity"; critical predictor of high-intensity care and tail-risk costs. |
 | **Recent Life Transition** | `RECENT_LIFE_TRANSITION` | Binary (Int) | Indicator for recent change in marital or employment status. | ⚠️ Preserves signal of major "life shocks" while ensuring model robustness by collapsing sparse categories. |
+| **Polynomial Features** | N/A (Pipeline Only) | Numerical (Float) | Interaction and squared terms for Age, Health, and Income. | ✅ Second-degree "sweet spot": captures the Age U-curve and primary interactions (e.g., Health × Insurance) without the overfitting risk or feature explosion of 3rd+ degrees. Robust against "super-spender" outlier distortion. |
 
 **Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). The count features allow the model to capture complex health profiles efficiently. In the UI, individual chronic conditions and limitations/symptoms are presented as multi-select checklists to minimize cognitive load (~12–14 total UI interactions).
 
@@ -272,7 +273,7 @@ A 4-phase approach where each model is evaluated with its own optimal feature se
 **Feature Selection by Model Type**
 | Model | Method | Notes |
 | :--- | :--- | :--- |
-| Elastic Net | L1 regularization | Non-zero coefficients = selected features |
+| Elastic Net | L1 regularization + Polynomials | Non-zero coefficients = selected features; captures non-linearities via explicit interaction terms |
 | Random Forest | `feature_importances_` | Built-in feature importance scores |
 | XGBoost | `feature_importances_` | Built-in feature importance scores |
 | KNN, MLP | Recursive Feature Elimination (RFE) | Wrapper method with CV |
