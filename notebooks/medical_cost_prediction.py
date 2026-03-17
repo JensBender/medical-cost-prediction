@@ -1689,7 +1689,12 @@ def plot_numerical_feature_target_relationships(df, features, target, log_scale=
         ax.set_xlabel("")
         ax.set_ylabel(y_label if i % n_cols == 0 else "", fontsize=12)
         sns.despine(ax=ax)
-
+        
+        # Customize ticks for perceived health features
+        if feature in ["RTHLTH31", "MNHLTH31"]:
+            ax.set_xticks([1, 2, 3, 4, 5])
+            ax.set_xticklabels(["1) Excellent", "2) Very Good", "3) Good", "4) Fair", "5) Poor"], fontsize=9, rotation=15)
+            
     # Hide unused subplots
     for j in range(i + 1, len(axes_flat)):
         axes_flat[j].axis("off")
