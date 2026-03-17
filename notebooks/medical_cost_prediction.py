@@ -2161,8 +2161,6 @@ plot_binary_feature_target_relationships(
 #                 <li style="margin-bottom:5px;"><b>Tree-Based Models (XGBoost, Random Forest, Decision Tree):</b> Handle non-linear and interaction effects natively and don't require polynomial features. Use <b>raw costs</b>, because log-transformation can inadvertently "blur" the 22.3% zero-hurdle by stretching low-value differences while compressing the extreme high-cost tail that drives total spending. Shift objective functions from standard MSE to an <b>Absolute Error (MAE)</b> criterion (e.g., <code>reg:absoluteerror</code> in XGBoost) or the <b>Tweedie</b> objective, which is mathematically optimized for zero-inflated, power-law distributions.</li>
 #                 <li style="margin-bottom:5px;"><b>K-Nearest Neighbors (KNN):</b> Highly sensitive to unscaled variance and extreme values in the target. It mandates robust feature standardization and <b>log-transformed costs</b> to prevent a single "super-spender" neighbor from disproportionately skewing the local neighborhood average.</li>
 #                 <li><b>Multi-Layer Perceptron (MLP):</b> Log-transformation is required to prevent "exploding gradients" triggered by the \$100k+ extreme tail, which would otherwise destabilize weight updates during backpropagation. Since scikit-learn's <code>MLPRegressor</code> is restricted to MSE loss (doesn't allow custom loss functions), log-transformation acts as a mathematical proxy. This shifts the "center of gravity" of the MSE loss toward the median, aligning the gradient updates with our MdAE success metric.</li>
-#                     </ul>
-#                 </li>
 #             </ul>
 #         </li>
 #         <li style="margin-bottom:10px;"><b>6. Architectural Fallback</b>
@@ -2171,6 +2169,40 @@ plot_binary_feature_target_relationships(
 #             </ul>
 #         </li>
 #     </ul>
+# <hr style="margin-top:15px; margin-bottom:15px; border:0; border-top:1px solid #e0f0e0;">
+# <b>Model Configuration Summary</b>
+# <table style="width:100%; margin-top:10px; border-collapse:collapse; font-size:13px;">
+#     <tr style="background-color:#e8f5e9;">
+#         <th style="padding:8px; border:1px solid #c8e6c9; text-align:left;">Model Category</th>
+#         <th style="padding:8px; border:1px solid #c8e6c9; text-align:center;">Target Scaling</th>
+#         <th style="padding:8px; border:1px solid #c8e6c9; text-align:center;">Polynomial Features</th>
+#         <th style="padding:8px; border:1px solid #c8e6c9; text-align:center;">Feature Scaling</th>
+#     </tr>
+#     <tr>
+#         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Tree-Based</b> (XGB, RF)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Raw (MAE/Tweedie)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard</td>
+#     </tr>
+#     <tr style="background-color:#fafafa;">
+#         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Regression-Based</b> (Elastic Net)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Yes</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard</td>
+#     </tr>
+#     <tr>
+#         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Distance-Based/Gradient-Based</b> (KNN, MLP)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard</td>
+#     </tr>
+#     <tr style="background-color:#fafafa;">
+#         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Kernel-Based</b> (SVM)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard</td>
+#     </tr>
+# </table>
 # </div> 
 
 
