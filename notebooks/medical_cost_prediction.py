@@ -2163,7 +2163,12 @@ plot_binary_feature_target_relationships(
 #                 <li><b>Multi-Layer Perceptron (MLP):</b> Log-transformation is required to prevent "exploding gradients" triggered by the \$100k+ extreme tail, which would otherwise destabilize weight updates during backpropagation. Since scikit-learn's <code>MLPRegressor</code> is restricted to MSE loss (doesn't allow custom loss functions), log-transformation acts as a mathematical proxy. This shifts the "center of gravity" of the MSE loss toward the median, aligning the gradient updates with our MdAE success metric.</li>
 #             </ul>
 #         </li>
-#         <li style="margin-bottom:10px;"><b>6. Architectural Fallback</b>
+#         <li style="margin-bottom:10px;"><b>6. Sample Weights</b>
+#             <ul style="margin-top:5px;">
+#                 <li><b>Population Representativeness:</b> MEPS uses a complex survey design that oversamples low socio-economic status individuals. To ensure the model remains representative of the actual U.S. civilian population, all models must incorporate <b>weights</b> (<code>sample_weight="PERWT23F"</code>) during training. This prevents the model from being disproportionately influenced by oversampled subgroups and ensures that the loss function is minimized for the true population distribution.</li>
+#             </ul>
+#         </li>
+#         <li style="margin-bottom:10px;"><b>7. Architectural Fallback</b>
 #             <ul style="margin-top:5px;">
 #                 <li><b>Two-Stage Hurdle Model:</b> The "Usage Gatekeeper" insight and the 22.3% baseline of zero-cost individuals indicate a fundamental split in user behavior (accessing care vs. avoiding it). If single-stage regressors struggle to capture this bimodal zero-inflated distribution, evaluate a <b>Hurdle Model</b>: a binary classifier to predict the probability of any cost, followed by a regressor to predict the magnitude.</li>
 #             </ul>
@@ -2215,6 +2220,7 @@ plot_binary_feature_target_relationships(
 #         <td style="padding:8px; border:1px solid #e0f0e0;">Kernel: <code>RBF</code> (Natively captures non-linearity without expansion)</td>
 #     </tr>
 # </table>
+# <p style="font-size:11px; color:#555; margin-top:10px;"><i>Note: All models use weights (<code>sample_weight="PERWT23F"</code>) during training to ensure population representativeness.</i></p>
 # </div> 
 
 

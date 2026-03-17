@@ -279,7 +279,7 @@ A 4-phase approach where each model is evaluated with its own optimal feature se
 | XGBoost | `feature_importances_` | Built-in feature importance scores |
 | KNN, MLP | Recursive Feature Elimination (RFE) | Wrapper method with CV |
 
-> **Sample Weights:** All models must use `PERWT23F` as `sample_weight` to ensure national representativeness.
+> **Sample Weights:** All models must use `PERWT23F` as `sample_weight` during training. This is required because the MEPS survey design purposefully oversamples low socio-economic status (SES) individuals to ensure research-quality sample sizes for these sub-groups. Using survey weights ensures the model is representative of the actual U.S. civilian population and prevents bias from oversampled cohorts.
 
 > **Future Enhancement:** A Two-Part (Hurdle) Model—P(cost > 0) then E[cost | cost > 0]—may improve predictions for zero-cost users if single-stage models underperform.
 
