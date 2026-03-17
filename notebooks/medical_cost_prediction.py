@@ -3459,15 +3459,15 @@ def verify_data_integrity(original, loaded, name):
     # 4. Full DataFrame Equality (including values allowing for tiny floating point differences)
     try:
         pd.testing.assert_frame_equal(original, loaded, atol=1e-5)
-        values_equal = True
+        df_equal = True
     except AssertionError:
-        values_equal = False
+        df_equal = False
         
     return {
         "Shape": "✅" if shape_equal else "❌", 
         "Index": "✅" if index_equal else "❌", 
         "Data Types": "✅" if types_equal else "❌", 
-        "Values": "✅" if values_equal else "❌"
+        "Full DataFrame": "✅" if df_equal else "❌"
     }
 verify_loaded_integrity = pd.DataFrame({
     "Train": verify_data_integrity(df_train_preprocessed, df_train_preprocessed_loaded, "Train"),
