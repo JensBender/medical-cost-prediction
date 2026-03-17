@@ -3503,28 +3503,34 @@ display(verify_loaded_dtypes.style.pipe(add_caption, "Data Types"))
 #     <h1 style="margin:0px">Summary</h1>
 # </div> 
 #
-# - **Data Loading:** Imported MEPS-HC 2023 SAS data using `pandas` `read_sas`.
+# - **Data Loading:** Imported MEPS-HC 2023 SAS data as a pandas DataFrame.
 # - **Data Preparation:**
 #     - **Handling Duplicates:** Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
 #     - **Variable Selection:** Filtered 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
 #     - **Target Population Filtering:** Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
 #     - **Handling Data Types:** Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models. Defined raw semantic data types for all features (numerical, binary, nominal, ordinal).
 #     - **Standardizing Missing Values:** Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
-# - **Exploratory Data Analysis (EDA):** Analyzed raw distributions to inform data preprocessing and feature engineering decisions.
-#     - **Sample Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
-#     - **Target Variable:** Identified a zero-inflated (22%) and extremely right-skewed distribution where the top 1% of spenders drive ~21% of costs.
-#     - **Numerical Features:** Analyzed distributions for age, family size, and self-reported health to inform robust median-based imputation.
-#     - **Categorical Features:** Identified oversampling of low socio-economic status and chronic conditions, requiring survey weight adjustments for modeling.
-# - **Feature Engineering (Stateless):**
 #     - **Standardizing Binary Features:** Standardized binary features to 0/1 encoding.
+# - **Exploratory Data Analysis (EDA):** Analyzed distributions and relationships to inform data preprocessing, feature engineering, and modeling decisions.
+#     - **Univariate EDA:** 
+#         - **Sample Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
+#         - **Target Variable:** Identified a zero-inflated (22%) and extremely right-skewed distribution where the top 1% of spenders drive ~21% of costs.
+#         - **Numerical Features:** Analyzed distributions for age, family size, and self-reported health to inform robust median-based imputation.
+#         - **Categorical Features:** Identified oversampling of low socio-economic status and medical conditions, requiring survey weights for accurately modeling population.
+#         - **Binary Features:** 
+#     - **Bivariate EDA:** 
+#         - **Correlations:** 
+#         - **Numerical Features vs. Target:** 
+#         - **Categorical Features vs. Target:** 
+#         - **Binary Features vs. Target:** 
+#     - **Modeling Strategy:** 
+# - **Feature Engineering (Stateless):**
 #     - **Feature Refinement:** Created a recent life transition flag and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
 #     - **Feature Validation:** Defined pipeline input feature lists and verified feature engineering results.
 # - **Train-Validation-Test Split:** Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
 # - **Data Preprocessing (Stateful):**
 #     - **Handling Missing Values:** Imputed missing values using the median for numerical and mode for categorical features, calculated from the training data. 
+#     - **Derive Medical Features:** Imputed missing values using the median for numerical and mode for categorical features, calculated from the training data. 
 #     - **Handling Outliers:** Detected univariate outliers with 3SD and 1.5 IQR methods and identified multivariate outliers with an isolation forest. Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
-#     - **Preprocessing Pipeline:** Integrated all refined preprocessing and engineering steps into a robust scikit-learn pipeline for consistent training and inference.
-# - **Model Training (Baseline):**
-#     - **Evaluation Framework:** Established a robust evaluation protocol using Median Absolute Error (MdAE) as the primary metric, supplemented by MAE and R².
-#     - **Architectural Benchmarking:** Evaluated multiple model families (Linear, Tree-based, Neural Networks) across "Lean" and "Polynomial" pipeline architectures.
-#     - **Variance Stabilization:** Implemented target transformations (log-shift) for linear models to address the extreme right-skew of medical costs.
+#     - **Pipeline:** Integrated all refined preprocessing and engineering steps into a robust scikit-learn pipeline for consistent training and inference.
+#     - **Data Persistence:** Stored preprocessed data as CSV files and verified integrity of reloaded data.
