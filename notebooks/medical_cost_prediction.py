@@ -3448,6 +3448,34 @@ df_train_preprocessed_loaded = pd.read_csv("../data/training_data_preprocessed.c
 df_val_preprocessed_loaded = pd.read_csv("../data/validation_data_preprocessed.csv", index_col="DUPERSID")
 df_test_preprocessed_loaded = pd.read_csv("../data/test_data_preprocessed.csv", index_col="DUPERSID")
 
+# Summary Table: Shape, Index, Types and Values of Original vs. Reloaded Data
+def verify_data_integrity(original, loaded, name):
+    # 1. Shape Equality
+    shape_equal = original.shape == loaded.shape
+    # 2. Index Equality
+    index_equal = original.index.equals(loaded.index)
+    # 3. Data Type Equality
+    types_equal = original.dtypes.equals(loaded.dtypes)
+    # 4. Values Equality (allowing for tiny floating point value differences)
+    try:
+        pd.testing.assert_frame_equal(original, loaded, check_dtype=False, atol=1e-5)
+        values_equal = True
+    except AssertionError:
+        values_equal = False
+        
+    return {
+        "Shape": "✅" if shape_equal else "❌", 
+        "Index": "✅" if index_equal else "❌", 
+        "Data Types": "✅" if types_equal else "❌", 
+        "Values": "✅" if values_equal else "❌"
+    }
+verify_loaded_integrity = pd.DataFrame({
+    "Train": verify_data_integrity(df_train_preprocessed, df_train_preprocessed_loaded, "Train"),
+    "Val": verify_data_integrity(df_val_preprocessed, df_val_preprocessed_loaded, "Val"),
+    "Test": verify_data_integrity(df_test_preprocessed, df_test_preprocessed_loaded, "Test"),
+}).T
+display(verify_loaded_integrity.style.pipe(add_caption, "Verify Data Integrity"))
+
 # Compare original vs. loaded data shapes
 verify_loaded_shape = pd.DataFrame({
     "Train Original": [df_train_preprocessed.shape], 
