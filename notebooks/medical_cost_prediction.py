@@ -1157,10 +1157,6 @@ plot_numerical_distributions(df, raw_numerical_features, DISPLAY_LABELS, weights
 #     <h3 style="margin:0px">Categorical Features</h3>
 # </div>
 #
-# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Visualize the distributions of all categorical features, both on sample-level and population-level. Use one plot for nominal and ordinal features and a separate plot for binary features.
-# </div>
-#
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Visualize the distributions of categorical (nominal and ordinal) features for sample and population. 
 # </div>
@@ -1261,8 +1257,12 @@ plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, D
 
 
 # %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Binary Features</h3>
+# </div>
+#
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Visualize the distributions of binary features for sample and population. 
+#     📌  Visualize the distributions of binary features for sample and population. 
 # </div>
 
 # %%
@@ -1733,8 +1733,9 @@ plot_numerical_feature_target_relationships(
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">Categorical Features vs. Target</h3>
 # </div>
+#
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Visualize the pairwise relationships between the target variable and each nominal and ordinal feature. 
+#     📌 Visualize the pairwise relationships between the target variable and each categorical (nominal and ordinal) feature. 
 # </div>
 
 # %%
@@ -1932,6 +1933,10 @@ plot_categorical_feature_target_relationships(
 #     </ul>
 # </div>
 # %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Binary Features vs. Target</h3>
+# </div>
+#
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Visualize the pairwise relationships between the target variable and each binary feature. 
 # </div>
