@@ -1653,6 +1653,9 @@ def plot_numerical_feature_target_relationships(df, features, target, log_scale=
     else:
         y_label = "Out-of-Pocket Costs"
 
+    # Initialize random number generator for jitter
+    rng = np.random.default_rng(RANDOM_STATE)
+
     # Iterate over features
     for i, feature in enumerate(features):
         ax = axes_flat[i]
@@ -1660,7 +1663,7 @@ def plot_numerical_feature_target_relationships(df, features, target, log_scale=
         # Apply jitter if feature is discrete (15 or less unique values)
         x_col = plot_df[feature]
         if x_col.nunique() <= 15:
-            x_col = x_col + np.random.uniform(-0.3, 0.3, size=len(x_col))
+            x_col = x_col + rng.uniform(-0.3, 0.3, size=len(x_col))
         
         # Create scatterplot between current feature and target 
         sns.scatterplot(
@@ -3327,121 +3330,6 @@ for name, (raw, processed) in datasets.items():
     all_numeric = "✅" if processed.apply(pd.api.types.is_numeric_dtype).all() else "❌"
     
     print(f"{name:5}: Rows Match: {rows_match} | No Missing Values: {nulls_status} | All Numeric: {all_numeric} | Raw Shape: {raw.shape} | Processed Shape: {processed.shape}")
-
-# %% [markdown]
-# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h1 style="margin:0px">Model Training</h1>
-# </div> 
-#
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 This phase focuses on establishing a robust performance baseline and identifying the most promising model architectures for medical cost prediction.
-# </div>
-#
-# %% [markdown]
-# ## Baseline Modeling Strategy
-#
-# Following the **Strategic Synthesis**, we will evaluate two distinct pipeline architectures across a variety of model families:
-#
-# 1.  **Lean Pipeline:** Uses the core preprocessing (standard scaling, one-hot encoding, and engineered counts). Best for models that learn non-linearities natively.
-# 2.  **Polynomial Pipeline:** Wraps the lean pipeline with explicit second-order interactions ($x^2, x \times y$). Used to provide Linear models with the "simulated complexity" needed to capture medical spending shocks.
-#
-# ### Evaluation Protocol
-# *   **Primary Metric:** Median Absolute Error (**MdAE**) - robust to the extreme skew of medical costs.
-# *   **Secondary Metrics:** Mean Absolute Error (**MAE**) and Coefficient of Determination (**$R^2$**).
-# *   **Target Transformation:** For models assuming homoscedasticity (Linear, MLP, KNN, SVR), we will train on **$log(y+1)$** to stabilize variance.
-# *   **Sample Weights:** All models are trained using population weights (`PERWT23F`) to ensure the results generalize to the U.S. civilian noninstitutionalized population.
-#
-# %%
-from sklearn.linear_model import LinearRegression, ElasticNet
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.neural_network import MLPRegressor
-from sklearn.svm import SVR
-from xgboost import XGBRegressor
-from sklearn.compose import TransformedTargetRegressor
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.metrics import median_absolute_error, mean_absolute_error, r2_score
-from sklearn.pipeline import Pipeline # Added this import as it was missing in the provided snippet
-
-# Define helper for evaluation
-def evaluate_model(y_true, y_pred, weights=None, model_name="Model"):
-    mdae = median_absolute_error(y_true, y_pred, sample_weight=weights)
-    mae = mean_absolute_error(y_true, y_pred, sample_weight=weights)
-    r2 = r2_score(y_true, y_pred, sample_weight=weights)
-    
-    return {
-        "Model": model_name,
-        "MdAE": mdae,
-        "MAE": mae,
-        "R2": r2
-    }
-
-# %%
-# Define models and their configurations (pipelines will be built dynamically)
-baseline_configs = [
-    {"name": "Linear Regression", "model": LinearRegression(), "use_poly": True, "use_log": True},
-    {"name": "Elastic Net", "model": ElasticNet(random_state=RANDOM_STATE), "use_poly": True, "use_log": True},
-    {"name": "MLP Regressor", "model": MLPRegressor(random_state=RANDOM_STATE, max_iter=500), "use_poly": False, "use_log": True},
-    {"name": "KNN Regressor", "model": KNeighborsRegressor(), "use_poly": False, "use_log": True},
-    {"name": "SVR", "model": SVR(kernel='rbf'), "use_poly": False, "use_log": True},
-    {"name": "Random Forest", "model": RandomForestRegressor(random_state=RANDOM_STATE, n_jobs=-1), "use_poly": False, "use_log": False},
-    {"name": "XGBoost", "model": XGBRegressor(random_state=RANDOM_STATE, objective='reg:tweedie', n_jobs=-1), "use_poly": False, "use_log": False}
-]
-
-# Define sample weights for training and validation
-y_train_weights = X_train["PERWT23F"]
-y_val_weights = X_val["PERWT23F"]
-
-# Train and evaluate all baseline models
-baseline_results = []
-
-for config in baseline_configs:
-    print(f"Training {config['name']}...")
-    
-    # 1. Start with the core preprocessor
-    steps = [("preprocessor", preprocessor)]
-    
-    # 2. Add Polynomial Features if configured
-    if config["use_poly"]:
-        steps.append(("polynomial", PolynomialFeatures(degree=2, interaction_only=True, include_bias=False)))
-    
-    # 3. Handle Target Transformation (log scale) if configured
-    if config["use_log"]:
-        # Wrap the model in a TransformedTargetRegressor
-        regressor = TransformedTargetRegressor(
-            regressor=config["model"],
-            func=np.log1p,
-            inverse_func=np.expm1
-        )
-    else:
-        regressor = config["model"]
-    
-    # 4. Add the regressor step
-    steps.append(("regressor", regressor))
-    
-    # 5. Create the final pipeline
-    model_pipeline = Pipeline(steps=steps)
-    
-    # 6. Fit the model (using sample weights if the regressor supports it)
-    # Note: Regressors wrapped in TransformedTargetRegressor pass sample_weight down
-    model_pipeline.fit(X_train, y_train, regressor__sample_weight=y_train_weights)
-    
-    # 7. Predict on validation set
-    y_pred = model_pipeline.predict(X_val)
-    
-    # 8. Evaluate
-    res = evaluate_model(y_val, y_pred, weights=y_val_weights, model_name=config["name"])
-    baseline_results.append(res)
-
-# Create results summary table
-baseline_df = pd.DataFrame(baseline_results).sort_values(by="MdAE")
-
-# Display results
-baseline_df.style \
-    .pipe(add_caption, "Baseline Model Evaluation (Validation Set)") \
-    .format({"MdAE": "${:,.2f}", "MAE": "${:,.2f}", "R2": "{:.4f}"}) \
-    .highlight_min(subset=["MdAE", "MAE"], color="lightgreen") \
-    .highlight_max(subset=["R2"], color="lightgreen")
 
 # %%
 # Verify feature scaling on training data
