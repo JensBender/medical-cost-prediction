@@ -2146,13 +2146,17 @@ plot_binary_feature_target_relationships(
 #                 <li><b>Limitations and Conditions Count:</b> Chronic conditions and functional limitations are highly inter-correlated (HBP↔Cholesterol 0.45, Arthritis↔Joint Pain 0.56, ADL↔IADL 0.60). This shared signal justifies engineering <code>CHRONIC_COUNT</code> and <code>LIMITATION_COUNT</code> as aggregate burden indices, reducing redundancy for regression-based models susceptible to multicollinearity while preserving cumulative signal.</li>
 #                 <li><b>Life Transitions and Sparse Categories:</b> The "Married in Round" category (\$788 median vs. \$410 for stable "Married") confirms that transition categories carry a meaningful cost impact. This justifies creating a <code>RECENT_LIFE_TRANSITION</code> flag and collapsing sparse transition categories into their stable counterparts (<code>MARRY31X_GRP</code>, <code>EMPST31_GRP</code>).</li>
 #                 <li><b>Polynomial Features:</b> Regression-based models (Linear, Elastic Net) require explicit feature expansion to capture non-linearities. Use <b>second-degree polynomial features</b> to model the U-shaped age-cost relationship through squared terms ($Age^2$) and primary cost multipliers via interaction terms (e.g., Health × Insurance). Higher degrees (3rd+) are avoided to prevent "feature explosion" and extreme sensitivity to "super-spender" outliers, which would otherwise destabilize predictions in the high-cost tail.</li>
-#                 <li><b>No Further Engineering Needed:</b> Non-linear patterns (Age scatter, Poverty staircase) do not require manual binning or interaction terms, because tree-based models capture these natively, and polynomial features handle them for linear models. Weak but present signals (Smoker ρ=−0.04, Mental Health ρ=0.02) are retained rather than dropped, since tree-based models can still leverage them in interaction splits.</li>
 #             </ul>
 #         </li>
 #         <li style="margin-bottom:10px;"><b>4. Model Pipeline</b>
 #             <ul style="margin-top:5px;">
 #                 <li><b>Lean Pipeline:</b> Tree-based models (XGBoost, RF, Decision Tree), MLP, SVM, and KNN use the core pipeline, relying on their native ability to capture non-linear relationships and interactions.</li>
 #                 <li><b>Polynomial Pipeline:</b> Regression-based models (Linear, Elastic Net) require explicit polynomial features to simulate the non-linear patterns and interaction effects.</li>
+#             </ul>
+#         </li>
+#         <li style="margin-bottom:10px;"><b>5. Model-Specific Decisions</b>
+#             <ul style="margin-top:5px;">
+#                 <li><b>Support Vector Machine (SVM):</b> Use the <b>RBF kernel</b> to capture complex non-linearities (like the Age U-curve) via the "kernel trick" without explicit feature expansion. Use <b>log-transformed costs</b> to ensure the $\epsilon$-insensitive loss function treats errors as relative percentages, preventing "super-spenders" from distorting the global fit. Use <code>gamma='scale'</code> and $\epsilon \approx 0.1$ (~10% error tolerance) for a robust noise-handling strategy tailored to the high-variance healthcare cost distribution.</li>
 #             </ul>
 #         </li>
 #     </ul>

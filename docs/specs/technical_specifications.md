@@ -266,6 +266,7 @@ A 4-phase approach where each model is evaluated with its own optimal feature se
 | Elastic Net | MSE + L1/L2 | `log(y+1)` | Built-in feature selection |
 | K-Nearest Neighbors | Distance-based | `log(y+1)` | Sensitive to outliers without log |
 | MLP (sklearn) | MSE | `log(y+1)` | Inverse-transform predictions |
+| SVR (SVM) | Epsilon-Insensitive | `log(y+1)` | RBF kernel; `gamma='scale'` |
 | Decision Tree | `absolute_error` | None | MAE-based splits; robust to skew |
 | Random Forest | `absolute_error` | None | MAE-based splits; robust to skew |
 | XGBoost | `reg:tweedie` | None | Tweedie handles skew natively |
