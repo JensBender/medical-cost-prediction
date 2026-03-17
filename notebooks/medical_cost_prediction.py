@@ -3441,6 +3441,24 @@ df_test_preprocessed.to_csv("../data/test_data_preprocessed.csv", index=True)
 # df_val_preprocessed.to_parquet("data/validation_data_preprocessed.parquet")
 # df_test_preprocessed.to_parquet("data/test_data_preprocessed.parquet")
 
+# %%
+# --- Verify Results ---  
+# Reload data from .csv files to Pandas DataFrames
+df_train_preprocessed_loaded = pd.read_csv("../data/training_data_preprocessed.csv", index_col="DUPERSID")
+df_val_preprocessed_loaded = pd.read_csv("../data/validation_data_preprocessed.csv", index_col="DUPERSID")
+df_test_preprocessed_loaded = pd.read_csv("../data/test_data_preprocessed.csv", index_col="DUPERSID")
+
+# Compare original vs loaded data types
+verify_loaded_dtypes = pd.DataFrame({
+    "Train Original": df_train_preprocessed.dtypes, 
+    "Train Reloaded": df_train_preprocessed_loaded.dtypes,
+    "Val Original": df_val_preprocessed.dtypes, 
+    "Val Reloaded": df_val_preprocessed_loaded.dtypes,
+    "Test Original": df_test_preprocessed.dtypes, 
+    "Test Reloaded": df_test_preprocessed_loaded.dtypes,
+})
+verify_loaded_dtypes
+
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Summary</h1>
