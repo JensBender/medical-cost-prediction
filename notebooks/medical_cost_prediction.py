@@ -3443,10 +3443,10 @@ df_test_preprocessed.to_csv("../data/test_data_preprocessed.csv", index=True)
 
 # %%
 # --- Verify Results ---  
-# Reload data from .csv files to Pandas DataFrames
-df_train_preprocessed_loaded = pd.read_csv("../data/training_data_preprocessed.csv", index_col="DUPERSID")
-df_val_preprocessed_loaded = pd.read_csv("../data/validation_data_preprocessed.csv", index_col="DUPERSID")
-df_test_preprocessed_loaded = pd.read_csv("../data/test_data_preprocessed.csv", index_col="DUPERSID")
+# Reload data from .csv files to Pandas DataFrames (ensure ID is loaded as a string)
+df_train_preprocessed_loaded = pd.read_csv("../data/training_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
+df_val_preprocessed_loaded = pd.read_csv("../data/validation_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
+df_test_preprocessed_loaded = pd.read_csv("../data/test_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
 
 # Summary Table: Shape, Index, Types and Values of Original vs. Reloaded Data
 def verify_data_integrity(original, loaded, name):
@@ -3456,9 +3456,9 @@ def verify_data_integrity(original, loaded, name):
     index_equal = original.index.equals(loaded.index)
     # 3. Data Type Equality
     types_equal = original.dtypes.equals(loaded.dtypes)
-    # 4. Values Equality (allowing for tiny floating point value differences)
+    # 4. Full DataFrame Equality (including values allowing for tiny floating point differences)
     try:
-        pd.testing.assert_frame_equal(original, loaded, check_dtype=False, atol=1e-5)
+        pd.testing.assert_frame_equal(original, loaded, atol=1e-5)
         values_equal = True
     except AssertionError:
         values_equal = False
@@ -3474,7 +3474,7 @@ verify_loaded_integrity = pd.DataFrame({
     "Val": verify_data_integrity(df_val_preprocessed, df_val_preprocessed_loaded, "Val"),
     "Test": verify_data_integrity(df_test_preprocessed, df_test_preprocessed_loaded, "Test"),
 }).T
-display(verify_loaded_integrity.style.pipe(add_caption, "Verify Data Integrity"))
+display(verify_loaded_integrity.style.pipe(add_caption, "Verify Integrity of Loaded Data"))
 
 # Compare original vs. loaded data shapes
 verify_loaded_shape = pd.DataFrame({
@@ -3485,7 +3485,7 @@ verify_loaded_shape = pd.DataFrame({
     "Test Original": [df_test_preprocessed.shape], 
     "Test Reloaded": [df_test_preprocessed_loaded.shape],
 }, index=["(rows, cols)"]) 
-display(verify_loaded_shape.style.pipe(add_caption, "Verify Shapes"))
+display(verify_loaded_shape.style.pipe(add_caption, "Data Shapes"))
 
 # Compare original vs. loaded data types
 verify_loaded_dtypes = pd.DataFrame({
@@ -3496,7 +3496,7 @@ verify_loaded_dtypes = pd.DataFrame({
     "Test Original": df_test_preprocessed.dtypes, 
     "Test Reloaded": df_test_preprocessed_loaded.dtypes,
 })
-display(verify_loaded_dtypes.style.pipe(add_caption, "Verify Data Types"))
+display(verify_loaded_dtypes.style.pipe(add_caption, "Data Types"))
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
