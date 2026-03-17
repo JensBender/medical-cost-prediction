@@ -2175,32 +2175,44 @@ plot_binary_feature_target_relationships(
 #     <tr style="background-color:#e8f5e9;">
 #         <th style="padding:8px; border:1px solid #c8e6c9; text-align:left;">Model Category</th>
 #         <th style="padding:8px; border:1px solid #c8e6c9; text-align:center;">Target Scaling</th>
-#         <th style="padding:8px; border:1px solid #c8e6c9; text-align:center;">Polynomial Features</th>
+#         <th style="padding:8px; border:1px solid #c8e6c9; text-align:center;">Polynomials</th>
 #         <th style="padding:8px; border:1px solid #c8e6c9; text-align:center;">Feature Scaling</th>
+#         <th style="padding:8px; border:1px solid #c8e6c9; text-align:left;">Key Settings</th>
 #     </tr>
 #     <tr>
-#         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Tree-Based</b> (XGB, RF)</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Raw (MAE/Tweedie)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Tree-Based</b> (XGB, RF, DT)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard Scaler</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;">Objective: <code>MAE</code> or <code>Tweedie</code> (Avoids MSE's tail distortion)</td>
 #     </tr>
 #     <tr style="background-color:#fafafa;">
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Regression-Based</b> (Elastic Net)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Yes</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard Scaler</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;">Penalty: <code>L1</code> (Handles multicollinearity from polynomial expansion)</td>
 #     </tr>
 #     <tr>
-#         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Distance-Based/Gradient-Based</b> (KNN, MLP)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Distance-Based</b> (KNN)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard Scaler</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;">Metric: <code>Minkowski</code> (Log-target ensures a stable Euclidean distance)</td>
 #     </tr>
 #     <tr style="background-color:#fafafa;">
+#         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Gradient-Based</b> (MLP)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard Scaler</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;">Loss: <code>MSE</code> (Log-target acts as a proxy for the non-differentiable MdAE)</td>
+#     </tr>
+#     <tr>
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Kernel-Based</b> (SVM)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard Scaler</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;">Kernel: <code>RBF</code> (Natively captures non-linearity without expansion)</td>
 #     </tr>
 # </table>
 # </div> 
