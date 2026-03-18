@@ -3545,9 +3545,9 @@ display(verify_loaded_dtypes.style.pipe(add_caption, "Data Types"))
 #     - **Univariate EDA:** 
 #         - **Sample Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
 #         - **Target Variable:** Identified a zero-inflated (22%) and extremely right-skewed distribution where the top 1% of spenders drive ~21% of costs.
-#         - **Numerical Features:** Analyzed distributions for age, family size, and self-reported health to inform robust median-based imputation.
-#         - **Categorical Features:** Identified oversampling of low socio-economic status and medical conditions, requiring survey weights for accurately modeling population.
-#         - **Binary Features:** 
+#         - **Numerical Features:** Profiled age, household size, and self-reported health, informing robust median imputation for missing values.
+#         - **Categorical Features:** Identified oversampling of healthy and low socio-economic status individuals, confirming that sample weights are required for population representativeness.
+#         - **Binary Features:** Quantified prevalence of chronic conditions and functional limitations.
 #     - **Bivariate EDA:** 
 #         - **Correlations:** 
 #         - **Numerical Features vs. Target:** 
@@ -3560,7 +3560,7 @@ display(verify_loaded_dtypes.style.pipe(add_caption, "Data Types"))
 # - **Train-Validation-Test Split:** Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
 # - **Data Preprocessing (Stateful):**
 #     - **Handling Missing Values:** Imputed missing values using the median for numerical and mode for categorical features. 
-#     - **Derive Medical Features:**  
+#     - **Derive Medical Features:** Calculated aggregate chronic condition and functional limitation counts to capture cumulative health burden. 
 #     - **Handling Outliers:** Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
 #     - **Pipeline:** Integrated data preprocessing and feature engineering steps into a robust scikit-learn pipeline for consistent training and inference.
 # - **Data Persistence:** Stored preprocessed data as CSV files and verified integrity of reloaded data.
