@@ -2151,33 +2151,39 @@ plot_binary_feature_target_relationships(
 #     <ul style="margin-top:10px; margin-bottom:0px">
 #         <li style="margin-bottom:10px;"><b>1. Model Evaluation</b>
 #             <ul style="margin-top:5px;">
-#                 <li><b>Metric:</b> Extreme 80/20 cost concentration (Gini=0.81) and a 22.3% zero-cost hurdle make mean-based metrics unreliable. Use <b>Median Absolute Error (MdAE)</b> as the primary evaluation metric.</li>
+#                 <li><b>Metric:</b> Extreme 80/20 cost concentration (Gini=0.81) and a 22.3% zero-cost hurdle make mean-based metrics unreliable. Use <b>Median Absolute Error (MdAE)</b> as the primary evaluation metric. We want a typical error of \$500 to "matter" more to the model than an error of \$50,000 on a rare surgery. MdAE is our way of saying: <i>"Tell me how I'll do for most people, not just for the average which is skewed by medical catastrophes."</i></li>
 #             </ul>
 #         </li>
-#         <li style="margin-bottom:10px;"><b>2. Sample Weights</b>
+#         <li style="margin-bottom:10px;"><b>2. Optimization & Loss Strategy</b>
+#             <ul style="margin-top:5px;">
+#                 <li><b>The Problem:</b> Most models (Regression, MLP, SVM) use Mean Squared Error (MSE) by default, which is highly sensitive to the \$100k+ extreme tail. Squaring the error of a \$100,000 "Black Swan" event creates a massive number that drowns out the signal from 1,000 "typical" \$500 users. Optimizing for MdAE isn't possible, because it is a non-differentiable sorting operation that provides no mathematical "instruction" (gradient) for the majority of the training samples. MdAE is a great Judge, but it's a terrible Teacher.</li>
+#                 <li><b>Optimization Proxy:</b> To align with our <b>MdAE</b> goal, use <b>Mean Absolute Error (MAE)</b> for tree-based models and <b>Log(y+1) transformation</b> for regression/gradient-based models to satisfy homoscedasticity and shift the loss "center of gravity" toward the median. MdAE is how we judge success, but MAE and Log-MSE is how we actually train.</li>
+#             </ul>
+#         </li>
+#         <li style="margin-bottom:10px;"><b>3. Sample Weights</b>
 #             <ul style="margin-top:5px;">
 #                 <li><b>Population Representativeness:</b> MEPS uses a complex survey design that oversamples low socio-economic status individuals. To ensure the model remains representative of the actual U.S. civilian population, all models must incorporate <b>weights</b> (<code>sample_weight="PERWT23F"</code>) during training. This ensures the loss function is minimized for the true population distribution rather than the oversampled survey cohort.</li>
 #             </ul>
 #         </li>
-#         <li style="margin-bottom:10px;"><b>3. Train-Validation-Test Split</b>
+#         <li style="margin-bottom:10px;"><b>4. Train-Validation-Test Split</b>
 #             <ul style="margin-top:5px;">
 #                 <li><b>Splitting:</b> Use a <b>Distribution-Informed Stratified Split</b> with a high resolution (0\$, 50th, 80th, 95th, 99th, 99.9th percentile) to guarantee the validation and test sets accurately mirror the full cost distribution, including the zero-hurdle and high-cost tail.</li>
 #             </ul>
 #         </li>
-#         <li style="margin-bottom:10px;"><b>4. Feature Engineering</b>
+#         <li style="margin-bottom:10px;"><b>5. Feature Engineering</b>
 #             <ul style="margin-top:5px;">
 #                 <li><b>Limitations and Conditions Count:</b> Chronic conditions and functional limitations are highly inter-correlated (HBP↔Cholesterol 0.45, Arthritis↔Joint Pain 0.56, ADL↔IADL 0.60). This shared signal justifies engineering <code>CHRONIC_COUNT</code> and <code>LIMITATION_COUNT</code> as aggregate burden indices, reducing redundancy for regression-based models susceptible to multicollinearity while preserving cumulative signal.</li>
 #                 <li><b>Life Transitions and Sparse Categories:</b> The "Married in Round" category (\$788 median vs. \$410 for stable "Married") confirms that transition categories carry a meaningful cost impact. This justifies creating a <code>RECENT_LIFE_TRANSITION</code> flag and collapsing sparse transition categories into their stable counterparts (<code>MARRY31X_GRP</code>, <code>EMPST31_GRP</code>).</li>
 #                 <li><b>Polynomial Features:</b> Elastic Net Regression requires explicit feature expansion to capture non-linearities. Use <b>second-degree polynomial features</b> to model the U-shaped age-cost relationship through squared terms ($Age^2$) and primary cost multipliers via interaction terms (e.g., Health × Insurance). Higher degrees (3rd+) are avoided to prevent "feature explosion" and extreme sensitivity to "super-spender" outliers, which would otherwise destabilize predictions in the high-cost tail. (Note: Naive Linear Regression is excluded from this expansion to serve as a pure linear benchmark).</li>
 #             </ul>
 #         </li>
-#         <li style="margin-bottom:10px;"><b>5. Model Pipeline</b>
+#         <li style="margin-bottom:10px;"><b>6. Model Pipeline</b>
 #             <ul style="margin-top:5px;">
 #                 <li><b>Lean Pipeline:</b> Tree-based models (DT, RF, XGB), SVM, and MLP use the core pipeline, relying on their native ability to capture non-linear relationships and interactions. Linear Regression with the lean pipeline provides a baseline.</li>
 #                 <li><b>Polynomial Pipeline:</b> Elastic Net Regression requires explicit polynomial features to simulate the non-linear patterns and interaction effects.</li>
 #             </ul>
 #         </li>
-#         <li style="margin-bottom:10px;"><b>6. Model-Specific Decisions</b>
+#         <li style="margin-bottom:10px;"><b>7. Model-Specific Decisions</b>
 #             <ul style="margin-top:5px;">
 #                 <li style="margin-bottom:5px;"><b>Linear Regression:</b> Serves as the naive baseline and provides a "floor" for performance and a benchmark for the value added by regularization and non-linear modeling.</li>
 #                 <li style="margin-bottom:5px;"><b>Elastic Net:</b> Leverages polynomial expansion to capture non-linearities and uses its L1 penalty for automatic feature selection, silencing redundant interaction terms that would otherwise destabilize an unregularized model. Both regression-based models require log-transformed costs to satisfy their constant variance assumption.</li>
@@ -2186,7 +2192,7 @@ plot_binary_feature_target_relationships(
 #                 <li><b>MLP:</b> Log-transformation is required to prevent "exploding gradients" triggered by the \$100k+ extreme tail, which would otherwise destabilize weight updates during backpropagation. Since scikit-learn's <code>MLPRegressor</code> is restricted to MSE loss (doesn't allow custom loss functions), log-transformation acts as a mathematical proxy. This shifts the "center of gravity" of the MSE loss toward the median, aligning the gradient updates with our MdAE success metric.</li>
 #             </ul>
 #         </li>
-#         <li style="margin-bottom:10px;"><b>7. Architectural Fallback</b>
+#         <li style="margin-bottom:10px;"><b>8. Architectural Fallback</b>
 #             <ul style="margin-top:5px;">
 #                 <li><b>Two-Stage Hurdle Model:</b> The "Usage Gatekeeper" insight and the 22.3% baseline of zero-cost individuals indicate a fundamental split in user behavior (accessing care vs. avoiding it). If single-stage regressors struggle to capture this bimodal zero-inflated distribution, evaluate a Hurdle Model: a binary classifier to predict the probability of any cost, followed by a regressor to predict the magnitude.</li>
 #             </ul>
