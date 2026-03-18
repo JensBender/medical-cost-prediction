@@ -3553,15 +3553,15 @@ display(verify_loaded_dtypes.style.pipe(add_caption, "Data Types"))
 #     - **Univariate EDA:** 
 #         - **Sample Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
 #         - **Target Variable:** Identified a zero-inflated (22%) and extremely right-skewed distribution where the top 1% of spenders drive ~21% of costs.
-#         - **Numerical Features:** Profiled age, household size, and self-reported health, informing robust median imputation for missing values.
-#         - **Categorical Features:** Identified oversampling of individuals with low socio-economic status, confirming that sample weights are required for population representativeness.
+#         - **Numerical Features:** Visualized distribution of age, household size, and health self-ratings, informing robust median-based imputation for right-skewed and discrete scales.
+#         - **Categorical Features:** Identified oversampling of low socio-economic status individuals, confirming that sample weights are required for population representativeness.
 #         - **Binary Features:** Quantified prevalence of chronic conditions and functional limitations and identified oversampling of healthy individuals.
 #     - **Bivariate EDA:** 
-#         - **Correlations:** 
+#         - **Correlations:** Visualized Spearman rank correlations with a heatmap. Identified Age (0.30) and Poverty Category (0.26) as primary correlates with out-of-pocket costs, alongside Arthritis, High Cholesterol, and Joint Pain (~0.22).
 #         - **Numerical Features vs. Target:** 
-#         - **Categorical Features vs. Target:** 
+#         - **Categorical Features vs. Target:** Revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization.
 #         - **Binary Features vs. Target:** 
-#     - **Modeling Strategy:** 
+#     - **Modeling Strategy:** Targeted MdAE optimization by using MAE loss for tree models and log-transforming the target for regression and gradient-based models.
 # - **Feature Engineering (Stateless):**
 #     - **Feature Refinement:** Created a recent life transition feature and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
 #     - **Feature Validation:** Defined pipeline input feature sets and verified feature engineering results.
