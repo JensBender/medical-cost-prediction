@@ -2128,6 +2128,17 @@ plot_binary_feature_target_relationships(
 #     <h2 style="margin:0px">Modeling Strategy</h2>
 # </div>
 #
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <strong>Baseline Models:</strong>
+#     <ul style="margin-top:8px; margin-bottom:0px">
+#         <li><b>Regression-Based:</b> Linear Regression, Elastic Net Regression</li>
+#         <li><b>Tree-Based:</b> Decision Tree (DT), Random Forest (RF), XGBoost (XGB)</li>
+#         <li><b>Distance-Based:</b> K-Nearest Neighbors (KNN)</li>
+#         <li><b>Kernel-Based:</b> Support Vector Machine (SVM)</li>
+#         <li><b>Gradient-Based:</b> Multi-Layer Perceptron (MLP)</li>
+#     </ul>
+# </div>
+#
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>EDA-Driven Decisions for Modeling and Feature Engineering</b>
 #     <ul style="margin-top:10px; margin-bottom:0px">
@@ -2155,17 +2166,17 @@ plot_binary_feature_target_relationships(
 #         </li>
 #         <li style="margin-bottom:10px;"><b>5. Model Pipeline</b>
 #             <ul style="margin-top:5px;">
-#                 <li><b>Lean Pipeline:</b> Tree-based models (XGBoost, RF, Decision Tree), MLP, SVM, and KNN use the core pipeline, relying on their native ability to capture non-linear relationships and interactions.</li>
+#                 <li><b>Lean Pipeline:</b> Tree-based models (DT, RF, XGB), KNN, SVM, and MLP use the core pipeline, relying on their native ability to capture non-linear relationships and interactions (except for KNN).</li>
 #                 <li><b>Polynomial Pipeline:</b> Regression-based models (Linear, Elastic Net) require explicit polynomial features to simulate the non-linear patterns and interaction effects.</li>
 #             </ul>
 #         </li>
 #         <li style="margin-bottom:10px;"><b>6. Model-Specific Decisions</b>
 #             <ul style="margin-top:5px;">
-#                 <li style="margin-bottom:5px;"><b>Support Vector Machine (SVM):</b> Use the <b>RBF kernel</b> to capture complex non-linearities (like the Age U-curve) via the "kernel trick" without explicit feature expansion. Use <b>log-transformed costs</b> to ensure the $\epsilon$-insensitive loss function treats errors as relative percentages, preventing "super-spenders" from distorting the global fit. Use <code>gamma='scale'</code> and $\epsilon \approx 0.1$ (~10% error tolerance) for a robust noise-handling strategy tailored to the high-variance healthcare cost distribution.</li>
+#                 <li style="margin-bottom:5px;"><b>SVM:</b> Use the <b>RBF kernel</b> to capture complex non-linearities (like the Age U-curve) via the "kernel trick" without explicit feature expansion. Use <b>log-transformed costs</b> to ensure the $\epsilon$-insensitive loss function treats errors as relative percentages, preventing "super-spenders" from distorting the global fit. Use <code>gamma='scale'</code> and $\epsilon \approx 0.1$ (~10% error tolerance) for a robust noise-handling strategy tailored to the high-variance healthcare cost distribution.</li>
 #                 <li style="margin-bottom:5px;"><b>Regression-Based Models:</b> Use <b>Elastic Net</b> to leverage its L1 penalty for automatic feature selection, silencing redundant polynomial interaction terms. Like SVM, these require <b>log-transformed costs</b> to satisfy their constant variance assumption.</li>
-#                 <li style="margin-bottom:5px;"><b>Tree-Based Models (XGBoost, Random Forest, Decision Tree):</b> Handle non-linear and interaction effects natively and don't require polynomial features. Use <b>raw costs</b>, because log-transformation can inadvertently "blur" the 22.3% zero-hurdle by stretching low-value differences while compressing the extreme high-cost tail that drives total spending. Shift objective functions from standard MSE to an <b>Absolute Error (MAE)</b> criterion (e.g., <code>reg:absoluteerror</code> in XGBoost) or the <b>Tweedie</b> objective, which is mathematically optimized for zero-inflated, power-law distributions.</li>
-#                 <li style="margin-bottom:5px;"><b>K-Nearest Neighbors (KNN):</b> Highly sensitive to unscaled variance and extreme values in the target. It mandates robust feature standardization and <b>log-transformed costs</b> to prevent a single "super-spender" neighbor from disproportionately skewing the local neighborhood average. Since KNN does not natively support sample weights, use weighted bootstrap resampling for the KNN training set to approximate population representativeness.</li>
-#                 <li><b>Multi-Layer Perceptron (MLP):</b> Log-transformation is required to prevent "exploding gradients" triggered by the \$100k+ extreme tail, which would otherwise destabilize weight updates during backpropagation. Since scikit-learn's <code>MLPRegressor</code> is restricted to MSE loss (doesn't allow custom loss functions), log-transformation acts as a mathematical proxy. This shifts the "center of gravity" of the MSE loss toward the median, aligning the gradient updates with our MdAE success metric.</li>
+#                 <li style="margin-bottom:5px;"><b>Tree-Based Models (XGB, RF, DT):</b> Handle non-linear and interaction effects natively and don't require polynomial features. Use <b>raw costs</b>, because log-transformation can inadvertently "blur" the 22.3% zero-hurdle by stretching low-value differences while compressing the extreme high-cost tail that drives total spending. Shift objective functions from standard MSE to an <b>Absolute Error (MAE)</b> criterion (e.g., <code>reg:absoluteerror</code> in XGBoost) or the <b>Tweedie</b> objective, which is mathematically optimized for zero-inflated, power-law distributions.</li>
+#                 <li style="margin-bottom:5px;"><b>KNN:</b> Highly sensitive to unscaled variance and extreme values in the target. It mandates robust feature standardization and <b>log-transformed costs</b> to prevent a single "super-spender" neighbor from disproportionately skewing the local neighborhood average. Since KNN does not natively support sample weights, use weighted bootstrap resampling for the KNN training set to approximate population representativeness.</li>
+#                 <li><b>MLP:</b> Log-transformation is required to prevent "exploding gradients" triggered by the \$100k+ extreme tail, which would otherwise destabilize weight updates during backpropagation. Since scikit-learn's <code>MLPRegressor</code> is restricted to MSE loss (doesn't allow custom loss functions), log-transformation acts as a mathematical proxy. This shifts the "center of gravity" of the MSE loss toward the median, aligning the gradient updates with our MdAE success metric.</li>
 #             </ul>
 #         </li>
 #         <li style="margin-bottom:10px;"><b>7. Architectural Fallback</b>
