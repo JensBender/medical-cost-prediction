@@ -1738,6 +1738,15 @@ plot_numerical_feature_target_relationships(
 
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul style="margin-top:8px; margin-bottom:0px">
+#         <li><b>The Life Cycle of Costs:</b> Age ($\rho=0.30$) is the strongest numerical predictor. While younger individuals are heavily concentrated at \$0 costs, the density of higher spending steadily accumulates with each decade, confirming age as a primary predictor for out-of-pocket spending.</li>
+#         <li><b>Family Size Paradox:</b> The negative relationship ($\rho=-0.22$) with the highest costs concentrated in smaller households (size 1–4) reinforces the earlier insight that larger families typically include children who incur lower individual expenses, diluting the per-person out-of-pocket burden.</li>
+#         <li><b>The Subtlety of Subjective Health:</b> While Physical Health ($\rho=0.08$) and Mental Health ($\rho=0.02$) show negligible associations, the jittered scatter plots reveal that individuals in "Poor" health are less likely to have \$0 costs compared to those in "Excellent" health. However, extreme financial "shocks" occur across all health ratings, suggesting subjective health is a weak predictor for catastrophic events.</li>
+#     </ul>
+# </div>
+# %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">Categorical Features vs. Target</h3>
 # </div>
