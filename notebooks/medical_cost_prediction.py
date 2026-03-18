@@ -2168,26 +2168,27 @@ plot_binary_feature_target_relationships(
 #             <ul style="margin-top:5px;">
 #                 <li><b>Limitations and Conditions Count:</b> Chronic conditions and functional limitations are highly inter-correlated (HBP↔Cholesterol 0.45, Arthritis↔Joint Pain 0.56, ADL↔IADL 0.60). This shared signal justifies engineering <code>CHRONIC_COUNT</code> and <code>LIMITATION_COUNT</code> as aggregate burden indices, reducing redundancy for regression-based models susceptible to multicollinearity while preserving cumulative signal.</li>
 #                 <li><b>Life Transitions and Sparse Categories:</b> The "Married in Round" category (\$788 median vs. \$410 for stable "Married") confirms that transition categories carry a meaningful cost impact. This justifies creating a <code>RECENT_LIFE_TRANSITION</code> flag and collapsing sparse transition categories into their stable counterparts (<code>MARRY31X_GRP</code>, <code>EMPST31_GRP</code>).</li>
-#                 <li><b>Polynomial Features:</b> Regression-based models (Linear, Elastic Net) require explicit feature expansion to capture non-linearities. Use <b>second-degree polynomial features</b> to model the U-shaped age-cost relationship through squared terms ($Age^2$) and primary cost multipliers via interaction terms (e.g., Health × Insurance). Higher degrees (3rd+) are avoided to prevent "feature explosion" and extreme sensitivity to "super-spender" outliers, which would otherwise destabilize predictions in the high-cost tail.</li>
+#                 <li><b>Polynomial Features:</b> Elastic Net Regression requires explicit feature expansion to capture non-linearities. Use <b>second-degree polynomial features</b> to model the U-shaped age-cost relationship through squared terms ($Age^2$) and primary cost multipliers via interaction terms (e.g., Health × Insurance). Higher degrees (3rd+) are avoided to prevent "feature explosion" and extreme sensitivity to "super-spender" outliers, which would otherwise destabilize predictions in the high-cost tail. (Note: Naive Linear Regression is excluded from this expansion to serve as a pure linear benchmark).</li>
 #             </ul>
 #         </li>
 #         <li style="margin-bottom:10px;"><b>5. Model Pipeline</b>
 #             <ul style="margin-top:5px;">
-#                 <li><b>Lean Pipeline:</b> Tree-based models (DT, RF, XGB), SVM, and MLP use the core pipeline, relying on their native ability to capture non-linear relationships and interactions.</li>
-#                 <li><b>Polynomial Pipeline:</b> Regression-based models (Linear, Elastic Net) require explicit polynomial features to simulate the non-linear patterns and interaction effects.</li>
+#                 <li><b>Lean Pipeline:</b> Tree-based models (DT, RF, XGB), SVM, and MLP use the core pipeline, relying on their native ability to capture non-linear relationships and interactions. Linear Regression with the lean pipeline provides a baseline.</li>
+#                 <li><b>Polynomial Pipeline:</b> Elastic Net Regression requires explicit polynomial features to simulate the non-linear patterns and interaction effects.</li>
 #             </ul>
 #         </li>
 #         <li style="margin-bottom:10px;"><b>6. Model-Specific Decisions</b>
 #             <ul style="margin-top:5px;">
-#                 <li style="margin-bottom:5px;"><b>Regression-Based Models:</b> Use <b>Elastic Net</b> to leverage its L1 penalty for automatic feature selection, silencing redundant polynomial interaction terms. Like SVM, these require <b>log-transformed costs</b> to satisfy their constant variance assumption.</li>
-#                 <li style="margin-bottom:5px;"><b>Tree-Based Models (XGB, RF, DT):</b> Handle non-linear and interaction effects natively and don't require polynomial features. Use <b>raw costs</b>, because log-transformation can inadvertently "blur" the 22.3% zero-hurdle by stretching low-value differences while compressing the extreme high-cost tail that drives total spending. Shift objective functions from standard MSE to an <b>Absolute Error (MAE)</b> criterion (e.g., <code>reg:absoluteerror</code> in XGBoost) or the <b>Tweedie</b> objective, which is mathematically optimized for zero-inflated, power-law distributions.</li>
-#                 <li style="margin-bottom:5px;"><b>SVM:</b> Use the <b>RBF kernel</b> to capture complex non-linearities (like the Age U-curve) via the "kernel trick" without explicit feature expansion. Use <b>log-transformed costs</b> to ensure the $\epsilon$-insensitive loss function treats errors as relative percentages, preventing "super-spenders" from distorting the global fit. Use <code>gamma='scale'</code> and $\epsilon \approx 0.1$ (~10% error tolerance) for a robust noise-handling strategy tailored to the high-variance healthcare cost distribution.</li>
+#                 <li style="margin-bottom:5px;"><b>Linear Regression:</b> Serves as the naive baseline and provides a "floor" for performance and a benchmark for the value added by regularization and non-linear modeling.</li>
+#                 <li style="margin-bottom:5px;"><b>Elastic Net:</b> Leverages polynomial expansion to capture non-linearities and uses its L1 penalty for automatic feature selection, silencing redundant interaction terms that would otherwise destabilize an unregularized model. Both regression-based models require log-transformed costs to satisfy their constant variance assumption.</li>
+#                 <li style="margin-bottom:5px;"><b>Tree-Based Models (XGB, RF, DT):</b> Handle non-linear and interaction effects natively and don't require polynomial features. Use raw costs, because log-transformation can inadvertently "blur" the 22.3% zero-hurdle by stretching low-value differences while compressing the extreme high-cost tail that drives total spending. Shift objective functions from standard MSE to an Absolute Error (MAE) criterion (e.g., <code>reg:absoluteerror</code> in XGBoost) or the Tweedie objective, which is mathematically optimized for zero-inflated, power-law distributions.</li>
+#                 <li style="margin-bottom:5px;"><b>SVM:</b> Use the RBF kernel to capture complex non-linearities (like the Age U-curve) via the "kernel trick" without explicit feature expansion. Use log-transformed costs to ensure the $\epsilon$-insensitive loss function treats errors as relative percentages, preventing "super-spenders" from distorting the global fit. Use <code>gamma='scale'</code> and $\epsilon \approx 0.1$ (~10% error tolerance) for a robust noise-handling strategy tailored to the high-variance healthcare cost distribution.</li>
 #                 <li><b>MLP:</b> Log-transformation is required to prevent "exploding gradients" triggered by the \$100k+ extreme tail, which would otherwise destabilize weight updates during backpropagation. Since scikit-learn's <code>MLPRegressor</code> is restricted to MSE loss (doesn't allow custom loss functions), log-transformation acts as a mathematical proxy. This shifts the "center of gravity" of the MSE loss toward the median, aligning the gradient updates with our MdAE success metric.</li>
 #             </ul>
 #         </li>
 #         <li style="margin-bottom:10px;"><b>7. Architectural Fallback</b>
 #             <ul style="margin-top:5px;">
-#                 <li><b>Two-Stage Hurdle Model:</b> The "Usage Gatekeeper" insight and the 22.3% baseline of zero-cost individuals indicate a fundamental split in user behavior (accessing care vs. avoiding it). If single-stage regressors struggle to capture this bimodal zero-inflated distribution, evaluate a <b>Hurdle Model</b>: a binary classifier to predict the probability of any cost, followed by a regressor to predict the magnitude.</li>
+#                 <li><b>Two-Stage Hurdle Model:</b> The "Usage Gatekeeper" insight and the 22.3% baseline of zero-cost individuals indicate a fundamental split in user behavior (accessing care vs. avoiding it). If single-stage regressors struggle to capture this bimodal zero-inflated distribution, evaluate a Hurdle Model: a binary classifier to predict the probability of any cost, followed by a regressor to predict the magnitude.</li>
 #             </ul>
 #         </li>
 #     </ul>
@@ -2208,12 +2209,19 @@ plot_binary_feature_target_relationships(
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard Scaler</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0;">Objective: <code>MAE</code> or <code>Tweedie</code> (Avoids MSE's tail distortion)</td>
 #     </tr>
+#     <tr>
+#         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Regression-Based</b> (Linear)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard Scaler</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;">Baseline performance benchmark</td>
+#     </tr>
 #     <tr style="background-color:#fafafa;">
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Regression-Based</b> (Elastic Net)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Yes</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard Scaler</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0;">Penalty: <code>L1</code> (Handles multicollinearity from polynomial expansion)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;">Penalty: <code>L1</code> (Robustly handles polynomial expansion)</td>
 #     </tr>
 #     <tr>
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Gradient-Based</b> (MLP)</td>
