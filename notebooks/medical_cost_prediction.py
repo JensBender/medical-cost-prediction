@@ -3555,12 +3555,12 @@ display(verify_loaded_dtypes.style.pipe(add_caption, "Data Types"))
 #         - **Binary Features vs. Target:** 
 #     - **Modeling Strategy:** 
 # - **Feature Engineering (Stateless):**
-#     - **Feature Refinement:** Created a recent life transition flag and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
-#     - **Feature Validation:** Defined pipeline input feature lists and verified feature engineering results.
+#     - **Feature Refinement:** Created a recent life transition feature and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
+#     - **Feature Validation:** Defined pipeline input feature sets and verified feature engineering results.
 # - **Train-Validation-Test Split:** Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
 # - **Data Preprocessing (Stateful):**
-#     - **Handling Missing Values:** Imputed missing values using the median for numerical and mode for categorical features, calculated from the training data. 
-#     - **Derive Medical Features:** Imputed missing values using the median for numerical and mode for categorical features, calculated from the training data. 
-#     - **Handling Outliers:** Detected univariate outliers with 3SD and 1.5 IQR methods and identified multivariate outliers with an isolation forest. Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
-#     - **Pipeline:** Integrated all refined preprocessing and engineering steps into a robust scikit-learn pipeline for consistent training and inference.
+#     - **Handling Missing Values:** Imputed missing values using the median for numerical and mode for categorical features. 
+#     - **Derive Medical Features:**  
+#     - **Handling Outliers:** Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
+#     - **Pipeline:** Integrated data preprocessing and feature engineering steps into a robust scikit-learn pipeline for consistent training and inference.
 # - **Data Persistence:** Stored preprocessed data as CSV files and verified integrity of reloaded data.
