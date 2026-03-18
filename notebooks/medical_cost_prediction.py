@@ -2137,9 +2137,9 @@ plot_binary_feature_target_relationships(
 #         <li><b>Gradient-Based:</b> Multi-Layer Perceptron (MLP)</li>
 #     </ul>
 #     <hr style="margin-top:12px; margin-bottom:10px; border:0; border-top:1px solid #d0e7fa;">
-#     <strong>Why K-Nearest Neighbors (KNN) was dropped:</strong>
+#     <strong>Why Not K-Nearest Neighbors (KNN):</strong>
 #     <ul style="margin-top:8px; margin-bottom:0px; font-size:13px;">
-#         <li><b>No Native Sample Weights:</b> It lacks support for the sample weights (<code>PERWT23F</code>) required to ensure population representativeness.</li>
+#         <li><b>No Native Sample Weights:</b> It lacks support for the sample weights required to ensure population representativeness.</li>
 #         <li><b>The Curse of Dimensionality:</b> Its distance-based logic degrades in high-dimensional feature spaces (especially after one-hot encoding).</li>
 #         <li><b>Deployment Inefficiency:</b> The memory-heavy inference (storing the entire training set) is impractical for a responsive web application layer.</li>
 #         <li><b>Tail Problem:</b> Local averaging tends to "wash out" the extreme 99.9th percentile super-spenders who drive costs.</li>
@@ -2203,13 +2203,6 @@ plot_binary_feature_target_relationships(
 #         <th style="padding:8px; border:1px solid #c8e6c9; text-align:left;">Key Settings</th>
 #     </tr>
 #     <tr>
-#         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Tree-Based</b> (XGB, RF, DT)</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard Scaler</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0;">Objective: <code>MAE</code> or <code>Tweedie</code> (Avoids MSE's tail distortion)</td>
-#     </tr>
-#     <tr>
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Regression-Based</b> (Linear)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
@@ -2222,6 +2215,13 @@ plot_binary_feature_target_relationships(
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Yes</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard Scaler</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0;">Penalty: <code>L1</code> (Robustly handles polynomial expansion)</td>
+#     </tr>
+#     <tr>
+#         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Tree-Based</b> (DT, RF, XGB)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard Scaler</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;">Objective: <code>MAE</code> or <code>Tweedie</code> (Avoids MSE's tail distortion)</td>
 #     </tr>
 #     <tr>
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Gradient-Based</b> (MLP)</td>
