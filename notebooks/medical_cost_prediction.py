@@ -2206,42 +2206,42 @@ plot_binary_feature_target_relationships(
 #         <th style="padding:8px; border:1px solid #c8e6c9; text-align:center;">Target Scaling</th>
 #         <th style="padding:8px; border:1px solid #c8e6c9; text-align:center;">Polynomials</th>
 #         <th style="padding:8px; border:1px solid #c8e6c9; text-align:center;">Loss / Objective</th>
-#         <th style="padding:8px; border:1px solid #c8e6c9; text-align:left;">Key Settings</th>
+#         <th style="padding:8px; border:1px solid #c8e6c9; text-align:left;">Optimization Strategy</th>
 #     </tr>
 #     <tr>
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Regression-Based</b> (Linear)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">MSE</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0;">Naive performance benchmark</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;">MAE not supported. Log-transform stabilizes variance.</td>
 #     </tr>
 #     <tr style="background-color:#fafafa;">
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Regression-Based</b> (Elastic Net)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Yes</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">MSE + L1/L2</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0;">Penalty: <code>L1</code> (Handles polynomial expansion)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;"><code>L1</code> penalty handles feature selection for polynomial interaction terms.</td>
 #     </tr>
 #     <tr>
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Tree-Based</b> (DT, RF, XGB)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Raw</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">MAE or Tweedie</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0;">Robust to extreme cost tail distortion</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;">MAE natively supported. Robust to extreme tail without Log.</td>
 #     </tr>
 #     <tr style="background-color:#fafafa;">
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Gradient-Based</b> (MLP)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">MSE</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0;">Log-target acts as proxy for MdAE optimization</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;">MAE not supported. Log squashes extreme tail errors to mimic median-focus during training.</td>
 #     </tr>
 #     <tr>
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Kernel-Based</b> (SVM)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">$\epsilon$-insensitive</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0;">Kernel: <code>RBF</code> (Natively captures non-linearity)</td>
+#         <td style="padding:8px; border:1px solid #e0f0e0;"><code>RBF</code> Kernel to handle non-linearity. Loss is linear like MAE, not squared like MSE. Log still benefits by focusing on percentage accuarcy.</td>
 #     </tr>
 # </table>
 # <p style="font-size:11px; color:#555; margin-top:10px;"><i>Note: All models use feature scaling (<code>StandardScaler</code>) and weights (<code>sample_weight="PERWT23F"</code>) during training.</i></p>
