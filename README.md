@@ -22,14 +22,14 @@ Currently developing an end-to-end machine learning application to predict annua
     <a href="#️-data">Data</a>
   </li>
   <li>
-    <a href="#-data-preprocessing">Data Preprocessing</a>
-  </li>
-  <li>
     <a href="#-exploratory-data-analysis-eda">Exploratory Data Analysis (EDA)</a>
     <ul>
       <li><a href="#target-variable-out-of-pocket-costs">Target Variable</a></li>
       <li><a href="#correlations">Correlations</a></li>
     </ul>
+  </li>
+  <li>
+    <a href="#-data-preprocessing">Data Preprocessing</a>
   </li>
   <li>
     <a href="#-modeling">Modeling</a>
@@ -169,21 +169,6 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to account for the comp
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-## 🧹 Data Preprocessing
-- **Data Loading**: Imported MEPS-HC 2023 SAS data using `pandas` `read_sas`.
-- **Handling Duplicates**: Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
-- **Variable Selection**: Filtered 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
-- **Target Population Filtering**: Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
-- **Handling Data Types**: Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models. Defined semantic data types for all features (numerical, binary, nominal, ordinal).
-- **Standardizing Missing Values**: Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
-- **Train-Validation-Test Split**: Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and extreme tail of the target variable.
-
-Developed a fully automated, robust data preprocessing pipeline using custom scikit-learn transformers to handle missing values, engineer medical features, scale, encode, and prepare features for model training and production deployment.
-![Data Preprocessing Pipeline](/assets/pipeline.svg)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 ## 🔍 Exploratory Data Analysis (EDA)
 
 ### Target Variable: Out-of-Pocket Costs
@@ -202,6 +187,31 @@ The distribution of annual out-of-pocket health care costs (`TOTSLF23`) exhibits
 
 ### Correlations
 ![Correlation Heatmap](figures/eda/correlation_heatmap.png)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+## 🧹 Data Preprocessing
+- **Data Loading:** Imported MEPS-HC 2023 SAS data as a pandas DataFrame.
+- **Data Preparation:**
+    - **Handling Duplicates:** Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
+    - **Variable Selection:** Filtered 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
+    - **Target Population Filtering:** Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
+    - **Handling Data Types:** Implemented IDs as strings and all features and target as floats to ensure scikit-learn compatibility. Defined numerical, nominal, ordinal, and binary feature sets.
+    - **Standardizing Missing Values:** Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
+    - **Standardizing Binary Features:** Standardized binary features to 0/1 encoding.
+- **Feature Engineering (Stateless):**
+    - **Feature Refinement:** Created a recent life transition feature and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
+    - **Feature Validation:** Defined pipeline input feature sets and verified feature engineering results.
+- **Train-Validation-Test Split:** Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
+- **Data Preprocessing (Stateful):**
+    - **Handling Missing Values:** Imputed missing values using the median for numerical and mode for categorical features. 
+    - **Derive Medical Features:** Calculated aggregate chronic condition and functional limitation counts to capture cumulative health burden. 
+    - **Handling Outliers:** Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
+    - **Pipeline:** Developed a fully automated, robust data preprocessing and feature engineering pipeline for consistent model training and inference.
+- **Data Persistence:** Stored preprocessed data as CSV files and verified integrity of reloaded data.
+
+![Data Preprocessing Pipeline](/assets/pipeline.svg)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
