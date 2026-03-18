@@ -3570,7 +3570,7 @@ display(verify_loaded_dtypes.style.pipe(add_caption, "Data Types"))
 #         - **Numerical Features vs. Target:** Visualized feature-target relationships with scatter plots. Revealed Age as the primary cost driver and a negative relationship with Family Size due to pediatric cost dilution in larger households.
 #         - **Categorical Features vs. Target:** Grouped box plots revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization.
 #         - **Binary Features vs. Target:** Identified chronic conditions like Arthritis as key cost drivers with grouped box plots and confirmed a significant "utilization hurdle", where having a usual source of care is a primary spending determinant.
-#     - **Modeling Strategy:** Targeted MdAE optimization by using MAE loss for tree models and log-transforming the target for regression and gradient-based models.
+#     - **Modeling Strategy:** Decided based on EDA insights to implement sample weights for population representativeness and align models with the Median Absolute Error (MdAE) success metric through tailored loss functions, target log transformation, and polynomial features to effectively handle the zero-inflated, heavy-tailed cost distribution.
 # - **Feature Engineering (Stateless):**
 #     - **Feature Refinement:** Created a recent life transition feature and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
 #     - **Feature Validation:** Defined pipeline input feature sets and verified feature engineering results.
