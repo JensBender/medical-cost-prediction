@@ -170,6 +170,19 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to account for the comp
 
 
 ## 🔍 Exploratory Data Analysis (EDA)
+Analyzed distributions and relationships to inform data preprocessing, feature engineering, and modeling decisions.
+  - **Univariate EDA:** 
+      - **Sample Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
+      - **Target Variable:** Identified a zero-inflated (22%) and extremely right-skewed distribution where the top 1% of spenders drive ~21% of costs.
+      - **Numerical Features:** Visualized distribution of age, household size, and health self-ratings, informing robust median-based imputation for right-skewed and discrete scales.
+      - **Categorical Features:** Identified oversampling of low socio-economic status individuals, confirming that sample weights are required for population representativeness.
+      - **Binary Features:** Quantified prevalence of chronic conditions and functional limitations and identified oversampling of healthy individuals.
+  - **Bivariate EDA:** 
+      - **Correlations:** Visualized Spearman rank correlations with a heatmap. Identified Age (0.30) and Poverty Category (0.26) as primary correlates with out-of-pocket costs, alongside Arthritis, High Cholesterol, and Joint Pain (~0.22).
+      - **Numerical Features vs. Target:** Visualized feature-target relationships with scatter plots. Revealed Age as the primary cost driver and a negative relationship with Family Size due to pediatric cost dilution in larger households.
+      - **Categorical Features vs. Target:** Grouped box plots revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization.
+      - **Binary Features vs. Target:** Identified chronic conditions like Arthritis as key cost drivers with grouped box plots and confirmed a significant "utilization hurdle", where having a usual source of care is a primary spending determinant.
+  - **Modeling Strategy:** Decided based on EDA insights to implement sample weights for population representativeness and align models with the Median Absolute Error (MdAE) success metric through tailored loss functions, target log transformation, and polynomial features to effectively handle the zero-inflated, heavy-tailed cost distribution.
 
 ### Target Variable: Out-of-Pocket Costs
 The distribution of annual out-of-pocket health care costs (`TOTSLF23`) exhibits severe right-skewness, zero-inflation, and an extremely heavy tail. While the majority of individuals incur minimal expenses, a small fraction faces extraordinary financial exposure, creating a highly concentrated cost distribution that requires robust modeling techniques.
