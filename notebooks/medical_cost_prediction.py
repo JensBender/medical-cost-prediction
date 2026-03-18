@@ -2133,9 +2133,16 @@ plot_binary_feature_target_relationships(
 #     <ul style="margin-top:8px; margin-bottom:0px">
 #         <li><b>Regression-Based:</b> Linear Regression, Elastic Net Regression</li>
 #         <li><b>Tree-Based:</b> Decision Tree (DT), Random Forest (RF), XGBoost (XGB)</li>
-#         <li><b>Distance-Based:</b> K-Nearest Neighbors (KNN)</li>
 #         <li><b>Kernel-Based:</b> Support Vector Machine (SVM)</li>
 #         <li><b>Gradient-Based:</b> Multi-Layer Perceptron (MLP)</li>
+#     </ul>
+#     <hr style="margin-top:12px; margin-bottom:10px; border:0; border-top:1px solid #d0e7fa;">
+#     <strong>Why K-Nearest Neighbors (KNN) was dropped:</strong>
+#     <ul style="margin-top:8px; margin-bottom:0px; font-size:13px;">
+#         <li><b>No Native Sample Weights:</b> It lacks support for the sample weights (<code>PERWT23F</code>) required to ensure population representativeness.</li>
+#         <li><b>The Curse of Dimensionality:</b> Its distance-based logic degrades in high-dimensional feature spaces (especially after one-hot encoding).</li>
+#         <li><b>Deployment Inefficiency:</b> The memory-heavy inference (storing the entire training set) is impractical for a responsive web application layer.</li>
+#         <li><b>Tail Problem:</b> Local averaging tends to "wash out" the extreme 99.9th percentile super-spenders who drive costs.</li>
 #     </ul>
 # </div>
 #
@@ -2166,16 +2173,15 @@ plot_binary_feature_target_relationships(
 #         </li>
 #         <li style="margin-bottom:10px;"><b>5. Model Pipeline</b>
 #             <ul style="margin-top:5px;">
-#                 <li><b>Lean Pipeline:</b> Tree-based models (DT, RF, XGB), KNN, SVM, and MLP use the core pipeline, relying on their native ability to capture non-linear relationships and interactions (except for KNN).</li>
+#                 <li><b>Lean Pipeline:</b> Tree-based models (DT, RF, XGB), SVM, and MLP use the core pipeline, relying on their native ability to capture non-linear relationships and interactions.</li>
 #                 <li><b>Polynomial Pipeline:</b> Regression-based models (Linear, Elastic Net) require explicit polynomial features to simulate the non-linear patterns and interaction effects.</li>
 #             </ul>
 #         </li>
 #         <li style="margin-bottom:10px;"><b>6. Model-Specific Decisions</b>
 #             <ul style="margin-top:5px;">
-#                 <li style="margin-bottom:5px;"><b>SVM:</b> Use the <b>RBF kernel</b> to capture complex non-linearities (like the Age U-curve) via the "kernel trick" without explicit feature expansion. Use <b>log-transformed costs</b> to ensure the $\epsilon$-insensitive loss function treats errors as relative percentages, preventing "super-spenders" from distorting the global fit. Use <code>gamma='scale'</code> and $\epsilon \approx 0.1$ (~10% error tolerance) for a robust noise-handling strategy tailored to the high-variance healthcare cost distribution.</li>
 #                 <li style="margin-bottom:5px;"><b>Regression-Based Models:</b> Use <b>Elastic Net</b> to leverage its L1 penalty for automatic feature selection, silencing redundant polynomial interaction terms. Like SVM, these require <b>log-transformed costs</b> to satisfy their constant variance assumption.</li>
 #                 <li style="margin-bottom:5px;"><b>Tree-Based Models (XGB, RF, DT):</b> Handle non-linear and interaction effects natively and don't require polynomial features. Use <b>raw costs</b>, because log-transformation can inadvertently "blur" the 22.3% zero-hurdle by stretching low-value differences while compressing the extreme high-cost tail that drives total spending. Shift objective functions from standard MSE to an <b>Absolute Error (MAE)</b> criterion (e.g., <code>reg:absoluteerror</code> in XGBoost) or the <b>Tweedie</b> objective, which is mathematically optimized for zero-inflated, power-law distributions.</li>
-#                 <li style="margin-bottom:5px;"><b>KNN:</b> Highly sensitive to unscaled variance and extreme values in the target. It mandates robust feature standardization and <b>log-transformed costs</b> to prevent a single "super-spender" neighbor from disproportionately skewing the local neighborhood average. Since KNN does not natively support sample weights, use weighted bootstrap resampling for the KNN training set to approximate population representativeness.</li>
+#                 <li style="margin-bottom:5px;"><b>SVM:</b> Use the <b>RBF kernel</b> to capture complex non-linearities (like the Age U-curve) via the "kernel trick" without explicit feature expansion. Use <b>log-transformed costs</b> to ensure the $\epsilon$-insensitive loss function treats errors as relative percentages, preventing "super-spenders" from distorting the global fit. Use <code>gamma='scale'</code> and $\epsilon \approx 0.1$ (~10% error tolerance) for a robust noise-handling strategy tailored to the high-variance healthcare cost distribution.</li>
 #                 <li><b>MLP:</b> Log-transformation is required to prevent "exploding gradients" triggered by the \$100k+ extreme tail, which would otherwise destabilize weight updates during backpropagation. Since scikit-learn's <code>MLPRegressor</code> is restricted to MSE loss (doesn't allow custom loss functions), log-transformation acts as a mathematical proxy. This shifts the "center of gravity" of the MSE loss toward the median, aligning the gradient updates with our MdAE success metric.</li>
 #             </ul>
 #         </li>
@@ -2210,20 +2216,13 @@ plot_binary_feature_target_relationships(
 #         <td style="padding:8px; border:1px solid #e0f0e0;">Penalty: <code>L1</code> (Handles multicollinearity from polynomial expansion)</td>
 #     </tr>
 #     <tr>
-#         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Distance-Based</b> (KNN)</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard Scaler</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0;">Metric: <code>Minkowski</code> (Log-target ensures a stable Euclidean distance)</td>
-#     </tr>
-#     <tr style="background-color:#fafafa;">
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Gradient-Based</b> (MLP)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Standard Scaler</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0;">Loss: <code>MSE</code> (Log-target acts as a proxy for the non-differentiable MdAE)</td>
 #     </tr>
-#     <tr>
+#     <tr style="background-color:#fafafa;">
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Kernel-Based</b> (SVM)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
