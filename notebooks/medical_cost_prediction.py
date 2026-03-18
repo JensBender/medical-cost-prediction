@@ -110,7 +110,7 @@ def add_caption(styler, caption, font_size="14px", font_weight="bold", text_alig
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h1 style="margin:0px">Data Loading and Inspection</h1>
+#     <h1 style="margin:0px">Data Loading</h1>
 # </div>
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
 #     📌 Load the MEPS-HC 2023 data from the <code>h251.sas7bdat</code> file (SAS V9 format) into a Pandas DataFrame.
@@ -3449,8 +3449,8 @@ print(f"\n--- Encoded Nominal Feature Names (Pipeline Output) ---")
 print(encoded_feature_names)
 
 # %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Data Persistence</h2>
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Data Persistence</h1>
 # </div> 
 #
 # <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">📌 Save the preprocessed data from Pandas DataFrames to <code>.csv</code> files.</p> 
@@ -3538,7 +3538,7 @@ display(verify_loaded_dtypes.style.pipe(add_caption, "Data Types"))
 #     - **Handling Duplicates:** Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
 #     - **Variable Selection:** Filtered 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
 #     - **Target Population Filtering:** Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
-#     - **Handling Data Types:** Converted ID to string and maintained features and target as floats to ensure compatibility with scikit-learn transformers and models. Defined raw semantic data types for all features (numerical, binary, nominal, ordinal).
+#     - **Handling Data Types:** Implemented IDs as strings and all features and target as floats to ensure scikit-learn compatibility. Defined numerical, nominal, ordinal, and binary feature sets.
 #     - **Standardizing Missing Values:** Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
 #     - **Standardizing Binary Features:** Standardized binary features to 0/1 encoding.
 # - **Exploratory Data Analysis (EDA):** Analyzed distributions and relationships to inform data preprocessing, feature engineering, and modeling decisions.
@@ -3563,4 +3563,4 @@ display(verify_loaded_dtypes.style.pipe(add_caption, "Data Types"))
 #     - **Derive Medical Features:** Imputed missing values using the median for numerical and mode for categorical features, calculated from the training data. 
 #     - **Handling Outliers:** Detected univariate outliers with 3SD and 1.5 IQR methods and identified multivariate outliers with an isolation forest. Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
 #     - **Pipeline:** Integrated all refined preprocessing and engineering steps into a robust scikit-learn pipeline for consistent training and inference.
-#     - **Data Persistence:** Stored preprocessed data as CSV files and verified integrity of reloaded data.
+# - **Data Persistence:** Stored preprocessed data as CSV files and verified integrity of reloaded data.
