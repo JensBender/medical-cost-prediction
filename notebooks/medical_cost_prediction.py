@@ -3567,9 +3567,9 @@ display(verify_loaded_dtypes.style.pipe(add_caption, "Data Types"))
 #         - **Binary Features:** Quantified prevalence of chronic conditions and functional limitations and identified oversampling of healthy individuals.
 #     - **Bivariate EDA:** 
 #         - **Correlations:** Visualized Spearman rank correlations with a heatmap. Identified Age (0.30) and Poverty Category (0.26) as primary correlates with out-of-pocket costs, alongside Arthritis, High Cholesterol, and Joint Pain (~0.22).
-#         - **Numerical Features vs. Target:** 
-#         - **Categorical Features vs. Target:** Revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization.
-#         - **Binary Features vs. Target:** 
+#         - **Numerical Features vs. Target:** Visualized feature-target relationships with scatter plots. Revealed Age as the primary cost driver and a negative relationship with Family Size due to pediatric cost dilution in larger households.
+#         - **Categorical Features vs. Target:** Grouped box plots revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization.
+#         - **Binary Features vs. Target:** Identified chronic conditions like Arthritis as key cost drivers with grouped box plots and confirmed a significant "utilization hurdle", where having a usual source of care is a primary spending determinant.
 #     - **Modeling Strategy:** Targeted MdAE optimization by using MAE loss for tree models and log-transforming the target for regression and gradient-based models.
 # - **Feature Engineering (Stateless):**
 #     - **Feature Refinement:** Created a recent life transition feature and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
