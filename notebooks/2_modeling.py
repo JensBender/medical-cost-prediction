@@ -94,16 +94,4 @@ from src.pipeline import (
     create_preprocessing_pipeline, 
     create_missing_value_handling_pipeline
 )
-
-# %% [markdown]
-# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     <strong>Constants & Helper Functions</strong>
-# </div>
-
-# %%
-def add_caption(styler, caption, font_size="14px", font_weight="bold", text_align="left"):
-    """Adds a styled caption to a Pandas Styler object."""
-    return styler.set_caption(caption).set_table_styles([{
-        "selector": "caption", 
-        "props": [("font-size", font_size), ("font-weight", font_weight), ("text-align", text_align)]
-    }])
+from src.utils import add_table_caption
