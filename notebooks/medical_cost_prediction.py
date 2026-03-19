@@ -1269,6 +1269,14 @@ plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, D
 
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <strong>Implications for Feature Engineering</strong><br>
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><strong>Recent Life Transition:</strong> Sparse "In Round" transitions regarding marrital status (e.g., recent divorce) and employment status (e.g., recent job loss) signal major "life shocks" between survey interviews. These stressors often precede health volatility and high out-of-pocket costs. To leverage this signal robustly, I will create a <code>RECENT_LIFE_TRANSITION</code> flag and collapse these categories into their parent categories (e.g., "Divorced in Round" → "Divorced").</li>
+#     </ul>
+# </div>
+#
+# %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">Binary Features</h3>
 # </div>
@@ -1381,14 +1389,6 @@ plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABE
 #         <li><b>Sparse High-Severity Risks:</b> Severe conditions such as Stroke (3.8%) and Coronary Heart Disease (4.7%) are relatively sparse. This scarcity reinforces the necessity of our distribution-informed stratified split to ensure these high-impact tail events are adequately represented for model evaluation.</li>
 #     </ul>
 # </div>
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <strong>Implications for Feature Engineering</strong><br>
-#     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><strong>Recent Life Transition:</strong> Sparse "In Round" transitions regarding marrital status (e.g., recent divorce) and employment status (e.g., recent job loss) signal major "life shocks" between survey interviews. These stressors often precede health volatility and high out-of-pocket costs. To leverage this signal robustly, I will create a <code>RECENT_LIFE_TRANSITION</code> flag and collapse these categories into their parent categories (e.g., "Divorced in Round" → "Divorced").</li>
-#     </ul>
-# </div>
-#
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h2 style="margin:0px">Bivariate EDA</h2>
@@ -3569,8 +3569,8 @@ display(verify_loaded_dtypes.style.pipe(add_caption, "Data Types"))
 #         - **Sample Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
 #         - **Target Variable:** Identified a zero-inflated (22%) and extremely right-skewed distribution where the top 20% of spenders drive 79% of costs.
 #         - **Numerical Features:** Visualized distribution of age, family size, and self-reported health, informing robust median-based imputation for right-skewed and discrete features.
-#         - **Categorical Features:** Revealed 66% hold private insurance, suggesting costs will be driven by plan-specific cost-sharing. Identified oversampling of low socio-economic status individuals, confirming the importance of sample weights.
-#         - **Binary Features:** Quantified prevalence of chronic conditions and functional limitations and identified oversampling of healthy individuals.
+#         - **Categorical Features:** Revealed 66% hold private insurance, suggesting costs will be driven by plan-specific cost-sharing. Identified oversampling of healthy and low socio-economic status individuals, confirming the importance of sample weights.
+#         - **Binary Features:** Identified high prevalence of joint pain (45%), high bood pressure (32%), and high cholesterol (31%), while severe conditions such as cancer (11%), coronary heart disease (5%), and stroke (4%) are more sparse.
 #     - **Bivariate EDA:** 
 #         - **Correlations:** A heatmap of Spearman rank correlations revealed age (0.30) and poverty category (0.26) as primary cost correlates, alongside arthritis, high cholesterol, and joint pain (~0.22).
 #         - **Numerical Features vs. Target:** Visualized feature-target relationships with scatter plots. Revealed Age as the primary cost driver and a negative relationship with Family Size due to pediatric cost dilution in larger households.
