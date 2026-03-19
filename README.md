@@ -23,10 +23,6 @@ Currently developing an end-to-end machine learning application to predict annua
   </li>
   <li>
     <a href="#-exploratory-data-analysis-eda">Exploratory Data Analysis (EDA)</a>
-    <ul>
-      <li><a href="#target-variable-out-of-pocket-costs">Target Variable</a></li>
-      <li><a href="#correlations">Correlations</a></li>
-    </ul>
   </li>
   <li>
     <a href="#-data-preprocessing">Data Preprocessing</a>
@@ -170,38 +166,27 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to account for the comp
 
 
 ## 🔍 Exploratory Data Analysis (EDA)
-Analyzed distributions and relationships to inform data preprocessing, feature engineering, and modeling decisions.
-  - **Univariate EDA:** 
-      - **Sample Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
-      - **Target Variable:** Identified a zero-inflated (22%) and extremely right-skewed distribution where the top 1% of spenders drive ~21% of costs.
-      - **Numerical Features:** Visualized distribution of age, household size, and health self-ratings, informing robust median-based imputation for right-skewed and discrete scales.
-      - **Categorical Features:** Identified oversampling of low socio-economic status individuals, confirming that sample weights are required for population representativeness.
-      - **Binary Features:** Quantified prevalence of chronic conditions and functional limitations and identified oversampling of healthy individuals.
-  - **Bivariate EDA:** 
-      - **Correlations:** Visualized Spearman rank correlations with a heatmap. Identified Age (0.30) and Poverty Category (0.26) as primary correlates with out-of-pocket costs, alongside Arthritis, High Cholesterol, and Joint Pain (~0.22).
-      - **Numerical Features vs. Target:** Visualized feature-target relationships with scatter plots. Revealed Age as the primary cost driver and a negative relationship with Family Size due to pediatric cost dilution in larger households.
-      - **Categorical Features vs. Target:** Grouped box plots revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization.
-      - **Binary Features vs. Target:** Identified chronic conditions like Arthritis as key cost drivers with grouped box plots and confirmed a significant "utilization hurdle", where having a usual source of care is a primary spending determinant.
-  - **Modeling Strategy:** Decided based on EDA insights to implement sample weights for population representativeness and align models with the Median Absolute Error (MdAE) success metric through tailored loss functions, target log transformation, and polynomial features to effectively handle the zero-inflated, heavy-tailed cost distribution.
+Analyzed distributions and relationships to inform data preprocessing, feature engineering, and modeling decisions.  
 
-### Target Variable: Out-of-Pocket Costs
-The distribution of annual out-of-pocket health care costs (`TOTSLF23`) exhibits severe right-skewness, zero-inflation, and an extremely heavy tail. While the majority of individuals incur minimal expenses, a small fraction faces extraordinary financial exposure, creating a highly concentrated cost distribution that requires robust modeling techniques.
+**Distributions (Univariate EDA)** 
+- **Sample Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
+- **Target Variable:** Identified a zero-inflated (22.3%) and extremely right-skewed distribution where the top 20% of spenders drive 79.3% of costs (see Lorenz curve below).
+- **Numerical Features:** Visualized distribution of age, family size, and self-reported health, informing robust median-based imputation for right-skewed and discrete features.
+- **Categorical Features:** Revealed 66% hold private insurance, suggesting costs will be driven by plan-specific cost-sharing. Identified oversampling of healthy and low socio-economic status individuals, confirming the importance of sample weights.
+- **Binary Features:** Identified high prevalence of joint pain (45%), high bood pressure (32%), and high cholesterol (31%), while severe conditions such as cancer (11%), coronary heart disease (5%), and stroke (4%) are more sparse.
 
 ![Lorenz Curve](figures/eda/lorenz_curve.png)
 
-**Key Insights:**
-*   **Zero-Cost Prevalence:** More than **one in five** U.S. adults (**22.3%**, or an estimated 58 million people) incurred **no out-of-pocket costs** in 2023. This high zero-inflation necessitates models capable of handling a large mass of zero values.
-*   **The 80/20 Rule:** The top **20%** of spenders account for **79.3%** of the total economic burden, demonstrating a near-perfect alignment with the **Pareto Principle**.
-*   **Extreme Concentration:** With a **Gini coefficient of 0.77**, healthcare cost concentration is extraordinary. For context, this far exceeds typical measures of U.S. income inequality (~0.45).
-*   **The Top 1% Phenomenon:** The top 1% of spenders (spending over **$12,868**) account for **20.6%** of all costs—nearly **ten times** the amount of the bottom 50% combined (which account for 2.4% of all costs).
-*   **Impact of "Super-Spenders":** The maximum individual cost reached **$104,652**. These "Black Swan" events can disproportionately skew training, requiring robust regression or target transformations to ensure model stability.
+**Relationships (Bivariate EDA)** 
+- **Correlations:** Spearman rank correlations (see heatmap below) revealed age (0.30) and poverty category (0.26) as primary cost correlates, alongside arthritis, high cholesterol, and joint pain (~0.22).
+- **Numerical Features vs. Target:** Visualized feature-target relationships with scatter plots, revealing age as the primary cost driver and a negative relationship with family size due to pediatric cost dilution in larger households.
+- **Categorical Features vs. Target:** Grouped box plots revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization.
+- **Binary Features vs. Target:** Identified high-prevalence "global drivers" (arthritis) vs. high-severity "local triggers" (cancer), and confirmed a massive "utilization hurdle" where women and people with a usual source of care spend more.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-### Correlations
 ![Correlation Heatmap](figures/eda/correlation_heatmap.png)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+**Modeling Strategy**  
+Based on EDA-driven insights, decided to implement sample weights for population representativeness and align models with the Median Absolute Error (MdAE) success metric through tailored loss functions, target log transformation, and polynomial features to effectively handle the zero-inflated, heavy-tailed cost distribution.
 
 
 ## 🧹 Data Preprocessing
