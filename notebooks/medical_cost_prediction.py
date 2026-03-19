@@ -3565,18 +3565,18 @@ display(verify_loaded_dtypes.style.pipe(add_caption, "Data Types"))
 #     - **Standardizing Missing Values:** Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
 #     - **Standardizing Binary Features:** Standardized binary features to 0/1 encoding.
 # - **Exploratory Data Analysis (EDA):** Analyzed distributions and relationships to inform data preprocessing, feature engineering, and modeling decisions.
-#     - **Univariate EDA:** 
+#     - **Distributions (Univariate EDA):** 
 #         - **Sample Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
 #         - **Target Variable:** Identified a zero-inflated (22%) and extremely right-skewed distribution where the top 20% of spenders drive 79% of costs.
 #         - **Numerical Features:** Visualized distribution of age, family size, and self-reported health, informing robust median-based imputation for right-skewed and discrete features.
 #         - **Categorical Features:** Revealed 66% hold private insurance, suggesting costs will be driven by plan-specific cost-sharing. Identified oversampling of healthy and low socio-economic status individuals, confirming the importance of sample weights.
 #         - **Binary Features:** Identified high prevalence of joint pain (45%), high bood pressure (32%), and high cholesterol (31%), while severe conditions such as cancer (11%), coronary heart disease (5%), and stroke (4%) are more sparse.
-#     - **Bivariate EDA:** 
+#     - **Relationships (Bivariate EDA):** 
 #         - **Correlations:** A heatmap of Spearman rank correlations revealed age (0.30) and poverty category (0.26) as primary cost correlates, alongside arthritis, high cholesterol, and joint pain (~0.22).
-#         - **Numerical Features vs. Target:** Visualized feature-target relationships with scatter plots, revealing age as the primary cost driver and a negative relationship with family size due to pediatric cost dilution in larger households.
+#         - **Numerical Features vs. Target:** Visualized feature-target relationships with scatter plots, revealing age as the primary cost driver and a negative relationship with family size likely due to shared family insurance limits.
 #         - **Categorical Features vs. Target:** Grouped box plots revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization.
 #         - **Binary Features vs. Target:** Identified high-prevalence "global drivers" (arthritis) vs. high-severity "local triggers" (cancer), and confirmed a massive "utilization hurdle" where women and people with a usual source of care spend more.
-#     - **Modeling Strategy:** Decided to implement sample weights for population representativeness and align models with the Median Absolute Error (MdAE) success metric through tailored loss functions, target log transformation, and polynomial features to effectively handle the zero-inflated, heavy-tailed cost distribution.
+#     - **Modeling Strategy:** Based on EDA-driven insights, decided to implement sample weights for population representativeness and align models with the Median Absolute Error (MdAE) success metric through tailored loss functions, target log transformation, and polynomial features to effectively handle the zero-inflated, heavy-tailed cost distribution.
 # - **Feature Engineering (Stateless):**
 #     - **Feature Refinement:** Created a recent life transition feature and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
 #     - **Feature Validation:** Defined pipeline input feature sets and verified feature engineering results.
