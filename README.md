@@ -171,17 +171,17 @@ Analyzed distributions and relationships to inform data preprocessing, feature e
 **Distributions (Univariate EDA)** 
 - **Sample Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
 - **Target Variable:** Identified a zero-inflated (22.3%) and extremely right-skewed distribution where the top 20% of spenders drive 79.3% of costs (see Lorenz curve below).
-- **Numerical Features:** Visualized distribution of age, family size, and self-reported health, informing robust median-based imputation for right-skewed and discrete features.
-- **Categorical Features:** Revealed 66% hold private insurance, suggesting costs will be driven by plan-specific cost-sharing. Identified oversampling of healthy and low socio-economic status individuals, confirming the importance of sample weights.
-- **Binary Features:** Identified high prevalence of joint pain (45%), high bood pressure (32%), and high cholesterol (31%), while severe conditions such as cancer (11%), coronary heart disease (5%), and stroke (4%) are more sparse.
+- **Numerical Features:** Visualized distribution of age, family size, and self-reported health, informing robust median-based imputation for right-skewed and discrete features [(see histograms)](#numerical-distributions).
+- **Categorical Features:** Revealed 66% hold private insurance, suggesting costs will be driven by plan-specific cost-sharing. Identified oversampling of healthy and low socio-economic status individuals, confirming the importance of sample weights [(see bar plots)](#categorical-distributions).
+- **Binary Features:** Identified high prevalence of joint pain (45%), high bood pressure (32%), and high cholesterol (31%), while severe conditions such as cancer (11%), coronary heart disease (5%), and stroke (4%) are more sparse [(see bar plots)](#binary-distributions).
 
 ![Lorenz Curve](figures/eda/lorenz_curve.png)
 
 **Relationships (Bivariate EDA)** 
 - **Correlations:** Spearman rank correlations (see heatmap below) revealed age (0.30) and poverty category (0.26) as primary cost correlates, alongside arthritis, high cholesterol, and joint pain (~0.22).
-- **Numerical Features vs. Target:** Visualized feature-target relationships with scatter plots, revealing age as the primary cost driver and a negative relationship with family size due to pediatric cost dilution in larger households.
-- **Categorical Features vs. Target:** Grouped box plots revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization.
-- **Binary Features vs. Target:** Identified high-prevalence "global drivers" (arthritis) vs. high-severity "local triggers" (cancer), and confirmed a massive "utilization hurdle" where women and people with a usual source of care spend more.
+- **Numerical Features vs. Target:** Visualized feature-target relationships, revealing age as the primary cost driver and a negative relationship with family size likely due to shared family insurance limits [(see scatter plots)](#numerical-feature-target-relationships).
+- **Categorical Features vs. Target:** Grouped box plots revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization [(see grouped box plots)](#categorical-feature-target-relationships).
+- **Binary Features vs. Target:** Identified high-prevalence "global drivers" (arthritis) vs. high-severity "local triggers" (cancer), and confirmed a massive "utilization hurdle" where women and people with a usual source of care spend more [(see grouped box plots)](#binary-feature-target-relationships).
 
 ![Correlation Heatmap](figures/eda/correlation_heatmap.png)
 
