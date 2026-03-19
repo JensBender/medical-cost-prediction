@@ -3470,7 +3470,9 @@ print(encoded_feature_names)
 #     <h1 style="margin:0px">Data Persistence</h1>
 # </div> 
 #
-# <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">📌 Save the preprocessed data from Pandas DataFrames to <code>.csv</code> files.</p> 
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Save the preprocessed data from Pandas DataFrames to <code>.csv</code> files.
+# </div> 
 
 # %%
 # Merge preprocessed X features and y target variable 
@@ -3488,14 +3490,18 @@ df_test_preprocessed.to_csv("../data/test_data_preprocessed.csv", index=True)
 # df_val_preprocessed.to_parquet("data/validation_data_preprocessed.parquet")
 # df_test_preprocessed.to_parquet("data/test_data_preprocessed.parquet")
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Reload preprocessed data and verify data integrity (i.e., shape, index, types, and values are identical to original).
+# </div>
+
 # %%
-# --- Verify Results ---  
-# Reload data from .csv files to Pandas DataFrames (ensure ID is loaded as a string)
+# Reload data from .csv files to Pandas DataFrames (ensure ID is loaded as the index and as a string)
 df_train_preprocessed_loaded = pd.read_csv("../data/training_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
 df_val_preprocessed_loaded = pd.read_csv("../data/validation_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
 df_test_preprocessed_loaded = pd.read_csv("../data/test_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
 
-# Summary Table: Shape, Index, Types and Values of Original vs. Reloaded Data
+# Data Integrity Summary Table: Shape, Index, Types and Values of Original vs. Reloaded Data
 def verify_data_integrity(original, loaded, name):
     # 1. Shape Equality
     shape_equal = original.shape == loaded.shape
@@ -3523,7 +3529,7 @@ verify_loaded_integrity = pd.DataFrame({
 }).T
 display(verify_loaded_integrity.style.pipe(add_caption, "Verify Integrity of Loaded Data"))
 
-# Compare original vs. loaded data shapes
+# Detailed shape comparison
 verify_loaded_shape = pd.DataFrame({
     "Train Original": [df_train_preprocessed.shape], 
     "Train Reloaded": [df_train_preprocessed_loaded.shape],
@@ -3534,7 +3540,7 @@ verify_loaded_shape = pd.DataFrame({
 }, index=["(rows, cols)"]) 
 display(verify_loaded_shape.style.pipe(add_caption, "Data Shapes"))
 
-# Compare original vs. loaded data types
+# Detailed data type comparison
 verify_loaded_dtypes = pd.DataFrame({
     "Train Original": df_train_preprocessed.dtypes, 
     "Train Reloaded": df_train_preprocessed_loaded.dtypes,
