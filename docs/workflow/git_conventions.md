@@ -37,6 +37,7 @@ Conventional structure of a commit message with a header, body, and footer:
     - `readme`: README.md file.
     - `prd`: Product Requirements Document.
     - `tech-spec`: Technical Specifications Document.
+    - `utils`: Helper functions and general utilities in `src/utils.py`.
     - `tests`: Unit tests.
 - **Subject**: A concise description of the change (maximum 50 characters).
 
