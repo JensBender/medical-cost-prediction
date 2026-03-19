@@ -363,27 +363,27 @@ Table of population statistics for all numerical features:
 | Physical Health | 258,917,544 | 2.37  | 1.04  | 1.0  | 2.0  | 2.0  | 3.0  | 5.0  |
 | Mental Health   | 258,635,089 | 2.26  | 1.03  | 1.0  | 1.0  | 2.0  | 3.0  | 5.0  |
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
 
 ### Categorical Distributions
 ![Categorical Distributions](figures/eda/categorical_distributions.png)
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
 
 ### Binary Distributions
 ![Binary Distributions](figures/eda/binary_distributions.png)
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
 
 ### Numerical Feature-Target Relationships
 ![Numerical Feature-Target Relationships](figures/eda/numerical_feature_target_relationships.png)
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
 
 ### Categorical Feature-Target Relationships
 ![Categorical Feature-Target Relationships](figures/eda/categorical_feature_target_relationships.png)
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
 
 ### Binary Feature-Target Relationships
 ![Binary Feature-Target Relationships](figures/eda/binary_feature_target_relationships.png)
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
 
 ### Outlier Analysis
 **1. Outlier Detection:** Utilized an Isolation Forest (5% contamination) to identify multivariate outliers in training data.  
