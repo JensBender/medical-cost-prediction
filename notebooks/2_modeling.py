@@ -85,7 +85,10 @@ import joblib
 # Local imports
 from src.constants import (
     DISPLAY_LABELS, 
-    CATEGORY_LABELS_EDA
+    CATEGORY_LABELS_EDA,
+    RANDOM_STATE,
+    POP_COLOR,
+    SAMPLE_COLOR
 )
 from src.pipeline import (
     create_preprocessing_pipeline, 
@@ -98,13 +101,6 @@ from src.pipeline import (
 # </div>
 
 # %%
-# Configuration
-RANDOM_STATE = 42
-
-# Plotting aesthetics
-POP_COLOR = "#084594"    # deep navy for population
-SAMPLE_COLOR = "#14b8a6" # vibrant teal for sample
-
 def add_caption(styler, caption, font_size="14px", font_weight="bold", text_align="left"):
     """Adds a styled caption to a Pandas Styler object."""
     return styler.set_caption(caption).set_table_styles([{

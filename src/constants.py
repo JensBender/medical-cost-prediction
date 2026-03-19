@@ -168,3 +168,10 @@ NOMINAL_CATEGORIES = [
 # Define the nominal categories to drop for one-hot encoder (must be in same order as NOMINAL_CATEGORIES)
 # Rationale: (1) Allow meaningful comparisons to other categories and (2) often the most frequent category (thus more robust baseline than sparse categories)
 NOMINAL_DROP_CATEGORIES = ["South", "Married", "Any Private", "HS Diploma"]
+
+# Configuration
+RANDOM_STATE = 42
+
+# Plotting Aesthetics
+POP_COLOR = "#084594"    # deep navy for population
+SAMPLE_COLOR = "#14b8a6" # vibrant teal for sample
