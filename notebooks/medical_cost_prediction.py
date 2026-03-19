@@ -3486,9 +3486,9 @@ df_val_preprocessed.to_csv("../data/validation_data_preprocessed.csv", index=Tru
 df_test_preprocessed.to_csv("../data/test_data_preprocessed.csv", index=True)
 
 # Save as .parquet files (preserves index, data types, is faster, and requires less storage space than .csv)
-# df_train_preprocessed.to_parquet("data/training_data_preprocessed.parquet")
-# df_val_preprocessed.to_parquet("data/validation_data_preprocessed.parquet")
-# df_test_preprocessed.to_parquet("data/test_data_preprocessed.parquet")
+df_train_preprocessed.to_parquet("../data/training_data_preprocessed.parquet")
+df_val_preprocessed.to_parquet("../data/validation_data_preprocessed.parquet")
+df_test_preprocessed.to_parquet("../data/test_data_preprocessed.parquet")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -3496,10 +3496,15 @@ df_test_preprocessed.to_csv("../data/test_data_preprocessed.csv", index=True)
 # </div>
 
 # %%
+# Reload data from .parquet files to Pandas DataFrames
+df_train_preprocessed_loaded = pd.read_parquet("../data/training_data_preprocessed.parquet")
+df_val_preprocessed_loaded = pd.read_parquet("../data/validation_data_preprocessed.parquet")
+df_test_preprocessed_loaded = pd.read_parquet("../data/test_data_preprocessed.parquet")
+
 # Reload data from .csv files to Pandas DataFrames (ensure ID is loaded as the index and as a string)
-df_train_preprocessed_loaded = pd.read_csv("../data/training_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
-df_val_preprocessed_loaded = pd.read_csv("../data/validation_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
-df_test_preprocessed_loaded = pd.read_csv("../data/test_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
+# df_train_preprocessed_loaded = pd.read_csv("../data/training_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
+# df_val_preprocessed_loaded = pd.read_csv("../data/validation_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
+# df_test_preprocessed_loaded = pd.read_csv("../data/test_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
 
 # Data Integrity Summary Table: Shape, Index, Types and Values of Original vs. Reloaded Data
 def verify_data_integrity(original, loaded, name):
