@@ -15,7 +15,7 @@
 
 # %% [markdown]
 # <div style="text-align:center; background-color:#fff6e4; padding:20px; border:4px solid #f5ecda; border-radius:8px;">
-#     <div style="font-size:32px; font-weight:bold; color:#4A4A4A;">
+#     <div style="font-size:36px; font-weight:bold; color:#4A4A4A;">
 #         Medical Cost Prediction
 #     </div>
 #     <div style="font-size:24px; font-weight:bold; color:#4A4A4A;">
@@ -27,3 +27,87 @@
 #         Last updated: March 2026
 #     </div>
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Setup</h1>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     <strong>Notebook Settings</strong>
+# </div>
+
+# %%
+# Automatically reload local modules before each cell run (prevents having to restart kernel after changes)
+# %load_ext autoreload
+# %autoreload 2
+
+# %% [markdown]
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     <strong>Imports</strong>
+# </div>
+
+# %%
+# Data manipulation
+import pandas as pd
+import numpy as np
+
+# Data visualization
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick  # to format axis ticks
+import seaborn as sns
+import math  # to calculate n_rows in subplot matrix
+
+# Model selection
+from sklearn.model_selection import RandomizedSearchCV
+from scipy.stats import randint, uniform  # for random hyperparameter values
+
+# Models
+from sklearn.linear_model import LinearRegression
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.svm import SVR
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.neural_network import MLPRegressor
+from xgboost import XGBRegressor 
+
+# Model evaluation
+from sklearn.metrics import (
+    median_absolute_error,
+    mean_squared_error, 
+    mean_absolute_percentage_error, 
+    r2_score
+)
+
+# Model persistence
+import joblib
+
+# Local imports
+from src.constants import (
+    DISPLAY_LABELS, 
+    CATEGORY_LABELS_EDA
+)
+from src.pipeline import (
+    create_preprocessing_pipeline, 
+    create_missing_value_handling_pipeline
+)
+
+# %% [markdown]
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     <strong>Constants & Helper Functions</strong>
+# </div>
+
+# %%
+# Configuration
+RANDOM_STATE = 42
+
+# Plotting aesthetics
+POP_COLOR = "#084594"    # deep navy for population
+SAMPLE_COLOR = "#14b8a6" # vibrant teal for sample
+
+def add_caption(styler, caption, font_size="14px", font_weight="bold", text_align="left"):
+    """Adds a styled caption to a Pandas Styler object."""
+    return styler.set_caption(caption).set_table_styles([{
+        "selector": "caption", 
+        "props": [("font-size", font_size), ("font-weight", font_weight), ("text-align", text_align)]
+    }])
