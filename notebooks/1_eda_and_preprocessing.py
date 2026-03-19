@@ -14,13 +14,18 @@
 # ---
 
 # %% [markdown]
-# <div style="text-align:center; font-size:36px; font-weight:bold; color:#4A4A4A; background-color:#fff6e4; padding:10px; border:3px solid #f5ecda; border-radius:6px">
-#     Medical Cost Prediction
-#     <p style="text-align:center; font-size:14px; font-weight:normal; color:#4A4A4A; margin-top:12px;">
+# <div style="text-align:center; background-color:#fff6e4; padding:20px; border:4px solid #f5ecda; border-radius:8px;">
+#     <div style="font-size:36px; font-weight:bold; color:#4A4A4A;">
+#         Medical Cost Prediction
+#     </div>
+#     <div style="font-size:24px; font-weight:bold; color:#4A4A4A;">
+#         Part 1: EDA &  Preprocessing
+#     </div>
+#     <div style="font-size:14px; font-weight:normal; color:#666; margin-top:16px;">
 #         Author: Jens Bender <br> 
 #         Created: December 2025<br>
 #         Last updated: March 2026
-#     </p>
+#     </div>
 # </div>
 
 # %% [markdown]
@@ -54,24 +59,10 @@ import seaborn as sns
 import math  # to calculate n_rows in subplot matrix
 
 # Model selection
-from sklearn.model_selection import train_test_split, RandomizedSearchCV
-from scipy.stats import randint, uniform  # for random hyperparameter values
+from sklearn.model_selection import train_test_split
 
-# Models
-from sklearn.linear_model import LinearRegression
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.svm import SVR
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor, IsolationForest
-from sklearn.neural_network import MLPRegressor
-from xgboost import XGBRegressor 
-
-# Model evaluation
-from sklearn.metrics import (
-    mean_squared_error, 
-    mean_absolute_percentage_error, 
-    r2_score
-)
+# Outlier handling
+from sklearn.ensemble import IsolationForest
 
 # Local imports
 from src.constants import (
