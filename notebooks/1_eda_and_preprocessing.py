@@ -81,20 +81,7 @@ from src.pipeline import (
     create_preprocessing_pipeline, 
     create_missing_value_handling_pipeline
 )
-
-
-# %% [markdown]
-# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     <strong>Constants & Helper Functions</strong>
-# </div>
-
-# %%
-def add_caption(styler, caption, font_size="14px", font_weight="bold", text_align="left"):
-    """Adds a styled caption to a Pandas Styler object."""
-    return styler.set_caption(caption).set_table_styles([{
-        "selector": "caption", 
-        "props": [("font-size", font_size), ("font-weight", font_weight), ("text-align", text_align)]
-    }])
+from src.utils import add_table_caption
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -524,7 +511,7 @@ sample_vs_population_stats = pd.DataFrame({
 # Display table
 # Formatting: Comma thousand separator and rounded to zero decimals (sample sum in Millions, population sum in Billions with one decimal)
 sample_vs_population_stats.style \
-    .pipe(add_caption, "Descriptive Statistics") \
+    .pipe(add_table_caption, "Descriptive Statistics") \
     .format("{:,.0f}") \
     .format(lambda x: f"${x/1e6:.1f}M", subset=("sum", "Sample (Unweighted)")) \
     .format(lambda x: f"${x/1e9:.1f}B", subset=("sum", "Population (Weighted)"))
@@ -683,7 +670,7 @@ zero_costs_df = pd.DataFrame({
 }, index=["Zero Costs", "Positive Costs"]).round(2)
 
 zero_costs_df.style \
-    .pipe(add_caption, "Zero Costs Analysis") \
+    .pipe(add_table_caption, "Zero Costs Analysis") \
     .format({
         "Sample (Unweighted) Count": "{:,.0f}",
         "Population (Weighted) Count": "{:,.0f}",
@@ -869,7 +856,7 @@ cost_concentration_df = pd.DataFrame(stats).set_index("Top X%")
 
 # Show table with formatted values
 cost_concentration_df.style \
-    .pipe(add_caption, "Cost Concentration Analysis") \
+    .pipe(add_table_caption, "Cost Concentration Analysis") \
     .format({
         "Threshold (Sample)": "${:,.0f}",
         "Threshold (Population)": "${:,.0f}",
@@ -932,7 +919,7 @@ top_1_df = pd.DataFrame({
 
 # Style the table
 top_1_df.style \
-    .pipe(add_caption, "Top 1% Analysis") \
+    .pipe(add_table_caption, "Top 1% Analysis") \
     .format("${:,.0f}", subset=(["Top 0.1% Threshold", "Top 1% Threshold"], slice(None))) \
     .format("${:,.1f}M", subset=(["Top 0.1% Total Costs", "Top 1% Total Costs"], "Sample (Unweighted)")) \
     .format("${:,.1f}B", subset=(["Top 0.1% Total Costs", "Top 1% Total Costs"], "Population (Weighted)")) \
@@ -956,7 +943,7 @@ chronic_cols = ["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX",
 df["CHRONIC_COUNT"] = (df[chronic_cols] == 1).sum(axis=1)
 
 super_spenders = df[df["TOTSLF23"] >= pop_p999].sort_values("TOTSLF23", ascending=False)
-super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_COUNT"] + chronic_cols].style.pipe(add_caption, "Super-Spenders")
+super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_COUNT"] + chronic_cols].style.pipe(add_table_caption, "Super-Spenders")
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -987,7 +974,7 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 # %%
 # Sample statistics (unweighted) 
 df[raw_numerical_features].describe().T.style \
-    .pipe(add_caption, "Descriptive Statistics (Sample)") \
+    .pipe(add_table_caption, "Descriptive Statistics (Sample)") \
     .format({
         "count": "{:,.0f}",
         "mean": "{:.2f}",
@@ -1023,7 +1010,7 @@ for feature in raw_numerical_features:
 # Show table of population statistics
 pop_stats_df = pd.DataFrame(pop_stats, index=raw_numerical_features)
 pop_stats_df.style \
-    .pipe(add_caption, "Descriptive Statistics (Population)") \
+    .pipe(add_table_caption, "Descriptive Statistics (Population)") \
     .format({
         "count": "{:,.0f}",
         "mean": "{:.2f}",
@@ -2486,7 +2473,7 @@ del X_temp, y_temp, temp_strata, y_strata
 
 # Display the verification DataFrame (format for readability) 
 split_verification_df.style \
-    .pipe(add_caption, "Stratified Split Verification") \
+    .pipe(add_table_caption, "Stratified Split Verification") \
     .format("{:,.1f}") \
     .format("{:,.0f}", subset=["Samples", "Max Cost"]) \
     .format("${:,.0f}", subset=["Mean Cost", "Median Cost", "Max Cost"]) \
@@ -2538,7 +2525,7 @@ missing_value_df.loc["TOTSLF23"] = [
 ]
 # Display table (sorted and with percentages)
 missing_value_df.sort_values("Training", ascending=False).style \
-    .pipe(add_caption, "Missing Value Analysis") \
+    .pipe(add_table_caption, "Missing Value Analysis") \
     .format({
         "Training": lambda x: f"{x} ({x / len(X_train) * 100:.1f}%)",
         "Validation": lambda x: f"{x} ({x / len(X_val) * 100:.1f}%)",
@@ -2603,7 +2590,7 @@ pd.DataFrame({
     "Validation (Preprocessed)": X_val_preprocessed[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
     "Test": X_test[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
     "Test (Preprocessed)": X_test_preprocessed[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
-}).style.pipe(add_caption, "Verification of Missing Value Imputation")
+}).style.pipe(add_table_caption, "Verification of Missing Value Imputation")
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
@@ -2677,7 +2664,7 @@ outlier_remover_3sd.fit(X_train_preprocessed, input_numerical_features + derived
 # Show outliers in training data
 summary_3sd = f"Training data contains {outlier_remover_3sd.outliers_} rows ({outlier_remover_3sd.outliers_ / len(outlier_remover_3sd.final_mask_) * 100:.1f}%) with outliers. Outliers by column below."
 outlier_remover_3sd.stats_.style \
-    .pipe(add_caption, f"<b>Outliers (3SD Method)</b> <br><span style='font-size:12px'>{summary_3sd}</span>", font_weight="normal") \
+    .pipe(add_table_caption, f"<b>Outliers (3SD Method)</b> <br><span style='font-size:12px'>{summary_3sd}</span>", font_weight="normal") \
     .format({
         "mean": "{:.2f}",
         "std": "{:.2f}",
@@ -2706,7 +2693,7 @@ outlier_remover_iqr.fit(X_train_preprocessed, input_numerical_features + derived
 # Show outliers by column for training data
 summary_iqr = f"Training data contains {outlier_remover_iqr.outliers_} rows ({outlier_remover_iqr.outliers_ / len(outlier_remover_iqr.final_mask_) * 100:.1f}%) with outliers. Outliers by column below."
 outlier_remover_iqr.stats_.style \
-    .pipe(add_caption, f"<b>Outliers (1.5 IQR)</b> <br><span style='font-size:12px'>{summary_iqr}</span>", font_weight="normal") \
+    .pipe(add_table_caption, f"<b>Outliers (1.5 IQR)</b> <br><span style='font-size:12px'>{summary_iqr}</span>", font_weight="normal") \
     .format({
         "Q1": "{:.1f}",
         "Q3": "{:.1f}",
@@ -2771,7 +2758,7 @@ for p in percentiles:
 # Create comparison table and display
 benchmark_df = pd.DataFrame(benchmarks).set_index("Benchmark")
 benchmark_df.style \
-    .pipe(add_caption, "Univariate Outlier Profiling: Cost Concentration") \
+    .pipe(add_table_caption, "Univariate Outlier Profiling: Cost Concentration") \
     .format("{:.1f}%", subset=["Inliers", "Outliers"]) \
     .format("{:.1f}x", subset="Outlier/Inlier Ratio")
 
@@ -2971,7 +2958,7 @@ benchmark_df = pd.DataFrame(benchmarks).set_index("Benchmark")
 
 # Display table
 benchmark_df.style \
-    .pipe(add_caption, "Outlier Profiling: Cost Concentration") \
+    .pipe(add_table_caption, "Outlier Profiling: Cost Concentration") \
     .format("{:.1f}%", subset=["Inliers", "Outliers"]) \
     .format("{:.1f}x", subset="Outlier/Inlier Ratio")
 # %% [markdown]
@@ -3014,7 +3001,7 @@ outlier_num_drivers_viz = [col if col != "TOTSLF23" else "TOTSLF23_LOG" for col 
 
 # Display table (Renaming the index only for the view to keep the DF's raw IDs intact)
 outlier_stats_num.rename(index=DISPLAY_LABELS).sort_values(by="IQR Difference", ascending=False).style \
-    .pipe(add_caption, "Outlier Numeric Profile: Median Differences") \
+    .pipe(add_table_caption, "Outlier Numeric Profile: Median Differences") \
     .format("{:.1f}") \
     .set_properties(**{"font-weight": "bold"}, subset=["Difference", "IQR Difference"])
 
@@ -3440,7 +3427,7 @@ for name, (raw, processed) in datasets.items():
 output_numerical_features = preprocessor.named_steps["feature_scaler_encoder"].named_transformers_["numerical_scaler"].get_feature_names_out()
 preprocessor_verify_scaling = X_train_preprocessed[output_numerical_features].describe().loc[["mean", "std", "min", "max"]]
 preprocessor_verify_scaling.style \
-    .pipe(add_caption, "Verification of Feature Scaling") \
+    .pipe(add_table_caption, "Verification of Feature Scaling") \
     .format("{:.2f}")
 
 # %%
@@ -3520,7 +3507,7 @@ verify_loaded_integrity = pd.DataFrame({
     "Val": verify_data_integrity(df_val_preprocessed, df_val_preprocessed_loaded, "Val"),
     "Test": verify_data_integrity(df_test_preprocessed, df_test_preprocessed_loaded, "Test"),
 }).T
-display(verify_loaded_integrity.style.pipe(add_caption, "Verify Integrity of Loaded Data"))
+display(verify_loaded_integrity.style.pipe(add_table_caption, "Verify Integrity of Loaded Data"))
 
 # Detailed shape comparison
 verify_loaded_shape = pd.DataFrame({
@@ -3531,7 +3518,7 @@ verify_loaded_shape = pd.DataFrame({
     "Test Original": [df_test_preprocessed.shape], 
     "Test Reloaded": [df_test_preprocessed_loaded.shape],
 }, index=["(rows, cols)"]) 
-display(verify_loaded_shape.style.pipe(add_caption, "Data Shapes"))
+display(verify_loaded_shape.style.pipe(add_table_caption, "Data Shapes"))
 
 # Detailed data type comparison
 verify_loaded_dtypes = pd.DataFrame({
@@ -3542,7 +3529,7 @@ verify_loaded_dtypes = pd.DataFrame({
     "Test Original": df_test_preprocessed.dtypes, 
     "Test Reloaded": df_test_preprocessed_loaded.dtypes,
 })
-display(verify_loaded_dtypes.style.pipe(add_caption, "Data Types"))
+display(verify_loaded_dtypes.style.pipe(add_table_caption, "Data Types"))
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
