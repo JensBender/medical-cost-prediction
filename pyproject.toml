@@ -29,6 +29,7 @@ train = [
     "matplotlib==3.10.7",
     "seaborn==0.13.2",
     "xgboost==3.1.2",
+    "pyarrow==19.0.1",
 ]
 
 # Dependencies for the Web App/API and deployment
