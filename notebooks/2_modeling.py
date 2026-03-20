@@ -115,24 +115,30 @@ df_test_preprocessed = pd.read_parquet("../data/test_data_preprocessed.parquet")
 # </div>
 
 # %%
+def inspect_df(df):
+    """
+    Inspect a DataFrame and return its shape and data integrity status.
+
+    Args:
+        df (pd.DataFrame): The DataFrame to be validated.
+
+    Returns:
+        list: A list containing:
+            - tuple: Shape of the DataFrame (rows, columns).
+            - str: Status icon for missing values (✅ if none, ❌ otherwise).
+            - str: Status icon for numerical-only columns (✅ if all numerical, ❌ otherwise).
+    """
+    shape = df.shape
+    no_missings = "✅" if not df.isna().any().any() else "❌"
+    all_numerical = "✅" if df.select_dtypes(exclude=[np.number]).empty else "❌"
+    return [shape, no_missings, all_numerical] 
+
 data_inspection = pd.DataFrame(
     {
-        "Train": [
-            df_train_preprocessed.shape,
-            "✅" if not df_train_preprocessed.isna().any().any() else "❌",
-            "✅" if (df_train_preprocessed.select_dtypes(include=[np.number]).shape[1] == df_train_preprocessed.shape[1]) else "❌",
-        ],
-        "Val": [
-            df_val_preprocessed.shape,
-            "✅" if df_val_preprocessed.isna().any().any() == 0 else "❌",
-            "✅" if (df_val_preprocessed.select_dtypes(include=[np.number]).shape[1] == df_val_preprocessed.shape[1]) else "❌",
-        ],
-        "Test": [
-            df_test_preprocessed.shape,
-            "✅" if df_test_preprocessed.isna().any().any() == 0 else "❌",
-            "✅" if (df_test_preprocessed.select_dtypes(include=[np.number]).shape[1] == df_test_preprocessed.shape[1]) else "❌",
-        ],
+        "Train": inspect_df(df_train_preprocessed),
+        "Val": inspect_df(df_val_preprocessed),
+        "Test": inspect_df(df_test_preprocessed),
     },
-    index=["Shape", "No Missing Values", "All Numerical"],
+    index=["Shape", "No Missings", "All Numerical"],
 )
 display(data_inspection.style.pipe(add_table_caption, "Data Inspection"))
