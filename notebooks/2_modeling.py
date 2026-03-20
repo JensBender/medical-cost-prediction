@@ -115,6 +115,24 @@ df_test_preprocessed = pd.read_parquet("../data/test_data_preprocessed.parquet")
 # </div>
 
 # %%
-display(df_train_preprocessed.info())
-display(df_val_preprocessed.info())
-display(df_test_preprocessed.info())
+data_inspection = pd.DataFrame(
+    {
+        "Train": [
+            df_train_preprocessed.shape,
+            "✅" if not df_train_preprocessed.isna().any().any() else "❌",
+            "✅" if (df_train_preprocessed.select_dtypes(include=[np.number]).shape[1] == df_train_preprocessed.shape[1]) else "❌",
+        ],
+        "Val": [
+            df_val_preprocessed.shape,
+            "✅" if df_val_preprocessed.isna().any().any() == 0 else "❌",
+            "✅" if (df_val_preprocessed.select_dtypes(include=[np.number]).shape[1] == df_val_preprocessed.shape[1]) else "❌",
+        ],
+        "Test": [
+            df_test_preprocessed.shape,
+            "✅" if df_test_preprocessed.isna().any().any() == 0 else "❌",
+            "✅" if (df_test_preprocessed.select_dtypes(include=[np.number]).shape[1] == df_test_preprocessed.shape[1]) else "❌",
+        ],
+    },
+    index=["Shape", "No Missing Values", "All Numerical"],
+)
+display(data_inspection.style.pipe(add_table_caption, "Data Inspection"))
