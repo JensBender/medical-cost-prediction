@@ -14,7 +14,7 @@
 # ---
 
 # %% [markdown]
-# <div style="text-align:center; background-color:#fff6e4; padding:20px; border:4px solid #f5ecda; border-radius:8px;">
+# <div style="text-align:center; background-color:#fff6e4; padding:20px; border:5px solid #f5ecda; border-radius:8px;">
 #     <div style="font-size:36px; font-weight:bold; color:#4A4A4A;">
 #         Medical Cost Prediction
 #     </div>
@@ -3446,7 +3446,7 @@ print(encoded_feature_names)
 # </div> 
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Save the preprocessed data from Pandas DataFrames to <code>.csv</code> files.
+#     📌 Save the preprocessed data from Pandas DataFrames as <code>.csv</code> and <code>.parquet</code> files.
 # </div> 
 
 # %%
@@ -3566,4 +3566,4 @@ display(verify_loaded_dtypes.style.pipe(add_table_caption, "Data Types"))
 #     - **Derive Medical Features:** Calculated aggregate chronic condition and functional limitation counts to capture cumulative health burden. 
 #     - **Handling Outliers:** Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
 #     - **Pipeline:** Integrated data preprocessing and feature engineering steps into a robust scikit-learn pipeline for consistent training and inference.
-# - **Data Persistence:** Stored preprocessed data as CSV files and verified integrity of reloaded data.
+# - **Data Persistence:** Stored preprocessed data as `.csv` and `.parquet` files and verified integrity of reloaded data.
