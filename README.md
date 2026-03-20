@@ -1,5 +1,5 @@
 <!-- anchor tag for back-to-top links -->
-<a name="readme-top"></a>
+<a id="readme-top"></a>
 
 <!-- HEADER IMAGE  -->
 <img src="assets/header.png" alt="Header Image">
