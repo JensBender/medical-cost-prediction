@@ -205,9 +205,9 @@ Based on EDA-driven insights, decided to implement sample weights for population
 - **Data Preprocessing (Stateful):**
     - **Handling Missing Values:** Imputed missing values using the median for numerical and mode for categorical features. 
     - **Derive Medical Features:** Calculated aggregate chronic condition and functional limitation counts to capture cumulative health burden. 
-    - **Handling Outliers:** Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.
+    - **Handling Outliers:** Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs [(see detailed outlier analysis)](#outlier-analysis).
     - **Pipeline:** Developed a fully automated, robust data preprocessing and feature engineering pipeline for consistent model training and inference (see architecture diagram below).
-- **Data Persistence:** Stored preprocessed data as CSV files and verified integrity of reloaded data.
+- **Data Persistence:** Stored preprocessed data as `.csv` and `.parquet` files and verified integrity of reloaded data.
 
 ![Data Preprocessing Pipeline](assets/pipeline.svg)
 
@@ -398,7 +398,7 @@ While outliers are only 1.1x more likely to cross the median cost threshold, the
 ![Outlier Profile for Binary Features](figures/outliers/outlier_binary_profile.png)
 ![Outlier Profile for Categorical Features](figures/outliers/outlier_categorical_profile.png)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#-data-preprocessing">back to Preprocessing</a> | <a href="#readme-top">back to top</a>)</p>
 
 
 <!-- MARKDOWN LINKS -->
