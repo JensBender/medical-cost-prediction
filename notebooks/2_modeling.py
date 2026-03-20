@@ -192,3 +192,45 @@ w_test = df_test_preprocessed["PERWT23F"]
 
 # Delete redundant DataFrames to free up memory
 del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
+
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Baseline Models</h1>
+# </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Train 7 baseline models on the full feature set (n raw, n preprocessed) with mostly default hyperparameter values.  
+#     <ul>
+#         <li>Linear Regression</li>
+#         <li>Elastic Net Regression</li>
+#         <li>Decision Tree Regressor</li>
+#         <li>Random Forest Regressor</li>
+#         <li>XGBoost Regressor</li>
+#         <li>Support Vector Regressor</li>
+#         <li>Multi-Layer Perceptron Regressor</li>
+#     </ul>
+#     <hr></hr>
+#     🎯 Evaluate model performance on the validation dataset.  
+#     <ul>
+#         <li>Primary Metric:
+#             <ul>
+#                 <li>Median Absolute Error (MdAE)</li>
+#                 <li>Target: MdAE < $500</li>
+#             </ul>
+#         </li>
+#         <li>Secondary Metrics:
+#             <ul>
+#                 <li>Mean Absolute Error (MAE)</li>
+#                 <li>Coefficient of Determination (R²)</li>
+#             </ul>     
+#         </li>
+#         <li>Additional Diagnostics:
+#             <ul>
+#                 <li>Metrics Comparison Plots and Tables</li>
+#                 <li>Stratified Error Analysis</li>
+#                 <li>Overfitting</li>
+#                 <li>Feature-Error Relationships</li> 
+#             </ul>
+#         </li>
+#     </ul>
+# </div>
