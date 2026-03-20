@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Project scoping |
 | **Created** | 2025-12-12 |
-| **Last Updated** | 2026-03-17 |
+| **Last Updated** | 2026-03-20 |
 
 **Note:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
 
@@ -106,12 +106,13 @@ To balance performance with a frictionless experience (target < 90s completion),
 
 **Selection Process**:
 1.  **Candidate Screening**: Identify MEPS variables that a layperson can answer from memory. Ensure temporal validity (no end-of-year or mid-year variables).
-2.  **Data Integrity Validation**: Verify missingness in training data. Features with 100% completeness (Age, Sex, Insurance) are prioritized as **Required** anchors.
+2.  **Data Integrity Validation**: Verify missingness in training data. Features with 100% completeness (Age, Sex, Insurance, Region, Physical Health) are prioritized as **Required** anchors.
 3.  **Feature Importance Ranking**: Train preliminary models to obtain importance scores.
 4.  **Final Feature Selection**: Map features to the matrix above.
     *   **Imputation Strategy**: Use Mode/Median imputation. Implement a "Safety First" imputation layer for **all** features:
-        *   **Production Robustness**: Even for required features with 0% missingness in training (e.g., Age, Sex), the inference pipeline will include fallback imputation to handle malformed production inputs and avoid system crashes.
+        *   **Production Robustness**: Even for required features with 0% missingness in training (e.g., Age, Sex, Region, Physical Health), the inference pipeline will include fallback imputation to handle malformed production inputs and avoid system crashes.
         *   **Implicit "No" Logic**: Given the high feature completeness in training (>96%), "absence of a checked box" in UI checklists can be statistically justified as an explicit "No" response rather than a missing value.
+    *   **Outlier Retention**: While univariate (3SD) and multivariate (Isolation Forest) outliers are identified for profiling, they are **retained** in the training data. Profiling confirms that these outliers represent legitimate high-risk clinical profiles (e.g., multiple comorbidities) rather than noise or measurement errors. Retaining them ensures the model captures the drivers of high-impact tail risk.
 
 
 ### Candidate Features
@@ -244,7 +245,6 @@ We apply transformations selectively based on how each model handles this varian
 | Models | Target Transform | Rationale |
 | :--- | :--- | :--- |
 | **Linear Regression, Elastic Net, MLP** | `log(y + 1)` | **Strict Assumption.** These models assume constant error variance. `log` stabilizes variance by compressing high values; `+1` handles zero-cost cases where `log(0)` is undefined. |
-| **K-Nearest Neighbors (KNN)** | `log(y + 1)` | **Outlier Sensitive.** KNN averages the values of neighbors. Without `log`, a single high-cost neighbor can skew the prediction massively. |
 | **Decision Tree, Random Forest, XGBoost** | None | **Robust.** These models are non-parametric and partition data into local regions. They can learn to accept low variance in one node and high variance in another without global transformation. |
 
 ### Model Training
@@ -264,12 +264,11 @@ A 4-phase approach where each model is evaluated with its own optimal feature se
 | :--- | :--- | :--- | :--- |
 | Linear Regression | MSE | `log(y+1)` | Inverse-transform predictions |
 | Elastic Net | MSE + L1/L2 | `log(y+1)` | Built-in feature selection |
-| K-Nearest Neighbors | Distance-based | `log(y+1)` | Sensitive to outliers without log |
-| MLP (sklearn) | MSE | `log(y+1)` | Inverse-transform predictions |
-| SVR (SVM) | Epsilon-Insensitive | `log(y+1)` | RBF kernel; `gamma='scale'` |
 | Decision Tree | `absolute_error` | None | MAE-based splits; robust to skew |
 | Random Forest | `absolute_error` | None | MAE-based splits; robust to skew |
 | XGBoost | `reg:tweedie` | None | Tweedie handles skew natively |
+| SVR (SVM) | Epsilon-Insensitive | `log(y+1)` | RBF kernel; `gamma='scale'` |
+| MLP (sklearn) | MSE | `log(y+1)` | Inverse-transform predictions |
 
 **Feature Selection by Model Type**
 | Model | Method | Notes |
@@ -277,7 +276,7 @@ A 4-phase approach where each model is evaluated with its own optimal feature se
 | Elastic Net | L1 regularization + Polynomials | Non-zero coefficients = selected features; captures non-linearities via explicit interaction terms |
 | Random Forest | `feature_importances_` | Built-in feature importance scores |
 | XGBoost | `feature_importances_` | Built-in feature importance scores |
-| KNN, MLP | Recursive Feature Elimination (RFE) | Wrapper method with CV |
+| MLP | Recursive Feature Elimination (RFE) | Wrapper method with CV |
 
 > **Sample Weights:** All models must use `PERWT23F` as `sample_weight` during training. This is required because the MEPS survey design purposefully oversamples low socio-economic status (SES) individuals to ensure research-quality sample sizes for these sub-groups. Using survey weights ensures the model is representative of the actual U.S. civilian population and prevents bias from oversampled cohorts.
 
@@ -324,13 +323,17 @@ The model will be exposed via a Python API (internal to the web app process) or 
         age: int = Field(..., ge=18, le=85)
         sex: int = Field(...)
         insurance_status: int = Field(...)
+        region: int = Field(...)
+        physical_health: int = Field(..., ge=1, le=5)
 
         # OPTIONAL (Null/None allowed; defaults to training mode/median)
         income_bracket: Optional[int] = None
-        physical_health: Optional[int] = None
         mental_health: Optional[int] = None
-        region: Optional[int] = None
-        chronic_conditions: List[str] = [] # Empty list implies "No" for all
+        marital_status: Optional[int] = None
+        employment_status: Optional[int] = None
+        recent_life_transition: bool = False
+        chronic_conditions: List[str] = [] # e.g., ["Diabetes", "Cancer"]
+        limitations: List[str] = []        # e.g., ["Walking", "ADL"]
     ```
 *   **Output Schema:**
     ```json
@@ -346,11 +349,13 @@ The model will be exposed via a Python API (internal to the web app process) or 
 
 ### Inference Pipeline
 1.  **Validation:** Ensure inputs are within valid ranges (e.g., Age 18-85).
-2.  **Imputation:** Fill missing values (Mode for categorical, Median for numerical).
-3.  **Transformation:** Apply `ColumnTransformer` (Scaling/Encoding).
-4.  **Prediction:** Run model inference.
-5.  **Explainability:** Run TreeExplainer/KernelExplainer.
-6.  **Post-Processing:** Apply inflation adjustment + inverse log-transform (if applicable).
+2.  **Initial Formatting:** Convert human-readable API inputs (e.g., condition lists) into the binary indicators and collapsed categories (`RECENT_LIFE_TRANSITION`, `MARRY31X_GRP`) expected by the pipeline.
+3.  **Imputation:** Fill missing values (Mode for categorical, Median for numerical).
+4.  **Medical Feature Derivation:** Calculate aggregate counts (`CHRONIC_COUNT`, `LIMITATION_COUNT`).
+5.  **Transformation:** Apply `ColumnTransformer` (Scaling/Encoding).
+6.  **Prediction:** Run model inference (including any model-specific polynomial interactions).
+7.  **Explainability:** Run TreeExplainer/KernelExplainer.
+8.  **Post-Processing:** Apply inflation adjustment + inverse log-transform (if applicable).
 
 
 ## Testing Strategy
