@@ -45,7 +45,7 @@ Proxies for healthcare access, literacy, insurance quality, and ability to pay.
 |:---|:---|:---|:---|:---|:---|
 | `POVCAT23` | Poverty Category | Family income relative to poverty line | Derived from detailed income components and family size | Poor, Near Poor, Low, Middle, High | Determines subsidy eligibility and insurance quality. [[4]](#ref4) |
 | `FAMSZE23` | Family Size | Number of related persons residing together | "How many people (including yourself) live in your home who are related to you by birth, marriage, or adoption?" | Numerical (1–8+) | Based on CPS definition; excludes roommates and family living elsewhere. |
-| `HIDEG` | Education | Highest degree attained | Derived from years of education, high school diploma status, and degree type | No Degree, GED, HS Diploma, Bachelor's, Master's, Doctorate, Other | Correlates with health literacy and preventive care use. [[4]](#ref4) |
+| `HIDEG` | Education | Highest degree attained | Derived from years of education, high school diploma status, and degree type | No Degree, GED, HS Diploma, Bachelor's, Master's, Doctorate, Other | Correlates with health literacy and preventive care use. Treated as nominal as the "Other" category disrupts the ordinal hierarchy. [[4]](#ref4) |
 | `EMPST31` | Employment Status | Status at beginning of year | Derived from a series of questions covering current job, job to return to, and work earlier in the round | Employed, Job to Return to, Job During Ref Period, Not Employed | Strong proxy for insurance type and income |
 
 **UI Recommendation for POVCAT23:**
