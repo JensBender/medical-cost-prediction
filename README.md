@@ -354,8 +354,7 @@ This project was made possible with the help of the following resources:
 <!-- APPENDIX -->
 ## 📎 Appendix
 ### Distributions
-<a id="numerical-distributions"></a>
-![Numerical Distributions](figures/eda/numerical_distributions.png)
+<a id="numerical-distributions">![Numerical Distributions](figures/eda/numerical_distributions.png)</a>
 
 Table of population statistics for all numerical features:
 | Feature         | Count       | Mean  | Std   | Min  | 25%  | 50%  | 75%  | Max  |
@@ -367,25 +366,20 @@ Table of population statistics for all numerical features:
 
 <p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
 
-<a id="categorical-distributions"></a>
-![Categorical Distributions](figures/eda/categorical_distributions.png)
+<a id="categorical-distributions">![Categorical Distributions](figures/eda/categorical_distributions.png)</a>
 <p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
 
-<a id="binary-distributions"></a>
-![Binary Distributions](figures/eda/binary_distributions.png)
+<a id="binary-distributions">![Binary Distributions](figures/eda/binary_distributions.png)</a>
 <p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
 
 ### Feature-Target Relationships
-<a id="numerical-feature-target-relationships"></a>
-![Numerical Feature-Target Relationships](figures/eda/numerical_feature_target_relationships.png)
+<a id="numerical-feature-target-relationships">![Numerical Feature-Target Relationships](figures/eda/numerical_feature_target_relationships.png)</a>
 <p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
 
-<a id="categorical-feature-target-relationships"></a>
-![Categorical Feature-Target Relationships](figures/eda/categorical_feature_target_relationships.png)
+<a id="categorical-feature-target-relationships">![Categorical Feature-Target Relationships](figures/eda/categorical_feature_target_relationships.png)</a>
 <p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
 
-<a id="binary-feature-target-relationships"></a>
-![Binary Feature-Target Relationships](figures/eda/binary_feature_target_relationships.png)
+<a id="binary-feature-target-relationships">![Binary Feature-Target Relationships](figures/eda/binary_feature_target_relationships.png)</a>
 <p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
 
 ### Outlier Analysis
