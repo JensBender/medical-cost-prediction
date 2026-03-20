@@ -3450,10 +3450,10 @@ print(encoded_feature_names)
 # </div> 
 
 # %%
-# Merge preprocessed X features and y target variable 
-df_train_preprocessed = pd.concat([X_train_preprocessed, y_train], axis=1)
-df_val_preprocessed = pd.concat([X_val_preprocessed, y_val], axis=1)
-df_test_preprocessed = pd.concat([X_test_preprocessed, y_test], axis=1)
+# Merge preprocessed X features, y target variable, and sample weights
+df_train_preprocessed = pd.concat([X_train_preprocessed, y_train, X_train["PERWT23F"]], axis=1)
+df_val_preprocessed = pd.concat([X_val_preprocessed, y_val, X_val["PERWT23F"]], axis=1)
+df_test_preprocessed = pd.concat([X_test_preprocessed, y_test, X_test["PERWT23F"]], axis=1)
 
 # Save as .csv files (in "data" directory)
 df_train_preprocessed.to_csv("../data/training_data_preprocessed.csv", index=True)
