@@ -199,7 +199,7 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Train 7 baseline models on the full feature set (n raw, n preprocessed) with mostly default hyperparameter values.  
+#     ℹ️ Train 7 baseline models on the full feature set (27 raw, 40 preprocessed features) with mostly default hyperparameter values.  
 #     <ul>
 #         <li>Linear Regression</li>
 #         <li>Elastic Net Regression</li>
@@ -209,13 +209,12 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 #         <li>Support Vector Regressor</li>
 #         <li>Multi-Layer Perceptron Regressor</li>
 #     </ul>
-#     <hr></hr>
+#     <hr style="height: 2px; border: none; background-color: #d0e7fa; margin: 16px 0; opacity: 0.8;">
 #     🎯 Evaluate model performance on the validation dataset.  
 #     <ul>
 #         <li>Primary Metric:
 #             <ul>
-#                 <li>Median Absolute Error (MdAE)</li>
-#                 <li>Target: MdAE < $500</li>
+#                 <li>Median Absolute Error (Target: MdAE < $500)</li>
 #             </ul>
 #         </li>
 #         <li>Secondary Metrics:
@@ -227,9 +226,13 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 #         <li>Additional Diagnostics:
 #             <ul>
 #                 <li>Metrics Comparison Plots and Tables</li>
-#                 <li>Stratified Error Analysis</li>
+#                 <li>Error Analysis</li>
+#                 <ul>
+#                     <li>Heteroscedasticity (Residuals vs. Predicted)</li> 
+#                     <li>Feature Dependencies (Residuals vs. Features)</li> 
+#                     <li>Stratified Error Analysis</li>
+#                 </ul>
 #                 <li>Overfitting</li>
-#                 <li>Feature-Error Relationships</li> 
 #             </ul>
 #         </li>
 #     </ul>
