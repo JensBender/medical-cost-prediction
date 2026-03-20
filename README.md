@@ -5,15 +5,12 @@
 <img src="assets/header.png" alt="Header Image">
 
 <!-- SHORT SUMMARY  -->
-Currently developing an end-to-end machine learning application to predict annual out-of-pocket healthcare costs. Initial phase: authoring [Product Requirements](./docs/specs/product_requirements.md) and [Technical Specifications](./docs/specs/technical_specifications.md) for a user-centric system design (task completion time <90s). Engineering the ML pipeline to translate complex survey data (MEPS) into personalized budgeting insights.
+
 
 ## 📋 Table of Contents
 <ol>
   <li>
     <a href="#-summary">Summary</a>
-    <ul>
-      <li><a href="#️-built-with">Built With</a></li>
-    </ul>
   </li>
   <li>
     <a href="#-motivation">Motivation</a>
@@ -67,7 +64,9 @@ Currently developing an end-to-end machine learning application to predict annua
 
 
 ## 🎯 Summary
-### 🛠️ Built With
+Currently developing an end-to-end machine learning application to predict annual out-of-pocket healthcare costs. Initial phase: authoring [Product Requirements](./docs/specs/product_requirements.md) and [Technical Specifications](./docs/specs/technical_specifications.md) for a user-centric system design (task completion time <90s). Engineering the ML pipeline to translate complex survey data (MEPS) into personalized budgeting insights.
+
+🛠️ **Built With**
 - [![Python][Python-badge]][Python-url]
 - [![Pandas][Pandas-badge]][Pandas-url]
 - [![Matplotlib][Matplotlib-badge]][Matplotlib-url] 
