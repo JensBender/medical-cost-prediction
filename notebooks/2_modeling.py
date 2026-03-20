@@ -155,8 +155,8 @@ def inspect_df(df):
 
 data_inspection = pd.DataFrame(
     {
-        "Train": inspect_df(df_train_preprocessed),
-        "Val": inspect_df(df_val_preprocessed),
+        "Training": inspect_df(df_train_preprocessed),
+        "Validation": inspect_df(df_val_preprocessed),
         "Test": inspect_df(df_test_preprocessed),
     },
     index=[
@@ -171,3 +171,24 @@ data_inspection = pd.DataFrame(
     ],
 )
 display(data_inspection.style.pipe(add_table_caption, "Data Inspection"))
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 
+#     📌 Split the preprocessed data into X features, y target variable, and sample weights (w).
+# </div>
+
+# %%
+X_train_preprocessed = df_train_preprocessed.drop(["TOTSLF23", "PERWT23F"], axis=1)
+y_train = df_train_preprocessed["TOTSLF23"]
+w_train = df_train_preprocessed["PERWT23F"]
+
+X_val_preprocessed = df_val_preprocessed.drop(["TOTSLF23", "PERWT23F"], axis=1)
+y_val = df_val_preprocessed["TOTSLF23"]
+w_val = df_val_preprocessed["PERWT23F"]
+
+X_test_preprocessed = df_test_preprocessed.drop(["TOTSLF23", "PERWT23F"], axis=1)
+y_test = df_test_preprocessed["TOTSLF23"]
+w_test = df_test_preprocessed["PERWT23F"]
+
+# Delete redundant DataFrames to free up memory
+del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
