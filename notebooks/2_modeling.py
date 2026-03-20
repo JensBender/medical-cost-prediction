@@ -14,7 +14,7 @@
 # ---
 
 # %% [markdown]
-# <div style="text-align:center; background-color:#fff6e4; padding:20px; border:4px solid #f5ecda; border-radius:8px;">
+# <div style="text-align:center; background-color:#fff6e4; padding:20px; border:5px solid #f5ecda; border-radius:8px;">
 #     <div style="font-size:36px; font-weight:bold; color:#4A4A4A;">
 #         Medical Cost Prediction
 #     </div>
@@ -95,3 +95,26 @@ from src.pipeline import (
     create_missing_value_handling_pipeline
 )
 from src.utils import add_table_caption
+
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Data Loading</h1>
+# </div>
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Load the preprocessed data from the <code>.parquet</code> files into Pandas DataFrames.
+# </div>
+
+# %%
+df_train_preprocessed = pd.read_parquet("../data/training_data_preprocessed.parquet")
+df_val_preprocessed = pd.read_parquet("../data/validation_data_preprocessed.parquet")
+df_test_preprocessed = pd.read_parquet("../data/test_data_preprocessed.parquet")
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 
+#     📌 Inspect the data.
+# </div>
+
+# %%
+display(df_train_preprocessed.info())
+display(df_val_preprocessed.info())
+display(df_test_preprocessed.info())
