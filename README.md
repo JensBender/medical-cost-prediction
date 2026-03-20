@@ -243,19 +243,11 @@ Based on EDA-driven insights, decided to implement sample weights for population
 │   └── *_preprocessed.*     # Training, validation, and test sets (CSV/Parquet)
 │
 ├── figures/                 # Generated figures
-│   ├── eda/                 # Exploratory data analysis visualizations
-│   │   ├── numerical_distributions.png
-│   │   ├── categorical_distributions.png
-│   │   ├── binary_distributions.png
-│   │   └── lorenz_curve.png
-│   ├── outliers/            # Outlier analysis and profiling 
-│   │   ├── outlier_lorenz_curve.png
-│   │   ├── outlier_numeric_profile.png
-│   │   ├── outlier_binary_profile.png
-│   │   └── outlier_categorical_profile.png
-│   ├── training/            # Training curves and learning rates (ignored by Git)
-│   ├── evaluation/          # Model performance plots (ignored by Git)
-│   └── tuning/              # Hyperparameter tuning results (ignored by Git)
+│   ├── eda/                 # Distribution and relationship plots 
+│   ├── outliers/            # Outlier analysis plots 
+│   ├── training/            # (Planned) Training curves and learning rates (ignored by Git)
+│   ├── evaluation/          # (Planned) Model performance plots (ignored by Git)
+│   └── tuning/              # (Planned) Hyperparameter tuning results (ignored by Git)
 │
 ├── assets/                  # Images and other assets for README
 │   ├── header.png           # Header image
@@ -275,8 +267,8 @@ Based on EDA-driven insights, decided to implement sample weights for population
 │   ├── research/            # Background research 
 │   └── workflow/            # Git conventions
 │
-├── pyproject.toml           # Project metadata and build configuration
-├── requirements.txt         # Production dependencies 
+├── pyproject.toml           # Project configuration and dependencies
+├── requirements.txt         # Proxy for production dependencies 
 ├── requirements-train.txt   # Training dependencies 
 ├── requirements-test.txt    # Test dependencies 
 │
