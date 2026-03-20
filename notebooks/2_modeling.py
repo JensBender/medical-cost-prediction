@@ -125,13 +125,33 @@ def inspect_df(df):
     Returns:
         list: A list containing:
             - tuple: Shape of the DataFrame (rows, columns).
-            - str: Status icon for missing values (✅ if none, ❌ otherwise).
             - str: Status icon for numerical-only columns (✅ if all numerical, ❌ otherwise).
+            - str: Status icon for missing values (✅ if none, ❌ otherwise).
+            - str: Status icon for infinite values (✅ if none, ❌ otherwise).
+            - str: Status icon for constant columns (✅ if none, ❌ otherwise).
+            - str: Status icon for unique index/ID (✅ if unique, ❌ otherwise).
+            - str: Status icon for target variable presence (✅ if "TOTSLF23" exists, ❌ otherwise).
+            - str: Status icon for weight variable presence (✅ if "PERWT23F" exists, ❌ otherwise).
     """
     shape = df.shape
     no_missings = "✅" if not df.isna().any().any() else "❌"
     all_numerical = "✅" if df.select_dtypes(exclude=[np.number]).empty else "❌"
-    return [shape, no_missings, all_numerical] 
+    no_infinites = "✅" if not np.isinf(df.select_dtypes(include=[np.number])).any().any() else "❌"
+    no_constants = "✅" if (df.nunique(dropna=False) > 1).all() else "❌"
+    unique_id = "✅" if df.index.is_unique else "❌"
+    target_present = "✅" if "TOTSLF23" in df.columns else "❌"
+    weights_present = "✅" if "PERWT23F" in df.columns else "❌"
+
+    return [
+        shape,
+        all_numerical,
+        no_missings,
+        no_infinites,
+        no_constants,
+        unique_id,
+        target_present,
+        weights_present,
+    ]
 
 data_inspection = pd.DataFrame(
     {
@@ -139,6 +159,15 @@ data_inspection = pd.DataFrame(
         "Val": inspect_df(df_val_preprocessed),
         "Test": inspect_df(df_test_preprocessed),
     },
-    index=["Shape", "No Missings", "All Numerical"],
+    index=[
+        "Shape",
+        "All Numerical",
+        "No Missings",
+        "No Infinites",
+        "No Constants",
+        "Unique ID",
+        "Target Present",
+        "Weights Present",
+    ],
 )
 display(data_inspection.style.pipe(add_table_caption, "Data Inspection"))
