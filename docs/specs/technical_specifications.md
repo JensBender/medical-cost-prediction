@@ -1,7 +1,7 @@
 # Technical Specifications
 | **Project Name** | Medical Cost Prediction |
 | :--- | :--- |
-| **Status** | Project scoping |
+| **Status** | Model Development |
 | **Created** | 2025-12-12 |
 | **Last Updated** | 2026-03-20 |
 

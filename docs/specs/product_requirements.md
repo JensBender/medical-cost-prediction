@@ -1,9 +1,9 @@
 # Product Requirements Document (PRD)
 | **Project Name** | Medical Cost Prediction |
 | :--- | :--- |
-| **Status** | Project scoping |
+| **Status** | Model Development |
 | **Created** | 2025-12-05 |
-| **Last Updated** | 2026-01-07 |
+| **Last Updated** | 2026-03-20 |
 | **Data Source** | Medical Expenditure Panel Survey (MEPS) |
 
 
