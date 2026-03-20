@@ -224,18 +224,23 @@ Based on EDA-driven insights, decided to implement sample weights for population
 ## 📂 Project Structure
 ```text
 ├── notebooks/               # Jupyter Notebooks 
-│   ├── medical_cost_prediction.ipynb  # Preprocessing, EDA, model training, evaluation, tuning and selection
-│   └── medical_cost_prediction.py     # Script version of the notebook
+│   ├── 1_eda_and_preprocessing.ipynb  # EDA, preprocessing, and pipeline development
+│   ├── 1_eda_and_preprocessing.py     # Script version (generated via Jupytext)
+│   ├── 2_modeling.ipynb               # Model training, evaluation and hyperparameter tuning 
+│   └── 2_modeling.py                  # Script version (generated via Jupytext)
 │
-├── app/                     # Web application source code
-│   └── app.py               # Main application file
+├── src/                     # Core package source code 
+│   ├── constants.py         # Feature lists and display labels
+│   ├── transformers.py      # Custom Scikit-learn transformers
+│   └── pipeline.py          # Preprocessing and prediction pipelines
 │
-├── models/                  # Models and pipelines (ignored by Git)
-│   ├── model.joblib         # Trained final model  
-│   └── pipeline.joblib      # Pipeline with model and preprocessing
+├── app/                     # (Planned) Web application source code
+│
+├── models/                  # (Planned) Trained model artifacts (ignored by Git)
 │
 ├── data/                    # Raw and processed datasets (ignored by Git)
-│   └── h251.sas7bdat        # MEPS-HC 2023 dataset (SAS V9 format)
+│   ├── h251.sas7bdat        # MEPS-HC 2023 dataset (SAS V9 format)
+│   └── *_preprocessed.*     # Training, validation, and test sets (CSV/Parquet)
 │
 ├── figures/                 # Generated figures
 │   ├── eda/                 # Exploratory data analysis visualizations
@@ -257,7 +262,7 @@ Based on EDA-driven insights, decided to implement sample weights for population
 │   ├── data_infographic.jpg # MEPS data overview infographic
 │   └── healthcare_costs_infographic.png  # U.S. healthcare cost explainer
 │
-├── tests/                   # Software testing for web application
+├── tests/                   # (Planned) Software testing for web application
 │   ├── unit/                # Unit tests
 │   ├── integration/         # Integration tests
 │   └── e2e/                 # End-to-end tests
@@ -270,6 +275,7 @@ Based on EDA-driven insights, decided to implement sample weights for population
 │   ├── research/            # Background research 
 │   └── workflow/            # Git conventions
 │
+├── pyproject.toml           # Project metadata and build configuration
 ├── requirements.txt         # Production dependencies 
 ├── requirements-train.txt   # Training dependencies 
 ├── requirements-test.txt    # Test dependencies 
