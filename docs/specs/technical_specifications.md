@@ -273,10 +273,9 @@ A 4-phase approach where each model is evaluated with its own optimal feature se
 **Feature Selection by Model Type**
 | Model | Method | Notes |
 | :--- | :--- | :--- |
-| Elastic Net | L1 regularization + Polynomials | Non-zero coefficients = selected features; captures non-linearities via explicit interaction terms |
-| Random Forest | `feature_importances_` | Built-in feature importance scores |
-| XGBoost | `feature_importances_` | Built-in feature importance scores |
-| MLP | Recursive Feature Elimination (RFE) | Wrapper method with CV |
+| **Elastic Net** | L1 regularization + Polynomials | Non-zero coefficients = selected features; captures non-linearities via explicit interaction terms |
+| **Tree-based Models**<br>*(Decision Tree, RF, XGBoost)* | `feature_importances_` | Built-in feature importance scores |
+| **Other Models**<br>*(Linear Regression, SVR, MLP)* | Recursive Feature Elimination (RFE) | Wrapper method with CV; ensures optimal feature subset selection by iteratively removing least significant features |
 
 > **Sample Weights:** All models must use `PERWT23F` as `sample_weight` during training. This is required because the MEPS survey design purposefully oversamples low socio-economic status (SES) individuals to ensure research-quality sample sizes for these sub-groups. Using survey weights ensures the model is representative of the actual U.S. civilian population and prevents bias from oversampled cohorts.
 
