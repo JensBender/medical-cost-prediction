@@ -66,6 +66,7 @@ from sklearn.pipeline import Pipeline
 # Model selection
 from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import randint, uniform  # for random hyperparameter values
+import time  # to measure model training time
 
 # Models
 from sklearn.linear_model import LinearRegression, ElasticNet
@@ -203,7 +204,7 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Train 7 baseline models on the full feature set (27 raw, 40 preprocessed features) with mostly default hyperparameter values.  
+#     ℹ️ Train 7 baseline models on the full feature set (27 raw, 40 preprocessed) with mostly default hyperparameter values.  
 #     <ul>
 #         <li>Linear Regression (lr)</li>
 #         <li>Elastic Net Regression (en)</li>
@@ -288,3 +289,42 @@ baseline_models = {
         inverse_func=np.expm1
     )
 }
+
+# Helper Function: Train and evaluate a single model
+def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=None):
+    # Fit model on training data 
+    start_time = time.time()  # Measure training time
+    if w_train is not None:
+        model.fit(X_train, y_train, sample_weight=w_train)
+    else:
+        model.fit(X_train, y_train)
+    end_time = time.time()    
+    
+    # Predict on validation data
+    y_val_pred = model.predict(X_val)
+
+    # Calculate evaluate metrics
+    mdae = median_absolute_error(y_val, y_val_pred)
+    if w_val is not None:
+        mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
+        r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
+    else:
+        mae = mean_absolute_error(y_val, y_val_pred)
+        r2 = r2_score(y_val, y_val_pred)
+
+    # Return fitted model, predicted values, and evaluation metrics
+    return {
+        "fitted_model": model,
+        "y_val_pred": y_val_pred,
+        "MdAE": mdae,
+        "MAE": mae,
+        "R-squared": r2,
+        "training_time": end_time - start_time,
+    }
+
+# Example usage: Train and evaluate linear regression model
+lr_results = evaluate_model(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train)
+
+# Display results
+lr_results["model"] = "Linear Regression"
+pd.DataFrame([lr_results])[["model", "MdAE", "MAE", "R-squared", "training_time"]]
