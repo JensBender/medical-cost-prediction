@@ -291,6 +291,7 @@ Evaluate predictive performance of model and perform error analysis.
 | **EV-01** | **Overall Performance** | Report overall MdAE on the full test set as the primary success metric. **Target: < $500.** |
 | **EV-02** | **Stratified Error Analysis** | Report MdAE separately for low (0–50th percentile), medium (50th–90th percentile), and high (90th+ percentile) cost tiers. This diagnoses where the model underperforms and quantifies heteroskedasticity. |
 | **EV-03** | **Interval Calibration** | Report what % of actual costs fall within the predicted 25th–75th percentile range. **Target: ≥ 50% coverage.** This diagnoses how accurate the prediction interval is across cost levels. Performance is expected to degrade for the high-cost tier due to (1) inherent unpredictability of high-cost events and (2) less training data in that range. |
+| **EV-04** | **LLM Benchmark** | Compare MdAE of specialized model vs. zero-shot predictions from LLMs (e.g., ChatGPT, Gemini, Claude) using the same raw feature inputs. This establishes the added value of training a specialized model over using a general-purpose model ("Why not just ask ChatGPT?"). Consider using a random subset (n=100) of rows to save API inference costs. |
 
 **Metric Selection Rationale**  
 Healthcare cost data has unique characteristics that influence evaluation metric selection: 
