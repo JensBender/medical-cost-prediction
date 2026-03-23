@@ -249,7 +249,7 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 #     <ul>
 #         <li>Train on preprocessed data (standardized, imputed, engineered, scaled, and encoded).</li>
 #         <li>Use sample weights for population representativeness.</li>
-#         <li>Apply log-transformation of target variable for designated models (lr, en, mlp, svr) using <code>TransformedTargetRegressor</code>.</li>
+#         <li>Apply log-transformation of target variable for designated models (lr, en, mlp, svr) using <code>TransformedTargetRegressor</code>. Use <code>log1p</code> instead of <code>log</code> to handle zeros in target (log(0) is undefined).</li>
 #         <li>Implement polynomial features for elastic net regression.</li>
 #         <li>Store fitted models, predicted values, and evaluation metrics in a results dictionary.</li>
 #     </ul>  
