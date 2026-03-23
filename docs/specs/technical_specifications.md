@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Model Development |
 | **Created** | 2025-12-12 |
-| **Last Updated** | 2026-03-20 |
+| **Last Updated** | 2026-03-23 |
 
 **Note:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
 
@@ -244,8 +244,10 @@ We apply transformations selectively based on how each model handles this varian
 
 | Models | Target Transform | Rationale |
 | :--- | :--- | :--- |
-| **Linear Regression, Elastic Net, MLP** | `log(y + 1)` | **Strict Assumption.** These models assume constant error variance. `log` stabilizes variance by compressing high values; `+1` handles zero-cost cases where `log(0)` is undefined. |
-| **Decision Tree, Random Forest, XGBoost** | None | **Robust.** These models are non-parametric and partition data into local regions. They can learn to accept low variance in one node and high variance in another without global transformation. |
+| **Linear Regression, Elastic Net** | `log(y + 1)` | **Strict Assumption.** These linear models assume constant error variance (homoscedasticity). |
+| **MLP (sklearn)** | `log(y + 1)` | **Optimization Stability.** MLPs benefit from smaller, more uniform target ranges for stable gradient descent and faster convergence. |
+| **SVR (SVM)** | `log(y + 1)` | **Scale Sensitivity.** Uses an $\epsilon$-insensitive loss function. It is sensitive to the magnitude of the target; the RBF kernel and $\epsilon$ parameter are easier to tune on a log-scaled range. |
+| **Decision Tree, Random Forest, XGBoost** | None | **Robust.** These models are non-parametric and partition data into local regions. They can learn to accept different variance levels in child nodes without global transformation. |
 
 ### Model Training
 
@@ -254,8 +256,8 @@ A 4-phase approach where each model is evaluated with its own optimal feature se
 
 | Phase | Goal | Details |
 | :--- | :--- | :--- |
-| **1. Baseline Models** | Compare baseline models on full features | Train all models on ~30 features with (mostly) default hyperparameters. Evaluate MdAE on validation set. Select top 3–4 models. |
-| **2. Feature Selection** | Find optimal features per model | Each model uses its own selection method (see below). Target ~10–12 features for 90 sec UX. |
+| **1. Baseline Models** | Compare baseline models on full features | Train all models on all features (27 raw, 40 preprocessed) with mostly default hyperparameters. Evaluate MdAE on validation set. Select top 3–4 models. |
+| **2. Feature Selection** | Find optimal features per model | Each model uses its own selection method (see below). Target ~10–12 raw features for 90 sec UX. |
 | **3. Hyperparameter Tuning** | Optimize hyperparameters | Tune each model via randomized search on its own reduced feature set. Select best tuned model + features combination. |
 | **4. Final Model** | Evaluate & deploy | Evaluate final model + features on hold-out test set. |
 
