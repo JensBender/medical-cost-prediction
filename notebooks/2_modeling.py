@@ -58,6 +58,11 @@ import matplotlib.ticker as mtick  # to format axis ticks
 import seaborn as sns
 import math  # to calculate n_rows in subplot matrix
 
+# Preprocessing (scikit-learn)
+from sklearn.compose import TransformedTargetRegressor
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import Pipeline
+
 # Model selection
 from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import randint, uniform  # for random hyperparameter values
@@ -70,13 +75,11 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
 from xgboost import XGBRegressor 
-from sklearn.compose import TransformedTargetRegressor
 
 # Model evaluation
 from sklearn.metrics import (
     median_absolute_error,
-    mean_squared_error, 
-    mean_absolute_percentage_error, 
+    mean_absolute_error, 
     r2_score
 )
 
@@ -249,8 +252,8 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 #     <ul>
 #         <li>Train on preprocessed data (standardized, imputed, engineered, scaled, and encoded).</li>
 #         <li>Use sample weights for population representativeness.</li>
-#         <li>Apply log-transformation of target variable for designated models (lr, en, mlp, svr) using <code>TransformedTargetRegressor</code>. Use <code>log1p</code> instead of <code>log</code> to handle zeros in target (log(0) is undefined).</li>
-#         <li>Implement polynomial features for elastic net regression.</li>
+#         <li>Apply log-transformation of target variable for designated models (lr, en, mlp, svr) using <code>TransformedTargetRegressor</code>. Use <code>log1p</code> instead of <code>log</code> to handle zeros in target (<code>log(0)</code> is undefined).</li>
+#         <li>Implement polynomial features for elastic net regression using second-degree <code>PolynomialFeatures</code> with a small <code>Pipeline</code>.</li>
 #         <li>Store fitted models, predicted values, and evaluation metrics in a results dictionary.</li>
 #     </ul>  
 # </div> 
@@ -264,7 +267,10 @@ baseline_models = {
         inverse_func=np.expm1
     ),
     "Elastic Net": TransformedTargetRegressor(
-        regressor=ElasticNet(),
+        regressor=Pipeline([
+            ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),  # Intercept (bias) handled by model 
+            ("model", ElasticNet())
+        ]),
         func=np.log1p,
         inverse_func=np.expm1
     ),
