@@ -70,6 +70,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
 from xgboost import XGBRegressor 
+from sklearn.compose import TransformedTargetRegressor
 
 # Model evaluation
 from sklearn.metrics import (
@@ -201,13 +202,13 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Train 7 baseline models on the full feature set (27 raw, 40 preprocessed features) with mostly default hyperparameter values.  
 #     <ul>
-#         <li>Linear Regression</li>
-#         <li>Elastic Net Regression</li>
-#         <li>Decision Tree Regressor</li>
-#         <li>Random Forest Regressor</li>
-#         <li>XGBoost Regressor</li>
-#         <li>Support Vector Regressor</li>
-#         <li>Multi-Layer Perceptron Regressor</li>
+#         <li>Linear Regression (lr)</li>
+#         <li>Elastic Net Regression (en)</li>
+#         <li>Decision Tree Regressor (tree)</li>
+#         <li>Random Forest Regressor (rf)</li>
+#         <li>XGBoost Regressor (xgb)</li>
+#         <li>Support Vector Regressor (svr)</li>
+#         <li>Multi-Layer Perceptron Regressor (mlp)</li>
 #     </ul>
 #     <hr style="height: 2px; border: none; background-color: #d0e7fa; margin: 16px 0; opacity: 0.8;">
 #     🎯 Evaluate model performance on the validation dataset.  
@@ -243,18 +244,41 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 #     <h3 style="margin:0px">Training</h3>
 # </div>
 #
-# <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Train each baseline model on preprocessed data (standardized, imputed, engineered, scaled, encoded) and use  sample weights for population representativeness. Apply model-specific configurations to optimize performance whenever warranted (e.g., log-transformed target, polynomial features). Store fitted models, predicted values, and evaluation metrics in a results dictionary.
-# </p> 
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Train each baseline model and evaluate model performance. 
+#     <ul>
+#         <li>Train on preprocessed data (standardized, imputed, engineered, scaled, and encoded).</li>
+#         <li>Use sample weights for population representativeness.</li>
+#         <li>Apply log-transformation of target variable for designated models (lr, en, mlp, svr) using <code>TransformedTargetRegressor</code>.</li>
+#         <li>Implement polynomial features for elastic net regression.</li>
+#         <li>Store fitted models, predicted values, and evaluation metrics in a results dictionary.</li>
+#     </ul>  
+# </div> 
 
 # %%
 # Define baseline models
 baseline_models = {
-    "Linear Regression": LinearRegression(),
-    "Elastic Net": ElasticNet(),
+    "Linear Regression": TransformedTargetRegressor(
+        regressor=LinearRegression(),
+        func=np.log1p,
+        inverse_func=np.expm1
+    ),
+    "Elastic Net": TransformedTargetRegressor(
+        regressor=ElasticNet(),
+        func=np.log1p,
+        inverse_func=np.expm1
+    ),
     "Decision Tree": DecisionTreeRegressor(criterion="absolute_error", random_state=RANDOM_STATE),
     "Random Forest": RandomForestRegressor(criterion="absolute_error", random_state=RANDOM_STATE),
     "XGBoost": XGBRegressor(objective="reg:tweedie", random_state=RANDOM_STATE),  # tweedie specializes in zero-inflated, heavily right-skewed target distributions
-    "Support Vector Machine": SVR(),
-    "Neural Network": MLPRegressor(random_state=RANDOM_STATE)
+    "Support Vector Machine": TransformedTargetRegressor(
+        regressor=SVR(),
+        func=np.log1p,
+        inverse_func=np.expm1
+    ),
+    "Neural Network": TransformedTargetRegressor(
+        regressor=MLPRegressor(random_state=RANDOM_STATE),
+        func=np.log1p,
+        inverse_func=np.expm1
+    )
 }
