@@ -275,15 +275,15 @@ baseline_models = {
         inverse_func=np.expm1
     ),
     "Decision Tree": DecisionTreeRegressor(criterion="absolute_error", random_state=RANDOM_STATE),
-    "Random Forest": RandomForestRegressor(criterion="absolute_error", random_state=RANDOM_STATE),
-    "XGBoost": XGBRegressor(objective="reg:tweedie", random_state=RANDOM_STATE),  # tweedie specializes in zero-inflated, heavily right-skewed target distributions
+    "Random Forest": RandomForestRegressor(criterion="absolute_error", n_jobs=-1, random_state=RANDOM_STATE), # n_jobs=-1 uses all CPU cores to speed up training
+    "XGBoost": XGBRegressor(objective="reg:tweedie", n_jobs=-1, random_state=RANDOM_STATE), # Tweedie handles zero-inflation and heavy tail
     "Support Vector Machine": TransformedTargetRegressor(
-        regressor=SVR(),
+        regressor=SVR(cache_size=1000), # Increasing cache_size uses more RAM to speed up training
         func=np.log1p,
         inverse_func=np.expm1
     ),
     "Neural Network": TransformedTargetRegressor(
-        regressor=MLPRegressor(random_state=RANDOM_STATE),
+        regressor=MLPRegressor(random_state=RANDOM_STATE, max_iter=500), # Higher max_iter ensures convergence on complex data
         func=np.log1p,
         inverse_func=np.expm1
     )
