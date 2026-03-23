@@ -63,7 +63,7 @@ from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import randint, uniform  # for random hyperparameter values
 
 # Models
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, ElasticNet
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
@@ -237,3 +237,24 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 #         </li>
 #     </ul>
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Training</h3>
+# </div>
+#
+# <p style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Train each baseline model on preprocessed data (standardized, imputed, engineered, scaled, encoded) and use  sample weights for population representativeness. Apply model-specific configurations to optimize performance whenever warranted (e.g., log-transformed target, polynomial features). Store fitted models, predicted values, and evaluation metrics in a results dictionary.
+# </p> 
+
+# %%
+# Define baseline models
+baseline_models = {
+    "Linear Regression": LinearRegression(),
+    "Elastic Net": ElasticNet(),
+    "Decision Tree": DecisionTreeRegressor(criterion="absolute_error", random_state=RANDOM_STATE),
+    "Random Forest": RandomForestRegressor(criterion="absolute_error", random_state=RANDOM_STATE),
+    "XGBoost": XGBRegressor(objective="reg:tweedie", random_state=RANDOM_STATE),  # tweedie specializes in zero-inflated, heavily right-skewed target distributions
+    "Support Vector Machine": SVR(),
+    "Neural Network": MLPRegressor(random_state=RANDOM_STATE)
+}
