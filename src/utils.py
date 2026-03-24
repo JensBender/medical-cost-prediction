@@ -1,3 +1,6 @@
+import numpy as np 
+
+
 def add_table_caption(styler, caption, font_size="14px", font_weight="bold", text_align="left"):
     """
     Adds a caption to a Pandas DataFrame for notebook display using a Pandas Styler object
@@ -21,3 +24,31 @@ def add_table_caption(styler, caption, font_size="14px", font_weight="bold", tex
             ("margin-bottom", "8px")
         ]
     }])
+
+
+def weighted_median_absolute_error(y_true, y_pred, sample_weight):
+    """
+    Computes the population-representative Median Absolute Error.
+    
+    Args:
+        y_true (array-like): True target variable values.
+        y_pred (array-like): Predicted target variable values.
+        sample_weight (array-like): Weights for population-level estimates.
+
+    Returns:
+        float: The weighted median absolute error.
+    """
+    # Calculate absolute errors and ensure inputs are numpy arrays
+    abs_errors = np.abs(np.array(y_true) - np.array(y_pred))
+    weights = np.array(sample_weight)
+    
+    # Sort errors and weights by error magnitude
+    sorted_idx = np.argsort(abs_errors)
+    errors_sorted = abs_errors[sorted_idx]
+    weights_sorted = weights[sorted_idx]
+    
+    # Find the value where cumulative weight reaches 50%
+    cumulative_weight = np.cumsum(weights_sorted)
+    cutoff = 0.5 * np.sum(weights_sorted)
+    
+    return errors_sorted[np.searchsorted(cumulative_weight, cutoff)]
