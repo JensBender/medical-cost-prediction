@@ -67,9 +67,28 @@ def save_model(model, filepath):
     try:
         # Ensure the parent directory exists (e.g., if saving to 'models/baseline.joblib')
         Path(filepath).parent.mkdir(parents=True, exist_ok=True)
-        
+
         # Save model
         joblib.dump(model, filepath)
         print(f"Successfully saved model to '{filepath}'.")
     except Exception as e:
         print(f"Error while saving model: {e}")
+
+
+def load_model(filepath):
+    """
+    Load a trained model or pipeline or a results dictionary from a file using joblib.
+
+    Args:
+        filepath (str or Path): The file path to load from.
+
+    Returns:
+        The loaded object (model, pipeline, or dictionary).
+    """
+    try:
+        model = joblib.load(filepath)
+        print(f"Successfully loaded model from '{filepath}'.")
+        return model
+    except Exception as e:
+        print(f"Error while loading model: {e}")
+        return None
