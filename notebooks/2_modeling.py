@@ -386,3 +386,17 @@ def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_
 # Train and evaluate all baseline models
 # baseline_results = evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     💡 <strong>Note on Negative $r^2$ Scores</strong>
+#     <br>
+#     Indicates the model performs worse than always predicting the mean (as seen e.g. in Linear Regression). This is common in medical cost prediction for several reasons:
+#     <ul>
+#         <li><strong>Sensitivity to Outliers</strong>: $r^2$ uses squared errors. Since medical costs (MEPS) are extremely heavy-tailed, even a few large mispredictions on high-cost individuals can cause the squared error to explode.</li>
+#         <li><strong>Log-Transformation Impact</strong>: While log-transforming handles skewness, small errors in "log-space" become exponential errors when converted back to raw dollars.</li>
+#         <li><strong>Sample Weights</strong>: Weighted $r^2$ penalizes errors more heavily on observations that represent larger portions of the US population.</li>
+#     </ul>
+#     Observation: The relatively small MdAE (~\$200) vs. large MAE (~\$1000) confirms that the baseline models predict typical costs well, but fail on high-cost outliers.
+# </div>
+
