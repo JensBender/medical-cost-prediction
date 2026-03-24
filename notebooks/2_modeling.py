@@ -387,13 +387,20 @@ def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_
 # Save baseline model results to file
 # save_model(baseline_results, "../models/baseline.joblib")
 
-
-# %%
 # Load baseline models from file
 baseline_results = load_model("../models/baseline.joblib")
 
-# Display baseline model metrics table
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Compare evaluation metrics of all baseline models on the validation data.
+# </div> 
+
+# %%
+# Extract metrics from baseline model results
 baseline_metrics = pd.DataFrame(baseline_results).T[["mdae", "mae", "r2", "training_time"]]
+
+# Display metric comparison table
 display(
     baseline_metrics
     .rename(columns=METRIC_LABELS)
