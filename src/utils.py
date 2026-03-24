@@ -1,4 +1,6 @@
+from pathlib import Path
 import numpy as np 
+import joblib
 
 
 def add_table_caption(styler, caption, font_size="14px", font_weight="bold", text_align="left"):
@@ -52,3 +54,22 @@ def weighted_median_absolute_error(y_true, y_pred, sample_weight):
     cutoff = 0.5 * np.sum(weights_sorted)
     
     return errors_sorted[np.searchsorted(cumulative_weight, cutoff)]
+
+
+def save_model(model, filepath):
+    """
+    Save a trained model or pipeline or a results dictionary to a file using joblib.
+
+    Args:
+        model: The model object or pipeline object or results dictionary to be saved.
+        filepath (str or Path): The destination file path (e.g., 'models/baseline.joblib').
+    """
+    try:
+        # Ensure the parent directory exists (e.g., if saving to 'models/baseline.joblib')
+        Path(filepath).parent.mkdir(parents=True, exist_ok=True)
+        
+        # Save model
+        joblib.dump(model, filepath)
+        print(f"Successfully saved model to '{filepath}'.")
+    except Exception as e:
+        print(f"Error while saving model: {e}")
