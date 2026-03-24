@@ -349,14 +349,6 @@ display(lr_metrics.rename(columns=METRIC_LABELS).style \
     .format("{:.2f}") \
     .hide())  # hides index
 
-# Example usage: Train and evaluate elastic net regression model
-lr = evaluate_model(baseline_models["Elastic Net"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
-lr_metrics = pd.DataFrame([lr])[["mdae", "mae", "r2", "training_time"]]
-display(lr_metrics.rename(columns=METRIC_LABELS).style \
-    .pipe(add_table_caption, "Elastic Net: Metrics") \
-    .format("{:.2f}") \
-    .hide())  
-
 
 def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_val=None):
     """
@@ -389,11 +381,16 @@ def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_
 # baseline_results = evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
 # Save baseline model results to file
-# save_model(baseline_models, "models/baseline.joblib")
+# save_model(baseline_results, "../models/baseline.joblib")
 
+
+# %%
 # Load baseline models from file
-# baseline_results = load_model("models/baseline.joblib")
+baseline_results = load_model("../models/baseline.joblib")
 
+# Display baseline model metrics table
+baseline_metrics = pd.DataFrame(baseline_results).T[["mdae", "mae", "r2", "training_time"]]
+display(baseline_metrics)
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
