@@ -98,7 +98,9 @@ from src.constants import (
 )
 from src.utils import (
     add_table_caption,
-    weighted_median_absolute_error
+    weighted_median_absolute_error,
+    save_model,
+    load_model
 )
 
 # %% [markdown]
@@ -385,6 +387,12 @@ def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_
     
 # Train and evaluate all baseline models
 # baseline_results = evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
+
+# Save baseline model results to file
+# save_model(baseline_models, "models/baseline.joblib")
+
+# Load baseline models from file
+# baseline_results = load_model("models/baseline.joblib")
 
 
 # %% [markdown]
