@@ -90,6 +90,7 @@ import joblib
 # Local imports
 from src.constants import (
     DISPLAY_LABELS, 
+    METRIC_LABELS,
     CATEGORY_LABELS_EDA,
     RANDOM_STATE,
     POP_COLOR,
@@ -303,7 +304,7 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
     # Predict on validation data
     y_val_pred = model.predict(X_val)
 
-    # Calculate evaluate metrics
+    # Calculate evaluation metrics
     mdae = median_absolute_error(y_val, y_val_pred)
     if w_val is not None:
         mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
@@ -312,19 +313,22 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
         mae = mean_absolute_error(y_val, y_val_pred)
         r2 = r2_score(y_val, y_val_pred)
 
-    # Return fitted model, predicted values, and evaluation metrics
+    # Return results dictionary
     return {
+        "mdae": mdae,
+        "mae": mae,
+        "r2": r2,
+        "training_time": end_time - start_time,
         "fitted_model": model,
         "y_val_pred": y_val_pred,
-        "MdAE": mdae,
-        "MAE": mae,
-        "R-squared": r2,
-        "training_time": end_time - start_time,
     }
 
 # Example usage: Train and evaluate linear regression model
-lr_results = evaluate_model(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train)
+lr = evaluate_model(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train)
 
 # Display results
-lr_results["model"] = "Linear Regression"
-pd.DataFrame([lr_results])[["model", "MdAE", "MAE", "R-squared", "training_time"]]
+lr_metrics = pd.DataFrame([lr])[["mdae", "mae", "r2", "training_time"]]
+lr_metrics.rename(columns=METRIC_LABELS).style \
+    .pipe(add_table_caption, "Linear Regression: Metrics") \
+    .format("{:.2f}") \  # formats metrics with 2 decimals
+    .hide()  # hides index
