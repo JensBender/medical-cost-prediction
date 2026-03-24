@@ -342,13 +342,19 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
 
 # Example usage: Train and evaluate linear regression model
 lr = evaluate_model(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
-
-# Display results
 lr_metrics = pd.DataFrame([lr])[["mdae", "mae", "r2", "training_time"]]
 display(lr_metrics.rename(columns=METRIC_LABELS).style \
     .pipe(add_table_caption, "Linear Regression: Metrics") \
     .format("{:.2f}") \
     .hide())  # hides index
+
+# Example usage: Train and evaluate elastic net regression model
+lr = evaluate_model(baseline_models["Elastic Net"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
+lr_metrics = pd.DataFrame([lr])[["mdae", "mae", "r2", "training_time"]]
+display(lr_metrics.rename(columns=METRIC_LABELS).style \
+    .pipe(add_table_caption, "Elastic Net: Metrics") \
+    .format("{:.2f}") \
+    .hide())  
 
 
 def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_val=None):
@@ -376,4 +382,8 @@ def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_
         results[model_name] = result
         print(f"Training Time: {round(result['training_time'], 2)} sec")
     return results
+
+    
+# Train and evaluate all baseline models
+# baseline_results = evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
