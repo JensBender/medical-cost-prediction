@@ -286,8 +286,29 @@ baseline_models = {
     )
 }
 
-# Helper Function: Train and evaluate a single model
+
 def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=None):
+    """
+    Train and evaluate a single machine learning model.
+
+    Args:
+        model (estimator): The Scikit-learn estimator or pipeline to be trained.
+        X_train (pd.DataFrame): Preprocessed training features.
+        y_train (pd.Series): Target variable for training data.
+        X_val (pd.DataFrame): Preprocessed validation features.
+        y_val (pd.Series): Target variable for validation data.
+        w_train (pd.Series, optional): Sample weights for training data. Defaults to None.
+        w_val (pd.Series, optional): Sample weights for validation data. Defaults to None.
+
+    Returns:
+        dict: A dictionary containing the evaluation results:
+            - "mdae" (float): Median Absolute Error (unweighted).
+            - "mae" (float): Mean Absolute Error (weighted).
+            - "r2" (float): Coefficient of Determination (weighted).
+            - "training_time" (float): Training time in seconds.
+            - "fitted_model" (estimator): The trained model object.
+            - "y_val_pred" (np.ndarray): The predicted values on the validation set.
+    """
     # Ensure weights are passed to model even when wrapped in a Pipeline (for Elastic Net)
     fit_params = {}
     if w_train is not None:
@@ -317,6 +338,7 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
         "fitted_model": model,
         "y_val_pred": y_val_pred,
     }
+
 
 # Example usage: Train and evaluate linear regression model
 lr = evaluate_model(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
