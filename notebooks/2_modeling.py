@@ -90,17 +90,16 @@ import joblib
 # Local imports
 from src.constants import (
     DISPLAY_LABELS, 
-    METRIC_LABELS,
     CATEGORY_LABELS_EDA,
+    METRIC_LABELS,
     RANDOM_STATE,
     POP_COLOR,
     SAMPLE_COLOR
 )
-from src.pipeline import (
-    create_preprocessing_pipeline, 
-    create_missing_value_handling_pipeline
+from src.utils import (
+    add_table_caption,
+    weighted_median_absolute_error
 )
-from src.utils import add_table_caption
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -325,7 +324,7 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
     y_val_pred = model.predict(X_val)
 
     # Calculate evaluation metrics
-    mdae = median_absolute_error(y_val, y_val_pred)  # MdAE is unweighted as it's not supported by sklearn
+    mdae = weighted_median_absolute_error(y_val, y_val_pred, sample_weight=w_val)  
     mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
     r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
 
