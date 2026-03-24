@@ -51,6 +51,15 @@ DISPLAY_LABELS = {
     "condition_count": "Medical Conditions"
 }
 
+# Mapping metric keys to human-readable labels for display in notebook tables
+METRIC_LABELS = {
+    "model": "Model",
+    "mdae": "MdAE",
+    "mae": "MAE",
+    "r2": "R-squared",
+    "training_time": "Training Time (s)"
+}
+
 # --- Categorical Label Mappings ---
 # Mapping categorical labels from numbers to strings (for pipeline)
 CATEGORY_LABELS_PIPELINE = {
