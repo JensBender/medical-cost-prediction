@@ -283,35 +283,30 @@ baseline_models = {
         regressor=SVR(cache_size=1000), # Increasing cache_size uses more RAM to speed up training
         func=np.log1p,
         inverse_func=np.expm1
-    ),
-    "Neural Network": TransformedTargetRegressor(
-        regressor=MLPRegressor(random_state=RANDOM_STATE, max_iter=500), # Higher max_iter ensures convergence on complex data
-        func=np.log1p,
-        inverse_func=np.expm1
     )
 }
 
 # Helper Function: Train and evaluate a single model
 def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=None):
-    # Fit model on training data 
-    start_time = time.time()  # Measure training time
+    # Ensure weights are passed to model even when wrapped in a Pipeline (for Elastic Net)
+    fit_params = {}
     if w_train is not None:
-        model.fit(X_train, y_train, sample_weight=w_train)
-    else:
-        model.fit(X_train, y_train)
-    end_time = time.time()    
-    
+        reg = getattr(model, "regressor", model)
+        key = f"{reg.steps[-1][0]}__sample_weight" if isinstance(reg, Pipeline) else "sample_weight"
+        fit_params[key] = w_train
+
+    # Fit model on training data
+    start_time = time.time()  # Measure training time
+    model.fit(X_train, y_train, **fit_params)
+    end_time = time.time()
+
     # Predict on validation data
     y_val_pred = model.predict(X_val)
 
     # Calculate evaluation metrics
-    mdae = median_absolute_error(y_val, y_val_pred)
-    if w_val is not None:
-        mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
-        r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
-    else:
-        mae = mean_absolute_error(y_val, y_val_pred)
-        r2 = r2_score(y_val, y_val_pred)
+    mdae = median_absolute_error(y_val, y_val_pred)  # MdAE is unweighted as it's not supported by sklearn
+    mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
+    r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
 
     # Return results dictionary
     return {
@@ -324,11 +319,19 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
     }
 
 # Example usage: Train and evaluate linear regression model
-lr = evaluate_model(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train)
+lr = evaluate_model(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
 # Display results
 lr_metrics = pd.DataFrame([lr])[["mdae", "mae", "r2", "training_time"]]
-lr_metrics.rename(columns=METRIC_LABELS).style \
+display(lr_metrics.rename(columns=METRIC_LABELS).style \
     .pipe(add_table_caption, "Linear Regression: Metrics") \
-    .format("{:.2f}") \  # formats metrics with 2 decimals
-    .hide()  # hides index
+    .format("{:.2f}") \
+    .hide())  # hides index
+
+# Iterate over all models
+results = {}
+for model_name, model in baseline_models.items():
+    print(f"\nEvaluating {model_name}...")
+    result = evaluate_model(model, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
+    results[model_name] = result
+    print(f"Training Time: {round(result['training_time'], 2)} sec")
