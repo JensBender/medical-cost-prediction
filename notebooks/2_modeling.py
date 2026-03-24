@@ -328,10 +328,30 @@ display(lr_metrics.rename(columns=METRIC_LABELS).style \
     .format("{:.2f}") \
     .hide())  # hides index
 
-# Iterate over all models
-results = {}
-for model_name, model in baseline_models.items():
-    print(f"\nEvaluating {model_name}...")
-    result = evaluate_model(model, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
-    results[model_name] = result
-    print(f"Training Time: {round(result['training_time'], 2)} sec")
+
+def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_val=None):
+    """
+    Train and evaluate multiple models and consolidate their results.
+
+    Args:
+        models (dict): A dictionary mapping model names (str) to model objects (estimators).
+        X_train (pd.DataFrame): Preprocessed training features.
+        y_train (pd.Series): Target variable for training data.
+        X_val (pd.DataFrame): Preprocessed validation features.
+        y_val (pd.Series): Target variable for validation data.
+        w_train (pd.Series, optional): Sample weights for training data. Defaults to None.
+        w_val (pd.Series, optional): Sample weights for validation data. Defaults to None.
+
+    Returns:
+        dict: A dictionary of evaluation results for each model, where keys are model names and
+              values are the dictionaries returned by the `evaluate_model` function.
+    """
+    # Iterate over all models
+    results = {}
+    for model_name, model in baseline_models.items():
+        print(f"\nEvaluating {model_name}...")
+        result = evaluate_model(model, X_train, y_train, X_val, y_val, w_train, w_val)
+        results[model_name] = result
+        print(f"Training Time: {round(result['training_time'], 2)} sec")
+    return results
+
