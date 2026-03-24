@@ -56,7 +56,7 @@ METRIC_LABELS = {
     "model": "Model",
     "mdae": "MdAE",
     "mae": "MAE",
-    "r2": "R-squared",
+    "r2": "R²",
     "training_time": "Training Time (s)"
 }
 
