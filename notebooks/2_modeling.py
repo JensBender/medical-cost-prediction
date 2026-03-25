@@ -66,6 +66,9 @@ from sklearn.pipeline import Pipeline
 # Model selection
 from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import randint, uniform  # for random hyperparameter values
+
+# MLOps
+import mlflow
 import time  # to measure model training time
 
 # Models
@@ -287,7 +290,7 @@ baseline_models = {
 }
 
 
-def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=None):
+def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=None, model_name="model"):
     """
     Train and evaluate a single machine learning model.
 
@@ -299,6 +302,7 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
         y_val (pd.Series): Target variable for validation data.
         w_train (pd.Series, optional): Sample weights for training data. Defaults to None.
         w_val (pd.Series, optional): Sample weights for validation data. Defaults to None.
+        model_name (str): Model name for MLFlow experiment tracking. Defaults to "model".
 
     Returns:
         dict: A dictionary containing the evaluation results:
@@ -309,38 +313,48 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
             - "fitted_model" (estimator): The trained model object.
             - "y_val_pred" (np.ndarray): The predicted values on the validation set.
     """
-    # Ensure weights are passed to model even when wrapped in a Pipeline (for Elastic Net)
-    fit_params = {}
-    if w_train is not None:
-        # Normalize weights so mean is 1.0 (prevents numerical instability in algorithms like SVR)
-        w_train_norm = w_train / w_train.mean()
-        
-        reg = getattr(model, "regressor", model)
-        key = f"{reg.steps[-1][0]}__sample_weight" if isinstance(reg, Pipeline) else "sample_weight"
-        fit_params[key] = w_train_norm
+    # Track model run
+    with mlflow.start_run(run_name=model_name):
+        # Log model parameters
+        mlflow.log_params(model.get_params())
 
-    # Fit model on training data
-    start_time = time.time()  # Measure training time
-    model.fit(X_train, y_train, **fit_params)
-    end_time = time.time()
+        # Ensure weights are passed to model even when wrapped in a Pipeline (for Elastic Net)
+        fit_params = {}
+        if w_train is not None:
+            # Normalize weights so mean is 1.0 (prevents numerical instability in algorithms like SVR)
+            w_train_norm = w_train / w_train.mean()
+            
+            reg = getattr(model, "regressor", model)
+            key = f"{reg.steps[-1][0]}__sample_weight" if isinstance(reg, Pipeline) else "sample_weight"
+            fit_params[key] = w_train_norm
 
-    # Predict on validation data
-    y_val_pred = model.predict(X_val)
+        # Fit model on training data
+        start_time = time.time()  # Measure training time
+        model.fit(X_train, y_train, **fit_params)
+        end_time = time.time()
 
-    # Calculate evaluation metrics
-    mdae = weighted_median_absolute_error(y_val, y_val_pred, sample_weight=w_val)  
-    mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
-    r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
+        # Predict on validation data
+        y_val_pred = model.predict(X_val)
 
-    # Return results dictionary
-    return {
-        "mdae": mdae,
-        "mae": mae,
-        "r2": r2,
-        "training_time": end_time - start_time,
-        "fitted_model": model,
-        "y_val_pred": y_val_pred,
-    }
+        # Calculate evaluation metrics
+        mdae = weighted_median_absolute_error(y_val, y_val_pred, sample_weight=w_val)  
+        mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
+        r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
+
+        # Log metrics
+        mlflow.log_metric("mdae", mdae)
+        mlflow.log_metric("mae", mae)
+        mlflow.log_metric("r2", r2)
+
+        # Return results dictionary
+        return {
+            "mdae": mdae,
+            "mae": mae,
+            "r2": r2,
+            "training_time": end_time - start_time,
+            "fitted_model": model,
+            "y_val_pred": y_val_pred,
+        }
 
 
 # Example usage: Train and evaluate linear regression model
@@ -377,7 +391,7 @@ def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_
     results = {}
     for model_name, model in baseline_models.items():
         print(f"\nEvaluating {model_name}...")
-        result = evaluate_model(model, X_train, y_train, X_val, y_val, w_train, w_val)
+        result = evaluate_model(model, X_train, y_train, X_val, y_val, w_train, w_val, model_name)
         results[model_name] = result
         print(f"Training Time: {round(result['training_time'], 2)} sec")
     return results
