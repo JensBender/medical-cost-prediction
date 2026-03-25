@@ -253,7 +253,7 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 #     📌 Train each baseline model and evaluate model performance. 
 #     <ul>
 #         <li>Train on preprocessed data (standardized, imputed, feature engineered, scaled, and encoded).</li>
-#         <li>Use sample weights for population representativeness.</li>
+#         <li>Use sample weights for population representativeness. Normalize weights (mean=1.0) to maintain relative importance while ensuring numerical stability during model training (especially for svr).</li>
 #         <li>Apply log-transformation of target variable for designated models (lr, en, mlp, svr) using <code>TransformedTargetRegressor</code>. Use <code>log1p</code> instead of <code>log</code> to handle zeros in target (<code>log(0)</code> is undefined).</li>
 #         <li>Implement polynomial features for elastic net regression using second-degree <code>PolynomialFeatures</code> with a small <code>Pipeline</code>.</li>
 #         <li>Store fitted models, predicted values, and evaluation metrics in a results dictionary and persist as a <code>.joblib</code> file.</li>
@@ -312,9 +312,12 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
     # Ensure weights are passed to model even when wrapped in a Pipeline (for Elastic Net)
     fit_params = {}
     if w_train is not None:
+        # Normalize weights so mean is 1.0 (prevents numerical instability in algorithms like SVR)
+        w_train_norm = w_train / w_train.mean()
+        
         reg = getattr(model, "regressor", model)
         key = f"{reg.steps[-1][0]}__sample_weight" if isinstance(reg, Pipeline) else "sample_weight"
-        fit_params[key] = w_train
+        fit_params[key] = w_train_norm
 
     # Fit model on training data
     start_time = time.time()  # Measure training time
@@ -381,13 +384,13 @@ def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_
 
     
 # Train and evaluate all baseline models
-# baseline_results = evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
+baseline_results = evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
 # Save baseline model results to file
 # save_model(baseline_results, "../models/baseline.joblib")
 
 # Load baseline model results from file
-baseline_results = load_model("../models/baseline.joblib")
+# baseline_results = load_model("../models/baseline.joblib")
 
 
 # %% [markdown]
