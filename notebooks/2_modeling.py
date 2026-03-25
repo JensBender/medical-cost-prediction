@@ -290,7 +290,7 @@ baseline_models = {
 }
 
 
-def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=None, model_name="model"):
+def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=None, model_name="model", log_model=False):
     """
     Train and evaluate a single machine learning model.
 
@@ -302,7 +302,9 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
         y_val (pd.Series): Target variable for validation data.
         w_train (pd.Series, optional): Sample weights for training data. Defaults to None.
         w_val (pd.Series, optional): Sample weights for validation data. Defaults to None.
-        model_name (str): Model name for MLFlow experiment tracking. Defaults to "model".
+        model_name (str, optional): Display name of the model for MLflow experiment tracking. Defaults to "model".
+        log_model (bool, optional): Whether to log the fitted model as an artifact to disk. Defaults to False.
+
 
     Returns:
         dict: A dictionary containing the evaluation results:
@@ -332,6 +334,10 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
         start_time = time.time()  # Measure training time
         model.fit(X_train, y_train, **fit_params)
         end_time = time.time()
+
+        # Log fitted model
+        if log_model:
+            mlflow.sklearn.log_model(model, "model")
 
         # Predict on validation data
         y_val_pred = model.predict(X_val)
