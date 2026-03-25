@@ -301,7 +301,7 @@ baseline_models = {
 
 def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=None, model_name="model", log_model=False):
     """
-    Train and evaluate a single machine learning model.
+    Train and evaluate a single machine learning model with MLflow experiment tracking.
 
     Args:
         model (estimator): The Scikit-learn estimator or pipeline to be trained.
@@ -312,8 +312,7 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
         w_train (pd.Series, optional): Sample weights for training data. Defaults to None.
         w_val (pd.Series, optional): Sample weights for validation data. Defaults to None.
         model_name (str, optional): Display name of the model for MLflow experiment tracking. Defaults to "model".
-        log_model (bool, optional): Whether to log the fitted model as an artifact to disk. Defaults to False.
-
+        log_model (bool, optional): Whether to log the fitted model as an artifact to MLflow. Defaults to False.
 
     Returns:
         dict: A dictionary containing the evaluation results:
@@ -326,7 +325,30 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
     """
     # Track model run
     with mlflow.start_run(run_name=model_name):
-        # Log model parameters
+        # Hash the data to uniquely identify it with a "fingerprint"
+        train_hash = (  # hash X, y, and w together
+            pd.util.hash_pandas_object(X_train).sum() +
+            pd.util.hash_pandas_object(y_train).sum() +
+            (pd.util.hash_pandas_object(w_train).sum() if w_train is not None else 0)
+        )
+        val_hash = (
+            pd.util.hash_pandas_object(X_val).sum() +
+            pd.util.hash_pandas_object(y_val).sum() +
+            (pd.util.hash_pandas_object(w_val).sum() if w_val is not None else 0)
+        )
+
+        # Log data version 
+        mlflow.set_tag("dataset_source", "h251.sas7bdat")
+        mlflow.set_tag("dataset_train", "training_data_preprocessed.parquet")
+        mlflow.set_tag("dataset_train_fingerprint", str(train_hash))
+        mlflow.set_tag("dataset_val", "validation_data_preprocessed.parquet")
+        mlflow.set_tag("dataset_val_fingerprint", str(val_hash))
+
+        # Log preprocessing code
+        mlflow.log_artifact("../src/pipeline.py", "code")
+        mlflow.log_artifact("../src/transformers.py", "code")
+
+        # Log model hyperparameters
         mlflow.log_params(model.get_params())
 
         # Ensure weights are passed to model even when wrapped in a Pipeline (for Elastic Net)
