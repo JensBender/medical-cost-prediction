@@ -25,5 +25,6 @@ figures/*_sample.png
 *.egg-info/
 
 # MLflow 
-mlflow.db
-mlruns/
+**/mlflow.db*
+**/mlruns/
+**/mlartifacts/
