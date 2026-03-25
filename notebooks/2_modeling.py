@@ -111,8 +111,8 @@ from src.utils import (
 # </div>
 
 # %%
-# Set the tracking URI to your local SQLite database
-mlflow.set_tracking_uri("sqlite:///mlflow.db")
+# Set the tracking URI to point to your running MLflow UI server
+mlflow.set_tracking_uri("http://127.0.0.1:5000")
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
