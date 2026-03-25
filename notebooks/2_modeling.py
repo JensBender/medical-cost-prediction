@@ -70,7 +70,6 @@ import time  # to measure model training time
 
 # Models
 from sklearn.linear_model import LinearRegression, ElasticNet
-from sklearn.neighbors import KNeighborsRegressor
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
@@ -253,11 +252,11 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Train each baseline model and evaluate model performance. 
 #     <ul>
-#         <li>Train on preprocessed data (standardized, imputed, engineered, scaled, and encoded).</li>
+#         <li>Train on preprocessed data (standardized, imputed, feature engineered, scaled, and encoded).</li>
 #         <li>Use sample weights for population representativeness.</li>
 #         <li>Apply log-transformation of target variable for designated models (lr, en, mlp, svr) using <code>TransformedTargetRegressor</code>. Use <code>log1p</code> instead of <code>log</code> to handle zeros in target (<code>log(0)</code> is undefined).</li>
 #         <li>Implement polynomial features for elastic net regression using second-degree <code>PolynomialFeatures</code> with a small <code>Pipeline</code>.</li>
-#         <li>Store fitted models, predicted values, and evaluation metrics in a results dictionary.</li>
+#         <li>Store fitted models, predicted values, and evaluation metrics in a results dictionary and persist as a <code>.joblib</code> file.</li>
 #     </ul>  
 # </div> 
 
@@ -277,7 +276,7 @@ baseline_models = {
         func=np.log1p,
         inverse_func=np.expm1
     ),
-    "Decision Tree": DecisionTreeRegressor(criterion="absolute_error", random_state=RANDOM_STATE),
+    "Decision Tree": DecisionTreeRegressor(criterion="absolute_error", random_state=RANDOM_STATE),  # absolute_error uses MAE loss function for training
     "Random Forest": RandomForestRegressor(criterion="absolute_error", n_jobs=-1, random_state=RANDOM_STATE), # n_jobs=-1 uses all CPU cores to speed up training
     "XGBoost": XGBRegressor(objective="reg:tweedie", n_jobs=-1, random_state=RANDOM_STATE), # Tweedie handles zero-inflation and heavy tail
     "Support Vector Machine": TransformedTargetRegressor(
@@ -342,8 +341,8 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
 
 
 # Example usage: Train and evaluate linear regression model
-lr = evaluate_model(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
-lr_metrics = pd.DataFrame([lr])[["mdae", "mae", "r2", "training_time"]]
+lr_results = evaluate_model(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
+lr_metrics = pd.DataFrame([lr_results])[["mdae", "mae", "r2", "training_time"]]
 display(
     lr_metrics
     .rename(columns=METRIC_LABELS)
@@ -387,12 +386,13 @@ def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_
 # Save baseline model results to file
 # save_model(baseline_results, "../models/baseline.joblib")
 
-# Load baseline models from file
+# Load baseline model results from file
 baseline_results = load_model("../models/baseline.joblib")
 
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>Evaluation</strong><br>
 #     📌 Compare evaluation metrics of all baseline models on the validation data.
 # </div> 
 
@@ -410,7 +410,7 @@ display(
 )
 
 # %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <strong>Note on Negative $r^2$ Scores</strong>
 #     <br>
 #     Indicates the model performs worse than always predicting the mean (as seen e.g. in Linear Regression). This is common in medical cost prediction for several reasons:
