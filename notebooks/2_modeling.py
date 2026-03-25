@@ -106,6 +106,15 @@ from src.utils import (
 )
 
 # %% [markdown]
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     <strong>MLFlow Settings</strong>
+# </div>
+
+# %%
+# Set the tracking URI to your local SQLite database
+mlflow.set_tracking_uri("sqlite:///mlflow.db")
+
+# %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Data Loading</h1>
 # </div>
@@ -404,6 +413,7 @@ def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_
 
     
 # Train and evaluate all baseline models
+mlflow.set_experiment("Baseline Models") 
 baseline_results = evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
 # Save baseline model results to file
