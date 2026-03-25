@@ -326,15 +326,15 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
     # Track model run
     with mlflow.start_run(run_name=model_name):
         # Hash the data to uniquely identify it with a "fingerprint"
-        train_hash = (  # hash X, y, and w together
-            pd.util.hash_pandas_object(X_train).sum() +
-            pd.util.hash_pandas_object(y_train).sum() +
-            (pd.util.hash_pandas_object(w_train).sum() if w_train is not None else 0)
+        train_hash = (  # hash X, y, and w together using object conversion to prevent overflow
+            pd.util.hash_pandas_object(X_train).astype(object).sum() +
+            pd.util.hash_pandas_object(y_train).astype(object).sum() +
+            (pd.util.hash_pandas_object(w_train).astype(object).sum() if w_train is not None else 0)
         )
         val_hash = (
-            pd.util.hash_pandas_object(X_val).sum() +
-            pd.util.hash_pandas_object(y_val).sum() +
-            (pd.util.hash_pandas_object(w_val).sum() if w_val is not None else 0)
+            pd.util.hash_pandas_object(X_val).astype(object).sum() +
+            pd.util.hash_pandas_object(y_val).astype(object).sum() +
+            (pd.util.hash_pandas_object(w_val).astype(object).sum() if w_val is not None else 0)
         )
 
         # Log data version 
