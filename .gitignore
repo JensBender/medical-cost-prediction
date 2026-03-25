@@ -23,3 +23,7 @@ figures/*_sample.png
 # Python artifacts
 **/__pycache__/
 *.egg-info/
+
+# MLflow 
+mlflow.db
+mlruns/
