@@ -325,28 +325,24 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
     """
     # Track model run
     with mlflow.start_run(run_name=model_name):
-        # Hash the data to uniquely identify it with a "fingerprint"
-        train_hash = (  # hash X, y, and w together; use object dtype to prevent overflow
-            pd.util.hash_pandas_object(X_train).astype(object).sum() +
-            pd.util.hash_pandas_object(y_train).astype(object).sum() +
-            (pd.util.hash_pandas_object(w_train).astype(object).sum() if w_train is not None else 0)
-        )
-        val_hash = (
-            pd.util.hash_pandas_object(X_val).astype(object).sum() +
-            pd.util.hash_pandas_object(y_val).astype(object).sum() +
-            (pd.util.hash_pandas_object(w_val).astype(object).sum() if w_val is not None else 0)
-        )
-
-        # Log data version 
+        # Tag raw data source 
         mlflow.set_tag("data_source", "h251.sas7bdat")
-        mlflow.set_tag("data_train", "training_data_preprocessed.parquet")
-        mlflow.set_tag("data_train_fingerprint", str(train_hash))
-        mlflow.set_tag("data_val", "validation_data_preprocessed.parquet")
-        mlflow.set_tag("data_val_fingerprint", str(val_hash))
 
-        # Log preprocessing code
-        mlflow.log_artifact("../src/pipeline.py", "code")
-        mlflow.log_artifact("../src/transformers.py", "code")
+        # Log data lineage
+        data_train = mlflow.data.from_pandas(
+            X_train, 
+            targets=y_train,
+            source="../data/training_data_preprocessed.parquet", 
+            name="training_data"
+        )
+        data_val = mlflow.data.from_pandas(
+            X_val, 
+            targets=y_val,
+            source="../data/validation_data_preprocessed.parquet", 
+            name="validation_data"
+        )
+        mlflow.log_input(data_train, context="training")
+        mlflow.log_input(data_val, context="validation")
 
         # Log model hyperparameters
         mlflow.log_params(model.get_params())
@@ -439,7 +435,7 @@ mlflow.set_experiment("Baseline Models")
 baseline_results = evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
 # Save baseline model results to file
-# save_model(baseline_results, "../models/baseline.joblib")
+save_model(baseline_results, "../models/baseline.joblib")
 
 # Load baseline model results from file
 # baseline_results = load_model("../models/baseline.joblib")
