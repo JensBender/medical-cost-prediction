@@ -30,7 +30,8 @@ train = [
     "seaborn==0.13.2",
     "xgboost==3.1.2",
     "pyarrow==19.0.1",
-    "mlflow==3.10.1"
+    "mlflow==3.10.1",
+    "dvc==3.67.0"
 ]
 
 # Dependencies for the Web App/API and deployment
