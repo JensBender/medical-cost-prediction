@@ -107,7 +107,7 @@ from src.utils import (
 
 # %% [markdown]
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     <strong>MLFlow Settings</strong>
+#     <strong>MLflow Settings</strong>
 # </div>
 
 # %%
@@ -326,7 +326,7 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
     # Track model run
     with mlflow.start_run(run_name=model_name):
         # Hash the data to uniquely identify it with a "fingerprint"
-        train_hash = (  # hash X, y, and w together using object conversion to prevent overflow
+        train_hash = (  # hash X, y, and w together; use object dtype to prevent overflow
             pd.util.hash_pandas_object(X_train).astype(object).sum() +
             pd.util.hash_pandas_object(y_train).astype(object).sum() +
             (pd.util.hash_pandas_object(w_train).astype(object).sum() if w_train is not None else 0)
@@ -338,11 +338,11 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
         )
 
         # Log data version 
-        mlflow.set_tag("dataset_source", "h251.sas7bdat")
-        mlflow.set_tag("dataset_train", "training_data_preprocessed.parquet")
-        mlflow.set_tag("dataset_train_fingerprint", str(train_hash))
-        mlflow.set_tag("dataset_val", "validation_data_preprocessed.parquet")
-        mlflow.set_tag("dataset_val_fingerprint", str(val_hash))
+        mlflow.set_tag("data_source", "h251.sas7bdat")
+        mlflow.set_tag("data_train", "training_data_preprocessed.parquet")
+        mlflow.set_tag("data_train_fingerprint", str(train_hash))
+        mlflow.set_tag("data_val", "validation_data_preprocessed.parquet")
+        mlflow.set_tag("data_val_fingerprint", str(val_hash))
 
         # Log preprocessing code
         mlflow.log_artifact("../src/pipeline.py", "code")
@@ -395,16 +395,16 @@ def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=No
 
 
 # Example usage: Train and evaluate linear regression model
-lr_results = evaluate_model(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
-lr_metrics = pd.DataFrame([lr_results])[["mdae", "mae", "r2", "training_time"]]
-display(
-    lr_metrics
-    .rename(columns=METRIC_LABELS)
-    .style
-    .pipe(add_table_caption, "Linear Regression: Metrics")
-    .format("{:.2f}")
-    .hide()  # hides index
-) 
+# lr_results = evaluate_model(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val, model_name="Linear Regression")
+# lr_metrics = pd.DataFrame([lr_results])[["mdae", "mae", "r2", "training_time"]]
+# display(
+#     lr_metrics
+#     .rename(columns=METRIC_LABELS)
+#     .style
+#     .pipe(add_table_caption, "Linear Regression: Metrics")
+#     .format("{:.2f}")
+#     .hide()  # hides index
+# ) 
 
 
 def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_val=None):
