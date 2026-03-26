@@ -9,6 +9,7 @@ stages:
       - ../src/pipeline.py                           # Preprocessing pipeline
       - ../src/transformers.py                       # Custom transformers
       - ../src/constants.py                          # Feature lists, label mappings, etc.
+      - ../src/utils.py                              # Helper function
     outs:
       - ../data/training_data_preprocessed.parquet
       - ../data/validation_data_preprocessed.parquet
@@ -21,6 +22,7 @@ stages:
     deps:
       - ../data/training_data_preprocessed.parquet   # Dependency on Stage 1
       - ../data/validation_data_preprocessed.parquet # Dependency on Stage 1
+      - ../data/test_data_preprocessed.parquet       # Dependency on Stage 1
       - 2_modeling.py                                # Training script
       - ../src/constants.py                          # Feature lists, label mappings, etc.
       - ../src/utils.py                              # Helper function
