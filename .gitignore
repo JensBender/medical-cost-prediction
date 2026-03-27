@@ -1,6 +1,10 @@
 # Project-specific files
-data/
-models/
+data/*
+!data/*.dvc
+!data/.gitignore
+models/*
+!models/*.dvc
+!models/.gitignore
 notebooks/machine_learning_template.ipynb
 notebooks/loan_default_prediction.ipynb
 assets/header_*.png
