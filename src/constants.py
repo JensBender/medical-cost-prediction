@@ -147,26 +147,45 @@ CATEGORY_LABELS_EDA = {
 }
 
 
-# List of Required Features
-# Note: Features selected based on subject matter expertise (known from prior healthcare research). 
-# Refine based on data (feature importance scores) after model training.
-REQUIRED_FEATURES = [
-    "AGE23X",    # Primary driver of medical utilization and costs
-    "SEX",       # Key driver of utilization frequency and spending disparities documented in healthcare literature
-    "INSCOV23",  # Critical for out-of-pocket cost prediction
-    "REGION23",  # Captures geographic variance in healthcare pricing
-    "RTHLTH31"   # Self-reported health is a powerful proxy for healthcare demand
-]
+# --- Feature Lists ---
 
-# List of Optional Features (can be imputed if missing)
-OPTIONAL_FEATURES = [
-    "MARRY31X", "FAMSZE23", "POVCAT23", "HIDEG", "EMPST31",
-    "HAVEUS42", "MNHLTH31", "ADSMOK42",
+# 1. Raw MEPS Features 
+RAW_NUMERICAL_FEATURES = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
+RAW_BINARY_FEATURES = [
+    "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31", 
+    "WLKLIM31", "COGLIM31", "JTPAIN31_M18", "HIBPDX", "CHOLDX", 
+    "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
+]
+RAW_NOMINAL_FEATURES = ["REGION23", "MARRY31X", "EMPST31", "INSCOV23", "HIDEG"]
+RAW_ORDINAL_FEATURES = ["POVCAT23"]
+
+ID_COLUMN = "DUPERSID"
+WEIGHT_COLUMN = "PERWT23F"
+TARGET_COLUMN = "TOTSLF23"
+
+# Combined list for initial data preparation
+RAW_COLUMNS_TO_KEEP = (
+    [ID_COLUMN, WEIGHT_COLUMN, TARGET_COLUMN] + 
+    RAW_NUMERICAL_FEATURES + RAW_BINARY_FEATURES + 
+    RAW_NOMINAL_FEATURES + RAW_ORDINAL_FEATURES
+)
+
+# 2. Pipeline Input Features 
+# After stateless preprocessing and feature engineering steps
+PIPELINE_NUMERICAL_FEATURES = RAW_NUMERICAL_FEATURES + RAW_ORDINAL_FEATURES
+PIPELINE_BINARY_FEATURES = RAW_BINARY_FEATURES + ["RECENT_LIFE_TRANSITION", "EMPST31_GRP"]
+PIPELINE_NOMINAL_FEATURES = ["REGION23", "MARRY31X_GRP", "INSCOV23", "HIDEG"]
+
+# Required vs. Optional Features (for MissingValueChecker in Pipeline)
+PIPELINE_REQUIRED_FEATURES = ["AGE23X", "SEX", "INSCOV23", "REGION23", "RTHLTH31"]
+PIPELINE_OPTIONAL_FEATURES = [
+    "MARRY31X_GRP", "FAMSZE23", "POVCAT23", "HIDEG", "EMPST31_GRP", 
+    "RECENT_LIFE_TRANSITION", "HAVEUS42", "MNHLTH31", "ADSMOK42",
     "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
     "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
 ]
 
-# Define the categories for the nominal features (for OneHotEncoder)
+# Define nominal feature categories (for OneHotEncoder in Pipeline)
 NOMINAL_CATEGORIES = [
     list(dict.fromkeys(CATEGORY_LABELS_PIPELINE["REGION23"].values())),     # 1st
     list(dict.fromkeys(CATEGORY_LABELS_PIPELINE["MARRY31X_GRP"].values())), # 2nd
@@ -174,9 +193,13 @@ NOMINAL_CATEGORIES = [
     list(dict.fromkeys(CATEGORY_LABELS_PIPELINE["HIDEG"].values()))         # 4th
 ]
 
-# Define the nominal categories to drop for one-hot encoder (must be in same order as NOMINAL_CATEGORIES)
+# Designated baseline categories to drop in nominal features (for OneHotEncoder in Pipeline) 
+# Must be in same order as NOMINAL_CATEGORIES
 # Rationale: (1) Allow meaningful comparisons to other categories and (2) often the most frequent category (thus more robust baseline than sparse categories)
 NOMINAL_DROP_CATEGORIES = ["South", "Married", "Any Private", "HS Diploma"]
+
+# MEPS missing value codes
+MEPS_MISSING_CODES = [-1, -7, -8, -9, -15]
 
 # Configuration
 RANDOM_STATE = 42
