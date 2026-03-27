@@ -287,9 +287,6 @@ raw_binary_features = [
 raw_nominal_features = ["REGION23", "MARRY31X", "EMPST31", "INSCOV23", "HIDEG"]
 raw_ordinal_features = ["POVCAT23"]
 
-# Combined raw feature sets
-raw_categorical_features = raw_nominal_features + raw_ordinal_features + raw_binary_features
-raw_all_features = raw_numerical_features + raw_categorical_features
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
