@@ -1,7 +1,7 @@
 stages:
   # Stage 1: Data Preprocessing
   preprocess:
-    cmd: ../.venv-train/Scripts/python 1_eda_and_preprocessing.py
+    cmd: ..\.venv-train\Scripts\python.exe 1_eda_and_preprocessing.py  # \ on windows
     wdir: notebooks
     deps:
       - ../data/h251.sas7bdat                        # Raw data source
@@ -9,7 +9,7 @@ stages:
       - ../src/pipeline.py                           # Preprocessing pipeline
       - ../src/transformers.py                       # Custom transformers
       - ../src/constants.py                          # Feature lists, label mappings, etc.
-      - ../src/utils.py                              # Helper function
+      - ../src/utils.py                              # Helper functions
     outs:
       - ../data/training_data_preprocessed.parquet
       - ../data/validation_data_preprocessed.parquet
@@ -17,7 +17,7 @@ stages:
 
   # Stage 2: Modeling
   train:
-    cmd: ../.venv-train/Scripts/python 2_modeling.py
+    cmd: ..\.venv-train\Scripts\python.exe 2_modeling.py
     wdir: notebooks
     deps:
       - ../data/training_data_preprocessed.parquet   # Dependency on Stage 1
@@ -25,6 +25,6 @@ stages:
       - ../data/test_data_preprocessed.parquet       # Dependency on Stage 1
       - 2_modeling.py                                # Training script
       - ../src/constants.py                          # Feature lists, label mappings, etc.
-      - ../src/utils.py                              # Helper function
+      - ../src/utils.py                              # Helper functions
     outs:
       - ../models/baselines.joblib
