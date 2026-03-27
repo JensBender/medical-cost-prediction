@@ -14,7 +14,20 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-from src.constants import RANDOM_STATE
+from src.constants import (
+    RANDOM_STATE,
+    ID_COLUMN,
+    WEIGHT_COLUMN,
+    TARGET_COLUMN,
+    RAW_COLUMNS_TO_KEEP,
+    RAW_BINARY_FEATURES,
+    MEPS_MISSING_CODES,
+    PIPELINE_NUMERICAL_FEATURES,
+    PIPELINE_BINARY_FEATURES,
+    PIPELINE_NOMINAL_FEATURES,
+    PIPELINE_REQUIRED_FEATURES,
+    PIPELINE_OPTIONAL_FEATURES
+)
 from src.pipeline import create_preprocessing_pipeline
 
 
@@ -25,58 +38,6 @@ from src.pipeline import create_preprocessing_pipeline
 # Paths (relative to project root)
 RAW_DATA_PATH = "data/h251.sas7bdat"
 OUTPUT_DIR = "data"
-
-# 29 columns to keep from the original 1,374
-COLUMNS_TO_KEEP = [
-    # ID
-    "DUPERSID",
-    # Sample Weights
-    "PERWT23F",
-    # Demographics
-    "AGE23X", "SEX", "REGION23", "MARRY31X",
-    # Socioeconomic
-    "POVCAT23", "FAMSZE23", "HIDEG", "EMPST31",
-    # Insurance & Access
-    "INSCOV23", "HAVEUS42",
-    # Perceived Health & Lifestyle
-    "RTHLTH31", "MNHLTH31", "ADSMOK42",
-    # Limitations & Symptoms
-    "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
-    # Chronic Conditions
-    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX",
-    # Target Variable
-    "TOTSLF23",
-]
-
-# Binary features (raw MEPS encoding: 1=Yes, 2=No → standardized to 1/0)
-RAW_BINARY_FEATURES = [
-    "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31",
-    "WLKLIM31", "COGLIM31", "JTPAIN31_M18", "HIBPDX", "CHOLDX",
-    "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX",
-]
-
-# MEPS missing value codes
-MEPS_MISSING_CODES = [-1, -7, -8, -9, -15]
-
-# Pipeline input feature lists 
-INPUT_NUMERICAL_FEATURES = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31", "POVCAT23"]
-INPUT_BINARY_FEATURES = RAW_BINARY_FEATURES + ["RECENT_LIFE_TRANSITION", "EMPST31_GRP"]
-INPUT_NOMINAL_FEATURES = ["REGION23", "MARRY31X_GRP", "INSCOV23", "HIDEG"]
-
-REQUIRED_FEATURES = [
-    "AGE23X",    # Primary driver of medical utilization and costs
-    "SEX",       # Key driver of utilization frequency and spending disparities
-    "INSCOV23",  # Critical for out-of-pocket cost prediction
-    "REGION23",  # Captures geographic variance in healthcare pricing
-    "RTHLTH31",  # Self-reported physical health, powerful proxy for healthcare demand
-]
-
-OPTIONAL_FEATURES = [
-    "MARRY31X_GRP", "FAMSZE23", "POVCAT23", "HIDEG", "EMPST31_GRP", "RECENT_LIFE_TRANSITION",
-    "HAVEUS42", "MNHLTH31", "ADSMOK42",
-    "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
-    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX",
-]
 
 
 # ============================================================
@@ -116,19 +77,19 @@ def main():
 
     # --- 2. Column Selection ---
     print("Step 2/11: Selecting columns...")
-    df = df[COLUMNS_TO_KEEP]
+    df = df[RAW_COLUMNS_TO_KEEP]
     print(f"  Kept {len(df.columns)} columns")
 
     # --- 3. Row Filtering (adults with positive weights) ---
     print("Step 3/11: Filtering target population...")
     n_before = len(df)
-    df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy()
+    df = df[(df[WEIGHT_COLUMN] > 0) & (df["AGE23X"] >= 18)].copy()
     print(f"  Kept {len(df):,} of {n_before:,} rows")
 
     # --- 4. Data Type Handling ---
     print("Step 4/11: Handling data types...")
-    df["DUPERSID"] = df["DUPERSID"].astype(str)
-    df.set_index("DUPERSID", inplace=True)
+    df[ID_COLUMN] = df[ID_COLUMN].astype(str)
+    df.set_index(ID_COLUMN, inplace=True)
 
     # --- 5. Missing Value Standardization ---
     print("Step 5/11: Standardizing missing values...")
@@ -163,8 +124,8 @@ def main():
 
     # --- 8. Train/Val/Test Split (80/10/10 stratified) ---
     print("Step 8/11: Splitting data...")
-    X = df.drop("TOTSLF23", axis=1)
-    y = df["TOTSLF23"]
+    X = df.drop(TARGET_COLUMN, axis=1)
+    y = df[TARGET_COLUMN]
 
     # First split: 80% train, 20% temp
     y_strata = create_stratification_bins(y)
@@ -182,11 +143,11 @@ def main():
     # --- 9. Preprocessing Pipeline (fit on train, transform all) ---
     print("Step 9/11: Running preprocessing pipeline...")
     preprocessor = create_preprocessing_pipeline(
-        REQUIRED_FEATURES,
-        OPTIONAL_FEATURES,
-        INPUT_NUMERICAL_FEATURES,
-        INPUT_NOMINAL_FEATURES,
-        INPUT_BINARY_FEATURES,
+        PIPELINE_REQUIRED_FEATURES,
+        PIPELINE_OPTIONAL_FEATURES,
+        PIPELINE_NUMERICAL_FEATURES,
+        PIPELINE_NOMINAL_FEATURES,
+        PIPELINE_BINARY_FEATURES,
         strict=False,
     )
     X_train_preprocessed = preprocessor.fit_transform(X_train)
@@ -215,7 +176,7 @@ def main():
         ("test",        X_test_preprocessed,  y_test,  X_test),
     ]:
         # Merge preprocessed features, target variable, and sample weights
-        df_out = pd.concat([X_proc, y_split, X_raw["PERWT23F"]], axis=1)
+        df_out = pd.concat([X_proc, y_split, X_raw[WEIGHT_COLUMN]], axis=1)
         path = f"{OUTPUT_DIR}/{split_name}_data_preprocessed.parquet"
         df_out.to_parquet(path)
         print(f"  Saved {path} ({df_out.shape[0]:,} rows × {df_out.shape[1]} cols)")
