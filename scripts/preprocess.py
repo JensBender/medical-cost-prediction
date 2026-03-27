@@ -22,9 +22,9 @@ from src.pipeline import create_preprocessing_pipeline
 # Configuration
 # ============================================================
 
-# Paths (relative to wdir: scripts/)
-RAW_DATA_PATH = "../data/h251.sas7bdat"
-OUTPUT_DIR = "../data"
+# Paths (relative to project root)
+RAW_DATA_PATH = "data/h251.sas7bdat"
+OUTPUT_DIR = "data"
 
 # 29 columns to keep from the original 1,374
 COLUMNS_TO_KEEP = [
