@@ -70,7 +70,20 @@ from src.constants import (
     CATEGORY_LABELS_EDA,
     RANDOM_STATE,
     POP_COLOR,
-    SAMPLE_COLOR
+    SAMPLE_COLOR,
+    ID_COLUMN, 
+    WEIGHT_COLUMN, 
+    TARGET_COLUMN, 
+    RAW_COLUMNS_TO_KEEP,
+    RAW_NUMERICAL_FEATURES,
+    RAW_BINARY_FEATURES,
+    RAW_NOMINAL_FEATURES,
+    RAW_ORDINAL_FEATURES,
+    PIPELINE_NUMERICAL_FEATURES,
+    PIPELINE_BINARY_FEATURES,
+    PIPELINE_NOMINAL_FEATURES,
+    PIPELINE_REQUIRED_FEATURES,
+    PIPELINE_OPTIONAL_FEATURES
 )
 from src.transformers import (
     MedicalFeatureDeriver,
@@ -147,14 +160,14 @@ df.duplicated().value_counts()
 
 # %%
 # Identify duplicates based on the ID column
-df.duplicated(["DUPERSID"]).value_counts()
+df.duplicated([ID_COLUMN]).value_counts()
 
 # %% [markdown]
 # <p style="background-color:#f7fff8; padding:15px; border-width:3px; border-color:#e0f0e0; border-style:solid; border-radius:6px"> ✅ No duplicates were found based on all columns or the ID column.</p>
 
 # %%
 # Identify duplicates based on all columns except ID columns
-id_columns = ["DUPERSID", "DUID", "PID", "PANEL"]
+id_columns = [ID_COLUMN, "DUID", "PID", "PANEL"]
 duplicates_without_id = df.duplicated(subset=df.columns.drop(id_columns), keep=False)
 duplicates_without_id.value_counts()
 
@@ -191,10 +204,10 @@ df[duplicates_without_id]
 # List of columns to keep 
 columns_to_keep = [
     # 1. ID
-    "DUPERSID",
+    ID_COLUMN,
     
     # 2. Sample Weights
-    "PERWT23F", 
+    WEIGHT_COLUMN, 
 
     # 3 Candidate Features.
     # 3.1 Demographics
@@ -216,7 +229,7 @@ columns_to_keep = [
     "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX", 
     
     # 4. Healthcare Expenditure (Target)
-    "TOTSLF23"
+    TARGET_COLUMN
 ]
 
 # Drop all other columns (keeping 29 out of 1,374)
@@ -239,7 +252,7 @@ df = df[columns_to_keep]
 
 # %%
 # Filter DataFrame 
-df = df[(df["PERWT23F"] > 0) & (df["AGE23X"] >= 18)].copy() 
+df = df[(df[WEIGHT_COLUMN] > 0) & (df["AGE23X"] >= 18)].copy() 
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
@@ -268,8 +281,8 @@ df.dtypes
 
 # %%
 # Convert ID to string and set as index
-df["DUPERSID"] = df["DUPERSID"].astype(str)
-df.set_index("DUPERSID", inplace=True)
+df[ID_COLUMN] = df[ID_COLUMN].astype(str)
+df.set_index(ID_COLUMN, inplace=True)
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 
@@ -277,15 +290,7 @@ df.set_index("DUPERSID", inplace=True)
 # </div> 
 
 # %%
-# Define semantic data types (raw)
-raw_numerical_features = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
-raw_binary_features = [
-    "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31", 
-    "WLKLIM31", "COGLIM31", "JTPAIN31_M18", "HIBPDX", "CHOLDX", 
-    "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
-]
-raw_nominal_features = ["REGION23", "MARRY31X", "EMPST31", "INSCOV23", "HIDEG"]
-raw_ordinal_features = ["POVCAT23"]
+# (Semantic data type lists moved to src.constants)
 
 
 # %% [markdown]
@@ -365,7 +370,7 @@ df.isnull().sum().sort_values(ascending=False)
 # %%
 # Standardize all binary features to 0/1 encoding. In MEPS, binary features typically use 1 (Yes) and 2 (No).
 # Mapping 2 to 0 aligns with the standard format (1 = presence, 0 = absence).
-df[raw_binary_features] = df[raw_binary_features].replace({2: 0})
+df[RAW_BINARY_FEATURES] = df[RAW_BINARY_FEATURES].replace({2: 0})
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -396,15 +401,15 @@ df[raw_binary_features] = df[raw_binary_features].replace({2: 0})
 
 # %%
 # Descriptive statistics of sample weights
-df["PERWT23F"].describe()
+df[WEIGHT_COLUMN].describe()
 
 # %%
 # Sum of sample weights
-df["PERWT23F"].sum()
+df[WEIGHT_COLUMN].sum()
 
 # %%
 # Histogram of sample weights
-sns.histplot(df["PERWT23F"])
+sns.histplot(df[WEIGHT_COLUMN])
 plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("{x:,.0f}"))
 
 
@@ -454,53 +459,53 @@ def weighted_std(variable, weights):
 
 
 # Calculate population statistics (weighted)
-pop_mean = np.average(df["TOTSLF23"], weights=df["PERWT23F"])
-pop_std = weighted_std(df["TOTSLF23"], weights=df["PERWT23F"])
-pop_p25 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.25)
-pop_median = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.5)
-pop_p75 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.75)
-pop_p95 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.95)
-pop_p99 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.99)
-pop_p999 = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], 0.999)
+pop_mean = np.average(df[TARGET_COLUMN], weights=df[WEIGHT_COLUMN])
+pop_std = weighted_std(df[TARGET_COLUMN], weights=df[WEIGHT_COLUMN])
+pop_p25 = weighted_quantile(df[TARGET_COLUMN], df[WEIGHT_COLUMN], 0.25)
+pop_median = weighted_quantile(df[TARGET_COLUMN], df[WEIGHT_COLUMN], 0.5)
+pop_p75 = weighted_quantile(df[TARGET_COLUMN], df[WEIGHT_COLUMN], 0.75)
+pop_p95 = weighted_quantile(df[TARGET_COLUMN], df[WEIGHT_COLUMN], 0.95)
+pop_p99 = weighted_quantile(df[TARGET_COLUMN], df[WEIGHT_COLUMN], 0.99)
+pop_p999 = weighted_quantile(df[TARGET_COLUMN], df[WEIGHT_COLUMN], 0.999)
 
 # Calculate sample quantiles (unweighted)
-sample_p95 = df["TOTSLF23"].quantile(0.95)
-sample_p99 = df["TOTSLF23"].quantile(0.99)
-sample_p999 = df["TOTSLF23"].quantile(0.999)
+sample_p95 = df[TARGET_COLUMN].quantile(0.95)
+sample_p99 = df[TARGET_COLUMN].quantile(0.99)
+sample_p999 = df[TARGET_COLUMN].quantile(0.999)
 
 # Calculate total costs (sum)
-sample_total_costs = df["TOTSLF23"].sum()
-df["pop_costs"] = df["TOTSLF23"] * df["PERWT23F"]  
+sample_total_costs = df[TARGET_COLUMN].sum()
+df["pop_costs"] = df[TARGET_COLUMN] * df[WEIGHT_COLUMN]  
 pop_total_costs = df["pop_costs"].sum()
 
 # Create comparison table: Sample vs. population statistics 
 sample_vs_population_stats = pd.DataFrame({
     "Sample (Unweighted)": [
         len(df),
-        df["TOTSLF23"].mean(),
-        df["TOTSLF23"].std(),
-        df["TOTSLF23"].min(),
-        df["TOTSLF23"].quantile(0.25),
-        df["TOTSLF23"].median(),
-        df["TOTSLF23"].quantile(0.75),
+        df[TARGET_COLUMN].mean(),
+        df[TARGET_COLUMN].std(),
+        df[TARGET_COLUMN].min(),
+        df[TARGET_COLUMN].quantile(0.25),
+        df[TARGET_COLUMN].median(),
+        df[TARGET_COLUMN].quantile(0.75),
         sample_p95,
         sample_p99,
         sample_p999,
-        df["TOTSLF23"].max(),
+        df[TARGET_COLUMN].max(),
         sample_total_costs
     ],
     "Population (Weighted)": [
-        df["PERWT23F"].sum(),  # sum of weights = count of target population
+        df[WEIGHT_COLUMN].sum(),  # sum of weights = count of target population
         pop_mean,
         pop_std,
-        df["TOTSLF23"].min(),  # min is identical
+        df[TARGET_COLUMN].min(),  # min is identical
         pop_p25,
         pop_median,
         pop_p75,
         pop_p95,
         pop_p99,
         pop_p999,
-        df["TOTSLF23"].max(),  # max is identical
+        df[TARGET_COLUMN].max(),  # max is identical
         pop_total_costs
     ]
 }, index=["count", "mean", "std", "min", "25%", "50%", "75%", "95%", "99%", "99.9%", "max", "sum"])
@@ -538,8 +543,8 @@ plt.figure(figsize=(10, 6))
 # Population histogram 
 sns.histplot(
     data=df, 
-    x="TOTSLF23", 
-    weights="PERWT23F", 
+    x=TARGET_COLUMN, 
+    weights=WEIGHT_COLUMN, 
     label="Population (Weighted)",
     stat="probability", 
     bins=50, 
@@ -552,7 +557,7 @@ sns.histplot(
 # Sample histogram 
 sns.histplot(
     data=df, 
-    x="TOTSLF23", 
+    x=TARGET_COLUMN, 
     label="Sample (Unweighted)",
     stat="probability", 
     bins=50, 
@@ -590,15 +595,15 @@ plt.show()
 
 # %%
 # Histogram of typical range (excluding zero costs and top 5%)
-plot_data = df[(df["TOTSLF23"] > 0) & (df["TOTSLF23"] < pop_p95)].copy()
+plot_data = df[(df[TARGET_COLUMN] > 0) & (df[TARGET_COLUMN] < pop_p95)].copy()
 
 plt.figure(figsize=(10, 6))
 
 # Population histogram 
 sns.histplot(
     data=plot_data, 
-    x="TOTSLF23", 
-    weights="PERWT23F", 
+    x=TARGET_COLUMN, 
+    weights=WEIGHT_COLUMN, 
     label="Population (Weighted)",
     stat="probability", 
     bins=50, 
@@ -611,7 +616,7 @@ sns.histplot(
 # Sample histogram 
 sns.histplot(
     data=plot_data, 
-    x="TOTSLF23", 
+    x=TARGET_COLUMN, 
     label="Sample (Unweighted)",
     stat="probability", 
     bins=50, 
@@ -654,15 +659,15 @@ plt.show()
 # %%
 # Zero costs analysis
 zero_costs_df = pd.DataFrame({
-    "Sample (Unweighted) Count": [len(df[df["TOTSLF23"] == 0]), len(df[df["TOTSLF23"] > 0])],
-    "Population (Weighted) Count": [df[df["TOTSLF23"] == 0]["PERWT23F"].sum(), df[df["TOTSLF23"] > 0]["PERWT23F"].sum()],
+    "Sample (Unweighted) Count": [len(df[df[TARGET_COLUMN] == 0]), len(df[df[TARGET_COLUMN] > 0])],
+    "Population (Weighted) Count": [df[df[TARGET_COLUMN] == 0][WEIGHT_COLUMN].sum(), df[df[TARGET_COLUMN] > 0][WEIGHT_COLUMN].sum()],
     "Sample (Unweighted) %": [
-        (df["TOTSLF23"] == 0).mean() * 100,
-        (df["TOTSLF23"] > 0).mean() * 100
+        (df[TARGET_COLUMN] == 0).mean() * 100,
+        (df[TARGET_COLUMN] > 0).mean() * 100
     ],
     "Population (Weighted) %": [
-        (df.loc[df["TOTSLF23"] == 0, "PERWT23F"].sum() / df["PERWT23F"].sum()) * 100,
-        (df.loc[df["TOTSLF23"] > 0, "PERWT23F"].sum() / df["PERWT23F"].sum()) * 100
+        (df.loc[df[TARGET_COLUMN] == 0, WEIGHT_COLUMN].sum() / df[WEIGHT_COLUMN].sum()) * 100,
+        (df.loc[df[TARGET_COLUMN] > 0, WEIGHT_COLUMN].sum() / df[WEIGHT_COLUMN].sum()) * 100
     ]
 }, index=["Zero Costs", "Positive Costs"]).round(2)
 
@@ -799,10 +804,10 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
 
 
 # Plot sample Lorenz curve of out-of-pocket costs
-plot_lorenz_curve(df, column="TOTSLF23")
+plot_lorenz_curve(df, column=TARGET_COLUMN)
 
 # Plot population Lorenz curve of out-of-pocket costs
-plot_lorenz_curve(df, column="TOTSLF23", weights="PERWT23F", save_to_file="../figures/eda/lorenz_curve.png")
+plot_lorenz_curve(df, column=TARGET_COLUMN, weights=WEIGHT_COLUMN, save_to_file="../figures/eda/lorenz_curve.png")
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -826,19 +831,19 @@ plot_lorenz_curve(df, column="TOTSLF23", weights="PERWT23F", save_to_file="../fi
 percentiles = [0.99, 0.95, 0.9, 0.8, 0.5]
 stats = []
 
-sample_total_costs = df["TOTSLF23"].sum()
+sample_total_costs = df[TARGET_COLUMN].sum()
 pop_total_costs = df["pop_costs"].sum()
 
 for p in percentiles:
     # Calculate Thresholds
-    sample_threshold = df["TOTSLF23"].quantile(p)
-    pop_threshold = weighted_quantile(df["TOTSLF23"], df["PERWT23F"], p)
+    sample_threshold = df[TARGET_COLUMN].quantile(p)
+    pop_threshold = weighted_quantile(df[TARGET_COLUMN], df[WEIGHT_COLUMN], p)
     
     # Sample Share (Unweighted)
-    sample_share = (df[df["TOTSLF23"] >= sample_threshold]["TOTSLF23"].sum() / sample_total_costs) * 100
+    sample_share = (df[df[TARGET_COLUMN] >= sample_threshold][TARGET_COLUMN].sum() / sample_total_costs) * 100
     
     # Population Share (Weighted)
-    pop_share = (df[df["TOTSLF23"] >= pop_threshold]["pop_costs"].sum() / pop_total_costs) * 100
+    pop_share = (df[df[TARGET_COLUMN] >= pop_threshold]["pop_costs"].sum() / pop_total_costs) * 100
     
     stats.append({
         "Top X%": f"Top {(1-p)*100:.0f}%",
@@ -880,12 +885,12 @@ cost_concentration_df.style \
 # %%
 # Top 1% analysis
 # Sample (Unweighted)
-sample_top_1_costs = df[df["TOTSLF23"] >= sample_p99]["TOTSLF23"].sum()
-sample_top_01_costs = df[df["TOTSLF23"] >= sample_p999]["TOTSLF23"].sum()
+sample_top_1_costs = df[df[TARGET_COLUMN] >= sample_p99][TARGET_COLUMN].sum()
+sample_top_01_costs = df[df[TARGET_COLUMN] >= sample_p999][TARGET_COLUMN].sum()
 
 # Population (Weighted)
-pop_top_1_costs = df[df["TOTSLF23"] >= pop_p99]["pop_costs"].sum()
-pop_top_01_costs = df[df["TOTSLF23"] >= pop_p999]["pop_costs"].sum()
+pop_top_1_costs = df[df[TARGET_COLUMN] >= pop_p99]["pop_costs"].sum()
+pop_top_01_costs = df[df[TARGET_COLUMN] >= pop_p999]["pop_costs"].sum()
 
 # Create comparison table
 top_1_df = pd.DataFrame({
@@ -939,8 +944,8 @@ top_1_df.style \
 chronic_cols = ["HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"]
 df["CHRONIC_COUNT"] = (df[chronic_cols] == 1).sum(axis=1)
 
-super_spenders = df[df["TOTSLF23"] >= pop_p999].sort_values("TOTSLF23", ascending=False)
-super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_COUNT"] + chronic_cols].style.pipe(add_table_caption, "Super-Spenders")
+super_spenders = df[df[TARGET_COLUMN] >= pop_p999].sort_values(TARGET_COLUMN, ascending=False)
+super_spenders[[TARGET_COLUMN, WEIGHT_COLUMN, "AGE23X", "SEX", "INSCOV23", "CHRONIC_COUNT"] + chronic_cols].style.pipe(add_table_caption, "Super-Spenders")
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -970,7 +975,7 @@ super_spenders[["TOTSLF23", "PERWT23F", "AGE23X", "SEX", "INSCOV23", "CHRONIC_CO
 
 # %%
 # Sample statistics (unweighted) 
-df[raw_numerical_features].describe().T.style \
+df[RAW_NUMERICAL_FEATURES].describe().T.style \
     .pipe(add_table_caption, "Descriptive Statistics (Sample)") \
     .format({
         "count": "{:,.0f}",
@@ -987,11 +992,11 @@ df[raw_numerical_features].describe().T.style \
 # Population statistics (weighted) 
 pop_stats = []
 # Iterate over all numerical features
-for feature in raw_numerical_features:
+for feature in RAW_NUMERICAL_FEATURES:
     # Drop missing values for the current feature
     valid_mask = df[feature].notna()
     values = df.loc[valid_mask, feature]
-    weights = df.loc[valid_mask, "PERWT23F"]
+    weights = df.loc[valid_mask, WEIGHT_COLUMN]
     
     pop_stats.append({
         "count": weights.sum(),  # Sum of weights is the estimated population count
@@ -1005,7 +1010,7 @@ for feature in raw_numerical_features:
     })
 
 # Show table of population statistics
-pop_stats_df = pd.DataFrame(pop_stats, index=raw_numerical_features)
+pop_stats_df = pd.DataFrame(pop_stats, index=RAW_NUMERICAL_FEATURES)
 pop_stats_df.style \
     .pipe(add_table_caption, "Descriptive Statistics (Population)") \
     .format({
@@ -1107,10 +1112,10 @@ def plot_numerical_distributions(df, numerical_features, display_labels=None, we
 
 
 # Plot sample distributions (unweighted) of numerical features
-plot_numerical_distributions(df, raw_numerical_features, DISPLAY_LABELS)  
+plot_numerical_distributions(df, RAW_NUMERICAL_FEATURES, DISPLAY_LABELS)  
 
 # Plot population distributions (weighted) of numerical features  
-plot_numerical_distributions(df, raw_numerical_features, DISPLAY_LABELS, weights="PERWT23F", save_to_file="../figures/eda/numerical_distributions.png")
+plot_numerical_distributions(df, RAW_NUMERICAL_FEATURES, DISPLAY_LABELS, weights=WEIGHT_COLUMN, save_to_file="../figures/eda/numerical_distributions.png")
 
 
 # %% [markdown]
@@ -1222,10 +1227,10 @@ def plot_categorical_distributions(df, nominal_features, ordinal_features, displ
 
 
 # Plot sample distributions (unweighted) of categorical features 
-plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA) 
+plot_categorical_distributions(df, RAW_NOMINAL_FEATURES, RAW_ORDINAL_FEATURES, DISPLAY_LABELS, CATEGORY_LABELS_EDA) 
 
 # Plot population distributions (weighted) of categorical features
-plot_categorical_distributions(df, raw_nominal_features, raw_ordinal_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F", save_to_file="../figures/eda/categorical_distributions.png")
+plot_categorical_distributions(df, RAW_NOMINAL_FEATURES, RAW_ORDINAL_FEATURES, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights=WEIGHT_COLUMN, save_to_file="../figures/eda/categorical_distributions.png")
 
 
 # %% [markdown]
@@ -1345,10 +1350,10 @@ def plot_binary_distributions(df, binary_features, display_labels=None, categori
 
 
 # Plot sample distributions (unweighted) of binary features 
-plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA)  
+plot_binary_distributions(df, RAW_BINARY_FEATURES, DISPLAY_LABELS, CATEGORY_LABELS_EDA)  
 
 # Plot population distributions (weighted) of binary features
-plot_binary_distributions(df, raw_binary_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F", save_to_file="../figures/eda/binary_distributions.png")
+plot_binary_distributions(df, RAW_BINARY_FEATURES, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights=WEIGHT_COLUMN, save_to_file="../figures/eda/binary_distributions.png")
 
 
 # %% [markdown]
@@ -1561,14 +1566,14 @@ def plot_correlation_heatmap(df, columns, method, weights=None, save_to_file=Non
 
     
 # Plot the sample Spearman rank correlations for the target variable and all numerical, ordinal, and binary features
-plot_correlation_heatmap(df, columns=["TOTSLF23"] + raw_numerical_features + raw_ordinal_features + raw_binary_features, method="spearman")
+plot_correlation_heatmap(df, columns=[TARGET_COLUMN] + RAW_NUMERICAL_FEATURES + RAW_ORDINAL_FEATURES + RAW_BINARY_FEATURES, method="spearman")
 
 # Plot the population Spearman rank correlations for the target variable and all numerical, ordinal, and binary features
 plot_correlation_heatmap(
     df, 
-    columns=["TOTSLF23"] + raw_numerical_features + raw_ordinal_features + raw_binary_features, 
+    columns=[TARGET_COLUMN] + RAW_NUMERICAL_FEATURES + RAW_ORDINAL_FEATURES + RAW_BINARY_FEATURES, 
     method="spearman",
-    weights="PERWT23F",
+    weights=WEIGHT_COLUMN,
     save_to_file="../figures/eda/correlation_heatmap.png"
 )
 
@@ -1696,15 +1701,15 @@ def plot_numerical_feature_target_relationships(df, features, target, log_scale=
     plt.show()
 
 # Visualize sample numerical feature-target relationships
-plot_numerical_feature_target_relationships(df, features=raw_numerical_features, target="TOTSLF23", log_scale=True)
+plot_numerical_feature_target_relationships(df, features=RAW_NUMERICAL_FEATURES, target=TARGET_COLUMN, log_scale=True)
 
 # Visualize population numerical feature-target relationships
 plot_numerical_feature_target_relationships(
     df, 
-    features=raw_numerical_features, 
-    target="TOTSLF23", 
+    features=RAW_NUMERICAL_FEATURES, 
+    target=TARGET_COLUMN, 
     log_scale=True,
-    weights="PERWT23F", 
+    weights=WEIGHT_COLUMN, 
     save_to_file="../figures/eda/numerical_feature_target_relationships.png"
 )
 
@@ -1894,20 +1899,20 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
 # Visualize sample categorical feature-target relationships 
 plot_categorical_feature_target_relationships(
     df, 
-    nominal_features=raw_nominal_features,
-    ordinal_features=raw_ordinal_features,
-    target="TOTSLF23", 
+    nominal_features=RAW_NOMINAL_FEATURES,
+    ordinal_features=RAW_ORDINAL_FEATURES,
+    target=TARGET_COLUMN, 
     log_scale=True
 )
 
 # Visualize population categorical feature-target relationships 
 plot_categorical_feature_target_relationships(
     df, 
-    nominal_features=raw_nominal_features,
-    ordinal_features=raw_ordinal_features,
-    target="TOTSLF23", 
+    nominal_features=RAW_NOMINAL_FEATURES,
+    ordinal_features=RAW_ORDINAL_FEATURES,
+    target=TARGET_COLUMN, 
     log_scale=True,
-    weights="PERWT23F", 
+    weights=WEIGHT_COLUMN, 
     save_to_file="../figures/eda/categorical_feature_target_relationships.png"
 )
 
@@ -2086,18 +2091,18 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
 # Visualize sample binary feature-target relationships 
 plot_binary_feature_target_relationships(
     df, 
-    features=raw_binary_features,
-    target="TOTSLF23", 
+    features=RAW_BINARY_FEATURES,
+    target=TARGET_COLUMN, 
     log_scale=True
 )
 
 # Visualize population binary feature-target relationships 
 plot_binary_feature_target_relationships(
     df, 
-    features=raw_binary_features,
-    target="TOTSLF23", 
+    features=RAW_BINARY_FEATURES,
+    target=TARGET_COLUMN, 
     log_scale=True,
-    weights="PERWT23F", 
+    weights=WEIGHT_COLUMN, 
     save_to_file="../figures/eda/binary_feature_target_relationships.png"
 )
 
@@ -2151,7 +2156,7 @@ plot_binary_feature_target_relationships(
 #         </li>
 #         <li style="margin-bottom:10px;"><b>3. Sample Weights</b>
 #             <ul style="margin-top:5px;">
-#                 <li><b>Population Representativeness:</b> MEPS uses a complex survey design that oversamples low socio-economic status individuals. To ensure the model remains representative of the actual U.S. civilian population, all models must incorporate <b>weights</b> (<code>sample_weight="PERWT23F"</code>) during training. This ensures the loss function is minimized for the true population distribution rather than the oversampled survey cohort.</li>
+#                 <li><b>Population Representativeness:</b> MEPS uses a complex survey design that oversamples low socio-economic status individuals. To ensure the model remains representative of the actual U.S. civilian population, all models must incorporate <b>weights</b> (<code>sample_weight=WEIGHT_COLUMN</code>) during training. This ensures the loss function is minimized for the true population distribution rather than the oversampled survey cohort.</li>
 #             </ul>
 #         </li>
 #         <li style="margin-bottom:10px;"><b>4. Train-Validation-Test Split</b>
@@ -2233,7 +2238,7 @@ plot_binary_feature_target_relationships(
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><code>RBF</code> Kernel to handle non-linearity. Loss is linear like MAE, not squared like MSE. Log still benefits by focusing on percentage accuarcy.</td>
 #     </tr>
 # </table>
-# <p style="font-size:11px; color:#555; margin-top:10px;"><i>Note: All models use feature scaling (<code>StandardScaler</code>) and weights (<code>sample_weight="PERWT23F"</code>) during training.</i></p>
+# <p style="font-size:11px; color:#555; margin-top:10px;"><i>Note: All models use feature scaling (<code>StandardScaler</code>) and weights (<code>sample_weight=WEIGHT_COLUMN</code>) during training.</i></p>
 # </div> 
 
 
@@ -2293,10 +2298,7 @@ df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
 # </div>
 
 # %%
-# Pipeline Input Features
-input_numerical_features = raw_numerical_features.copy() + raw_ordinal_features.copy()  # combine raw numerical and ordinal features for pipeline to apply median imputation and Z-score scaling 
-input_binary_features = raw_binary_features + ["RECENT_LIFE_TRANSITION", "EMPST31_GRP"]  # employment is binary after collapsing categories
-input_nominal_features = ["REGION23", "MARRY31X_GRP", "INSCOV23", "HIDEG"] 
+# (Pipeline input features moved to src.constants) 
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
@@ -2304,8 +2306,8 @@ input_nominal_features = ["REGION23", "MARRY31X_GRP", "INSCOV23", "HIDEG"]
 # </div>
 
 # %%
-plot_categorical_distributions(df, input_nominal_features, ["POVCAT23"], DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F")
-plot_binary_distributions(df, input_binary_features, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights="PERWT23F")
+plot_categorical_distributions(df, PIPELINE_NOMINAL_FEATURES, ["POVCAT23"], DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights=WEIGHT_COLUMN)
+plot_binary_distributions(df, PIPELINE_BINARY_FEATURES, DISPLAY_LABELS, CATEGORY_LABELS_EDA, weights=WEIGHT_COLUMN)
 
 
 # %% [markdown]
@@ -2400,8 +2402,8 @@ plot_binary_distributions(df, input_binary_features, DISPLAY_LABELS, CATEGORY_LA
 
 # %%
 # Split the data into X features and y target
-X = df.drop("TOTSLF23", axis=1)
-y = df["TOTSLF23"]
+X = df.drop(TARGET_COLUMN, axis=1)
+y = df[TARGET_COLUMN]
 
 # Helper function for distribution-informed stratification
 def create_stratification_bins(y):
@@ -2515,7 +2517,7 @@ missing_value_df = pd.DataFrame({
     "Test": X_test.isnull().sum(),
 })
 # Add target variable missings
-missing_value_df.loc["TOTSLF23"] = [
+missing_value_df.loc[TARGET_COLUMN] = [
     y_train.isnull().sum(),
     y_val.isnull().sum(),
     y_test.isnull().sum(),
@@ -2548,29 +2550,15 @@ missing_value_df.sort_values("Training", ascending=False).style \
 # </div>
 
 # %%
-# Define required vs. optional features
-required_features = [
-    "AGE23X",    # Primary driver of medical utilization and costs
-    "SEX",       # Key driver of utilization frequency and spending disparities documented in healthcare literature  
-    "INSCOV23",  # Critical for out-of-pocket cost prediction
-    "REGION23",  # Captures geographic variance in healthcare pricing
-    "RTHLTH31"   # Self-reported physical health is a powerful proxy for healthcare demand
-]
-
-optional_features = [
-    "MARRY31X_GRP", "FAMSZE23", "POVCAT23", "HIDEG", "EMPST31_GRP", "RECENT_LIFE_TRANSITION",
-    "HAVEUS42", "MNHLTH31", "ADSMOK42",
-    "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
-    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
-]
+# (Required and optional feature lists moved to src.constants)
 
 # Create missing value handling pipeline
 missing_value_handling_pipeline = create_missing_value_handling_pipeline(
-    required_features, 
-    optional_features, 
-    input_numerical_features, 
-    input_nominal_features,
-    input_binary_features,
+    PIPELINE_REQUIRED_FEATURES, 
+    PIPELINE_OPTIONAL_FEATURES, 
+    PIPELINE_NUMERICAL_FEATURES, 
+    PIPELINE_NOMINAL_FEATURES,
+    PIPELINE_BINARY_FEATURES,
     strict=False
 )
 
@@ -2581,12 +2569,12 @@ X_test_preprocessed = missing_value_handling_pipeline.transform(X_test)
 
 # Verify results: Missing value counts of raw vs. preprocessed data
 pd.DataFrame({
-    "Training": X_train[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
-    "Training (Preprocessed)": X_train_preprocessed[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
-    "Validation": X_val[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
-    "Validation (Preprocessed)": X_val_preprocessed[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
-    "Test": X_test[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
-    "Test (Preprocessed)": X_test_preprocessed[input_numerical_features + input_nominal_features + input_binary_features].isnull().sum(),
+    "Training": X_train[PIPELINE_NUMERICAL_FEATURES + PIPELINE_NOMINAL_FEATURES + PIPELINE_BINARY_FEATURES].isnull().sum(),
+    "Training (Preprocessed)": X_train_preprocessed[PIPELINE_NUMERICAL_FEATURES + PIPELINE_NOMINAL_FEATURES + PIPELINE_BINARY_FEATURES].isnull().sum(),
+    "Validation": X_val[PIPELINE_NUMERICAL_FEATURES + PIPELINE_NOMINAL_FEATURES + PIPELINE_BINARY_FEATURES].isnull().sum(),
+    "Validation (Preprocessed)": X_val_preprocessed[PIPELINE_NUMERICAL_FEATURES + PIPELINE_NOMINAL_FEATURES + PIPELINE_BINARY_FEATURES].isnull().sum(),
+    "Test": X_test[PIPELINE_NUMERICAL_FEATURES + PIPELINE_NOMINAL_FEATURES + PIPELINE_BINARY_FEATURES].isnull().sum(),
+    "Test (Preprocessed)": X_test_preprocessed[PIPELINE_NUMERICAL_FEATURES + PIPELINE_NOMINAL_FEATURES + PIPELINE_BINARY_FEATURES].isnull().sum(),
 }).style.pipe(add_table_caption, "Verification of Missing Value Imputation")
 
 # %% [markdown]
@@ -2617,9 +2605,9 @@ derived_numerical_features = MedicalFeatureDeriver.OUTPUT_FEATURES
 
 # Inspect distributions of new derived features
 X_train_inspect  = X_train_preprocessed.assign(
-    PERWT23F=X_train.loc[X_train_preprocessed.index, "PERWT23F"]  # Temporarily attach weights for population analysis
+    PERWT23F=X_train.loc[X_train_preprocessed.index, WEIGHT_COLUMN]  # Temporarily attach weights for population analysis
 ) 
-plot_numerical_distributions(X_train_inspect, derived_numerical_features, DISPLAY_LABELS, weights="PERWT23F")
+plot_numerical_distributions(X_train_inspect, derived_numerical_features, DISPLAY_LABELS, weights=WEIGHT_COLUMN)
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
@@ -2656,7 +2644,7 @@ plot_numerical_distributions(X_train_inspect, derived_numerical_features, DISPLA
 outlier_remover_3sd = OutlierRemover3SD()
 
 # Fit outlier remover to training data
-outlier_remover_3sd.fit(X_train_preprocessed, input_numerical_features + derived_numerical_features)
+outlier_remover_3sd.fit(X_train_preprocessed, PIPELINE_NUMERICAL_FEATURES + derived_numerical_features)
 
 # Show outliers in training data
 summary_3sd = f"Training data contains {outlier_remover_3sd.outliers_} rows ({outlier_remover_3sd.outliers_ / len(outlier_remover_3sd.final_mask_) * 100:.1f}%) with outliers. Outliers by column below."
@@ -2685,7 +2673,7 @@ outlier_remover_3sd.stats_.style \
 outlier_remover_iqr = OutlierRemoverIQR()
 
 # Fit outlier remover to training data
-outlier_remover_iqr.fit(X_train_preprocessed, input_numerical_features + derived_numerical_features)
+outlier_remover_iqr.fit(X_train_preprocessed, PIPELINE_NUMERICAL_FEATURES + derived_numerical_features)
 
 # Show outliers by column for training data
 summary_iqr = f"Training data contains {outlier_remover_iqr.outliers_} rows ({outlier_remover_iqr.outliers_ / len(outlier_remover_iqr.final_mask_) * 100:.1f}%) with outliers. Outliers by column below."
@@ -2722,7 +2710,7 @@ outlier_remover_iqr.stats_.style \
 outlier_df = X_train_preprocessed.assign(
     TOTSLF23=y_train, 
     outlier=outlier_remover_3sd.final_mask_,
-    PERWT23F=X_train.loc[X_train_preprocessed.index, "PERWT23F"] # Pass sample weights for population-level stats
+    PERWT23F=X_train.loc[X_train_preprocessed.index, WEIGHT_COLUMN] # Pass sample weights for population-level stats
 )
 
 # Outlier Profiling: Cost Concentration
@@ -2734,16 +2722,16 @@ percentiles = [0.999, 0.99, 0.95, 0.9, 0.8, 0.5]
 benchmarks = []
 
 # Pre-calculate group populations (weighted) for efficiency
-outlier_in_pop = outlier_in_df["PERWT23F"].sum()
-outlier_out_pop = outlier_out_df["PERWT23F"].sum()
+outlier_in_pop = outlier_in_df[WEIGHT_COLUMN].sum()
+outlier_out_pop = outlier_out_df[WEIGHT_COLUMN].sum()
 
 for p in percentiles:
     # Calculate global (population-wide) threshold
-    threshold = weighted_quantile(outlier_df["TOTSLF23"], outlier_df["PERWT23F"], p)
+    threshold = weighted_quantile(outlier_df[TARGET_COLUMN], outlier_df[WEIGHT_COLUMN], p)
     
     # Calculate representation within each subgroup
-    outlier_in_rep = (outlier_in_df.loc[outlier_in_df["TOTSLF23"] >= threshold, "PERWT23F"].sum() / outlier_in_pop) * 100
-    outlier_out_rep = (outlier_out_df.loc[outlier_out_df["TOTSLF23"] >= threshold, "PERWT23F"].sum() / outlier_out_pop) * 100
+    outlier_in_rep = (outlier_in_df.loc[outlier_in_df[TARGET_COLUMN] >= threshold, WEIGHT_COLUMN].sum() / outlier_in_pop) * 100
+    outlier_out_rep = (outlier_out_df.loc[outlier_out_df[TARGET_COLUMN] >= threshold, WEIGHT_COLUMN].sum() / outlier_out_pop) * 100
     
     benchmarks.append({
         "Benchmark": f"Top {(1-p)*100:.0f}% (>= ${threshold:,.0f})" if p != 0.999 else f"Top 0.1% (>= ${threshold:,.0f})",
@@ -2785,7 +2773,7 @@ benchmark_df.style \
 # %%
 # Define features to be used for multivariate outlier detection
 # Note: Include numerical and binary features from both pipeline input and derived, exclude ordinal features (POVCAT23)
-mutlivariate_outlier_features = [feat for feat in input_numerical_features if feat != "POVCAT23"] + input_binary_features + derived_numerical_features
+mutlivariate_outlier_features = [feat for feat in PIPELINE_NUMERICAL_FEATURES if feat != "POVCAT23"] + PIPELINE_BINARY_FEATURES + derived_numerical_features
 
 # Initialize isolation forest
 isolation_forest = IsolationForest(contamination=0.05, random_state=RANDOM_STATE)
@@ -2816,9 +2804,9 @@ print(f"Training Data: Identified {n_outliers_train} rows ({100 * contamination_
 # Create outlier profiling DataFrame from training data
 outlier_df = X_train_preprocessed.assign(
     TOTSLF23=y_train, 
-    TOTSLF23_LOG=lambda df: np.log1p(df["TOTSLF23"]),  # Log-scale out-of-pocket costs for plotting
+    TOTSLF23_LOG=lambda df: np.log1p(df[TARGET_COLUMN]),  # Log-scale out-of-pocket costs for plotting
     outlier_display=lambda df: df["outlier"].map({0: "Inliers", 1: "Outliers"}),
-    PERWT23F=X_train.loc[X_train_preprocessed.index, "PERWT23F"] # Pass sample weights for population-level stats
+    PERWT23F=X_train.loc[X_train_preprocessed.index, WEIGHT_COLUMN] # Pass sample weights for population-level stats
 )
 
 # Create outliers and inliers DataFrames 
@@ -2836,11 +2824,11 @@ outlier_out_df = outlier_df[outlier_df["outlier"] == 1]
 def get_lorenz_metrics(subset_df):
     """Calculates Lorenz curve coordinates and Gini coefficient."""
     # Create local copy and calculate population costs
-    l_df = subset_df[["TOTSLF23", "PERWT23F"]].sort_values("TOTSLF23").copy()
-    l_df["pop_costs"] = l_df["TOTSLF23"] * l_df["PERWT23F"]
+    l_df = subset_df[[TARGET_COLUMN, WEIGHT_COLUMN]].sort_values(TARGET_COLUMN).copy()
+    l_df["pop_costs"] = l_df[TARGET_COLUMN] * l_df[WEIGHT_COLUMN]
     
     # Cumulative percentages (weighted)
-    cum_pop_pct = l_df["PERWT23F"].cumsum() / l_df["PERWT23F"].sum() * 100
+    cum_pop_pct = l_df[WEIGHT_COLUMN].cumsum() / l_df[WEIGHT_COLUMN].sum() * 100
     cum_pop_costs = l_df["pop_costs"].cumsum() / l_df["pop_costs"].sum() * 100
     
     # Prepend origin
@@ -2894,7 +2882,7 @@ for g in groups:
 
     # Highlight Zero-Cost Threshold for this group
     group_df = outlier_out_df if g["name"] == "Outliers" else outlier_in_df
-    group_zero_pct = (group_df.loc[group_df["TOTSLF23"] == 0, "PERWT23F"].sum() / group_df["PERWT23F"].sum()) * 100
+    group_zero_pct = (group_df.loc[group_df[TARGET_COLUMN] == 0, WEIGHT_COLUMN].sum() / group_df[WEIGHT_COLUMN].sum()) * 100
     
     plt.plot(group_zero_pct, 0, 'o', color=g["color"], markersize=8)
     
@@ -2932,16 +2920,16 @@ percentiles = [0.999, 0.99, 0.95, 0.9, 0.8, 0.5]
 benchmarks = []
 
 # Pre-calculate group populations (weighted) for efficiency
-outlier_in_pop = outlier_in_df["PERWT23F"].sum()
-outlier_out_pop = outlier_out_df["PERWT23F"].sum()
+outlier_in_pop = outlier_in_df[WEIGHT_COLUMN].sum()
+outlier_out_pop = outlier_out_df[WEIGHT_COLUMN].sum()
 
 for p in percentiles:
     # Calculate global (population-wide) threshold
-    threshold = weighted_quantile(outlier_df["TOTSLF23"], outlier_df["PERWT23F"], p)
+    threshold = weighted_quantile(outlier_df[TARGET_COLUMN], outlier_df[WEIGHT_COLUMN], p)
     
     # Calculate representation within each subgroup
-    outlier_in_rep = (outlier_in_df.loc[outlier_in_df["TOTSLF23"] >= threshold, "PERWT23F"].sum() / outlier_in_pop) * 100
-    outlier_out_rep = (outlier_out_df.loc[outlier_out_df["TOTSLF23"] >= threshold, "PERWT23F"].sum() / outlier_out_pop) * 100
+    outlier_in_rep = (outlier_in_df.loc[outlier_in_df[TARGET_COLUMN] >= threshold, WEIGHT_COLUMN].sum() / outlier_in_pop) * 100
+    outlier_out_rep = (outlier_out_df.loc[outlier_out_df[TARGET_COLUMN] >= threshold, WEIGHT_COLUMN].sum() / outlier_out_pop) * 100
     
     benchmarks.append({
         "Benchmark": f"Top {(1-p)*100:.0f}% (>= ${threshold:,.0f})" if p != 0.999 else f"Top 0.1% (>= ${threshold:,.0f})",
@@ -2965,13 +2953,13 @@ benchmark_df.style \
 
 # %%
 # Outlier Numeric Profile: Median Differences (Population)
-outlier_num_cols = [feat for feat in input_numerical_features if feat != "POVCAT23"] + derived_numerical_features + ["TOTSLF23"]
+outlier_num_cols = [feat for feat in PIPELINE_NUMERICAL_FEATURES if feat != "POVCAT23"] + derived_numerical_features + [TARGET_COLUMN]
 
 # Calculate population medians (weighted) for each feature/target
 outlier_stats_num = pd.DataFrame(index=outlier_num_cols, columns=["Inliers", "Outliers"])
 for col in outlier_num_cols:
-    outlier_stats_num.loc[col, "Inliers"] = weighted_quantile(outlier_in_df[col], outlier_in_df["PERWT23F"], 0.5)
-    outlier_stats_num.loc[col, "Outliers"] = weighted_quantile(outlier_out_df[col], outlier_out_df["PERWT23F"], 0.5)
+    outlier_stats_num.loc[col, "Inliers"] = weighted_quantile(outlier_in_df[col], outlier_in_df[WEIGHT_COLUMN], 0.5)
+    outlier_stats_num.loc[col, "Outliers"] = weighted_quantile(outlier_out_df[col], outlier_out_df[WEIGHT_COLUMN], 0.5)
 
 # Calculate median difference
 outlier_stats_num["Difference"] = (outlier_stats_num["Outliers"] - outlier_stats_num["Inliers"]).astype(float)
@@ -2979,8 +2967,8 @@ outlier_stats_num["Difference"] = (outlier_stats_num["Outliers"] - outlier_stats
 # Calculate population interquartile range (IQR) of inliers for standardization
 inlier_iqrs = pd.Series(index=outlier_num_cols, dtype=float)
 for col in outlier_num_cols:
-    q1 = weighted_quantile(outlier_in_df[col], outlier_in_df["PERWT23F"], 0.25)
-    q3 = weighted_quantile(outlier_in_df[col], outlier_in_df["PERWT23F"], 0.75)
+    q1 = weighted_quantile(outlier_in_df[col], outlier_in_df[WEIGHT_COLUMN], 0.25)
+    q3 = weighted_quantile(outlier_in_df[col], outlier_in_df[WEIGHT_COLUMN], 0.75)
     inlier_iqrs[col] = q3 - q1
 
 # Calculate how many IQRs the outlier median is different from the inlier median
@@ -2993,8 +2981,8 @@ outlier_num_cols_sorted = outlier_stats_num["IQR Difference"].abs().sort_values(
 outlier_num_drivers = outlier_num_cols_sorted[:4]
 
 # Create lists for visualization (mapping TOTSLF23 to its log-scaled version)
-outlier_num_cols_viz = [col if col != "TOTSLF23" else "TOTSLF23_LOG" for col in outlier_num_cols_sorted]
-outlier_num_drivers_viz = [col if col != "TOTSLF23" else "TOTSLF23_LOG" for col in outlier_num_drivers] 
+outlier_num_cols_viz = [col if col != TARGET_COLUMN else "TOTSLF23_LOG" for col in outlier_num_cols_sorted]
+outlier_num_drivers_viz = [col if col != TARGET_COLUMN else "TOTSLF23_LOG" for col in outlier_num_drivers] 
 
 # Display table (Renaming the index only for the view to keep the DF's raw IDs intact)
 outlier_stats_num.rename(index=DISPLAY_LABELS).sort_values(by="IQR Difference", ascending=False).style \
@@ -3023,7 +3011,7 @@ for i, numeric_column in enumerate(outlier_num_cols_viz):
         x=numeric_column, 
         hue="outlier_display", 
         hue_order=["Inliers", "Outliers"],
-        weights="PERWT23F", # Use sample weights for population-level density
+        weights=WEIGHT_COLUMN, # Use sample weights for population-level density
         ax=ax,
         palette=colors,
         stat="density",  # Changes y-axis to density
@@ -3035,13 +3023,13 @@ for i, numeric_column in enumerate(outlier_num_cols_viz):
     )
 
     # Calculate population-level (weighted) medians and differences 
-    median_inliers = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df["PERWT23F"], 0.5)
-    median_outliers = weighted_quantile(outlier_out_df[numeric_column], outlier_out_df["PERWT23F"], 0.5)
+    median_inliers = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df[WEIGHT_COLUMN], 0.5)
+    median_outliers = weighted_quantile(outlier_out_df[numeric_column], outlier_out_df[WEIGHT_COLUMN], 0.5)
     median_diff = median_outliers - median_inliers
     
     # Calculate standardized difference (using IQR of inliers)
-    q1_in = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df["PERWT23F"], 0.25)
-    q3_in = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df["PERWT23F"], 0.75)
+    q1_in = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df[WEIGHT_COLUMN], 0.25)
+    q3_in = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df[WEIGHT_COLUMN], 0.75)
     iqr_in = q3_in - q1_in
     iqr_text = f" ({median_diff/iqr_in:+.1f} IQR)" if iqr_in > 0 else ""
 
@@ -3107,7 +3095,7 @@ for i, numeric_column in enumerate(outlier_num_cols_viz):
         x=numeric_column, 
         hue="outlier_display", 
         hue_order=["Inliers", "Outliers"],
-        weights="PERWT23F", # Use sample weights for population-level density
+        weights=WEIGHT_COLUMN, # Use sample weights for population-level density
         fill=True, 
         common_norm=False, 
         ax=ax,
@@ -3116,13 +3104,13 @@ for i, numeric_column in enumerate(outlier_num_cols_viz):
     )
 
     # Calculate population-level (weighted) medians and differences 
-    median_inliers = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df["PERWT23F"], 0.5)
-    median_outliers = weighted_quantile(outlier_out_df[numeric_column], outlier_out_df["PERWT23F"], 0.5)
+    median_inliers = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df[WEIGHT_COLUMN], 0.5)
+    median_outliers = weighted_quantile(outlier_out_df[numeric_column], outlier_out_df[WEIGHT_COLUMN], 0.5)
     median_diff = median_outliers - median_inliers
     
     # Calculate standardized difference using weighted IQR of inliers
-    q1_in = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df["PERWT23F"], 0.25)
-    q3_in = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df["PERWT23F"], 0.75)
+    q1_in = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df[WEIGHT_COLUMN], 0.25)
+    q3_in = weighted_quantile(outlier_in_df[numeric_column], outlier_in_df[WEIGHT_COLUMN], 0.75)
     iqr_in = q3_in - q1_in
     iqr_text = f" ({median_diff/iqr_in:+.1f} IQR)" if iqr_in > 0 else ""
 
@@ -3172,12 +3160,12 @@ plt.show()
 # Create a population-representative subsample using weighted bootstrap resampling. 
 # Since sns.pairplot does not natively support weights, this approach 'bakes' the survey weights directly into the subsample's density. 
 # Setting replace=True ensures that high-weight respondents are proportionally represented as multiple 'virtual' individuals in the plot.
-outlier_subsample = outlier_df[outlier_num_drivers_viz + ["outlier_display", "PERWT23F"]].sample(
+outlier_subsample = outlier_df[outlier_num_drivers_viz + ["outlier_display", WEIGHT_COLUMN]].sample(
     n=5000, 
-    weights="PERWT23F", 
+    weights=WEIGHT_COLUMN, 
     replace=True, 
     random_state=RANDOM_STATE
-).drop(columns="PERWT23F")
+).drop(columns=WEIGHT_COLUMN)
 
 # Create pair plot matrix
 grid = sns.pairplot(
@@ -3214,13 +3202,13 @@ plt.show()
 
 # %%
 # Outlier Profile: Binary Features (Population)
-outlier_stats_bin = pd.DataFrame(index=input_binary_features, columns=["Inliers", "Outliers"])
+outlier_stats_bin = pd.DataFrame(index=PIPELINE_BINARY_FEATURES, columns=["Inliers", "Outliers"])
 
 for group, mask in [("Inliers", outlier_df["outlier"] == 0), ("Outliers", outlier_df["outlier"] == 1)]:
     subset = outlier_df[mask]
-    for col in input_binary_features:
+    for col in PIPELINE_BINARY_FEATURES:
         # Weighted avg of 0/1 columns = population prevalence
-        outlier_stats_bin.loc[col, group] = np.average(subset[col], weights=subset["PERWT23F"])
+        outlier_stats_bin.loc[col, group] = np.average(subset[col], weights=subset[WEIGHT_COLUMN])
 
 outlier_stats_bin = outlier_stats_bin.astype(float)
 
@@ -3281,14 +3269,14 @@ plt.show()
 
 # %%
 # Outlier Profile: Categorical Features (Population)
-n_features = len(input_nominal_features + ["POVCAT23"])
+n_features = len(PIPELINE_NOMINAL_FEATURES + ["POVCAT23"])
 n_cols = 2
 n_rows = math.ceil(n_features / n_cols)
 
 fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 5, n_rows * 4))
 axes_flat = axes.flatten()
 
-for i, feature in enumerate(input_nominal_features + ["POVCAT23"]):
+for i, feature in enumerate(PIPELINE_NOMINAL_FEATURES + ["POVCAT23"]):
     ax = axes_flat[i]
     
     # Calculate weighted distribution for each group
@@ -3296,7 +3284,7 @@ for i, feature in enumerate(input_nominal_features + ["POVCAT23"]):
     ct = outlier_df.pivot_table(
         index=feature, 
         columns="outlier_display", 
-        values="PERWT23F", 
+        values=WEIGHT_COLUMN, 
         aggfunc="sum"
     )
     # Normalize within each group to get percentages
@@ -3383,11 +3371,11 @@ plt.show()
 # %%
 # Create data preprocessing pipeline
 preprocessor = create_preprocessing_pipeline(
-    required_features, 
-    optional_features, 
-    input_numerical_features, 
-    input_nominal_features,
-    input_binary_features,
+    PIPELINE_REQUIRED_FEATURES, 
+    PIPELINE_OPTIONAL_FEATURES, 
+    PIPELINE_NUMERICAL_FEATURES, 
+    PIPELINE_NOMINAL_FEATURES,
+    PIPELINE_BINARY_FEATURES,
     strict=False
 )
 
@@ -3448,9 +3436,9 @@ print(encoded_feature_names)
 
 # %%
 # Merge preprocessed X features, y target variable, and sample weights
-df_train_preprocessed = pd.concat([X_train_preprocessed, y_train, X_train["PERWT23F"]], axis=1)
-df_val_preprocessed = pd.concat([X_val_preprocessed, y_val, X_val["PERWT23F"]], axis=1)
-df_test_preprocessed = pd.concat([X_test_preprocessed, y_test, X_test["PERWT23F"]], axis=1)
+df_train_preprocessed = pd.concat([X_train_preprocessed, y_train, X_train[WEIGHT_COLUMN]], axis=1)
+df_val_preprocessed = pd.concat([X_val_preprocessed, y_val, X_val[WEIGHT_COLUMN]], axis=1)
+df_test_preprocessed = pd.concat([X_test_preprocessed, y_test, X_test[WEIGHT_COLUMN]], axis=1)
 
 # Save as .csv files (in "data" directory)
 df_train_preprocessed.to_csv("../data/training_data_preprocessed.csv", index=True)
@@ -3474,9 +3462,9 @@ df_val_preprocessed_loaded = pd.read_parquet("../data/validation_data_preprocess
 df_test_preprocessed_loaded = pd.read_parquet("../data/test_data_preprocessed.parquet")
 
 # Reload data from .csv files to Pandas DataFrames (ensure ID is loaded as the index and as a string)
-# df_train_preprocessed_loaded = pd.read_csv("../data/training_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
-# df_val_preprocessed_loaded = pd.read_csv("../data/validation_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
-# df_test_preprocessed_loaded = pd.read_csv("../data/test_data_preprocessed.csv", index_col="DUPERSID", dtype={"DUPERSID": str})
+# df_train_preprocessed_loaded = pd.read_csv("../data/training_data_preprocessed.csv", index_col=ID_COLUMN, dtype={ID_COLUMN: str})
+# df_val_preprocessed_loaded = pd.read_csv("../data/validation_data_preprocessed.csv", index_col=ID_COLUMN, dtype={ID_COLUMN: str})
+# df_test_preprocessed_loaded = pd.read_csv("../data/test_data_preprocessed.csv", index_col=ID_COLUMN, dtype={ID_COLUMN: str})
 
 # Data Integrity Summary Table: Shape, Index, Types and Values of Original vs. Reloaded Data
 def verify_data_integrity(original, loaded, name):
