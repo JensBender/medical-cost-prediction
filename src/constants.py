@@ -1,6 +1,46 @@
-# --------------------------
-# ----- Label Mappings -----
-# --------------------------
+# =========================
+# Feature Lists 
+# =========================
+
+# Raw MEPS Features 
+RAW_NUMERICAL_FEATURES = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
+RAW_BINARY_FEATURES = [
+    "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31", 
+    "WLKLIM31", "COGLIM31", "JTPAIN31_M18", "HIBPDX", "CHOLDX", 
+    "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
+]
+RAW_NOMINAL_FEATURES = ["REGION23", "MARRY31X", "EMPST31", "INSCOV23", "HIDEG"]
+RAW_ORDINAL_FEATURES = ["POVCAT23"]
+
+ID_COLUMN = "DUPERSID"
+WEIGHT_COLUMN = "PERWT23F"
+TARGET_COLUMN = "TOTSLF23"
+
+#  Variable Selection List (for initial data preparation)
+RAW_COLUMNS_TO_KEEP = (
+    [ID_COLUMN, WEIGHT_COLUMN, TARGET_COLUMN] + 
+    RAW_NUMERICAL_FEATURES + RAW_BINARY_FEATURES + 
+    RAW_NOMINAL_FEATURES + RAW_ORDINAL_FEATURES
+)
+
+# Pipeline Input Features (after initial data preparation and feature engineering)
+PIPELINE_NUMERICAL_FEATURES = RAW_NUMERICAL_FEATURES + RAW_ORDINAL_FEATURES
+PIPELINE_BINARY_FEATURES = RAW_BINARY_FEATURES + ["RECENT_LIFE_TRANSITION", "EMPST31_GRP"]
+PIPELINE_NOMINAL_FEATURES = ["REGION23", "MARRY31X_GRP", "INSCOV23", "HIDEG"]
+
+# Required vs. Optional Features (for MissingValueChecker in Pipeline)
+PIPELINE_REQUIRED_FEATURES = ["AGE23X", "SEX", "INSCOV23", "REGION23", "RTHLTH31"]
+PIPELINE_OPTIONAL_FEATURES = [
+    "MARRY31X_GRP", "FAMSZE23", "POVCAT23", "HIDEG", "EMPST31_GRP", 
+    "RECENT_LIFE_TRANSITION", "HAVEUS42", "MNHLTH31", "ADSMOK42",
+    "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
+    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
+]
+
+
+# =========================
+# Label Mappings 
+# =========================
 
 # Mapping MEPS variable names to human-readable display labels (for notebook EDA and app UI)
 DISPLAY_LABELS = {
@@ -150,49 +190,9 @@ CATEGORY_LABELS_EDA = {
 }
 
 
-# -------------------------
-# ----- Feature Lists -----
-# -------------------------
-
-# Raw MEPS Features 
-RAW_NUMERICAL_FEATURES = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
-RAW_BINARY_FEATURES = [
-    "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31", 
-    "WLKLIM31", "COGLIM31", "JTPAIN31_M18", "HIBPDX", "CHOLDX", 
-    "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
-]
-RAW_NOMINAL_FEATURES = ["REGION23", "MARRY31X", "EMPST31", "INSCOV23", "HIDEG"]
-RAW_ORDINAL_FEATURES = ["POVCAT23"]
-
-ID_COLUMN = "DUPERSID"
-WEIGHT_COLUMN = "PERWT23F"
-TARGET_COLUMN = "TOTSLF23"
-
-#  Variable Selection List (for initial data preparation)
-RAW_COLUMNS_TO_KEEP = (
-    [ID_COLUMN, WEIGHT_COLUMN, TARGET_COLUMN] + 
-    RAW_NUMERICAL_FEATURES + RAW_BINARY_FEATURES + 
-    RAW_NOMINAL_FEATURES + RAW_ORDINAL_FEATURES
-)
-
-# Pipeline Input Features (after initial data preparation and feature engineering)
-PIPELINE_NUMERICAL_FEATURES = RAW_NUMERICAL_FEATURES + RAW_ORDINAL_FEATURES
-PIPELINE_BINARY_FEATURES = RAW_BINARY_FEATURES + ["RECENT_LIFE_TRANSITION", "EMPST31_GRP"]
-PIPELINE_NOMINAL_FEATURES = ["REGION23", "MARRY31X_GRP", "INSCOV23", "HIDEG"]
-
-# Required vs. Optional Features (for MissingValueChecker in Pipeline)
-PIPELINE_REQUIRED_FEATURES = ["AGE23X", "SEX", "INSCOV23", "REGION23", "RTHLTH31"]
-PIPELINE_OPTIONAL_FEATURES = [
-    "MARRY31X_GRP", "FAMSZE23", "POVCAT23", "HIDEG", "EMPST31_GRP", 
-    "RECENT_LIFE_TRANSITION", "HAVEUS42", "MNHLTH31", "ADSMOK42",
-    "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
-    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
-]
-
-
-# -----------------------------------
-# ----- Categorical Label Lists -----
-# -----------------------------------
+# =========================
+# Categorical Label Lists 
+# =========================
 
 # Nominal Feature Categories (for OneHotEncoder in Pipeline)
 NOMINAL_CATEGORIES = [
@@ -208,27 +208,27 @@ NOMINAL_CATEGORIES = [
 NOMINAL_DROP_CATEGORIES = ["South", "Married", "Any Private", "HS Diploma"]
 
 
-# -------------------------
-# ----- Data Cleaning -----
-# -------------------------
+# =========================
+# Data Preparation
+# =========================
 
-# MEPS Missing Value Codes (for initial data preparation)
+# MEPS Missing Value Codes 
 # Used to standardize survey-specific markers (-1 to -15) to NaN
 MEPS_MISSING_CODES = [-1, -7, -8, -9, -15]
 
 
-# --------------------
-# ----- Modeling -----
-# --------------------
-
-# Configuration (for reproducible training runs and data splits)
-RANDOM_STATE = 42
-
-
-# ---------------------
-# ----- Plotting  -----
-# ---------------------
+# =========================
+# EDA  
+# =========================
 
 # Visualization Colors (for notebook EDA)
 POP_COLOR = "#084594"    # deep navy for population
 SAMPLE_COLOR = "#14b8a6" # vibrant teal for sample
+
+
+# =========================
+# Modeling 
+# =========================
+
+# Configuration (for reproducible training runs and data splits)
+RANDOM_STATE = 42
