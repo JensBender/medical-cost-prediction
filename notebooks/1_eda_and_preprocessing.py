@@ -3470,9 +3470,7 @@ display(verify_loaded_dtypes.style.pipe(add_table_caption, "Data Types"))
 #         - **Categorical Features vs. Target:** Grouped box plots revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization.
 #         - **Binary Features vs. Target:** Identified high-prevalence "global drivers" (arthritis) vs. high-severity "local triggers" (cancer), and confirmed a massive "utilization hurdle" where women and people with a usual source of care spend more.
 #     - **Modeling Strategy:** Based on EDA-driven insights, decided to implement sample weights for population representativeness and align models with the Median Absolute Error (MdAE) success metric through tailored loss functions, target log transformation, and polynomial features to effectively handle the zero-inflated, heavy-tailed cost distribution.
-# - **Feature Engineering (Stateless):**
-#     - **Feature Refinement:** Created a recent life transition feature and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
-#     - **Feature Validation:** Defined pipeline input feature sets and verified feature engineering results.
+# - **Feature Engineering (Stateless):** Created a recent life transition feature and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
 # - **Train-Validation-Test Split:** Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
 # - **Data Preprocessing (Stateful):**
 #     - **Handling Missing Values:** Imputed missing values using the median for numerical and mode for categorical features. 
