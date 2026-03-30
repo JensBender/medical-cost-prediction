@@ -66,19 +66,20 @@ from sklearn.ensemble import IsolationForest
 
 # Local imports
 from src.constants import (
-    DISPLAY_LABELS, 
-    CATEGORY_LABELS_EDA,
-    RANDOM_STATE,
-    POP_COLOR,
-    SAMPLE_COLOR,
     ID_COLUMN, 
     WEIGHT_COLUMN, 
     TARGET_COLUMN, 
-    RAW_COLUMNS_TO_KEEP,
     RAW_NUMERICAL_FEATURES,
     RAW_BINARY_FEATURES,
     RAW_NOMINAL_FEATURES,
     RAW_ORDINAL_FEATURES,
+    RAW_COLUMNS_TO_KEEP,
+    MEPS_MISSING_CODES,
+    DISPLAY_LABELS, 
+    CATEGORY_LABELS_EDA,
+    POP_COLOR,
+    SAMPLE_COLOR,
+    RANDOM_STATE,
     PIPELINE_NUMERICAL_FEATURES,
     PIPELINE_BINARY_FEATURES,
     PIPELINE_NOMINAL_FEATURES,
@@ -201,39 +202,8 @@ df[duplicates_without_id]
 # </div>
 
 # %%
-# List of columns to keep 
-columns_to_keep = [
-    # 1. ID
-    ID_COLUMN,
-    
-    # 2. Sample Weights
-    WEIGHT_COLUMN, 
-
-    # 3 Candidate Features.
-    # 3.1 Demographics
-    "AGE23X", "SEX", "REGION23", "MARRY31X",
-    
-    # 3.2 Socioeconomic
-    "POVCAT23", "FAMSZE23", "HIDEG", "EMPST31",
-    
-    # 3.3 Insurance & Access
-    "INSCOV23", "HAVEUS42",
-    
-    # 3.4 Perceived Health & Lifestyle
-    "RTHLTH31", "MNHLTH31", "ADSMOK42",
-    
-    # 3.5 Limitations & Symptoms
-    "ADLHLP31", "IADLHP31", "WLKLIM31", "COGLIM31", "JTPAIN31_M18",
-    
-    # 3.6 Chronic Conditions
-    "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX", 
-    
-    # 4. Healthcare Expenditure (Target)
-    TARGET_COLUMN
-]
-
-# Drop all other columns (keeping 29 out of 1,374)
-df = df[columns_to_keep]
+# Filter columns (keeping 29 out of 1,374)
+df = df[RAW_COLUMNS_TO_KEEP]
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
@@ -285,15 +255,6 @@ df[ID_COLUMN] = df[ID_COLUMN].astype(str)
 df.set_index(ID_COLUMN, inplace=True)
 
 # %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 
-#     📌 Define semantic data types of features (numerical, binary, nominal, ordinal) for downstream tasks like EDA, further preprocessing steps, and machine learning. Distinguishes between <code>raw_</code> lists for discovery EDA and <code>input_</code> lists for validation of engineered features before they enter the preprocessing pipeline.
-# </div> 
-
-# %%
-# (Semantic data type lists moved to src.constants)
-
-
-# %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h2 style="margin:0px">Standardizing Missing Values</h1>
 # </div> 
@@ -337,9 +298,8 @@ df.isnull().sum()
 # </div>
 
 # %%
-# Identify MEPS missing values 
-missing_codes = [-1, -7, -8, -9, -15]
-missing_frequency_df = pd.DataFrame({code: (df == code).sum() for code in missing_codes})
+# Identify MEPS missing value codes 
+missing_frequency_df = pd.DataFrame({code: (df == code).sum() for code in MEPS_MISSING_CODES})
 missing_frequency_df["TOTAL"] = missing_frequency_df.sum(axis=1)
 missing_frequency_df["PERCENTAGE"] = (missing_frequency_df["TOTAL"] / len(df) * 100).round(2)
 missing_frequency_df.sort_values("TOTAL", ascending=False) 
@@ -353,7 +313,7 @@ df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2
 df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
 
 # Convert remaining MEPS missing codes to np.nan
-df.replace(missing_codes, np.nan, inplace=True)
+df.replace(MEPS_MISSING_CODES, np.nan, inplace=True)
 
 # Verify results
 df.isnull().sum().sort_values(ascending=False)
