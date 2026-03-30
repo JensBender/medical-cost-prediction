@@ -227,6 +227,19 @@ SAMPLE_COLOR = "#14b8a6" # vibrant teal for sample
 
 
 # =========================
+# Feature Engineering 
+# =========================
+
+# Life Transition Codes (used to derive the 'RECENT_LIFE_TRANSITION' feature)
+MARRY31X_TRANSITION_CODES = [7, 8, 9, 10]  # represent marrital transitions (Married/Widowed/Divorced/Separated in Round)
+EMPST31_TRANSITION_CODES = [2, 3]  # represent employment transitions (Job to Return To, Job in Ref Period)
+
+# Category Collapsing Maps (used to group sparse categories into stable counterparts)
+MARRY31X_COLLAPSE_MAP = {7: 1, 8: 2, 9: 3, 10: 4}
+EMPST31_COLLAPSE_MAP = {2: 0, 3: 0, 4: 0}
+
+
+# =========================
 # Modeling 
 # =========================
 
