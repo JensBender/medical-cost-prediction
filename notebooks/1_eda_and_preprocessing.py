@@ -99,7 +99,10 @@ from src.pipeline import (
     create_preprocessing_pipeline, 
     create_missing_value_handling_pipeline
 )
-from src.utils import add_table_caption
+from src.utils import (
+    add_table_caption,
+    create_stratification_bins
+)
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -2349,26 +2352,7 @@ plot_binary_distributions(df, PIPELINE_BINARY_FEATURES, DISPLAY_LABELS, CATEGORY
 X = df.drop(TARGET_COLUMN, axis=1)
 y = df[TARGET_COLUMN]
 
-# Helper function for distribution-informed stratification
-def create_stratification_bins(y):
-    # Initialize strata series 
-    strata = pd.Series(index=y.index, dtype=int)
-    
-    # Bin 0: Zero Costs (Handle the hurdle separately)
-    is_zero = (y == 0)
-    strata[is_zero] = 0
-    
-    # Custom non-linear quantiles for positive values to capture the tail
-    positive_y = y[~is_zero]
-    bins = [0, 0.5, 0.8, 0.95, 0.99, 0.999, 1.0]
-    
-    # Assign positive spenders to bins 1 through 5 
-    # note: labels=False returns the bin indices (0-4) instead of Interval objects (e.g., [0, 150.5]). We add 1 to shift the indices to 1-5 with 0 being reserved for the zero cost bin.
-    # note: duplicates="drop" avoids errors if multiple quantiles (e.g., 0.95 and 0.99) result in the same cost value.
-    strata[~is_zero] = pd.qcut(positive_y, q=bins, labels=False, duplicates="drop") + 1
-    return strata
-
-# Generate the stratification column 
+# Generate the stratification column (using helper function from src/utils.py)
 y_strata = create_stratification_bins(y)
 
 # Perform the first distribution-informed stratified split (80% Train, 20% Temp)

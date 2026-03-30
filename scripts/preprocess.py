@@ -10,10 +10,12 @@ Usage::
     .venv-train/Scripts/python scripts/preprocess.py
 """
 
+# Third-party imports
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 
+# Local imports
 from src.constants import (
     ID_COLUMN,
     WEIGHT_COLUMN,
@@ -33,46 +35,15 @@ from src.constants import (
     PIPELINE_OPTIONAL_FEATURES
 )
 from src.pipeline import create_preprocessing_pipeline
+from src.utils import create_stratification_bins
 
-
-# ============================================================
-# Configuration
-# ============================================================
 
 # Paths (relative to project root)
 RAW_DATA_PATH = "data/h251.sas7bdat"
 OUTPUT_DIR = "data"
 
 
-# ============================================================
-# Helper: Distribution-informed stratification for splitting
-# ============================================================
-
-def create_stratification_bins(y):
-    """Create stratification bins that preserve the zero-inflated, heavy-tailed
-    cost distribution across train/val/test splits.
-
-    Uses non-linear percentile boundaries (50th, 80th, 95th, 99th, 99.9th)
-    to ensure extreme high-cost cases are balanced across all splits.
-    """
-    strata = pd.Series(index=y.index, dtype=int)
-
-    # Bin 0: Zero costs (the hurdle)
-    is_zero = y == 0
-    strata[is_zero] = 0
-
-    # Bins 1–6: Non-linear quantiles for positive spenders
-    positive_y = y[~is_zero]
-    bins = [0, 0.5, 0.8, 0.95, 0.99, 0.999, 1.0]
-    strata[~is_zero] = pd.qcut(positive_y, q=bins, labels=False, duplicates="drop") + 1
-
-    return strata
-
-
-# ============================================================
 # Main Preprocessing Pipeline
-# ============================================================
-
 def main():
     # --- 1. Data Loading ---
     print("Step 1/11: Loading raw MEPS data...")
