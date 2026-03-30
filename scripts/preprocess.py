@@ -62,7 +62,7 @@ def main():
     df = df[(df[WEIGHT_COLUMN] > 0) & (df["AGE23X"] >= 18)].copy()
     print(f"  Kept {len(df):,} of {n_rows_raw:,} rows")
 
-    # --- 4. Data Types Handling ---
+    # --- 4. Data Type Handling ---
     print("Step 4/11: Handling data types...")
     df[ID_COLUMN] = df[ID_COLUMN].astype(str)
     df.set_index(ID_COLUMN, inplace=True)
@@ -79,8 +79,9 @@ def main():
     print(f"  Recovered missing values from survey skip patterns and converted {df.isnull().sum().sum():,} remaining MEPS missing codes to np.nan")
 
     # --- 6. Binary Feature Standardization (MEPS 1/2 → 1/0) ---
-    print("Step 6/11: Standardizing binary features to 0/1...")
+    print("Step 6/11: Standardizing binary features...")
     df[RAW_BINARY_FEATURES] = df[RAW_BINARY_FEATURES].replace({2: 0})
+    print("  Binary features standardized to 0/1")
 
     # --- 7. Feature Engineering (Stateless) ---
     print("Step 7/11: Engineering stateless features...")
@@ -90,14 +91,17 @@ def main():
     ).astype(float)
     df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] = np.nan
 
-    # Collapse marital status transition categories into stable counterparts
+    # Collapse marital status transition categories into stable counterparts 
+    # Map 7→1 (Married), 8→2 (Widowed), 9→3 (Divorced), 10→4 (Separated)
     df["MARRY31X_GRP"] = df["MARRY31X"].replace(MARRY31X_COLLAPSE_MAP)
 
-    # Collapse employment status categories (2, 3, 4 → 0: Not Employed)
+    # Collapse employment status categories 
+    # Map 2, 3, 4 → 0 (Not Employed)
     df["EMPST31_GRP"] = df["EMPST31"].replace(EMPST31_COLLAPSE_MAP)
+    print("  Created RECENT_LIFE_TRANSITION feature and collapsed sparse transition categories")
 
     # --- 8. Train-Validation-Test Split (80/10/10 stratified) ---
-    print("Step 8/11: Splitting data into training, validation, and test...")
+    print("Step 8/11: Performing train-validation-test split (80/10/10) with a distribution-informed stratified split...")
     X = df.drop(TARGET_COLUMN, axis=1)
     y = df[TARGET_COLUMN]
 
@@ -112,7 +116,7 @@ def main():
     X_val, X_test, y_val, y_test = train_test_split(
         X_temp, y_temp, test_size=0.50, random_state=RANDOM_STATE, stratify=temp_strata
     )
-    print(f"  Train: {len(X_train):,} | Val: {len(X_val):,} | Test: {len(X_test):,}")
+    print(f"  Split the data into training ({len(X_train):,}), validation ({len(X_val):,}), and test ({len(X_test):,})")
 
     # --- 9. Preprocessing Pipeline (stateful; fit on train, transform all) ---
     print("Step 9/11: Running preprocessing pipeline...")
