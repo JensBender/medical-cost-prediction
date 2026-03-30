@@ -1,4 +1,8 @@
-# Mapping MEPS variable names to human-readable display labels (for EDA and UI)
+# --------------------------
+# ----- Label Mappings -----
+# --------------------------
+
+# Mapping MEPS variable names to human-readable display labels (for notebook EDA and app UI)
 DISPLAY_LABELS = {
     # Target
     "TOTSLF23": "Out-of-Pocket Costs",
@@ -51,7 +55,7 @@ DISPLAY_LABELS = {
     "condition_count": "Medical Conditions"
 }
 
-# Mapping metric keys to human-readable labels for display in notebook tables
+# Mapping metrics to human-readable display labels (for notebook model evaluation)
 METRIC_LABELS = {
     "model": "Model",
     "mdae": "MdAE",
@@ -60,7 +64,6 @@ METRIC_LABELS = {
     "training_time": "Training Time (s)"
 }
 
-# --- Categorical Label Mappings ---
 # Mapping categorical labels from numbers to strings (for pipeline)
 CATEGORY_LABELS_PIPELINE = {
     # Demographics
@@ -147,9 +150,11 @@ CATEGORY_LABELS_EDA = {
 }
 
 
-# --- Feature Lists ---
+# -------------------------
+# ----- Feature Lists -----
+# -------------------------
 
-# 1. Raw MEPS Features 
+# Raw MEPS Features 
 RAW_NUMERICAL_FEATURES = ["AGE23X", "FAMSZE23", "RTHLTH31", "MNHLTH31"]
 RAW_BINARY_FEATURES = [
     "SEX", "HAVEUS42", "ADSMOK42", "ADLHLP31", "IADLHP31", 
@@ -163,15 +168,14 @@ ID_COLUMN = "DUPERSID"
 WEIGHT_COLUMN = "PERWT23F"
 TARGET_COLUMN = "TOTSLF23"
 
-# Combined list for initial data preparation
+#  Variable Selection List (for initial data preparation)
 RAW_COLUMNS_TO_KEEP = (
     [ID_COLUMN, WEIGHT_COLUMN, TARGET_COLUMN] + 
     RAW_NUMERICAL_FEATURES + RAW_BINARY_FEATURES + 
     RAW_NOMINAL_FEATURES + RAW_ORDINAL_FEATURES
 )
 
-# 2. Pipeline Input Features 
-# After stateless preprocessing and feature engineering steps
+# Pipeline Input Features (after initial data preparation and feature engineering)
 PIPELINE_NUMERICAL_FEATURES = RAW_NUMERICAL_FEATURES + RAW_ORDINAL_FEATURES
 PIPELINE_BINARY_FEATURES = RAW_BINARY_FEATURES + ["RECENT_LIFE_TRANSITION", "EMPST31_GRP"]
 PIPELINE_NOMINAL_FEATURES = ["REGION23", "MARRY31X_GRP", "INSCOV23", "HIDEG"]
@@ -185,7 +189,12 @@ PIPELINE_OPTIONAL_FEATURES = [
     "HIBPDX", "CHOLDX", "DIABDX_M18", "CHDDX", "STRKDX", "CANCERDX", "ARTHDX", "ASTHDX"
 ]
 
-# Define nominal feature categories (for OneHotEncoder in Pipeline)
+
+# -----------------------------------
+# ----- Categorical Label Lists -----
+# -----------------------------------
+
+# Nominal Feature Categories (for OneHotEncoder in Pipeline)
 NOMINAL_CATEGORIES = [
     list(dict.fromkeys(CATEGORY_LABELS_PIPELINE["REGION23"].values())),     # 1st
     list(dict.fromkeys(CATEGORY_LABELS_PIPELINE["MARRY31X_GRP"].values())), # 2nd
@@ -193,17 +202,33 @@ NOMINAL_CATEGORIES = [
     list(dict.fromkeys(CATEGORY_LABELS_PIPELINE["HIDEG"].values()))         # 4th
 ]
 
-# Designated baseline categories to drop in nominal features (for OneHotEncoder in Pipeline) 
+# Designated Baseline Categories of Nominal Features (to drop in OneHotEncoder in Pipeline) 
 # Must be in same order as NOMINAL_CATEGORIES
 # Rationale: (1) Allow meaningful comparisons to other categories and (2) often the most frequent category (thus more robust baseline than sparse categories)
 NOMINAL_DROP_CATEGORIES = ["South", "Married", "Any Private", "HS Diploma"]
 
-# MEPS missing value codes
+
+# -------------------------
+# ----- Data Cleaning -----
+# -------------------------
+
+# MEPS Missing Value Codes (for initial data preparation)
+# Used to standardize survey-specific markers (-1 to -15) to NaN
 MEPS_MISSING_CODES = [-1, -7, -8, -9, -15]
 
-# Configuration
+
+# --------------------
+# ----- Modeling -----
+# --------------------
+
+# Configuration (for reproducible training runs and data splits)
 RANDOM_STATE = 42
 
-# Plotting Aesthetics
+
+# ---------------------
+# ----- Plotting  -----
+# ---------------------
+
+# Visualization Colors (for notebook EDA)
 POP_COLOR = "#084594"    # deep navy for population
 SAMPLE_COLOR = "#14b8a6" # vibrant teal for sample
