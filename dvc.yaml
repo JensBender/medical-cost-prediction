@@ -4,10 +4,11 @@ stages:
     cmd: .venv-train\Scripts\python.exe scripts/preprocess.py
     deps:
       - data/h251.sas7bdat                        # Raw data source
-      - scripts/preprocess.py                     # Deterministic data preparation and preprocessing steps
+      - scripts/preprocess.py                     # Preprocessing script (with deterministic data preparation and preprocessing steps)
       - src/pipeline.py                           # Preprocessing pipeline
       - src/transformers.py                       # Custom transformers
       - src/constants.py                          # Feature lists, label mappings, etc.
+      - src/utils.py                              # Helper functions
     outs:
       - data/training_data_preprocessed.parquet
       - data/validation_data_preprocessed.parquet
@@ -20,7 +21,7 @@ stages:
       - data/training_data_preprocessed.parquet   # Dependency on Stage 1
       - data/validation_data_preprocessed.parquet # Dependency on Stage 1
       - data/test_data_preprocessed.parquet       # Dependency on Stage 1
-      - notebooks/2_modeling.py                   # Training script
+      - notebooks/2_modeling.py                   # Model training script
       - src/constants.py                          # Feature lists, label mappings, etc.
       - src/utils.py                              # Helper functions
     outs:
