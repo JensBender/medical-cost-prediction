@@ -2210,11 +2210,6 @@ plot_binary_feature_target_relationships(
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Feature Engineering (Stateless)</h1>
 # </div>
-
-# %% [markdown]
-# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h2 style="margin:0px">Feature Refinement</h2>
-# </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Refine features to enhance the predictive signal and improve model generalization. This involves category collapsing to fix sparse categories and ensure the model learns from stable, well-populated demographics.
@@ -2226,9 +2221,9 @@ plot_binary_feature_target_relationships(
 # </div>
 
 # %%
-# Identify all "in round" transitions in marital and employment status
-# MARRY31X: 7-10 represent transitions (Married/Widowed/Divorced/Separated in Round)
-# EMPST31: 2-3 represent transitions (Job to Return To, Job in Ref Period)
+# Life transition codes 
+# MARRY31X transition codes: 7=Married in Round, 8=Widowed in Round, 9=Divorced in Round, 10=Separated in Round
+# EMPST31 transition codes: 2=Job to Return To, 3=Job in Ref Period
 
 # Create unified RECENT_LIFE_TRANSITION flag
 df["RECENT_LIFE_TRANSITION"] = (df["MARRY31X"].isin(MARRY31X_TRANSITION_CODES) | df["EMPST31"].isin(EMPST31_TRANSITION_CODES)).astype(float)
@@ -2249,20 +2244,9 @@ df["EMPST31_GRP"] = df["EMPST31"].replace(EMPST31_COLLAPSE_MAP)
 # </div>
 
 # %% [markdown]
-# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h2 style="margin:0px">Feature Validation</h2>
-# </div> 
-#
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Define the lists of features that enter the pipeline.
-# </div>
-
-# %%
-# (Pipeline input features moved to src.constants) 
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Verify feature engineering results.
+#     📌 Verify feature engineering results.<br>
+#     Note: Use the <code>PIPELINE_</code> feature lists, which include the new <code>RECENT_LIFE_TRANSITION</code> feature and the refined <code>MARRY31X_GRP</code> and <code>EMPST31_GRP</code> features.
 # </div>
 
 # %%
