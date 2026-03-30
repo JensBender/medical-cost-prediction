@@ -15,13 +15,17 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 from src.constants import (
-    RANDOM_STATE,
     ID_COLUMN,
     WEIGHT_COLUMN,
     TARGET_COLUMN,
-    RAW_COLUMNS_TO_KEEP,
     RAW_BINARY_FEATURES,
+    RAW_COLUMNS_TO_KEEP,
     MEPS_MISSING_CODES,
+    MARRY31X_TRANSITION_CODES,
+    EMPST31_TRANSITION_CODES,
+    MARRY31X_COLLAPSE_MAP,
+    EMPST31_COLLAPSE_MAP,
+    RANDOM_STATE,
     PIPELINE_NUMERICAL_FEATURES,
     PIPELINE_BINARY_FEATURES,
     PIPELINE_NOMINAL_FEATURES,
@@ -75,18 +79,18 @@ def main():
     df = pd.read_sas(RAW_DATA_PATH, format="sas7bdat", encoding="latin1")
     print(f"  Loaded {len(df):,} rows × {len(df.columns):,} columns")
 
-    # --- 2. Column Selection ---
-    print("Step 2/11: Selecting columns...")
+    # --- 2. Variable Selection ---
+    print("Step 2/11: Selecting variables...")
     df = df[RAW_COLUMNS_TO_KEEP]
     print(f"  Kept {len(df.columns)} columns")
 
-    # --- 3. Row Filtering (adults with positive weights) ---
+    # --- 3. Target Population Filtering (adults with positive weights) ---
     print("Step 3/11: Filtering target population...")
     n_before = len(df)
     df = df[(df[WEIGHT_COLUMN] > 0) & (df["AGE23X"] >= 18)].copy()
     print(f"  Kept {len(df):,} of {n_before:,} rows")
 
-    # --- 4. Data Type Handling ---
+    # --- 4. Data Types Handling ---
     print("Step 4/11: Handling data types...")
     df[ID_COLUMN] = df[ID_COLUMN].astype(str)
     df.set_index(ID_COLUMN, inplace=True)
@@ -100,30 +104,26 @@ def main():
     df.replace(MEPS_MISSING_CODES, np.nan, inplace=True)
     print(f"  Total missing values: {df.isnull().sum().sum():,}")
 
-    # --- 6. Binary Standardization (MEPS 1/2 → 1/0) ---
+    # --- 6. Binary Feature Standardization (MEPS 1/2 → 1/0) ---
     print("Step 6/11: Standardizing binary features to 0/1...")
     df[RAW_BINARY_FEATURES] = df[RAW_BINARY_FEATURES].replace({2: 0})
 
-    # --- 7. Feature Engineering ---
-    print("Step 7/11: Engineering features...")
+    # --- 7. Feature Engineering (Stateless) ---
+    print("Step 7/11: Engineering stateless features...")
     # Recent Life Transition flag
-    marital_transitions = [7, 8, 9, 10]
-    employment_transitions = [2, 3]
     df["RECENT_LIFE_TRANSITION"] = (
-        df["MARRY31X"].isin(marital_transitions) | df["EMPST31"].isin(employment_transitions)
+        df["MARRY31X"].isin(MARRY31X_TRANSITION_CODES) | df["EMPST31"].isin(EMPST31_TRANSITION_CODES)
     ).astype(float)
     df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] = np.nan
 
     # Collapse marital status transition categories into stable counterparts
-    marital_map = {7: 1, 8: 2, 9: 3, 10: 4}
-    df["MARRY31X_GRP"] = df["MARRY31X"].replace(marital_map)
+    df["MARRY31X_GRP"] = df["MARRY31X"].replace(MARRY31X_COLLAPSE_MAP)
 
     # Collapse employment status categories (2, 3, 4 → 0: Not Employed)
-    employment_map = {2: 0, 3: 0, 4: 0}
-    df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
+    df["EMPST31_GRP"] = df["EMPST31"].replace(EMPST31_COLLAPSE_MAP)
 
-    # --- 8. Train/Val/Test Split (80/10/10 stratified) ---
-    print("Step 8/11: Splitting data...")
+    # --- 8. Train-Validation-Test Split (80/10/10 stratified) ---
+    print("Step 8/11: Splitting data into training, validation, and test...")
     X = df.drop(TARGET_COLUMN, axis=1)
     y = df[TARGET_COLUMN]
 
@@ -140,7 +140,7 @@ def main():
     )
     print(f"  Train: {len(X_train):,} | Val: {len(X_val):,} | Test: {len(X_test):,}")
 
-    # --- 9. Preprocessing Pipeline (fit on train, transform all) ---
+    # --- 9. Preprocessing Pipeline (stateful; fit on train, transform all) ---
     print("Step 9/11: Running preprocessing pipeline...")
     preprocessor = create_preprocessing_pipeline(
         PIPELINE_REQUIRED_FEATURES,
@@ -168,12 +168,12 @@ def main():
         status = "✅" if (rows_ok and nulls == 0 and numeric_ok) else "❌"
         print(f"  {name:5}: {status}  rows={len(processed):,}  nulls={nulls}  all_numeric={numeric_ok}")
 
-    # --- 11. Save Parquet Files ---
+    # --- 11. Data Persistence (save parquet files) ---
     print("Step 11/11: Saving preprocessed data...")
     for split_name, X_proc, y_split, X_raw in [
-        ("training",    X_train_preprocessed, y_train, X_train),
-        ("validation",  X_val_preprocessed,   y_val,   X_val),
-        ("test",        X_test_preprocessed,  y_test,  X_test),
+        ("training", X_train_preprocessed, y_train, X_train),
+        ("validation", X_val_preprocessed, y_val, X_val),
+        ("test", X_test_preprocessed, y_test, X_test),
     ]:
         # Merge preprocessed features, target variable, and sample weights
         df_out = pd.concat([X_proc, y_split, X_raw[WEIGHT_COLUMN]], axis=1)

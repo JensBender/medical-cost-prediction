@@ -79,6 +79,10 @@ from src.constants import (
     CATEGORY_LABELS_EDA,
     POP_COLOR,
     SAMPLE_COLOR,
+    MARRY31X_TRANSITION_CODES,
+    EMPST31_TRANSITION_CODES,
+    MARRY31X_COLLAPSE_MAP,
+    EMPST31_COLLAPSE_MAP,
     RANDOM_STATE,
     PIPELINE_NUMERICAL_FEATURES,
     PIPELINE_BINARY_FEATURES,
@@ -2225,23 +2229,19 @@ plot_binary_feature_target_relationships(
 # Identify all "in round" transitions in marital and employment status
 # MARRY31X: 7-10 represent transitions (Married/Widowed/Divorced/Separated in Round)
 # EMPST31: 2-3 represent transitions (Job to Return To, Job in Ref Period)
-marital_transitions = [7, 8, 9, 10]
-employment_transitions = [2, 3]
 
 # Create unified RECENT_LIFE_TRANSITION flag
-df["RECENT_LIFE_TRANSITION"] = (df["MARRY31X"].isin(marital_transitions) | df["EMPST31"].isin(employment_transitions)).astype(float)
+df["RECENT_LIFE_TRANSITION"] = (df["MARRY31X"].isin(MARRY31X_TRANSITION_CODES) | df["EMPST31"].isin(EMPST31_TRANSITION_CODES)).astype(float)
 df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] = np.nan
 
 # Collapse categories into their stable counterparts 
 # For Marital Status: Map 7->1 (Married), 8->2 (Widowed), 9->3 (Divorced), 10->4 (Separated)
-marital_map = {7: 1, 8: 2, 9: 3, 10: 4}
-df["MARRY31X_GRP"] = df["MARRY31X"].replace(marital_map)
+df["MARRY31X_GRP"] = df["MARRY31X"].replace(MARRY31X_COLLAPSE_MAP)
 
 # For Employment Status: Map 2, 3, 4 to 0 (Not Employed). 1 remains 1 (Employed).
 # EMPST31: 1=Employed, 4=Not Employed. 2 and 3 are effectively "Not working now but attached". 
 # Transitioner signal is preserved in RECENT_LIFE_TRANSITION.
-employment_map = {2: 0, 3: 0, 4: 0} 
-df["EMPST31_GRP"] = df["EMPST31"].replace(employment_map)
+df["EMPST31_GRP"] = df["EMPST31"].replace(EMPST31_COLLAPSE_MAP)
 
 # %% [markdown]
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
