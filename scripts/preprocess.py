@@ -1,5 +1,5 @@
 """
-Deterministic data preprocessing: raw MEPS SAS data → preprocessed parquet splits.
+Deterministic data preprocessing: raw MEPS data (SAS) → preprocessed data (parquet).
 
 This script contains only the production steps needed for reproducible
 preprocessing via ``dvc repro``. For exploratory data analysis and preprocessing
@@ -43,37 +43,40 @@ RAW_DATA_PATH = "data/h251.sas7bdat"
 OUTPUT_DIR = "data"
 
 
-# Main Preprocessing Pipeline
+# Main Preprocessing 
 def main():
     # --- 1. Data Loading ---
     print("Step 1/11: Loading raw MEPS data...")
     df = pd.read_sas(RAW_DATA_PATH, format="sas7bdat", encoding="latin1")
-    print(f"  Loaded {len(df):,} rows × {len(df.columns):,} columns")
+    n_rows_raw = len(df)
+    n_cols_raw = len(df.columns)
+    print(f"  Loaded {n_rows_raw:,} rows and {n_cols_raw:,} columns")
 
     # --- 2. Variable Selection ---
     print("Step 2/11: Selecting variables...")
     df = df[RAW_COLUMNS_TO_KEEP]
-    print(f"  Kept {len(df.columns)} columns")
+    print(f"  Kept {len(df.columns)} of {n_cols_raw:,} columns")
 
     # --- 3. Target Population Filtering (adults with positive weights) ---
     print("Step 3/11: Filtering target population...")
-    n_before = len(df)
     df = df[(df[WEIGHT_COLUMN] > 0) & (df["AGE23X"] >= 18)].copy()
-    print(f"  Kept {len(df):,} of {n_before:,} rows")
+    print(f"  Kept {len(df):,} of {n_rows_raw:,} rows")
 
     # --- 4. Data Types Handling ---
     print("Step 4/11: Handling data types...")
     df[ID_COLUMN] = df[ID_COLUMN].astype(str)
     df.set_index(ID_COLUMN, inplace=True)
+    print("  Converted ID to string and set as index")
 
     # --- 5. Missing Value Standardization ---
     print("Step 5/11: Standardizing missing values...")
     # Recover implied values from survey skip patterns
-    df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2        # Never smokers → No
-    df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1  # Arthritis skip → Yes
+    df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2  # Converts -1 "Never Smoker" → 2 "No"
+    df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1  # Converts -1 for joint pain to 1 "Yes" if they have Arthritis
+    
     # Convert remaining MEPS codes to NaN
     df.replace(MEPS_MISSING_CODES, np.nan, inplace=True)
-    print(f"  Total missing values: {df.isnull().sum().sum():,}")
+    print(f"  Recovered missing values from survey skip patterns and converted {df.isnull().sum().sum():,} remaining MEPS missing codes to np.nan")
 
     # --- 6. Binary Feature Standardization (MEPS 1/2 → 1/0) ---
     print("Step 6/11: Standardizing binary features to 0/1...")
@@ -130,8 +133,8 @@ def main():
     print("Step 10/11: Verifying preprocessing results...")
     for name, raw, processed in [
         ("Train", X_train, X_train_preprocessed),
-        ("Val",   X_val,   X_val_preprocessed),
-        ("Test",  X_test,  X_test_preprocessed),
+        ("Val", X_val, X_val_preprocessed),
+        ("Test", X_test, X_test_preprocessed),
     ]:
         rows_ok = len(raw) == len(processed)
         nulls = processed.isnull().sum().sum()
