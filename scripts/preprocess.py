@@ -1,12 +1,27 @@
 """
-Deterministic data preprocessing: raw MEPS data (SAS) → preprocessed data (parquet).
+Deterministic data preprocessing from raw MEPS SAS data to model-ready parquet files.
 
-This script contains only the production steps needed for reproducible
-preprocessing via ``dvc repro``. For exploratory data analysis and preprocessing
-experiments, see ``notebooks/1_eda_and_preprocessing.py``.
+This script implements the production-ready, reproducible version of all data preparation, 
+cleaning, preprocessing, and feature engineering steps.
 
-Usage::
+Steps:
+  1.  Data Loading: SAS to Pandas.
+  2.  Variable Selection: Keep only candidate features, target variable, ID, and weights.
+  3.  Population Filtering: Adults (>=18) with positive weights.
+  4.  Data Type Handling: Convert IDs to String and assign as index.
+  5.  Missing Value Standardization: Recover survey skip patterns and convert missings to np.nan.
+  6.  Binary Standardization: Recode MEPS 1/2 codes to 0/1.
+  7.  Feature Engineering (Stateless): Create life transition flag and collapse sparse categories.
+  8.  Train-Val-Test Split: 80/10/10 stratified split based on target distribution.
+  9.  Preprocessing Pipeline (Stateful): Feature standardization, validation imputation, medical 
+      feature engineering, scaling, and encoding.
+  10. Data Verification: Automated checks for row integrity, missing values, data types and scaling.
+  11. Data Persistence: Export to parquet files for model training.
 
+For preprocessing experiments, exploratory data analysis, and detailed rationale, see:
+notebooks/1_eda_and_preprocessing.ipynb
+
+Usage:
     .venv-train/Scripts/python scripts/preprocess.py
 """
 
