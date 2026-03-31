@@ -3327,18 +3327,30 @@ for name, raw, processed in [
     # Verify absence of missing values
     no_nulls = "✅" if processed.isnull().sum().sum() == 0 else "❌"
 
-    # Verify all columns are now numeric (floats/ints)
+    # Verify all preprocessed features are numeric (floats/ints)
     all_numeric = "✅" if processed.apply(pd.api.types.is_numeric_dtype).all() else "❌"
-    
-    print(f"{name:5}: Rows Match: {rows_match} | No Missing Values: {nulls_status} | All Numeric: {all_numeric} | Raw Shape: {raw.shape} | Processed Shape: {processed.shape}")
+
+    # Verify scaled features have mean=0, std=1
+    scaled_features = preprocessor.named_steps["feature_scaler_encoder"].named_transformers_["numerical_scaler"].get_feature_names_out()
+    scaled = "✅" if (processed[scaled_features].mean().all() == 0 and processed[scaled_features].std().all() == 1) else "❌"
+
+    # Display results
+    print(f"{name:5}: Rows Match: {rows_match} | No Missing Values: {nulls_status} | All Numeric: {all_numeric} | Scaled (M=0, Std=1): {scaled} | Raw Shape: {raw.shape} | Processed Shape: {processed.shape}")
 
 # %%
-# Verify feature scaling on training data
-output_numerical_features = preprocessor.named_steps["feature_scaler_encoder"].named_transformers_["numerical_scaler"].get_feature_names_out()
-preprocessor_verify_scaling = X_train_preprocessed[output_numerical_features].describe().loc[["mean", "std", "min", "max"]]
-preprocessor_verify_scaling.style \
-    .pipe(add_table_caption, "Verification of Feature Scaling") \
-    .format("{:.2f}")
+# Verify scaled features have mean=0, std=1 (on train)
+scaled_features = preprocessor.named_steps["feature_scaler_encoder"].named_transformers_["numerical_scaler"].get_feature_names_out()
+verify_scaling = []
+for data_split, X_processed in [("Train", X_train_preprocessed), ("Val", X_val_preprocessed), ("Test", X_test_preprocessed)]:
+    row = {"Split": data_split}
+    for feature in scaled_features:
+        mean = X_processed[feature].mean()
+        std = X_processed[feature].std()
+        row[feature] = f"M={mean:.2f}, Std={std:.2f}"
+    verify_scaling.append(row)
+
+verify_scaling = pd.DataFrame(verify_scaling).set_index("Split")
+verify_scaling.style.pipe(add_table_caption, "Verification of Feature Scaling")
 
 # %%
 # Check feature names of pipeline output to verify human-readable encoding
