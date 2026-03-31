@@ -1,0 +1,42 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: .venv-train\Scripts\python.exe scripts/preprocess.py
+    deps:
+    - path: data/h251.sas7bdat
+      hash: md5
+      md5: 493fcaa1b6f8b7f23879b568d35820da
+      size: 207093760
+    - path: scripts/preprocess.py
+      hash: md5
+      md5: 7d362ac86f02d1ec42971ceec21d0fd2
+      size: 9144
+    - path: src/constants.py
+      hash: md5
+      md5: a62865a691ed830b9ceaf69cf5329c33
+      size: 9177
+    - path: src/pipeline.py
+      hash: md5
+      md5: 5b5d8dc9431ce299e68a21f08c1bae31
+      size: 6850
+    - path: src/transformers.py
+      hash: md5
+      md5: 5920c0ca24641df700182ead056d0362
+      size: 35874
+    - path: src/utils.py
+      hash: md5
+      md5: 22c9c83dde161dc7261f8a72d9f7dd70
+      size: 4399
+    outs:
+    - path: data/test_data_preprocessed.parquet
+      hash: md5
+      md5: b4c515101bd1dbde39c1f06350a98fb2
+      size: 69424
+    - path: data/training_data_preprocessed.parquet
+      hash: md5
+      md5: a045a49de975005c96adff5b20fa8756
+      size: 355338
+    - path: data/validation_data_preprocessed.parquet
+      hash: md5
+      md5: 88c1393d697a77b153796db97a5f6a64
+      size: 69302
