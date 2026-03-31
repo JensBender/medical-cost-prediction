@@ -113,7 +113,7 @@ def main():
     # Collapse employment status categories 
     # Map 2, 3, 4 → 0 (Not Employed)
     df["EMPST31_GRP"] = df["EMPST31"].replace(EMPST31_COLLAPSE_MAP)
-    print("  Created RECENT_LIFE_TRANSITION feature and collapsed sparse categories for marrital and employment transitions")
+    print("  Created RECENT_LIFE_TRANSITION feature and collapsed sparse categories for marital and employment transitions")
 
     # --- 8. Train-Validation-Test Split (80/10/10 stratified) ---
     print("Step 8/11: Performing train-validation-test split (80/10/10) with a distribution-informed stratified split...")
