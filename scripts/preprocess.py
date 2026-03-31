@@ -140,10 +140,20 @@ def main():
         ("Val", X_val, X_val_preprocessed),
         ("Test", X_test, X_test_preprocessed),
     ]:
+        # Verify equal row counts between raw and processed data
         rows_match = "✅" if len(raw) == len(processed) else "❌"
+        # Verify absence of missing values
         no_nulls = "✅" if processed.isnull().sum().sum() == 0 else "❌"
-        all_numeric = "✅" if processed.apply(pd.api.types.is_numeric_dtype).all()  else "❌"
-        print(f"  {name:5}: Rows Match: {rows_match} | No Missing Values: {no_nulls} | All Numeric: {all_numeric}")
+        # Verify all preprocessed features are numeric (floats/ints)
+        all_numeric = "✅" if processed.apply(pd.api.types.is_numeric_dtype).all() else "❌"
+        # Verify scaled features have mean=0, std=1
+        scaled_features = preprocessor.named_steps["feature_scaler_encoder"].named_transformers_["numerical_scaler"].get_feature_names_out()
+        means = processed[scaled_features].mean()
+        stds = processed[scaled_features].std(ddof=0)
+        is_mean_0 = np.allclose(means, 0, atol=1e-7 if name == "Train" else 0.1)  # small tolerance (1e-7) allows minor floating-point precision errors on train, large tolerance (0.1) allows minor distributions drift on Val and Test
+        is_std_1 = np.allclose(stds, 1, atol=1e-7 if name == "Train" else 0.1)  
+        scaled = "✅" if (is_mean_0 and is_std_1) else "❌"
+        print(f"  {name:5}: Rows Match: {rows_match} | No Missing Values: {no_nulls} | All Numeric: {all_numeric} | Scaled (M=0, Std=1): {scaled}")
 
     # --- 11. Data Persistence (save parquet files) ---
     print("Step 11/11: Saving preprocessed data...")
