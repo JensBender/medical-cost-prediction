@@ -3323,12 +3323,21 @@ for name, raw, processed in [
 ]:
     # Verify equal row counts between raw and processed data
     rows_match = "✅" if len(raw) == len(processed) else "❌"
-    
-    # Verify absence of missing values
-    no_nulls = "✅" if processed.isnull().sum().sum() == 0 else "❌"
 
     # Verify all preprocessed features are numeric (floats/ints)
     all_numeric = "✅" if processed.apply(pd.api.types.is_numeric_dtype).all() else "❌"
+
+    # Verify absence of missing values
+    no_nulls = "✅" if processed.isnull().sum().sum() == 0 else "❌"
+
+    # Verify the absence of infinite values
+    no_infinites = "✅" if not np.isinf(processed.select_dtypes(include=[np.number])).any().any() else "❌"
+
+    # Verify the absence of constant values
+    no_constants = "✅" if (processed.nunique(dropna=False) > 1).all() else "❌"
+
+    # Verify IDs are unique
+    unique_ids = "✅" if processed.index.is_unique else "❌"
 
     # Verify scaled features have mean=0, std=1
     scaled_features = preprocessor.named_steps["feature_scaler_encoder"].named_transformers_["numerical_scaler"].get_feature_names_out()
@@ -3339,7 +3348,7 @@ for name, raw, processed in [
     scaled = "✅" if (is_mean_0 and is_std_1) else "❌"
 
     # Display results
-    print(f"{name:5}: Rows Match: {rows_match} | No Missing Values: {nulls_status} | All Numeric: {all_numeric} | Scaled (M=0, Std=1): {scaled} | Raw Shape: {raw.shape} | Processed Shape: {processed.shape}")
+    print(f"{name:5}: Rows Match: {rows_match} | All Numeric: {all_numeric} | No Missings: {no_nulls} | No Infinites: {no_infinites} | No Constants: {no_constants} | Unique IDs: {unique_ids} | Scaled (M=0, Std=1): {scaled} | Raw Shape: {raw.shape} | Processed Shape: {processed.shape}")
 
 # %%
 # Verify scaled features have mean=0, std=1 (on train)
