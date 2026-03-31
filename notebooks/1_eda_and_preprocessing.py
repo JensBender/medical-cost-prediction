@@ -3332,7 +3332,11 @@ for name, raw, processed in [
 
     # Verify scaled features have mean=0, std=1
     scaled_features = preprocessor.named_steps["feature_scaler_encoder"].named_transformers_["numerical_scaler"].get_feature_names_out()
-    scaled = "✅" if (processed[scaled_features].mean().all() == 0 and processed[scaled_features].std().all() == 1) else "❌"
+    means = processed[scaled_features].mean()
+    stds = processed[scaled_features].std(ddof=0)
+    is_mean_0 = np.allclose(means, 0, atol=1e-7 if name == "Train" else 0.1)  # small tolerance (1e-7) allows minor floating-point precision errors on train, large tolerance (0.1) allows minor distributions drift on Val and Test
+    is_std_1 = np.allclose(stds, 1, atol=1e-7 if name == "Train" else 0.1)  
+    scaled = "✅" if (is_mean_0 and is_std_1) else "❌"
 
     # Display results
     print(f"{name:5}: Rows Match: {rows_match} | No Missing Values: {nulls_status} | All Numeric: {all_numeric} | Scaled (M=0, Std=1): {scaled} | Raw Shape: {raw.shape} | Processed Shape: {processed.shape}")
