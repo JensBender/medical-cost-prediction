@@ -147,16 +147,15 @@ def main():
 
     # --- 11. Data Persistence (save parquet files) ---
     print("Step 11/11: Saving preprocessed data...")
-    for split_name, X_proc, y_split, X_raw in [
-        ("training", X_train_preprocessed, y_train, X_train),
-        ("validation", X_val_preprocessed, y_val, X_val),
-        ("test", X_test_preprocessed, y_test, X_test),
-    ]:
-        # Merge preprocessed features, target variable, and sample weights
-        df_out = pd.concat([X_proc, y_split, X_raw[WEIGHT_COLUMN]], axis=1)
-        path = f"{OUTPUT_DIR}/{split_name}_data_preprocessed.parquet"
-        df_out.to_parquet(path)
-        print(f"  Saved {path} ({df_out.shape[0]:,} rows × {df_out.shape[1]} cols)")
+    # Merge preprocessed X features, y target variable, and sample weights
+    df_train_preprocessed = pd.concat([X_train_preprocessed, y_train, X_train[WEIGHT_COLUMN]], axis=1)
+    df_val_preprocessed = pd.concat([X_val_preprocessed, y_val, X_val[WEIGHT_COLUMN]], axis=1)
+    df_test_preprocessed = pd.concat([X_test_preprocessed, y_test, X_test[WEIGHT_COLUMN]], axis=1)
+    # Save as .parquet files (preserves index, data types, is faster, and requires less storage space than .csv)
+    df_train_preprocessed.to_parquet(f"{OUTPUT_DIR}/training_data_preprocessed.parquet")
+    df_val_preprocessed.to_parquet(f"{OUTPUT_DIR}/validation_data_preprocessed.parquet")
+    df_test_preprocessed.to_parquet(f"{OUTPUT_DIR}/test_data_preprocessed.parquet")
+    print(f"  Saved preprocessed features, target variable, and sample weights as .parquet files in {OUTPUT_DIR} directory")
 
     print("\n✅ Preprocessing complete.")
 
