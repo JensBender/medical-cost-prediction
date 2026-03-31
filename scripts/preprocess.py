@@ -133,18 +133,17 @@ def main():
     X_test_preprocessed = preprocessor.transform(X_test)
     print(f"  Created preprocessed training, validation, and test DataFrames with {len(X_train_preprocessed.columns)} output features")
 
-    # --- 10. Verification ---
-    print("Step 10/11: Verifying preprocessing results...")
+    # --- 10. Data Verification ---
+    print("Step 10/11: Verifying preprocessed data...")
     for name, raw, processed in [
         ("Train", X_train, X_train_preprocessed),
         ("Val", X_val, X_val_preprocessed),
         ("Test", X_test, X_test_preprocessed),
     ]:
-        rows_ok = len(raw) == len(processed)
-        nulls = processed.isnull().sum().sum()
-        numeric_ok = processed.apply(pd.api.types.is_numeric_dtype).all()
-        status = "✅" if (rows_ok and nulls == 0 and numeric_ok) else "❌"
-        print(f"  {name:5}: {status}  rows={len(processed):,}  nulls={nulls}  all_numeric={numeric_ok}")
+        rows_match = "✅" if len(raw) == len(processed) else "❌"
+        no_nulls = "✅" if processed.isnull().sum().sum() == 0 else "❌"
+        all_numeric = "✅" if processed.apply(pd.api.types.is_numeric_dtype).all()  else "❌"
+        print(f"  {name:5}: Rows Match: {rows_match} | No Missing Values: {no_nulls} | All Numeric: {all_numeric}")
 
     # --- 11. Data Persistence (save parquet files) ---
     print("Step 11/11: Saving preprocessed data...")
