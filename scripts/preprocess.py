@@ -98,7 +98,7 @@ def main():
     # Collapse employment status categories 
     # Map 2, 3, 4 → 0 (Not Employed)
     df["EMPST31_GRP"] = df["EMPST31"].replace(EMPST31_COLLAPSE_MAP)
-    print("  Created RECENT_LIFE_TRANSITION feature and collapsed sparse transition categories")
+    print("  Created RECENT_LIFE_TRANSITION feature and collapsed sparse categories for marrital and employment transitions")
 
     # --- 8. Train-Validation-Test Split (80/10/10 stratified) ---
     print("Step 8/11: Performing train-validation-test split (80/10/10) with a distribution-informed stratified split...")
@@ -119,7 +119,7 @@ def main():
     print(f"  Split the data into training ({len(X_train):,}), validation ({len(X_val):,}), and test ({len(X_test):,})")
 
     # --- 9. Preprocessing Pipeline (stateful; fit on train, transform all) ---
-    print("Step 9/11: Running preprocessing pipeline...")
+    print("Step 9/11: Running preprocessing pipeline with feature standardization, validation, imputation, medical feature engineering, scaling, and encoding...")
     preprocessor = create_preprocessing_pipeline(
         PIPELINE_REQUIRED_FEATURES,
         PIPELINE_OPTIONAL_FEATURES,
@@ -131,7 +131,7 @@ def main():
     X_train_preprocessed = preprocessor.fit_transform(X_train)
     X_val_preprocessed = preprocessor.transform(X_val)
     X_test_preprocessed = preprocessor.transform(X_test)
-    print(f"  Output features: {X_train_preprocessed.shape[1]}")
+    print(f"  Created preprocessed training, validation, and test DataFrames with {len(X_train_preprocessed.columns)} output features")
 
     # --- 10. Verification ---
     print("Step 10/11: Verifying preprocessing results...")
