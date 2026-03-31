@@ -3314,23 +3314,20 @@ X_val_preprocessed = preprocessor.transform(X_val)
 X_test_preprocessed = preprocessor.transform(X_test)
 
 # %%
-# --- Verify results ---
-# Verify absence of missing values and numeric types only in preprocessed data, and matching row counts between raw and processed data
-datasets = {
-    "Train": (X_train, X_train_preprocessed),
-    "Val": (X_val, X_val_preprocessed),
-    "Test": (X_test, X_test_preprocessed)
-}
-print("--- Preprocessing Pipeline Sanity Checks ---")
-for name, (raw, processed) in datasets.items():
-    # Check row counts (should match since no outlier removal)
+# Verify preprocessed data
+print("--- Verification of Preprocessed Data ---")
+for name, raw, processed in [
+    ("Train", X_train, X_train_preprocessed),
+    ("Val", X_val, X_val_preprocessed),
+    ("Test", X_test, X_test_preprocessed),
+]:
+    # Verify equal row counts between raw and processed data
     rows_match = "✅" if len(raw) == len(processed) else "❌"
     
-    # Check for any remaining missing values
-    null_count = processed.isnull().sum().sum()
-    nulls_status = f"✅" if null_count == 0 else f"❌ ({null_count})"
-    
-    # Check if all columns are now numeric (floats/ints)
+    # Verify absence of missing values
+    no_nulls = "✅" if processed.isnull().sum().sum() == 0 else "❌"
+
+    # Verify all columns are now numeric (floats/ints)
     all_numeric = "✅" if processed.apply(pd.api.types.is_numeric_dtype).all() else "❌"
     
     print(f"{name:5}: Rows Match: {rows_match} | No Missing Values: {nulls_status} | All Numeric: {all_numeric} | Raw Shape: {raw.shape} | Processed Shape: {processed.shape}")
