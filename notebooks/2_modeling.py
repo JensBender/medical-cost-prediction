@@ -91,12 +91,12 @@ import joblib
 
 # Local imports
 from src.constants import (
+    ID_COLUMN,
+    WEIGHT_COLUMN,
+    TARGET_COLUMN,
     DISPLAY_LABELS, 
-    CATEGORY_LABELS_EDA,
     METRIC_LABELS,
-    RANDOM_STATE,
-    POP_COLOR,
-    SAMPLE_COLOR
+    RANDOM_STATE
 )
 from src.utils import (
     add_table_caption,
@@ -148,17 +148,17 @@ def inspect_df(df):
             - str: Status icon for infinite values (✅ if none, ❌ otherwise).
             - str: Status icon for constant columns (✅ if none, ❌ otherwise).
             - str: Status icon for unique index/ID (✅ if unique, ❌ otherwise).
-            - str: Status icon for target variable presence (✅ if "TOTSLF23" exists, ❌ otherwise).
-            - str: Status icon for weight variable presence (✅ if "PERWT23F" exists, ❌ otherwise).
+            - str: Status icon for target variable presence (✅ if TARGET_COLUMN exists, ❌ otherwise).
+            - str: Status icon for weight variable presence (✅ if WEIGHT_COLUMN exists, ❌ otherwise).
     """
     shape = df.shape
     no_missings = "✅" if not df.isna().any().any() else "❌"
     all_numerical = "✅" if df.select_dtypes(exclude=[np.number]).empty else "❌"
     no_infinites = "✅" if not np.isinf(df.select_dtypes(include=[np.number])).any().any() else "❌"
     no_constants = "✅" if (df.nunique(dropna=False) > 1).all() else "❌"
-    unique_id = "✅" if df.index.is_unique else "❌"
-    target_present = "✅" if "TOTSLF23" in df.columns else "❌"
-    weights_present = "✅" if "PERWT23F" in df.columns else "❌"
+    unique_id = "✅" if (df.index.is_unique and df.index.name == ID_COLUMN) else "❌"
+    target_present = "✅" if TARGET_COLUMN in df.columns else "❌"
+    weights_present = "✅" if WEIGHT_COLUMN in df.columns else "❌"
 
     return [
         shape,
@@ -196,17 +196,17 @@ display(data_inspection.style.pipe(add_table_caption, "Data Inspection"))
 # </div>
 
 # %%
-X_train_preprocessed = df_train_preprocessed.drop(["TOTSLF23", "PERWT23F"], axis=1)
-y_train = df_train_preprocessed["TOTSLF23"]
-w_train = df_train_preprocessed["PERWT23F"]
+X_train_preprocessed = df_train_preprocessed.drop([TARGET_COLUMN, WEIGHT_COLUMN], axis=1)
+y_train = df_train_preprocessed[TARGET_COLUMN]
+w_train = df_train_preprocessed[WEIGHT_COLUMN]
 
-X_val_preprocessed = df_val_preprocessed.drop(["TOTSLF23", "PERWT23F"], axis=1)
-y_val = df_val_preprocessed["TOTSLF23"]
-w_val = df_val_preprocessed["PERWT23F"]
+X_val_preprocessed = df_val_preprocessed.drop([TARGET_COLUMN, WEIGHT_COLUMN], axis=1)
+y_val = df_val_preprocessed[TARGET_COLUMN]
+w_val = df_val_preprocessed[WEIGHT_COLUMN]
 
-X_test_preprocessed = df_test_preprocessed.drop(["TOTSLF23", "PERWT23F"], axis=1)
-y_test = df_test_preprocessed["TOTSLF23"]
-w_test = df_test_preprocessed["PERWT23F"]
+X_test_preprocessed = df_test_preprocessed.drop([TARGET_COLUMN, WEIGHT_COLUMN], axis=1)
+y_test = df_test_preprocessed[TARGET_COLUMN]
+w_test = df_test_preprocessed[WEIGHT_COLUMN]
 
 # Delete redundant DataFrames to free up memory
 del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
