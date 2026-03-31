@@ -157,10 +157,16 @@ def main():
     ]:
         # Verify equal row counts between raw and processed data
         rows_match = "✅" if len(raw) == len(processed) else "❌"
-        # Verify absence of missing values
-        no_nulls = "✅" if processed.isnull().sum().sum() == 0 else "❌"
         # Verify all preprocessed features are numeric (floats/ints)
         all_numeric = "✅" if processed.apply(pd.api.types.is_numeric_dtype).all() else "❌"
+        # Verify absence of missing values
+        no_nulls = "✅" if processed.isnull().sum().sum() == 0 else "❌"
+        # Verify the absence of infinite values
+        no_infinites = "✅" if not np.isinf(processed.select_dtypes(include=[np.number])).any().any() else "❌"
+        # Verify the absence of constant values
+        no_constants = "✅" if (processed.nunique(dropna=False) > 1).all() else "❌"
+        # Verify IDs are unique
+        unique_ids = "✅" if processed.index.is_unique else "❌"
         # Verify scaled features have mean=0, std=1
         scaled_features = preprocessor.named_steps["feature_scaler_encoder"].named_transformers_["numerical_scaler"].get_feature_names_out()
         means = processed[scaled_features].mean()
@@ -168,8 +174,8 @@ def main():
         is_mean_0 = np.allclose(means, 0, atol=1e-7 if name == "Train" else 0.1)  # small tolerance (1e-7) allows minor floating-point precision errors on train, large tolerance (0.1) allows minor distributions drift on Val and Test
         is_std_1 = np.allclose(stds, 1, atol=1e-7 if name == "Train" else 0.1)  
         scaled = "✅" if (is_mean_0 and is_std_1) else "❌"
-        print(f"  {name:5}: Rows Match: {rows_match} | No Missing Values: {no_nulls} | All Numeric: {all_numeric} | Scaled (M=0, Std=1): {scaled}")
-
+        print(f"{name:5}: Rows Match: {rows_match} | All Numeric: {all_numeric} | No Missings: {no_nulls} | No Infinites: {no_infinites} | No Constants: {no_constants} | Unique IDs: {unique_ids} | Scaled (M=0, Std=1): {scaled}")
+    
     # --- 11. Data Persistence (save parquet files) ---
     print("Step 11/11: Saving preprocessed data...")
     # Merge preprocessed X features, y target variable, and sample weights
