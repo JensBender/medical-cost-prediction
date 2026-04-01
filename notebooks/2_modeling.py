@@ -302,20 +302,20 @@ baseline_models = {
 }
 
 
-# Example usage: Train and evaluate linear regression model
-lr_results = train_and_evaluate(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
-lr_metrics = pd.DataFrame([lr_results])[["mdae", "mae", "r2", "training_time"]]
-display(
-    lr_metrics
-    .rename(columns=METRIC_LABELS)
-    .style
-    .pipe(add_table_caption, "Linear Regression: Metrics")
-    .format("{:.2f}")
-    .hide()  # hides index
-) 
+# Train and evaluate linear regression model (example usage of train_and_evaluate) 
+# lr_results = train_and_evaluate(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
+# lr_metrics = pd.DataFrame([lr_results])[["mdae", "mae", "r2", "training_time"]]
+# display(
+#     lr_metrics
+#     .rename(columns=METRIC_LABELS)
+#     .style
+#     .pipe(add_table_caption, "Linear Regression: Metrics")
+#     .format("{:.2f}")
+#     .hide()  # hides index
+# ) 
 
 
-def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_val=None):
+def train_and_evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_val=None):
     """
     Train and evaluate multiple models and consolidate their results.
 
@@ -335,22 +335,23 @@ def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_
     # Iterate over all models
     results = {}
     for model_name, model in baseline_models.items():
-        print(f"\nEvaluating {model_name}...")
-        result = evaluate_model(model, X_train, y_train, X_val, y_val, w_train, w_val, model_name)
-        results[model_name] = result
-        print(f"Training Time: {round(result['training_time'], 2)} sec")
+        if model_name != "Random Forest":
+            print(f"Training {model_name}...")
+            result = train_and_evaluate(model, X_train, y_train, X_val, y_val, w_train, w_val)
+            results[model_name] = result
+            print(f"  {model_name} trained in {round(result['training_time'], 2)} sec")
+    print("\n✅ Baseline model training complete.")    
     return results
 
     
 # Train and evaluate all baseline models
-# mlflow.set_experiment("Baseline Models") 
-# baseline_results = evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
+baseline_results = train_and_evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
 # Save baseline model results to file
 # save_model(baseline_results, "../models/baseline.joblib")
 
 # Load baseline model results from file
-baseline_results = load_model("../models/baseline.joblib")
+# baseline_results = load_model("../models/baseline.joblib")
 
 
 # %% [markdown]
