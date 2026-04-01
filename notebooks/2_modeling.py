@@ -24,7 +24,7 @@
 #     <div style="font-size:14px; font-weight:normal; color:#666; margin-top:16px;">
 #         Author: Jens Bender <br> 
 #         Created: March 2026<br>
-#         Last updated: March 2026
+#         Last updated: April 2026
 #     </div>
 # </div>
 
@@ -288,9 +288,20 @@ baseline_models = {
         func=np.log1p,
         inverse_func=np.expm1
     ),
-    "Decision Tree": DecisionTreeRegressor(criterion="absolute_error", random_state=RANDOM_STATE),  # absolute_error uses MAE loss function for training
-    "Random Forest": RandomForestRegressor(criterion="absolute_error", n_jobs=-1, random_state=RANDOM_STATE), # n_jobs=-1 uses all CPU cores to speed up training
-    "XGBoost": XGBRegressor(objective="reg:tweedie", n_jobs=-1, random_state=RANDOM_STATE), # Tweedie handles zero-inflation and heavy tail
+    "Decision Tree": DecisionTreeRegressor(
+        criterion="absolute_error",  # Uses MAE loss function for training
+        random_state=RANDOM_STATE
+    ),  
+    "Random Forest": RandomForestRegressor(
+        criterion="absolute_error", 
+        n_jobs=-1,  # Uses all CPU cores to speed up training
+        random_state=RANDOM_STATE
+    ), 
+    "XGBoost": XGBRegressor(
+        objective="reg:tweedie",  # Handles zero-inflation and heavy tail
+        n_jobs=-1, 
+        random_state=RANDOM_STATE
+    ), 
     "Support Vector Machine": TransformedTargetRegressor(
         regressor=SVR(cache_size=1000), # Increasing cache_size uses more RAM to speed up training
         func=np.log1p,
@@ -431,14 +442,14 @@ def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_
 
     
 # Train and evaluate all baseline models
-mlflow.set_experiment("Baseline Models") 
-baseline_results = evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
+# mlflow.set_experiment("Baseline Models") 
+# baseline_results = evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
 # Save baseline model results to file
-save_model(baseline_results, "../models/baseline.joblib")
+# save_model(baseline_results, "../models/baseline.joblib")
 
 # Load baseline model results from file
-# baseline_results = load_model("../models/baseline.joblib")
+baseline_results = load_model("../models/baseline.joblib")
 
 
 # %% [markdown]
