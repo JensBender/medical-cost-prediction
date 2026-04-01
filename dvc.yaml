@@ -14,14 +14,14 @@ stages:
       - data/validation_data_preprocessed.parquet
       - data/test_data_preprocessed.parquet
 
-  # Stage 2: Modeling
-  train:
-    cmd: .venv-train\Scripts\python.exe notebooks/2_modeling.py
+  # --- Modeling ---
+  # Stage 2: Baseline Models
+  baseline:
+    cmd: .venv-train\Scripts\python.exe scripts/train_baseline.py
     deps:
       - data/training_data_preprocessed.parquet   # Dependency on Stage 1
       - data/validation_data_preprocessed.parquet # Dependency on Stage 1
-      - data/test_data_preprocessed.parquet       # Dependency on Stage 1
-      - notebooks/2_modeling.py                   # Model training script
+      - scripts/train_baseline.py                 # Training script for baseline models 
       - src/constants.py                          # Feature lists, label mappings, etc.
       - src/utils.py                              # Helper functions
     outs:
