@@ -90,6 +90,7 @@ from sklearn.metrics import (
 import joblib
 
 # Local imports
+from src.modeling import train_and_evaluate
 from src.constants import (
     ID_COLUMN,
     WEIGHT_COLUMN,
@@ -104,15 +105,6 @@ from src.utils import (
     save_model,
     load_model
 )
-
-# %% [markdown]
-# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     <strong>MLflow Settings</strong>
-# </div>
-
-# %%
-# Set the tracking URI to point to your running MLflow UI server
-mlflow.set_tracking_uri("http://127.0.0.1:5000")
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -310,108 +302,17 @@ baseline_models = {
 }
 
 
-def evaluate_model(model, X_train, y_train, X_val, y_val, w_train=None, w_val=None, model_name="model", log_model=False):
-    """
-    Train and evaluate a single machine learning model with MLflow experiment tracking.
-
-    Args:
-        model (estimator): The Scikit-learn estimator or pipeline to be trained.
-        X_train (pd.DataFrame): Preprocessed training features.
-        y_train (pd.Series): Target variable for training data.
-        X_val (pd.DataFrame): Preprocessed validation features.
-        y_val (pd.Series): Target variable for validation data.
-        w_train (pd.Series, optional): Sample weights for training data. Defaults to None.
-        w_val (pd.Series, optional): Sample weights for validation data. Defaults to None.
-        model_name (str, optional): Display name of the model for MLflow experiment tracking. Defaults to "model".
-        log_model (bool, optional): Whether to log the fitted model as an artifact to MLflow. Defaults to False.
-
-    Returns:
-        dict: A dictionary containing the evaluation results:
-            - "mdae" (float): Median Absolute Error (unweighted).
-            - "mae" (float): Mean Absolute Error (weighted).
-            - "r2" (float): Coefficient of Determination (weighted).
-            - "training_time" (float): Training time in seconds.
-            - "fitted_model" (estimator): The trained model object.
-            - "y_val_pred" (np.ndarray): The predicted values on the validation set.
-    """
-    # Track model run
-    with mlflow.start_run(run_name=model_name):
-        # Tag raw data source 
-        mlflow.set_tag("data_source", "h251.sas7bdat")
-
-        # Log data lineage
-        data_train = mlflow.data.from_pandas(
-            X_train, 
-            targets=y_train,
-            source="../data/training_data_preprocessed.parquet", 
-            name="training_data"
-        )
-        data_val = mlflow.data.from_pandas(
-            X_val, 
-            targets=y_val,
-            source="../data/validation_data_preprocessed.parquet", 
-            name="validation_data"
-        )
-        mlflow.log_input(data_train, context="training")
-        mlflow.log_input(data_val, context="validation")
-
-        # Log model hyperparameters
-        mlflow.log_params(model.get_params())
-
-        # Ensure weights are passed to model even when wrapped in a Pipeline (for Elastic Net)
-        fit_params = {}
-        if w_train is not None:
-            # Normalize weights so mean is 1.0 (prevents numerical instability in algorithms like SVR)
-            w_train_norm = w_train / w_train.mean()
-            
-            reg = getattr(model, "regressor", model)
-            key = f"{reg.steps[-1][0]}__sample_weight" if isinstance(reg, Pipeline) else "sample_weight"
-            fit_params[key] = w_train_norm
-
-        # Fit model on training data
-        start_time = time.time()  # Measure training time
-        model.fit(X_train, y_train, **fit_params)
-        end_time = time.time()
-
-        # Log fitted model
-        if log_model:
-            mlflow.sklearn.log_model(model, "model")
-
-        # Predict on validation data
-        y_val_pred = model.predict(X_val)
-
-        # Calculate evaluation metrics
-        mdae = weighted_median_absolute_error(y_val, y_val_pred, sample_weight=w_val)  
-        mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
-        r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
-
-        # Log metrics
-        mlflow.log_metric("mdae", mdae)
-        mlflow.log_metric("mae", mae)
-        mlflow.log_metric("r2", r2)
-
-        # Return results dictionary
-        return {
-            "mdae": mdae,
-            "mae": mae,
-            "r2": r2,
-            "training_time": end_time - start_time,
-            "fitted_model": model,
-            "y_val_pred": y_val_pred,
-        }
-
-
 # Example usage: Train and evaluate linear regression model
-# lr_results = evaluate_model(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val, model_name="Linear Regression")
-# lr_metrics = pd.DataFrame([lr_results])[["mdae", "mae", "r2", "training_time"]]
-# display(
-#     lr_metrics
-#     .rename(columns=METRIC_LABELS)
-#     .style
-#     .pipe(add_table_caption, "Linear Regression: Metrics")
-#     .format("{:.2f}")
-#     .hide()  # hides index
-# ) 
+lr_results = train_and_evaluate(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
+lr_metrics = pd.DataFrame([lr_results])[["mdae", "mae", "r2", "training_time"]]
+display(
+    lr_metrics
+    .rename(columns=METRIC_LABELS)
+    .style
+    .pipe(add_table_caption, "Linear Regression: Metrics")
+    .format("{:.2f}")
+    .hide()  # hides index
+) 
 
 
 def evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_val=None):
