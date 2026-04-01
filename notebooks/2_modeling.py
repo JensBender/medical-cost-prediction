@@ -68,7 +68,6 @@ from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import randint, uniform  # for random hyperparameter values
 
 # MLOps
-import mlflow
 import time  # to measure model training time
 
 # Models
@@ -81,7 +80,6 @@ from xgboost import XGBRegressor
 
 # Model evaluation
 from sklearn.metrics import (
-    median_absolute_error,
     mean_absolute_error, 
     r2_score
 )
@@ -301,7 +299,6 @@ baseline_models = {
     )
 }
 
-
 # Train and evaluate linear regression model (example usage of train_and_evaluate) 
 # lr_results = train_and_evaluate(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 # lr_metrics = pd.DataFrame([lr_results])[["mdae", "mae", "r2", "training_time"]]
@@ -330,7 +327,7 @@ def train_and_evaluate_all_models(models, X_train, y_train, X_val, y_val, w_trai
 
     Returns:
         dict: A dictionary of evaluation results for each model, where keys are model names and
-              values are the dictionaries returned by the `evaluate_model` function.
+              values are the dictionaries returned by the `train_and_evaluate` function.
     """
     # Iterate over all models
     results = {}
