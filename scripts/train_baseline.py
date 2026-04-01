@@ -12,23 +12,47 @@ Usage:
     .venv-train/Scripts/python scripts/train_baseline.py
 """
 
+# Thrid-party imports
 import pandas as pd
 import mlflow
+
+# Local imports
+from src.constants import (
+    TARGET_COLUMN,
+    WEIGHT_COLUMN
+)
+
+
+# Paths (relative to project root)
+TRAIN_DATA_PATH = "data/training_data_preprocessed.parquet"
+VAL_DATA_PATH = "data/validation_data_preprocessed.parquet"
 
 
 # Main Baseline Model Training 
 def main():
     # --- 1. MLflow Settings --- 
-    # Set the tracking URI to point to your running MLflow UI server
-    print("Step 1: Setting up MLflow experiment tracking...")
-    mlflow.set_tracking_uri("http://127.0.0.1:5000")
+    print("Step 1: Setting up MLflow...")
+    mlflow.set_tracking_uri("http://127.0.0.1:5000") # Points to running MLflow UI server
+    mlflow.set_experiment("Baseline Models")
+    print(f"  Set up MLflow 'Baseline Models' experiment with tracking URI '{mlflow.get_tracking_uri()}'")
 
     # --- 2. Preprocessed Data Loading ---
     print("Step 2: Loading preprocessed data...")
-    df_train_preprocessed = pd.read_parquet("data/training_data_preprocessed.parquet")
-    df_val_preprocessed = pd.read_parquet("data/validation_data_preprocessed.parquet")
-    print(f"  Loaded 'training_data_preprocessed.parquet' with {len(df_train_preprocessed):,} rows and {len(df_train_preprocessed.columns):,} columns")
-    print(f"  Loaded 'validation_data_preprocessed.parquet' with {len(df_val_preprocessed):,} rows and {len(df_val_preprocessed.columns):,} columns")
+    df_train_preprocessed = pd.read_parquet(TRAIN_DATA_PATH)
+    df_val_preprocessed = pd.read_parquet(VAL_DATA_PATH)
+    print(f"  Loaded '{TRAIN_DATA_PATH}' with {len(df_train_preprocessed):,} rows and {len(df_train_preprocessed.columns):,} columns")
+    print(f"  Loaded '{VAL_DATA_PATH}' with {len(df_val_preprocessed):,} rows and {len(df_val_preprocessed.columns):,} columns")
+
+    # --- 2. Feature-Target Separation ---
+    print("Step 3: Separating features, target, and weights...")
+    X_train_preprocessed = df_train_preprocessed.drop([TARGET_COLUMN, WEIGHT_COLUMN], axis=1)
+    y_train = df_train_preprocessed[TARGET_COLUMN]
+    w_train = df_train_preprocessed[WEIGHT_COLUMN]
+    X_val_preprocessed = df_val_preprocessed.drop([TARGET_COLUMN, WEIGHT_COLUMN], axis=1)
+    y_val = df_val_preprocessed[TARGET_COLUMN]
+    w_val = df_val_preprocessed[WEIGHT_COLUMN]
+    del df_train_preprocessed, df_val_preprocessed  # Free up memory
+    print("  Separated data into X features, y target variable, and w sample weights")
 
 
 if __name__ == "__main__":
