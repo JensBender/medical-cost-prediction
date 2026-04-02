@@ -311,17 +311,16 @@ baseline_models = {
     "XGBoost": TransformedTargetRegressor(
         # Histogram + conservative boosting baseline; strong default for skewed cost prediction.
         regressor=XGBRegressor(
-            objective="reg:squarederror",  # On log-target, this is a reliable baseline objective before Tweedie tuning.
-            n_estimators=600,  # More boosting rounds paired with lower learning rate for smoother additive fitting.
-            learning_rate=0.05,  # Smaller step size reduces overshooting on noisy heavy-tail targets.
-            max_depth=6,  # Keep trees moderate-depth to capture nonlinearity without high variance.
-            min_child_weight=10,  # Require stronger node support before splitting, limiting noise-driven branches.
-            subsample=0.8,  # Row subsampling adds regularization and improves robustness.
-            colsample_bytree=0.5,  # Column subsampling is helpful with wide sparse feature sets.
-            reg_lambda=2.0,  # Extra L2 regularization dampens overly sharp leaf weights.
-            tree_method="hist",  # Histogram algorithm is significantly faster for this tabular workload.
-            n_jobs=-1,  # Parallelize tree construction across available cores.
-            random_state=RANDOM_STATE  # Make stochastic boosting behavior reproducible.
+            objective="reg:absoluteerror", # Optimized for MAE of log-costs; corresponds to predicting the Median raw costs (Default: "reg:squarederror")
+            n_estimators=600,      # More rounds with lower learning rate for smooth fitting (Default: 100)
+            learning_rate=0.05,    # Smaller steps to prevent overshooting noisy targets (Default: 0.3)
+            min_child_weight=10,   # Requires more "support" per node to split (Default: 1)
+            subsample=0.8,         # Uses random row subset (80%) to prevent overfitting (Default: 1)
+            colsample_bytree=0.5,  # Uses random feature subset (50%) for each split to prevent overfitting on individual features (Default: 1)
+            reg_lambda=2.0,        # L2 regularization on leaf weights to avoid sharp peaks (Default: 1)
+            tree_method="hist",    # Uses histogram algorithm for significantly faster training (Default: auto)
+            n_jobs=-1,             # Use all CPU cores to speed up training
+            random_state=RANDOM_STATE  
         ),
         func=np.log1p,
         inverse_func=np.expm1
