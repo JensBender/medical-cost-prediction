@@ -72,10 +72,9 @@ import time  # to measure model training time
 
 # Models
 from sklearn.linear_model import LinearRegression, ElasticNet
-from sklearn.svm import LinearSVR, SVR
+from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.neural_network import MLPRegressor
 from xgboost import XGBRegressor 
 
 # Model evaluation
@@ -207,7 +206,7 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Train 7 baseline models on the full feature set (27 raw, 40 preprocessed) with distribution-aware baseline hyperparameters.  
+#     ℹ️ Train 6 baseline models on the full feature set (27 raw, 40 preprocessed) with distribution-aware baseline hyperparameters.  
 #     <ul>
 #         <li>Linear Regression (lr)</li>
 #         <li>Elastic Net Regression (en)</li>
@@ -215,7 +214,6 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 #         <li>Random Forest Regressor (rf)</li>
 #         <li>XGBoost Regressor (xgb)</li>
 #         <li>Support Vector Regressor (svr)</li>
-#         <li>Multi-Layer Perceptron Regressor (mlp)</li>
 #     </ul>
 #     <hr style="height: 2px; border: none; background-color: #d0e7fa; margin: 16px 0; opacity: 0.8;">
 #     🎯 Evaluate model performance on the validation dataset.  
