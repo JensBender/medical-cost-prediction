@@ -72,7 +72,7 @@ import time  # to measure model training time
 
 # Models
 from sklearn.linear_model import LinearRegression, ElasticNet
-from sklearn.svm import SVR
+from sklearn.svm import LinearSVR
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
@@ -207,7 +207,7 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Train 7 baseline models on the full feature set (27 raw, 40 preprocessed) with mostly default hyperparameter values.  
+#     ℹ️ Train 7 baseline models on the full feature set (27 raw, 40 preprocessed) with distribution-aware baseline hyperparameters.  
 #     <ul>
 #         <li>Linear Regression (lr)</li>
 #         <li>Elastic Net Regression (en)</li>
@@ -256,7 +256,7 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 #     <ul>
 #         <li>Train on preprocessed data (standardized, imputed, feature engineered, scaled, and encoded).</li>
 #         <li>Use sample weights for population representativeness. Normalize weights (mean=1.0) to maintain relative importance while ensuring numerical stability during model training (especially for svr).</li>
-#         <li>Apply log-transformation of target variable for designated models (lr, en, mlp, svr) using <code>TransformedTargetRegressor</code>. Use <code>log1p</code> instead of <code>log</code> to handle zeros in target (<code>log(0)</code> is undefined).</li>
+#         <li>Apply log-transformation of target variable for all baseline models using <code>TransformedTargetRegressor</code>. Use <code>log1p</code> instead of <code>log</code> to handle zeros in target (<code>log(0)</code> is undefined).</li>
 #         <li>Implement polynomial features for elastic net regression using second-degree <code>PolynomialFeatures</code> with a small <code>Pipeline</code>.</li>
 #         <li>Store fitted models, predicted values, and evaluation metrics in a results dictionary and persist as a <code>.joblib</code> file.</li>
 #     </ul>  
@@ -265,35 +265,77 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 # %%
 # Define baseline models
 baseline_models = {
-    "Linear Regression": TransformedTargetRegressor(
-        regressor=LinearRegression(),
+    "Linear Regression": TransformedTargetRegressor(      
+        regressor=LinearRegression(),  # Interpretable baseline; often strong on sparse one-hot features
         func=np.log1p,
         inverse_func=np.expm1
     ),
     "Elastic Net": TransformedTargetRegressor(
         regressor=Pipeline([
             ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),  # Intercept (bias) handled by model 
-            ("model", ElasticNet())
+            ("model", ElasticNet(
+                alpha=0.01,  # Stronger regularization to help with many correlated sparse binary features
+                l1_ratio=0.2,  # 20% Lasso and 80% Ridge to keep grouped correlated binary features (like chronic condition clusters)
+                tol=1e-3  # Convergence threshold slightly higher than default (1e-4) to speed up training
+            ))
         ]),
         func=np.log1p,
         inverse_func=np.expm1
     ),
-    "Decision Tree": DecisionTreeRegressor(
-        criterion="absolute_error",  # Uses MAE loss function for training
-        random_state=RANDOM_STATE
-    ),  
-    "Random Forest": RandomForestRegressor(
-        criterion="absolute_error", 
-        n_jobs=-1,  # Uses all CPU cores to speed up training
-        random_state=RANDOM_STATE
-    ), 
-    "XGBoost": XGBRegressor(
-        objective="reg:tweedie",  # Handles zero-inflation and heavy tail
-        n_jobs=-1, 
-        random_state=RANDOM_STATE
-    ), 
+    "Decision Tree": TransformedTargetRegressor(
+        # Constrained tree to reduce variance and noise-chasing in sparse high-dimensional inputs.
+        regressor=DecisionTreeRegressor(
+            criterion="absolute_error",  # Optimize for MAE-like behavior, more robust to heavy-tail outliers than MSE.
+            max_depth=12,  # Limit depth to curb variance from sparse, mostly binary predictors.
+            min_samples_split=100,  # Require larger nodes before splitting to avoid noisy micro-partitions.
+            min_samples_leaf=50,  # Enforce coarser leaves so predictions are less brittle on rare patterns.
+            max_features="sqrt",  # Feature subsampling reduces overfitting and improves generalization at baseline.
+            random_state=RANDOM_STATE  # Keep tree structure reproducible across runs.
+        ),
+        func=np.log1p,
+        inverse_func=np.expm1
+    ),
+    "Random Forest": TransformedTargetRegressor(
+        # Shallower, regularized forest baseline for better speed/robustness than deep defaults.
+        regressor=RandomForestRegressor(
+            criterion="absolute_error",  # MAE-style split objective is less dominated by extreme-cost outliers.
+            n_estimators=300,  # Moderate forest size for stable baseline estimates without excessive runtime.
+            max_depth=16,  # Cap depth to reduce overfitting and training cost versus unconstrained trees.
+            min_samples_split=40,  # Avoid tiny splits that often memorize noise in sparse encoded data.
+            min_samples_leaf=20,  # Smooth leaf predictions by requiring more support per terminal node.
+            max_features="sqrt",  # Decorrelate trees and improve generalization under many input columns.
+            n_jobs=-1,  # Use all cores to make baseline runtime practical.
+            random_state=RANDOM_STATE  # Ensure reproducible bootstrap/sample-feature randomness.
+        ),
+        func=np.log1p,
+        inverse_func=np.expm1
+    ),
+    "XGBoost": TransformedTargetRegressor(
+        # Histogram + conservative boosting baseline; strong default for skewed cost prediction.
+        regressor=XGBRegressor(
+            objective="reg:squarederror",  # On log-target, this is a reliable baseline objective before Tweedie tuning.
+            n_estimators=600,  # More boosting rounds paired with lower learning rate for smoother additive fitting.
+            learning_rate=0.05,  # Smaller step size reduces overshooting on noisy heavy-tail targets.
+            max_depth=6,  # Keep trees moderate-depth to capture nonlinearity without high variance.
+            min_child_weight=10,  # Require stronger node support before splitting, limiting noise-driven branches.
+            subsample=0.8,  # Row subsampling adds regularization and improves robustness.
+            colsample_bytree=0.5,  # Column subsampling is helpful with wide sparse feature sets.
+            reg_lambda=2.0,  # Extra L2 regularization dampens overly sharp leaf weights.
+            tree_method="hist",  # Histogram algorithm is significantly faster for this tabular workload.
+            n_jobs=-1,  # Parallelize tree construction across available cores.
+            random_state=RANDOM_STATE  # Make stochastic boosting behavior reproducible.
+        ),
+        func=np.log1p,
+        inverse_func=np.expm1
+    ),
     "Support Vector Machine": TransformedTargetRegressor(
-        regressor=SVR(cache_size=1000), # Increasing cache_size uses more RAM to speed up training
+        # LinearSVR is typically more stable and much faster than kernel SVR on sparse tabular data.
+        regressor=LinearSVR(
+            C=1.0,  # Keep standard regularization strength as a stable baseline for linear margin regression.
+            epsilon=0.1,  # Preserve default epsilon-insensitive tube to ignore very small residual noise.
+            max_iter=20000,  # Increase optimization budget to improve convergence on large sparse matrices.
+            random_state=RANDOM_STATE,  # Reproducible coordinate descent path when internal shuffling occurs.
+        ),
         func=np.log1p,
         inverse_func=np.expm1
     )
@@ -302,14 +344,7 @@ baseline_models = {
 # Train and evaluate linear regression model (example usage of train_and_evaluate) 
 # lr_results = train_and_evaluate(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 # lr_metrics = pd.DataFrame([lr_results])[["mdae", "mae", "r2", "training_time"]]
-# display(
-#     lr_metrics
-#     .rename(columns=METRIC_LABELS)
-#     .style
-#     .pipe(add_table_caption, "Linear Regression: Metrics")
-#     .format("{:.2f}")
-#     .hide()  # hides index
-# ) 
+# display(lr_metrics.rename(columns=METRIC_LABELS).style.pipe(add_table_caption, "Linear Regression: Metrics").format("{:.2f}").hide()) 
 
 
 def train_and_evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_val=None):
@@ -332,17 +367,16 @@ def train_and_evaluate_all_models(models, X_train, y_train, X_val, y_val, w_trai
     # Iterate over all models
     results = {}
     for model_name, model in baseline_models.items():
-        if model_name != "Random Forest":
-            print(f"Training {model_name}...")
-            result = train_and_evaluate(model, X_train, y_train, X_val, y_val, w_train, w_val)
-            results[model_name] = result
-            print(f"  {model_name} trained in {round(result['training_time'], 2)} sec")
-    print("\n✅ Baseline model training complete.")    
+        print(f"Training {model_name}...")
+        result = train_and_evaluate(model, X_train, y_train, X_val, y_val, w_train, w_val)
+        results[model_name] = result
+        print(f"  {model_name} trained in {round(result['training_time'], 2)} sec")
     return results
 
     
 # Train and evaluate all baseline models
 baseline_results = train_and_evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
+print("\n✅ Baseline model training and evaluation complete.")    
 
 # Save baseline model results to file
 # save_model(baseline_results, "../models/baseline.joblib")
@@ -382,4 +416,3 @@ display(
 #     </ul>
 #     Observation: The relatively small MdAE (~\$200) vs. large MAE (~\$1000) confirms that the baseline models predict typical costs well, but fail on high-cost outliers.
 # </div>
-
