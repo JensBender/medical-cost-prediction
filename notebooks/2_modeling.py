@@ -72,7 +72,7 @@ import time  # to measure model training time
 
 # Models
 from sklearn.linear_model import LinearRegression, ElasticNet
-from sklearn.svm import LinearSVR
+from sklearn.svm import LinearSVR, SVR
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
@@ -309,7 +309,6 @@ baseline_models = {
         inverse_func=np.expm1
     ),
     "XGBoost": TransformedTargetRegressor(
-        # Histogram + conservative boosting baseline; strong default for skewed cost prediction.
         regressor=XGBRegressor(
             objective="reg:absoluteerror", # Optimized for MAE of log-costs; corresponds to predicting the Median raw costs (Default: "reg:squarederror")
             n_estimators=600,      # More rounds with lower learning rate for smooth fitting (Default: 100)
@@ -326,12 +325,10 @@ baseline_models = {
         inverse_func=np.expm1
     ),
     "Support Vector Machine": TransformedTargetRegressor(
-        # LinearSVR is typically more stable and much faster than kernel SVR on sparse tabular data.
-        regressor=LinearSVR(
-            C=1.0,  # Keep standard regularization strength as a stable baseline for linear margin regression.
-            epsilon=0.1,  # Preserve default epsilon-insensitive tube to ignore very small residual noise.
-            max_iter=20000,  # Increase optimization budget to improve convergence on large sparse matrices.
-            random_state=RANDOM_STATE,  # Reproducible coordinate descent path when internal shuffling occurs.
+        regressor=SVR(
+            kernel="rbf",    # Handles non-linearity and feature interactions (Default: same)
+            C=10.0,          # Slightly higher regularization strength for log-costs (Default: 1.0)
+            cache_size=1000  # Increase memory budget (1GB) to speed up training time (Default: 200)
         ),
         func=np.log1p,
         inverse_func=np.expm1
