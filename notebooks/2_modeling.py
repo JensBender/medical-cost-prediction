@@ -285,26 +285,25 @@ baseline_models = {
     "Decision Tree": TransformedTargetRegressor(
         regressor=DecisionTreeRegressor(
             criterion="absolute_error",  # Optimize for MAE of log-costs; corresponds to predicting the Median of raw costs
-            max_depth=12,          # Limits tree depth to prevent pure overfitting (Default: None)
+            max_depth=12,          # Limits tree depth to prevent overfitting (Default: None)
             min_samples_split=100, # Prevents splitting on tiny, noisy groups of patients (Default: 2)
             min_samples_leaf=50,   # Ensures each leaf's cost prediction has enough support (Default: 1)
-            max_features="sqrt",   # Uses only subset of features for each split to prevent overfitting on individual features (Default: None)
+            max_features="sqrt",   # Uses random feature subset for each split to prevent overfitting on individual features (Default: None)
             random_state=RANDOM_STATE  
         ),
         func=np.log1p,
         inverse_func=np.expm1
     ),
     "Random Forest": TransformedTargetRegressor(
-        # Shallower, regularized forest baseline for better speed/robustness than deep defaults.
         regressor=RandomForestRegressor(
-            criterion="absolute_error",  # MAE-style split objective is less dominated by extreme-cost outliers.
-            n_estimators=300,  # Moderate forest size for stable baseline estimates without excessive runtime.
-            max_depth=16,  # Cap depth to reduce overfitting and training cost versus unconstrained trees.
-            min_samples_split=40,  # Avoid tiny splits that often memorize noise in sparse encoded data.
-            min_samples_leaf=20,  # Smooth leaf predictions by requiring more support per terminal node.
-            max_features="sqrt",  # Decorrelate trees and improve generalization under many input columns.
-            n_jobs=-1,  # Use all cores to make baseline runtime practical.
-            random_state=RANDOM_STATE  # Ensure reproducible bootstrap/sample-feature randomness.
+            criterion="absolute_error",  # Optimize for MAE of log-costs; corresponds to predicting the Median of raw costs
+            n_estimators=300,      # More trees for more stable estimates (Default: 100)
+            max_depth=16,          # Limits tree depth to prevent overfitting (Default: None)
+            min_samples_split=40,  # Prevents splitting on tiny, noisy groups of patients (Default: 2)
+            min_samples_leaf=20,   # Ensures each leaf's cost prediction has enough support (Default: 1)
+            max_features="sqrt",   # Uses random feature subset for each split to prevent overfitting on individual features (Default: 1.0)
+            n_jobs=-1,             # Use all CPU cores to speed up training
+            random_state=RANDOM_STATE 
         ),
         func=np.log1p,
         inverse_func=np.expm1
