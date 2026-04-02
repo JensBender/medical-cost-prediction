@@ -283,14 +283,13 @@ baseline_models = {
         inverse_func=np.expm1
     ),
     "Decision Tree": TransformedTargetRegressor(
-        # Constrained tree to reduce variance and noise-chasing in sparse high-dimensional inputs.
         regressor=DecisionTreeRegressor(
-            criterion="absolute_error",  # Optimize for MAE-like behavior, more robust to heavy-tail outliers than MSE.
-            max_depth=12,  # Limit depth to curb variance from sparse, mostly binary predictors.
-            min_samples_split=100,  # Require larger nodes before splitting to avoid noisy micro-partitions.
-            min_samples_leaf=50,  # Enforce coarser leaves so predictions are less brittle on rare patterns.
-            max_features="sqrt",  # Feature subsampling reduces overfitting and improves generalization at baseline.
-            random_state=RANDOM_STATE  # Keep tree structure reproducible across runs.
+            criterion="absolute_error",  # Optimize for MAE of log-costs; corresponds to predicting the Median of raw costs
+            max_depth=12,          # Limits tree depth to prevent pure overfitting (Default: None)
+            min_samples_split=100, # Prevents splitting on tiny, noisy groups of patients (Default: 2)
+            min_samples_leaf=50,   # Ensures each leaf's cost prediction has enough support (Default: 1)
+            max_features="sqrt",   # Uses only subset of features for each split to prevent overfitting on individual features (Default: None)
+            random_state=RANDOM_STATE  
         ),
         func=np.log1p,
         inverse_func=np.expm1
