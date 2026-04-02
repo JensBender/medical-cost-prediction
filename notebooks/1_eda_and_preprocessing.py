@@ -2095,15 +2095,13 @@ plot_binary_feature_target_relationships(
 #         <li><b>Regression-Based:</b> Linear Regression, Elastic Net Regression</li>
 #         <li><b>Tree-Based:</b> Decision Tree (DT), Random Forest (RF), XGBoost (XGB)</li>
 #         <li><b>Kernel-Based:</b> Support Vector Machine (SVM)</li>
-#         <li><b>Gradient-Based:</b> Multi-Layer Perceptron (MLP)</li>
 #     </ul>
 #     <hr style="margin-top:12px; margin-bottom:10px; border:0; border-top:1px solid #d0e7fa;">
-#     <strong>Why Not K-Nearest Neighbors (KNN):</strong>
+#     <strong>Excluded Models (KNN & MLP):</strong>
 #     <ul style="margin-top:8px; margin-bottom:0px; font-size:13px;">
-#         <li><b>No Native Sample Weights:</b> It lacks support for the sample weights required to ensure population representativeness.</li>
-#         <li><b>The Curse of Dimensionality:</b> Its distance-based logic degrades in high-dimensional feature spaces (especially after one-hot encoding).</li>
-#         <li><b>Deployment Inefficiency:</b> The memory-heavy inference (storing the entire training set) is impractical for a responsive web application layer.</li>
-#         <li><b>Tail Problem:</b> Local averaging tends to "wash out" the extreme 99.9th percentile super-spenders who drive costs.</li>
+#         <li><b>No Native Sample Weights:</b> Both <code>KNeighborsRegressor</code> and <code>MLPRegressor</code> in scikit-learn lack support for the sample weights required to ensure population representativeness for this survey dataset.</li>
+#         <li><b>KNN Specifics (Distance & Deployment):</b> Distance-based logic degrades in high-dimensional sparse spaces, and memory-heavy inference is impractical for a responsive web app.</li>
+#         <li><b>MLP Specifics (Loss Flexibility):</b> Unlike XGBoost or Decision Trees, scikit-learn's MLP implementation is restricted to MSE loss, preventing direct optimization for absolute error (MAE) without custom gradient implementations.</li>
 #     </ul>
 # </div>
 #
@@ -2118,7 +2116,7 @@ plot_binary_feature_target_relationships(
 #         <li style="margin-bottom:10px;"><b>2. Optimization & Loss Strategy</b>
 #             <ul style="margin-top:5px;">
 #                 <li><b>The Problem:</b> Most models (Regression, MLP, SVM) use Mean Squared Error (MSE) by default, which is highly sensitive to the \$100k+ extreme tail. Squaring the error of a \$100,000 "Black Swan" event creates a massive number that drowns out the signal from 1,000 "typical" \$500 users. Optimizing for MdAE isn't possible, because it is a non-differentiable sorting operation that provides no mathematical "instruction" (gradient) for the majority of the training samples. MdAE is a great Judge, but it's a terrible Teacher.</li>
-#                 <li><b>Optimization Proxy:</b> To align with our <b>MdAE</b> goal, use <b>Mean Absolute Error (MAE)</b> for tree-based models and <b>Log(y+1) transformation</b> for regression/gradient-based models to satisfy homoscedasticity and shift the loss "center of gravity" toward the median. MdAE is how we judge success, but MAE and Log-MSE is how we actually train.</li>
+#                 <li><b>Optimization Proxy:</b> To align with our <b>MdAE</b> goal, use <b>Mean Absolute Error (MAE)</b> for tree-based models and <b>Log(y+1) transformation</b> for regression-based models to satisfy homoscedasticity and shift the loss "center of gravity" toward the median. MdAE is how we judge success, but MAE and Log-MSE is how we actually train.</li>
 #             </ul>
 #         </li>
 #         <li style="margin-bottom:10px;"><b>3. Sample Weights</b>
@@ -2140,7 +2138,7 @@ plot_binary_feature_target_relationships(
 #         </li>
 #         <li style="margin-bottom:10px;"><b>6. Model Pipeline</b>
 #             <ul style="margin-top:5px;">
-#                 <li><b>Lean Pipeline:</b> Tree-based models (DT, RF, XGB), SVM, and MLP use the core pipeline, relying on their native ability to capture non-linear relationships and interactions. Linear Regression with the lean pipeline provides a baseline.</li>
+#                 <li><b>Lean Pipeline:</b> Tree-based models (DT, RF, XGB) and SVM use the core pipeline, relying on their native ability to capture non-linear relationships and interactions. Linear Regression with the lean pipeline provides a baseline.</li>
 #                 <li><b>Polynomial Pipeline:</b> Elastic Net Regression requires explicit polynomial features to simulate the non-linear patterns and interaction effects.</li>
 #             </ul>
 #         </li>
@@ -2150,7 +2148,6 @@ plot_binary_feature_target_relationships(
 #                 <li style="margin-bottom:5px;"><b>Elastic Net:</b> Leverages polynomial expansion to capture non-linearities and uses its L1 penalty for automatic feature selection, silencing redundant interaction terms that would otherwise destabilize an unregularized model. Both regression-based models require log-transformed costs to satisfy their constant variance assumption.</li>
 #                 <li style="margin-bottom:5px;"><b>Tree-Based Models (XGB, RF, DT):</b> Handle non-linear and interaction effects natively and don't require polynomial features. Use raw costs, because log-transformation can inadvertently "blur" the 22.3% zero-hurdle by stretching low-value differences while compressing the extreme high-cost tail that drives total spending. Shift objective functions from standard MSE to an Absolute Error (MAE) criterion (e.g., <code>reg:absoluteerror</code> in XGBoost) or the Tweedie objective, which is mathematically optimized for zero-inflated, power-law distributions.</li>
 #                 <li style="margin-bottom:5px;"><b>SVM:</b> Use the RBF kernel to capture complex non-linearities (like the Age U-curve) via the "kernel trick" without explicit feature expansion. Use log-transformed costs to ensure the $\epsilon$-insensitive loss function treats errors as relative percentages, preventing "super-spenders" from distorting the global fit. Use <code>gamma='scale'</code> and $\epsilon \approx 0.1$ (~10% error tolerance) for a robust noise-handling strategy tailored to the high-variance healthcare cost distribution.</li>
-#                 <li><b>MLP:</b> Log-transformation is required to prevent "exploding gradients" triggered by the \$100k+ extreme tail, which would otherwise destabilize weight updates during backpropagation. Since scikit-learn's <code>MLPRegressor</code> is restricted to MSE loss (doesn't allow custom loss functions), log-transformation acts as a mathematical proxy. This shifts the "center of gravity" of the MSE loss toward the median, aligning the gradient updates with our MdAE success metric.</li>
 #             </ul>
 #         </li>
 #         <li style="margin-bottom:10px;"><b>8. Architectural Fallback</b>
@@ -2191,13 +2188,6 @@ plot_binary_feature_target_relationships(
 #         <td style="padding:8px; border:1px solid #e0f0e0;">MAE natively supported. Robust to extreme tail without Log.</td>
 #     </tr>
 #     <tr style="background-color:#fafafa;">
-#         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Gradient-Based</b> (MLP)</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">MSE</td>
-#         <td style="padding:8px; border:1px solid #e0f0e0;">MAE not supported. Log squashes extreme tail errors to mimic median-focus during training.</td>
-#     </tr>
-#     <tr>
 #         <td style="padding:8px; border:1px solid #e0f0e0;"><b>Kernel-Based</b> (SVM)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">Log (y+1)</td>
 #         <td style="padding:8px; border:1px solid #e0f0e0; text-align:center;">No</td>
