@@ -437,3 +437,20 @@ display(
     .pipe(add_table_caption, "Baseline Model Metrics (Log-Scale)")
     .format("{:.2f}")
 )
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px; margin-bottom:16px;">
+#     💡 <strong>Insights & Key Findings:</strong>
+#     <ul style="margin-top:8px; margin-bottom:8px">
+#         <li><strong>The Log-Scale "North Star":</strong> While R² on the raw dollar scale is near zero (or negative), the <b>Log-Scale R² is ~0.30</b> across all top models. This confirms the features have strong predictive signal for healthcare utilization and that the negative raw R² is simply a scaling artifact caused by rare high-cost "black swan" events.</li>
+#         <li><strong>MdAE Priority:</strong> For our typical app user, <b>MdAE is the most meaningful success metric</b>. The data confirms that predicting the "typical experience" is statistically distinct from predicting the catastrophic extreme costs.</li>
+#         <li><strong>Mean vs. Median Trade-off:</strong> Objectives like <em>reg:tweedie</em> fix the dollar-scale $R^2$ but hurt the MdAE because they are biased toward the high-expenditure tail. For a budgeting app, sticking to <b>Log-Absolute-Error</b> models seems the better strategy.</li>
+#     </ul>
+#     <hr style="height: 1px; border: none; background-color: #e0f0e0; margin: 12px 0;">
+#     🎯 <strong>Selected Models for Hyperparameter Tuning:</strong>
+#     <ol style="margin-top:8px; margin-bottom:0px">
+#         <li><strong>Elastic Net:</strong> The current "Champion" (MdAE 163). Its combination of second-degree polynomial features and L1/L2 regularization handles the correlated medical inputs well.</li>
+#         <li><strong>XGBoost:</strong> Displays the deepest predictive "signal" (Log R² 0.30). Its histogram-based gradient boosting captures non-linear health interactions that simpler models miss. Tune it to beat the Elastic Net performance.</li>
+#         <li><strong>Random Forest:</strong> A highly stable alternate learner that currently leads on MAE (958). It provides an essential check against the boosting-bias of XGBoost.</li>
+#     </ol>
+# </div>
