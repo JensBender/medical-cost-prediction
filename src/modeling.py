@@ -8,7 +8,7 @@ import numpy as np
 from sklearn.compose import TransformedTargetRegressor
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import Pipeline
-from sklearn.dummy import DummyRegressor
+from sklearn.dummy import DummyRegressor  # for median baseline prediction
 from sklearn.linear_model import LinearRegression, ElasticNet
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
