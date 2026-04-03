@@ -53,11 +53,11 @@ def main():
     print("  Separated data into X features, y target variable, and w sample weights")
 
     # --- 4. Baseline Model Training ---
-    print("Step 4: Training and evaluating all baseline models...")    
+    print("Step 4: Training and evaluating baseline models...")    
     baseline_models = get_baseline_models()
     baseline_results = {}
-    
     for model_name, model in baseline_models.items():
+        print(f"  Training {model_name}...")
         result = train_and_evaluate(
             model, 
             X_train_preprocessed, y_train, 
@@ -72,7 +72,7 @@ def main():
         if "fitted_model" in summary_result: del summary_result["fitted_model"]
         if "y_val_pred" in summary_result: del summary_result["y_val_pred"]
         baseline_results[model_name] = summary_result
-        print(f"    {model_name} trained (MdAE: {result['mdae']:.2f})")
+        print(f"    {model_name} trained in {result['training_time']} sec (MdAE: {result['mdae']:.2f})")
 
     # --- 5. Result Persistence ---
     print("Step 5: Saving baseline results...")
