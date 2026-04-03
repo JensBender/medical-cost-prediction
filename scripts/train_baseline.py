@@ -17,11 +17,9 @@ import pandas as pd
 import mlflow
 
 # Local imports
-from src.constants import (
-    TARGET_COLUMN,
-    WEIGHT_COLUMN
-)
-
+from src.constants import TARGET_COLUMN, WEIGHT_COLUMN
+from src.modeling import get_baseline_models, train_and_evaluate
+from src.utils import save_model
 
 # Paths (relative to project root)
 TRAIN_DATA_PATH = "data/training_data_preprocessed.parquet"
@@ -53,6 +51,34 @@ def main():
     w_val = df_val_preprocessed[WEIGHT_COLUMN]
     del df_train_preprocessed, df_val_preprocessed  # Free up memory
     print("  Separated data into X features, y target variable, and w sample weights")
+
+    # --- 4. Baseline Model Training ---
+    print("Step 4: Training and evaluating all baseline models...")    
+    baseline_models = get_baseline_models()
+    baseline_results = {}
+    
+    for model_name, model in baseline_models.items():
+        result = train_and_evaluate(
+            model, 
+            X_train_preprocessed, y_train, 
+            X_val_preprocessed, y_val, 
+            w_train, w_val,
+            track_mlflow=True,
+            model_name=model_name,
+            log_model=True
+        )
+        # Store metadata only to keep results file lightweight
+        summary_result = result.copy()
+        if "fitted_model" in summary_result: del summary_result["fitted_model"]
+        if "y_val_pred" in summary_result: del summary_result["y_val_pred"]
+        baseline_results[model_name] = summary_result
+        print(f"    {model_name} trained (MdAE: {result['mdae']:.2f})")
+
+    # --- 5. Result Persistence ---
+    print("Step 5: Saving baseline results...")
+    save_model(baseline_results, "models/baseline_metrics.joblib")
+    print(f"  Baseline metrics saved to 'models/baseline_metrics.joblib'")
+    print("\n✅ Baseline model training and evaluation complete.")
 
 
 if __name__ == "__main__":
