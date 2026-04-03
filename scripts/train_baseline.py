@@ -64,20 +64,16 @@ def main():
             X_val_preprocessed, y_val, 
             w_train, w_val,
             track_mlflow=True,
-            model_name=model_name,
-            log_model=True
+            model_name=model_name
         )
-        # Store metadata only to keep results file lightweight
-        summary_result = result.copy()
-        if "fitted_model" in summary_result: del summary_result["fitted_model"]
-        if "y_val_pred" in summary_result: del summary_result["y_val_pred"]
-        baseline_results[model_name] = summary_result
+        baseline_results[model_name] = result
         print(f"    {model_name} trained in {result['training_time']} sec (MdAE: {result['mdae']:.2f})")
 
-    # --- 5. Result Persistence ---
-    print("Step 5: Saving baseline results...")
-    save_model(baseline_results, "models/baseline_metrics.joblib")
-    print(f"  Baseline metrics saved to 'models/baseline_metrics.joblib'")
+    # --- 5. Model Results Persistence ---
+    print("Step 5: Persisting baseline models...")
+    save_model(baseline_results, "models/baseline.joblib")
+    print(f"  Saved the fitted models, predicted values, and evaluation metrics to 'models/baseline.joblib'")
+
     print("\n✅ Baseline model training and evaluation complete.")
 
 
