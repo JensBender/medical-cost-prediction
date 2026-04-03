@@ -58,25 +58,9 @@ import matplotlib.ticker as mtick  # to format axis ticks
 import seaborn as sns
 import math  # to calculate n_rows in subplot matrix
 
-# Preprocessing (scikit-learn)
-from sklearn.compose import TransformedTargetRegressor
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.pipeline import Pipeline
-
 # Model selection
 from sklearn.model_selection import RandomizedSearchCV
 from scipy.stats import randint, uniform  # for random hyperparameter values
-
-# MLOps
-import time  # to measure model training time
-
-# Models
-from sklearn.dummy import DummyRegressor  # for median baseline prediction
-from sklearn.linear_model import LinearRegression, ElasticNet
-from sklearn.svm import SVR
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor
 
 # Model evaluation
 from sklearn.metrics import (
@@ -84,11 +68,11 @@ from sklearn.metrics import (
     r2_score
 )
 
-# Model persistence
-import joblib
-
 # Local imports
-from src.modeling import train_and_evaluate
+from src.modeling import (
+    train_and_evaluate,
+    get_baseline_models
+)
 from src.constants import (
     ID_COLUMN,
     WEIGHT_COLUMN,
@@ -216,6 +200,7 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 #         <li>XGBoost Regressor (xgb)</li>
 #         <li>Support Vector Regressor (svr)</li>
 #     </ul>
+#     For more details, see <a href="../src/modeling.py">src/modeling.py</a>.
 #     <hr style="height: 2px; border: none; background-color: #d0e7fa; margin: 16px 0; opacity: 0.8;">
 #     🎯 Evaluate model performance on the validation dataset.  
 #     <ul>
@@ -262,74 +247,8 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 # </div> 
 
 # %%
-# Define baseline models
-baseline_models = {
-    "Median Prediction": DummyRegressor(strategy="median"),  # Always predict median as a baseline
-    "Linear Regression": TransformedTargetRegressor(      
-        regressor=LinearRegression(),  # Simple, linear predictions as an interpretable baseline
-        func=np.log1p,
-        inverse_func=np.expm1
-    ),
-    "Elastic Net": TransformedTargetRegressor(
-        regressor=Pipeline([
-            ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),  # Intercept (bias) handled by model 
-            ("model", ElasticNet())
-        ]),
-        func=np.log1p,
-        inverse_func=np.expm1
-    ),
-    "Decision Tree": TransformedTargetRegressor(
-        regressor=DecisionTreeRegressor(
-            criterion="absolute_error",  # Optimize for MAE of log-costs; corresponds to predicting the Median of raw costs
-            max_depth=12,          # Limits tree depth to prevent overfitting (Default: None)
-            min_samples_split=100, # Prevents splitting on tiny, noisy groups of patients (Default: 2)
-            min_samples_leaf=50,   # Ensures each leaf's cost prediction has enough support (Default: 1)
-            max_features="sqrt",   # Uses random feature subset for each split to prevent overfitting on individual features (Default: None)
-            random_state=RANDOM_STATE  
-        ),
-        func=np.log1p,
-        inverse_func=np.expm1
-    ),
-    "Random Forest": TransformedTargetRegressor(
-        regressor=RandomForestRegressor(
-            criterion="absolute_error",  # Optimize for MAE of log-costs; corresponds to predicting the Median of raw costs
-            n_estimators=200,      # More trees for more stable estimates (Default: 100)
-            max_depth=16,          # Limits tree depth to prevent overfitting (Default: None)
-            min_samples_split=50,  # Prevents splitting on tiny, noisy groups of patients (Default: 2)
-            min_samples_leaf=25,   # Ensures each leaf's cost prediction has enough support (Default: 1)
-            max_features="sqrt",   # Uses random feature subset for each split to prevent overfitting on individual features (Default: 1.0)
-            n_jobs=-1,             # Use all CPU cores to speed up training
-            random_state=RANDOM_STATE 
-        ),
-        func=np.log1p,
-        inverse_func=np.expm1
-    ),
-    "XGBoost": TransformedTargetRegressor(
-        regressor=XGBRegressor(
-            objective="reg:absoluteerror", # Optimized for MAE of log-costs; corresponds to predicting the Median raw costs (Default: "reg:squarederror")
-            n_estimators=600,      # More rounds with lower learning rate for smooth fitting (Default: 100)
-            learning_rate=0.05,    # Smaller steps to prevent overshooting noisy targets (Default: 0.3)
-            min_child_weight=10,   # Requires more "support" per node to split (Default: 1)
-            subsample=0.8,         # Uses random row subset (80%) to prevent overfitting (Default: 1)
-            colsample_bytree=0.5,  # Uses random feature subset (50%) for each split to prevent overfitting on individual features (Default: 1)
-            reg_lambda=2.0,        # L2 regularization on leaf weights to avoid sharp peaks (Default: 1)
-            tree_method="hist",    # Uses histogram algorithm for significantly faster training (Default: auto)
-            n_jobs=-1,             # Use all CPU cores to speed up training
-            random_state=RANDOM_STATE  
-        ),
-        func=np.log1p,
-        inverse_func=np.expm1
-    ),
-    "Support Vector Machine": TransformedTargetRegressor(
-        regressor=SVR(
-            kernel="rbf",    # Handles non-linearity and feature interactions (Default: same)
-            C=10.0,          # Slightly higher regularization strength for log-costs (Default: 1.0)
-            cache_size=1000  # Increase memory budget (1GB) to speed up training time (Default: 200)
-        ),
-        func=np.log1p,
-        inverse_func=np.expm1
-    )
-}
+# Build baseline models (using helper function from "src/modeling.py")
+baseline_models = get_baseline_models()
 
 # Train and evaluate linear regression model (example usage of train_and_evaluate) 
 # lr_results = train_and_evaluate(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
@@ -366,13 +285,13 @@ def train_and_evaluate_all_models(models, X_train, y_train, X_val, y_val, w_trai
 
     
 # Train and evaluate all baseline models
-# baseline_results = train_and_evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
+baseline_results = train_and_evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
 # Save baseline model results to file
-# save_model(baseline_results, "../models/baseline.joblib")
+save_model(baseline_results, "../models/baseline.joblib")
 
 # Load baseline model results from file
-baseline_results = load_model("../models/baseline.joblib")
+# baseline_results = load_model("../models/baseline.joblib")
 
 
 # %% [markdown]
