@@ -273,11 +273,7 @@ baseline_models = {
     "Elastic Net": TransformedTargetRegressor(
         regressor=Pipeline([
             ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),  # Intercept (bias) handled by model 
-            ("model", ElasticNet(
-                alpha=0.01,  # Stronger regularization to help with many correlated sparse binary features (Default: 1.0)
-                l1_ratio=0.2,  # 20% Lasso and 80% Ridge (Default: 0.5) to keep grouped correlated binary features (like chronic condition clusters)
-                tol=1e-3  # Convergence threshold slightly higher than default (1e-4) to speed up training
-            ))
+            ("model", ElasticNet())
         ]),
         func=np.log1p,
         inverse_func=np.expm1
@@ -297,10 +293,10 @@ baseline_models = {
     "Random Forest": TransformedTargetRegressor(
         regressor=RandomForestRegressor(
             criterion="absolute_error",  # Optimize for MAE of log-costs; corresponds to predicting the Median of raw costs
-            n_estimators=300,      # More trees for more stable estimates (Default: 100)
+            n_estimators=200,      # More trees for more stable estimates (Default: 100)
             max_depth=16,          # Limits tree depth to prevent overfitting (Default: None)
-            min_samples_split=40,  # Prevents splitting on tiny, noisy groups of patients (Default: 2)
-            min_samples_leaf=20,   # Ensures each leaf's cost prediction has enough support (Default: 1)
+            min_samples_split=50,  # Prevents splitting on tiny, noisy groups of patients (Default: 2)
+            min_samples_leaf=25,   # Ensures each leaf's cost prediction has enough support (Default: 1)
             max_features="sqrt",   # Uses random feature subset for each split to prevent overfitting on individual features (Default: 1.0)
             n_jobs=-1,             # Use all CPU cores to speed up training
             random_state=RANDOM_STATE 
@@ -308,21 +304,18 @@ baseline_models = {
         func=np.log1p,
         inverse_func=np.expm1
     ),
-    "XGBoost": TransformedTargetRegressor(
-        regressor=XGBRegressor(
-            objective="reg:absoluteerror", # Optimized for MAE of log-costs; corresponds to predicting the Median raw costs (Default: "reg:squarederror")
-            n_estimators=600,      # More rounds with lower learning rate for smooth fitting (Default: 100)
-            learning_rate=0.05,    # Smaller steps to prevent overshooting noisy targets (Default: 0.3)
-            min_child_weight=10,   # Requires more "support" per node to split (Default: 1)
-            subsample=0.8,         # Uses random row subset (80%) to prevent overfitting (Default: 1)
-            colsample_bytree=0.5,  # Uses random feature subset (50%) for each split to prevent overfitting on individual features (Default: 1)
-            reg_lambda=2.0,        # L2 regularization on leaf weights to avoid sharp peaks (Default: 1)
-            tree_method="hist",    # Uses histogram algorithm for significantly faster training (Default: auto)
-            n_jobs=-1,             # Use all CPU cores to speed up training
-            random_state=RANDOM_STATE  
-        ),
-        func=np.log1p,
-        inverse_func=np.expm1
+    "XGBoost": XGBRegressor(
+        objective="reg:tweedie", # Optimized for zero-inflated, heavy-tailed targets like medical costs; must be on raw target (Default: "reg:squarederror")
+        tweedie_variance_power=1.5, # Compound Poisson-Gamma; 1.5 balances the point mass at zero with the continuous Gamma tail (Default: 1.5)
+        n_estimators=600,      # More rounds with lower learning rate for smooth fitting (Default: 100)
+        learning_rate=0.05,    # Smaller steps to prevent overshooting noisy targets (Default: 0.3)
+        min_child_weight=10,   # Requires more "support" per node to split (Default: 1)
+        subsample=0.8,         # Uses random row subset (80%) to prevent overfitting (Default: 1)
+        colsample_bytree=0.5,  # Uses random feature subset (50%) for each split to prevent overfitting on individual features (Default: 1)
+        reg_lambda=2.0,        # L2 regularization on leaf weights to avoid sharp peaks (Default: 1)
+        tree_method="hist",    # Uses histogram algorithm for significantly faster training (Default: auto)
+        n_jobs=-1,             # Use all CPU cores to speed up training
+        random_state=RANDOM_STATE  
     ),
     "Support Vector Machine": TransformedTargetRegressor(
         regressor=SVR(
@@ -370,13 +363,13 @@ def train_and_evaluate_all_models(models, X_train, y_train, X_val, y_val, w_trai
 
     
 # Train and evaluate all baseline models
-# baseline_results = train_and_evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
+baseline_results = train_and_evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
 # Save baseline model results to file
 # save_model(baseline_results, "../models/baseline.joblib")
 
 # Load baseline model results from file
-baseline_results = load_model("../models/baseline.joblib")
+# baseline_results = load_model("../models/baseline.joblib")
 
 
 # %% [markdown]
