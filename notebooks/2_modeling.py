@@ -71,11 +71,12 @@ from scipy.stats import randint, uniform  # for random hyperparameter values
 import time  # to measure model training time
 
 # Models
+from sklearn.dummy import DummyRegressor  # for median baseline prediction
 from sklearn.linear_model import LinearRegression, ElasticNet
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor 
+from xgboost import XGBRegressor
 
 # Model evaluation
 from sklearn.metrics import (
@@ -263,8 +264,9 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 # %%
 # Define baseline models
 baseline_models = {
+    "Median Prediction": DummyRegressor(strategy="median"),  # Always predict median as a baseline
     "Linear Regression": TransformedTargetRegressor(      
-        regressor=LinearRegression(),  # Interpretable baseline; often strong on sparse one-hot features
+        regressor=LinearRegression(),  # Simple, linear predictions as an interpretable baseline
         func=np.log1p,
         inverse_func=np.expm1
     ),
@@ -272,8 +274,8 @@ baseline_models = {
         regressor=Pipeline([
             ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),  # Intercept (bias) handled by model 
             ("model", ElasticNet(
-                alpha=0.01,  # Stronger regularization to help with many correlated sparse binary features
-                l1_ratio=0.2,  # 20% Lasso and 80% Ridge to keep grouped correlated binary features (like chronic condition clusters)
+                alpha=0.01,  # Stronger regularization to help with many correlated sparse binary features (Default: 1.0)
+                l1_ratio=0.2,  # 20% Lasso and 80% Ridge (Default: 0.5) to keep grouped correlated binary features (like chronic condition clusters)
                 tol=1e-3  # Convergence threshold slightly higher than default (1e-4) to speed up training
             ))
         ]),
@@ -358,23 +360,23 @@ def train_and_evaluate_all_models(models, X_train, y_train, X_val, y_val, w_trai
     """
     # Iterate over all models
     results = {}
-    for model_name, model in baseline_models.items():
+    for model_name, model in models.items():
         print(f"Training {model_name}...")
         result = train_and_evaluate(model, X_train, y_train, X_val, y_val, w_train, w_val)
         results[model_name] = result
         print(f"  {model_name} trained in {round(result['training_time'], 2)} sec")
+    print("\n✅ Baseline model training and evaluation complete.")    
     return results
 
     
 # Train and evaluate all baseline models
-baseline_results = train_and_evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
-print("\n✅ Baseline model training and evaluation complete.")    
+# baseline_results = train_and_evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
 # Save baseline model results to file
 # save_model(baseline_results, "../models/baseline.joblib")
 
 # Load baseline model results from file
-# baseline_results = load_model("../models/baseline.joblib")
+baseline_results = load_model("../models/baseline.joblib")
 
 
 # %% [markdown]
