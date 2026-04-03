@@ -410,3 +410,34 @@ display(
 #     </ul>
 #     Observation: The relatively small MdAE (~\$200) vs. large MAE (~\$1000) confirms that the baseline models predict typical costs well, but fail on high-cost outliers.
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     🔍 <strong>Diagnostic: Log-Scale Evaluation</strong><br>
+#     📌 Recalculate metrics in log-space to assess model learning without the "explosion" effect of high-cost outliers on the dollar scale.
+# </div> 
+
+# %%
+# Log-transform true values
+y_val_log = np.log1p(y_val)
+
+log_metrics = {}
+for model_name, result in baseline_results.items():
+    # Log-transform predictions (they were inverse-transformed to dollars by TransformedTargetRegressor)
+    y_val_pred_log = np.log1p(result["y_val_pred"])
+    
+    # Calculate weighted metrics in log-space
+    log_metrics[model_name] = {
+        "MdAE (Log)": weighted_median_absolute_error(y_val_log, y_val_pred_log, sample_weight=w_val),
+        "MAE (Log)": mean_absolute_error(y_val_log, y_val_pred_log, sample_weight=w_val),
+        "R² (Log)": r2_score(y_val_log, y_val_pred_log, sample_weight=w_val)
+    }
+
+# Display log-scale comparison
+df_log_metrics = pd.DataFrame(log_metrics).T
+display(
+    df_log_metrics
+    .style
+    .pipe(add_table_caption, "Baseline Model Metrics (Log-Scale)")
+    .format("{:.2f}")
+)
