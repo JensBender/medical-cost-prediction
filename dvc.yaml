@@ -1,10 +1,10 @@
 stages:
   # Stage 1: Data Preprocessing
   preprocess:
-    cmd: .venv-train\Scripts\python.exe scripts/preprocess.py
+    cmd: .venv-train\Scripts\python scripts/preprocess.py
     deps:
       - data/h251.sas7bdat                        # Raw data source
-      - scripts/preprocess.py                     # Preprocessing script (with deterministic data preparation and preprocessing steps)
+      - scripts/preprocess.py                     # Preprocessing script (with reproducible data preparation and preprocessing steps)
       - src/pipeline.py                           # Preprocessing pipeline
       - src/transformers.py                       # Custom transformers
       - src/constants.py                          # Feature lists, label mappings, etc.
@@ -17,13 +17,21 @@ stages:
   # --- Modeling ---
   # Stage 2: Baseline Models
   baseline:
-    cmd: .venv-train\Scripts\python.exe scripts/train_baseline.py
+    cmd: .venv-train\Scripts\python scripts/train_baseline.py
     deps:
       - data/training_data_preprocessed.parquet   # Dependency on Stage 1
       - data/validation_data_preprocessed.parquet # Dependency on Stage 1
-      - scripts/train_baseline.py                 # Training script for baseline models 
+      - scripts/train_baseline.py                 # Training script for reproducible baseline models 
       - src/modeling.py                           # Model training and evaluation functions
       - src/constants.py                          # Feature lists, label mappings, etc.
       - src/utils.py                              # Helper functions
     outs:
-      - models/baseline.joblib
+      - models/median_prediction_baseline.joblib
+      - models/linear_regression_baseline.joblib
+      - models/elastic_net_baseline.joblib
+      - models/decision_tree_baseline.joblib
+      - models/random_forest_baseline.joblib
+      - models/xgboost_baseline.joblib
+      - models/support_vector_machine_baseline.joblib
+      - models/baseline_metrics.json
+      - models/baseline_predictions.joblib
