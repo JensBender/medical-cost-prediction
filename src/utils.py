@@ -2,6 +2,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np 
 import joblib
+import json
 
 
 def add_table_caption(styler, caption, font_size="14px", font_weight="bold", text_align="left"):
@@ -118,4 +119,41 @@ def load_model(filepath):
         return model
     except Exception as e:
         print(f"Error while loading model: {e}")
+        return None
+
+
+def save_metrics(metrics, filepath):
+    """
+    Save a dictionary of metrics to a JSON file.
+
+    Args:
+        metrics (dict): Dictionary of model performance numbers.
+        filepath (str or Path): Path to save the JSON file.
+    """
+    try:
+        Path(filepath).parent.mkdir(parents=True, exist_ok=True)
+        with open(filepath, "w") as f:
+            json.dump(metrics, f, indent=4)
+        print(f"Successfully saved metrics to '{filepath}'.")
+    except Exception as e:
+        print(f"Error while saving metrics: {e}")
+
+
+def load_metrics(filepath):
+    """
+    Load metrics from a JSON file.
+
+    Args:
+        filepath (str or Path): The file path to load from.
+
+    Returns:
+        dict: The loaded metrics or None if an error occurred.
+    """
+    try:
+        with open(filepath, "r") as f:
+            metrics = json.load(f)
+        print(f"Successfully loaded metrics from '{filepath}'.")
+        return metrics
+    except Exception as e:
+        print(f"Error while loading metrics: {e}")
         return None
