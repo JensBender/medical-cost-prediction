@@ -98,7 +98,7 @@ def train_and_evaluate(
         # Fit model on training data
         start_time = time.time()  # Measure training time
         model.fit(X_train, y_train, **fit_params)
-        end_time = time.time()
+        training_time = time.time() - start_time
 
         # Predict on validation data
         y_val_pred = model.predict(X_val)
@@ -113,6 +113,7 @@ def train_and_evaluate(
             mlflow.log_metric("mdae", mdae)
             mlflow.log_metric("mae", mae)
             mlflow.log_metric("r2", r2)
+            mlflow.log_metric("training_time", training_time)
 
            # Log fitted model artifact
             if log_model:
@@ -123,7 +124,7 @@ def train_and_evaluate(
         "mdae": mdae,
         "mae": mae,
         "r2": r2,
-        "training_time": end_time - start_time,
+        "training_time": training_time,
         "fitted_model": model,
         "y_val_pred": y_val_pred,
     }
