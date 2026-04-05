@@ -1,12 +1,20 @@
 """
-Deterministic model training script for baseline models.
+Reproducible model training and evaluation script for baseline models.
 
-Steps:
-  1.  MLflow Settings: Set up experiment tracking.
-  2.  Preprocessed Data Loading: Parquet to Pandas.
+This script trains multiple baseline models, logs the experiments to MLflow, and persists the model results.
 
-For model training experiments, in-depth model evaluation, error analysis, and detailed rationale, see:
-notebooks/2_modeling.ipynb
+Workflow:
+  1.  MLflow Setup: Initialize experiment tracking for "Baseline Models".
+  2.  Data Loading: Load preprocessed Parquet datasets into Memory.
+  3.  Feature-Target Separation: Separate features, target variable, and sample weights.
+  4.  Training and Evaluation: Fit baseline models (e.g., Linear Regression, Random Forest, XGBoost)
+      on the training data using fixed random states. Predict and evaluate metrics on the validation data.
+  5.  Model Persistence: Save fitted models as individual Joblib files (DVC-tracked), evaluation metrics 
+      as a collective JSON file (Git-tracked), and predicted values as a collective Joblib file (DVC-tracked).
+
+Reference:
+    For model training exploration, in-depth model evaluation, error analysis, and detailed rationale, see:
+    notebooks/2_modeling.ipynb
 
 Usage:
     .venv-train/Scripts/python scripts/train_baseline.py
@@ -28,7 +36,7 @@ VAL_DATA_PATH = "data/validation_data_preprocessed.parquet"
 
 # Main Baseline Model Training 
 def main():
-    # --- 1. MLflow Settings --- 
+    # --- 1. MLflow Setup --- 
     print("Step 1: Setting up MLflow...")
     mlflow.set_tracking_uri("http://127.0.0.1:5000") # Points to running MLflow UI server
     mlflow.set_experiment("Baseline Models")
