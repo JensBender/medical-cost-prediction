@@ -17,7 +17,7 @@ Reference:
     notebooks/2_modeling.ipynb
 
 Usage:
-    .venv-train/Scripts/python scripts/train_baseline.py
+    ./.venv-train/Scripts/python scripts/train_baseline.py
 """
 
 # Thrid-party imports
@@ -40,7 +40,7 @@ def main():
     print("Step 1: Setting up MLflow...")
     mlflow.set_tracking_uri("http://127.0.0.1:5000") # Points to running MLflow UI server
     mlflow.set_experiment("Baseline Models")
-    print(f"  Set up MLflow 'Baseline Models' experiment with tracking URI '{mlflow.get_tracking_uri()}'")
+    print(f"  Set up 'Baseline Models' experiment in MLflow with tracking URI '{mlflow.get_tracking_uri()}'")
 
     # --- 2. Preprocessed Data Loading ---
     print("Step 2: Loading preprocessed data...")
@@ -50,7 +50,7 @@ def main():
     print(f"  Loaded '{VAL_DATA_PATH}' with {len(df_val_preprocessed):,} rows and {len(df_val_preprocessed.columns):,} columns")
 
     # --- 2. Feature-Target Separation ---
-    print("Step 3: Separating features, target, and weights...")
+    print("Step 3: Separating features and target...")
     X_train_preprocessed = df_train_preprocessed.drop([TARGET_COLUMN, WEIGHT_COLUMN], axis=1)
     y_train = df_train_preprocessed[TARGET_COLUMN]
     w_train = df_train_preprocessed[WEIGHT_COLUMN]
@@ -75,7 +75,7 @@ def main():
             model_name=model_name
         )
         baseline_results[model_name] = result
-        print(f"    {model_name} trained in {result['training_time']} sec (MdAE: {result['mdae']:.2f})")
+        print(f"    {model_name} trained in {result['training_time']:.2f} sec (MdAE: {result['mdae']:.2f})")
 
     # --- 5. Model Persistence ---
     print("Step 5: Persisting baseline models...")
@@ -85,25 +85,25 @@ def main():
     for model_name, result in baseline_results.items():        
         # Save fitted model as .joblib file (DVC-tracked)
         model_path = f"models/{model_name.lower().replace(' ', '_')}_baseline.joblib"
-        save_model(result["fitted_model"], model_path)
-        print(f"  Saved fitted model to '{model_path}'")
+        save_model(result["fitted_model"], model_path, verbose=False)
+        print(f"  Saved fitted {model_name} model to '{model_path}'")
         
         # Collect evaluation metrics of all models in single dictionary
         all_metrics[model_name] = {
-            "mdae": float(result["mdae"]), # convert Scikit-learn/NumPy float to basic Python float to ensure it's JSON serializable
-            "mae": float(result["mae"]),
-            "r2": float(result["r2"])
+            "mdae": result["mdae"],
+            "mae": result["mae"],
+            "r2": result["r2"]
         }
         
         # Collect predicted values of all models in single dictionary
         all_predictions[model_name] = result["y_val_pred"]
 
     # Save evaluation metrics as JSON (Git-tracked)
-    save_metrics(all_metrics, "models/baseline_metrics.json")
+    save_metrics(all_metrics, "models/baseline_metrics.json", verbose=False)
     print(f"  Saved model evaluation metrics to 'models/baseline_metrics.json'")
     
     # Save predictions as .joblib file (DVC-tracked)
-    save_model(all_predictions, "models/baseline_predictions.joblib")
+    save_model(all_predictions, "models/baseline_predictions.joblib", verbose=False)
     print(f"  Saved predicted values of all baseline models to 'models/baseline_predictions.joblib'")
 
     print("\n✅ Baseline model training and evaluation complete.")

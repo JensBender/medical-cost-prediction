@@ -18,7 +18,7 @@ from sklearn.metrics import mean_absolute_error, r2_score
 
 # Local imports
 from src.utils import weighted_median_absolute_error
-from src.constants import RANDOM_STATE
+from src.constants import TARGET_COLUMN, RANDOM_STATE
 
 
 def train_and_evaluate(
@@ -78,14 +78,14 @@ def train_and_evaluate(
 
             # Log data lineage
             data_train = mlflow.data.from_pandas(
-                X_train, 
-                targets=y_train,
+                X_train.assign(**{TARGET_COLUMN: y_train}), 
+                targets=TARGET_COLUMN,
                 source="../data/training_data_preprocessed.parquet", 
                 name="training_data"
             )
             data_val = mlflow.data.from_pandas(
-                X_val, 
-                targets=y_val,
+                X_val.assign(**{TARGET_COLUMN: y_val}), 
+                targets=TARGET_COLUMN,
                 source="../data/validation_data_preprocessed.parquet", 
                 name="validation_data"
             )
