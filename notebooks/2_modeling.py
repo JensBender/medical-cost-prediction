@@ -85,7 +85,9 @@ from src.utils import (
     add_table_caption,
     weighted_median_absolute_error,
     save_model,
-    load_model
+    load_model,
+    save_metrics,
+    load_metrics
 )
 
 # %% [markdown]
@@ -273,25 +275,62 @@ def train_and_evaluate_all_models(models, X_train, y_train, X_val, y_val, w_trai
         dict: A dictionary of evaluation results for each model, where keys are model names and
               values are the dictionaries returned by the `train_and_evaluate` function.
     """
-    # Iterate over all models
+    print("Training and evaluating baseline models...")    
     results = {}
     for model_name, model in models.items():
         print(f"Training {model_name}...")
         result = train_and_evaluate(model, X_train, y_train, X_val, y_val, w_train, w_val)
         results[model_name] = result
-        print(f"  {model_name} trained in {round(result['training_time'], 2)} sec")
-    print("\n✅ Baseline model training and evaluation complete.")    
+        print(f"  {model_name} trained in {round(result['training_time'], 2)} sec")        
     return results
 
-    
-# Train and evaluate all baseline models
-baseline_results = train_and_evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
-# Save baseline model results to file
-save_model(baseline_results, "../models/baseline.joblib")
+def persist_all_models(model_results):
+    """
+    Save baseline model results in various files:
+      1.  Saves each fitted model object individually as a .joblib file.
+      2.  Aggregates all performance metrics into a single JSON file.
+      3.  Saves predictions of all models on the validation data into a single .joblib file.
+    Args:
+        model_results (dict): A nested dictionary mapping model names to results 
+            dictionaries (containing 'fitted_model', 'mdae', 'mae', 'r2', and 'y_val_pred').
+    """
+    print("Persisting baseline models...")
+    all_metrics = {}
+    all_predictions = {}
+    for model_name, result in model_results.items():        
+        # Save fitted model as .joblib file 
+        model_id = model_name.lower().replace(" ", "_")
+        model_path = f"models/{model_id}_baseline.joblib"
+        save_model(result["fitted_model"], model_path, verbose=False)
+        print(f"  Saved fitted {model_name} model to '{model_path}'")
+        
+        # Collect evaluation metrics of all models in single dictionary
+        all_metrics[model_name] = {
+            "mdae": result["mdae"],
+            "mae": result["mae"],
+            "r2": result["r2"]
+        }
+        
+        # Collect predicted values of all models in single dictionary
+        all_predictions[model_name] = result["y_val_pred"]
+
+    # Save evaluation metrics as JSON 
+    save_metrics(all_metrics, "models/baseline_metrics.json", verbose=False)
+    print(f"  Saved model evaluation metrics to 'models/baseline_metrics.json'")
+    
+    # Save predictions as .joblib file 
+    save_model(all_predictions, "models/baseline_predictions.joblib", verbose=False)
+    print(f"  Saved predicted values of all baseline models to 'models/baseline_predictions.joblib'")
+
+
+# Train and evaluate baseline models
+# baseline_results = train_and_evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
+
+# Save baseline model results
+# persist_all_models(baseline_results)
 
 # Load baseline model results from file
-# baseline_results = load_model("../models/baseline.joblib")
 
 
 # %% [markdown]
