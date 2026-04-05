@@ -84,67 +84,82 @@ def weighted_median_absolute_error(y_true, y_pred, sample_weight):
     return errors_sorted[np.searchsorted(cumulative_weight, cutoff)]
 
 
-def save_model(model, filepath):
+def save_model(model, filepath, verbose=True):
     """
     Save a trained model or pipeline or a results dictionary to a file using joblib.
 
     Args:
         model: The model object or pipeline object or results dictionary to be saved.
         filepath (str or Path): The destination file path (e.g., 'models/baseline.joblib').
+        verbose (bool): Whether to print a success message.
     """
     try:
         # Ensure the parent directory exists (e.g., if saving to 'models/baseline.joblib')
         Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
-        # Save model
         joblib.dump(model, filepath)
-        print(f"Successfully saved model to '{filepath}'.")
+        if verbose:
+            print(f"Successfully saved model to '{filepath}'.")
     except Exception as e:
         print(f"Error while saving model: {e}")
 
 
-def load_model(filepath):
+def load_model(filepath, verbose=True):
     """
     Load a trained model or pipeline or a results dictionary from a file using joblib.
 
     Args:
         filepath (str or Path): The file path to load from.
+        verbose (bool): Whether to print a success message.
 
     Returns:
         The loaded object (model, pipeline, or dictionary).
     """
     try:
         model = joblib.load(filepath)
-        print(f"Successfully loaded model from '{filepath}'.")
+        if verbose:
+            print(f"Successfully loaded model from '{filepath}'.")
         return model
     except Exception as e:
         print(f"Error while loading model: {e}")
         return None
 
 
-def save_metrics(metrics, filepath):
+def save_metrics(metrics, filepath, verbose=True):
     """
-    Save a dictionary of metrics to a JSON file.
+    Save a dictionary of metrics to a JSON file, automatically converting 
+    NumPy types to Python floats for serialization.
 
     Args:
         metrics (dict): Dictionary of model performance numbers.
         filepath (str or Path): Path to save the JSON file.
+        verbose (bool): Whether to print a success message.
     """
     try:
+        # Clean metrics: Ensure NumPy floats are converted to Python floats for JSON
+        def clean_value(v):
+            if isinstance(v, dict):
+                return {k: clean_value(i) for k, i in v.items()}
+            return float(v) if hasattr(v, "dtype") else v
+
+        clean_metrics = clean_value(metrics)
+
         Path(filepath).parent.mkdir(parents=True, exist_ok=True)
         with open(filepath, "w") as f:
-            json.dump(metrics, f, indent=4)
-        print(f"Successfully saved metrics to '{filepath}'.")
+            json.dump(clean_metrics, f, indent=4)
+        if verbose:
+            print(f"Successfully saved metrics to '{filepath}'.")
     except Exception as e:
         print(f"Error while saving metrics: {e}")
 
 
-def load_metrics(filepath):
+def load_metrics(filepath, verbose=True):
     """
     Load metrics from a JSON file.
 
     Args:
         filepath (str or Path): The file path to load from.
+        verbose (bool): Whether to print a success message.
 
     Returns:
         dict: The loaded metrics or None if an error occurred.
@@ -152,7 +167,8 @@ def load_metrics(filepath):
     try:
         with open(filepath, "r") as f:
             metrics = json.load(f)
-        print(f"Successfully loaded metrics from '{filepath}'.")
+        if verbose:
+            print(f"Successfully loaded metrics from '{filepath}'.")
         return metrics
     except Exception as e:
         print(f"Error while loading metrics: {e}")
