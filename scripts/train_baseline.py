@@ -20,6 +20,9 @@ Usage:
     ./.venv-train/Scripts/python scripts/train_baseline.py
 """
 
+# Standard library imports
+import warnings
+
 # Thrid-party imports
 import pandas as pd
 import mlflow
@@ -28,6 +31,9 @@ import mlflow
 from src.constants import TARGET_COLUMN, WEIGHT_COLUMN
 from src.modeling import get_baseline_models, train_and_evaluate
 from src.utils import save_model, save_metrics
+
+# Suppress benign MLflow warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
 
 # Paths (relative to project root)
 TRAIN_DATA_PATH = "data/training_data_preprocessed.parquet"
@@ -84,7 +90,8 @@ def main():
     
     for model_name, result in baseline_results.items():        
         # Save fitted model as .joblib file (DVC-tracked)
-        model_path = f"models/{model_name.lower().replace(' ', '_')}_baseline.joblib"
+        model_id = model_name.lower().replace(" ", "_")
+        model_path = f"models/{model_id}_baseline.joblib"
         save_model(result["fitted_model"], model_path, verbose=False)
         print(f"  Saved fitted {model_name} model to '{model_path}'")
         
