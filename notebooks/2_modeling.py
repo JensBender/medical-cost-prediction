@@ -330,8 +330,6 @@ def persist_all_models(model_results):
 # Save baseline model results
 # persist_all_models(baseline_results)
 
-# Load baseline model results from file
-
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -340,12 +338,12 @@ def persist_all_models(model_results):
 # </div> 
 
 # %%
-# Extract metrics from baseline model results
-baseline_metrics = pd.DataFrame(baseline_results).T[["mdae", "mae", "r2", "training_time"]]
+# Load baseline model metrics from JSON file
+baseline_metrics = load_metrics("../models/baseline_metrics.json")
 
 # Display metric comparison table
 display(
-    baseline_metrics
+    pd.DataFrame(baseline_metrics).T
     .rename(columns=METRIC_LABELS)
     .style
     .pipe(add_table_caption, "Baseline Model Metrics")
