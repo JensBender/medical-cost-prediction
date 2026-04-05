@@ -1,7 +1,7 @@
 schema: '2.0'
 stages:
   preprocess:
-    cmd: .venv-train\Scripts\python.exe scripts/preprocess.py
+    cmd: .venv-train\Scripts\python scripts/preprocess.py
     deps:
     - path: data/h251.sas7bdat
       hash: md5
@@ -25,8 +25,8 @@ stages:
       size: 35874
     - path: src/utils.py
       hash: md5
-      md5: 22c9c83dde161dc7261f8a72d9f7dd70
-      size: 4399
+      md5: 1aea9039d5e383463c308fa410bb1d90
+      size: 6395
     outs:
     - path: data/test_data_preprocessed.parquet
       hash: md5
@@ -40,3 +40,67 @@ stages:
       hash: md5
       md5: 88c1393d697a77b153796db97a5f6a64
       size: 69302
+  baseline:
+    cmd: .venv-train\Scripts\python scripts/train_baseline.py
+    deps:
+    - path: data/training_data_preprocessed.parquet
+      hash: md5
+      md5: a045a49de975005c96adff5b20fa8756
+      size: 355338
+    - path: data/validation_data_preprocessed.parquet
+      hash: md5
+      md5: 88c1393d697a77b153796db97a5f6a64
+      size: 69302
+    - path: scripts/train_baseline.py
+      hash: md5
+      md5: 9b62915a1a0a2feaaaf58296a5524161
+      size: 5226
+    - path: src/constants.py
+      hash: md5
+      md5: a62865a691ed830b9ceaf69cf5329c33
+      size: 9177
+    - path: src/modeling.py
+      hash: md5
+      md5: 781f5fece244e5260eb126783096497f
+      size: 9738
+    - path: src/utils.py
+      hash: md5
+      md5: 1aea9039d5e383463c308fa410bb1d90
+      size: 6395
+    outs:
+    - path: models/baseline_metrics.json
+      hash: md5
+      md5: 5808cccbf7c272e8d6ff6dae2e158b9d
+      size: 981
+    - path: models/baseline_predictions.joblib
+      hash: md5
+      md5: b8b58b926b612d3f1e3b42c591f3fd28
+      size: 77530
+    - path: models/decision_tree_baseline.joblib
+      hash: md5
+      md5: 39a94f08d973a31ce72a3dba8aacc528
+      size: 22657
+    - path: models/elastic_net_baseline.joblib
+      hash: md5
+      md5: f47d39a0735a7689de0a35e4e17581e2
+      size: 10026
+    - path: models/linear_regression_baseline.joblib
+      hash: md5
+      md5: 63e4ab16718bec6d67c35b68d1d9513b
+      size: 3289
+    - path: models/median_prediction_baseline.joblib
+      hash: md5
+      md5: 88d26df104485cb3486ec575d0024893
+      size: 1247
+    - path: models/random_forest_baseline.joblib
+      hash: md5
+      md5: 240ebb27f0ae0580c797cdcc1633c66d
+      size: 4706488
+    - path: models/support_vector_machine_baseline.joblib
+      hash: md5
+      md5: 9b522b6c0d92524d45a28ad93de86740
+      size: 3854372
+    - path: models/xgboost_baseline.joblib
+      hash: md5
+      md5: 02f04d019812f365e8aa7919cf5deaa3
+      size: 2139568
