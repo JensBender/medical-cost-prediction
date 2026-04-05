@@ -19,7 +19,7 @@ import mlflow
 # Local imports
 from src.constants import TARGET_COLUMN, WEIGHT_COLUMN
 from src.modeling import get_baseline_models, train_and_evaluate
-from src.utils import save_model
+from src.utils import save_model, save_metrics
 
 # Paths (relative to project root)
 TRAIN_DATA_PATH = "data/training_data_preprocessed.parquet"
@@ -52,7 +52,7 @@ def main():
     del df_train_preprocessed, df_val_preprocessed  # Free up memory
     print("  Separated data into X features, y target variable, and w sample weights")
 
-    # --- 4. Baseline Model Training ---
+    # --- 4. Model Training and Evaluation ---
     print("Step 4: Training and evaluating baseline models...")    
     baseline_models = get_baseline_models()
     baseline_results = {}
@@ -69,10 +69,34 @@ def main():
         baseline_results[model_name] = result
         print(f"    {model_name} trained in {result['training_time']} sec (MdAE: {result['mdae']:.2f})")
 
-    # --- 5. Model Results Persistence ---
+    # --- 5. Model Persistence ---
     print("Step 5: Persisting baseline models...")
-    save_model(baseline_results, "models/baseline.joblib")
-    print(f"  Saved the fitted models, predicted values, and evaluation metrics to 'models/baseline.joblib'")
+    all_metrics = {}
+    all_predictions = {}
+    
+    for model_name, result in baseline_results.items():        
+        # Save fitted model as .joblib file (DVC-tracked)
+        model_path = f"models/{model_name.lower().replace(' ', '_')}_baseline.joblib"
+        save_model(result["fitted_model"], model_path)
+        print(f"  Saved fitted model to '{model_path}'")
+        
+        # Collect evaluation metrics of all models in single dictionary
+        all_metrics[model_name] = {
+            "mdae": float(result["mdae"]), # convert Scikit-learn/NumPy float to basic Python float to ensure it's JSON serializable
+            "mae": float(result["mae"]),
+            "r2": float(result["r2"])
+        }
+        
+        # Collect predicted values of all models in single dictionary
+        all_predictions[model_name] = result["y_val_pred"]
+
+    # Save evaluation metrics as JSON (Git-tracked)
+    save_metrics(all_metrics, "models/baseline_metrics.json")
+    print(f"  Saved model evaluation metrics to 'models/baseline_metrics.json'")
+    
+    # Save predictions as .joblib file (DVC-tracked)
+    save_model(all_predictions, "models/baseline_predictions.joblib")
+    print(f"  Saved predicted values of all baseline models to 'models/baseline_predictions.joblib'")
 
     print("\n✅ Baseline model training and evaluation complete.")
 
