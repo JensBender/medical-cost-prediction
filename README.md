@@ -200,16 +200,20 @@ This project implements a hybrid workflow that bridges interactive exploration a
 To ensure a seamless transition from raw survey data to live application predictions, the preprocessing workflow follows a structured three-step process:
 
 **Step 1: Raw Data Preparation** (via `scripts/preprocess.py`)  
-This stage converts the original 1,374-column MEPS SAS file into the clean, 29-column format required by the machine learning models. These steps are primarily for data cleaning and population filtering:
-- **Data Loading & Filtering:** Imports the 2023 MEPS-HC SAS data, filters for adults (18+) with positive person weights (n=14,768), and selects the 29 essential variables.
-- **Data Preparation:** Standardizes MEPS-specific missing codes, recovers survey skip patterns, and standardizes binary features.
-- **Stateless Feature Engineering:** Refined life transition indicators and collapsed sparse categories (e.g., marital status and employment status).
-- **Data Splitting:** Executes an 80/10/10 split using distribution-informed stratification.
+This stage converts the raw MEPS data to the clean format expected by the production-ready pipeline. These steps are primarily for data cleaning and population filtering:
+- **Data Loading:** Imports the MEPS-HC 2023 SAS data as a pandas DataFrame.
+- **Variable Selection:** Filters 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
+- **Target Population Filtering:** Filters rows for adults with positive person weights (14,768 out of 18,919 respondents).
+- **Data Type Handling:** Converts ID to string and sets as index.
+- **Missing Value Standardization:** Recovers missing values from survey skip patterns and converts MEPS-specific missing codes to `np.nan`.
+- **Binary Feature Standardization:** Standardizes binary features to 0/1 encoding.
+- **Stateless Feature Engineering:** Creates a recent life transition feature and collapses sparse categories (e.g., recent divorce, job loss) into stable parent categories.
+- **Train-Validation-Test Split:** Splits data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
 
-**Step 2: Stateful Transformation Pipeline** (via `src/pipeline.py`)  
-Once the raw data is cleaned, the `preprocess.py` script *calls* a production-ready Scikit-learn `Pipeline`. This object is used for both training and real-time inference (**Web UI and API**), ensuring absolute consistency across all environments:
-- **Categorical Standardization:** Normalizes inputs (accepting both numeric codes and string labels) for human-readable encoded names. 
-- **Validation & Imputation:** Implements a `MissingValueChecker` to catch required fields and a `RobustSimpleImputer` for median/mode-based completion.
+**Step 2: Production-Ready Pipeline** (via `src/pipeline.py`)  
+Once the raw data is cleaned and prepared, the `preprocess.py` script *calls* a production-ready Scikit-learn pipeline. This pipeline is used for both training and inference (Web UI and API), ensuring absolute consistency across all environments:
+- **Standardization:** Normalizes categorical inputs. Accepts both numeric codes (e.g. 0/1) and string labels (e.g. no/yes). 
+- **Validation & Imputation:** Implements a `MissingValueChecker` to catch required fields and a `RobustSimpleImputer` for median/mode-based imputation.
 - **Medical Feature Derivation:** Calculates aggregate chronic condition and functional limitation counts to capture health burden.
 - **Scaling & Encoding:** Implements a `ColumnTransformer` with `RobustStandardScaler` and `RobustOneHotEncoder`.
 
