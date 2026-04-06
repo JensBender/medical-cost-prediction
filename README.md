@@ -68,6 +68,7 @@ Currently developing an end-to-end machine learning application to predict annua
 - [![Matplotlib][Matplotlib-badge]][Matplotlib-url] 
 - [![Seaborn][Seaborn-badge]][Seaborn-url]
 - [![scikit-learn][scikit-learn-badge]][scikit-learn-url]
+- [![DVC][DVC-badge]][DVC-url]
 - [![Jupyter Notebook][JupyterNotebook-badge]][JupyterNotebook-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -185,6 +186,17 @@ Based on EDA-driven insights, decided to implement sample weights for population
 
 
 ## 🧹 Data Preprocessing
+This project implements a hybrid workflow that bridges interactive exploration and production-grade reproducibility. While [Jupyter notebooks](notebooks/) were used for initial EDA and logic prototyping, the final pipeline is executed via a standalone script and orchestrated by [DVC](https://dvc.org/).
+
+**Workflow Overview:**
+- **Interactive Exploration:** [1_eda_and_preprocessing.ipynb](notebooks/1_eda_and_preprocessing.ipynb) was used to develop the transformation logic and perform outlier profiling.
+- **Reproducible Pipeline:** All preprocessing steps are encapsulated in [scripts/preprocess.py](scripts/preprocess.py), which uses modular components from `src/` for consistent execution across environments.
+- **Data Versioning:** The pipeline is tracked in [dvc.yaml](dvc.yaml), ensuring that data lineage is preserved and results can be reproduced with a single command:
+  ```bash
+  dvc repro preprocess
+  ```
+
+### Data Pipeline Details
 - **Data Loading:** Imported MEPS-HC 2023 SAS data as a pandas DataFrame.
 - **Data Preparation:**
     - **Handling Duplicates:** Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
@@ -202,7 +214,7 @@ Based on EDA-driven insights, decided to implement sample weights for population
     - **Derive Medical Features:** Calculated aggregate chronic condition and functional limitation counts to capture cumulative health burden. 
     - **Handling Outliers:** Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs [(see detailed outlier analysis)](#outlier-analysis).
     - **Pipeline:** Developed a fully automated, robust data preprocessing and feature engineering pipeline for consistent model training and inference (see architecture diagram below).
-- **Data Persistence:** Stored preprocessed data as `.csv` and `.parquet` files and verified integrity of reloaded data.
+- **Data Persistence:** Stored preprocessed data as `.parquet` files and verified integrity of reloaded data.
 
 ![Data Preprocessing Pipeline](assets/pipeline.svg)
 
@@ -228,6 +240,10 @@ Based on EDA-driven insights, decided to implement sample weights for population
 │   ├── 1_eda_and_preprocessing.py     # Script version (generated via Jupytext)
 │   ├── 2_modeling.ipynb               # Model training, evaluation and hyperparameter tuning 
 │   └── 2_modeling.py                  # Script version (generated via Jupytext)
+│
+├── scripts/                 # Reproducible pipeline scripts 
+│   ├── preprocess.py        # Production-ready data preprocessing
+│   └── train_baseline.py    # Baseline model training 
 │
 ├── src/                     # Core package source code 
 │   ├── constants.py         # Feature lists and display labels
@@ -272,6 +288,10 @@ Based on EDA-driven insights, decided to implement sample weights for population
 ├── requirements-train.txt   # Training dependencies 
 ├── requirements-test.txt    # Test dependencies 
 │
+├── dvc.yaml                 # Preprocessing and modeling pipeline definitions (stages, deps, outs)
+├── dvc.lock                 # Hash-based data lineage lockfile
+├── .dvc/                    # DVC configuration 
+│
 ├── README.md                # Project overview 
 ├── AGENTS.md                # Context and instructions for AI agents
 ├── LICENSE                  # MIT License
@@ -315,6 +335,17 @@ This project uses three isolated virtual environments to keep application depend
   pip install -r requirements-test.txt
   ```
 - **Import Logic:** This environment uses an **editable install** (`-e .[app,test]`). It combines both the application dependencies and the testing tools, allowing you to run tests against your latest code.
+
+**4. Data Management (DVC)**
+- **Purpose:** Version control for local data and reproducibility of preprocessing and modeling.
+- **Workflow:**
+  - **Run Full Pipeline:** To execute all stages (preprocessing through baseline modeling):
+    ```bash
+    dvc repro
+    ```
+  - **Run Specific Stages:**
+    - `dvc repro preprocess`: Reproduce only the data preparation, feature engineering, and preprocessing.
+    - `dvc repro baseline`: Reproduce baseline model training (will re-run `preprocess` if data or script changed).
 
 #### Production Deployment 
 The project is optimized for deployment on Hugging Face. When you connect your repository to Hugging Face Spaces (or any platform using `requirements.txt`), it automatically runs:
@@ -401,5 +432,7 @@ While outliers are only 1.1x more likely to cross the median cost threshold, the
 [Seaborn-url]: https://seaborn.pydata.org/
 [scikit-learn-badge]: https://img.shields.io/badge/scikit--learn-%23F7931E.svg?style=for-the-badge&logo=scikit-learn&logoColor=white
 [scikit-learn-url]: https://scikit-learn.org/stable/
+[DVC-badge]: https://img.shields.io/badge/DVC-9cf?style=for-the-badge&logo=data-version-control&logoColor=white
+[DVC-url]: https://dvc.org/
 [JupyterNotebook-badge]: https://img.shields.io/badge/Jupyter-F37626.svg?style=for-the-badge&logo=Jupyter&logoColor=white
 [JupyterNotebook-url]: https://jupyter.org/
