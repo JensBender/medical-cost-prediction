@@ -196,27 +196,32 @@ This project implements a hybrid workflow that bridges interactive exploration a
   dvc repro preprocess
   ```
 
-### Data Pipeline Details
-- **Data Loading:** Imported MEPS-HC 2023 SAS data as a pandas DataFrame.
-- **Data Preparation:**
-    - **Handling Duplicates:** Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
-    - **Variable Selection:** Filtered 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
-    - **Target Population Filtering:** Filtered rows for adults with positive person weights (14,768 out of 18,919 respondents).
-    - **Handling Data Types:** Implemented IDs as strings and all features and target as floats to ensure scikit-learn compatibility. Defined numerical, nominal, ordinal, and binary feature sets.
-    - **Standardizing Missing Values:** Recovered values from survey skip patterns and converted MEPS-specific missing codes to `np.nan`.
-    - **Standardizing Binary Features:** Standardized binary features to 0/1 encoding.
-- **Feature Engineering (Stateless):**
-    - **Feature Refinement:** Created a recent life transition feature and collapsed sparse categories (e.g., recent divorce, job loss) into stable parent categories.
-    - **Feature Validation:** Defined pipeline input feature sets and verified feature engineering results.
-- **Train-Validation-Test Split:** Split data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
-- **Data Preprocessing (Stateful):**
-    - **Handling Missing Values:** Imputed missing values using the median for numerical and mode for categorical features. 
-    - **Derive Medical Features:** Calculated aggregate chronic condition and functional limitation counts to capture cumulative health burden. 
-    - **Handling Outliers:** Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs [(see detailed outlier analysis)](#outlier-analysis).
-    - **Pipeline:** Developed a fully automated, robust data preprocessing and feature engineering pipeline for consistent model training and inference (see architecture diagram below).
-- **Data Persistence:** Stored preprocessed data as `.parquet` files and verified integrity of reloaded data.
+**Preprocessing Architecture**  
+To ensure a seamless transition from raw survey data to live application predictions, the preprocessing workflow follows a structured three-step process:
 
-![Data Preprocessing Pipeline](assets/pipeline.svg)
+**Step 1: Raw Data Preparation** (via `scripts/preprocess.py`)  
+This stage converts the original 1,374-column MEPS SAS file into the clean, 29-column format required by the machine learning models. These steps are primarily for data cleaning and population filtering:
+- **Data Loading & Filtering:** Imports the 2023 MEPS-HC SAS data, filters for adults (18+) with positive person weights (n=14,768), and selects the 29 essential variables.
+- **Data Preparation:** Standardizes MEPS-specific missing codes, recovers survey skip patterns, and standardizes binary features.
+- **Stateless Feature Engineering:** Refined life transition indicators and collapsed sparse categories (e.g., marital status and employment status).
+- **Data Splitting:** Executes an 80/10/10 split using distribution-informed stratification.
+
+**Step 2: Stateful Transformation Pipeline** (via `src/pipeline.py`)  
+Once the raw data is cleaned, the `preprocess.py` script *calls* a production-ready Scikit-learn `Pipeline`. This object is used for both training and real-time inference (**Web UI and API**), ensuring absolute consistency across all environments:
+- **Categorical Standardization:** Normalizes inputs (accepting both numeric codes and string labels) for human-readable encoded names. 
+- **Validation & Imputation:** Implements a `MissingValueChecker` to catch required fields and a `RobustSimpleImputer` for median/mode-based completion.
+- **Medical Feature Derivation:** Calculates aggregate chronic condition and functional limitation counts to capture health burden.
+- **Scaling & Encoding:** Implements a `ColumnTransformer` with `RobustStandardScaler` and `RobustOneHotEncoder`.
+
+**Step 3: Data Persistence** (via `scripts/preprocess.py`)  
+Finally, the script merges the processed features with the target variable and survey weights to generate the final model-ready artifacts:
+- **Parquet Export:** Saves the training, validation, and test sets as `.parquet` files to preserve data types and ensure high-performance loading during model training.
+
+![Preprocessing Pipeline](assets/pipeline.svg)
+
+**Exploratory Phase** (via `notebooks/1_eda_and_preprocessing.ipynb`):  
+- **Handling Duplicates**: Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
+- **Handling Outliers**: Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs [(see detailed outlier analysis)](#outlier-analysis).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
