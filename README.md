@@ -217,13 +217,14 @@ Once the raw data is cleaned and prepared, the `preprocess.py` script *calls* a 
 - **Medical Feature Derivation:** Calculates aggregate chronic condition and functional limitation counts to capture health burden.
 - **Scaling & Encoding:** Implements a `ColumnTransformer` with `RobustStandardScaler` and `RobustOneHotEncoder`.
 
-**Step 3: Data Persistence** (via `scripts/preprocess.py`)  
-Finally, the script merges the processed features with the target variable and survey weights to generate the final model-ready artifacts:
-- **Parquet Export:** Saves the training, validation, and test sets as `.parquet` files to preserve data types and ensure high-performance loading during model training.
+**Step 3: Data Verification & Persistence** (via `scripts/preprocess.py`)  
+- **Data Verification:** Verifies matching rows, absence of missing, infinite, or constant values, unique IDs, and correct feature scaling.
+- **Data Persistence:** Merges the preprocessed features with the target variable and sample weights and stores them as `.parquet` files.
 
 ![Preprocessing Pipeline](assets/pipeline.svg)
 
 **Exploratory Phase** (via `notebooks/1_eda_and_preprocessing.ipynb`):  
+Additional steps explored in notebook without being implemented in production script.
 - **Handling Duplicates**: Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
 - **Handling Outliers**: Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs [(see detailed outlier analysis)](#outlier-analysis).
 
