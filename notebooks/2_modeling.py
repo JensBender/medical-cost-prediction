@@ -403,13 +403,16 @@ display(
 #     <ul style="margin-top:8px; margin-bottom:8px">
 #         <li><strong>The Log-Scale "North Star":</strong> While R² on the raw dollar scale is near zero (or negative), the <b>Log-Scale R² is ~0.30</b> across all top models. This confirms the features have strong predictive signal for healthcare costs and that the negative raw R² is simply a scaling artifact caused by rare high-cost "black swan" events.</li>
 #         <li><strong>MdAE Priority:</strong> For our typical app user, <b>MdAE is the most meaningful success metric</b>. The data confirms that predicting the "typical experience" is statistically distinct from predicting the catastrophic extreme costs.</li>
-#         <li><strong>Mean vs. Median Trade-off:</strong> Objectives like <em>reg:tweedie</em> fix the dollar-scale $R^2$ but hurt the MdAE because they are biased toward the high-expenditure tail. For a budgeting app, sticking to <b>Log-Absolute-Error</b> models seems the better strategy.</li>
+#         <li><strong>MdAE vs. R² Trade-off:</strong> Elastic Net has the <b>best MdAE (163)</b> but a weak Log R² (0.09), while XGBoost has the <b>best Log R² (0.30)</b> but a higher MdAE (281). Elastic Net's polynomial features concentrate predictions tightly around the median, excelling for the typical user but compressing the prediction range. XGBoost captures more of the full cost structure but hasn't been optimized for median accuracy yet — a gap that tuning can close.</li>
+#         <li><strong>Median Prediction Sanity Check:</strong> The naive "always predict the median" baseline achieves MdAE = 248. Notably, <b>XGBoost (281), Decision Tree (271), and SVM (291) perform worse than this naive baseline on MdAE</b> despite having strong log-scale signal. Their <code>absolute_error</code> objectives minimize mean errors, not median errors — tuning should address this misalignment.</li>
 #     </ul>
 #     <hr style="height: 1px; border: none; background-color: #e0f0e0; margin: 12px 0;">
 #     🎯 <strong>Selected Models for Hyperparameter Tuning:</strong>
 #     <ol style="margin-top:8px; margin-bottom:0px">
-#         <li><strong>Elastic Net:</strong> The current "Champion" (MdAE 163). Its combination of second-degree polynomial features and L1/L2 regularization handles the correlated medical inputs well.</li>
-#         <li><strong>XGBoost:</strong> Displays the deepest predictive "signal" (Log R² is 0.30). Its histogram-based gradient boosting captures non-linear health interactions that simpler models miss. Tune it to beat the Elastic Net performance.</li>
-#         <li><strong>Random Forest:</strong> A highly stable alternate learner that currently leads on MAE (958). It provides an essential check against the boosting-bias of XGBoost.</li>
+#         <li><strong>Elastic Net:</strong> Current MdAE champion (163). Its polynomial features and L1/L2 regularization handle correlated medical inputs well. Tuning goal: improve tail accuracy (R²) without sacrificing MdAE leadership.</li>
+#         <li><strong>XGBoost:</strong> Strong predictive signal (Log R² = 0.30, best Log MAE = 1.89). Its gradient boosting captures non-linear health interactions that simpler models miss. Tuning goal: shift predictions toward the median to beat the naive baseline and close the gap with Elastic Net on MdAE.</li>
+#         <li><strong>Random Forest:</strong> Best raw MAE (958) and tied-best Log R² (0.30). A stable ensemble learner that provides an essential diversity check against XGBoost's boosting bias. Tuning goal: push MdAE below 200 via leaf/split constraints.</li>
 #     </ol>
+#     <br>
+#     <strong>Not selected:</strong> Linear Regression (dominated by Elastic Net; same family but less flexible), Decision Tree (dominated by Random Forest), SVM (worst MdAE, slow training, hardest to tune).
 # </div>
