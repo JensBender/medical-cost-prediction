@@ -58,8 +58,14 @@ import matplotlib.ticker as mtick  # to format axis ticks
 import seaborn as sns
 import math  # to calculate n_rows in subplot matrix
 
+# Target Preprocessing
+from sklearn.compose import TransformedTargetRegressor
+
+# Models
+from sklearn.ensemble import RandomForestRegressor
+
 # Model selection
-from sklearn.model_selection import RandomizedSearchCV
+from sklearn.model_selection import RandomizedSearchCV, ParameterSampler
 from scipy.stats import randint, uniform  # for random hyperparameter values
 
 # Model evaluation
@@ -416,3 +422,162 @@ display(
 #     <br>
 #     <strong>Not selected:</strong> Linear Regression (dominated by Elastic Net; same family but less flexible), Decision Tree (dominated by Random Forest), SVM (worst MdAE, slow training, hardest to tune).
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Hyperparameter Tuning</h1>
+# </div> 
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Random Forest</h2>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Tune <code>RandomForestRegressor</code> hyperparameters via randomized search on the fixed <b>holdout validation set</b>.
+#     <ul>
+#         <li><b>Target Transform:</b> <code>TransformedTargetRegressor(log1p)</code> to optimize for MAE in log-space, which approximates MdAE on raw costs.</li>
+#         <li><b>Search Strategy:</b> Manual loop with <code>ParameterSampler</code> to avoid the <code>sample_weight</code> indexing issue in sklearn's CV scorers.</li>
+#         <li><b>Sample Weights:</b> Normalized weights (mean=1.0) for training; raw survey weights for evaluation.</li>
+#         <li><b>Scoring:</b> Weighted Median Absolute Error (MdAE) on raw-dollar predictions — our primary metric.</li>
+#         <li><b>Iterations:</b> 10 (notebook sanity check). Scale to 100+ in <code>scripts/tune_random_forest.py</code>.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Define the hyperparameter search space.
+# </div>
+
+# %%
+# Hyperparameter search space
+rf_param_distributions = {
+    "n_estimators": [200, 300, 500],          # More trees = more stable but slower
+    "max_depth": randint(8, 25),              # Baseline: 16. Search around it.
+    "min_samples_split": randint(20, 150),    # Baseline: 50. Explore wider.
+    "min_samples_leaf": randint(10, 80),      # Baseline: 25. Explore wider. Most impactful for MdAE.
+    "max_features": ["sqrt", "log2", 0.3, 0.5, 0.7],  # Baseline: "sqrt". Explore random subset with 30%, 50% and 70% of features.
+    "max_samples": uniform(0.6, 0.4),         # Random subsample (0.6–1.0). 
+}
+
+# Generate random parameter combinations
+N_ITER = 10  # Small for notebook sanity check
+rf_param_list = list(ParameterSampler(rf_param_distributions, n_iter=N_ITER, random_state=RANDOM_STATE))
+
+print(f"Generated {len(rf_param_list)} random hyperparameter combinations")
+print(f"Example: {rf_param_list[0]}")
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Run the randomized search with weighted MdAE scoring on the validation set.
+# </div>
+
+# %%
+# Normalize training weights (mean=1.0) for numerical stability during model fitting
+w_train_norm = w_train / w_train.mean()
+
+# Run randomized search
+rf_tuning_results = []
+
+for i, params in enumerate(rf_param_list):
+    # Build model: RandomForest wrapped in log-transform
+    rf_model = TransformedTargetRegressor(
+        regressor=RandomForestRegressor(
+            criterion="absolute_error",
+            n_jobs=-1,
+            random_state=RANDOM_STATE,
+            **params
+        ),
+        func=np.log1p,
+        inverse_func=np.expm1
+    )
+    
+    # Train with normalized sample weights
+    rf_model.fit(X_train_preprocessed, y_train, sample_weight=w_train_norm)
+    
+    # Predict on validation set (predictions are in raw dollars due to inverse_func)
+    y_val_pred = rf_model.predict(X_val_preprocessed)
+    
+    # Evaluate with raw survey weights
+    mdae = weighted_median_absolute_error(y_val, y_val_pred, sample_weight=w_val)
+    mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
+    r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
+    
+    rf_tuning_results.append({"params": params, "mdae": mdae, "mae": mae, "r2": r2})
+    
+    print(f"[{i+1:3d}/{N_ITER}] MdAE: {mdae:8.2f} | MAE: {mae:8.2f} | R²: {r2:7.4f} | "
+          f"depth={params['max_depth']}, leaf={params['min_samples_leaf']}, "
+          f"feat={params['max_features']}")
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Inspect the tuning results. Compare best tuned configuration against the baseline.
+# </div>
+
+# %%
+# Create results DataFrame and sort by primary metric
+rf_tuning_df = pd.DataFrame(rf_tuning_results)
+rf_tuning_df = rf_tuning_df.sort_values("mdae").reset_index(drop=True)
+
+# Extract params into separate columns for readability
+params_df = pd.json_normalize(rf_tuning_df["params"])
+rf_tuning_display = pd.concat([params_df, rf_tuning_df[["mdae", "mae", "r2"]]], axis=1)
+
+display(
+    rf_tuning_display
+    .rename(columns=METRIC_LABELS)
+    .style
+    .pipe(add_table_caption, "Random Forest: Hyperparameter Tuning Results (sorted by MdAE)")
+    .format({"MdAE": "{:.2f}", "MAE": "{:.2f}", "R²": "{:.4f}", 
+             "max_samples": "{:.3f}", "max_features": "{}"})
+    .highlight_min(subset=["MdAE", "MAE"], color="#d4edda")
+    .highlight_max(subset=["R²"], color="#d4edda")
+)
+
+# Print comparison to baseline
+best_tuned = rf_tuning_df.iloc[0]
+baseline_rf_metrics = load_metrics("../models/baseline_metrics.json", verbose=False)["Random Forest"]
+print(f"\nBaseline RF  →  MdAE: {baseline_rf_metrics['mdae']:.2f} | MAE: {baseline_rf_metrics['mae']:.2f} | R²: {baseline_rf_metrics['r2']:.4f}")
+print(f"Best Tuned   →  MdAE: {best_tuned['mdae']:.2f} | MAE: {best_tuned['mae']:.2f} | R²: {best_tuned['r2']:.4f}")
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Retrain the best configuration using <code>train_and_evaluate()</code> for consistent metrics and model persistence.
+# </div>
+
+# %%
+# Build final tuned model with best hyperparameters
+best_rf_params = best_tuned["params"]
+
+best_rf_model = TransformedTargetRegressor(
+    regressor=RandomForestRegressor(
+        criterion="absolute_error",
+        n_jobs=-1,
+        random_state=RANDOM_STATE,
+        **best_rf_params
+    ),
+    func=np.log1p,
+    inverse_func=np.expm1
+)
+
+# Train and evaluate using existing infrastructure (no MLflow for notebook)
+rf_tuned_results = train_and_evaluate(
+    best_rf_model,
+    X_train_preprocessed, y_train,
+    X_val_preprocessed, y_val,
+    w_train, w_val
+)
+
+# Display results
+rf_tuned_metrics = pd.DataFrame([rf_tuned_results])[["mdae", "mae", "r2", "training_time"]]
+display(
+    rf_tuned_metrics
+    .rename(columns=METRIC_LABELS)
+    .style
+    .pipe(add_table_caption, "Random Forest (Tuned): Validation Metrics")
+    .format("{:.2f}")
+    .hide()
+)
+
+print(f"\nBest hyperparameters: {best_rf_params}")
+
