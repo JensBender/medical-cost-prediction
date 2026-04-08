@@ -185,12 +185,11 @@ Based on EDA-driven insights, decided to implement sample weights for population
 
 
 ## 🧹 Data Preprocessing
-This project implements a hybrid workflow that bridges interactive exploration and production-grade reproducibility. While [Jupyter notebooks](notebooks/) were used for initial EDA and logic prototyping, the final pipeline is executed via a standalone script and orchestrated by [DVC](https://dvc.org/).
+This project utilizes a hybrid workflow to bridge interactive exploration with production reproducibility. Transformation logic prototyped in [Jupyter notebooks](notebooks/) is migrated to modular scripts and orchestrated by [DVC](https://dvc.org/) for data lineage and automation.
 
-**Workflow Overview:**
-- **Interactive Exploration:** [1_eda_and_preprocessing.ipynb](notebooks/1_eda_and_preprocessing.ipynb) was used to develop the transformation logic and perform outlier profiling.
-- **Reproducible Pipeline:** All preprocessing steps are encapsulated in [scripts/preprocess.py](scripts/preprocess.py), which uses modular components from `src/` for consistent execution across environments.
-- **Data Versioning:** The pipeline is tracked in [dvc.yaml](dvc.yaml), ensuring that data lineage is preserved and results can be reproduced with a single command:
+- **Explore:** [1_eda_and_preprocessing.ipynb](notebooks/1_eda_and_preprocessing.ipynb) (EDA & logic development).
+- **Automate:** [scripts/preprocess.py](scripts/preprocess.py) (reproducible pipeline via `dvc.yaml`).
+- **Reproduce:**
   ```bash
   dvc repro preprocess
   ```
