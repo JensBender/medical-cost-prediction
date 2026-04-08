@@ -69,7 +69,6 @@ Currently developing an end-to-end machine learning application to predict annua
 - [![Seaborn][Seaborn-badge]][Seaborn-url]
 - [![scikit-learn][scikit-learn-badge]][scikit-learn-url]
 - [![DVC][DVC-badge]][DVC-url]
-- [![Jupyter Notebook][JupyterNotebook-badge]][JupyterNotebook-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -442,7 +441,5 @@ While outliers are only 1.1x more likely to cross the median cost threshold, the
 [Seaborn-url]: https://seaborn.pydata.org/
 [scikit-learn-badge]: https://img.shields.io/badge/scikit--learn-%23F7931E.svg?style=for-the-badge&logo=scikit-learn&logoColor=white
 [scikit-learn-url]: https://scikit-learn.org/stable/
-[DVC-badge]: https://img.shields.io/badge/DVC-9cf?style=for-the-badge&logo=data-version-control&logoColor=white
+[DVC-badge]: https://img.shields.io/badge/DVC-13ADC7?style=for-the-badge&logo=dvc&logoColor=white
 [DVC-url]: https://dvc.org/
-[JupyterNotebook-badge]: https://img.shields.io/badge/Jupyter-F37626.svg?style=for-the-badge&logo=Jupyter&logoColor=white
-[JupyterNotebook-url]: https://jupyter.org/
