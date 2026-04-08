@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Model Development |
 | **Created** | 2025-12-12 |
-| **Last Updated** | 2026-03-23 |
+| **Last Updated** | 2026-04-08 |
 
 **Note:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
 
@@ -234,10 +234,13 @@ Implemented via `ColumnTransformer`. Exact columns depend on final feature selec
 | Nominal | `SEX`, `REGION23`, `INSCOV23`, `MARRY31X`, `EMPST31`, `HIDEG` | `OneHotEncoder` | Drop designated baseline category to avoid multicollinearity |
 | Binary | `DIABDX_M18`, `HIBPDX`, `CHDDX`, etc. | passthrough | Already 0/1 encoded |
 
-**The Heteroscedasticity Problem**  
-Medical cost data is inherently **heteroscedastic**, meaning the "noise" or variance in errors is not constant but grows with the target value. 
-*   **Example:** A standard office visit costing **$100** might vary by **±$20**. A complex surgery costing **$100,000** might vary by **±$20,000**. 
-*   **Impact:** If we treat raw dollars as the target, models that assume constant variance (homoscedasticity) will be overwhelmingly driven by the massive errors in the high-cost patients, ignoring the smaller, consistent patterns in the low-cost majority.
+**The Heteroscedasticity Problem (The "Blindness" Effect)**  
+Medical cost data is inherently **heteroscedastic**, meaning the variance in errors grows with the target value. 
+*   **The Problem:** In raw dollars, an error of 10% on a **$100,000** surgery is **$10,000**. An error of 100% on a **$100** visit is only **$100**. 
+*   **Impact:** On the raw scale, the "Floodlight" of high-cost outliers ($10k+ errors) completely blinds the model to the "Candles" of typical users ($100 errors). The model spends all its capacity on the tail, ignoring consistent patterns for the median user. This creates a "blind" loss surface where $R^2 \approx 0$ because the signal from the majority is flattened by the noise of the minority.
+
+**The Solution: Log-Proportional Learning**  
+Applying `log(y + 1)` transforms absolute dollar errors into **proportional (percentage) errors**. This levels the playing field, allowing the model to prioritize a 10% error on a $100 visit just as much as a 10% error on a $100,000 surgery. Resulting models achieve a $R^2 \approx 0.30$ in log-space, capturing signal that was previously invisible.
 
 **Target Preprocessing**  
 We apply transformations selectively based on how each model handles this variance. 
@@ -247,7 +250,7 @@ We apply transformations selectively based on how each model handles this varian
 | **Linear Regression, Elastic Net** | `log(y + 1)` | **Strict Assumption.** These linear models assume constant error variance (homoscedasticity). |
 | **MLP (sklearn)** | `log(y + 1)` | **Optimization Stability.** MLPs benefit from smaller, more uniform target ranges for stable gradient descent and faster convergence. |
 | **SVR (SVM)** | `log(y + 1)` | **Scale Sensitivity.** Uses an $\epsilon$-insensitive loss function. It is sensitive to the magnitude of the target; the RBF kernel and $\epsilon$ parameter are easier to tune on a log-scaled range. |
-| **Decision Tree, Random Forest, XGBoost** | None | **Robust.** These models are non-parametric and partition data into local regions. They can learn to accept different variance levels in child nodes without global transformation. |
+| **Decision Tree, Random Forest, XGBoost** | `log(y + 1)` | **Signal Restoration.** Prevents outlier-driven "blindness." By training on the log-scale, trees optimize for relative proportional accuracy across all cost tiers rather than being dominated by the massive absolute residuals of high-cost events. |
 
 ### Model Training
 
@@ -266,9 +269,9 @@ A 4-phase approach where each model is evaluated with its own optimal feature se
 | :--- | :--- | :--- | :--- |
 | Linear Regression | MSE | `log(y+1)` | Inverse-transform predictions |
 | Elastic Net | MSE + L1/L2 | `log(y+1)` | Built-in feature selection |
-| Decision Tree | `absolute_error` | None | MAE-based splits; robust to skew |
-| Random Forest | `absolute_error` | None | MAE-based splits; robust to skew |
-| XGBoost | `reg:tweedie` | None | Tweedie handles skew natively |
+| Decision Tree | `absolute_error` | `log(y+1)` | MAE-based splits on log-costs; targets raw Median |
+| Random Forest | `absolute_error` | `log(y+1)` | MAE-based splits on log-costs; targets raw Median |
+| XGBoost | `reg:absoluteerror` | `log(y+1)` | Absolute error on log-costs; targets raw Median |
 | SVR (SVM) | Epsilon-Insensitive | `log(y+1)` | RBF kernel; `gamma='scale'` |
 | MLP (sklearn) | MSE | `log(y+1)` | Inverse-transform predictions |
 
