@@ -187,18 +187,18 @@ Based on EDA-driven insights, decided to implement sample weights for population
 ## 🧹 Data Preprocessing
 This project utilizes a hybrid workflow to bridge interactive exploration with production reproducibility. Transformation logic prototyped in [Jupyter notebooks](notebooks/) is migrated to modular scripts and orchestrated by [DVC](https://dvc.org/) for data lineage and automation.
 
-- **Explore:** [1_eda_and_preprocessing.ipynb](notebooks/1_eda_and_preprocessing.ipynb) (EDA & logic development).
-- **Automate:** [scripts/preprocess.py](scripts/preprocess.py) (reproducible pipeline via `dvc.yaml`).
+- **Explore:** [1_eda_and_preprocessing.ipynb](notebooks/1_eda_and_preprocessing.ipynb) (EDA & preprocessing logic development).
+- **Automate:** [scripts/preprocess.py](scripts/preprocess.py) (automated stage via `dvc.yaml`).
 - **Reproduce:**
   ```bash
   dvc repro preprocess
   ```
 
-**Preprocessing Architecture**  
+**Data Preparation Workflow**  
 To ensure a seamless transition from raw survey data to live application predictions, the preprocessing workflow follows a structured three-step process:
 
-**Step 1: Raw Data Preparation** (via `scripts/preprocess.py`)  
-This stage converts the raw MEPS data to the clean format expected by the production-ready pipeline. These steps are primarily for data cleaning and population filtering:
+**Step 1: Data Preparation** (via `scripts/preprocess.py`)  
+This stage converts the raw MEPS data to the clean format expected by the inference pipeline. These steps are primarily for data cleaning and population filtering:
 - **Data Loading:** Imports the MEPS-HC 2023 SAS data as a pandas DataFrame.
 - **Variable Selection:** Filters 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
 - **Target Population Filtering:** Filters rows for adults with positive person weights (14,768 out of 18,919 respondents).
@@ -208,18 +208,17 @@ This stage converts the raw MEPS data to the clean format expected by the produc
 - **Stateless Feature Engineering:** Creates a recent life transition feature and collapses sparse categories (e.g., recent divorce, job loss) into stable parent categories.
 - **Train-Validation-Test Split:** Splits data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
 
-**Step 2: Production-Ready Pipeline** (via `src/pipeline.py`)  
-Once the raw data is cleaned and prepared, the `preprocess.py` script *calls* a production-ready Scikit-learn pipeline. This pipeline is used for both training and inference (Web UI and API), ensuring absolute consistency across all environments:
+**Step 2: Inference Pipeline** (via `src/pipeline.py`)  
+Once the raw data is cleaned and prepared, the `preprocess.py` script *calls* a Scikit-learn pipeline that is used for both training and inference (Web UI and API), ensuring absolute consistency across all environments:
 - **Standardization:** Normalizes categorical inputs. Accepts both numeric codes (e.g. 0/1) and string labels (e.g. no/yes). 
 - **Validation & Imputation:** Implements a `MissingValueChecker` to catch required fields and a `RobustSimpleImputer` for median/mode-based imputation.
 - **Medical Feature Derivation:** Calculates aggregate chronic condition and functional limitation counts to capture health burden.
 - **Scaling & Encoding:** Implements a `ColumnTransformer` with `RobustStandardScaler` and `RobustOneHotEncoder`.
 
-**Step 3: Data Verification & Persistence** (via `scripts/preprocess.py`)  
-- **Data Verification:** Verifies matching rows, absence of missing, infinite, or constant values, unique IDs, and correct feature scaling.
-- **Data Persistence:** Merges the preprocessed features with the target variable and sample weights and stores them as `.parquet` files.
-
 ![Preprocessing Pipeline](assets/pipeline.svg)
+
+**Step 3: Data Persistence** (via `scripts/preprocess.py`)  
+ This stage is used during training. It verifies the preprocessed data (e.g., absence of missing, infinite, or constant values, unique IDs), merges features with target and sample weights, and stores them as `.parquet` files.
 
 **Exploratory Phase** (via `notebooks/1_eda_and_preprocessing.ipynb`):  
 Additional steps explored in notebook without being implemented in production script.
