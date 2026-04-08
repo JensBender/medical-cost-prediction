@@ -1,0 +1,217 @@
+"""
+Reproducible hyperparameter tuning script for Random Forest Regressor.
+
+This script performs a randomized search over a defined hyperparameter space,
+evaluates each configuration on the validation set using weighted MdAE, and
+persists the best model with MLflow experiment tracking.
+
+Workflow:
+  1.  MLflow Setup: Initialize experiment tracking for "RF Tuning".
+  2.  Data Loading: Load preprocessed Parquet datasets into memory.
+  3.  Feature-Target Separation: Separate features, target variable, and sample weights.
+  4.  Hyperparameter Search: Evaluate N_ITER random configurations using 
+      ParameterSampler on the holdout validation set with weighted MdAE scoring.
+  5.  Best Model Training: Retrain the best configuration with full MLflow logging.
+  6.  Model Persistence: Save the best tuned model as a Joblib file, evaluation metrics
+      as JSON, and tuning search results as CSV.
+
+Reference:
+    For tuning exploration and detailed rationale, see:
+    notebooks/2_modeling.ipynb
+
+Usage:
+    ./.venv-train/Scripts/python scripts/tune_random_forest.py
+"""
+
+# Standard library imports
+import time
+import warnings
+
+# Third-party imports
+import pandas as pd
+import numpy as np
+import mlflow
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.compose import TransformedTargetRegressor
+from sklearn.model_selection import ParameterSampler
+from sklearn.metrics import mean_absolute_error, r2_score
+from scipy.stats import randint, uniform
+
+# Local imports
+from src.constants import TARGET_COLUMN, WEIGHT_COLUMN, RANDOM_STATE
+from src.modeling import train_and_evaluate
+from src.utils import weighted_median_absolute_error, save_model, save_metrics
+
+# Suppress benign MLflow warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
+
+# --- Configuration ---
+N_ITER = 100  # Number of random hyperparameter combinations to evaluate
+
+# Paths (relative to project root)
+TRAIN_DATA_PATH = "data/training_data_preprocessed.parquet"
+VAL_DATA_PATH = "data/validation_data_preprocessed.parquet"
+
+# Hyperparameter search space (mirrors notebook for reproducibility)
+RF_PARAM_DISTRIBUTIONS = {
+    "n_estimators": [200, 300, 500],          # More trees = more stable but slower
+    "max_depth": randint(8, 25),              # Baseline: 16
+    "min_samples_split": randint(20, 150),    # Baseline: 50
+    "min_samples_leaf": randint(10, 80),      # Baseline: 25. Most impactful for MdAE.
+    "max_features": ["sqrt", "log2", 0.3, 0.5, 0.7],  # Baseline: "sqrt"
+    "max_samples": uniform(0.6, 0.4),         # Bootstrap sample fraction (0.6–1.0)
+}
+
+
+def main():
+    # --- 1. MLflow Setup ---
+    print("Step 1: Setting up MLflow...")
+    mlflow.set_tracking_uri("http://127.0.0.1:5000")
+    mlflow.set_experiment("RF Tuning")
+    print(f"  Set up 'RF Tuning' experiment in MLflow with tracking URI '{mlflow.get_tracking_uri()}'")
+
+    # --- 2. Preprocessed Data Loading ---
+    print("Step 2: Loading preprocessed data...")
+    df_train = pd.read_parquet(TRAIN_DATA_PATH)
+    df_val = pd.read_parquet(VAL_DATA_PATH)
+    print(f"  Loaded '{TRAIN_DATA_PATH}' with {len(df_train):,} rows and {len(df_train.columns):,} columns")
+    print(f"  Loaded '{VAL_DATA_PATH}' with {len(df_val):,} rows and {len(df_val.columns):,} columns")
+
+    # --- 3. Feature-Target Separation ---
+    print("Step 3: Separating features and target...")
+    X_train = df_train.drop([TARGET_COLUMN, WEIGHT_COLUMN], axis=1)
+    y_train = df_train[TARGET_COLUMN]
+    w_train = df_train[WEIGHT_COLUMN]
+    X_val = df_val.drop([TARGET_COLUMN, WEIGHT_COLUMN], axis=1)
+    y_val = df_val[TARGET_COLUMN]
+    w_val = df_val[WEIGHT_COLUMN]
+    del df_train, df_val
+    print("  Separated data into X features, y target variable, and w sample weights")
+
+    # --- 4. Hyperparameter Search ---
+    print(f"Step 4: Running randomized search ({N_ITER} iterations)...")
+    w_train_norm = w_train / w_train.mean()
+    param_list = list(ParameterSampler(RF_PARAM_DISTRIBUTIONS, n_iter=N_ITER, random_state=RANDOM_STATE))
+
+    search_results = []
+    best_mdae = np.inf
+    search_start = time.time()
+
+    for i, params in enumerate(param_list):
+        # Build model: RandomForest wrapped in TransformedTargetRegressor(log1p)
+        rf_model = TransformedTargetRegressor(
+            regressor=RandomForestRegressor(
+                criterion="absolute_error",
+                n_jobs=-1,
+                random_state=RANDOM_STATE,
+                **params
+            ),
+            func=np.log1p,
+            inverse_func=np.expm1
+        )
+
+        # Train with normalized sample weights
+        iter_start = time.time()
+        rf_model.fit(X_train, y_train, sample_weight=w_train_norm)
+        training_time = time.time() - iter_start
+
+        # Predict on validation set (predictions in raw dollars)
+        y_val_pred = rf_model.predict(X_val)
+
+        # Evaluate with raw survey weights
+        mdae = weighted_median_absolute_error(y_val, y_val_pred, sample_weight=w_val)
+        mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
+        r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
+
+        search_results.append({
+            **params,
+            "mdae": mdae,
+            "mae": mae,
+            "r2": r2,
+            "training_time": training_time
+        })
+
+        # Track best
+        if mdae < best_mdae:
+            best_mdae = mdae
+            best_idx = i
+
+        # Log each iteration to MLflow as a child run
+        with mlflow.start_run(run_name=f"RF iter {i+1:03d}", nested=True):
+            mlflow.log_params(params)
+            mlflow.log_metric("mdae", mdae)
+            mlflow.log_metric("mae", mae)
+            mlflow.log_metric("r2", r2)
+            mlflow.log_metric("training_time", training_time)
+
+        # Progress logging
+        if (i + 1) % 10 == 0 or (i + 1) == N_ITER:
+            elapsed = time.time() - search_start
+            print(f"  [{i+1:3d}/{N_ITER}] Best MdAE: {best_mdae:.2f} | "
+                  f"Current MdAE: {mdae:.2f} | Elapsed: {elapsed:.0f}s")
+
+    total_search_time = time.time() - search_start
+    print(f"  Search complete in {total_search_time:.0f}s")
+
+    # --- 5. Best Model: Retrain with MLflow Logging ---
+    print("Step 5: Retraining best configuration with MLflow logging...")
+    best_params = param_list[best_idx]
+    print(f"  Best hyperparameters (iter {best_idx+1}): {best_params}")
+
+    best_rf_model = TransformedTargetRegressor(
+        regressor=RandomForestRegressor(
+            criterion="absolute_error",
+            n_jobs=-1,
+            random_state=RANDOM_STATE,
+            **best_params
+        ),
+        func=np.log1p,
+        inverse_func=np.expm1
+    )
+
+    best_result = train_and_evaluate(
+        best_rf_model,
+        X_train, y_train,
+        X_val, y_val,
+        w_train, w_val,
+        track_mlflow=True,
+        model_name="Random Forest (Tuned)",
+        log_model=True
+    )
+    print(f"  Tuned RF  →  MdAE: {best_result['mdae']:.2f} | MAE: {best_result['mae']:.2f} | "
+          f"R²: {best_result['r2']:.4f} | Time: {best_result['training_time']:.2f}s")
+
+    # --- 6. Model Persistence ---
+    print("Step 6: Persisting tuned model and results...")
+
+    # Save fitted model as .joblib file
+    save_model(best_result["fitted_model"], "models/random_forest_tuned.joblib", verbose=False)
+    print("  Saved fitted model to 'models/random_forest_tuned.joblib'")
+
+    # Save evaluation metrics as JSON
+    tuned_metrics = {
+        "Random Forest (Tuned)": {
+            "mdae": best_result["mdae"],
+            "mae": best_result["mae"],
+            "r2": best_result["r2"],
+        }
+    }
+    save_metrics(tuned_metrics, "models/rf_tuned_metrics.json", verbose=False)
+    print("  Saved evaluation metrics to 'models/rf_tuned_metrics.json'")
+
+    # Save full search results as CSV for analysis
+    search_df = pd.DataFrame(search_results)
+    search_df.to_csv("models/rf_tuning_search_results.csv", index=False)
+    print("  Saved search results to 'models/rf_tuning_search_results.csv'")
+
+    # Save best hyperparameters as JSON for reproducibility
+    best_params_clean = {k: float(v) if hasattr(v, "dtype") else v for k, v in best_params.items()}
+    save_metrics({"best_params": best_params_clean, "best_mdae": float(best_mdae)},
+                 "models/rf_tuned_best_params.json", verbose=False)
+    print("  Saved best hyperparameters to 'models/rf_tuned_best_params.json'")
+
+    print("\n✅ Random Forest hyperparameter tuning complete.")
+
+
+if __name__ == "__main__":
+    main()
