@@ -288,9 +288,13 @@ def persist_all_models(model_results):
         
         # Collect evaluation metrics of all models in single dictionary
         all_metrics[model_name] = {
-            "mdae": result["mdae"],
-            "mae": result["mae"],
-            "r2": result["r2"]
+            "val_mdae": result["val_mdae"],
+            "val_mae": result["val_mae"],
+            "val_r2": result["val_r2"],
+            "train_mdae": result.get("train_mdae"),
+            "train_mae": result.get("train_mae"),
+            "train_r2": result.get("train_r2"),
+            "training_time": result["training_time"]
         }
         
         # Collect predicted values of all models in single dictionary
@@ -358,9 +362,10 @@ baseline_metrics = load_metrics("../models/baseline_metrics.json")
 # Display metric comparison table
 display(
     pd.DataFrame(baseline_metrics).T
+    [["val_mdae", "val_mae", "val_r2", "training_time"]]
     .rename(columns=METRIC_LABELS)
     .style
-    .pipe(add_table_caption, "Baseline Model Metrics")
+    .pipe(add_table_caption, "Baseline Model Metrics (Validation Data)")
     .format("{:.2f}")
 )
 
@@ -376,6 +381,33 @@ display(
 #     </ul>
 #     Observation: The relatively small MdAE (~\$250) vs. large MAE (~\$1000) confirms that the baseline models predict typical costs well, but fail on high-cost outliers.
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>Overfitting Analysis</strong><br>
+#     📌 Compare training vs. validation MdAE (primary metric) to identify overfitting.
+# </div> 
+# %%
+# Extract train and val mdae
+overfitting_data = []
+for model_name, metrics in baseline_metrics.items():
+        overfitting_data.append({
+            "Model": model_name,
+            "MdAE (Train)": metrics["train_mdae"],
+            "MdAE (Val)": metrics["val_mdae"],
+            "Delta": metrics["val_mdae"] - metrics["train_mdae"],
+            "Delta %": ((metrics["val_mdae"] - metrics["train_mdae"]) / metrics["train_mdae"]) * 100
+        })
+
+# Display overfitting table
+display(
+    pd.DataFrame(overfitting_data)
+    .set_index("Model")
+    .style
+    .pipe(add_table_caption, "Baseline Models: Overfitting Analysis (MdAE)")
+    .format({"MdAE (Train)": "{:.2f}", "MdAE (Val)": "{:.2f}", "Delta": "{:.2f}", "Delta %": "{:+.1f}%"})
+    .background_gradient(subset=["Delta %"], cmap="YlOrRd")
+)
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
