@@ -197,9 +197,14 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Baseline Models</h1>
 # </div> 
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Training</h2>
+# </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Train 6 baseline models on the full feature set (27 raw, 40 preprocessed) with distribution-aware baseline hyperparameters.  
+#     ℹ️ Train 6 baseline models with distribution-aware baseline hyperparameters.  
 #     <ul>
 #         <li>Linear Regression (lr)</li>
 #         <li>Elastic Net Regression (en)</li>
@@ -208,50 +213,20 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 #         <li>XGBoost Regressor (xgb)</li>
 #         <li>Support Vector Regressor (svr)</li>
 #     </ul>
-#     For more details, see <a href="../src/modeling.py">src/modeling.py</a>.
-#     <hr style="height: 2px; border: none; background-color: #d0e7fa; margin: 16px 0; opacity: 0.8;">
-#     🎯 Evaluate model performance on the validation dataset.  
+#     Training Setup:
 #     <ul>
-#         <li>Primary Metric:
-#             <ul>
-#                 <li>Median Absolute Error (Target: MdAE < $500)</li>
-#             </ul>
-#         </li>
-#         <li>Secondary Metrics:
-#             <ul>
-#                 <li>Mean Absolute Error (MAE)</li>
-#                 <li>Coefficient of Determination (R²)</li>
-#             </ul>     
-#         </li>
-#         <li>Additional Diagnostics:
-#             <ul>
-#                 <li>Metrics Comparison Plots and Tables</li>
-#                 <li>Error Analysis</li>
-#                 <ul>
-#                     <li>Heteroscedasticity (Residuals vs. Predicted)</li> 
-#                     <li>Feature Dependencies (Residuals vs. Features)</li> 
-#                     <li>Stratified Error Analysis</li>
-#                 </ul>
-#                 <li>Overfitting</li>
-#             </ul>
-#         </li>
-#     </ul>
-# </div>
-
-# %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Training</h3>
+#         <li>Train on preprocessed data (standardized, imputed, feature engineered, scaled, and encoded).</li>
+#         <li>Train on all candidate features (27 raw, 40 preprocessed).</li>
+#         <li>Use sample weights for population representativeness. Normalize weights (mean=1.0) to maintain relative importance while ensuring numerical stability during training (especially for svr).</li>
+#         <li>Apply log-transformation of target variable for all baseline models using <code>TransformedTargetRegressor</code>. Use <code>log1p</code> instead of <code>log</code> to handle zeros in target (<code>log(0)</code> is undefined).</li>
+#         <li>Implement polynomial features for elastic net regression using second-degree <code>PolynomialFeatures</code> with a small <code>Pipeline</code>.</li>
+#         <li>Store each fitted model as an individual <code>.joblib</code> file, all evaluation metrics collectively as a <code>.json</code> file and all predictions collectively as a <code>.joblib</code> file.</li>
+#     </ul>  
+#     For more details, see <a href="../src/modeling.py">src/modeling.py</a>.
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Train each baseline model and evaluate model performance. 
-#     <ul>
-#         <li>Train on preprocessed data (standardized, imputed, feature engineered, scaled, and encoded).</li>
-#         <li>Use sample weights for population representativeness. Normalize weights (mean=1.0) to maintain relative importance while ensuring numerical stability during model training (especially for svr).</li>
-#         <li>Apply log-transformation of target variable for all baseline models using <code>TransformedTargetRegressor</code>. Use <code>log1p</code> instead of <code>log</code> to handle zeros in target (<code>log(0)</code> is undefined).</li>
-#         <li>Implement polynomial features for elastic net regression using second-degree <code>PolynomialFeatures</code> with a small <code>Pipeline</code>.</li>
-#         <li>Store fitted models, predicted values, and evaluation metrics in a results dictionary and persist as a <code>.joblib</code> file.</li>
-#     </ul>  
+#     📌 Train and evaluate each baseline model and store model results. 
 # </div> 
 
 # %%
@@ -338,8 +313,41 @@ def persist_all_models(model_results):
 
 
 # %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Evaluation</h2>
+# </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     🎯 Evaluate model performance on the validation dataset.  
+#     <ul>
+#         <li>Primary Metric:
+#             <ul>
+#                 <li>Median Absolute Error (Target: MdAE < $500)</li>
+#             </ul>
+#         </li>
+#         <li>Secondary Metrics:
+#             <ul>
+#                 <li>Mean Absolute Error (MAE)</li>
+#                 <li>Coefficient of Determination (R²)</li>
+#             </ul>     
+#         </li>
+#         <li>Additional Diagnostics:
+#             <ul>
+#                 <li>Metrics Comparison Tables and Plots</li>
+#                 <li>Error Analysis</li>
+#                 <ul>
+#                     <li>Heteroscedasticity (Residuals vs. Predicted)</li> 
+#                     <li>Feature Dependencies (Residuals vs. Features)</li> 
+#                     <li>Stratified Error Analysis</li>
+#                 </ul>
+#                 <li>Overfitting</li>
+#             </ul>
+#         </li>
+#     </ul>
+# </div>
+#
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Evaluation</strong><br>
+#     <strong>Metric Comparison Table</strong><br>
 #     📌 Compare evaluation metrics of all baseline models on the validation data.
 # </div> 
 
@@ -371,7 +379,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Evaluation on Log-Scale</strong><br>
+#     <strong>Log-Scale Metric Comparison Table</strong><br>
 #     📌 Recalculate metrics in log-space to diagnose model learning without the outlier error "explosion" effect on the raw dollar scale.
 # </div> 
 
