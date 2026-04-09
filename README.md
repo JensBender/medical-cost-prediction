@@ -51,6 +51,7 @@
   <li>
     <a href="#-appendix">Appendix</a>
     <ul>
+      <li><a href="#candidate-features">Candidate Features</a></li>      
       <li><a href="#distributions">Distributions</a></li>        
       <li><a href="#feature-target-relationships">Feature-Target Relationships</a></li>      
       <li><a href="#outlier-analysis">Outlier Analysis</a></li>      
@@ -103,49 +104,20 @@ This project utilizes the 2023 Full-Year Consolidated Data File (HC-251). The da
 The target variable is **total out-of-pocket health care costs in 2023** (`TOTSLF23`). This variable represents what the person or their family actually paid directly for all medical events throughout 2023. It includes copays and coinsurance, deductibles, and services not covered by insurance. `TOTSLF23` directly answers practical user questions like "How much should I contribute to my FSA/HSA?" and "What's my financial exposure?" For uninsured users, out-of-pocket costs approximate total costs, making this target appropriate across all insurance statuses.  
 
 <details>
-<summary>ℹ️<strong>US Healthcare Costs Explained</strong> (click to expand)</summary>
+<summary>ℹ️ <strong>US Healthcare Costs Explained</strong> (click to expand)</summary>
 
 ![US Healthcare Costs Infographic](./assets/infographic_healthcare_costs.png)
 </details>
 <br>
 
-**Feature Selection**  
-Candidate features were selected from MEPS-HC 2023 based on the following criteria:
-- **Consumer Accessibility:** Users can answer from memory without looking up records, ensuring the model is usable in a consumer-facing app.
-- **Beginning-of-Year Data:** To enable the app to be used during Open Enrollment for predicting *upcoming* costs, only variables measured at the beginning of the year (`31` suffix) or stable traits are used to prevent data leakage.
-- **Predictive Power:** Features have established significance in healthcare cost literature.
+**Candidate Features**  
+We selected 26 features based on consumer accessibility (no record-checking required), timing (beginning-of-year data to prevent leakage) and predictive power. 
+- **Demographics:** Age, Sex, Marital Status, Education, Family Size, and Poverty Category.
+- **Health Profile:** Self-rated physical/mental health, smoking status, and usual source of care.
+- **Chronic Conditions:** Hypertension, Diabetes, Cancer, Heart Disease, and Stroke.
+- **Functional Limitations:** Difficulties with daily living, walking, or cognitive tasks.
 
-These 26 candidate features will be further reduced based on importance scores to meet the UX goal of a form completion time of less than 90 seconds.
-
-**Candidate Features**
-| Label | Variable | Description | Data Type | Value Range |
-| :--- | :--- | :--- | :--- | :--- |
-| Age | `AGE23X` | Age as of Dec 31, 2023. | Numerical (Int) | 0–85 |
-| Sex | `SEX` | Biological sex. | Binary (Int) | 1=Male, 2=Female |
-| Region | `REGION23` | Census region. | Nominal (Int) | 1=Northeast, 2=Midwest, 3=South, 4=West |
-| Marital Status | `MARRY31X` | Status at beginning of year. | Nominal (Int) | 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married |
-| Poverty Category | `POVCAT23` | Family income relative to poverty line. | Ordinal (Int) | 1=Poor, 2=Near Poor, 3=Low Income, 4=Middle Income, 5=High Income |
-| Family Size | `FAMSZE23` | Number of related persons residing together. | Numerical (Int) | 1–14 |
-| Education | `HIDEG` | Highest degree attained. | Ordinal (Int) | 1=No Degree, 2=GED, 3=HS Diploma, 4=Bachelor's, 5=Master's, 6=Doctorate, 7=Other |
-| Employment Status | `EMPST31` | Status at beginning of year. | Nominal (Int) | 1=Employed, 2=Job to return to, 3=Job during reference period, 4=Not employed |
-| Insurance | `INSCOV23` | Coverage status. | Nominal (Int) | 1=Any Private, 2=Public Only, 3=Uninsured |
-| Usual Source of Care | `HAVEUS42` | Regular doctor or clinic. | Binary (Int) | 1=Yes, 2=No |
-| Physical Health | `RTHLTH31` | Self-rated physical health. | Numerical (Int) | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor |
-| Mental Health | `MNHLTH31` | Self-rated mental health. | Numerical (Int) | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor |
-| Smoker | `ADSMOK42` | Currently smokes cigarettes. | Binary (Int) | 1=Yes, 2=No |
-| ADL Help | `ADLHLP31` | Needs help with activities of daily living (personal care, bathing, dressing). | Binary (Int) | 1=Yes, 2=No |
-| IADL Help | `IADLHP31` | Needs help with instrumental activities of daily living (paying bills, taking medications, doing laundry). | Binary (Int) | 1=Yes, 2=No |
-| Walking Limitation | `WLKLIM31` | Difficulty walking or climbing stairs. | Binary (Int) | 1=Yes, 2=No |
-| Cognitive Limitation | `COGLIM31` | Confusion or memory loss. | Binary (Int) | 1=Yes, 2=No |
-| Joint Pain | `JTPAIN31_M18` | Pain/stiffness in past year. | Binary (Int) | 1=Yes, 2=No |
-| Hypertension | `HIBPDX` | Diagnosed with high blood pressure. | Binary (Int) | 1=Yes, 2=No |
-| High Cholesterol | `CHOLDX` | Diagnosed with high cholesterol. | Binary (Int) | 1=Yes, 2=No |
-| Diabetes | `DIABDX_M18` | Diagnosed with diabetes. | Binary (Int) | 1=Yes, 2=No |
-| Heart Disease | `CHDDX` | Diagnosed with coronary heart disease. | Binary (Int) | 1=Yes, 2=No |
-| Stroke | `STRKDX` | Diagnosed with stroke. | Binary (Int) | 1=Yes, 2=No |
-| Cancer | `CANCERDX` | Diagnosed with cancer or malignancy. | Binary (Int) | 1=Yes, 2=No |
-| Arthritis | `ARTHDX` | Diagnosed with arthritis. | Binary (Int) | 1=Yes, 2=No |
-| Asthma | `ASTHDX` | Diagnosed with asthma. | Binary (Int) | 1=Yes, 2=No |
+For details, see [Candidate Features Appendix](#candidate-features).
 
 **Sample Weights**  
 MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to account for the complex survey design and non-response. This project incorporates these weights during model training to correct for the intentional oversampling of specific subgroups (e.g., the elderly and low-income), ensuring the model remains representative of the general population and prevents bias toward overrepresented groups.
@@ -385,6 +357,48 @@ This project was made possible with the help of the following resources:
 
 <!-- APPENDIX -->
 ## 📎 Appendix
+### Candidate Features
+**Feature Selection**  
+Candidate features were selected from MEPS-HC 2023 based on the following criteria:
+- **Consumer Accessibility:** Users can answer from memory without looking up records, ensuring the model is usable in a consumer-facing app.
+- **Beginning-of-Year Data:** To enable the app to be used during Open Enrollment for predicting *upcoming* costs, only variables measured at the beginning of the year (`31` suffix) or stable traits are used to prevent data leakage.
+- **Predictive Power:** Features have established significance in healthcare cost literature.
+
+These 26 candidate features will be further reduced based on importance scores to meet the UX goal of a form completion time of less than 90 seconds.
+
+**Candidate Features**
+| Label | Variable | Description | Data Type | Value Range |
+| :--- | :--- | :--- | :--- | :--- |
+| Age | `AGE23X` | Age as of Dec 31, 2023. | Numerical (Int) | 0–85 |
+| Sex | `SEX` | Biological sex. | Binary (Int) | 1=Male, 2=Female |
+| Region | `REGION23` | Census region. | Nominal (Int) | 1=Northeast, 2=Midwest, 3=South, 4=West |
+| Marital Status | `MARRY31X` | Status at beginning of year. | Nominal (Int) | 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married |
+| Poverty Category | `POVCAT23` | Family income relative to poverty line. | Ordinal (Int) | 1=Poor, 2=Near Poor, 3=Low Income, 4=Middle Income, 5=High Income |
+| Family Size | `FAMSZE23` | Number of related persons residing together. | Numerical (Int) | 1–14 |
+| Education | `HIDEG` | Highest degree attained. | Ordinal (Int) | 1=No Degree, 2=GED, 3=HS Diploma, 4=Bachelor's, 5=Master's, 6=Doctorate, 7=Other |
+| Employment Status | `EMPST31` | Status at beginning of year. | Nominal (Int) | 1=Employed, 2=Job to return to, 3=Job during reference period, 4=Not employed |
+| Insurance | `INSCOV23` | Coverage status. | Nominal (Int) | 1=Any Private, 2=Public Only, 3=Uninsured |
+| Usual Source of Care | `HAVEUS42` | Regular doctor or clinic. | Binary (Int) | 1=Yes, 2=No |
+| Physical Health | `RTHLTH31` | Self-rated physical health. | Numerical (Int) | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor |
+| Mental Health | `MNHLTH31` | Self-rated mental health. | Numerical (Int) | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor |
+| Smoker | `ADSMOK42` | Currently smokes cigarettes. | Binary (Int) | 1=Yes, 2=No |
+| ADL Help | `ADLHLP31` | Needs help with activities of daily living (personal care, bathing, dressing). | Binary (Int) | 1=Yes, 2=No |
+| IADL Help | `IADLHP31` | Needs help with instrumental activities of daily living (paying bills, taking medications, doing laundry). | Binary (Int) | 1=Yes, 2=No |
+| Walking Limitation | `WLKLIM31` | Difficulty walking or climbing stairs. | Binary (Int) | 1=Yes, 2=No |
+| Cognitive Limitation | `COGLIM31` | Confusion or memory loss. | Binary (Int) | 1=Yes, 2=No |
+| Joint Pain | `JTPAIN31_M18` | Pain/stiffness in past year. | Binary (Int) | 1=Yes, 2=No |
+| Hypertension | `HIBPDX` | Diagnosed with high blood pressure. | Binary (Int) | 1=Yes, 2=No |
+| High Cholesterol | `CHOLDX` | Diagnosed with high cholesterol. | Binary (Int) | 1=Yes, 2=No |
+| Diabetes | `DIABDX_M18` | Diagnosed with diabetes. | Binary (Int) | 1=Yes, 2=No |
+| Heart Disease | `CHDDX` | Diagnosed with coronary heart disease. | Binary (Int) | 1=Yes, 2=No |
+| Stroke | `STRKDX` | Diagnosed with stroke. | Binary (Int) | 1=Yes, 2=No |
+| Cancer | `CANCERDX` | Diagnosed with cancer or malignancy. | Binary (Int) | 1=Yes, 2=No |
+| Arthritis | `ARTHDX` | Diagnosed with arthritis. | Binary (Int) | 1=Yes, 2=No |
+| Asthma | `ASTHDX` | Diagnosed with asthma. | Binary (Int) | 1=Yes, 2=No |
+
+<p align="right">(<a href="#️-data">back to Data</a> | <a href="#readme-top">back to top</a>)</p>
+
+
 ### Distributions
 <a id="numerical-distributions">![Numerical Distributions](figures/eda/numerical_distributions.png)</a>
 
