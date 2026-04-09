@@ -69,6 +69,7 @@ Currently developing an end-to-end machine learning application to predict annua
 - [![Seaborn][Seaborn-badge]][Seaborn-url]
 - [![scikit-learn][scikit-learn-badge]][scikit-learn-url]
 - [![DVC][DVC-badge]][DVC-url]
+- [![MLflow][MLflow-badge]][MLflow-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -229,6 +230,7 @@ Additional steps explored in notebook without being implemented in production sc
 
 
 ## 🧠 Modeling
+This project utilizes **MLflow** for experiment tracking to ensure all training runs are reproducible and comparable. To maintain a clean separation between development and production, MLflow tracking is exclusively integrated into the [reproducible scripts](scripts/), while [Jupyter notebooks](notebooks/) are reserved for quick prototyping and exploration.
 
 ### 📏 Baseline Models  
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -441,3 +443,6 @@ While outliers are only 1.1x more likely to cross the median cost threshold, the
 [scikit-learn-url]: https://scikit-learn.org/stable/
 [DVC-badge]: https://img.shields.io/badge/DVC-13ADC7?style=for-the-badge&logo=dvc&logoColor=white
 [DVC-url]: https://dvc.org/
+[MLflow-badge]: https://img.shields.io/badge/MLflow-0194E2?style=for-the-badge&logo=MLflow&logoColor=white
+[MLflow-url]: https://mlflow.org/
+
