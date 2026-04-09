@@ -28,7 +28,8 @@ def train_and_evaluate(
     w_train=None, w_val=None, 
     track_mlflow=False,
     model_name="model", 
-    log_model=False
+    log_model=False,
+    calculate_train_metrics=True
 ):
     """
     Train and evaluate a single machine learning model with optional MLflow experiment tracking.
@@ -44,12 +45,16 @@ def train_and_evaluate(
         track_mlflow (bool, optional): Whether to track experiment with MLflow. Defaults to False. 
         model_name (str, optional): Display name of the model for MLflow experiment tracking. Defaults to "model".
         log_model (bool, optional): Whether to log the fitted model as an artifact to MLflow. Defaults to False.
+        calculate_train_metrics (bool, optional): Whether to calculate training performance metrics. Defaults to True.
 
     Returns:
         dict: A dictionary containing the evaluation results:
-            - "mdae" (float): Median Absolute Error (unweighted).
-            - "mae" (float): Mean Absolute Error (weighted).
-            - "r2" (float): Coefficient of Determination (weighted).
+            - "val_mdae" (float): Validation Median Absolute Error.
+            - "val_mae" (float): Validation Mean Absolute Error.
+            - "val_r2" (float): Validation Coefficient of Determination.
+            - "train_mdae" (float): Training Median Absolute Error (if calculate_train_metrics is True).
+            - "train_mae" (float): Training Mean Absolute Error (if calculate_train_metrics is True).
+            - "train_r2" (float): Training Coefficient of Determination (if calculate_train_metrics is True).
             - "training_time" (float): Training time in seconds.
             - "fitted_model" (estimator): The trained model object.
             - "y_val_pred" (np.ndarray): The predicted values on the validation set.
@@ -103,31 +108,53 @@ def train_and_evaluate(
         # Predict on validation data
         y_val_pred = model.predict(X_val)
 
-        # Calculate evaluation metrics
-        mdae = weighted_median_absolute_error(y_val, y_val_pred, sample_weight=w_val)  
-        mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
-        r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
+        # Calculate evaluation metrics on validation data 
+        val_mdae = weighted_median_absolute_error(y_val, y_val_pred, sample_weight=w_val)  
+        val_mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
+        val_r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
+
+        results = {
+            "val_mdae": val_mdae,
+            "val_mae": val_mae,
+            "val_r2": val_r2,
+            "training_time": training_time,
+            "fitted_model": model,
+            "y_val_pred": y_val_pred,
+        }
+
+        # Calculate evaluation metrics on training data for overfitting analysis
+        if calculate_train_metrics:
+            y_train_pred = model.predict(X_train)
+            train_mdae = weighted_median_absolute_error(y_train, y_train_pred, sample_weight=w_train)
+            train_mae = mean_absolute_error(y_train, y_train_pred, sample_weight=w_train)
+            train_r2 = r2_score(y_train, y_train_pred, sample_weight=w_train)
+            
+            results.update({
+                "train_mdae": train_mdae,
+                "train_mae": train_mae,
+                "train_r2": train_r2
+            })
 
         if track_mlflow:
             # Log metrics
-            mlflow.log_metric("mdae", mdae)
-            mlflow.log_metric("mae", mae)
-            mlflow.log_metric("r2", r2)
-            mlflow.log_metric("training_time", training_time)
+            mlflow.log_metrics({
+                "val_mdae": val_mdae,
+                "val_mae": val_mae,
+                "val_r2": val_r2,
+                "training_time": training_time
+            })
+            if calculate_train_metrics:
+                mlflow.log_metrics({
+                    "train_mdae": train_mdae,
+                    "train_mae": train_mae,
+                    "train_r2": train_r2
+                })
 
            # Log fitted model artifact
             if log_model:
                 mlflow.sklearn.log_model(model, "model")
 
-    # Return results dictionary
-    return {
-        "mdae": mdae,
-        "mae": mae,
-        "r2": r2,
-        "training_time": training_time,
-        "fitted_model": model,
-        "y_val_pred": y_val_pred,
-    }
+    return results
 
 
 def get_baseline_models():

@@ -98,6 +98,12 @@ DISPLAY_LABELS = {
 # Mapping metrics to human-readable display labels (for notebook model evaluation)
 METRIC_LABELS = {
     "model": "Model",
+    "val_mdae": "MdAE (Val)",
+    "val_mae": "MAE (Val)",
+    "val_r2": "R² (Val)",
+    "train_mdae": "MdAE (Train)",
+    "train_mae": "MAE (Train)",
+    "train_r2": "R² (Train)",
     "mdae": "MdAE",
     "mae": "MAE",
     "r2": "R²",
