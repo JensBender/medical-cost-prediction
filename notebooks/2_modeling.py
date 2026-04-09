@@ -83,9 +83,11 @@ from src.constants import (
     ID_COLUMN,
     WEIGHT_COLUMN,
     TARGET_COLUMN,
+    RANDOM_STATE
+)
+from src.display import (
     DISPLAY_LABELS, 
     METRIC_LABELS,
-    RANDOM_STATE
 )
 from src.utils import (
     add_table_caption,

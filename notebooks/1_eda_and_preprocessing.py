@@ -75,10 +75,6 @@ from src.constants import (
     RAW_ORDINAL_FEATURES,
     RAW_COLUMNS_TO_KEEP,
     MEPS_MISSING_CODES,
-    DISPLAY_LABELS, 
-    CATEGORY_LABELS_EDA,
-    POP_COLOR,
-    SAMPLE_COLOR,
     MARRY31X_TRANSITION_CODES,
     EMPST31_TRANSITION_CODES,
     MARRY31X_COLLAPSE_MAP,
@@ -89,6 +85,12 @@ from src.constants import (
     PIPELINE_NOMINAL_FEATURES,
     PIPELINE_REQUIRED_FEATURES,
     PIPELINE_OPTIONAL_FEATURES
+)
+from src.display import (
+    DISPLAY_LABELS, 
+    CATEGORY_LABELS_EDA,
+    POP_COLOR,
+    SAMPLE_COLOR,
 )
 from src.transformers import (
     MedicalFeatureDeriver,
