@@ -81,7 +81,7 @@ def main():
             model_name=model_name
         )
         baseline_results[model_name] = result
-        print(f"    {model_name} trained in {result['training_time']:.2f} sec (MdAE: {result['mdae']:.2f})")
+        print(f"    {model_name} trained in {result['training_time']:.2f} sec (MdAE: {result['val_mdae']:.2f})")
 
     # --- 5. Model Persistence ---
     print("Step 5: Persisting baseline models...")
@@ -97,10 +97,13 @@ def main():
         
         # Collect evaluation metrics of all models in single dictionary
         all_metrics[model_name] = {
-            "mdae": result["mdae"],
-            "mae": result["mae"],
-            "r2": result["r2"]
-        }
+            "val_mdae": result["val_mdae"],
+            "val_mae": result["val_mae"],
+            "val_r2": result["val_r2"],
+            "train_mdae": result["train_mdae"],
+            "train_mae": result["train_mae"],
+            "train_r2": result["train_r2"]
+         }
         
         # Collect predicted values of all models in single dictionary
         all_predictions[model_name] = result["y_val_pred"]

@@ -262,7 +262,7 @@ def train_and_evaluate_all_models(models, X_train, y_train, X_val, y_val, w_trai
         print(f"Training {model_name}...")
         result = train_and_evaluate(model, X_train, y_train, X_val, y_val, w_train, w_val)
         results[model_name] = result
-        print(f"  {model_name} trained in {round(result['training_time'], 2)} sec")        
+        print(f"  {model_name} trained in {result['training_time']:.2f} sec (MdAE: {result['val_mdae']:.2f})")        
     return results
 
 
@@ -274,7 +274,8 @@ def persist_all_models(model_results):
       3.  Saves predictions of all models on the validation data into a single .joblib file.
     Args:
         model_results (dict): A nested dictionary mapping model names to results 
-            dictionaries (containing 'fitted_model', 'mdae', 'mae', 'r2', and 'y_val_pred').
+            dictionaries (containing 'fitted_model', training and validation metrics 
+            (e.g. 'val_mdae', 'train_mdae'), and 'y_val_pred').
     """
     print("Persisting baseline models...")
     all_metrics = {}
@@ -291,10 +292,9 @@ def persist_all_models(model_results):
             "val_mdae": result["val_mdae"],
             "val_mae": result["val_mae"],
             "val_r2": result["val_r2"],
-            "train_mdae": result.get("train_mdae"),
-            "train_mae": result.get("train_mae"),
-            "train_r2": result.get("train_r2"),
-            "training_time": result["training_time"]
+            "train_mdae": result["train_mdae"],
+            "train_mae": result["train_mae"],
+            "train_r2": result["train_r2"]
         }
         
         # Collect predicted values of all models in single dictionary
