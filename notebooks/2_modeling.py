@@ -333,14 +333,14 @@ def persist_all_models(model_results):
 #         </li>
 #         <li>Additional Diagnostics:
 #             <ul>
-#                 <li>Metrics Comparison Tables and Plots</li>
+#                 <li>Metrics Comparison Tables</li>
+#                 <li>Overfitting Analysis</li>
 #                 <li>Error Analysis</li>
 #                 <ul>
 #                     <li>Heteroscedasticity (Residuals vs. Predicted)</li> 
 #                     <li>Feature Dependencies (Residuals vs. Features)</li> 
 #                     <li>Stratified Error Analysis</li>
 #                 </ul>
-#                 <li>Overfitting</li>
 #             </ul>
 #         </li>
 #     </ul>
@@ -435,6 +435,22 @@ display(
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Hyperparameter Tuning</h1>
 # </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Tune the hyperparameters of Random Forest, XGBoost, and Elastic Net using randomized search. 
+#     <br><br>
+#     Evaluate model performance on the validation dataset:  
+#     <ul>
+#         <li>Metrics Comparison Tables</li>
+#         <li>Overfitting Analysis</li>
+#         <li>Error Analysis</li>
+#         <ul>
+#             <li>Heteroscedasticity (Residuals vs. Predicted)</li> 
+#             <li>Stratified Error Analysis</li>
+#             <li>(optionally) Feature Dependencies (Residuals vs. Features)</li> 
+#         </ul>
+#     </ul>
+# </div>
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
