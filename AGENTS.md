@@ -27,7 +27,8 @@ Agents should follow this directory structure strictly when adding new files:
 - `figures/`: Visualizations generated during analysis (e.g., `figures/eda/`).
 - `notebooks/`: Exploratory Data Analysis and model training experiments (using Jupytext).
 - `src/`: Core package source code:
-    - `constants.py`: Centralized feature lists and display labels.
+    - `constants.py`: Pipeline-critical constants (feature lists, category mappings, engineering configs). DVC-tracked — changes trigger pipeline reruns.
+    - `display.py`: Display/presentation constants (display labels, metric labels, EDA colors). NOT DVC-tracked — safe to modify without pipeline reruns.
     - `transformers.py`: Custom Scikit-learn transformers for validation and cleaning.
     - `pipeline.py`: Functions to construct the preprocessing and prediction pipelines.
 - `app/`: (Planned) Web application source code (FastAPI + Gradio).
