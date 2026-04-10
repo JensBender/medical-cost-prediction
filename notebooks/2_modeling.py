@@ -473,9 +473,13 @@ display(
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Tune the hyperparameters of Random Forest, XGBoost, and Elastic Net using randomized search. 
+#     ℹ️ Tune the hyperparameters of Random Forest, XGBoost, and Elastic Net using randomized search on the fixed holdout validation set. 
 #     <br><br>
-#     Evaluate model performance on the validation dataset:  
+#     <b>Why not <code>RandomizedSearchCV</code>?</b>
+#     <br>
+#     Avoids scikit-learn issues with <code>sample_weight</code> routing and ensures weights are applied during scoring on a fixed holdout set.
+#     <br><br>
+#     Evaluate model performance:  
 #     <ul>
 #         <li>Metrics Comparison Tables</li>
 #         <li>Overfitting Analysis</li>
@@ -494,14 +498,16 @@ display(
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Tune <code>RandomForestRegressor</code> hyperparameters via randomized search on the fixed <b>holdout validation set</b>.
+#     ℹ️ Tune <code>RandomForestRegressor</code> hyperparameters.
 #     <ul>
 #         <li><b>Target Transform:</b> <code>TransformedTargetRegressor(log1p)</code> to optimize for MAE in log-space, which approximates MdAE on raw costs.</li>
 #         <li><b>Search Strategy:</b> Manual loop with <code>ParameterSampler</code> to avoid the <code>sample_weight</code> indexing issue in sklearn's CV scorers.</li>
 #         <li><b>Sample Weights:</b> Normalized weights (mean=1.0) for training; raw survey weights for evaluation.</li>
-#         <li><b>Scoring:</b> Weighted Median Absolute Error (MdAE) on raw-dollar predictions — our primary metric.</li>
-#         <li><b>Iterations:</b> 10 (notebook sanity check). Scale to 100+ in <code>scripts/tune_random_forest.py</code>.</li>
+#         <li><b>Scoring:</b> Weighted Median Absolute Error (MdAE) on raw-dollar predictions.</li>
+#         <li><b>Iterations:</b> 10 for notebook exploration and logic prototying. Scale to 100 for production automation in <code>scripts/tune_random_forest.py</code>.</li>
 #     </ul>
+#     For hyperparameter details, refer to the official scikit-learn <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html" target="_blank">RandomForestClassifier documentation</a>.
+#
 # </div>
 
 # %% [markdown]
@@ -517,11 +523,11 @@ rf_param_distributions = {
     "min_samples_split": randint(20, 150),    # Baseline: 50. Explore wider.
     "min_samples_leaf": randint(10, 80),      # Baseline: 25. Explore wider. Most impactful for MdAE.
     "max_features": ["sqrt", "log2", 0.3, 0.5, 0.7],  # Baseline: "sqrt". Explore random subset with 30%, 50% and 70% of features.
-    "max_samples": uniform(0.6, 0.4),         # Random subsample (0.6–1.0). 
+    "max_samples": uniform(0.6, 0.4),         # Baseline: None (100%). Explore random subsample of 60% to 100%. 
 }
 
 # Generate random parameter combinations
-N_ITER = 10  # Small for notebook sanity check
+N_ITER = 10  # Small for prototyping
 rf_param_list = list(ParameterSampler(rf_param_distributions, n_iter=N_ITER, random_state=RANDOM_STATE))
 
 print(f"Generated {len(rf_param_list)} random hyperparameter combinations")
