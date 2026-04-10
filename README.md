@@ -115,7 +115,7 @@ Selected 26 features out of 1,374 MEPS variables based on consumer accessibility
 For details, see [Candidate Features Appendix](#candidate-features).
 
 **Sample Weights**  
-MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to account for the complex survey design and non-response. This project incorporates these weights during model training to correct for the intentional oversampling of specific subgroups (e.g., the elderly and low-income), ensuring the model remains representative of the general population and prevents bias toward overrepresented groups.
+This project incorporates MEPS survey weights during training to account for the complex survey design and non-response. This corrects for the intentional oversampling of specific subgroups (e.g., elderly and low-income), ensuring model estimates remain representative of the general U.S. population.
 
 **MEPS Resources**
 | Resource | Description | Link |
