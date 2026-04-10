@@ -65,7 +65,7 @@ from sklearn.compose import TransformedTargetRegressor
 from sklearn.ensemble import RandomForestRegressor
 
 # Model selection
-from sklearn.model_selection import RandomizedSearchCV, ParameterSampler
+from sklearn.model_selection import ParameterSampler
 from scipy.stats import randint, uniform  # for random hyperparameter values
 
 # Model evaluation
@@ -73,6 +73,7 @@ from sklearn.metrics import (
     mean_absolute_error, 
     r2_score
 )
+import time  # to measure training time
 
 # Local imports
 from src.modeling import (
@@ -364,7 +365,7 @@ baseline_metrics = load_metrics("../models/baseline_metrics.json")
 # Display metric comparison table
 display(
     pd.DataFrame(baseline_metrics).T
-    [["val_mdae", "val_mae", "val_r2", "training_time"]]
+    [["val_mdae", "val_mae", "val_r2"]]
     .rename(columns=METRIC_LABELS)
     .style
     .pipe(add_table_caption, "Baseline Model Metrics (Validation Data)")
@@ -408,7 +409,6 @@ display(
     .style
     .pipe(add_table_caption, "Baseline Models: Overfitting Analysis (MdAE)")
     .format({"MdAE (Train)": "{:.2f}", "MdAE (Val)": "{:.2f}", "Delta": "{:.2f}", "Delta %": "{:+.1f}%"})
-    .background_gradient(subset=["Delta %"], cmap="YlOrRd")
 )
 
 # %% [markdown]
@@ -531,7 +531,7 @@ rf_param_distributions = {
 }
 
 # Generate random parameter combinations
-N_ITER = 10  # Small for prototyping
+N_ITER = 2  # Small for prototyping
 rf_param_list = list(ParameterSampler(rf_param_distributions, n_iter=N_ITER, random_state=RANDOM_STATE))
 
 print(f"Generated {len(rf_param_list)} random hyperparameter combinations")
@@ -547,6 +547,7 @@ print(f"Example: {rf_param_list[0]}")
 w_train_norm = w_train / w_train.mean()
 
 # Run randomized search
+print("Tuning random forest...")    
 rf_tuning_results = []
 
 for i, params in enumerate(rf_param_list):
@@ -563,7 +564,9 @@ for i, params in enumerate(rf_param_list):
     )
     
     # Train with normalized sample weights
+    start_time = time.time()  # Measure training time
     rf_model.fit(X_train_preprocessed, y_train, sample_weight=w_train_norm)
+    training_time = time.time() - start_time
     
     # Predict on training and validation set (predictions are in raw dollars due to inverse_func)
     y_train_pred = rf_model.predict(X_train_preprocessed)
@@ -588,9 +591,7 @@ for i, params in enumerate(rf_param_list):
         "val_r2": val_r2
     })
     
-    print(f"[{i+1:3d}/{N_ITER}] Val MdAE: {val_mdae:8.2f} | Train MdAE: {train_mdae:8.2f} | "
-          f"depth={params['max_depth']}, leaf={params['min_samples_leaf']}, "
-          f"feat={params['max_features']}")
+    print(f"  [{i+1:3d}/{N_ITER}] MdAE: {val_mdae:8.2f} | trees={params['n_estimators']}, depth={params['max_depth']}, leaf={params['min_samples_leaf']}, feats={params['max_features']}, samples={params['max_samples']:.2f}, split={params['min_samples_split']} | training: {training_time:5.1f} s")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
