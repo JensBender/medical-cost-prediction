@@ -95,7 +95,7 @@ This project utilizes the **2023 Full-Year Consolidated Data File (HC-251)**:
 ![MEPS Data Infographic](assets/infographic_meps_data.jpg)
 
 **Target Variable**  
-The target variable is **total out-of-pocket health care costs in 2023** (`TOTSLF23`). This variable represents what the person or their family actually paid directly for all medical events throughout 2023. It includes copays and coinsurance, deductibles, and services not covered by insurance. `TOTSLF23` directly answers practical user questions like "How much should I contribute to my FSA/HSA?" and "What's my financial exposure?" For uninsured users, out-of-pocket costs approximate total costs, making this target appropriate across all insurance statuses.  
+The target variable is **total out-of-pocket health care costs in 2023** (`TOTSLF23`), including copays, deductibles, and uncovered services. The goal is to facilitate financial planning and healthcare budgeting. By estimating next year's out-of-pocket costs, users can make data-driven decisions about FSA/HSA contributions and better prepare for their financial exposure. For uninsured users, out-of-pocket costs approximate total costs.  
 
 <details>
 <summary>ℹ️ <strong>US Healthcare Costs Explained</strong> (click to expand)</summary>
@@ -105,11 +105,12 @@ The target variable is **total out-of-pocket health care costs in 2023** (`TOTSL
 <br>
 
 **Candidate Features**  
-We selected 26 features based on consumer accessibility (no record-checking required), timing (beginning-of-year data to prevent leakage) and predictive power. 
-- **Demographics:** Age, Sex, Marital Status, Education, Family Size, and Poverty Category.
-- **Health Profile:** Self-rated physical/mental health, smoking status, and usual source of care.
-- **Chronic Conditions:** Hypertension, Diabetes, Cancer, Heart Disease, and Stroke.
-- **Functional Limitations:** Difficulties with daily living, walking, or cognitive tasks.
+Selected 26 features out of 1,374 MEPS variables based on consumer accessibility (no record-checking required), timing (beginning-of-year data to prevent leakage) and expected predictive power. 
+- **Demographics:** Age, Sex, Region, Marital Status, Family Size.
+- **Socioeconomics:** Education, Poverty Category, Employment Status.
+- **Health Profile:** Insurance, Self-Rated Physical/Mental Health, Smoking Status, Usual Source of Care.
+- **Chronic Conditions:** Hypertension, High Cholesterol, Diabetes, Heart Disease, Stroke, Cancer, Arthritis, Asthma.
+- **Limitations:** Difficulties with Daily Living, Walking, Cognitive Tasks, Joint Pain.
 
 For details, see [Candidate Features Appendix](#candidate-features).
 
