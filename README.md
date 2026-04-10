@@ -19,7 +19,7 @@
     <a href="#️-data">Data</a>
   </li>
   <li>
-    <a href="#-exploratory-data-analysis-eda">Exploratory Data Analysis (EDA)</a>
+    <a href="#-exploratory-data-analysis">Exploratory Data Analysis</a>
   </li>
   <li>
     <a href="#-data-preprocessing">Data Preprocessing</a>
@@ -86,17 +86,11 @@ Currently developing an end-to-end machine learning application to predict annua
 
 
 ## 🗂️ Data
-The **Medical Expenditure Panel Survey (MEPS)** is the most complete source of data on the cost and use of health care and health insurance coverage in the United States. Administered by the **Agency for Healthcare Research and Quality (AHRQ)**, it is a set of large-scale surveys of families and individuals, their medical providers, and employers. MEPS provides nationally representative estimates for the **U.S. civilian noninstitutionalized population**:
-- **Included:** People living in households (houses, apartments) and non-institutional group quarters (e.g., college dorms).
-- **Excluded:** Active-duty military, and people in institutions like nursing homes or prisons. Also excludes individual periods where a respondent moved outside the U.S. during the survey year.
+The **Medical Expenditure Panel Survey (MEPS)**, administered by **AHRQ**, is the gold standard for U.S. healthcare cost and usage data. It provides nationally representative estimates for the **U.S. civilian noninstitutionalized population**, combining household reports with validated medical provider and insurance data.
 
-**MEPS Household Component**  
-The Household Component (MEPS-HC) collects comprehensive data directly from families and individuals. To ensure accuracy, household-reported expenditures are validated and imputed using the Medical Provider Component (MEPS-MPC), which draws data directly from doctors, hospitals, and pharmacies.
-
-**MEPS-HC 2023**  
-This project utilizes the 2023 Full-Year Consolidated Data File (HC-251). The data was released in August 2025.
-- **Sample Size:** 18,919 individuals.
-- **Variables:** 1,374.
+This project utilizes the **2023 Full-Year Consolidated Data File (HC-251)**:
+- **Sample Size:** 18,919 individuals
+- **Variables:** 1,374 variables
 
 ![MEPS Data Infographic](assets/infographic_meps_data.jpg)
 
@@ -133,7 +127,7 @@ MEPS-HC 2023 includes survey sample weights (`PERWT23F`) to account for the comp
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-## 🔍 Exploratory Data Analysis (EDA)
+## 🔍 Exploratory Data Analysis
 Analyzed distributions and relationships to inform data preprocessing, feature engineering, and modeling decisions.  
 
 **Distributions (Univariate EDA)** 
