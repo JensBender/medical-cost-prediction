@@ -88,7 +88,7 @@ Currently developing an end-to-end machine learning application to predict annua
 ## 🗂️ Data
 The **Medical Expenditure Panel Survey (MEPS)**, administered by **AHRQ**, is the gold standard for U.S. healthcare cost and usage data. It provides nationally representative estimates for the **U.S. civilian noninstitutionalized population**, combining household reports with validated medical provider and insurance data.
 
-This project utilizes the **2023 Full-Year Consolidated Data File (HC-251)**:
+Utilized the **2023 Full-Year Consolidated Data File (HC-251)**:
 - **Sample Size:** 18,919 individuals
 - **Variables:** 1,374 variables
 
@@ -115,7 +115,7 @@ Selected 26 features out of 1,374 MEPS variables based on consumer accessibility
 For details, see [Candidate Features Appendix](#candidate-features).
 
 **Sample Weights**  
-This project incorporates MEPS survey weights during training to account for the complex survey design and non-response. This corrects for the intentional oversampling of specific subgroups (e.g., elderly and low-income), ensuring model estimates remain representative of the general U.S. population.
+Incorporated MEPS survey weights during training to account for the complex survey design and non-response. This corrects for the intentional oversampling of specific subgroups (e.g., elderly and low-income), ensuring model estimates remain representative of the general U.S. population.
 
 **MEPS Resources**
 | Resource | Description | Link |
@@ -153,7 +153,7 @@ Based on EDA-driven insights, decided to implement sample weights for population
 
 
 ## 🧹 Data Preprocessing
-This project utilizes a hybrid workflow to bridge interactive exploration with production reproducibility. Transformation logic prototyped in [Jupyter notebooks](notebooks/) is migrated to modular scripts and orchestrated by [DVC](https://dvc.org/) for data lineage and automation.
+Utilized a hybrid workflow to bridge interactive exploration with production reproducibility. Transformation logic prototyped in [Jupyter notebooks](notebooks/) was migrated to modular scripts and orchestrated by [DVC](https://dvc.org/) for data lineage and automation.
 
 - **Explore:** [1_eda_and_preprocessing.ipynb](notebooks/1_eda_and_preprocessing.ipynb) (EDA & preprocessing logic development).
 - **Automate:** [scripts/preprocess.py](scripts/preprocess.py) (automated stage via `dvc.yaml`).
@@ -197,7 +197,7 @@ Additional steps explored in notebook without being implemented in production sc
 
 
 ## 🧠 Modeling
-This project utilizes **MLflow** for experiment tracking to ensure all training runs are reproducible and comparable. To maintain a clean separation between development and production, MLflow tracking is exclusively integrated into the [reproducible scripts](scripts/), while [Jupyter notebooks](notebooks/) are reserved for quick prototyping and exploration.
+Utilized **MLflow** for experiment tracking to ensure all training runs were reproducible and comparable. To maintain a clean separation between development and production, MLflow tracking was exclusively integrated into the [reproducible scripts](scripts/), while [Jupyter notebooks](notebooks/) were reserved for quick prototyping and exploration.
 
 ### 📏 Baseline Models  
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
