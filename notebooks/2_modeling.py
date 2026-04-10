@@ -475,11 +475,18 @@ display(
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Tune the hyperparameters of Random Forest, XGBoost, and Elastic Net using randomized search on the fixed holdout validation set. 
 #     <br><br>
-#     <b>Why not <code>RandomizedSearchCV</code>?</b>
-#     <br>
-#     Avoids scikit-learn issues with <code>sample_weight</code> routing and ensures weights are applied during scoring on a fixed holdout set.
+#     <b>Tuning Framework (Shared Logic):</b>
+#     <ul>
+#         <li><b>Search Strategy:</b> Manual loop with <code>ParameterSampler</code> to avoid <code>sample_weight</code> routing issues.</li>
+#         <li><b>Target Transform:</b> <code>TransformedTargetRegressor(log1p)</code> to handle skewness and optimize in log-space.</li>
+#         <li><b>Sample Weights:</b> Normalized weights (mean=1.0) for training; raw survey weights for evaluation.</li>
+#         <li><b>Scoring:</b> Weighted Median Absolute Error (MdAE) on raw-dollar predictions.</li>
+#         <li><b>Iterations:</b> 10 in notebook for prototyping. Scale to 100 in <code>scripts/tune_random_forest.py</code> for production.</li>
+#     </ul>
+#     <b>Why not <code>RandomizedSearchCV</code>?</b><br>
+#     Avoids <code>sample_weight</code> routing complexities and ensures transparent weighted scoring on a fixed holdout set.
 #     <br><br>
-#     Evaluate model performance:  
+#     <b>Evaluate Model Performance:</b>
 #     <ul>
 #         <li>Metrics Comparison Tables</li>
 #         <li>Overfitting Analysis</li>
@@ -500,13 +507,10 @@ display(
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Tune <code>RandomForestRegressor</code> hyperparameters.
 #     <ul>
-#         <li><b>Target Transform:</b> <code>TransformedTargetRegressor(log1p)</code> to optimize for MAE in log-space, which approximates MdAE on raw costs.</li>
-#         <li><b>Search Strategy:</b> Manual loop with <code>ParameterSampler</code> to avoid the <code>sample_weight</code> indexing issue in sklearn's CV scorers.</li>
-#         <li><b>Sample Weights:</b> Normalized weights (mean=1.0) for training; raw survey weights for evaluation.</li>
-#         <li><b>Scoring:</b> Weighted Median Absolute Error (MdAE) on raw-dollar predictions.</li>
-#         <li><b>Iterations:</b> 10 for notebook exploration and logic prototying. Scale to 100 for production automation in <code>scripts/tune_random_forest.py</code>.</li>
+#         <li><b>Objective:</b> <code>criterion="absolute_error"</code> to minimize L1 loss on log-costs.</li>
+#         <li><b>Key Params:</b> Control variance via <code>min_samples_leaf</code> and <code>max_features</code>.</li>
 #     </ul>
-#     For hyperparameter details, refer to the official scikit-learn <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html" target="_blank">RandomForestClassifier documentation</a>.
+#     For hyperparameter details, refer to the official scikit-learn <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank">RandomForestRegressor documentation</a>.
 #
 # </div>
 
