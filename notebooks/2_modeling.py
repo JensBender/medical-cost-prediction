@@ -361,7 +361,7 @@ def persist_all_models(model_results):
 
 # %%
 # Load baseline model metrics from JSON file
-baseline_metrics = load_metrics("../models/baseline_metrics.json")
+baseline_metrics = load_metrics("../models/baselines_metrics.json")
 
 # Display metric comparison table
 display(
@@ -423,7 +423,7 @@ display(
 y_val_log = np.log1p(y_val)
 
 # Load predicted values from .joblib file
-predictions = load_model("../models/baseline_predictions.joblib")
+predictions = load_model("../models/baselines_predictions.joblib")
 
 # Evaluate all models on log-scale
 log_metrics = {}
@@ -599,12 +599,12 @@ best_rf_model = TransformedTargetRegressor(
 best_rf_results = train_and_evaluate(best_rf_model, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
 # Persist results
-save_metrics(rf_tuning_metrics, "../models/tuned_rf_metrics.json", verbose=False)
-print("  Saved tuned random forest metrics to 'models/tuned_rf_metrics.json'")
-save_model(best_rf_results["fitted_model"], "../models/random_forest_tuned.joblib", verbose=False)
-print("  Saved best model to 'models/random_forest_tuned.joblib'")
-save_model(best_rf_results["y_val_pred"], "../models/tuned_rf_predictions.joblib", verbose=False)
-print("  Saved predicted values of best model to 'models/tuned_rf_predictions.joblib'")
+save_metrics(rf_tuning_metrics, "../models/rf_tuning_history.json", verbose=False)
+print("  Saved tuned random forest metrics to 'models/rf_tuning_history.json'")
+save_model(best_rf_results["fitted_model"], "../models/rf_tuned_model.joblib", verbose=False)
+print("  Saved best model to 'models/rf_tuned_model.joblib'")
+save_model(best_rf_results["y_val_pred"], "../models/rf_tuned_predictions.joblib", verbose=False)
+print("  Saved predicted values of best model to 'models/rf_tuned_predictions.joblib'")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -613,7 +613,7 @@ print("  Saved predicted values of best model to 'models/tuned_rf_predictions.jo
 
 # %%
 # Load tuned random forest metrics from JSON file
-rf_tuning_metrics = load_metrics("../models/tuned_rf_metrics.json")
+rf_tuning_metrics = load_metrics("../models/rf_tuning_history.json")
 
 # Display metric comparison table  
 rf_tuning_metrics_df = pd.DataFrame(rf_tuning_metrics)

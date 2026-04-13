@@ -26,12 +26,12 @@ stages:
       - src/constants.py                          # Feature lists, label mappings, etc.
       - src/utils.py                              # Helper functions
     outs:
-      - models/median_prediction_baseline.joblib
-      - models/linear_regression_baseline.joblib
-      - models/elastic_net_baseline.joblib
-      - models/decision_tree_baseline.joblib
-      - models/random_forest_baseline.joblib
-      - models/xgboost_baseline.joblib
-      - models/support_vector_machine_baseline.joblib
-      - models/baseline_metrics.json
-      - models/baseline_predictions.joblib
+      - models/median_baseline_model.joblib
+      - models/lr_baseline_model.joblib
+      - models/en_baseline_model.joblib
+      - models/tree_baseline_model.joblib
+      - models/rf_baseline_model.joblib
+      - models/xgb_baseline_model.joblib
+      - models/svm_baseline_model.joblib
+      - models/baselines_metrics.json
+      - models/baselines_predictions.joblib
