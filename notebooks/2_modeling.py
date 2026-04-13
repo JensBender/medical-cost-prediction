@@ -522,7 +522,7 @@ display(
 # %%
 # Hyperparameter search space
 rf_param_distributions = {
-    "n_estimators": [200, 300, 500],          # More trees = more stable but slower
+    "n_estimators": [20, 30, 50],          # More trees = more stable but slower
     "max_depth": randint(8, 25),              # Baseline: 16. Search around it.
     "min_samples_split": randint(20, 150),    # Baseline: 50. Explore wider.
     "min_samples_leaf": randint(10, 80),      # Baseline: 25. Explore wider. Most impactful for MdAE.
@@ -539,7 +539,7 @@ print(f"Example: {rf_param_list[0]}")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Run the randomized search with weighted MdAE scoring on the validation set.
+#     📌 Perform randomized search and store results (metrics of all model runs as <code>.json</code>, best model as <code>.joblib</code>, predictions of best model as <code>.joblib</code>).
 # </div>
 
 # %%
@@ -592,6 +592,10 @@ for i, params in enumerate(rf_param_list):
     })
     
     print(f"  [{i+1:3d}/{N_ITER}] MdAE: {val_mdae:8.2f} | trees={params['n_estimators']}, depth={params['max_depth']}, leaf={params['min_samples_leaf']}, feats={params['max_features']}, samples={params['max_samples']:.2f}, split={params['min_samples_split']} | training: {training_time:5.1f} s")
+
+# Save evaluation metrics as JSON 
+save_metrics(rf_tuning_results, "models/tuning_metrics_rf.json", verbose=False)
+print(f"  Saved evaluation metrics to 'models/tuning_metrics_rf.json'")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
