@@ -36,32 +36,19 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.compose import TransformedTargetRegressor
 from sklearn.model_selection import ParameterSampler
 from sklearn.metrics import mean_absolute_error, r2_score
-from scipy.stats import randint, uniform
 
 # Local imports
 from src.constants import TARGET_COLUMN, WEIGHT_COLUMN, RANDOM_STATE
 from src.modeling import train_and_evaluate
+from src.params import RF_PARAM_DISTRIBUTIONS, RF_N_ITER
 from src.utils import weighted_median_absolute_error, save_model, save_metrics
 
 # Suppress benign MLflow warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
 
-# --- Configuration ---
-N_ITER = 100  # Number of random hyperparameter combinations to evaluate
-
 # Paths (relative to project root)
 TRAIN_DATA_PATH = "data/training_data_preprocessed.parquet"
 VAL_DATA_PATH = "data/validation_data_preprocessed.parquet"
-
-# Hyperparameter search space (mirrors notebook for reproducibility)
-RF_PARAM_DISTRIBUTIONS = {
-    "n_estimators": [200, 300, 500],          # More trees = more stable but slower
-    "max_depth": randint(8, 25),              # Baseline: 16
-    "min_samples_split": randint(20, 150),    # Baseline: 50
-    "min_samples_leaf": randint(10, 80),      # Baseline: 25. Most impactful for MdAE.
-    "max_features": ["sqrt", "log2", 0.3, 0.5, 0.7],  # Baseline: "sqrt"
-    "max_samples": uniform(0.6, 0.4),         # Bootstrap sample fraction (0.6–1.0)
-}
 
 
 def main():
@@ -90,10 +77,10 @@ def main():
     print("  Separated data into X features, y target variable, and w sample weights")
 
     # --- 4. Hyperparameter Search ---
-    print(f"Step 4: Running randomized search ({N_ITER} iterations)...")
+    print(f"Step 4: Running randomized search ({RF_N_ITER} iterations)...")
     # Normalize training weights (mean=1.0) for numerical stability during model fitting
     w_train_norm = w_train / w_train.mean()
-    param_list = list(ParameterSampler(RF_PARAM_DISTRIBUTIONS, n_iter=N_ITER, random_state=RANDOM_STATE))
+    param_list = list(ParameterSampler(RF_PARAM_DISTRIBUTIONS, n_iter=RF_N_ITER, random_state=RANDOM_STATE))
 
     tuning_metrics = []
     best_mdae = np.inf
@@ -160,7 +147,7 @@ def main():
             })
 
         # Progress logging (matches notebook style)
-        print(f"  [{i+1:3d}/{N_ITER}] MdAE: {val_mdae:8.2f} | trees={params['n_estimators']}, depth={params['max_depth']}, leaf={params['min_samples_leaf']}, feats={params['max_features']}, samples={params['max_samples']:.2f}, split={params['min_samples_split']} | training: {training_time:5.1f} s")
+        print(f"  [{i+1:3d}/{RF_N_ITER}] MdAE: {val_mdae:8.2f} | trees={params['n_estimators']}, depth={params['max_depth']}, leaf={params['min_samples_leaf']}, feats={params['max_features']}, samples={params['max_samples']:.2f}, split={params['min_samples_split']} | training: {training_time:5.1f} s")
 
     total_search_time = time.time() - search_start
     print(f"  Search complete in {total_search_time:.0f}s")

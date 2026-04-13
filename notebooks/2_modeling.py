@@ -90,6 +90,7 @@ from src.display import (
     DISPLAY_LABELS, 
     METRIC_LABELS,
 )
+from src.params import RF_PARAM_DISTRIBUTIONS
 from src.utils import (
     add_table_caption,
     weighted_median_absolute_error,
@@ -520,19 +521,9 @@ display(
 # </div>
 
 # %%
-# Hyperparameter search space
-rf_param_distributions = {
-    "n_estimators": [200, 300, 500],          # More trees = more stable but slower
-    "max_depth": randint(8, 25),              # Baseline: 16. Search around it.
-    "min_samples_split": randint(20, 150),    # Baseline: 50. Explore wider.
-    "min_samples_leaf": randint(10, 80),      # Baseline: 25. Explore wider. Most impactful for MdAE.
-    "max_features": ["sqrt", "log2", 0.3, 0.5, 0.7],  # Baseline: "sqrt". Explore random subset with 30%, 50% and 70% of features.
-    "max_samples": uniform(0.6, 0.4),         # Baseline: None (100%). Explore random subsample of 60% to 100%. 
-}
-
 # Generate random parameter combinations
 N_ITER = 2  # Small for prototyping
-rf_param_list = list(ParameterSampler(rf_param_distributions, n_iter=N_ITER, random_state=RANDOM_STATE))
+rf_param_list = list(ParameterSampler(RF_PARAM_DISTRIBUTIONS, n_iter=N_ITER, random_state=RANDOM_STATE))
 
 print(f"Generated {len(rf_param_list)} random hyperparameter combinations")
 print(f"Example: {rf_param_list[0]}")
