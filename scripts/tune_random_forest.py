@@ -184,8 +184,8 @@ def main():
     print("Step 6: Persisting hyperparameter tuning results...")
 
     # Save best fitted model as .joblib file
-    save_model(best_rf_result["fitted_model"], "models/random_forest_tuned.joblib", verbose=False)
-    print("  Saved best model to 'models/random_forest_tuned.joblib'")
+    save_model(best_rf_result["fitted_model"], "models/rf_tuned_model.joblib", verbose=False)
+    print("  Saved best model to 'models/rf_tuned_model.joblib'")
 
     # Save evaluation metrics of best model as JSON
     tuned_metrics = {
@@ -202,23 +202,23 @@ def main():
     print("  Saved evaluation metrics to 'models/rf_tuned_metrics.json'")
 
     # Save metrics of all randomly searched models as JSON 
-    save_metrics(tuning_metrics, "models/tuned_rf_metrics.json", verbose=False)
-    print("  Saved metrics of all randomly searched models to 'models/tuned_rf_metrics.json'")
+    save_metrics(tuning_metrics, "models/rf_tuning_history.json", verbose=False)
+    print("  Saved metrics of all randomly searched models to 'models/rf_tuning_history.json'")
 
     # Save full search results as CSV for analysis
     search_df = pd.concat([pd.DataFrame(tuning_metrics), pd.json_normalize([m["params"] for m in tuning_metrics])], axis=1).drop("params", axis=1)
-    search_df.to_csv("models/rf_tuning_search_results.csv", index=False)
-    print("  Saved search results to 'models/rf_tuning_search_results.csv'")
+    search_df.to_csv("models/rf_tuning_history.csv", index=False)
+    print("  Saved search results to 'models/rf_tuning_history.csv'")
 
     # Save best hyperparameters as JSON for reproducibility
     best_params_clean = {k: float(v) if hasattr(v, "dtype") else v for k, v in best_params.items()}
     save_metrics({"best_params": best_params_clean, "best_mdae": float(best_mdae)},
-                 "models/rf_tuned_best_params.json", verbose=False)
-    print("  Saved best hyperparameters to 'models/rf_tuned_best_params.json'")
+                 "models/rf_tuned_params.json", verbose=False)
+    print("  Saved best hyperparameters to 'models/rf_tuned_params.json'")
     
     # Save predictions of best model as .joblib file
-    save_model(best_rf_result["y_val_pred"], "models/tuned_rf_predictions.joblib", verbose=False)
-    print("  Saved predicted values of best model to 'models/tuned_rf_predictions.joblib'")
+    save_model(best_rf_result["y_val_pred"], "models/rf_tuned_predictions.joblib", verbose=False)
+    print("  Saved predicted values of best model to 'models/rf_tuned_predictions.joblib'")
 
     print("\n✅ Random Forest hyperparameter tuning complete.")
 
