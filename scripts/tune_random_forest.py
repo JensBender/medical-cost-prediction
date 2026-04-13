@@ -86,68 +86,73 @@ def main():
     best_mdae = np.inf
     search_start = time.time()
 
-    for i, params in enumerate(param_list):
-        # Build model: RandomForest wrapped in TransformedTargetRegressor(log1p)
-        model = TransformedTargetRegressor(
-            regressor=RandomForestRegressor(
-                criterion="absolute_error",
-                n_jobs=-1,
-                random_state=RANDOM_STATE,
-                **params
-            ),
-            func=np.log1p,
-            inverse_func=np.expm1
-        )
+    # Start MLflow parent run (to group all iterations as child runs for better organization in UI)
+    with mlflow.start_run(run_name="Random Forest Randomized Search"):
+        mlflow.set_tag("stage", "tuning")
+        mlflow.log_param("n_iterations", RF_N_ITER)
 
-        # Train with normalized sample weights
-        iter_start = time.time()
-        model.fit(X_train, y_train, sample_weight=w_train_norm)
-        training_time = time.time() - iter_start
+        for i, params in enumerate(param_list):
+            # Build model: RandomForest wrapped in TransformedTargetRegressor(log1p)
+            model = TransformedTargetRegressor(
+                regressor=RandomForestRegressor(
+                    criterion="absolute_error",
+                    n_jobs=-1,
+                    random_state=RANDOM_STATE,
+                    **params
+                ),
+                func=np.log1p,
+                inverse_func=np.expm1
+            )
 
-        # Predict on training and validation set (predictions in raw dollars)
-        y_train_pred = model.predict(X_train)
-        y_val_pred = model.predict(X_val)
+            # Train with normalized sample weights
+            iter_start = time.time()
+            model.fit(X_train, y_train, sample_weight=w_train_norm)
+            training_time = time.time() - iter_start
 
-        # Evaluate with raw survey weights
-        train_mdae = weighted_median_absolute_error(y_train, y_train_pred, sample_weight=w_train)
-        train_mae = mean_absolute_error(y_train, y_train_pred, sample_weight=w_train)
-        train_r2 = r2_score(y_train, y_train_pred, sample_weight=w_train)
+            # Predict on training and validation set (predictions in raw dollars)
+            y_train_pred = model.predict(X_train)
+            y_val_pred = model.predict(X_val)
 
-        val_mdae = weighted_median_absolute_error(y_val, y_val_pred, sample_weight=w_val)
-        val_mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
-        val_r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
+            # Evaluate with raw survey weights
+            train_mdae = weighted_median_absolute_error(y_train, y_train_pred, sample_weight=w_train)
+            train_mae = mean_absolute_error(y_train, y_train_pred, sample_weight=w_train)
+            train_r2 = r2_score(y_train, y_train_pred, sample_weight=w_train)
 
-        tuning_metrics.append({
-            "params": params,
-            "train_mdae": train_mdae,
-            "train_mae": train_mae,
-            "train_r2": train_r2,
-            "val_mdae": val_mdae,
-            "val_mae": val_mae,
-            "val_r2": val_r2,
-            "training_time": training_time
-        })
+            val_mdae = weighted_median_absolute_error(y_val, y_val_pred, sample_weight=w_val)
+            val_mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
+            val_r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
 
-        # Track best configuration
-        if val_mdae < best_mdae:
-            best_mdae = val_mdae
-            best_idx = i
-
-        # Log each iteration to MLflow as a child run
-        with mlflow.start_run(run_name=f"RF iter {i+1:03d}", nested=True):
-            mlflow.log_params(params)
-            mlflow.log_metrics({
-                "val_mdae": val_mdae,
-                "val_mae": val_mae,
-                "val_r2": val_r2,
+            tuning_metrics.append({
+                "params": params,
                 "train_mdae": train_mdae,
                 "train_mae": train_mae,
                 "train_r2": train_r2,
+                "val_mdae": val_mdae,
+                "val_mae": val_mae,
+                "val_r2": val_r2,
                 "training_time": training_time
             })
 
-        # Progress logging 
-        print(f"  [{i+1:3d}/{RF_N_ITER}] MdAE: {val_mdae:8.2f} | trees={params['n_estimators']}, depth={params['max_depth']}, leaf={params['min_samples_leaf']}, feats={params['max_features']}, samples={params['max_samples']:.2f}, split={params['min_samples_split']} | training: {training_time:5.1f} s")
+            # Track best configuration
+            if val_mdae < best_mdae:
+                best_mdae = val_mdae
+                best_idx = i
+
+            # Log each iteration to MLflow as a child run
+            with mlflow.start_run(run_name=f"Trial {i+1:03d}", nested=True):
+                mlflow.log_params(params)
+                mlflow.log_metrics({
+                    "val_mdae": val_mdae,
+                    "val_mae": val_mae,
+                    "val_r2": val_r2,
+                    "train_mdae": train_mdae,
+                    "train_mae": train_mae,
+                    "train_r2": train_r2,
+                    "training_time": training_time
+                })
+
+            # Progress logging 
+            print(f"  [{i+1:3d}/{RF_N_ITER}] MdAE: {val_mdae:8.2f} | trees={params['n_estimators']}, depth={params['max_depth']}, leaf={params['min_samples_leaf']}, feats={params['max_features']}, samples={params['max_samples']:.2f}, split={params['min_samples_split']} | training: {training_time:5.1f} s")
 
     total_search_time = time.time() - search_start
     print(f"  Random search complete in {total_search_time:.0f} s")
@@ -204,11 +209,6 @@ def main():
     # Save metrics of all randomly searched models as JSON 
     save_metrics(tuning_metrics, "models/rf_tuning_history.json", verbose=False)
     print("  Saved metrics of all randomly searched models to 'models/rf_tuning_history.json'")
-
-    # Save full search results as CSV for analysis
-    search_df = pd.concat([pd.DataFrame(tuning_metrics), pd.json_normalize([m["params"] for m in tuning_metrics])], axis=1).drop("params", axis=1)
-    search_df.to_csv("models/rf_tuning_history.csv", index=False)
-    print("  Saved search results to 'models/rf_tuning_history.csv'")
 
     # Save best hyperparameters as JSON for reproducibility
     best_params_clean = {k: float(v) if hasattr(v, "dtype") else v for k, v in best_params.items()}
