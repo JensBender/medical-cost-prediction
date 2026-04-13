@@ -522,7 +522,7 @@ display(
 # %%
 # Hyperparameter search space
 rf_param_distributions = {
-    "n_estimators": [20, 30, 50],          # More trees = more stable but slower
+    "n_estimators": [200, 300, 500],          # More trees = more stable but slower
     "max_depth": randint(8, 25),              # Baseline: 16. Search around it.
     "min_samples_split": randint(20, 150),    # Baseline: 50. Explore wider.
     "min_samples_leaf": randint(10, 80),      # Baseline: 25. Explore wider. Most impactful for MdAE.
