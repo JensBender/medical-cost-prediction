@@ -127,20 +127,29 @@ def load_model(filepath, verbose=True):
 
 def save_metrics(metrics, filepath, verbose=True):
     """
-    Save a dictionary of metrics to a JSON file, automatically converting 
+    Save performance metrics to a JSON file, automatically converting 
     NumPy types to Python floats for serialization.
 
+    Supports nested dictionaries (e.g., baseline models names with metrics) and 
+    lists of dictionaries (e.g., hyperparameter tuning runs with metrics).
+
     Args:
-        metrics (dict): Dictionary of model performance numbers.
+        metrics (dict or list): Metrics to save. Usually a dict of dicts 
+            or a list of dicts.
         filepath (str or Path): Path to save the JSON file.
         verbose (bool): Whether to print a success message.
     """
     try:
         # Clean metrics: Ensure NumPy floats are converted to Python floats for JSON
-        def clean_value(v):
-            if isinstance(v, dict):
-                return {k: clean_value(i) for k, i in v.items()}
-            return float(v) if hasattr(v, "dtype") else v
+        def clean_value(x):
+            """Recursively convert NumPy scalars to Python floats for JSON serialization."""
+            if isinstance(x, dict):
+                return {key: clean_value(value) for key, value in x.items()}
+            if isinstance(x, list):
+                return [clean_value(i) for i in x]
+            if hasattr(x, "dtype"):  # for single NumPy float
+                return float(x)
+            return x
 
         clean_metrics = clean_value(metrics)
 
@@ -162,7 +171,7 @@ def load_metrics(filepath, verbose=True):
         verbose (bool): Whether to print a success message.
 
     Returns:
-        dict: The loaded metrics or None if an error occurred.
+        dict or list: The loaded metrics or None if an error occurred.
     """
     try:
         with open(filepath, "r") as f:
