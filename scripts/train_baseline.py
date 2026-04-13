@@ -90,8 +90,8 @@ def main():
     
     for model_name, result in baseline_results.items():        
         # Save fitted model as .joblib file (DVC-tracked)
-        model_id = model_name.lower().replace(" ", "_")
-        model_path = f"models/{model_id}_baseline.joblib"
+        model_id = model_name.lower().replace(" ", "_").replace("support_vector_machine", "svm").replace("linear_regression", "lr").replace("elastic_net", "en").replace("decision_tree", "tree").replace("random_forest", "rf").replace("xgboost", "xgb").replace("median_prediction", "median")
+        model_path = f"models/{model_id}_baseline_model.joblib"
         save_model(result["fitted_model"], model_path, verbose=False)
         print(f"  Saved fitted {model_name} model to '{model_path}'")
         
@@ -109,12 +109,12 @@ def main():
         all_predictions[model_name] = result["y_val_pred"]
 
     # Save evaluation metrics as JSON (Git-tracked)
-    save_metrics(all_metrics, "models/baseline_metrics.json", verbose=False)
-    print(f"  Saved model evaluation metrics to 'models/baseline_metrics.json'")
+    save_metrics(all_metrics, "models/baselines_metrics.json", verbose=False)
+    print(f"  Saved model evaluation metrics to 'models/baselines_metrics.json'")
     
     # Save predictions as .joblib file (DVC-tracked)
-    save_model(all_predictions, "models/baseline_predictions.joblib", verbose=False)
-    print(f"  Saved predicted values of all baseline models to 'models/baseline_predictions.joblib'")
+    save_model(all_predictions, "models/baselines_predictions.joblib", verbose=False)
+    print(f"  Saved predicted values of all baseline models to 'models/baselines_predictions.joblib'")
 
     print("\n✅ Baseline model training and evaluation complete.")
 
