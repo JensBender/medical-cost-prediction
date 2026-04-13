@@ -539,7 +539,7 @@ print(f"Example: {rf_param_list[0]}")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Perform randomized search and store results (metrics of all model runs as <code>.json</code>, best model as <code>.joblib</code>, predictions of best model as <code>.joblib</code>).
+#     📌 Perform randomized search and store results (best model as <code>.joblib</code>, metrics of all model runs as <code>.json</code>, predictions of best model as <code>.joblib</code>).
 # </div>
 
 # %%
@@ -593,43 +593,8 @@ for i, params in enumerate(rf_param_list):
     
     print(f"  [{i+1:3d}/{N_ITER}] MdAE: {val_mdae:8.2f} | trees={params['n_estimators']}, depth={params['max_depth']}, leaf={params['min_samples_leaf']}, feats={params['max_features']}, samples={params['max_samples']:.2f}, split={params['min_samples_split']} | training: {training_time:5.1f} s")
 
-# Save evaluation metrics as JSON 
-save_metrics(rf_tuning_metrics, "../models/tuning_metrics_rf.json", verbose=False)
-print(f"  Saved evaluation metrics to 'models/tuning_metrics_rf.json'")
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Evaluate tuning results. 
-# </div>
-
-# %%
-# Load tuned random forest metrics from JSON file
-rf_tuning_metrics = load_metrics("../models/tuning_metrics_rf.json")
-
-# Display metric comparison table  
-rf_tuning_metrics_display = pd.DataFrame(rf_tuning_metrics)
-rf_tuning_metrics_display = rf_tuning_df.sort_values("val_mdae")  # sort by primary metric
-params_df = pd.json_normalize(rf_tuning_df["params"])
-rf_tuning_metrics_display = pd.concat([rf_tuning_metrics_display[["val_mdae", "val_mae", "val_r2"]], params_df], axis=1) 
-display(
-    rf_tuning_metrics_display
-    .style
-    .pipe(add_table_caption, "Random Forest: Hyperparameter Tuning Results")
-    .format({"val_mdae": "{:.2f}", "val_mae": "{:.2f}", "val_r2": "{:.4f}", "max_samples": "{:.2f}", "max_features": "{}"})
-    .highlight_min(subset=["val_mdae", "val_mae"], color="#d4edda")
-    .highlight_max(subset=["val_r2"], color="#d4edda")
-    .hide()
-)
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Retrain the best configuration using <code>train_and_evaluate()</code> for consistent metrics and model persistence.
-# </div>
-
-# %%
-# Build final tuned model with best hyperparameters
-best_rf_params = best_tuned["params"]
-
+# Retrain best model 
+best_rf_params = sorted(rf_tuning_metrics, key=lambda x: x["val_mdae"])[0]["params"]
 best_rf_model = TransformedTargetRegressor(
     regressor=RandomForestRegressor(
         criterion="absolute_error",
@@ -640,27 +605,36 @@ best_rf_model = TransformedTargetRegressor(
     func=np.log1p,
     inverse_func=np.expm1
 )
+best_rf_results = train_and_evaluate(best_rf_model, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
-# Train and evaluate using existing infrastructure (no MLflow for notebook)
-rf_tuned_results = train_and_evaluate(
-    best_rf_model,
-    X_train_preprocessed, y_train,
-    X_val_preprocessed, y_val,
-    w_train, w_val
-)
+# Persist results
+save_metrics(rf_tuning_metrics, "../models/tuned_rf_metrics.json", verbose=False)
+print("  Saved tuned random forest metrics to 'models/tuned_rf_metrics.json'")
+save_model(best_rf_results["fitted_model"], "../models/random_forest_tuned.joblib", verbose=False)
+print("  Saved best model to 'models/random_forest_tuned.joblib'")
+save_model(best_rf_results["y_val_pred"], "../models/tuned_rf_predictions.joblib", verbose=False)
+print("  Saved predicted values of best model to 'models/tuned_rf_predictions.joblib'")
 
-# Display results (including training metrics for overfitting analysis)
-rf_tuned_results_df = pd.DataFrame([rf_tuned_results])
-rf_tuned_metrics = rf_tuned_results_df[["val_mdae", "train_mdae", "val_mae", "val_r2", "training_time"]]
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Evaluate tuning results. 
+# </div>
 
+# %%
+# Load tuned random forest metrics from JSON file
+rf_tuning_metrics = load_metrics("../models/tuned_rf_metrics.json")
+
+# Display metric comparison table  
+rf_tuning_metrics_df = pd.DataFrame(rf_tuning_metrics)
+rf_tuning_metrics_df = rf_tuning_metrics_df.sort_values("val_mdae")  # sort by primary metric
+params_df = pd.json_normalize(rf_tuning_metrics_df["params"])
+rf_tuning_metrics_display = pd.concat([rf_tuning_metrics_df[["val_mdae", "val_mae", "val_r2"]], params_df], axis=1) 
 display(
-    rf_tuned_metrics
-    .rename(columns=METRIC_LABELS)
+    rf_tuning_metrics_display
     .style
-    .pipe(add_table_caption, "Random Forest (Tuned): Overfitting Analysis & Metrics")
-    .format("{:.2f}")
+    .pipe(add_table_caption, "Random Forest: Hyperparameter Tuning Results")
+    .format({"val_mdae": "{:.2f}", "val_mae": "{:.2f}", "val_r2": "{:.4f}", "max_samples": "{:.2f}", "max_features": "{}"})
+    .highlight_min(subset=["val_mdae", "val_mae"], color="#d4edda")
+    .highlight_max(subset=["val_r2"], color="#d4edda")
     .hide()
 )
-
-print(f"\nBest hyperparameters: {best_rf_params}")
-
