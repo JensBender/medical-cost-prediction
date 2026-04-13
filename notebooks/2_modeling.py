@@ -548,7 +548,7 @@ w_train_norm = w_train / w_train.mean()
 
 # Run randomized search
 print("Tuning random forest...")    
-rf_tuning_results = []
+rf_tuning_metrics = []
 
 for i, params in enumerate(rf_param_list):
     # Build model: RandomForest wrapped in log-transform
@@ -581,7 +581,7 @@ for i, params in enumerate(rf_param_list):
     val_mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
     val_r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
     
-    rf_tuning_results.append({
+    rf_tuning_metrics.append({
         "params": params, 
         "train_mdae": train_mdae, 
         "train_mae": train_mae, 
@@ -594,39 +594,32 @@ for i, params in enumerate(rf_param_list):
     print(f"  [{i+1:3d}/{N_ITER}] MdAE: {val_mdae:8.2f} | trees={params['n_estimators']}, depth={params['max_depth']}, leaf={params['min_samples_leaf']}, feats={params['max_features']}, samples={params['max_samples']:.2f}, split={params['min_samples_split']} | training: {training_time:5.1f} s")
 
 # Save evaluation metrics as JSON 
-save_metrics(rf_tuning_results, "models/tuning_metrics_rf.json", verbose=False)
+save_metrics(rf_tuning_metrics, "../models/tuning_metrics_rf.json", verbose=False)
 print(f"  Saved evaluation metrics to 'models/tuning_metrics_rf.json'")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Inspect the tuning results. Compare best tuned configuration against the baseline.
+#     📌 Evaluate tuning results. 
 # </div>
 
 # %%
-# Create results DataFrame and sort by primary metric
-rf_tuning_df = pd.DataFrame(rf_tuning_results)
-rf_tuning_df = rf_tuning_df.sort_values("val_mdae").reset_index(drop=True)
+# Load tuned random forest metrics from JSON file
+rf_tuning_metrics = load_metrics("../models/tuning_metrics_rf.json")
 
-# Extract params into separate columns for readability
+# Display metric comparison table  
+rf_tuning_metrics_display = pd.DataFrame(rf_tuning_metrics)
+rf_tuning_metrics_display = rf_tuning_df.sort_values("val_mdae")  # sort by primary metric
 params_df = pd.json_normalize(rf_tuning_df["params"])
-metric_cols = ["val_mdae", "train_mdae", "val_mae", "train_mae", "val_r2", "train_r2"]
-rf_tuning_display = pd.concat([params_df, rf_tuning_df[metric_cols]], axis=1)
-
+rf_tuning_metrics_display = pd.concat([rf_tuning_metrics_display[["val_mdae", "val_mae", "val_r2"]], params_df], axis=1) 
 display(
-    rf_tuning_display
+    rf_tuning_metrics_display
     .style
-    .pipe(add_table_caption, "Random Forest: Hyperparameter Tuning Results (sorted by Val MdAE)")
-    .format({"val_mdae": "{:.2f}", "train_mdae": "{:.2f}", "val_mae": "{:.2f}", "train_mae": "{:.2f}", 
-             "val_r2": "{:.4f}", "train_r2": "{:.4f}", "max_samples": "{:.3f}", "max_features": "{}"})
+    .pipe(add_table_caption, "Random Forest: Hyperparameter Tuning Results")
+    .format({"val_mdae": "{:.2f}", "val_mae": "{:.2f}", "val_r2": "{:.4f}", "max_samples": "{:.2f}", "max_features": "{}"})
     .highlight_min(subset=["val_mdae", "val_mae"], color="#d4edda")
     .highlight_max(subset=["val_r2"], color="#d4edda")
+    .hide()
 )
-
-# Print comparison to baseline
-best_tuned = rf_tuning_df.iloc[0]
-baseline_rf_metrics = load_metrics("../models/baseline_metrics.json", verbose=False)["Random Forest"]
-print(f"\nBaseline RF  →  Val MdAE: {baseline_rf_metrics['val_mdae']:.2f} | Val MAE: {baseline_rf_metrics['val_mae']:.2f} | Val R²: {baseline_rf_metrics['val_r2']:.4f}")
-print(f"Best Tuned   →  Val MdAE: {best_tuned['val_mdae']:.2f} | Val MAE: {best_tuned['val_mae']:.2f} | Val R²: {best_tuned['val_r2']:.4f}")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
