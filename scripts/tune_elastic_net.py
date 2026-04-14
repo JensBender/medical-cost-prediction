@@ -158,7 +158,10 @@ def main():
                 })
 
             # Progress logging 
-            print(f"  [{i+1:3d}/{EN_N_ITER}] MdAE: {val_mdae:8.2f} | alpha={params['model__alpha']:.6f}, l1_ratio={params['model__l1_ratio']:.4f}, interact={params['polynomials__interaction_only']} | training: {training_time:5.1f} s")
+            squares_label = "Off" if params["polynomials__interaction_only"] else "On "  # interaction_only=True means turning off squared features
+            print(f"  [{i+1:3d}/{EN_N_ITER}] MdAE: {val_mdae:8.2f} | alpha={params['model__alpha']:.6f}, l1_ratio={params['model__l1_ratio']:.4f}, squares={squares_label:3} | training: {training_time:5.1f} s")
+
+        mlflow.log_metric("random_search_time", time.time() - search_start)
 
     total_search_time = time.time() - search_start
     print(f"  Random search complete in {total_search_time:.0f} s")
