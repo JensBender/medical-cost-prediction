@@ -55,7 +55,7 @@ def main():
     print(f"  Loaded '{TRAIN_DATA_PATH}' with {len(df_train_preprocessed):,} rows and {len(df_train_preprocessed.columns):,} columns")
     print(f"  Loaded '{VAL_DATA_PATH}' with {len(df_val_preprocessed):,} rows and {len(df_val_preprocessed.columns):,} columns")
 
-    # --- 2. Feature-Target Separation ---
+    # --- 3. Feature-Target Separation ---
     print("Step 3: Separating features and target...")
     X_train_preprocessed = df_train_preprocessed.drop([TARGET_COLUMN, WEIGHT_COLUMN], axis=1)
     y_train = df_train_preprocessed[TARGET_COLUMN]
@@ -81,7 +81,8 @@ def main():
             model_name=model_name
         )
         baseline_results[model_name] = result
-        print(f"    {model_name} trained in {result['training_time']:.2f} sec (MdAE: {result['val_mdae']:.2f})")
+        print(f"    {model_name:<20} → MdAE: {result['val_mdae']:8.2f} | MAE: {result['val_mae']:8.2f} | "
+              f"R²: {result['val_r2']:.4f} | Training Time: {result['training_time']:.2f}s")
 
     # --- 5. Model Persistence ---
     print("Step 5: Persisting baseline models...")
@@ -102,7 +103,8 @@ def main():
             "val_r2": result["val_r2"],
             "train_mdae": result["train_mdae"],
             "train_mae": result["train_mae"],
-            "train_r2": result["train_r2"]
+            "train_r2": result["train_r2"],
+            "training_time": result["training_time"]
          }
         
         # Collect predicted values of all models in single dictionary
@@ -110,13 +112,13 @@ def main():
 
     # Save evaluation metrics as JSON (Git-tracked)
     save_metrics(all_metrics, "models/baselines_metrics.json", verbose=False)
-    print(f"  Saved model evaluation metrics to 'models/baselines_metrics.json'")
+    print(f"  Saved evaluation metrics of all baseline models to 'models/baselines_metrics.json'")
     
     # Save predictions as .joblib file (DVC-tracked)
     save_model(all_predictions, "models/baselines_predictions.joblib", verbose=False)
     print(f"  Saved predicted values of all baseline models to 'models/baselines_predictions.joblib'")
 
-    print("\n✅ Baseline model training and evaluation complete.")
+    print("\n✅ Baseline model training completed.")
 
 
 if __name__ == "__main__":
