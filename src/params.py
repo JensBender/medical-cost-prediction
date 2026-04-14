@@ -7,7 +7,7 @@ randomized search. It ensures consistency between exploratory notebooks
 and avoids unnecessary DVC pipeline reruns triggered by changes to src/constants.py.
 """
 
-from scipy.stats import randint, uniform
+from scipy.stats import randint, uniform, loguniform
 
 # =========================
 # Random Forest
@@ -25,3 +25,18 @@ RF_PARAM_DISTRIBUTIONS = {
 
 # Number of hyperparameter combinations for tuning in production script 
 RF_N_ITER = 100
+
+
+# =========================
+# Elastic Net
+# =========================
+
+# Hyperparameter search space for ElasticNet
+# Note: Prefixed with 'model__' because it's used within a Pipeline in scripts
+EN_PARAM_DISTRIBUTIONS = {
+    "model__alpha": loguniform(1e-4, 1.0),    # Strength of regularization
+    "model__l1_ratio": uniform(0.0, 1.0),      # Mix of L1 (Lasso) and L2 (Ridge)
+}
+
+# Number of hyperparameter combinations for tuning in production script 
+EN_N_ITER = 50
