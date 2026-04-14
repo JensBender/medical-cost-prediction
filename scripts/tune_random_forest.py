@@ -82,7 +82,7 @@ def main():
     w_train_norm = w_train / w_train.mean()
     param_list = list(ParameterSampler(RF_PARAM_DISTRIBUTIONS, n_iter=RF_N_ITER, random_state=RANDOM_STATE))
 
-    tuning_metrics = []
+    tuning_history = []
     best_mdae = np.inf
     search_start = time.time()
 
@@ -122,7 +122,7 @@ def main():
             val_mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
             val_r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
 
-            tuning_metrics.append({
+            tuning_history.append({
                 "params": params,
                 "train_mdae": train_mdae,
                 "train_mae": train_mae,
@@ -200,14 +200,15 @@ def main():
             "val_r2": best_rf_result["val_r2"],
             "train_mdae": best_rf_result["train_mdae"],
             "train_mae": best_rf_result["train_mae"],
-            "train_r2": best_rf_result["train_r2"]
+            "train_r2": best_rf_result["train_r2"],
+            "training_time": best_rf_result["training_time"]
         }
     }
     save_metrics(tuned_metrics, "models/rf_tuned_metrics.json", verbose=False)
     print("  Saved evaluation metrics to 'models/rf_tuned_metrics.json'")
 
     # Save metrics of all randomly searched models as JSON 
-    save_metrics(tuning_metrics, "models/rf_tuning_history.json", verbose=False)
+    save_metrics(tuning_history, "models/rf_tuning_history.json", verbose=False)
     print("  Saved metrics of all randomly searched models to 'models/rf_tuning_history.json'")
 
     # Save best hyperparameters as JSON for reproducibility
