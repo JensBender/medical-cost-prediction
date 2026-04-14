@@ -2,19 +2,21 @@
 Reproducible hyperparameter tuning script for Random Forest Regressor.
 
 This script performs a randomized search over a defined hyperparameter space 
-with MLflow experiment tracking, evaluates each configuration on the training 
-and validation set using weighted MdAE, MAE, and R², and persists metrics, 
-the best model and predicted values.
+with MLflow experiment tracking. It uses log-transformed targets 
+(TransformedTargetRegressor) and evaluates each configuration on the training 
+and validation set using weighted MdAE, MAE, and R². It persists the best model, 
+evaluation metrics, and predictions.
 
 Workflow:
-  1.  MLflow Setup: Initialize experiment tracking for "RF Tuning".
+  1.  MLflow Setup: Initialize experiment tracking for "Random Forest Tuning".
   2.  Preprocessed Data Loading: Load preprocessed Parquet datasets into memory.
   3.  Feature-Target Separation: Separate features, target variable, and sample weights.
   4.  Hyperparameter Search: Evaluate N_ITER random configurations using 
-      ParameterSampler on the holdout validation set with weighted scoring.
+      ParameterSampler. Track each trial as an MLflow child run with 
+      training/validation metrics and training time.
   5.  Best Model: Retrain the best configuration with full MLflow logging.
-  6.  Model Persistence: Save the best tuned model as a Joblib file, evaluation metrics
-      as JSON, and tuning search results as CSV.
+  6.  Model Persistence: Save the best tuned model as a Joblib file, evaluation metrics 
+      as JSON, parameters as JSON, and full random search history as JSON.
 
 Reference:
     For tuning exploration and detailed rationale, see:
