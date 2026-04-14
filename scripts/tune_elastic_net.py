@@ -164,12 +164,11 @@ def main():
         mlflow.log_metric("random_search_time", time.time() - search_start)
 
     total_search_time = time.time() - search_start
-    print(f"  Random search complete in {total_search_time:.0f} s")
+    print(f"  Random search completed in {total_search_time:.0f} s")
 
     # --- 5. Best Model: Retrain with MLflow Logging ---
-    print("Step 5: Retraining best configuration with MLflow logging...")
+    print("Step 5: Retraining best model...")
     best_params = param_list[best_idx]
-    print(f"  Best hyperparameters (iter {best_idx+1}): {best_params}")
 
     best_en_model = TransformedTargetRegressor(
         regressor=Pipeline([
@@ -187,11 +186,10 @@ def main():
         X_val, y_val,
         w_train, w_val,
         track_mlflow=True,
-        model_name="Elastic Net (Tuned)",
-        log_model=True
+        model_name="Elastic Net (Tuned)"
     )
-    print(f"  Tuned EN  →  MdAE: {best_en_result['val_mdae']:.2f} | MAE: {best_en_result['val_mae']:.2f} | "
-          f"R²: {best_en_result['val_r2']:.4f} | Time: {best_en_result['training_time']:.2f}s")
+    print(f"  Best Tuned Elastic Net  →  MdAE: {best_en_result['val_mdae']:.2f} | MAE: {best_en_result['val_mae']:.2f} | "
+          f"R²: {best_en_result['val_r2']:.4f} | Training Time: {best_en_result['training_time']:.2f}s")
 
     # --- 6. Model Persistence ---
     print("Step 6: Persisting hyperparameter tuning results...")
@@ -213,15 +211,15 @@ def main():
         }
     }
     save_metrics(tuned_metrics, "models/en_tuned_metrics.json", verbose=False)
-    print("  Saved evaluation metrics to 'models/en_tuned_metrics.json'")
+    print("  Saved evaluation metrics of best model to 'models/en_tuned_metrics.json'")
 
     # Save metrics of all randomly searched models as JSON 
     save_metrics(tuning_history, "models/en_tuning_history.json", verbose=False)
-    print("  Saved metrics of all randomly searched models to 'models/en_tuning_history.json'")
+    print("  Saved evaluation metrics of all models to 'models/en_tuning_history.json'")
 
     # Save best hyperparameters as JSON for reproducibility
     save_metrics(best_params, "models/en_tuned_params.json", verbose=False)
-    print("  Saved best hyperparameters to 'models/en_tuned_params.json'")
+    print("  Saved hyperparameters of best model to 'models/en_tuned_params.json'")
     
     # Save predictions of best model as .joblib file
     save_model(best_en_result["y_val_pred"], "models/en_tuned_predictions.joblib", verbose=False)

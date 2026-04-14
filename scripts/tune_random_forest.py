@@ -183,8 +183,7 @@ def main():
         X_val, y_val,
         w_train, w_val,
         track_mlflow=True,
-        model_name="Random Forest (Tuned)",
-        log_model=True
+        model_name="Random Forest (Tuned)"
     )
     print(f"  Tuned RF  →  MdAE: {best_rf_result['val_mdae']:.2f} | MAE: {best_rf_result['val_mae']:.2f} | "
           f"R²: {best_rf_result['val_r2']:.4f} | Time: {best_rf_result['training_time']:.2f}s")
