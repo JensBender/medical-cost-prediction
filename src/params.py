@@ -36,7 +36,7 @@ RF_N_ITER = 100
 # Note: Prefixed with step names (polynomials__, model__) because it's used within a Pipeline in scripts/tune_elastic_net.py
 EN_PARAM_DISTRIBUTIONS = {
     "polynomials__interaction_only": [True, False],  # True avoids redundant squared binary features; False captures non-linearities (e.g. Age^2).
-    "model__alpha": loguniform(1e-4, 1.0),           # Regularization strength. Log-scale: 1e-4 (near-none) to 1.0 (strong on standardized features).
+    "model__alpha": loguniform(0.001, 1.0),          # Regularization strength. Log-scale: 0.001 (near-none) to 1.0 (strong on standardized features).
     "model__l1_ratio": uniform(0.0, 1.0),            # Penalty mix. 0=Ridge (L2) keeps correlated features; 1=Lasso (L1) for automated feature selection.
 }
 
