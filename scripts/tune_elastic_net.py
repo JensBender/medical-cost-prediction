@@ -87,7 +87,7 @@ def main():
     param_list = list(ParameterSampler(EN_PARAM_DISTRIBUTIONS, n_iter=EN_N_ITER, random_state=RANDOM_STATE))
 
     tuning_history = []
-    best_mdae = np.inf
+    best_mdae = np.inf  # positive infinity
     best_idx = -1
     search_start = time.time()
 
@@ -100,8 +100,8 @@ def main():
             # Build model: Elastic Net with Polynomial Features wrapped in Target Log-Transformer
             model = TransformedTargetRegressor(
                 regressor=Pipeline([
-                    ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),
-                    ("model", ElasticNet(random_state=RANDOM_STATE, max_iter=2000))
+                    ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),  # include_bias=False lets ElasticNet handle the intercept
+                    ("model", ElasticNet(random_state=RANDOM_STATE, max_iter=5000))
                 ]),
                 func=np.log1p,
                 inverse_func=np.expm1
@@ -158,7 +158,7 @@ def main():
                 })
 
             # Progress logging 
-            print(f"  [{i+1:3d}/{EN_N_ITER}] MdAE: {val_mdae:8.2f} | alpha={params['model__alpha']:.6f}, l1_ratio={params['model__l1_ratio']:.4f} | training: {training_time:5.1f} s")
+            print(f"  [{i+1:3d}/{EN_N_ITER}] MdAE: {val_mdae:8.2f} | alpha={params['model__alpha']:.6f}, l1_ratio={params['model__l1_ratio']:.4f}, interact={params['polynomials__interaction_only']} | training: {training_time:5.1f} s")
 
     total_search_time = time.time() - search_start
     print(f"  Random search complete in {total_search_time:.0f} s")
