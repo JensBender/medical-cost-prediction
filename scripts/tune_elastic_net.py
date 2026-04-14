@@ -214,7 +214,7 @@ def main():
     print("  Saved metrics of all randomly searched models to 'models/en_tuning_history.json'")
 
     # Save best hyperparameters as JSON for reproducibility
-    save_metrics({"best_params": best_params, "best_mdae": best_mdae}, "models/en_tuned_params.json", verbose=False)
+    save_metrics(best_params, "models/en_tuned_params.json", verbose=False)
     print("  Saved best hyperparameters to 'models/en_tuned_params.json'")
     
     # Save predictions of best model as .joblib file
