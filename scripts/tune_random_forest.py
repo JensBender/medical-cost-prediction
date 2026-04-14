@@ -159,12 +159,11 @@ def main():
         mlflow.log_metric("random_search_time", time.time() - search_start)
 
     total_search_time = time.time() - search_start
-    print(f"  Random search complete in {total_search_time:.0f} s")
+    print(f"  Random search completed in {total_search_time:.0f} s")
 
     # --- 5. Best Model: Retrain with MLflow Logging ---
-    print("Step 5: Retraining best configuration with MLflow logging...")
+    print("Step 5: Retraining best model...")
     best_params = param_list[best_idx]
-    print(f"  Best hyperparameters (iter {best_idx+1}): {best_params}")
 
     best_rf_model = TransformedTargetRegressor(
         regressor=RandomForestRegressor(
@@ -185,8 +184,8 @@ def main():
         track_mlflow=True,
         model_name="Random Forest (Tuned)"
     )
-    print(f"  Tuned RF  →  MdAE: {best_rf_result['val_mdae']:.2f} | MAE: {best_rf_result['val_mae']:.2f} | "
-          f"R²: {best_rf_result['val_r2']:.4f} | Time: {best_rf_result['training_time']:.2f}s")
+    print(f"  Best Tuned Random Forest  →  MdAE: {best_rf_result['val_mdae']:.2f} | MAE: {best_rf_result['val_mae']:.2f} | "
+          f"R²: {best_rf_result['val_r2']:.4f} | Training Time: {best_rf_result['training_time']:.2f}s")
 
     # --- 6. Model Persistence ---
     print("Step 6: Persisting hyperparameter tuning results...")
@@ -208,15 +207,15 @@ def main():
         }
     }
     save_metrics(tuned_metrics, "models/rf_tuned_metrics.json", verbose=False)
-    print("  Saved evaluation metrics to 'models/rf_tuned_metrics.json'")
+    print("  Saved evaluation metrics of best model to 'models/rf_tuned_metrics.json'")
 
     # Save metrics of all randomly searched models as JSON 
     save_metrics(tuning_history, "models/rf_tuning_history.json", verbose=False)
-    print("  Saved metrics of all randomly searched models to 'models/rf_tuning_history.json'")
+    print("  Saved evaluation metrics of all models to 'models/rf_tuning_history.json'")
 
     # Save best hyperparameters as JSON for reproducibility
     save_metrics(best_params, "models/rf_tuned_params.json", verbose=False)
-    print("  Saved best hyperparameters to 'models/rf_tuned_params.json'")
+    print("  Saved hyperparameters of best model to 'models/rf_tuned_params.json'")
     
     # Save predictions of best model as .joblib file
     save_model(best_rf_result["y_val_pred"], "models/rf_tuned_predictions.joblib", verbose=False)
