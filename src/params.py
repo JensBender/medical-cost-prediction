@@ -3,7 +3,7 @@ Hyperparameter tuning parameter configurations.
 
 This module centralizes the distributions used for hyperparameter tuning with 
 randomized search. It ensures consistency between exploratory notebooks 
-(notebooks/2_modeling.ipynb) and production scripts (scripts/tune_random_forest.py)
+(notebooks/2_modeling.ipynb) and production scripts (e.g., scripts/tune_random_forest.py)
 and avoids unnecessary DVC pipeline reruns triggered by changes to src/constants.py.
 """
 
@@ -14,6 +14,7 @@ from scipy.stats import randint, uniform, loguniform
 # =========================
 
 # Hyperparameter search space for RandomForestRegressor
+# Note: Used in scripts/tune_random_forest.py
 RF_PARAM_DISTRIBUTIONS = {
     "n_estimators": [200, 300, 500],          # More trees = more stable but slower
     "max_depth": randint(8, 25),              # Baseline: 16. Search around it.
@@ -32,10 +33,11 @@ RF_N_ITER = 100
 # =========================
 
 # Hyperparameter search space for ElasticNet
-# Note: Prefixed with 'model__' because it's used within a Pipeline in scripts
+# Note: Prefixed with step names (polynomials__, model__) because it's used within a Pipeline in scripts/tune_elastic_net.py
 EN_PARAM_DISTRIBUTIONS = {
-    "model__alpha": loguniform(1e-4, 1.0),    # Strength of regularization
-    "model__l1_ratio": uniform(0.0, 1.0),      # Mix of L1 (Lasso) and L2 (Ridge)
+    "polynomials__interaction_only": [True, False],  # True avoids redundant squared binary features; False captures non-linearities (e.g. Age^2).
+    "model__alpha": loguniform(1e-4, 1.0),           # Regularization strength. Log-scale: 1e-4 (near-none) to 1.0 (strong on standardized features).
+    "model__l1_ratio": uniform(0.0, 1.0),            # Penalty mix. 0=Ridge (L2) keeps correlated features; 1=Lasso (L1) for automated feature selection.
 }
 
 # Number of hyperparameter combinations for tuning in production script 
