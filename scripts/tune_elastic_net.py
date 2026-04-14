@@ -101,7 +101,7 @@ def main():
             model = TransformedTargetRegressor(
                 regressor=Pipeline([
                     ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),  # include_bias=False lets ElasticNet handle the intercept
-                    ("model", ElasticNet(random_state=RANDOM_STATE, max_iter=5000))
+                    ("model", ElasticNet(random_state=RANDOM_STATE, max_iter=2000))
                 ]),
                 func=np.log1p,
                 inverse_func=np.expm1
@@ -159,7 +159,7 @@ def main():
 
             # Progress logging 
             squares_label = "off" if params["polynomials__interaction_only"] else "on "  # interaction_only=True means turning off squared features
-            print(f"  [{i+1:3d}/{EN_N_ITER}] MdAE: {val_mdae:8.2f} | alpha={params['model__alpha']:.3f}, l1_ratio={params['model__l1_ratio']:.3f}, squares={squares_label:3} | fit: {training_time:5.1f} s")
+            print(f"  [{i+1:3d}/{EN_N_ITER}] MdAE: {val_mdae:8.2f} | alpha={params['model__alpha']:.2f}, l1_ratio={params['model__l1_ratio']:.2f}, squares={squares_label:3} | fit: {training_time:5.1f} s")
 
         mlflow.log_metric("random_search_time", time.time() - search_start)
 

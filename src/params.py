@@ -33,10 +33,11 @@ RF_N_ITER = 100
 # =========================
 
 # Hyperparameter search space for ElasticNet
-# Note: Prefixed with step names (polynomials__, model__) because it's used within a Pipeline in scripts/tune_elastic_net.py
+# Note 1: Prefixed with step names (polynomials__, model__) to be compatible with Pipeline used in scripts/tune_elastic_net.py
+# Note 2: model__alpha uses loguniform for equal sampling across orders of magnitude (e.g., 0.01-0.1 has same chance as 0.1-1.0)
 EN_PARAM_DISTRIBUTIONS = {
     "polynomials__interaction_only": [True, False],  # True avoids redundant squared binary features; False captures non-linearities (e.g. Age^2).
-    "model__alpha": loguniform(0.001, 1.0),          # Regularization strength. Log-scale: 0.001 (near-none) to 1.0 (strong on standardized features).
+    "model__alpha": loguniform(0.01, 1.0),           # Regularization strength. Log-scale: 0.01 (low regularization) to 1.0 (high for z-standardized features).
     "model__l1_ratio": uniform(0.0, 1.0),            # Penalty mix. 0=Ridge (L2) keeps correlated features; 1=Lasso (L1) for automated feature selection.
 }
 
