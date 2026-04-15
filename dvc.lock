@@ -13,8 +13,8 @@ stages:
       size: 9625
     - path: src/constants.py
       hash: md5
-      md5: e00ec4fe5c6379d86b59c5e9e4a48d0c
-      size: 9365
+      md5: fb58d875a4e834067f7d11799ceb635e
+      size: 5111
     - path: src/pipeline.py
       hash: md5
       md5: 5b5d8dc9431ce299e68a21f08c1bae31
@@ -25,8 +25,8 @@ stages:
       size: 35874
     - path: src/utils.py
       hash: md5
-      md5: 1aea9039d5e383463c308fa410bb1d90
-      size: 6395
+      md5: 0a04e09434e5c5c365a11a89b01d32c7
+      size: 7813
     outs:
     - path: data/test_data_preprocessed.parquet
       hash: md5
@@ -53,54 +53,130 @@ stages:
       size: 69302
     - path: scripts/train_baseline.py
       hash: md5
-      md5: fd92b6a32c327622c6674bf9c5357e28
-      size: 5393
+      md5: dc8139e654d650bf8c53dc1caf612b02
+      size: 6155
     - path: src/constants.py
       hash: md5
-      md5: e00ec4fe5c6379d86b59c5e9e4a48d0c
-      size: 9365
+      md5: fb58d875a4e834067f7d11799ceb635e
+      size: 5111
     - path: src/modeling.py
       hash: md5
       md5: 0881d5446dd4b6435e4b5cc09b067e7f
       size: 11153
     - path: src/utils.py
       hash: md5
-      md5: 1aea9039d5e383463c308fa410bb1d90
-      size: 6395
+      md5: 0a04e09434e5c5c365a11a89b01d32c7
+      size: 7813
     outs:
-    - path: models/baseline_metrics.json
+    - path: models/en_baseline_metrics.json
       hash: md5
-      md5: 13eb5f1c54299c3203dc20cfa36e87f5
-      size: 1942
-    - path: models/baseline_predictions.joblib
-      hash: md5
-      md5: b8c95f983bfffade3169071bcc7ef14d
-      size: 77530
-    - path: models/decision_tree_baseline.joblib
-      hash: md5
-      md5: 39a94f08d973a31ce72a3dba8aacc528
-      size: 22657
-    - path: models/elastic_net_baseline.joblib
+      md5: 6696775e927f045c6bf74befbd2b5791
+      size: 338
+    - path: models/en_baseline_model.joblib
       hash: md5
       md5: f47d39a0735a7689de0a35e4e17581e2
       size: 10026
-    - path: models/linear_regression_baseline.joblib
+    - path: models/en_baseline_params.json
+      hash: md5
+      md5: 621e735b3d33e7c9852e48abad00c17e
+      size: 493
+    - path: models/en_baseline_predictions.joblib
+      hash: md5
+      md5: c855a427d0364fd110cf95a717455179
+      size: 12041
+    - path: models/lr_baseline_metrics.json
+      hash: md5
+      md5: 66397b541da3cb7fe517b00e45531515
+      size: 348
+    - path: models/lr_baseline_model.joblib
       hash: md5
       md5: 63e4ab16718bec6d67c35b68d1d9513b
       size: 3289
-    - path: models/median_prediction_baseline.joblib
+    - path: models/lr_baseline_params.json
+      hash: md5
+      md5: fb11d55207c77e718534c9ec283f5f89
+      size: 116
+    - path: models/lr_baseline_predictions.joblib
+      hash: md5
+      md5: 9668a565d94f765179506861c99f990a
+      size: 12041
+    - path: models/median_baseline_metrics.json
+      hash: md5
+      md5: a03377707deeb4bfa9367b00f6621eff
+      size: 320
+    - path: models/median_baseline_model.joblib
       hash: md5
       md5: 88d26df104485cb3486ec575d0024893
       size: 1247
-    - path: models/random_forest_baseline.joblib
+    - path: models/median_baseline_params.json
+      hash: md5
+      md5: 6296005d93da1db33c25e034ee2a66ad
+      size: 76
+    - path: models/median_baseline_predictions.joblib
+      hash: md5
+      md5: c55a2b34369fa9e07e8f95a0d661926e
+      size: 12041
+    - path: models/rf_baseline_metrics.json
+      hash: md5
+      md5: 15ca6b137e11ec310e5d621ab423d569
+      size: 339
+    - path: models/rf_baseline_model.joblib
       hash: md5
       md5: 240ebb27f0ae0580c797cdcc1633c66d
       size: 4706488
-    - path: models/support_vector_machine_baseline.joblib
+    - path: models/rf_baseline_params.json
+      hash: md5
+      md5: 038467708f4ee2aba4d9d3b81397fe38
+      size: 492
+    - path: models/rf_baseline_predictions.joblib
+      hash: md5
+      md5: f62a3ff7a1e1a9c62c7d656c83902433
+      size: 12041
+    - path: models/svm_baseline_metrics.json
+      hash: md5
+      md5: a95ecfffba87bca2175f8b1d3e4cb8d6
+      size: 346
+    - path: models/svm_baseline_model.joblib
       hash: md5
       md5: 9b522b6c0d92524d45a28ad93de86740
       size: 3854372
-    - path: models/xgboost_baseline.joblib
+    - path: models/svm_baseline_params.json
+      hash: md5
+      md5: f22726cba156e2464a64a88bde7b9662
+      size: 234
+    - path: models/svm_baseline_predictions.joblib
+      hash: md5
+      md5: 49a2c1169aacf2fde16d142a5bef0364
+      size: 12041
+    - path: models/tree_baseline_metrics.json
+      hash: md5
+      md5: 56afd9f286549055f1ed22168c0655b7
+      size: 340
+    - path: models/tree_baseline_model.joblib
+      hash: md5
+      md5: 39a94f08d973a31ce72a3dba8aacc528
+      size: 22657
+    - path: models/tree_baseline_params.json
+      hash: md5
+      md5: 881d5de19ff2a7a987ac29135da7abb5
+      size: 353
+    - path: models/tree_baseline_predictions.joblib
+      hash: md5
+      md5: 4be83f9ad3027a5bbd784a87d4ff8d7b
+      size: 12041
+    - path: models/xgb_baseline_metrics.json
+      hash: md5
+      md5: 934c7552cd9064d40647d623790faa97
+      size: 330
+    - path: models/xgb_baseline_model.joblib
       hash: md5
       md5: 02f04d019812f365e8aa7919cf5deaa3
       size: 2139568
+    - path: models/xgb_baseline_params.json
+      hash: md5
+      md5: 96f213c276f3bb53ce08bfd4b266fc54
+      size: 1121
+    - path: models/xgb_baseline_predictions.joblib
+      hash: md5
+      md5: 07d89f5d4e5e09caffa27b7a9c977f6f
+      size: 6133
