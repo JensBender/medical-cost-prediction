@@ -209,11 +209,11 @@ def main():
     save_metrics(tuned_metrics, "models/rf_tuned_metrics.json", verbose=False)
     print("  Saved evaluation metrics of best model to 'models/rf_tuned_metrics.json'")
 
-    # Save metrics of all randomly searched models as JSON 
+    # Save evaluation metrics of all randomly searched models as JSON 
     save_metrics(tuning_history, "models/rf_tuning_history.json", verbose=False)
     print("  Saved evaluation metrics of all models to 'models/rf_tuning_history.json'")
 
-    # Save best hyperparameters as JSON for reproducibility
+    # Save hyperparameters of best model as JSON 
     save_metrics(best_params, "models/rf_tuned_params.json", verbose=False)
     print("  Saved hyperparameters of best model to 'models/rf_tuned_params.json'")
     

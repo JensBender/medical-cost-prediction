@@ -97,12 +97,12 @@ def main():
                     .replace("xgboost", "xgb")
                     .replace("median_prediction", "median"))
         
-        # 1. Save fitted model as .joblib file
+        # 5.1. Save fitted model as .joblib file
         model_path = f"models/{model_id}_baseline_model.joblib"
         save_model(result["fitted_model"], model_path, verbose=False)
         print(f"  Saved fitted {model_name} model to '{model_path}'")
         
-        # 2. Save evaluation metrics as JSON
+        # 5.2. Save evaluation metrics as JSON
         metrics_dict = {
             model_name: {
                 "val_mdae": result["val_mdae"],
@@ -117,8 +117,13 @@ def main():
         metrics_path = f"models/{model_id}_baseline_metrics.json"
         save_metrics(metrics_dict, metrics_path, verbose=False)
         print(f"  Saved evaluation metrics of {model_name} to '{metrics_path}'")
+
+        # 5.3. Save hyperparameters as JSON
+        params_path = f"models/{model_id}_baseline_params.json"
+        save_metrics(result["fitted_model"].get_params(), params_path, verbose=False)
+        print(f"  Saved hyperparameters of {model_name} to '{params_path}'")
         
-        # 3. Save predicted values as .joblib file
+        # 5.4. Save predicted values as .joblib file
         pred_path = f"models/{model_id}_baseline_predictions.joblib"
         save_model(result["y_val_pred"], pred_path, verbose=False)
         print(f"  Saved predicted values of {model_name} to '{pred_path}'")
