@@ -1,8 +1,12 @@
-from pathlib import Path
-import pandas as pd
-import numpy as np 
-import joblib
+# Standard library imports
 import json
+from pathlib import Path
+
+# Third-party library imports
+import joblib
+import numpy as np
+import pandas as pd
+from sklearn.pipeline import Pipeline
 
 
 def add_table_caption(styler, caption, font_size="14px", font_weight="bold", text_align="left"):
@@ -123,6 +127,27 @@ def load_model(filepath, verbose=True):
     except Exception as e:
         print(f"Error while loading model: {e}")
         return None
+
+
+def get_core_model_params(fitted_model):
+    """
+    Extract JSON-friendly core model params for persistence.
+
+    - Unwrap TransformedTargetRegressor to its inner regressor.
+    - For Pipeline models, persist only step parameters (e.g., polynomials__degree),
+      not estimator objects stored under top-level keys like "polynomials" or "model".
+    """
+    core_model = getattr(fitted_model, "regressor_", getattr(fitted_model, "regressor", fitted_model))
+
+    if isinstance(core_model, Pipeline):
+        params = {}
+        for step_name, step in core_model.named_steps.items():
+            step_params = step.get_params(deep=False)
+            for param_name, param_value in step_params.items():
+                params[f"{step_name}__{param_name}"] = param_value
+        return params
+
+    return core_model.get_params(deep=False)
 
 
 def save_metrics(metrics, filepath, verbose=True):
