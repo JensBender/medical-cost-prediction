@@ -1,3 +1,8 @@
+# DVC run commands:
+# - Run all stages: dvc repro
+# - Run preprocessing stage only: dvc repro preprocess
+# - Run baseline model training only: dvc repro baseline
+
 stages:
   # Stage 1: Data Preprocessing
   preprocess:
