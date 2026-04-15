@@ -30,7 +30,7 @@ import mlflow
 # Local imports
 from src.constants import TARGET_COLUMN, WEIGHT_COLUMN
 from src.modeling import get_baseline_models, train_and_evaluate
-from src.utils import save_model, save_metrics
+from src.utils import save_model, save_metrics, get_core_model_params
 
 # Suppress benign MLflow warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
@@ -118,10 +118,9 @@ def main():
         save_metrics(metrics_dict, metrics_path, verbose=False)
         print(f"  Saved evaluation metrics of {model_name} to '{metrics_path}'")
 
-        # 5.3. Save core model hyperparameters as JSON (exclude TransformedTargetRegressor params)
-        core_model = getattr(result["fitted_model"], "regressor_", getattr(result["fitted_model"], "regressor", result["fitted_model"]))
+        # 5.3. Save hyperparameters as JSON
         params_path = f"models/{model_id}_baseline_params.json"
-        save_metrics(core_model.get_params(), params_path, verbose=False)
+        save_metrics(get_core_model_params(result["fitted_model"]), params_path, verbose=False)
         print(f"  Saved hyperparameters of {model_name} to '{params_path}'")
         
         # 5.4. Save predicted values as .joblib file

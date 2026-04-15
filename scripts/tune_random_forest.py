@@ -43,7 +43,7 @@ from sklearn.metrics import mean_absolute_error, r2_score
 from src.constants import TARGET_COLUMN, WEIGHT_COLUMN, RANDOM_STATE
 from src.modeling import train_and_evaluate
 from src.params import RF_PARAM_DISTRIBUTIONS, RF_N_ITER
-from src.utils import weighted_median_absolute_error, save_model, save_metrics
+from src.utils import weighted_median_absolute_error, save_model, save_metrics, get_core_model_params
 
 # Suppress benign MLflow warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
@@ -213,8 +213,8 @@ def main():
     save_metrics(tuning_history, "models/rf_tuning_history.json", verbose=False)
     print("  Saved evaluation metrics of all models to 'models/rf_tuning_history.json'")
 
-    # Save hyperparameters of best model as JSON 
-    save_metrics(best_params, "models/rf_tuned_params.json", verbose=False)
+    # Save hyperparameters as JSON
+    save_metrics(get_core_model_params(best_rf_result["fitted_model"]), "models/rf_tuned_params.json", verbose=False)
     print("  Saved hyperparameters of best model to 'models/rf_tuned_params.json'")
     
     # Save predictions of best model as .joblib file
