@@ -27,11 +27,30 @@ stages:
       - src/utils.py                              # Helper functions
     outs:
       - models/median_baseline_model.joblib
+      - models/median_baseline_metrics.json
+      - models/median_baseline_predictions.joblib
+      - models/median_baseline_params.json
       - models/lr_baseline_model.joblib
+      - models/lr_baseline_metrics.json
+      - models/lr_baseline_predictions.joblib
+      - models/lr_baseline_params.json
       - models/en_baseline_model.joblib
+      - models/en_baseline_metrics.json
+      - models/en_baseline_predictions.joblib
+      - models/en_baseline_params.json
       - models/tree_baseline_model.joblib
+      - models/tree_baseline_metrics.json
+      - models/tree_baseline_predictions.joblib
+      - models/tree_baseline_params.json
       - models/rf_baseline_model.joblib
+      - models/rf_baseline_metrics.json
+      - models/rf_baseline_predictions.joblib
+      - models/rf_baseline_params.json
       - models/xgb_baseline_model.joblib
+      - models/xgb_baseline_metrics.json
+      - models/xgb_baseline_predictions.joblib
+      - models/xgb_baseline_params.json
       - models/svm_baseline_model.joblib
-      - models/baselines_metrics.json
-      - models/baselines_predictions.joblib
+      - models/svm_baseline_metrics.json
+      - models/svm_baseline_predictions.joblib
+      - models/svm_baseline_params.json
