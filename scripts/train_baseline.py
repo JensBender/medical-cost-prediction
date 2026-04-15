@@ -104,7 +104,7 @@ def main():
         
         # 5.2. Save evaluation metrics as JSON
         metrics_dict = {
-            model_name: {
+            f"{model_name} (Baseline)": {
                 "val_mdae": result["val_mdae"],
                 "val_mae": result["val_mae"],
                 "val_r2": result["val_r2"],
