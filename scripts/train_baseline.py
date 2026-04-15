@@ -118,9 +118,10 @@ def main():
         save_metrics(metrics_dict, metrics_path, verbose=False)
         print(f"  Saved evaluation metrics of {model_name} to '{metrics_path}'")
 
-        # 5.3. Save hyperparameters as JSON
+        # 5.3. Save core model hyperparameters as JSON (exclude TransformedTargetRegressor params)
+        core_model = getattr(result["fitted_model"], "regressor_", getattr(result["fitted_model"], "regressor", result["fitted_model"]))
         params_path = f"models/{model_id}_baseline_params.json"
-        save_metrics(result["fitted_model"].get_params(), params_path, verbose=False)
+        save_metrics(core_model.get_params(), params_path, verbose=False)
         print(f"  Saved hyperparameters of {model_name} to '{params_path}'")
         
         # 5.4. Save predicted values as .joblib file
