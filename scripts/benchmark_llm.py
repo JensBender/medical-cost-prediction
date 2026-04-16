@@ -201,7 +201,8 @@ def prepare_human_readable_validation_data():
 def row_to_profile(row):
     """
     Convert a single row of cleaned (pre-pipeline) data to a natural language profile
-    that we feed as input to the LLM.
+    that we feed as input to the LLM. Profiles use a bulleted list of explicit 
+    feature names with corresponding values to maximize clarity during batch inference.
 
     Missing values (NaN) are intentionally omitted from the profile rather than
     imputed. This simulates a real-world "just ask an LLM" scenario where a user
