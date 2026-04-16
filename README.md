@@ -196,6 +196,23 @@ Additional steps explored in notebook without being implemented in production sc
 Utilized **MLflow** for experiment tracking to ensure all training runs were reproducible and comparable. To maintain a clean separation between development and production, MLflow tracking was exclusively integrated into the [reproducible scripts](scripts/), while [Jupyter notebooks](notebooks/) were reserved for quick prototyping and exploration.
 
 ### 📏 Baseline Models  
+
+#### LLM Benchmark
+Benchmarked performance against a general-purpose LLM (Gemini 3.1 Pro). This is to demonstrate added value of a specialized ML model against a state-of-the-art general intelligence LLM (**"Why not just ask Gemini?"**)
+
+**The "High-Bar" Benchmarking Strategy**
+Set a high performance baseline for the LLM to ensure the benchmark is rigorous:
+*   **Expert Prompting:** The LLM is given expert-level definitions of out-of-pocket costs (e.g., excluding premiums).
+*   **Natural Language Profiles:** Converted structured MEPS data into natural-language user profiles to test Gemini's reasoning on realistic user inputs.
+*   **Consistency:** Weighted metrics (MdAE, MAE, R²) are computed on the exact same validation set for an "apples-to-apples" comparison.
+
+To reproduce these benchmarks:
+1.  **Configure API Key:** Create a `.env` file in the root directory (see [`.env.example`](.env.example)).
+2.  **Run Benchmark:**
+    ```bash
+    python scripts/benchmark_llm.py
+    ```
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### 🎛️ Hyperparameter Tuning  
@@ -215,7 +232,8 @@ Utilized **MLflow** for experiment tracking to ensure all training runs were rep
 │
 ├── scripts/                 # Reproducible pipeline scripts 
 │   ├── preprocess.py        # Production-ready data preprocessing
-│   └── train_baseline.py    # Baseline model training 
+│   ├── train_baseline.py    # Baseline model training 
+│   └── benchmark_llm.py     # LLM vs ML comparison benchmark
 │
 ├── src/                     # Core package source code 
 │   ├── constants.py         # Feature lists and display labels
