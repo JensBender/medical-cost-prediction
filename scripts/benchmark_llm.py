@@ -143,21 +143,26 @@ def prepare_human_readable_validation_data():
     w_val = df_val[WEIGHT_COLUMN]
 
     # --- Data Preparation (mirrors preprocess.py steps 1-7) ---
+    print("Preparing human-readable validation data...")
     # Step 1: Load raw MEPS data
-    print("  Loading raw MEPS SAS file (~200MB)...")
+    print("  Loading raw MEPS SAS data...")
     df = pd.read_sas(RAW_DATA_PATH, format="sas7bdat", encoding="latin1")
 
     # Step 2: Variable selection
+    print("  Selecting variables...")
     df = df[RAW_COLUMNS_TO_KEEP]
 
     # Step 3: Population filtering (adults with positive weights)
+    print("  Filtering target population...")
     df = df[(df[WEIGHT_COLUMN] > 0) & (df["AGE23X"] >= 18)].copy()
 
     # Step 4: Data type handling
+    print("  Handling data types...")
     df[ID_COLUMN] = df[ID_COLUMN].astype(str)
     df.set_index(ID_COLUMN, inplace=True)
 
     # Step 5: Missing value standardization
+    print("  Standardizing missing values...")
     # Recover implied values from survey skip patterns
     df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2    # -1 "Never Smoker" → 2 "No"
     df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
@@ -165,9 +170,11 @@ def prepare_human_readable_validation_data():
     df.replace(MEPS_MISSING_CODES, np.nan, inplace=True)
 
     # Step 6: Binary standardization (MEPS 1/2 → 1/0)
+    print("  Standardizing binary features...")
     df[RAW_BINARY_FEATURES] = df[RAW_BINARY_FEATURES].replace({2: 0})
 
     # Step 7: Feature engineering (stateless)
+    print("  Engineering stateless features...")
     df["RECENT_LIFE_TRANSITION"] = (
         df["MARRY31X"].isin(MARRY31X_TRANSITION_CODES) | df["EMPST31"].isin(EMPST31_TRANSITION_CODES)
     ).astype(float)
@@ -175,11 +182,12 @@ def prepare_human_readable_validation_data():
     df["MARRY31X_GRP"] = df["MARRY31X"].replace(MARRY31X_COLLAPSE_MAP)
     df["EMPST31_GRP"] = df["EMPST31"].replace(EMPST31_COLLAPSE_MAP)
 
-    # Filter to validation set rows and align to parquet row order
+    # Filter to validation set rows and align to preprocessed data row order
+    print("  Filtering rows to match preprocessed validation data...")
     df_raw_val = df.loc[df.index.isin(val_ids)].reindex(y_val.index)
     n_matched = df_raw_val.index.isin(val_ids).sum()
     n_complete = df_raw_val.notna().all(axis=1).sum()
-    print(f"  Matched {n_matched:,}/{len(val_ids):,} validation rows ({n_complete:,} fully populated, {n_matched - n_complete:,} with optional NaNs)")
+    print(f"  Matched {n_matched:,} out of {len(val_ids):,} rows of the preprocessed validation data ({n_complete:,} complete, {n_matched - n_complete:,} with missing values)")
 
     return df_raw_val, y_val, w_val
 
