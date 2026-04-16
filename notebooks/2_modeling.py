@@ -446,6 +446,7 @@ display(
     .format("{:.2f}")
 )
 
+
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px; margin-bottom:16px;">
 #     💡 <strong>Insights:</strong>
@@ -467,6 +468,130 @@ display(
 #     <br>
 #     <strong>Not selected:</strong> Linear Regression (dominated by Elastic Net; same family but less flexible), Decision Tree (dominated by Random Forest), SVM (worst MdAE, slow training, hardest to tune).
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">LLM Benchmark</h2>
+# </div> 
+
+# %%
+# Data Preparation
+def load_human_readable_validation_data():
+    """
+    Recover human-readable feature values for the validation set.
+
+    The saved parquet contains scaled/encoded features (after StandardScaler and
+    OneHotEncoder). This function reloads the raw MEPS SAS file, applies the same
+    cleaning steps 1-7 as preprocess.py (but NOT the sklearn pipeline), then filters
+    to only the validation set rows by matching DUPERSID indices.
+
+    Returns:
+        tuple: (df_raw_val, y_val, w_val) where df_raw_val has human-readable
+               feature values, y_val is the target, and w_val are sample weights.
+               All aligned by DUPERSID index in parquet row order.
+    """
+    # Load validation parquet to get row IDs, target, and weights
+    df_val = pd.read_parquet(VAL_DATA_PATH)
+    val_ids = set(df_val.index.astype(str))
+    y_val = df_val[TARGET_COLUMN]
+    w_val = df_val[WEIGHT_COLUMN]
+
+    # Load raw MEPS data and apply cleaning (mirrors preprocess.py steps 1-7)
+    print("  Loading raw MEPS SAS file (~200MB)...")
+    df = pd.read_sas(RAW_DATA_PATH, format="sas7bdat", encoding="latin1")
+
+    # Step 2: Variable selection
+    df = df[RAW_COLUMNS_TO_KEEP]
+
+    # Step 3: Population filtering (adults with positive weights)
+    df = df[(df[WEIGHT_COLUMN] > 0) & (df["AGE23X"] >= 18)].copy()
+
+    # Step 4: Data type handling
+    df[ID_COLUMN] = df[ID_COLUMN].astype(str).str.replace(r"\.0$", "", regex=True)
+    df.set_index(ID_COLUMN, inplace=True)
+
+    # Step 5: Missing value standardization
+    df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2    # -1 "Never Smoker" → 2 "No"
+    df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
+    df.replace(MEPS_MISSING_CODES, np.nan, inplace=True)
+
+    # Step 6: Binary standardization (MEPS 1/2 → 1/0)
+    df[RAW_BINARY_FEATURES] = df[RAW_BINARY_FEATURES].replace({2: 0})
+
+    # Step 7: Feature engineering (stateless)
+    df["RECENT_LIFE_TRANSITION"] = (
+        df["MARRY31X"].isin(MARRY31X_TRANSITION_CODES)
+        | df["EMPST31"].isin(EMPST31_TRANSITION_CODES)
+    ).astype(float)
+    df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] = np.nan
+    df["MARRY31X_GRP"] = df["MARRY31X"].replace(MARRY31X_COLLAPSE_MAP)
+    df["EMPST31_GRP"] = df["EMPST31"].replace(EMPST31_COLLAPSE_MAP)
+
+    # Filter to validation set rows and align to parquet row order
+    df_raw_val = df.loc[df.index.isin(val_ids)].reindex(y_val.index)
+    n_matched = df_raw_val.index.isin(val_ids).sum()
+    n_complete = df_raw_val.notna().all(axis=1).sum()
+    print(f"  Matched {n_matched:,}/{len(val_ids):,} validation rows ({n_complete:,} fully populated, {n_matched - n_complete:,} with optional NaNs)")
+
+    return df_raw_val, y_val, w_val
+
+
+# %%
+# Convert a DataFrame row to a natural language profile (like a user would write in an AI Chatbot) 
+def row_to_profile(row):
+    """Convert a single row of cleaned (pre-pipeline) data to a natural language profile."""
+    lines = []
+
+    # --- Demographics ---
+    if pd.notna(row.get("AGE23X")):
+        lines.append(f"- Age: {int(row['AGE23X'])}")
+    if pd.notna(row.get("SEX")):
+        lines.append(f"- Sex: {SEX_LABELS.get(int(row['SEX']), 'Unknown')}")
+    if pd.notna(row.get("REGION23")):
+        lines.append(f"- Region: {REGION_LABELS.get(int(row['REGION23']), 'Unknown')}")
+    if pd.notna(row.get("MARRY31X_GRP")):
+        lines.append(f"- Marital Status: {MARITAL_LABELS.get(int(row['MARRY31X_GRP']), 'Unknown')}")
+    if pd.notna(row.get("FAMSZE23")):
+        lines.append(f"- Family Size: {int(row['FAMSZE23'])}")
+
+    # --- Socioeconomic ---
+    if pd.notna(row.get("POVCAT23")):
+        lines.append(f"- Family Income Level: {INCOME_LABELS.get(int(row['POVCAT23']), 'Unknown')}")
+    if pd.notna(row.get("HIDEG")):
+        lines.append(f"- Education: {EDUCATION_LABELS.get(int(row['HIDEG']), 'Unknown')}")
+    if pd.notna(row.get("EMPST31_GRP")):
+        lines.append(f"- Employment: {EMPLOYMENT_LABELS.get(int(row['EMPST31_GRP']), 'Unknown')}")
+
+    # --- Insurance & Access ---
+    if pd.notna(row.get("INSCOV23")):
+        lines.append(f"- Insurance: {INSURANCE_LABELS.get(int(row['INSCOV23']), 'Unknown')}")
+    if pd.notna(row.get("HAVEUS42")):
+        lines.append(f"- Has Usual Source of Healthcare: {YES_NO.get(int(row['HAVEUS42']), 'Unknown')}")
+
+    # --- Health & Lifestyle ---
+    if pd.notna(row.get("RTHLTH31")):
+        lines.append(f"- Self-Rated Physical Health: {HEALTH_SCALE.get(int(row['RTHLTH31']), 'Unknown')}")
+    if pd.notna(row.get("MNHLTH31")):
+        lines.append(f"- Self-Rated Mental Health: {HEALTH_SCALE.get(int(row['MNHLTH31']), 'Unknown')}")
+    if pd.notna(row.get("ADSMOK42")):
+        lines.append(f"- Current Smoker: {YES_NO.get(int(row['ADSMOK42']), 'Unknown')}")
+
+    # --- Chronic Conditions (list only diagnosed) ---
+    conditions = [
+        label for var, label in CHRONIC_CONDITIONS.items()
+        if pd.notna(row.get(var)) and int(row[var]) == 1
+    ]
+    lines.append(f"- Diagnosed Chronic Conditions: {', '.join(conditions) if conditions else 'None'}")
+
+    # --- Functional Limitations (list only present) ---
+    limitations = [
+        label for var, label in FUNCTIONAL_LIMITATIONS.items()
+        if pd.notna(row.get(var)) and int(row[var]) == 1
+    ]
+    lines.append(f"- Functional Limitations: {', '.join(limitations) if limitations else 'None'}")
+
+    return "\n".join(lines)
+
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
