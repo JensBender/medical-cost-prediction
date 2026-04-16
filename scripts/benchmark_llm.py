@@ -3,6 +3,9 @@ LLM benchmark for medical cost prediction.
 
 Compares specialized ML models against a general-purpose LLM to quantify
 the added value of training a domain-specific model ("Why not just ask Gemini?").
+This script uses a "High-Bar" approach: the LLM is given expert-level instructions 
+and definitions to test its maximum potential, proving that a specialized model adds 
+value even against an well instructed LLM.
 
 Approach:
   1.  Data Preprocessing (Partial): Load raw MEPS SAS data, apply cleaning steps 1-7
@@ -218,7 +221,7 @@ def row_to_profile(row):
     if pd.notna(row.get("SEX")):
         lines.append(f"- Sex: {SEX_LABELS.get(int(row['SEX']), 'Unknown')}")
     if pd.notna(row.get("REGION23")):
-        lines.append(f"- Region: {REGION_LABELS.get(int(row['REGION23']), 'Unknown')}")
+        lines.append(f"- U.S. Region: {REGION_LABELS.get(int(row['REGION23']), 'Unknown')}")
     if pd.notna(row.get("MARRY31X_GRP")):
         lines.append(f"- Marital Status: {MARITAL_LABELS.get(int(row['MARRY31X_GRP']), 'Unknown')}")
     if pd.notna(row.get("FAMSZE23")):
@@ -226,7 +229,7 @@ def row_to_profile(row):
 
     # --- Socioeconomic ---
     if pd.notna(row.get("POVCAT23")):
-        lines.append(f"- Family Income Level: {INCOME_LABELS.get(int(row['POVCAT23']), 'Unknown')}")
+        lines.append(f"- Family Income: {INCOME_LABELS.get(int(row['POVCAT23']), 'Unknown')}")
     if pd.notna(row.get("HIDEG")):
         lines.append(f"- Education: {EDUCATION_LABELS.get(int(row['HIDEG']), 'Unknown')}")
     if pd.notna(row.get("EMPST31_GRP")):
