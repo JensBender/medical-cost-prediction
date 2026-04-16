@@ -103,6 +103,8 @@ FUNCTIONAL_LIMITATIONS = {
 # System Prompt
 # =========================
 
+# Ensures LLM and the domain-specifc ML model solve the same problem by defining costs explicitly.
+# This sets a higher bar compared to real LLM chatbot usage by providing expert-level clarity in prompt.
 SYSTEM_PROMPT = """\
 You are a healthcare cost estimation expert for the United States.
 
@@ -198,7 +200,8 @@ def prepare_human_readable_validation_data():
 
 def row_to_profile(row):
     """
-    Convert a single row of cleaned (pre-pipeline) data to a natural language profile.
+    Convert a single row of cleaned (pre-pipeline) data to a natural language profile
+    that we feed as input to the LLM.
 
     Missing values (NaN) are intentionally omitted from the profile rather than
     imputed. This simulates a real-world "just ask an LLM" scenario where a user
