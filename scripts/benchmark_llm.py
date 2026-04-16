@@ -197,7 +197,15 @@ def prepare_human_readable_validation_data():
 # =========================
 
 def row_to_profile(row):
-    """Convert a single row of cleaned (pre-pipeline) data to a natural language profile."""
+    """
+    Convert a single row of cleaned (pre-pipeline) data to a natural language profile.
+
+    Missing values (NaN) are intentionally omitted from the profile rather than
+    imputed. This simulates a real-world "just ask an LLM" scenario where a user
+    would simply not mention information they don't know or don't want to provide.
+    This establishes a fair benchmark for the LLM's performance on natural,
+    unstructured input compared to the app's structured and imputed results.
+    """
     lines = []
 
     # --- Demographics ---
@@ -349,7 +357,7 @@ def main():
     print(f"{'='*60}\n")
 
     # --- 1. Data Preparation ---
-    print("Step 1: Recovering human-readable validation data...")
+    print("Step 1: Preparing human-readable validation data...")
     df_raw_val, y_val, w_val = prepare_human_readable_validation_data()
 
     # Align all arrays by common indices

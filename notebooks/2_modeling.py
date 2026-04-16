@@ -486,6 +486,36 @@ from src.constants import (
 RAW_DATA_PATH = "../data/h251.sas7bdat"
 VAL_DATA_PATH = "../data/validation_data_preprocessed.parquet"
 
+# Human-Readable Label Maps
+SEX_LABELS = {1: "Male", 0: "Female"}
+REGION_LABELS = {1: "Northeast", 2: "Midwest", 3: "South", 4: "West"}
+MARITAL_LABELS = {1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married"}
+INCOME_LABELS = {1: "Poor/Negative", 2: "Near Poor", 3: "Low Income", 4: "Middle Income", 5: "High Income"}
+EDUCATION_LABELS = {1: "No Degree", 2: "GED", 3: "High School Diploma", 4: "Bachelor's Degree", 5: "Master's Degree", 6: "Doctorate", 7: "Other Degree"}
+INSURANCE_LABELS = {1: "Private Insurance", 2: "Public Insurance Only (Medicare/Medicaid)", 3: "Uninsured"}
+EMPLOYMENT_LABELS = {1: "Employed", 0: "Not Employed"}
+HEALTH_SCALE = {1: "Excellent", 2: "Very Good", 3: "Good", 4: "Fair", 5: "Poor"}
+YES_NO = {1: "Yes", 0: "No"}
+
+CHRONIC_CONDITIONS = {
+    "HIBPDX": "High Blood Pressure (Hypertension)",
+    "CHOLDX": "High Cholesterol",
+    "DIABDX_M18": "Diabetes",
+    "CHDDX": "Coronary Heart Disease",
+    "STRKDX": "Stroke",
+    "CANCERDX": "Cancer",
+    "ARTHDX": "Arthritis",
+    "ASTHDX": "Asthma",
+}
+
+FUNCTIONAL_LIMITATIONS = {
+    "ADLHLP31": "Needs help with personal care (bathing, dressing)",
+    "IADLHP31": "Needs help with daily tasks (bills, medications, shopping)",
+    "WLKLIM31": "Difficulty walking or climbing stairs",
+    "COGLIM31": "Difficulty concentrating, remembering, or making decisions",
+    "JTPAIN31_M18": "Joint pain, aching, or stiffness",
+}
+
 
 # %%
 # Data Preparation
@@ -510,7 +540,6 @@ def prepare_human_readable_validation_data():
     w_val = df_val[WEIGHT_COLUMN]
 
     # --- Data Preparation (mirrors preprocess.py steps 1-7) ---
-    print("Preparing human-readable validation data...")
     # Step 1: Load raw MEPS data
     print("  Loading raw MEPS SAS data...")
     df = pd.read_sas(RAW_DATA_PATH, format="sas7bdat", encoding="latin1")
@@ -560,13 +589,29 @@ def prepare_human_readable_validation_data():
 
 
 # Use function to prepare validation data for LLM benchmarking
+print("Step 1: Preparing human-readable validation data...")
 df_raw_val, y_val, w_val = prepare_human_readable_validation_data()
+
+# Align all arrays by common indices
+common_ids = df_raw_val.dropna(how="all").index.intersection(y_val.index)
+df_raw_val = df_raw_val.loc[common_ids]
+y_val = y_val.loc[common_ids]
+w_val = w_val.loc[common_ids]
+print(f"  Benchmarking on {len(common_ids):,} validation rows\n")
 
 
 # %%
 # Convert a DataFrame row to a natural language profile (like a user would write in an AI Chatbot) 
 def row_to_profile(row):
-    """Convert a single row of cleaned (pre-pipeline) data to a natural language profile."""
+    """
+    Convert a single row of cleaned (pre-pipeline) data to a natural language profile.
+
+    Missing values (NaN) are intentionally omitted from the profile rather than
+    imputed. This simulates a real-world "just ask an LLM" scenario where a user
+    would simply not mention information they don't know or don't want to provide.
+    This establishes a fair benchmark for the LLM's performance on natural,
+    unstructured input compared to the app's structured and imputed results.
+    """
     lines = []
 
     # --- Demographics ---
@@ -619,6 +664,9 @@ def row_to_profile(row):
 
     return "\n".join(lines)
 
+print("Step 2: Converting features to natural language profiles...")
+profiles = [row_to_profile(row) for _, row in df_raw_val.iterrows()]
+print(f"  Created {len(profiles):,} profiles\n")
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
