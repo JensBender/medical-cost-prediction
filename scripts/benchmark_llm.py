@@ -56,7 +56,7 @@ from src.utils import weighted_median_absolute_error, save_metrics
 # =========================
 
 LLM_MODEL = "gemini-3.1-pro-preview"
-BATCH_SIZE = 25       # Profiles per API call (fits well within context window)
+BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
 DELAY_SECONDS = 20    # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
 MAX_RETRIES = 5       # Retry attempts per batch on API errors
 
@@ -122,7 +122,7 @@ Respond with ONLY a JSON array of numbers, one per profile, in the same order. N
 # Data Preparation
 # =========================
 
-def load_human_readable_validation_data():
+def prepare_human_readable_validation_data():
     """
     Recover human-readable feature values for the validation set.
 
@@ -136,13 +136,14 @@ def load_human_readable_validation_data():
                feature values, y_val is the target, and w_val are sample weights.
                All aligned by DUPERSID index in parquet row order.
     """
-    # Load validation parquet to get row IDs, target, and weights
+    # Load preprocessed validation data to get row IDs, target, and weights
     df_val = pd.read_parquet(VAL_DATA_PATH)
     val_ids = set(df_val.index.astype(str))
     y_val = df_val[TARGET_COLUMN]
     w_val = df_val[WEIGHT_COLUMN]
 
-    # Load raw MEPS data and apply cleaning (mirrors preprocess.py steps 1-7)
+    # --- Data Preparation (mirrors preprocess.py steps 1-7) ---
+    # Step 1: Load raw MEPS data
     print("  Loading raw MEPS SAS file (~200MB)...")
     df = pd.read_sas(RAW_DATA_PATH, format="sas7bdat", encoding="latin1")
 
@@ -153,12 +154,14 @@ def load_human_readable_validation_data():
     df = df[(df[WEIGHT_COLUMN] > 0) & (df["AGE23X"] >= 18)].copy()
 
     # Step 4: Data type handling
-    df[ID_COLUMN] = df[ID_COLUMN].astype(str).str.replace(r"\.0$", "", regex=True)
+    df[ID_COLUMN] = df[ID_COLUMN].astype(str)
     df.set_index(ID_COLUMN, inplace=True)
 
     # Step 5: Missing value standardization
+    # Recover implied values from survey skip patterns
     df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2    # -1 "Never Smoker" → 2 "No"
     df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
+    # Convert remaining MEPS codes to NaN
     df.replace(MEPS_MISSING_CODES, np.nan, inplace=True)
 
     # Step 6: Binary standardization (MEPS 1/2 → 1/0)
@@ -166,8 +169,7 @@ def load_human_readable_validation_data():
 
     # Step 7: Feature engineering (stateless)
     df["RECENT_LIFE_TRANSITION"] = (
-        df["MARRY31X"].isin(MARRY31X_TRANSITION_CODES)
-        | df["EMPST31"].isin(EMPST31_TRANSITION_CODES)
+        df["MARRY31X"].isin(MARRY31X_TRANSITION_CODES) | df["EMPST31"].isin(EMPST31_TRANSITION_CODES)
     ).astype(float)
     df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] = np.nan
     df["MARRY31X_GRP"] = df["MARRY31X"].replace(MARRY31X_COLLAPSE_MAP)
@@ -340,7 +342,7 @@ def main():
 
     # --- 1. Data Preparation ---
     print("Step 1: Recovering human-readable validation data...")
-    df_raw_val, y_val, w_val = load_human_readable_validation_data()
+    df_raw_val, y_val, w_val = prepare_human_readable_validation_data()
 
     # Align all arrays by common indices
     common_ids = df_raw_val.dropna(how="all").index.intersection(y_val.index)

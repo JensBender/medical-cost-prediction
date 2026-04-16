@@ -446,7 +446,6 @@ display(
     .format("{:.2f}")
 )
 
-
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px; margin-bottom:16px;">
 #     💡 <strong>Insights:</strong>
@@ -475,8 +474,22 @@ display(
 # </div> 
 
 # %%
+# Imports
+from src.constants import (
+    RAW_COLUMNS_TO_KEEP, RAW_BINARY_FEATURES,
+    MEPS_MISSING_CODES,
+    MARRY31X_TRANSITION_CODES, EMPST31_TRANSITION_CODES,
+    MARRY31X_COLLAPSE_MAP, EMPST31_COLLAPSE_MAP,
+)
+
+# Paths (relative to /notebook directory)
+RAW_DATA_PATH = "../data/h251.sas7bdat"
+VAL_DATA_PATH = "../data/validation_data_preprocessed.parquet"
+
+
+# %%
 # Data Preparation
-def load_human_readable_validation_data():
+def prepare_human_readable_validation_data():
     """
     Recover human-readable feature values for the validation set.
 
@@ -490,13 +503,14 @@ def load_human_readable_validation_data():
                feature values, y_val is the target, and w_val are sample weights.
                All aligned by DUPERSID index in parquet row order.
     """
-    # Load validation parquet to get row IDs, target, and weights
+    # Load preprocessed validation data to get row IDs, target, and weights
     df_val = pd.read_parquet(VAL_DATA_PATH)
     val_ids = set(df_val.index.astype(str))
     y_val = df_val[TARGET_COLUMN]
     w_val = df_val[WEIGHT_COLUMN]
 
-    # Load raw MEPS data and apply cleaning (mirrors preprocess.py steps 1-7)
+    # --- Data Preparation (mirrors preprocess.py steps 1-7) ---
+    # Step 1: Load raw MEPS data
     print("  Loading raw MEPS SAS file (~200MB)...")
     df = pd.read_sas(RAW_DATA_PATH, format="sas7bdat", encoding="latin1")
 
@@ -507,12 +521,14 @@ def load_human_readable_validation_data():
     df = df[(df[WEIGHT_COLUMN] > 0) & (df["AGE23X"] >= 18)].copy()
 
     # Step 4: Data type handling
-    df[ID_COLUMN] = df[ID_COLUMN].astype(str).str.replace(r"\.0$", "", regex=True)
+    df[ID_COLUMN] = df[ID_COLUMN].astype(str)
     df.set_index(ID_COLUMN, inplace=True)
 
     # Step 5: Missing value standardization
+    # Recover implied values from survey skip patterns
     df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2    # -1 "Never Smoker" → 2 "No"
     df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
+    # Convert remaining MEPS codes to NaN
     df.replace(MEPS_MISSING_CODES, np.nan, inplace=True)
 
     # Step 6: Binary standardization (MEPS 1/2 → 1/0)
@@ -520,8 +536,7 @@ def load_human_readable_validation_data():
 
     # Step 7: Feature engineering (stateless)
     df["RECENT_LIFE_TRANSITION"] = (
-        df["MARRY31X"].isin(MARRY31X_TRANSITION_CODES)
-        | df["EMPST31"].isin(EMPST31_TRANSITION_CODES)
+        df["MARRY31X"].isin(MARRY31X_TRANSITION_CODES) | df["EMPST31"].isin(EMPST31_TRANSITION_CODES)
     ).astype(float)
     df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] = np.nan
     df["MARRY31X_GRP"] = df["MARRY31X"].replace(MARRY31X_COLLAPSE_MAP)
@@ -534,6 +549,10 @@ def load_human_readable_validation_data():
     print(f"  Matched {n_matched:,}/{len(val_ids):,} validation rows ({n_complete:,} fully populated, {n_matched - n_complete:,} with optional NaNs)")
 
     return df_raw_val, y_val, w_val
+
+
+# Use function to prepare validation data for LLM benchmarking
+df_raw_val, y_val, w_val = prepare_human_readable_validation_data()
 
 
 # %%
