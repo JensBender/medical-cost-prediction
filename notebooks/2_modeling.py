@@ -474,6 +474,7 @@ display(
 # </div> 
 
 # %%
+# --- Setup ---
 # Imports
 from src.constants import (
     RAW_COLUMNS_TO_KEEP, RAW_BINARY_FEATURES,
@@ -482,7 +483,7 @@ from src.constants import (
     MARRY31X_COLLAPSE_MAP, EMPST31_COLLAPSE_MAP,
 )
 
-# Paths (relative to /notebook directory)
+# Paths (relative to /notebooks directory)
 RAW_DATA_PATH = "../data/h251.sas7bdat"
 VAL_DATA_PATH = "../data/validation_data_preprocessed.parquet"
 
@@ -601,10 +602,12 @@ print(f"  Benchmarking on {len(common_ids):,} validation rows\n")
 
 
 # %%
-# Convert a DataFrame row to a natural language profile (like a user would write in an AI Chatbot) 
+# Convert DataFrame rows to natural language profiles (like user input provided to an AI Chatbot) 
 def row_to_profile(row):
     """
-    Convert a single row of cleaned (pre-pipeline) data to a natural language profile.
+    Convert a single row of cleaned (pre-pipeline) data to a natural language profile
+    that we feed as input to the LLM. Profiles use a bulleted list of explicit 
+    feature names with corresponding values to maximize clarity during batch inference.
 
     Missing values (NaN) are intentionally omitted from the profile rather than
     imputed. This simulates a real-world "just ask an LLM" scenario where a user
@@ -620,7 +623,7 @@ def row_to_profile(row):
     if pd.notna(row.get("SEX")):
         lines.append(f"- Sex: {SEX_LABELS.get(int(row['SEX']), 'Unknown')}")
     if pd.notna(row.get("REGION23")):
-        lines.append(f"- Region: {REGION_LABELS.get(int(row['REGION23']), 'Unknown')}")
+        lines.append(f"- U.S. Region: {REGION_LABELS.get(int(row['REGION23']), 'Unknown')}")
     if pd.notna(row.get("MARRY31X_GRP")):
         lines.append(f"- Marital Status: {MARITAL_LABELS.get(int(row['MARRY31X_GRP']), 'Unknown')}")
     if pd.notna(row.get("FAMSZE23")):
@@ -628,7 +631,7 @@ def row_to_profile(row):
 
     # --- Socioeconomic ---
     if pd.notna(row.get("POVCAT23")):
-        lines.append(f"- Family Income Level: {INCOME_LABELS.get(int(row['POVCAT23']), 'Unknown')}")
+        lines.append(f"- Family Income: {INCOME_LABELS.get(int(row['POVCAT23']), 'Unknown')}")
     if pd.notna(row.get("HIDEG")):
         lines.append(f"- Education: {EDUCATION_LABELS.get(int(row['HIDEG']), 'Unknown')}")
     if pd.notna(row.get("EMPST31_GRP")):
@@ -664,11 +667,15 @@ def row_to_profile(row):
 
     return "\n".join(lines)
 
+
 print("Step 2: Converting features to natural language profiles...")
 profiles = [row_to_profile(row) for _, row in df_raw_val.iterrows()]
 print(f"  Created {len(profiles):,} profiles\n")
 
-# %% [markdown]
+# Display example profile
+print(profiles[0])
+
+# %% [markdown] jp-MarkdownHeadingCollapsed=true
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Hyperparameter Tuning</h1>
 # </div> 
