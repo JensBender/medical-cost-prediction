@@ -25,8 +25,8 @@ Prerequisites:
     pip install google-genai
 
 Usage:
-    $env:GEMINI_API_KEY = "your-api-key-here"
-    ./.venv-train/Scripts/python scripts/benchmark_llm.py
+    1. Create a .env file with GEMINI_API_KEY=your_key
+    2. Run: ./.venv-train/Scripts/python scripts/benchmark_llm.py
 """
 
 # Standard library imports
@@ -41,7 +41,12 @@ import numpy as np
 import pandas as pd
 import joblib
 from google import genai
+from google.genai import types
+from dotenv import load_dotenv
 from sklearn.metrics import mean_absolute_error, r2_score
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Local imports
 from src.constants import (
