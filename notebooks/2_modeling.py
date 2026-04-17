@@ -361,8 +361,9 @@ def persist_all_models(model_results):
 
 # %%
 # Load baseline model metrics from JSON files 
+baseline_models_to_evaluate = ["median", "lr", "en", "tree", "rf", "xgb", "svm"]
 baseline_metrics = {}
-for model in ["median", "lr", "en", "tree", "rf", "xgb", "svm"]:
+for model in baseline_models_to_evaluate:
     metrics = load_metrics(f"../models/{model}_baseline_metrics.json")
     baseline_metrics.update(metrics)
 
@@ -425,17 +426,29 @@ display(
 # Log-transform true values
 y_val_log = np.log1p(y_val)
 
-# Load predicted values from .joblib file
-predictions = load_model("../models/baselines_predictions.joblib")
+# Map model names to display labels
+model_name_map = {
+    "median": "Median Prediction",
+    "lr": "Linear Regression",
+    "en": "Elastic Net",
+    "tree": "Decision Tree",
+    "rf": "Random Forest",
+    "xgb": "XGBoost",
+    "svm": "Support Vector Machine"
+}
 
-# Evaluate all models on log-scale
+# Evaluate all baseline models on log-scale
+baseline_models_to_evaluate = ["median", "lr", "en", "tree", "rf", "xgb", "svm"]
 log_metrics = {}
-for model_name, y_val_pred in predictions.items():
+for model in baseline_models_to_evaluate:
+    # Load predicted values from .joblib file (use load_model for binary files)
+    y_val_pred = load_model(f"../models/{model}_baseline_predictions.joblib", verbose=False)
+    
     # Log-transform predictions (they were inverse-transformed to dollars by TransformedTargetRegressor)
     y_val_pred_log = np.log1p(y_val_pred)
-    
+
     # Calculate weighted metrics in log-space
-    log_metrics[model_name] = {
+    log_metrics[model] = {
         "MdAE (Log)": weighted_median_absolute_error(y_val_log, y_val_pred_log, sample_weight=w_val),
         "MAE (Log)": mean_absolute_error(y_val_log, y_val_pred_log, sample_weight=w_val),
         "R² (Log)": r2_score(y_val_log, y_val_pred_log, sample_weight=w_val)
@@ -444,6 +457,7 @@ for model_name, y_val_pred in predictions.items():
 # Display log-scale comparison table
 display(
     pd.DataFrame(log_metrics).T
+    .rename(index=model_name_map)
     .style
     .pipe(add_table_caption, "Baseline Model Metrics (Log-Scale)")
     .format("{:.2f}")
@@ -594,7 +608,7 @@ def prepare_human_readable_validation_data():
     df_raw_val = df.loc[df.index.isin(val_ids)].reindex(y_val.index)
     n_matched = df_raw_val.index.isin(val_ids).sum()
     n_complete = df_raw_val.notna().all(axis=1).sum()
-    print(f"  Matched {n_matched:,} out of {len(val_ids):,} rows of the preprocessed validation data ({n_complete:,} complete, {n_matched - n_complete:,} with missing values)")
+    print(f"  Matched {n_matched:,} of {len(val_ids):,} rows of the preprocessed validation data ({n_complete:,} complete, {n_matched - n_complete:,} with missing values)")
 
     return df_raw_val, y_val, w_val
 
@@ -604,11 +618,12 @@ print("Step 1: Preparing human-readable validation data...")
 df_raw_val, y_val, w_val = prepare_human_readable_validation_data()
 
 # Align all arrays by common indices
+print(f"  Aligning row indices with preprocessed validation data...")
 common_ids = df_raw_val.dropna(how="all").index.intersection(y_val.index)
 df_raw_val = df_raw_val.loc[common_ids]
 y_val = y_val.loc[common_ids]
 w_val = w_val.loc[common_ids]
-print(f"  Benchmarking on {len(common_ids):,} validation rows\n")
+print(f"  Aligned {len(common_ids):,} validation rows")
 
 
 # %% [markdown]
