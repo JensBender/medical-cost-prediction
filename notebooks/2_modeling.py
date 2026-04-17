@@ -366,13 +366,9 @@ for model in ["median", "lr", "en", "tree", "rf", "xgb", "svm"]:
     metrics = load_metrics(f"../models/{model}_baseline_metrics.json")
     baseline_metrics.update(metrics)
 
-# Create DataFrame
-baseline_metrics = pd.DataFrame(baseline_metrics).T
-
 # Display metric comparison table
 display(
-    baseline_metrics
-    [["val_mdae", "val_mae", "val_r2"]]
+    pd.DataFrame(baseline_metrics).T[["val_mdae", "val_mae", "val_r2"]]
     .rename(columns=lambda x: METRIC_LABELS.get(x, x).replace(" (Val)", ""))
     .rename(index=lambda x: x.replace(" (Baseline)", ""))
     .style
@@ -399,11 +395,11 @@ display(
 #     📌 Compare training vs. validation MdAE (primary metric) to identify overfitting.
 # </div> 
 # %%
-# Extract train and val mdae
+# Extract train MdAE, val MdAE, and calculate difference
 overfitting_data = []
 for model_name, metrics in baseline_metrics.items():
         overfitting_data.append({
-            "Model": model_name,
+            "Model": model_name.replace(" (Baseline)", ""),
             "MdAE (Train)": metrics["train_mdae"],
             "MdAE (Val)": metrics["val_mdae"],
             "Delta": metrics["val_mdae"] - metrics["train_mdae"],
@@ -415,7 +411,7 @@ display(
     pd.DataFrame(overfitting_data)
     .set_index("Model")
     .style
-    .pipe(add_table_caption, "Baseline Models: Overfitting Analysis (MdAE)")
+    .pipe(add_table_caption, "Baseline Models: Overfitting Analysis")
     .format({"MdAE (Train)": "{:.2f}", "MdAE (Val)": "{:.2f}", "Delta": "{:.2f}", "Delta %": "{:+.1f}%"})
 )
 
