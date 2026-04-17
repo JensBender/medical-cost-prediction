@@ -124,8 +124,8 @@ office visits, prescriptions, hospital stays, ER visits, dental, vision, \
 home health care, and medical equipment.
 Out-of-pocket costs EXCLUDE monthly insurance premiums and over-the-counter medications.
 
-For each profile, provide your best single-number estimate (in dollars). \
-Respond with ONLY a JSON array of numbers, one per profile, in the same order. No explanation."""
+For each profile, provide your best single-number estimate (in dollars), 
+returned in the requested list format."""
 
 
 # =========================
@@ -299,8 +299,7 @@ def build_batch_prompt(profiles, start_idx):
         f"Predict the total annual out-of-pocket healthcare costs (in 2023 US dollars) "
         f"for each of the following {n} US adults.\n\n"
         + "\n\n".join(profile_texts)
-        + f"\n\nRespond with ONLY a JSON array of {n} numbers (dollar amounts), "
-        f"one per profile, in the same order."
+        + f"\n\nReturn the {n} estimates as an ordered array."
     )
 
 
@@ -337,17 +336,22 @@ def parse_llm_response(response_text, expected_count):
 
 def query_llm_batch(client, profiles, start_idx, batch_num, total_batches):
     """Send a batch of profiles to the LLM API with retry logic."""
-    prompt = build_batch_prompt(profiles, start_idx)
+    batch_prompt = build_batch_prompt(profiles, start_idx)
 
     for attempt in range(MAX_RETRIES):
         try:
             response = client.models.generate_content(
                 model=LLM_MODEL,
-                contents=prompt,
+                contents=batch_prompt,
                 config=genai.types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
                     temperature=0,
+                    # Use structured JSON output (array of numbers, or list of floats in python)
                     response_mime_type="application/json",
+                    response_schema={
+                        "type": "ARRAY",
+                        "items": {"type": "NUMBER"}
+                    },
                 ),
             )
             return parse_llm_response(response.text, len(profiles))

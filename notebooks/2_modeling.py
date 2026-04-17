@@ -725,13 +725,30 @@ print(f"  Created {len(profiles):,} profiles\n")
 print("Example Profile:")
 print(profiles[0])
 
-
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Get LLM predictions via API request.
 # </div> 
 
 # %%
+# System Prompt
+# Ensures LLM and the domain-specifc ML model solve the same problem by defining costs explicitly.
+# This sets a higher bar compared to real LLM chatbot usage by providing expert-level clarity in prompt.
+SYSTEM_PROMPT = """\
+You are a healthcare cost estimation expert for the United States.
+
+You will be given demographic and health profiles of US adults. For each profile, \
+predict their total annual out-of-pocket healthcare costs for the year 2023 in US dollars.
+
+Out-of-pocket costs include deductibles, copays, and coinsurance for: \
+office visits, prescriptions, hospital stays, ER visits, dental, vision, \
+home health care, and medical equipment.
+Out-of-pocket costs EXCLUDE monthly insurance premiums and over-the-counter medications.
+
+For each profile, provide your best single-number estimate (in dollars), 
+returned in the requested list format."""
+
+
 def build_batch_prompt(profiles, start_idx):
     """
     Build a prompt containing multiple profiles for prompt-batching.
@@ -756,8 +773,7 @@ def build_batch_prompt(profiles, start_idx):
         f"Predict the total annual out-of-pocket healthcare costs (in 2023 US dollars) "
         f"for each of the following {n} US adults.\n\n"
         + "\n\n".join(profile_texts)
-        + f"\n\nRespond with ONLY a JSON array of {n} numbers (dollar amounts), "
-        f"one per profile, in the same order."
+        + f"\n\nReturn the {n} estimates as an ordered array."
     )
 
 
@@ -800,17 +816,22 @@ def parse_llm_response(response_text, expected_count):
 
 def query_llm_batch(client, profiles, start_idx, batch_num, total_batches):
     """Send a batch of profiles to the LLM API with retry logic."""
-    prompt = build_batch_prompt(profiles, start_idx)
+    batch_prompt = build_batch_prompt(profiles, start_idx)
 
     for attempt in range(MAX_RETRIES):
         try:
             response = client.models.generate_content(
                 model=LLM_MODEL,
-                contents=prompt,
+                contents=batch_prompt,
                 config=genai.types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
                     temperature=0,
+                    # Use structured JSON output (array of numbers, or list of floats in python)
                     response_mime_type="application/json",
+                    response_schema={
+                        "type": "ARRAY",
+                        "items": {"type": "NUMBER"}
+                    },
                 ),
             )
             return parse_llm_response(response.text, len(profiles))
