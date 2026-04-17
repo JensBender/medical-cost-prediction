@@ -495,13 +495,33 @@ display(
 # </div>
 
 # %%
-# Imports
+# Standard library imports
+import os
+import re
+import sys
+import json
+
+# Third-party imports
+from google import genai
+from google.genai import types
+from dotenv import load_dotenv
+
+# Local importsfrom src.constants import (
 from src.constants import (
     RAW_COLUMNS_TO_KEEP, RAW_BINARY_FEATURES,
     MEPS_MISSING_CODES,
     MARRY31X_TRANSITION_CODES, EMPST31_TRANSITION_CODES,
     MARRY31X_COLLAPSE_MAP, EMPST31_COLLAPSE_MAP,
 )
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Configuration
+LLM_MODEL = "gemini-3.1-pro-preview"
+BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
+DELAY_SECONDS = 20    # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
+MAX_RETRIES = 5       # Retry attempts per batch on API errors
 
 # Paths (relative to /notebooks directory)
 RAW_DATA_PATH = "../data/h251.sas7bdat"
@@ -519,7 +539,7 @@ HEALTH_SCALE = {1: "Excellent", 2: "Very Good", 3: "Good", 4: "Fair", 5: "Poor"}
 YES_NO = {1: "Yes", 0: "No"}
 
 CHRONIC_CONDITIONS = {
-    "HIBPDX": "High Blood Pressure (Hypertension)",
+    "HIBPDX": "High Blood Pressure",
     "CHOLDX": "High Cholesterol",
     "DIABDX_M18": "Diabetes",
     "CHDDX": "Coronary Heart Disease",
@@ -628,7 +648,7 @@ print(f"  Aligned {len(common_ids):,} validation rows")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Create natural language profiles (user input provided to an AI Chatbot).
+#     📌 Create natural language profiles (user input provided to AI Chatbot).
 # </div> 
 
 # %%
@@ -702,7 +722,62 @@ profiles = [row_to_profile(row) for _, row in df_raw_val.iterrows()]
 print(f"  Created {len(profiles):,} profiles\n")
 
 # Display example profile
+print("Example Profile:")
 print(profiles[0])
+
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Get LLM predictions via API request.
+# </div> 
+
+# %%
+def build_batch_prompt(profiles, start_idx):
+    """Build a prompt containing multiple profiles for batched inference."""
+    profile_texts = []
+    for i, profile in enumerate(profiles):
+        profile_texts.append(f"Profile {start_idx + i + 1}:\n{profile}")
+
+    n = len(profiles)
+    return (
+        f"Predict the total annual out-of-pocket healthcare costs (in 2023 US dollars) "
+        f"for each of the following {n} US adults.\n\n"
+        + "\n\n".join(profile_texts)
+        + f"\n\nRespond with ONLY a JSON array of {n} numbers (dollar amounts), "
+        f"one per profile, in the same order."
+    )
+
+
+
+# %%
+# API Key Check 
+api_key = os.environ.get("GEMINI_API_KEY")
+if not api_key:
+    print("❌ GEMINI_API_KEY environment variable not set.")
+    print("   Get a free API key at: https://aistudio.google.com/apikey")
+    print("   Then set it in .env: GEMINI_API_KEY=your_gemini_api_key_here")
+    sys.exit(1)
+
+# --- Query LLM in Batches ---
+print(f"Step 3: Making API requests to {LLM_MODEL} to predict out-of-pocket costs for {len(profiles):,} profiles in batches of {BATCH_SIZE}...")
+client = genai.Client(api_key=api_key)
+
+all_predictions = []
+batches = [profiles[i : i + BATCH_SIZE] for i in range(0, len(profiles), BATCH_SIZE)]
+total_batches = len(batches)
+start_time = time.time()
+
+for i, batch in enumerate(batches):
+    start_idx = i * BATCH_SIZE
+    elapsed = time.time() - start_time
+    
+    # Calculate ETA: (time per batch so far) * (batches remaining)
+    # We use max(i, 1) to avoid division by zero on the first batch
+    eta = (elapsed / max(i, 1)) * (total_batches - i)
+    
+    print(
+        f"  Batch {i + 1:>2}/{total_batches} | Elapsed: {elapsed:>4.0f}s | ETA: {eta:>4.0f}s"
+    )
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">

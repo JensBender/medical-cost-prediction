@@ -45,9 +45,6 @@ from google.genai import types
 from dotenv import load_dotenv
 from sklearn.metrics import mean_absolute_error, r2_score
 
-# Load environment variables from .env file
-load_dotenv()
-
 # Local imports
 from src.constants import (
     ID_COLUMN, WEIGHT_COLUMN, TARGET_COLUMN,
@@ -57,6 +54,9 @@ from src.constants import (
     MARRY31X_COLLAPSE_MAP, EMPST31_COLLAPSE_MAP,
 )
 from src.utils import weighted_median_absolute_error, save_metrics
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 # =========================
@@ -88,7 +88,7 @@ HEALTH_SCALE = {1: "Excellent", 2: "Very Good", 3: "Good", 4: "Fair", 5: "Poor"}
 YES_NO = {1: "Yes", 0: "No"}
 
 CHRONIC_CONDITIONS = {
-    "HIBPDX": "High Blood Pressure (Hypertension)",
+    "HIBPDX": "High Blood Pressure",
     "CHOLDX": "High Cholesterol",
     "DIABDX_M18": "Diabetes",
     "CHDDX": "Coronary Heart Disease",
@@ -362,7 +362,7 @@ def main():
     if not api_key:
         print("❌ GEMINI_API_KEY environment variable not set.")
         print("   Get a free API key at: https://aistudio.google.com/apikey")
-        print('   Then set it:  $env:GEMINI_API_KEY = "your-key-here"')
+        print("   Then set it in .env: GEMINI_API_KEY=your_gemini_api_key_here")
         sys.exit(1)
 
     print(f"LLM Benchmark (EV-04): {LLM_MODEL}")
@@ -393,21 +393,23 @@ def main():
     total_batches = len(batches)
     start_time = time.time()
 
-    for batch_num, batch in enumerate(batches, 1):
-        start_idx = (batch_num - 1) * BATCH_SIZE
+    for i, batch in enumerate(batches):
+        start_idx = i * BATCH_SIZE
         elapsed = time.time() - start_time
-        eta = (elapsed / max(batch_num - 1, 1)) * (total_batches - batch_num)
+        
+        # Calculate ETA: (time per batch so far) * (batches remaining)
+        # We use max(i, 1) to avoid division by zero on the first batch
+        eta = (elapsed / max(i, 1)) * (total_batches - i)
+        
         print(
-            f"  Batch {batch_num:>3}/{total_batches} "
-            f"(profiles {start_idx + 1:>4}–{start_idx + len(batch):>4}) | "
-            f"Elapsed: {elapsed:>5.0f}s | ETA: {eta:>5.0f}s"
+            f"  Batch {i + 1:>2}/{total_batches} | Elapsed: {elapsed:>4.0f}s | ETA: {eta:>4.0f}s"
         )
 
-        predictions = query_llm_batch(client, batch, start_idx, batch_num, total_batches)
+        predictions = query_llm_batch(client, batch, start_idx, i + 1, total_batches)
         all_predictions.extend(predictions)
 
         # Rate-limiting delay (skip after last batch)
-        if batch_num < total_batches:
+        if i < total_batches - 1:
             time.sleep(DELAY_SECONDS)
 
     total_time = time.time() - start_time
