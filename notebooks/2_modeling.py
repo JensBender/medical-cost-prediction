@@ -360,14 +360,21 @@ def persist_all_models(model_results):
 # </div> 
 
 # %%
-# Load baseline model metrics from JSON file
-baseline_metrics = load_metrics("../models/baselines_metrics.json")
+# Load baseline model metrics from JSON files 
+baseline_metrics = {}
+for model in ["median", "lr", "en", "tree", "rf", "xgb", "svm"]:
+    metrics = load_metrics(f"../models/{model}_baseline_metrics.json")
+    baseline_metrics.update(metrics)
+
+# Create DataFrame
+baseline_metrics = pd.DataFrame(baseline_metrics).T
 
 # Display metric comparison table
 display(
-    pd.DataFrame(baseline_metrics).T
+    baseline_metrics
     [["val_mdae", "val_mae", "val_r2"]]
-    .rename(columns=METRIC_LABELS)
+    .rename(columns=lambda x: METRIC_LABELS.get(x, x).replace(" (Val)", ""))
+    .rename(index=lambda x: x.replace(" (Baseline)", ""))
     .style
     .pipe(add_table_caption, "Baseline Model Metrics (Validation Data)")
     .format("{:.2f}")
@@ -472,9 +479,12 @@ display(
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">LLM Benchmark</h2>
 # </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     Setup
+# </div>
 
 # %%
-# --- Setup ---
 # Imports
 from src.constants import (
     RAW_COLUMNS_TO_KEEP, RAW_BINARY_FEATURES,
@@ -518,8 +528,12 @@ FUNCTIONAL_LIMITATIONS = {
 }
 
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Prepare data.
+# </div> 
+
 # %%
-# Data Preparation
 def prepare_human_readable_validation_data():
     """
     Recover human-readable feature values for the validation set.
@@ -601,8 +615,12 @@ w_val = w_val.loc[common_ids]
 print(f"  Benchmarking on {len(common_ids):,} validation rows\n")
 
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Create natural language profiles (user input provided to an AI Chatbot).
+# </div> 
+
 # %%
-# Convert DataFrame rows to natural language profiles (like user input provided to an AI Chatbot) 
 def row_to_profile(row):
     """
     Convert a single row of cleaned (pre-pipeline) data to a natural language profile
@@ -675,7 +693,7 @@ print(f"  Created {len(profiles):,} profiles\n")
 # Display example profile
 print(profiles[0])
 
-# %% [markdown] jp-MarkdownHeadingCollapsed=true
+# %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Hyperparameter Tuning</h1>
 # </div> 
