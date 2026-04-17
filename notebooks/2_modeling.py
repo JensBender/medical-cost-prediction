@@ -733,7 +733,20 @@ print(profiles[0])
 
 # %%
 def build_batch_prompt(profiles, start_idx):
-    """Build a prompt containing multiple profiles for batched inference."""
+    """
+    Build a prompt containing multiple profiles for prompt-batching.
+    
+    Rationale: Bundling multiple profiles into a single request maximizes 
+    throughput under RPM-constrained free tier, reduces total latency by 
+    minimizing round-trips, and improves token efficiency. 
+    
+    Trade-offs: Large batches can suffer from "lost in the middle" effects 
+    (reduced attention to middle profiles) or cross-profile information 
+    leakage/anchoring (e.g., first prediction influences subsequent 
+    predictions). A batch size of 25 is chosen as a "sweet spot" that 
+    maintains high prediction quality and reliable JSON arrays while reducing 
+    total latency and improving token efficiency.
+    """
     profile_texts = []
     for i, profile in enumerate(profiles):
         profile_texts.append(f"Profile {start_idx + i + 1}:\n{profile}")
@@ -748,8 +761,74 @@ def build_batch_prompt(profiles, start_idx):
     )
 
 
+# Display example batch prompt
+batch_prompt = build_batch_prompt(profiles[:25], 0)
+print(batch_prompt)
+
 
 # %%
+def parse_llm_response(response_text, expected_count):
+    """Parse the LLM's JSON array response into a list of floats."""
+    text = response_text.strip()
+
+    # Primary: extract JSON array
+    match = re.search(r"\[[\s\S]*?\]", text)
+    if match:
+        try:
+            values = json.loads(match.group())
+            if len(values) == expected_count:
+                return [float(v) for v in values]
+            print(f"    ⚠️  Expected {expected_count} values, got {len(values)}")
+            values = [float(v) for v in values]
+            # Pad with NaN if too few, truncate if too many
+            values.extend([np.nan] * max(0, expected_count - len(values)))
+            return values[:expected_count]
+        except (json.JSONDecodeError, ValueError, TypeError) as e:
+            print(f"    ⚠️  JSON parse error: {e}")
+
+    # Fallback: extract individual numbers
+    numbers = re.findall(r"[\d,]+\.?\d*", text)
+    if len(numbers) >= expected_count:
+        try:
+            return [float(n.replace(",", "")) for n in numbers[:expected_count]]
+        except ValueError:
+            pass
+
+    print(f"    ❌ Unparseable response: {text[:200]}...")
+    return [np.nan] * expected_count
+
+
+def query_llm_batch(client, profiles, start_idx, batch_num, total_batches):
+    """Send a batch of profiles to the LLM API with retry logic."""
+    prompt = build_batch_prompt(profiles, start_idx)
+
+    for attempt in range(MAX_RETRIES):
+        try:
+            response = client.models.generate_content(
+                model=LLM_MODEL,
+                contents=prompt,
+                config=genai.types.GenerateContentConfig(
+                    system_instruction=SYSTEM_PROMPT,
+                    temperature=0,
+                    response_mime_type="application/json",
+                ),
+            )
+            return parse_llm_response(response.text, len(profiles))
+
+        except Exception as e:
+            wait_time = DELAY_SECONDS * (2 ** attempt)
+            error_msg = str(e)
+            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+                print(f"    ⚠️  Rate limited (attempt {attempt + 1}/{MAX_RETRIES}). Waiting {wait_time}s...")
+            else:
+                print(f"    ⚠️  API error (attempt {attempt + 1}/{MAX_RETRIES}): {error_msg[:120]}. Waiting {wait_time}s...")
+            time.sleep(wait_time)
+
+    print(f"    ❌ Batch {batch_num} failed after {MAX_RETRIES} retries")
+    return [np.nan] * len(profiles)
+
+
+# --- Make API Requests ---
 # API Key Check 
 api_key = os.environ.get("GEMINI_API_KEY")
 if not api_key:
@@ -758,7 +837,7 @@ if not api_key:
     print("   Then set it in .env: GEMINI_API_KEY=your_gemini_api_key_here")
     sys.exit(1)
 
-# --- Query LLM in Batches ---
+# Query LLM in Batches
 print(f"Step 3: Making API requests to {LLM_MODEL} to predict out-of-pocket costs for {len(profiles):,} profiles in batches of {BATCH_SIZE}...")
 client = genai.Client(api_key=api_key)
 
@@ -767,7 +846,7 @@ batches = [profiles[i : i + BATCH_SIZE] for i in range(0, len(profiles), BATCH_S
 total_batches = len(batches)
 start_time = time.time()
 
-for i, batch in enumerate(batches):
+for i, batch in enumerate(batches[:2]):
     start_idx = i * BATCH_SIZE
     elapsed = time.time() - start_time
     

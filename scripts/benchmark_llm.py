@@ -276,7 +276,20 @@ def row_to_profile(row):
 # =========================
 
 def build_batch_prompt(profiles, start_idx):
-    """Build a prompt containing multiple profiles for batched inference."""
+    """
+    Build a prompt containing multiple profiles for prompt-batching.
+    
+    Rationale: Bundling multiple profiles into a single request maximizes 
+    throughput under RPM-constrained free tier, reduces total latency by 
+    minimizing round-trips, and improves token efficiency. 
+    
+    Trade-offs: Large batches can suffer from "lost in the middle" effects 
+    (reduced attention to middle profiles) or cross-profile information 
+    leakage/anchoring (e.g., first prediction influences subsequent 
+    predictions). A batch size of 25 is chosen as a "sweet spot" that 
+    maintains high prediction quality and reliable JSON arrays while reducing 
+    total latency and improving token efficiency.
+    """
     profile_texts = []
     for i, profile in enumerate(profiles):
         profile_texts.append(f"Profile {start_idx + i + 1}:\n{profile}")
