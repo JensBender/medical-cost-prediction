@@ -41,7 +41,6 @@ import numpy as np
 import pandas as pd
 import joblib
 from google import genai
-from google.genai import types
 from dotenv import load_dotenv
 from sklearn.metrics import mean_absolute_error, r2_score
 
@@ -63,7 +62,7 @@ load_dotenv()
 # Configuration
 # =========================
 
-LLM_MODEL = "gemini-3.1-pro-preview"
+LLM_MODEL = "gemini-3.1-flash-lite"
 BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
 DELAY_SECONDS = 20    # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
 MAX_ATTEMPTS = 5      # Maximum times to try API call before giving up
@@ -334,7 +333,7 @@ def parse_llm_response(response_text, expected_count):
     return [np.nan] * expected_count
 
 
-def query_llm_batch(client, profiles, start_idx, batch_num, total_batches):
+def query_llm_batch(client, profiles, start_idx, batch_num):
     """Send a batch of profiles in a single prompt to the LLM API with retry logic."""
     batch_prompt = build_batch_prompt(profiles, start_idx)
 
@@ -360,9 +359,9 @@ def query_llm_batch(client, profiles, start_idx, batch_num, total_batches):
             wait_time = DELAY_SECONDS * (2 ** attempt)  # 20 sec after first failed attempt, 40 after 2nd, 80 after 3rd, 160 after 4th, 320 after 5th
             error_msg = str(e)
             if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
-                print(f"    ⚠️  Rate limited (attempt {attempt + 1}/{MAX_ATTEMPTS}). Waiting {wait_time}s...")
+                print(f"    ⚠️ Rate limited (attempt {attempt + 1}/{MAX_ATTEMPTS}). Waiting {wait_time}s...")
             else:
-                print(f"    ⚠️  API error (attempt {attempt + 1}/{MAX_ATTEMPTS}): {error_msg[:120]}. Waiting {wait_time}s...")
+                print(f"    ⚠️ API error (attempt {attempt + 1}/{MAX_ATTEMPTS}): {error_msg[:120]}. Waiting {wait_time}s...")
             time.sleep(wait_time)
 
     print(f"    ❌ Batch {batch_num} failed after {MAX_ATTEMPTS} attempts")
@@ -422,7 +421,7 @@ def main():
             f"  Batch {i + 1:>2}/{total_batches} | Elapsed: {elapsed:>4.0f}s | ETA: {eta:>4.0f}s"
         )
 
-        predictions = query_llm_batch(client, batch, start_idx, i + 1, total_batches)
+        predictions = query_llm_batch(client, batch, start_idx, i + 1)
         all_predictions.extend(predictions)
 
         # Rate-limiting delay (skip after last batch)
@@ -430,6 +429,8 @@ def main():
             time.sleep(DELAY_SECONDS)
 
     total_time = time.time() - start_time
+    client.close()  # Close the API client to release resources
+
     y_llm_pred = np.array(all_predictions, dtype=float)
 
     n_failed = int(np.isnan(y_llm_pred).sum())

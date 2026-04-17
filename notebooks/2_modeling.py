@@ -503,7 +503,6 @@ import json
 
 # Third-party imports
 from google import genai
-from google.genai import types
 from dotenv import load_dotenv
 
 # Local importsfrom src.constants import (
@@ -518,7 +517,7 @@ from src.constants import (
 load_dotenv()
 
 # Configuration
-LLM_MODEL = "gemini-3.1-pro-preview"
+LLM_MODEL = "gemini-3.1-flash-lite-preview"
 BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
 DELAY_SECONDS = 20    # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
 MAX_ATTEMPTS = 5      # Maximum times to try API call before giving up
@@ -731,6 +730,17 @@ print(profiles[0])
 # </div> 
 
 # %%
+# Load API Key from .env file 
+api_key = os.environ.get("GEMINI_API_KEY")
+
+# Check existence of API key
+if not api_key:
+    print("❌ GEMINI_API_KEY environment variable not set.")
+    print("   Get a free API key at: https://aistudio.google.com/apikey")
+    print("   Then set it in .env: GEMINI_API_KEY=your_gemini_api_key_here")
+    sys.exit(1)
+
+# %%
 # System Prompt
 # Ensures LLM and the domain-specifc ML model solve the same problem by defining costs explicitly.
 # This sets a higher bar compared to real LLM chatbot usage by providing expert-level clarity in prompt.
@@ -783,6 +793,51 @@ print(batch_prompt)
 
 
 # %%
+def query_llm_batch(client, profiles, start_idx, batch_num):
+    """Send a batch of profiles in a single prompt to the LLM API with retry logic."""
+    batch_prompt = build_batch_prompt(profiles, start_idx)
+
+    for attempt in range(MAX_ATTEMPTS):
+        try:
+            response = client.models.generate_content(
+                model=LLM_MODEL,
+                contents=batch_prompt,
+                config=genai.types.GenerateContentConfig(
+                    system_instruction=SYSTEM_PROMPT,
+                    temperature=0,  # Almost deterministic model outputs (except for tiny variations due to floating-point math)
+                    # Use structured JSON output (array of numbers, or list of floats in python)
+                    response_mime_type="application/json",
+                    response_schema={
+                        "type": "ARRAY",
+                        "items": {"type": "NUMBER"}
+                    },
+                ),
+            )
+            return response
+
+        except Exception as e:
+            wait_time = DELAY_SECONDS * (2 ** attempt)  # 20 sec after first failed attempt, 40 after 2nd, 80 after 3rd, 160 after 4th, 320 after 5th
+            error_msg = str(e)
+            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+                print(f"    ⚠️ Rate limited (attempt {attempt + 1}/{MAX_ATTEMPTS}). Waiting {wait_time}s...")
+            else:
+                print(f"    ⚠️ API error (attempt {attempt + 1}/{MAX_ATTEMPTS}): {error_msg[:120]}. Waiting {wait_time}s...")
+            time.sleep(wait_time)
+
+    print(f"    ❌ Batch {batch_num} failed after {MAX_ATTEMPTS} attempts")
+    return [np.nan] * len(profiles)
+
+
+# Example usage on single batch prompt
+client = genai.Client(api_key=api_key)
+response = query_llm_batch(client, profiles[:25], start_idx=0, batch_num=1)
+client.close()  # Close the API client to release resources
+
+# Display example API response 
+print(response.text)
+
+
+# %%
 def parse_llm_response(response_text, expected_count):
     """Parse the LLM's JSON array response into a list of floats."""
     text = response_text.strip()
@@ -814,50 +869,7 @@ def parse_llm_response(response_text, expected_count):
     return [np.nan] * expected_count
 
 
-def query_llm_batch(client, profiles, start_idx, batch_num, total_batches):
-    """Send a batch of profiles in a single prompt to the LLM API with retry logic."""
-    batch_prompt = build_batch_prompt(profiles, start_idx)
-
-    for attempt in range(MAX_ATTEMPTS):
-        try:
-            response = client.models.generate_content(
-                model=LLM_MODEL,
-                contents=batch_prompt,
-                config=genai.types.GenerateContentConfig(
-                    system_instruction=SYSTEM_PROMPT,
-                    temperature=0,  # Almost deterministic model outputs (except for tiny variations due to floating-point math)
-                    # Use structured JSON output (array of numbers, or list of floats in python)
-                    response_mime_type="application/json",
-                    response_schema={
-                        "type": "ARRAY",
-                        "items": {"type": "NUMBER"}
-                    },
-                ),
-            )
-            return parse_llm_response(response.text, len(profiles))
-
-        except Exception as e:
-            wait_time = DELAY_SECONDS * (2 ** attempt)  # 20 sec after first failed attempt, 40 after 2nd, 80 after 3rd, 160 after 4th, 320 after 5th
-            error_msg = str(e)
-            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
-                print(f"    ⚠️  Rate limited (attempt {attempt + 1}/{MAX_ATTEMPTS}). Waiting {wait_time}s...")
-            else:
-                print(f"    ⚠️  API error (attempt {attempt + 1}/{MAX_ATTEMPTS}): {error_msg[:120]}. Waiting {wait_time}s...")
-            time.sleep(wait_time)
-
-    print(f"    ❌ Batch {batch_num} failed after {MAX_ATTEMPTS} attempts")
-    return [np.nan] * len(profiles)
-
-
 # --- Make API Requests ---
-# API Key Check 
-api_key = os.environ.get("GEMINI_API_KEY")
-if not api_key:
-    print("❌ GEMINI_API_KEY environment variable not set.")
-    print("   Get a free API key at: https://aistudio.google.com/apikey")
-    print("   Then set it in .env: GEMINI_API_KEY=your_gemini_api_key_here")
-    sys.exit(1)
-
 # Query LLM in Batches
 print(f"Step 3: Making API requests to {LLM_MODEL} to predict out-of-pocket costs for {len(profiles):,} profiles in batches of {BATCH_SIZE}...")
 client = genai.Client(api_key=api_key)
@@ -878,6 +890,23 @@ for i, batch in enumerate(batches[:2]):
     print(
         f"  Batch {i + 1:>2}/{total_batches} | Elapsed: {elapsed:>4.0f}s | ETA: {eta:>4.0f}s"
     )
+
+    predictions = query_llm_batch(client, batch, start_idx, i + 1)
+    all_predictions.extend(predictions)
+
+    # Rate-limiting delay (skip after last batch)
+    if i < len(batches[:2]) - 1:
+        time.sleep(DELAY_SECONDS)
+
+total_time = time.time() - start_time
+y_llm_pred = np.array(all_predictions, dtype=float)
+
+# Close the API client to release resources
+client.close()
+
+n_failed = int(np.isnan(y_llm_pred).sum())
+n_success = len(y_llm_pred) - n_failed
+print(f"\nCompleted in {total_time:.0f}s | Parsed: {n_success:,}/{len(y_llm_pred):,} | Failed: {n_failed:,}\n")
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
