@@ -521,7 +521,7 @@ load_dotenv()
 LLM_MODEL = "gemini-3.1-pro-preview"
 BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
 DELAY_SECONDS = 20    # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
-MAX_RETRIES = 5       # Retry attempts per batch on API errors
+MAX_ATTEMPTS = 5      # Maximum times to try API call before giving up
 
 # Paths (relative to /notebooks directory)
 RAW_DATA_PATH = "../data/h251.sas7bdat"
@@ -815,17 +815,17 @@ def parse_llm_response(response_text, expected_count):
 
 
 def query_llm_batch(client, profiles, start_idx, batch_num, total_batches):
-    """Send a batch of profiles to the LLM API with retry logic."""
+    """Send a batch of profiles in a single prompt to the LLM API with retry logic."""
     batch_prompt = build_batch_prompt(profiles, start_idx)
 
-    for attempt in range(MAX_RETRIES):
+    for attempt in range(MAX_ATTEMPTS):
         try:
             response = client.models.generate_content(
                 model=LLM_MODEL,
                 contents=batch_prompt,
                 config=genai.types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
-                    temperature=0,
+                    temperature=0,  # Almost deterministic model outputs (except for tiny variations due to floating-point math)
                     # Use structured JSON output (array of numbers, or list of floats in python)
                     response_mime_type="application/json",
                     response_schema={
@@ -837,15 +837,15 @@ def query_llm_batch(client, profiles, start_idx, batch_num, total_batches):
             return parse_llm_response(response.text, len(profiles))
 
         except Exception as e:
-            wait_time = DELAY_SECONDS * (2 ** attempt)
+            wait_time = DELAY_SECONDS * (2 ** attempt)  # 20 sec after first failed attempt, 40 after 2nd, 80 after 3rd, 160 after 4th, 320 after 5th
             error_msg = str(e)
             if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
-                print(f"    ⚠️  Rate limited (attempt {attempt + 1}/{MAX_RETRIES}). Waiting {wait_time}s...")
+                print(f"    ⚠️  Rate limited (attempt {attempt + 1}/{MAX_ATTEMPTS}). Waiting {wait_time}s...")
             else:
-                print(f"    ⚠️  API error (attempt {attempt + 1}/{MAX_RETRIES}): {error_msg[:120]}. Waiting {wait_time}s...")
+                print(f"    ⚠️  API error (attempt {attempt + 1}/{MAX_ATTEMPTS}): {error_msg[:120]}. Waiting {wait_time}s...")
             time.sleep(wait_time)
 
-    print(f"    ❌ Batch {batch_num} failed after {MAX_RETRIES} retries")
+    print(f"    ❌ Batch {batch_num} failed after {MAX_ATTEMPTS} attempts")
     return [np.nan] * len(profiles)
 
 
