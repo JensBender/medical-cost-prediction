@@ -764,83 +764,95 @@ rf_param_list = list(ParameterSampler(RF_PARAM_DISTRIBUTIONS, n_iter=N_ITER, ran
 print(f"Generated {len(rf_param_list)} random hyperparameter combinations")
 print(f"Example: {rf_param_list[0]}")
 
+
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Perform randomized search and store results (best model as <code>.joblib</code>, metrics of all model runs as <code>.json</code>, predictions of best model as <code>.joblib</code>).
 # </div>
 
 # %%
-# Normalize training weights (mean=1.0) for numerical stability during model fitting
-w_train_norm = w_train / w_train.mean()
-
-# Run randomized search
-print("Tuning random forest...")    
-rf_tuning_metrics = []
-
-for i, params in enumerate(rf_param_list):
-    # Build model: RandomForest wrapped in log-transform
-    rf_model = TransformedTargetRegressor(
+def tune_random_forest(X_train, y_train, X_val, y_val, w_train, w_val, param_list, random_state=RANDOM_STATE):
+    """
+    Perform randomized search for Random Forest hyperparameters and persist results.
+    """
+    n_iter = len(param_list)
+    # Normalize training weights (mean=1.0) for numerical stability during model fitting
+    w_train_norm = w_train / w_train.mean()
+    
+    # Run randomized search
+    print(f"Tuning random forest ({n_iter} iterations)...")    
+    rf_tuning_metrics = []
+    
+    for i, params in enumerate(param_list):
+        # Build model: RandomForest wrapped in log-transform
+        rf_model = TransformedTargetRegressor(
+            regressor=RandomForestRegressor(
+                criterion="absolute_error",
+                n_jobs=-1,
+                random_state=random_state,
+                **params
+            ),
+            func=np.log1p,
+            inverse_func=np.expm1
+        )
+        
+        # Train with normalized sample weights
+        start_time = time.time()  # Measure training time
+        rf_model.fit(X_train, y_train, sample_weight=w_train_norm)
+        training_time = time.time() - start_time
+        
+        # Predict on training and validation set (predictions are in raw dollars due to inverse_func)
+        y_train_pred = rf_model.predict(X_train)
+        y_val_pred = rf_model.predict(X_val)
+        
+        # Evaluate with raw survey weights
+        train_mdae = weighted_median_absolute_error(y_train, y_train_pred, sample_weight=w_train)
+        train_mae = mean_absolute_error(y_train, y_train_pred, sample_weight=w_train)
+        train_r2 = r2_score(y_train, y_train_pred, sample_weight=w_train)
+    
+        val_mdae = weighted_median_absolute_error(y_val, y_val_pred, sample_weight=w_val)
+        val_mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
+        val_r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
+        
+        rf_tuning_metrics.append({
+            "params": params, 
+            "train_mdae": train_mdae, 
+            "train_mae": train_mae, 
+            "train_r2": train_r2,
+            "val_mdae": val_mdae, 
+            "val_mae": val_mae, 
+            "val_r2": val_r2
+        })
+        
+        print(f"  [{i+1:3d}/{n_iter}] MdAE: {val_mdae:8.2f} | trees={params['n_estimators']}, depth={params['max_depth']}, leaf={params['min_samples_leaf']}, feats={params['max_features']}, samples={params['max_samples']:.2f}, split={params['min_samples_split']} | training: {training_time:5.1f} s")
+    
+    # Retrain best model 
+    best_rf_params = sorted(rf_tuning_metrics, key=lambda x: x["val_mdae"])[0]["params"]
+    best_rf_model = TransformedTargetRegressor(
         regressor=RandomForestRegressor(
             criterion="absolute_error",
             n_jobs=-1,
-            random_state=RANDOM_STATE,
-            **params
+            random_state=random_state,
+            **best_rf_params
         ),
         func=np.log1p,
         inverse_func=np.expm1
     )
-    
-    # Train with normalized sample weights
-    start_time = time.time()  # Measure training time
-    rf_model.fit(X_train_preprocessed, y_train, sample_weight=w_train_norm)
-    training_time = time.time() - start_time
-    
-    # Predict on training and validation set (predictions are in raw dollars due to inverse_func)
-    y_train_pred = rf_model.predict(X_train_preprocessed)
-    y_val_pred = rf_model.predict(X_val_preprocessed)
-    
-    # Evaluate with raw survey weights
-    train_mdae = weighted_median_absolute_error(y_train, y_train_pred, sample_weight=w_train)
-    train_mae = mean_absolute_error(y_train, y_train_pred, sample_weight=w_train)
-    train_r2 = r2_score(y_train, y_train_pred, sample_weight=w_train)
+    best_rf_results = train_and_evaluate(best_rf_model, X_train, y_train, X_val, y_val, w_train, w_val)
 
-    val_mdae = weighted_median_absolute_error(y_val, y_val_pred, sample_weight=w_val)
-    val_mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
-    val_r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
+    # Persist results
+    save_metrics(rf_tuning_metrics, "../models/rf_tuning_history.json", verbose=False)
+    print("  Saved tuned random forest metrics to 'models/rf_tuning_history.json'")
+    save_model(best_rf_results["fitted_model"], "../models/rf_tuned_model.joblib", verbose=False)
+    print("  Saved best model to 'models/rf_tuned_model.joblib'")
+    save_model(best_rf_results["y_val_pred"], "../models/rf_tuned_predictions.joblib", verbose=False)
+    print("  Saved predicted values of best model to 'models/rf_tuned_predictions.joblib'")
     
-    rf_tuning_metrics.append({
-        "params": params, 
-        "train_mdae": train_mdae, 
-        "train_mae": train_mae, 
-        "train_r2": train_r2,
-        "val_mdae": val_mdae, 
-        "val_mae": val_mae, 
-        "val_r2": val_r2
-    })
-    
-    print(f"  [{i+1:3d}/{N_ITER}] MdAE: {val_mdae:8.2f} | trees={params['n_estimators']}, depth={params['max_depth']}, leaf={params['min_samples_leaf']}, feats={params['max_features']}, samples={params['max_samples']:.2f}, split={params['min_samples_split']} | training: {training_time:5.1f} s")
+    return rf_tuning_metrics, best_rf_results
 
-# Retrain best model 
-best_rf_params = sorted(rf_tuning_metrics, key=lambda x: x["val_mdae"])[0]["params"]
-best_rf_model = TransformedTargetRegressor(
-    regressor=RandomForestRegressor(
-        criterion="absolute_error",
-        n_jobs=-1,
-        random_state=RANDOM_STATE,
-        **best_rf_params
-    ),
-    func=np.log1p,
-    inverse_func=np.expm1
-)
-best_rf_results = train_and_evaluate(best_rf_model, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
 
-# Persist results
-save_metrics(rf_tuning_metrics, "../models/rf_tuning_history.json", verbose=False)
-print("  Saved tuned random forest metrics to 'models/rf_tuning_history.json'")
-save_model(best_rf_results["fitted_model"], "../models/rf_tuned_model.joblib", verbose=False)
-print("  Saved best model to 'models/rf_tuned_model.joblib'")
-save_model(best_rf_results["y_val_pred"], "../models/rf_tuned_predictions.joblib", verbose=False)
-print("  Saved predicted values of best model to 'models/rf_tuned_predictions.joblib'")
+# Run tuning
+# rf_tuning_metrics, best_rf_results = tune_random_forest(X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val, rf_param_list)
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
