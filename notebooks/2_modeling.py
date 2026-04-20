@@ -843,14 +843,11 @@ client.close()  # Close the API client to release resources
 # Display example API response 
 print(response)
 
-# %%
-print(response)
-
 
 # %%
 def parse_llm_response(response_text, expected_count):
     """
-    Parse the LLM's JSON array response into a list of floats.
+    Parse the LLM's response into a list of floats.
 
     Strictness Rationale:
     If the number of predictions does not exactly match `expected_count`, the 
@@ -881,20 +878,20 @@ def parse_llm_response(response_text, expected_count):
             print(f"    ⚠️  Parse error: {e}. Discarding batch.")
             return [np.nan] * expected_count
 
-    # Fallback: extract individual numbers
+    # Fallback: extract numbers in case of missing list brackets []
     numbers = re.findall(r"[\d,]+\.?\d*", text)
-    if len(numbers) == expected_count:
+    if len(numbers) == expected_count:  # only if number of predictions is as expected
         try:
             return [float(n.replace(",", "")) for n in numbers]
-        except ValueError:
+        except ValueError:  # handles potential stray comma (which would match re)
             pass
 
     print(f"    ❌ Unparseable or mismatched response: {text[:200]}...")
     return [np.nan] * expected_count
 
 
-# Extract predictions as list of floats from LLM response
-predictions = parse_llm_response(response)
+# Extract predictions from LLM text response as a list of floats
+predictions = parse_llm_response(response, expected_count=25)
 predictions
 
 # %% [markdown]
