@@ -68,6 +68,7 @@ load_dotenv()
 
 LLM_MODEL = "gemma-4-31b-it"
 LLM_TEMPERATURE = 0   # Almost deterministic model outputs (except for tiny variations due to floating-point math)
+LLM_THINKING_LEVEL = "high"  # Reasoning depth 
 BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
 DELAY_SECONDS = 2     # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
 MAX_ATTEMPTS = 5      # Maximum times to try API call before giving up
@@ -363,7 +364,7 @@ def query_llm_batch(client, profiles, start_idx, batch_num):
                 config=genai.types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
                     temperature=LLM_TEMPERATURE,
-                    thinking_config=genai.types.ThinkingConfig(thinking_level="high"),
+                    thinking_config=genai.types.ThinkingConfig(thinking_level=LLM_THINKING_LEVEL),
                     # Use structured JSON output (array of numbers, or list of floats in python)
                     response_mime_type="application/json",
                     response_schema={
@@ -422,7 +423,7 @@ def main():
         mlflow.log_param("temperature", LLM_TEMPERATURE)
         mlflow.log_param("batch_size", BATCH_SIZE)
         mlflow.log_param("delay_seconds", DELAY_SECONDS)
-        mlflow.log_param("thinking_level", "high")
+        mlflow.log_param("thinking_level", LLM_THINKING_LEVEL)
         print("  Logged parameters to MLflow")
         
         # --- 1. Data Preparation ---
@@ -534,7 +535,7 @@ def main():
                 "batch_size": BATCH_SIZE,
                 "temperature": LLM_TEMPERATURE,
                 "delay_seconds": DELAY_SECONDS,
-                "thinking_level": "high"
+                "thinking_level": LLM_THINKING_LEVEL
             }
         }
         save_metrics(params_dict, "models/llm_benchmark_params.json", verbose=False)
