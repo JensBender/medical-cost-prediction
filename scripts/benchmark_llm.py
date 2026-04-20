@@ -156,7 +156,6 @@ def prepare_human_readable_validation_data():
     w_val = df_val[WEIGHT_COLUMN]
 
     # --- Data Preparation (mirrors preprocess.py steps 1-7) ---
-    print("Preparing human-readable validation data...")
     # Step 1: Load raw MEPS data
     print("  Loading raw MEPS SAS data...")
     df = pd.read_sas(RAW_DATA_PATH, format="sas7bdat", encoding="latin1")
@@ -429,7 +428,7 @@ def main():
     # --- 2. Build Natural Language Profiles ---
     print("Step 2: Converting features to natural language profiles...")
     profiles = [row_to_profile(row) for _, row in df_raw_val.iterrows()]
-    print(f"  Created {len(profiles):,} profiles\n")
+    print(f"  Created {len(profiles):,} profiles for LLM input\n")
 
     # --- 3. Query LLM in Batches ---
     print(f"Step 3: Querying {LLM_MODEL} ({len(profiles):,} profiles in batches of {BATCH_SIZE})...")
