@@ -69,7 +69,7 @@ load_dotenv()
 LLM_MODEL = "gemma-4-31b-it"
 LLM_TEMPERATURE = 0   # Almost deterministic model outputs (except for tiny variations due to floating-point math)
 BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
-DELAY_SECONDS = 5    # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
+DELAY_SECONDS = 2     # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
 MAX_ATTEMPTS = 5      # Maximum times to try API call before giving up
 
 # Paths (relative to project root)
@@ -443,7 +443,7 @@ def main():
         print(f"  Created {len(profiles):,} profiles for LLM input\n")
 
         # --- 3. Query LLM in Batches ---
-        print(f"Step 3: Querying {LLM_MODEL} ({len(profiles):,} profiles in batches of {BATCH_SIZE})...")
+        print(f"Step 3: Querying '{LLM_MODEL}' ({len(profiles):,} profiles in batches of {BATCH_SIZE})...")
         client = genai.Client(api_key=api_key)
         all_predictions = []
         total_time = 0
@@ -512,6 +512,8 @@ def main():
 
         # --- 5. Persistence ---
         print("Step 5: Saving results...")
+        
+        # 5.1. Save evaluation metrics as JSON
         metrics_dict = {
             f"LLM ({LLM_MODEL})": {
                 "val_mdae": float(llm_mdae),
@@ -520,13 +522,25 @@ def main():
                 "n_predictions": int(n_success),
                 "n_failed_predictions": int(n_failed),
                 "inference_time_seconds": round(total_time, 2),
-                "batch_size": BATCH_SIZE,
-                "temperature": LLM_TEMPERATURE,
             }
         }
         save_metrics(metrics_dict, "models/llm_benchmark_metrics.json", verbose=False)
-        print(f"  Saved evaluation metrics of LLM ({LLM_MODEL}) to 'models/llm_benchmark_metrics.json'")
+        print(f"  Saved evaluation metrics to 'models/llm_benchmark_metrics.json'")
+
+        # 5.2. Save LLM parameters as JSON
+        params_dict = {
+            f"LLM ({LLM_MODEL})": {
+                "llm_model": LLM_MODEL,
+                "batch_size": BATCH_SIZE,
+                "temperature": LLM_TEMPERATURE,
+                "delay_seconds": DELAY_SECONDS,
+                "thinking_level": "high"
+            }
+        }
+        save_metrics(params_dict, "models/llm_benchmark_params.json", verbose=False)
+        print(f"  Saved LLM parameters to 'models/llm_benchmark_params.json'")
         
+        # 5.3. Save LLM predictions as .joblib
         save_model(y_llm_pred, "models/llm_benchmark_predictions.joblib", verbose=False)
         print(f"  Saved LLM predictions to 'models/llm_benchmark_predictions.joblib'")
 
