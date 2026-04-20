@@ -39,10 +39,14 @@ import json
 # Third-party imports
 import numpy as np
 import pandas as pd
-import joblib
+import mlflow
+import warnings
 from google import genai
 from dotenv import load_dotenv
 from sklearn.metrics import mean_absolute_error, r2_score
+
+# Suppress benign MLflow warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
 
 # Local imports
 from src.constants import (
@@ -52,7 +56,7 @@ from src.constants import (
     MARRY31X_TRANSITION_CODES, EMPST31_TRANSITION_CODES,
     MARRY31X_COLLAPSE_MAP, EMPST31_COLLAPSE_MAP,
 )
-from src.utils import weighted_median_absolute_error, save_metrics
+from src.utils import weighted_median_absolute_error, save_metrics, save_model
 
 # Load environment variables from .env file
 load_dotenv()
@@ -405,6 +409,12 @@ def main():
     print(f"LLM Benchmark (EV-04): {LLM_MODEL}")
     print(f"{'='*60}\n")
 
+    # --- MLflow Setup ---
+    print("Step 0: Setting up MLflow...")
+    mlflow.set_tracking_uri("http://127.0.0.1:5000")  # Points to running MLflow UI server
+    mlflow.set_experiment("LLM Benchmarks")
+    print(f"  Set up 'LLM Benchmarks' experiment in MLflow with URI '{mlflow.get_tracking_uri()}'\n")
+
     # --- 1. Data Preparation ---
     print("Step 1: Preparing human-readable validation data...")
     df_raw_val, y_val, w_val = prepare_human_readable_validation_data()
@@ -454,7 +464,7 @@ def main():
 
     y_llm_pred = np.array(all_predictions, dtype=float)
 
-    n_failed = int(np.isnan(y_llm_pred).sum())
+    n_failed = np.isnan(y_llm_pred).sum()
     n_success = len(y_llm_pred) - n_failed
     print(f"\n  Completed in {total_time:.0f}s | Parsed: {n_success:,}/{len(y_llm_pred):,} | Failed: {n_failed:,}\n")
 
@@ -479,6 +489,22 @@ def main():
     print(f"    {LLM_MODEL:<25} → MdAE: {llm_mdae:8.2f} | MAE: {llm_mae:8.2f} | "
           f"R²: {llm_r2:.4f} | Inference Time: {total_time:.2f}s")
 
+    # MLflow Logging
+    print("  Logging results to MLflow...")
+    with mlflow.start_run(run_name=LLM_MODEL):
+        # Log Parameters
+        mlflow.log_param("llm_model", LLM_MODEL)
+        mlflow.log_param("batch_size", BATCH_SIZE)
+        mlflow.log_param("delay_seconds", DELAY_SECONDS)
+        
+        # Log Metrics
+        mlflow.log_metric("val_mdae", float(llm_mdae))
+        mlflow.log_metric("val_mae", float(llm_mae))
+        mlflow.log_metric("val_r2", float(llm_r2))
+        mlflow.log_metric("inference_time_s", total_time)
+        mlflow.log_metric("n_success", int(n_success))
+        mlflow.log_metric("n_failed", int(n_failed))
+
     # --- 5. Persistence ---
     print("Step 5: Saving results...")
     metrics_dict = {
@@ -486,16 +512,17 @@ def main():
             "val_mdae": float(llm_mdae),
             "val_mae": float(llm_mae),
             "val_r2": float(llm_r2),
-            "n_predictions": n_success,
-            "n_failed": n_failed,
+            "n_predictions": int(n_success),
+            "n_failed_predictions": int(n_failed),
             "inference_time_seconds": round(total_time, 2),
             "batch_size": BATCH_SIZE,
         }
     }
     save_metrics(metrics_dict, "models/llm_benchmark_metrics.json")
-
-    joblib.dump(y_llm_pred, "models/llm_benchmark_predictions.joblib")
-    print(f"  Saved predictions to 'models/llm_benchmark_predictions.joblib'")
+    print(f"  Saved evaluation metrics of LLM ({LLM_MODEL}) to 'models/llm_benchmark_metrics.json'")
+    
+    save_model(y_llm_pred, "models/llm_benchmark_predictions.joblib", verbose=False)
+    print(f"  Saved LLM predictions to 'models/llm_benchmark_predictions.joblib'")
 
     print("\n✅ LLM benchmark complete.")
 
