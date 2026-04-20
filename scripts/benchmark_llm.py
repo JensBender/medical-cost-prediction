@@ -69,7 +69,7 @@ load_dotenv()
 LLM_MODEL = "gemma-4-31b-it"
 LLM_TEMPERATURE = 0   # Almost deterministic model outputs (except for tiny variations due to floating-point math)
 BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
-DELAY_SECONDS = 20    # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
+DELAY_SECONDS = 5    # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
 MAX_ATTEMPTS = 5      # Maximum times to try API call before giving up
 
 # Paths (relative to project root)
@@ -363,6 +363,7 @@ def query_llm_batch(client, profiles, start_idx, batch_num):
                 config=genai.types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
                     temperature=LLM_TEMPERATURE,
+                    thinking_config=genai.types.ThinkingConfig(thinking_level="high"),
                     # Use structured JSON output (array of numbers, or list of floats in python)
                     response_mime_type="application/json",
                     response_schema={
@@ -414,116 +415,120 @@ def main():
     mlflow.set_experiment("LLM Benchmarks")
     print(f"  Set up 'LLM Benchmarks' experiment in MLflow with URI '{mlflow.get_tracking_uri()}'\n")
 
-    # --- 1. Data Preparation ---
-    print("Step 1: Preparing human-readable validation data...")
-    df_raw_val, y_val, w_val = prepare_human_readable_validation_data()
-
-    # Align all arrays by common indices
-    common_ids = df_raw_val.dropna(how="all").index.intersection(y_val.index)
-    df_raw_val = df_raw_val.loc[common_ids]
-    y_val = y_val.loc[common_ids]
-    w_val = w_val.loc[common_ids]
-    print(f"  Benchmarking on {len(common_ids):,} validation rows\n")
-
-    # --- 2. Build Natural Language Profiles ---
-    print("Step 2: Converting features to natural language profiles...")
-    profiles = [row_to_profile(row) for _, row in df_raw_val.iterrows()]
-    print(f"  Created {len(profiles):,} profiles for LLM input\n")
-
-    # --- 3. Query LLM in Batches ---
-    print(f"Step 3: Querying {LLM_MODEL} ({len(profiles):,} profiles in batches of {BATCH_SIZE})...")
-    client = genai.Client(api_key=api_key)
-
-    all_predictions = []
-    batches = [profiles[i : i + BATCH_SIZE] for i in range(0, len(profiles), BATCH_SIZE)]
-    total_batches = len(batches)
-    start_time = time.time()
-
-    for i, batch in enumerate(batches):
-        start_idx = i * BATCH_SIZE
-        elapsed = time.time() - start_time
-        
-        # Calculate ETA: (time per batch so far) * (batches remaining)
-        # We use max(i, 1) to avoid division by zero on the first batch
-        eta = (elapsed / max(i, 1)) * (total_batches - i)
-        
-        print(
-            f"  Batch {i + 1:>2}/{total_batches} | Elapsed: {elapsed:>4.0f}s | ETA: {eta:>4.0f}s"
-        )
-
-        predictions = query_llm_batch(client, batch, start_idx, i + 1)
-        all_predictions.extend(predictions)
-
-        # Rate-limiting delay (skip after last batch)
-        if i < total_batches - 1:
-            time.sleep(DELAY_SECONDS)
-
-    total_time = time.time() - start_time
-    client.close()  # Close the API client to release resources
-
-    y_llm_pred = np.array(all_predictions, dtype=float)
-
-    n_failed = np.isnan(y_llm_pred).sum()
-    n_success = len(y_llm_pred) - n_failed
-    print(f"\n  Completed in {total_time:.0f}s | Predictions: {n_success:,}/{len(y_llm_pred):,} | Failed Predictions: {n_failed:,}\n")
-
-    # --- 4. Compute Weighted Metrics ---
-    print("Step 4: Computing weighted evaluation metrics...")
-
-    # Exclude rows where LLM failed to produce a prediction
-    valid_mask = ~np.isnan(y_llm_pred)
-    y_true = y_val.values[valid_mask]
-    y_pred = y_llm_pred[valid_mask]
-    weights = w_val.values[valid_mask]
-
-    if n_success == 0:
-        print("  ❌ No valid predictions. Cannot compute metrics.")
-        sys.exit(1)
-
-    llm_mdae = weighted_median_absolute_error(y_true, y_pred, sample_weight=weights)
-    llm_mae = mean_absolute_error(y_true, y_pred, sample_weight=weights)
-    llm_r2 = r2_score(y_true, y_pred, sample_weight=weights)
-
-    print(f"  LLM Benchmark Results (n={n_success:,} rows)")
-    print(f"    {LLM_MODEL:<25} → MdAE: {llm_mdae:8.2f} | MAE: {llm_mae:8.2f} | "
-          f"R²: {llm_r2:.4f} | Inference Time: {total_time:.2f}s")
-
-    # MLflow Logging
-    print("  Logging results to MLflow...")
+    # Start MLflow run to capture the entire process duration
     with mlflow.start_run(run_name=LLM_MODEL):
-        # Log Parameters
+        # Log Parameters to MLflow
         mlflow.log_param("llm_model", LLM_MODEL)
         mlflow.log_param("temperature", LLM_TEMPERATURE)
         mlflow.log_param("batch_size", BATCH_SIZE)
         mlflow.log_param("delay_seconds", DELAY_SECONDS)
+        mlflow.log_param("thinking_level", "high")
+        print("  Logged parameters to MLflow")
         
-        # Log Metrics
+        # --- 1. Data Preparation ---
+        print("Step 1: Preparing human-readable validation data...")
+        df_raw_val, y_val, w_val = prepare_human_readable_validation_data()
+
+        # Align all arrays by common indices
+        print(f"  Aligning row indices with preprocessed validation data...")
+        common_ids = df_raw_val.dropna(how="all").index.intersection(y_val.index)
+        df_raw_val = df_raw_val.loc[common_ids]
+        y_val = y_val.loc[common_ids]
+        w_val = w_val.loc[common_ids]
+        print(f"  Benchmarking on {len(common_ids):,} validation rows")
+
+        # --- 2. Build Natural Language Profiles ---
+        print("Step 2: Converting features to natural language profiles...")
+        profiles = [row_to_profile(row) for _, row in df_raw_val.iterrows()]
+        print(f"  Created {len(profiles):,} profiles for LLM input\n")
+
+        # --- 3. Query LLM in Batches ---
+        print(f"Step 3: Querying {LLM_MODEL} ({len(profiles):,} profiles in batches of {BATCH_SIZE})...")
+        client = genai.Client(api_key=api_key)
+        all_predictions = []
+        total_time = 0
+
+        total_batches = len(range(0, len(profiles), BATCH_SIZE))
+        for i in range(0, len(profiles), BATCH_SIZE):
+            batch = profiles[i:i + BATCH_SIZE]
+            start_idx = i
+            
+            # Progress tracking
+            progress = (i / len(profiles)) * 100
+            elapsed_str = f"{total_time:.0f}s"
+            eta = (total_time / (i + 1e-6)) * (len(profiles) - i) if i > 0 else 0
+            eta_str = f"{eta:.0f}s"
+            print(f"  Batch {i//BATCH_SIZE + 1:>2}/{total_batches:>2} | "
+                  f"{progress:5.1f}% | Elapsed: {elapsed_str:>4} | ETA: {eta_str:>5}")
+
+            start_time = time.time()
+            predictions = query_llm_batch(client, batch, start_idx, i // BATCH_SIZE + 1)
+            batch_time = time.time() - start_time
+            total_time += batch_time
+            
+            all_predictions.extend(predictions)
+            
+            # Add delay to handle API rate limiting (except on the last batch)
+            if i + BATCH_SIZE < len(profiles):
+                time.sleep(DELAY_SECONDS)
+
+        client.close()  # Close the API client to release resources
+
+        y_llm_pred = np.array(all_predictions, dtype=float)
+
+        n_failed = np.isnan(y_llm_pred).sum()
+        n_success = len(y_llm_pred) - n_failed
+        print(f"\n  Completed in {total_time:.0f}s | Predictions: {n_success:,}/{len(y_llm_pred):,} | Failed Predictions: {n_failed:,}\n")
+
+        # --- 4. Compute Weighted Metrics ---
+        print("Step 4: Computing weighted evaluation metrics...")
+
+        # Exclude rows where LLM failed to produce a prediction
+        valid_mask = ~np.isnan(y_llm_pred)
+        y_true = y_val.values[valid_mask]
+        y_pred = y_llm_pred[valid_mask]
+        weights = w_val.values[valid_mask]
+
+        if n_success == 0:
+            print("  ❌ No valid predictions. Cannot compute metrics.")
+            sys.exit(1)
+
+        llm_mdae = weighted_median_absolute_error(y_true, y_pred, sample_weight=weights)
+        llm_mae = mean_absolute_error(y_true, y_pred, sample_weight=weights)
+        llm_r2 = r2_score(y_true, y_pred, sample_weight=weights)
+
+        print(f"  LLM Benchmark Results (n={n_success:,} rows)")
+        print(f"    {LLM_MODEL:<25} → MdAE: {llm_mdae:8.2f} | MAE: {llm_mae:8.2f} | "
+              f"R²: {llm_r2:.4f} | Inference Time: {total_time:.2f}s")
+
+        # Log Metrics to MLflow 
         mlflow.log_metric("val_mdae", float(llm_mdae))
         mlflow.log_metric("val_mae", float(llm_mae))
         mlflow.log_metric("val_r2", float(llm_r2))
         mlflow.log_metric("n_predictions", int(n_success))
         mlflow.log_metric("n_failed_predictions", int(n_failed))
         mlflow.log_metric("inference_time_seconds", total_time)
+        print("  Logged metrics to MLflow")
 
-    # --- 5. Persistence ---
-    print("Step 5: Saving results...")
-    metrics_dict = {
-        f"LLM ({LLM_MODEL})": {
-            "val_mdae": float(llm_mdae),
-            "val_mae": float(llm_mae),
-            "val_r2": float(llm_r2),
-            "n_predictions": int(n_success),
-            "n_failed_predictions": int(n_failed),
-            "inference_time_seconds": round(total_time, 2),
-            "batch_size": BATCH_SIZE,
-            "temperature": LLM_TEMPERATURE,
+        # --- 5. Persistence ---
+        print("Step 5: Saving results...")
+        metrics_dict = {
+            f"LLM ({LLM_MODEL})": {
+                "val_mdae": float(llm_mdae),
+                "val_mae": float(llm_mae),
+                "val_r2": float(llm_r2),
+                "n_predictions": int(n_success),
+                "n_failed_predictions": int(n_failed),
+                "inference_time_seconds": round(total_time, 2),
+                "batch_size": BATCH_SIZE,
+                "temperature": LLM_TEMPERATURE,
+            }
         }
-    }
-    save_metrics(metrics_dict, "models/llm_benchmark_metrics.json", verbose=False)
-    print(f"  Saved evaluation metrics of LLM ({LLM_MODEL}) to 'models/llm_benchmark_metrics.json'")
-    
-    save_model(y_llm_pred, "models/llm_benchmark_predictions.joblib", verbose=False)
-    print(f"  Saved LLM predictions to 'models/llm_benchmark_predictions.joblib'")
+        save_metrics(metrics_dict, "models/llm_benchmark_metrics.json", verbose=False)
+        print(f"  Saved evaluation metrics of LLM ({LLM_MODEL}) to 'models/llm_benchmark_metrics.json'")
+        
+        save_model(y_llm_pred, "models/llm_benchmark_predictions.joblib", verbose=False)
+        print(f"  Saved LLM predictions to 'models/llm_benchmark_predictions.joblib'")
 
     print("\n✅ LLM benchmark complete.")
 
