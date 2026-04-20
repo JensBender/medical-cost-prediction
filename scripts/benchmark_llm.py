@@ -67,6 +67,7 @@ load_dotenv()
 # =========================
 
 LLM_MODEL = "gemini-3.1-flash-lite-preview"
+LLM_TEMPERATURE = 0   # Almost deterministic model outputs (except for tiny variations due to floating-point math)
 BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
 DELAY_SECONDS = 20    # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
 MAX_ATTEMPTS = 5      # Maximum times to try API call before giving up
@@ -361,7 +362,7 @@ def query_llm_batch(client, profiles, start_idx, batch_num):
                 contents=batch_prompt,
                 config=genai.types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
-                    temperature=0,  # Almost deterministic model outputs (except for tiny variations due to floating-point math)
+                    temperature=LLM_TEMPERATURE,
                     # Use structured JSON output (array of numbers, or list of floats in python)
                     response_mime_type="application/json",
                     response_schema={
@@ -464,7 +465,7 @@ def main():
 
     n_failed = np.isnan(y_llm_pred).sum()
     n_success = len(y_llm_pred) - n_failed
-    print(f"\n  Completed in {total_time:.0f}s | Parsed: {n_success:,}/{len(y_llm_pred):,} | Failed: {n_failed:,}\n")
+    print(f"\n  Completed in {total_time:.0f}s | Predictions: {n_success:,}/{len(y_llm_pred):,} | Failed Predictions: {n_failed:,}\n")
 
     # --- 4. Compute Weighted Metrics ---
     print("Step 4: Computing weighted evaluation metrics...")
@@ -492,6 +493,7 @@ def main():
     with mlflow.start_run(run_name=LLM_MODEL):
         # Log Parameters
         mlflow.log_param("llm_model", LLM_MODEL)
+        mlflow.log_param("temperature", LLM_TEMPERATURE)
         mlflow.log_param("batch_size", BATCH_SIZE)
         mlflow.log_param("delay_seconds", DELAY_SECONDS)
         
@@ -514,6 +516,7 @@ def main():
             "n_failed_predictions": int(n_failed),
             "inference_time_seconds": round(total_time, 2),
             "batch_size": BATCH_SIZE,
+            "temperature": LLM_TEMPERATURE,
         }
     }
     save_metrics(metrics_dict, "models/llm_benchmark_metrics.json", verbose=False)
