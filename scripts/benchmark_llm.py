@@ -66,7 +66,7 @@ load_dotenv()
 # Configuration
 # =========================
 
-LLM_MODEL = "gemini-3.1-flash-lite"
+LLM_MODEL = "gemini-3.1-flash-lite-preview"
 BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
 DELAY_SECONDS = 20    # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
 MAX_ATTEMPTS = 5      # Maximum times to try API call before giving up
@@ -397,16 +397,15 @@ def query_llm_batch(client, profiles, start_idx, batch_num):
 # =========================
 
 def main():
-    # --- 0. API Key Check ---
+    print(f"LLM Benchmark: {LLM_MODEL}")
+
+    # --- API Key Check ---
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         print("❌ GEMINI_API_KEY environment variable not set.")
         print("   Get a free API key at: https://aistudio.google.com/apikey")
         print("   Then set it in .env: GEMINI_API_KEY=your_gemini_api_key_here")
         sys.exit(1)
-
-    print(f"LLM Benchmark (EV-04): {LLM_MODEL}")
-    print(f"{'='*60}\n")
 
     # --- MLflow Setup ---
     print("Step 0: Setting up MLflow...")
@@ -500,9 +499,9 @@ def main():
         mlflow.log_metric("val_mdae", float(llm_mdae))
         mlflow.log_metric("val_mae", float(llm_mae))
         mlflow.log_metric("val_r2", float(llm_r2))
-        mlflow.log_metric("inference_time_s", total_time)
-        mlflow.log_metric("n_success", int(n_success))
-        mlflow.log_metric("n_failed", int(n_failed))
+        mlflow.log_metric("n_predictions", int(n_success))
+        mlflow.log_metric("n_failed_predictions", int(n_failed))
+        mlflow.log_metric("inference_time_seconds", total_time)
 
     # --- 5. Persistence ---
     print("Step 5: Saving results...")
@@ -517,7 +516,7 @@ def main():
             "batch_size": BATCH_SIZE,
         }
     }
-    save_metrics(metrics_dict, "models/llm_benchmark_metrics.json")
+    save_metrics(metrics_dict, "models/llm_benchmark_metrics.json", verbose=False)
     print(f"  Saved evaluation metrics of LLM ({LLM_MODEL}) to 'models/llm_benchmark_metrics.json'")
     
     save_model(y_llm_pred, "models/llm_benchmark_predictions.joblib", verbose=False)
