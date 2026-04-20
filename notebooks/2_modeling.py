@@ -843,77 +843,59 @@ client.close()  # Close the API client to release resources
 # Display example API response 
 print(response)
 
+# %%
+print(response)
+
 
 # %%
 def parse_llm_response(response_text, expected_count):
-    """Parse the LLM's JSON array response into a list of floats."""
+    """
+    Parse the LLM's JSON array response into a list of floats.
+
+    Strictness Rationale:
+    If the number of predictions does not exactly match `expected_count`, the 
+    entire batch is discarded (returned as NaNs). This "Strict Approach" 
+    prevents data shifting, where a single skipped profile in the LLM's 
+    output would cause all subsequent predictions in the batch to be 
+    misaligned with their ground-truth labels, ruining the benchmark's validity.
+
+    Likely error scenarios handled:
+      - JSON format errors (invalid syntax or missing markdown fences).
+      - Count mismatch (LLM skips a profile or adds a summary value).
+      - Value errors (LLM returns non-numeric strings within the array).
+    """
     text = response_text.strip()
 
-    # Primary: extract JSON array
-    match = re.search(r"\[[\s\S]*?\]", text)
+    # Extract list of predictions
+    match = re.search(r"\[[\s\S]*?\]", text)  # extracts first [] with any characters within
     if match:
         try:
-            values = json.loads(match.group())
-            if len(values) == expected_count:
-                return [float(v) for v in values]
-            print(f"    ⚠️  Expected {expected_count} values, got {len(values)}")
-            values = [float(v) for v in values]
-            # Pad with NaN if too few, truncate if too many
-            values.extend([np.nan] * max(0, expected_count - len(values)))
-            return values[:expected_count]
+            predictions = json.loads(match.group())  # converts str to list
+            if len(predictions) == expected_count:
+                return [float(prediction) for prediction in predictions]
+            
+            print(f"    ⚠️  Count mismatch: Expected {expected_count}, got {len(predictions)}. Discarding batch to avoid alignment errors.")
+            return [np.nan] * expected_count
+
         except (json.JSONDecodeError, ValueError, TypeError) as e:
-            print(f"    ⚠️  JSON parse error: {e}")
+            print(f"    ⚠️  Parse error: {e}. Discarding batch.")
+            return [np.nan] * expected_count
 
     # Fallback: extract individual numbers
     numbers = re.findall(r"[\d,]+\.?\d*", text)
-    if len(numbers) >= expected_count:
+    if len(numbers) == expected_count:
         try:
-            return [float(n.replace(",", "")) for n in numbers[:expected_count]]
+            return [float(n.replace(",", "")) for n in numbers]
         except ValueError:
             pass
 
-    print(f"    ❌ Unparseable response: {text[:200]}...")
+    print(f"    ❌ Unparseable or mismatched response: {text[:200]}...")
     return [np.nan] * expected_count
 
 
-# --- Make API Requests ---
-# Query LLM in Batches
-print(f"Step 3: Making API requests to {LLM_MODEL} to predict out-of-pocket costs for {len(profiles):,} profiles in batches of {BATCH_SIZE}...")
-client = genai.Client(api_key=api_key)
-
-all_predictions = []
-batches = [profiles[i : i + BATCH_SIZE] for i in range(0, len(profiles), BATCH_SIZE)]
-total_batches = len(batches)
-start_time = time.time()
-
-for i, batch in enumerate(batches[:2]):
-    start_idx = i * BATCH_SIZE
-    elapsed = time.time() - start_time
-    
-    # Calculate ETA: (time per batch so far) * (batches remaining)
-    # We use max(i, 1) to avoid division by zero on the first batch
-    eta = (elapsed / max(i, 1)) * (total_batches - i)
-    
-    print(
-        f"  Batch {i + 1:>2}/{total_batches} | Elapsed: {elapsed:>4.0f}s | ETA: {eta:>4.0f}s"
-    )
-
-    predictions = query_llm_batch(client, batch, start_idx, i + 1)
-    all_predictions.extend(predictions)
-
-    # Rate-limiting delay (skip after last batch)
-    if i < len(batches[:2]) - 1:
-        time.sleep(DELAY_SECONDS)
-
-total_time = time.time() - start_time
-y_llm_pred = np.array(all_predictions, dtype=float)
-
-# Close the API client to release resources
-client.close()
-
-n_failed = int(np.isnan(y_llm_pred).sum())
-n_success = len(y_llm_pred) - n_failed
-print(f"\nCompleted in {total_time:.0f}s | Parsed: {n_success:,}/{len(y_llm_pred):,} | Failed: {n_failed:,}\n")
+# Extract predictions as list of floats from LLM response
+predictions = parse_llm_response(response)
+predictions
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
