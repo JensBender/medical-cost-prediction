@@ -633,16 +633,16 @@ def prepare_human_readable_validation_data():
 
 
 # Use function to prepare validation data for LLM benchmarking
-print("Step 1: Preparing human-readable validation data...")
-df_raw_val, y_val, w_val = prepare_human_readable_validation_data()
+# print("Step 1: Preparing human-readable validation data...")
+# df_raw_val, y_val, w_val = prepare_human_readable_validation_data()
 
 # Align all arrays by common indices
-print(f"  Aligning row indices with preprocessed validation data...")
-common_ids = df_raw_val.dropna(how="all").index.intersection(y_val.index)
-df_raw_val = df_raw_val.loc[common_ids]
-y_val = y_val.loc[common_ids]
-w_val = w_val.loc[common_ids]
-print(f"  Aligned {len(common_ids):,} validation rows")
+# print(f"  Aligning row indices with preprocessed validation data...")
+# common_ids = df_raw_val.dropna(how="all").index.intersection(y_val.index)
+# df_raw_val = df_raw_val.loc[common_ids]
+# y_val = y_val.loc[common_ids]
+# w_val = w_val.loc[common_ids]
+# print(f"  Aligned {len(common_ids):,} validation rows")
 
 
 # %% [markdown]
@@ -716,13 +716,13 @@ def row_to_profile(row):
     return "\n".join(lines)
 
 
-print("Step 2: Converting features to natural language profiles...")
-profiles = [row_to_profile(row) for _, row in df_raw_val.iterrows()]
-print(f"  Created {len(profiles):,} profiles\n")
+# print("Step 2: Converting features to natural language profiles...")
+# profiles = [row_to_profile(row) for _, row in df_raw_val.iterrows()]
+# print(f"  Created {len(profiles):,} profiles\n")
 
 # Display example profile
-print("Example Profile:")
-print(profiles[0])
+# print("Example Profile:")
+# print(profiles[0])
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -788,8 +788,8 @@ def build_batch_prompt(profiles, start_idx):
 
 
 # Display example batch prompt
-batch_prompt = build_batch_prompt(profiles[:25], 0)
-print(batch_prompt)
+# batch_prompt = build_batch_prompt(profiles[:25], 0)
+# print(batch_prompt)
 
 
 # %%
@@ -836,12 +836,12 @@ def query_llm_batch(client, profiles, start_idx, batch_num):
 
 
 # Example usage on single batch prompt
-client = genai.Client(api_key=api_key)
-response = query_llm_batch(client, profiles[:25], start_idx=0, batch_num=1)
-client.close()  # Close the API client to release resources
+# client = genai.Client(api_key=api_key)
+# response = query_llm_batch(client, profiles[:25], start_idx=0, batch_num=1)
+# client.close()  # Close the API client to release resources
 
 # Display example API response 
-print(response)
+# print(response)
 
 
 # %%
@@ -891,8 +891,8 @@ def parse_llm_response(response_text, expected_count):
 
 
 # Extract predictions from LLM text response as a list of floats
-predictions = parse_llm_response(response, expected_count=25)
-predictions
+# predictions = parse_llm_response(response, expected_count=25)
+# predictions
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
