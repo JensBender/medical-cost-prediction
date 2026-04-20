@@ -66,7 +66,7 @@ load_dotenv()
 # Configuration
 # =========================
 
-LLM_MODEL = "gemini-3.1-flash-lite-preview"
+LLM_MODEL = "gemma-4-31b-it"
 LLM_TEMPERATURE = 0   # Almost deterministic model outputs (except for tiny variations due to floating-point math)
 BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
 DELAY_SECONDS = 20    # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
