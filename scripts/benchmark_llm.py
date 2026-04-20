@@ -356,13 +356,20 @@ def query_llm_batch(client, profiles, start_idx, batch_num):
             return parse_llm_response(response.text, len(profiles))
 
         except Exception as e:
-            wait_time = DELAY_SECONDS * (2 ** attempt)  # 20 sec after first failed attempt, 40 after 2nd, 80 after 3rd, 160 after 4th, 320 after 5th
             error_msg = str(e)
-            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
-                print(f"    ⚠️ Rate limited (attempt {attempt + 1}/{MAX_ATTEMPTS}). Waiting {wait_time}s...")
+            if attempt < MAX_ATTEMPTS - 1:  
+                wait_time = DELAY_SECONDS * (2 ** attempt)  # 20 sec after first failed attempt, 40 after 2nd, 80 after 3rd, 160 after 4th
+                if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+                    print(f"    ⚠️ Rate limited (attempt {attempt + 1}/{MAX_ATTEMPTS}). Waiting {wait_time}s...")
+                else:
+                    print(f"    ⚠️ API error (attempt {attempt + 1}/{MAX_ATTEMPTS}): {error_msg[:120]}. Waiting {wait_time}s...")
+                time.sleep(wait_time)
             else:
-                print(f"    ⚠️ API error (attempt {attempt + 1}/{MAX_ATTEMPTS}): {error_msg[:120]}. Waiting {wait_time}s...")
-            time.sleep(wait_time)
+                # Dont't wait after last attempt failed
+                if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+                    print(f"    ❌ Rate limited (final attempt {MAX_ATTEMPTS}/{MAX_ATTEMPTS}).")
+                else:
+                    print(f"    ❌ API error (final attempt {MAX_ATTEMPTS}/{MAX_ATTEMPTS}): {error_msg[:120]}.")
 
     print(f"    ❌ Batch {batch_num} failed after {MAX_ATTEMPTS} attempts")
     return [np.nan] * len(profiles)
