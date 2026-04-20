@@ -475,35 +475,11 @@ def main():
     llm_mae = mean_absolute_error(y_true, y_pred, sample_weight=weights)
     llm_r2 = r2_score(y_true, y_pred, sample_weight=weights)
 
-    # --- 5. Compare with ML Models ---
-    print(f"\n  {'='*65}")
-    print(f"  LLM vs. ML Model Comparison  (n={n_success:,} validation rows, weighted)")
-    print(f"  {'='*65}")
-    print(f"  {'Model':<35} {'MdAE ($)':>10} {'MAE ($)':>10} {'R²':>10}")
-    print(f"  {'-'*65}")
-    print(f"  {LLM_MODEL:<35} {llm_mdae:>10,.2f} {llm_mae:>10,.2f} {llm_r2:>10.4f}")
+    print(f"  LLM Benchmark Results (n={n_success:,} rows)")
+    print(f"    {LLM_MODEL:<25} → MdAE: {llm_mdae:8.2f} | MAE: {llm_mae:8.2f} | "
+          f"R²: {llm_r2:.4f} | Inference Time: {total_time:.2f}s")
 
-    # Load ML model predictions and compute metrics on same valid rows
-    ml_models = {
-        "Elastic Net (Tuned)": "models/en_tuned_predictions.joblib",
-        "Random Forest (Baseline)": "models/rf_baseline_predictions.joblib",
-        "XGBoost (Baseline)": "models/xgb_baseline_predictions.joblib",
-    }
-
-    for model_name, pred_path in ml_models.items():
-        try:
-            ml_pred_full = np.array(joblib.load(pred_path))
-            ml_pred = ml_pred_full[valid_mask]
-            ml_mdae = weighted_median_absolute_error(y_true, ml_pred, sample_weight=weights)
-            ml_mae = mean_absolute_error(y_true, ml_pred, sample_weight=weights)
-            ml_r2 = r2_score(y_true, ml_pred, sample_weight=weights)
-            print(f"  {model_name:<35} {ml_mdae:>10,.2f} {ml_mae:>10,.2f} {ml_r2:>10.4f}")
-        except Exception as e:
-            print(f"  {model_name:<35} (load error: {e})")
-
-    print(f"  {'='*65}\n")
-
-    # --- 6. Persistence ---
+    # --- 5. Persistence ---
     print("Step 5: Saving results...")
     metrics_dict = {
         f"LLM ({LLM_MODEL})": {
