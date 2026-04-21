@@ -74,7 +74,6 @@ LLM_THINKING_LEVEL = "high"  # Reasoning depth
 BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
 DELAY_SECONDS = 2     # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
 MAX_ATTEMPTS = 5      # Maximum times to try API call before giving up
-SCHEMA_DESCRIPTION = "List of out-of-pocket healthcare costs in 2023 US dollars."
 
 # Paths (relative to project root)
 RAW_DATA_PATH = "data/h251.sas7bdat"
@@ -132,8 +131,8 @@ office visits, prescriptions, hospital stays, ER visits, dental, vision, \
 home health care, and medical equipment.
 Out-of-pocket costs EXCLUDE monthly insurance premiums and over-the-counter medications.
 
-For each profile, provide your best single-number estimate (in dollars).
-Your response must strictly follow the provided JSON schema, returning an array of numbers where the count matches the number of profiles provided."""
+For each profile, provide your best single-number estimate (in dollars), 
+returned in the requested list format."""
 
 
 # =========================
@@ -287,10 +286,7 @@ class PredictionBatch(BaseModel):
     Schema for a batch of LLM cost predictions.
     Annotated with Field(ge=0) to ensure costs are never negative.
     """
-    costs: list[Annotated[float, Field(
-        ge=0, 
-        description=SCHEMA_DESCRIPTION
-    )]]
+    costs: list[Annotated[float, Field(ge=0)]]
 
 
 # =========================
@@ -438,7 +434,6 @@ def main():
         mlflow.log_param("delay_seconds", DELAY_SECONDS)
         mlflow.log_param("thinking_level", LLM_THINKING_LEVEL)
         mlflow.log_param("system_prompt", SYSTEM_PROMPT)
-        mlflow.log_param("schema_description", SCHEMA_DESCRIPTION)
         print("  Logged parameters to MLflow")
         
         # --- 1. Data Preparation ---
@@ -551,8 +546,7 @@ def main():
                 "temperature": LLM_TEMPERATURE,
                 "delay_seconds": DELAY_SECONDS,
                 "thinking_level": LLM_THINKING_LEVEL,
-                "system_prompt": SYSTEM_PROMPT,
-                "schema_description": SCHEMA_DESCRIPTION
+                "system_prompt": SYSTEM_PROMPT
             }
         }
         save_metrics(params_dict, "models/llm_benchmark_params.json", verbose=False)
