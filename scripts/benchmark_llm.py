@@ -42,6 +42,8 @@ import pandas as pd
 import mlflow
 import warnings
 from google import genai
+from pydantic import BaseModel, Field
+from typing import Annotated
 from dotenv import load_dotenv
 from sklearn.metrics import mean_absolute_error, r2_score
 
@@ -276,6 +278,18 @@ def row_to_profile(row):
 
 
 # =========================
+# Structured Output Schema
+# =========================
+
+class PredictionBatch(BaseModel):
+    """
+    Schema for a batch of LLM cost predictions.
+    Annotated with Field(ge=0) to ensure costs are never negative.
+    """
+    costs: list[Annotated[float, Field(ge=0)]]
+
+
+# =========================
 # LLM API
 # =========================
 
@@ -307,48 +321,45 @@ def build_batch_prompt(profiles, start_idx):
     )
 
 
-def parse_llm_response(response_text, expected_count):
+def parse_llm_response(response, expected_count):
     """
-    Parse the LLM's response into a list of floats.
+    Extract predictions from the LLM response object.
 
-    Strictness Rationale:
-    If the number of predictions does not exactly match `expected_count`, the 
-    entire batch is discarded (returned as NaNs). This "Strict Approach" 
-    prevents data shifting, where a single skipped profile in the LLM's 
-    output would cause all subsequent predictions in the batch to be 
-    misaligned with their ground-truth labels, ruining the benchmark's validity.
+    Handles the parsed Pydantic object if available, falling back to 
+    manual string parsing if the structured output failed.
 
-    Likely error scenarios handled:
-      - JSON format errors (invalid syntax or missing markdown fences).
-      - Count mismatch (LLM skips a profile or adds a summary value).
-      - Value errors (LLM returns non-numeric strings within the array).
+    Division of Labor:
+      1. Data Integrity (Pydantic): Ensures JSON is valid, values are floats, 
+         and costs are non-negative (Field ge=0). Errors here trigger a
+         ValidationError caught in the try/except block.
+      2. Contextual Alignment (Manual): Ensures the LLM didn't "hallucinate" 
+         extra values or omit profiles. If the count mismatches, the entire 
+         batch is discarded (returned as NaNs) to prevent data shifting, where 
+         a single skipped profile would cause all subsequent predictions to 
+         be misaligned with ground-truth labels.
     """
-    text = response_text.strip()
-
-    # Extract list of predictions
-    match = re.search(r"\[[\s\S]*?\]", text)  # extracts first [] with any characters within
-    if match:
-        try:
-            predictions = json.loads(match.group())  # converts str to list
+    try:
+        # Preferred: Use the SDK's parsed field (v1.0+)
+        if hasattr(response, "parsed") and response.parsed:
+            predictions = response.parsed.costs
             if len(predictions) == expected_count:
-                return [float(prediction) for prediction in predictions]
+                return predictions
             
-            print(f"    ⚠️  Count mismatch: Expected {expected_count}, got {len(predictions)}. Discarding batch to avoid alignment errors.")
+            print(f"    ⚠️  Count mismatch in parsed output: Expected {expected_count}, got {len(predictions)}. Returning NaNs for this batch.")
             return [np.nan] * expected_count
 
-        except (json.JSONDecodeError, ValueError, TypeError) as e:
-            print(f"    ⚠️  Parse error: {e}. Discarding batch.")
-            return [np.nan] * expected_count
+        # Fallback: Manual parsing of raw text if structured output is missing
+        text = response.text.strip()
+        match = re.search(r"\[[\s\S]*?\]", text)
+        if match:
+            predictions = json.loads(match.group())
+            if isinstance(predictions, list) and len(predictions) == expected_count:
+                return [float(p) for p in predictions]
 
-    # Fallback: extract numbers in case of missing list brackets []
-    numbers = re.findall(r"[\d,]+\.?\d*", text)
-    if len(numbers) == expected_count:  # only if number of predictions is as expected
-        try:
-            return [float(n.replace(",", "")) for n in numbers]
-        except ValueError:  # handles potential stray comma (which would match re)
-            pass
+    except (Exception) as e:
+        print(f"    ⚠️  Parse error: {str(e)[:100]}. Returning NaNs for this batch.")
 
-    print(f"    ❌ Unparseable or mismatched response: {text[:200]}...")
+    print(f"    ❌ Unparseable or mismatched response. Returning NaNs for this batch.")
     return [np.nan] * expected_count
 
 
@@ -364,16 +375,12 @@ def query_llm_batch(client, profiles, start_idx, batch_num):
                 config=genai.types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
                     temperature=LLM_TEMPERATURE,
-                    thinking_config=genai.types.ThinkingConfig(thinking_level=LLM_THINKING_LEVEL),
-                    # Use structured JSON output (array of numbers, or list of floats in python)
-                    response_mime_type="application/json",
-                    response_schema={
-                        "type": "ARRAY",
-                        "items": {"type": "NUMBER"}
-                    },
+                    thinking_config=genai.types.ThinkingConfig(thinking_level=LLM_THINKING_LEVEL),                   
+                    response_mime_type="application/json",  # Use structured JSON output
+                    response_schema=PredictionBatch,  # Use Pydantic schema
                 ),
             )
-            return parse_llm_response(response.text, len(profiles))
+            return parse_llm_response(response, len(profiles))
 
         except Exception as e:
             error_msg = str(e)
