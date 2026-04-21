@@ -14,12 +14,15 @@ Approach:
       from the already-preprocessed parquet which contains scaled/encoded values.
   2.  Profile Generation: Convert each row into a natural language description
       that a layperson would provide to an LLM (zero-shot, no training examples).
-  3.  Batched LLM Inference: Send profiles in batches to the Gemini API with
-      JSON-mode output for reliable parsing. Includes rate limiting and retry logic.
-  4.  Metric Computation: Compute the same weighted metrics (MdAE, MAE, R²) used
-      by the ML models, on the same validation rows, for an apples-to-apples comparison.
-  5.  Persistence: Save metrics as JSON and predictions as joblib (same convention
-      as ML model artifacts).
+  3.  Batched LLM Inference (Run & Resume): Send profiles in batches to the Gemini 
+      API with structured JSON output. The script supports a "Run & Resume" strategy 
+      to stay within daily free-tier quotas (e.g., 20 requests per day for Gemini 3 Flash).
+      It automatically detects previous progress from 'models/llm_benchmark_predictions.joblib' 
+      and picks up where it left off.
+  4.  Metric Computation: Compute weighted metrics (MdAE, MAE, R²) on the total 
+      accumulated progress.
+  5.  Persistence: Save evaluation metrics as JSON, LLM parameters (including system prompt) 
+      as JSON, and the (updated) predictions as joblib file.
 
 Prerequisites:
     pip install google-genai
