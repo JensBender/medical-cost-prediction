@@ -55,7 +55,7 @@ from src.constants import (
     MARRY31X_TRANSITION_CODES, EMPST31_TRANSITION_CODES,
     MARRY31X_COLLAPSE_MAP, EMPST31_COLLAPSE_MAP,
 )
-from src.utils import weighted_median_absolute_error, save_metrics, save_model
+from src.utils import weighted_median_absolute_error, save_metrics, save_model, load_model
 
 # Suppress benign MLflow warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
@@ -69,11 +69,12 @@ load_dotenv()
 # =========================
 
 LLM_MODEL = "gemini-3-flash-preview"  # "gemini-3.1-flash-lite-preview" | "gemma-4-31b-it"
-LLM_TEMPERATURE = 0   # Almost deterministic model outputs (except for tiny variations due to floating-point math)
+LLM_TEMPERATURE = 0          # Almost deterministic model outputs (except for tiny variations due to floating-point math)
 LLM_THINKING_LEVEL = "high"  # Reasoning depth 
-BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
-DELAY_SECONDS = 2     # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
-MAX_ATTEMPTS = 5      # Maximum times to try API call before giving up
+BATCH_SIZE = 25              # User profiles per API call (fits well within context window)
+MAX_REQUESTS_PER_RUN = 20    # Stop after 20 API calls to stay within daily free-tier limit (20 RPD for gemini-3-flash)
+DELAY_SECONDS = 4            # Seconds between API calls to stay within free-tier limit (5 RPM for gemini-3-flash)
+MAX_ATTEMPTS = 5             # Maximum times to try API call before giving up
 
 # Paths (relative to project root)
 RAW_DATA_PATH = "data/h251.sas7bdat"
@@ -454,38 +455,61 @@ def main():
         print(f"  Created {len(profiles):,} profiles for LLM input\n")
 
         # --- 3. Query LLM in Batches ---
-        print(f"Step 3: Querying '{LLM_MODEL}' ({len(profiles):,} profiles in batches of {BATCH_SIZE})...")
         client = genai.Client(api_key=api_key)
-        all_predictions = []
-        total_time = 0
+        all_predictions = np.full(len(profiles), np.nan)  # Initialize with NaNs
+        
+        # Resume Logic: Load existing progress if available
+        predictions_path = "models/llm_benchmark_predictions.joblib"
+        if os.path.exists(predictions_path):
+            existing_preds = load_model(predictions_path, verbose=False)
+            if len(existing_preds) == len(profiles):
+                all_predictions = existing_preds
+                n_previously_done = np.count_nonzero(~np.isnan(all_predictions))
+                print(f"  Resuming: Found {n_previously_done:,} existing predictions in '{predictions_path}'")
+            else:
+                print(f"  ⚠️ Existing predictions file size mismatch. Starting fresh.")
 
-        total_batches = len(range(0, len(profiles), BATCH_SIZE))
-        for i in range(0, len(profiles), BATCH_SIZE):
-            batch = profiles[i:i + BATCH_SIZE]
+        print(f"Step 3: Querying '{LLM_MODEL}' (Up to {MAX_REQUESTS_PER_RUN} new batches of {BATCH_SIZE})...")
+        total_time = 0
+        requests_sent = 0
+
+        batch_indices = list(range(0, len(profiles), BATCH_SIZE))
+        for i in batch_indices:
+            # Shift check: If all items in this batch are already predicted, skip it
+            batch_slice = slice(i, i + BATCH_SIZE)
+            if i < len(all_predictions) and not np.isnan(all_predictions[batch_slice]).any():
+                continue
+                
+            if requests_sent >= MAX_REQUESTS_PER_RUN:
+                print(f"\n  🛑 Reached limit of {MAX_REQUESTS_PER_RUN} requests per run. Pausing for today.")
+                break
+
+            batch = profiles[batch_slice]
             start_idx = i
             
             # Progress tracking
-            progress = (i / len(profiles)) * 100
-            elapsed_str = f"{total_time:.0f}s"
-            eta = (total_time / (i + 1e-6)) * (len(profiles) - i) if i > 0 else 0
-            eta_str = f"{eta:.0f}s"
-            print(f"  Batch {i//BATCH_SIZE + 1:>2}/{total_batches:>2} | "
-                  f"{progress:5.1f}% | Elapsed: {elapsed_str:>4} | ETA: {eta_str:>5}")
+            current_batch_num = i // BATCH_SIZE + 1
+            total_batches = len(batch_indices)
+            progress = (current_batch_num / total_batches) * 100
+            print(f"  Batch {current_batch_num:>2}/{total_batches:>2} | "
+                  f"{progress:5.1f}% | Request {requests_sent + 1}/{MAX_REQUESTS_PER_RUN}")
 
             start_time = time.time()
-            predictions = query_llm_batch(client, batch, start_idx, i // BATCH_SIZE + 1)
+            predictions = query_llm_batch(client, batch, start_idx, current_batch_num)
             batch_time = time.time() - start_time
             total_time += batch_time
+            requests_sent += 1
             
-            all_predictions.extend(predictions)
+            # Update prediction array
+            all_predictions[batch_slice] = predictions[:len(batch)]
             
-            # Add delay to handle API rate limiting (except on the last batch)
-            if i + BATCH_SIZE < len(profiles):
+            # Add delay to handle API rate limiting
+            if i + BATCH_SIZE < len(profiles) and requests_sent < MAX_REQUESTS_PER_RUN:
                 time.sleep(DELAY_SECONDS)
 
         client.close()  # Close the API client to release resources
 
-        y_llm_pred = np.array(all_predictions, dtype=float)
+        y_llm_pred = all_predictions
 
         n_failed = np.isnan(y_llm_pred).sum()
         n_success = len(y_llm_pred) - n_failed
