@@ -131,8 +131,8 @@ office visits, prescriptions, hospital stays, ER visits, dental, vision, \
 home health care, and medical equipment.
 Out-of-pocket costs EXCLUDE monthly insurance premiums and over-the-counter medications.
 
-For each profile, provide your best single-number estimate (in dollars), 
-returned in the requested list format."""
+For each profile, provide your best single-number estimate (in dollars).
+Your response must strictly follow the provided JSON schema, returning an array of numbers where the count matches the number of profiles provided."""
 
 
 # =========================
@@ -286,7 +286,12 @@ class PredictionBatch(BaseModel):
     Schema for a batch of LLM cost predictions.
     Annotated with Field(ge=0) to ensure costs are never negative.
     """
-    costs: list[Annotated[float, Field(ge=0)]]
+    costs: list[Annotated[float, Field(
+        ge=0, 
+        description="Predicted out-of-pocket healthcare costs in 2023 US dollars. "
+                    "Values must be non-negative. The number of estimates in the "
+                    "list MUST exactly match the number of profiles provided."
+    )]]
 
 
 # =========================
@@ -357,7 +362,9 @@ def parse_llm_response(response, expected_count):
                 return [float(p) for p in predictions]
 
     except (Exception) as e:
-        print(f"    ⚠️  Parse error: {str(e)[:100]}. Returning NaNs for this batch.")
+        # Capture specific validation/parsing errors for easier debugging
+        err_msg = str(e).replace('\n', ' ')
+        print(f"    ⚠️  Parse/Validation error: {err_msg[:150]}... Returning NaNs for this batch.")
 
     print(f"    ❌ Unparseable or mismatched response. Returning NaNs for this batch.")
     return [np.nan] * expected_count
