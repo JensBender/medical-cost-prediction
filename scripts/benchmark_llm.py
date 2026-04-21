@@ -129,10 +129,7 @@ predict their total annual out-of-pocket healthcare costs for the year 2023 in U
 Out-of-pocket costs include deductibles, copays, and coinsurance for: \
 office visits, prescriptions, hospital stays, ER visits, dental, vision, \
 home health care, and medical equipment.
-Out-of-pocket costs EXCLUDE monthly insurance premiums and over-the-counter medications.
-
-For each profile, provide your best single-number estimate (in dollars).
-Your response must strictly follow the provided JSON schema, returning an array of numbers where the count matches the number of profiles provided."""
+Out-of-pocket costs EXCLUDE monthly insurance premiums and over-the-counter medications."""
 
 
 # =========================
