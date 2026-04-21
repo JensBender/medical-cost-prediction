@@ -34,21 +34,18 @@ import os
 import re
 import sys
 import time
+import warnings
 import json
+from typing import Annotated
 
 # Third-party imports
 import numpy as np
 import pandas as pd
 import mlflow
-import warnings
 from google import genai
 from pydantic import BaseModel, Field
-from typing import Annotated
-from dotenv import load_dotenv
 from sklearn.metrics import mean_absolute_error, r2_score
-
-# Suppress benign MLflow warnings
-warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
+from dotenv import load_dotenv
 
 # Local imports
 from src.constants import (
@@ -60,6 +57,9 @@ from src.constants import (
 )
 from src.utils import weighted_median_absolute_error, save_metrics, save_model
 
+# Suppress benign MLflow warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -68,7 +68,7 @@ load_dotenv()
 # Configuration
 # =========================
 
-LLM_MODEL = "gemini-3.1-flash-lite-preview"  # "gemma-4-31b-it"
+LLM_MODEL = "gemini-3-flash-preview"  # "gemini-3.1-flash-lite-preview" | "gemma-4-31b-it"
 LLM_TEMPERATURE = 0   # Almost deterministic model outputs (except for tiny variations due to floating-point math)
 LLM_THINKING_LEVEL = "high"  # Reasoning depth 
 BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
@@ -508,8 +508,7 @@ def main():
         llm_mae = mean_absolute_error(y_true, y_pred, sample_weight=weights)
         llm_r2 = r2_score(y_true, y_pred, sample_weight=weights)
 
-        print(f"  LLM Benchmark Results (n={n_success:,} rows)")
-        print(f"    {LLM_MODEL:<25} → MdAE: {llm_mdae:8.2f} | MAE: {llm_mae:8.2f} | "
+        print(f"  Validation Data Performance (n={n_success:,} rows) for '{LLM_MODEL}' → MdAE: {llm_mdae:8.2f} | MAE: {llm_mae:8.2f} | "
               f"R²: {llm_r2:.4f} | Inference Time: {total_time:.2f}s")
 
         # Log Metrics to MLflow 
