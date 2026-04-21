@@ -68,7 +68,7 @@ load_dotenv()
 # Configuration
 # =========================
 
-LLM_MODEL = "gemma-4-31b-it"
+LLM_MODEL = "gemini-3.1-flash-lite-preview"  # "gemma-4-31b-it"
 LLM_TEMPERATURE = 0   # Almost deterministic model outputs (except for tiny variations due to floating-point math)
 LLM_THINKING_LEVEL = "high"  # Reasoning depth 
 BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
