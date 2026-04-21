@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Navigate to the project root (if not already there)
+# Navigate to the directory where this script resides (project root)
 cd "$(dirname "$0")"
 
 # Start the MLflow UI pointing to the SQLite database
