@@ -104,7 +104,7 @@
 
   <!-- Global Header -->
   <g transform="translate(500, 45)">
-    <text class="text-title" style="font-size: 24px;">Data Preprocessing Pipeline</text>
+    <text class="text-title" style="font-size: 24px;">Inference Pipeline</text>
     <text y="25" class="text-subtitle" style="font-size: 14px; fill: #ffffff;">Standardization, Validation, Imputation, Medical Feature Engineering, Scaling &amp; Encoding</text>
   </g>
 
