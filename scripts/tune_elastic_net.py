@@ -4,8 +4,10 @@ Reproducible hyperparameter tuning script for Elastic Net Regressor.
 This script performs a randomized search over a defined hyperparameter space 
 with MLflow experiment tracking. It uses a pipeline with second-degree polynomial 
 features and log-transformed targets (TransformedTargetRegressor). It evaluates 
-each configuration on the training and validation set using weighted MdAE, MAE, 
-and R², and persists the best model, metrics, and predictions.
+each configuration on the training and validation set using weighted MdAE, MAE, and R². It then retrains the best 
+configuration using the train_and_evaluate function and persists the fitted 
+model, evaluation metrics, hyperparameters, validation predictions, and the 
+full randomized search history.
 
 Workflow:
   1.  MLflow Setup: Initialize experiment tracking for "Elastic Net Tuning".

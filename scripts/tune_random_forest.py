@@ -4,8 +4,10 @@ Reproducible hyperparameter tuning script for Random Forest Regressor.
 This script performs a randomized search over a defined hyperparameter space 
 with MLflow experiment tracking. It uses log-transformed targets 
 (TransformedTargetRegressor) and evaluates each configuration on the training 
-and validation set using weighted MdAE, MAE, and R². It persists the best model, 
-evaluation metrics, and predictions.
+and validation set using weighted MdAE, MAE, and R². It then retrains the best 
+configuration using the train_and_evaluate function and persists the fitted 
+model, evaluation metrics, hyperparameters, validation predictions, and the 
+full randomized search history.
 
 Workflow:
   1.  MLflow Setup: Initialize experiment tracking for "Random Forest Tuning".
