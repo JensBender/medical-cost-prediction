@@ -479,7 +479,7 @@ def main():
         for i in batch_indices:
             # Shift check: If all items in this batch are already predicted, skip it
             batch_slice = slice(i, i + BATCH_SIZE)
-            if i < len(all_predictions) and not np.isnan(all_predictions[batch_slice]).any():
+            if not np.isnan(all_predictions[batch_slice]).any():
                 continue
                 
             if requests_sent >= MAX_REQUESTS_PER_RUN:
@@ -493,8 +493,7 @@ def main():
             current_batch_num = i // BATCH_SIZE + 1
             total_batches = len(batch_indices)
             progress = (current_batch_num / total_batches) * 100
-            print(f"  Batch {current_batch_num:>2}/{total_batches:>2} | "
-                  f"{progress:5.1f}% | Request {requests_sent + 1}/{MAX_REQUESTS_PER_RUN}")
+            print(f"  Batch {current_batch_num:>2}/{total_batches:>2} | {progress:5.1f}% | Request {requests_sent + 1}/{MAX_REQUESTS_PER_RUN}")
 
             start_time = time.time()
             predictions = query_llm_batch(client, batch, start_idx, current_batch_num)
