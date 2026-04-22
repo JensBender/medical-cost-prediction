@@ -941,8 +941,8 @@ display(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> 
 #     <ul style="margin-top:8px; margin-bottom:0px">
-#         <li><strong>Specialized ML Crushes General Intelligence:</strong> The best specialized model (Elastic Net, MdAE=$163) outperforms the LLM (MdAE=$600) by a factor of 3.7x. For the typical user, the domain-specific model is far more accurate.</li>
-#         <li><strong>The LLM "Sanity Check" Failure:</strong> Notably, Gemini performs significantly worse than the naive "Median Prediction" baseline (MdAE $600 vs. $248). This indicates the LLM lacks a grounded statistical understanding of <em>typical</em> US healthcare costs, likely overestimating based on "catastrophic" outliers.</li>
+#         <li><strong>Specialized ML Crushes General Intelligence:</strong> The best specialized model (Elastic Net, MdAE=\$163) outperforms the LLM (MdAE=\$600) by a factor of 3.7x. For the typical user, the domain-specific model is far more accurate.</li>
+#         <li><strong>The LLM "Sanity Check" Failure:</strong> Notably, Gemini performs significantly worse than the naive "Median Prediction" baseline (MdAE \$600 vs. \$248). This indicates the LLM lacks a grounded statistical understanding of typical US healthcare costs, potentially overestimating based on "catastrophic" outliers.</li>
 #         <li><strong>The R² Paradox:</strong> Despite poor median accuracy, the LLM achieves the best R² (0.11), while ML models are near-zero. This suggests the LLM's high-variance predictions capture the high-cost "tails" better than the conservative ML models, which prioritize the typical case (MdAE) over outlier variance (R²).</li>
 #         <li><strong>Proof of Value:</strong> This benchmark justifies the entire project. Even a state-of-the-art LLM with expert instructions cannot match a model trained on the specific distribution of US medical expenditures.</li>
 #     </ul>
@@ -961,7 +961,7 @@ display(
 #         <li><b>Target Transform:</b> <code>TransformedTargetRegressor(log1p)</code> to handle skewness and optimize in log-space.</li>
 #         <li><b>Sample Weights:</b> Normalized weights (mean=1.0) for training; raw survey weights for evaluation.</li>
 #         <li><b>Scoring:</b> Weighted Median Absolute Error (MdAE) on raw-dollar predictions.</li>
-#         <li><b>Iterations:</b> 10 in notebook for prototyping. Scale to 100 in <code>scripts/tune_random_forest.py</code> for production.</li>
+#         <li><b>Iterations:</b> Small number (2-5) in notebook for prototyping. Scale to 50-100 in <code>scripts/tune_random_forest.py</code> for production.</li>
 #     </ul>
 #     <b>Why not <code>RandomizedSearchCV</code>?</b><br>
 #     Avoids <code>sample_weight</code> routing complexities and ensures transparent weighted scoring on a fixed holdout set.
@@ -1143,7 +1143,7 @@ display(
 
 # %%
 # Generate random parameter combinations
-N_ITER = 2  # Small for prototyping
+N_ITER = 5  # Small for prototyping
 xgb_param_list = list(ParameterSampler(XGB_PARAM_DISTRIBUTIONS, n_iter=N_ITER, random_state=RANDOM_STATE))
 
 print(f"Generated {len(xgb_param_list)} random hyperparameter combinations")
@@ -1289,7 +1289,7 @@ display(
 
 # %%
 # Generate random parameter combinations
-N_ITER = 2  # Small for prototyping
+N_ITER = 5  # Small for prototyping
 en_param_list = list(ParameterSampler(EN_PARAM_DISTRIBUTIONS, n_iter=N_ITER, random_state=RANDOM_STATE))
 
 print(f"Generated {len(en_param_list)} random hyperparameter combinations")
