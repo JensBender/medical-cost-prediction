@@ -1,31 +1,30 @@
 """
-LLM benchmark for medical cost prediction.
+LLM benchmark for medical out-of-pocket cost prediction.
 
-Compares specialized ML models against a general-purpose LLM to quantify
-the added value of training a domain-specific model ("Why not just ask Gemini?").
-This script uses a "High-Bar" approach: the LLM is given expert-level instructions 
-and definitions to test its maximum potential, proving that a specialized model adds 
-value even against an well instructed LLM.
+Compares specialized ML models against a general-purpose LLM to quantify the added 
+value of training a domain-specific model ("Why not just ask Gemini?"). This script 
+uses a "High-Bar" approach: the LLM is given expert-level instructions and 
+definitions to test its maximum potential, demonstrating that a specialized model 
+adds value even against a well instructed LLM.
 
 Approach:
   1.  Data Preprocessing (Partial): Load raw MEPS SAS data, apply cleaning steps 1-7
-      (mirroring preprocess.py), then filter to validation set rows by DUPERSID.
+      (mirroring preprocess.py), then filter to validation set rows by ID.
       This recovers human-readable feature values (e.g., Age=42, Region=South)
       from the already-preprocessed parquet which contains scaled/encoded values.
   2.  Profile Generation: Convert each row into a natural language description
       that a layperson would provide to an LLM (zero-shot, no training examples).
-  3.  Batched LLM Inference (Run & Resume): Send profiles in batches to the Gemini 
-      API with structured JSON output. The script supports a "Run & Resume" strategy 
-      to stay within daily free-tier quotas (e.g., 20 requests per day for Gemini 3 Flash).
-      It automatically detects previous progress from 'models/llm_benchmark_predictions.joblib' 
-      and picks up where it left off.
+  3.  Batched LLM Inference: Send profiles in batches to the Gemini API with structured JSON 
+      output. The script supports a "Run & Resume" strategy to stay within daily free-tier 
+      limits (e.g., 20 requests per day for Gemini 3 Flash). It automatically detects previous 
+      progress from 'models/llm_benchmark_predictions.joblib' and picks up where it left off.
   4.  Metric Computation: Compute weighted metrics (MdAE, MAE, R²) on the total 
       accumulated progress.
   5.  Persistence: Save evaluation metrics as JSON, LLM parameters (including system prompt) 
-      as JSON, and the (updated) predictions as joblib file.
-
-Prerequisites:
-    pip install google-genai
+      as JSON, and the (updated) predictions as a joblib file.
+  6.  MLflow Tracking: Log hyperparameters, weighted performance metrics, and 
+      inference metadata to a local MLflow server for head-to-head comparison 
+      against specialized ML models.
 
 Usage:
     1. Create a .env file with GEMINI_API_KEY=your_key
@@ -42,11 +41,11 @@ import json
 from typing import Annotated
 
 # Third-party imports
-import numpy as np
-import pandas as pd
-import mlflow
 from google import genai
 from pydantic import BaseModel, Field
+import mlflow
+import numpy as np
+import pandas as pd
 from sklearn.metrics import mean_absolute_error, r2_score
 from dotenv import load_dotenv
 
@@ -123,7 +122,7 @@ FUNCTIONAL_LIMITATIONS = {
 # =========================
 
 # Ensures LLM and the domain-specifc ML model solve the same problem by defining costs explicitly.
-# This sets a higher bar compared to real LLM chatbot usage by providing expert-level clarity in prompt.
+# This sets a high bar for comparison by providing expert-level clarity in prompt.
 SYSTEM_PROMPT = """\
 You are a healthcare cost estimation expert for the United States.
 
