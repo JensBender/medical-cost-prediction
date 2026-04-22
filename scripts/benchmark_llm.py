@@ -28,7 +28,8 @@ Approach:
 
 Usage:
     1. Create a .env file with GEMINI_API_KEY=your_key
-    2. Run: ./.venv-train/Scripts/python scripts/benchmark_llm.py
+    2. Start the MLflow UI server (in a separate terminal): ./run_mlflow_ui.sh
+    3. Run: ./.venv-train/Scripts/python scripts/benchmark_llm.py
 """
 
 # Standard library imports
@@ -443,7 +444,7 @@ def main():
         print("Step 1: Preparing human-readable validation data...")
         df_raw_val, y_val, w_val = prepare_human_readable_validation_data()
 
-        # Align all arrays by common indices
+        # Ensure indices are aligned between raw features and preprocessed targets
         print(f"  Aligning row indices with preprocessed validation data...")
         common_ids = df_raw_val.dropna(how="all").index.intersection(y_val.index)
         df_raw_val = df_raw_val.loc[common_ids]
@@ -497,6 +498,8 @@ def main():
 
             start_time = time.time()
             predictions = query_llm_batch(client, batch, start_idx, current_batch_num)
+            
+            # Track cumulative inference time and total API requests sent
             batch_time = time.time() - start_time
             total_time += batch_time
             requests_sent += 1
