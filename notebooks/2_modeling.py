@@ -101,7 +101,8 @@ from src.utils import (
     save_model,
     load_model,
     save_metrics,
-    load_metrics
+    load_metrics,
+    get_core_model_params
 )
 
 # %% [markdown]
@@ -1025,6 +1026,8 @@ def tune_random_forest(X_train, y_train, X_val, y_val, w_train, w_val, param_lis
     # Run randomized search
     print(f"Tuning random forest ({n_iter} iterations)...")    
     rf_tuning_metrics = []
+    best_mdae = np.inf
+    best_idx = -1
     
     for i, params in enumerate(param_list):
         # Build model: RandomForest wrapped in log-transform
@@ -1064,34 +1067,61 @@ def tune_random_forest(X_train, y_train, X_val, y_val, w_train, w_val, param_lis
             "train_r2": train_r2,
             "val_mdae": val_mdae, 
             "val_mae": val_mae, 
-            "val_r2": val_r2
+            "val_r2": val_r2,
+            "training_time": training_time
         })
         
-        print(f"  [{i+1:3d}/{n_iter}] MdAE: {val_mdae:8.2f} | trees={params['n_estimators']}, depth={params['max_depth']}, leaf={params['min_samples_leaf']}, feats={params['max_features']}, samples={params['max_samples']:.2f}, split={params['min_samples_split']} | training: {training_time:5.1f} s")
+        if val_mdae < best_mdae:
+            best_mdae = val_mdae
+            best_idx = i
+
+        # Progress logging 
+        print(f"  [{i+1:3d}/{n_iter}] MdAE: {val_mdae:8.2f} | trees={params['n_estimators']}, depth={params['max_depth']}, leaf={params['min_samples_leaf']}, feats={params['max_features']}, samples={params['max_samples']:.2f}, split={params['min_samples_split']} | fit: {training_time:5.1f} s")
     
     # Retrain best model 
-    best_rf_params = sorted(rf_tuning_metrics, key=lambda x: x["val_mdae"])[0]["params"]
+    print("\nRetraining best model...")
+    best_params = param_list[best_idx]
     best_rf_model = TransformedTargetRegressor(
         regressor=RandomForestRegressor(
             criterion="absolute_error",
             n_jobs=-1,
             random_state=random_state,
-            **best_rf_params
+            **best_params
         ),
         func=np.log1p,
         inverse_func=np.expm1
     )
-    best_rf_results = train_and_evaluate(best_rf_model, X_train, y_train, X_val, y_val, w_train, w_val)
+    
+    best_rf_result = train_and_evaluate(
+        best_rf_model, 
+        X_train, y_train, 
+        X_val, y_val, 
+        w_train, w_val
+    )
 
     # Persist results
     save_metrics(rf_tuning_metrics, "../models/rf_tuning_history.json", verbose=False)
-    print("  Saved tuned random forest metrics to 'models/rf_tuning_history.json'")
-    save_model(best_rf_results["fitted_model"], "../models/rf_tuned_model.joblib", verbose=False)
+    print("  Saved tuned random forest history to 'models/rf_tuning_history.json'")
+    
+    save_model(best_rf_result["fitted_model"], "../models/rf_tuned_model.joblib", verbose=False)
     print("  Saved best model to 'models/rf_tuned_model.joblib'")
-    save_model(best_rf_results["y_val_pred"], "../models/rf_tuned_predictions.joblib", verbose=False)
+    
+    save_metrics({ "Random Forest (Tuned)": {
+        "val_mdae": best_rf_result["val_mdae"],
+        "val_mae": best_rf_result["val_mae"],
+        "val_r2": best_rf_result["val_r2"],
+        "train_mdae": best_rf_result["train_mdae"],
+        "train_mae": best_rf_result["train_mae"],
+        "train_r2": best_rf_result["train_r2"],
+        "training_time": best_rf_result["training_time"]
+    }}, "../models/rf_tuned_metrics.json", verbose=False)
+    
+    save_metrics(get_core_model_params(best_rf_result["fitted_model"]), "../models/rf_tuned_params.json", verbose=False)
+    
+    save_model(best_rf_result["y_val_pred"], "../models/rf_tuned_predictions.joblib", verbose=False)
     print("  Saved predicted values of best model to 'models/rf_tuned_predictions.joblib'")
     
-    return rf_tuning_metrics, best_rf_results
+    return rf_tuning_metrics, best_rf_result
 
 
 # Run tuning
@@ -1167,6 +1197,8 @@ def tune_xgboost(X_train, y_train, X_val, y_val, w_train, w_val, param_list, ran
     # Run randomized search
     print(f"Tuning XGBoost ({n_iter} iterations)...")    
     xgb_tuning_metrics = []
+    best_mdae = np.inf
+    best_idx = -1
     
     for i, params in enumerate(param_list):
         # Build model: XGBoost wrapped in log-transform
@@ -1207,31 +1239,57 @@ def tune_xgboost(X_train, y_train, X_val, y_val, w_train, w_val, param_list, ran
             "train_r2": train_r2,
             "val_mdae": val_mdae, 
             "val_mae": val_mae, 
-            "val_r2": val_r2
+            "val_r2": val_r2,
+            "training_time": training_time
         })
         
+        if val_mdae < best_mdae:
+            best_mdae = val_mdae
+            best_idx = i
+
         print(f"  [{i+1:3d}/{n_iter}] MdAE: {val_mdae:8.2f} | estimators={params['n_estimators']}, depth={params['max_depth']}, lr={params['learning_rate']:.3f}, sub={params['subsample']:.2f}, col={params['colsample_bytree']:.2f} | training: {training_time:5.1f} s")
     
     # Retrain best model 
-    best_xgb_params = sorted(xgb_tuning_metrics, key=lambda x: x["val_mdae"])[0]["params"]
+    print("\nRetraining best model...")
+    best_params = param_list[best_idx]
     best_xgb_model = TransformedTargetRegressor(
         regressor=XGBRegressor(
             objective="reg:absoluteerror",
             tree_method="hist",
             n_jobs=-1,
             random_state=random_state,
-            **best_xgb_params
+            **best_params
         ),
         func=np.log1p,
         inverse_func=np.expm1
     )
-    best_xgb_results = train_and_evaluate(best_xgb_model, X_train, y_train, X_val, y_val, w_train, w_val)
+    
+    best_xgb_result = train_and_evaluate(
+        best_xgb_model, 
+        X_train, y_train, 
+        X_val, y_val, 
+        w_train, w_val
+    )
 
     # Persist results
     save_metrics(xgb_tuning_metrics, "../models/xgb_tuning_history.json", verbose=False)
-    print("  Saved tuned XGBoost metrics to 'models/xgb_tuning_history.json'")
+    print("  Saved tuned XGBoost history to 'models/xgb_tuning_history.json'")
+    
     save_model(best_xgb_results["fitted_model"], "../models/xgb_tuned_model.joblib", verbose=False)
     print("  Saved best model to 'models/xgb_tuned_model.joblib'")
+    
+    save_metrics({ "XGBoost (Tuned)": {
+        "val_mdae": best_xgb_results["val_mdae"],
+        "val_mae": best_xgb_results["val_mae"],
+        "val_r2": best_xgb_results["val_r2"],
+        "train_mdae": best_xgb_results["train_mdae"],
+        "train_mae": best_xgb_results["train_mae"],
+        "train_r2": best_xgb_results["train_r2"],
+        "training_time": best_xgb_results["training_time"]
+    }}, "../models/xgb_tuned_metrics.json", verbose=False)
+    
+    save_metrics(get_core_model_params(best_xgb_results["fitted_model"]), "../models/xgb_tuned_params.json", verbose=False)
+    
     save_model(best_xgb_results["y_val_pred"], "../models/xgb_tuned_predictions.joblib", verbose=False)
     print("  Saved predicted values of best model to 'models/xgb_tuned_predictions.joblib'")
     
@@ -1313,26 +1371,25 @@ def tune_elastic_net(X_train, y_train, X_val, y_val, w_train, w_val, param_list,
     # Run randomized search
     print(f"Tuning Elastic Net ({n_iter} iterations)...")    
     en_tuning_metrics = []
+    best_mdae = np.inf
+    best_idx = -1
     
     for i, params in enumerate(param_list):
-        # Extract params for the different pipeline steps (polynomials__, model__)
-        poly_params = {k.replace("polynomials__", ""): v for k, v in params.items() if k.startswith("polynomials__")}
-        model_params = {k.replace("model__", ""): v for k, v in params.items() if k.startswith("model__")}
-
-        # Build model: Pipeline wrapped in log-transform
+        # Build model: Elastic Net with Polynomial Features wrapped in Target Log-Transformer
         en_model = TransformedTargetRegressor(
             regressor=Pipeline([
-                ("polynomials", PolynomialFeatures(degree=2, include_bias=False, **poly_params)),
-                ("model", ElasticNet(random_state=random_state, **model_params))
+                ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),
+                ("model", ElasticNet(random_state=random_state, max_iter=2000))
             ]),
             func=np.log1p,
             inverse_func=np.expm1
         )
+        # Set hyperparameters for the internal model in the pipeline
+        en_model.regressor.set_params(**params)
         
         # Train with normalized sample weights
-        # Pipeline handles passing weights to the final step if correctly configured
-        start_time = time.time()  # Measure training time
-        en_model.fit(X_train, y_train, regressor__model__sample_weight=w_train_norm)
+        start_time = time.time()
+        en_model.fit(X_train, y_train, model__sample_weight=w_train_norm)
         training_time = time.time() - start_time
         
         # Predict on training and validation set (predictions are in raw dollars due to inverse_func)
@@ -1355,35 +1412,61 @@ def tune_elastic_net(X_train, y_train, X_val, y_val, w_train, w_val, param_list,
             "train_r2": train_r2,
             "val_mdae": val_mdae, 
             "val_mae": val_mae, 
-            "val_r2": val_r2
+            "val_r2": val_r2,
+            "training_time": training_time
         })
         
-        print(f"  [{i+1:3d}/{n_iter}] MdAE: {val_mdae:8.2f} | alpha={model_params['alpha']:.4f}, l1={model_params['l1_ratio']:.2f}, inter={poly_params['interaction_only']} | training: {training_time:5.1f} s")
+        if val_mdae < best_mdae:
+            best_mdae = val_mdae
+            best_idx = i
+
+        # Progress logging 
+        squares_label = "off" if params["polynomials__interaction_only"] else "on "
+        print(f"  [{i+1:3d}/{n_iter}] MdAE: {val_mdae:8.2f} | alpha={params['model__alpha']:.4f}, l1={params['model__l1_ratio']:.2f}, squares={squares_label:3} | fit: {training_time:5.1f} s")
     
     # Retrain best model 
-    best_en_params = sorted(en_tuning_metrics, key=lambda x: x["val_mdae"])[0]["params"]
-    best_poly_params = {k.replace("polynomials__", ""): v for k, v in best_en_params.items() if k.startswith("polynomials__")}
-    best_model_params = {k.replace("model__", ""): v for k, v in best_en_params.items() if k.startswith("model__")}
-
+    print("\nRetraining best model...")
+    best_params = param_list[best_idx]
     best_en_model = TransformedTargetRegressor(
         regressor=Pipeline([
-            ("polynomials", PolynomialFeatures(degree=2, include_bias=False, **best_poly_params)),
-            ("model", ElasticNet(random_state=random_state, **best_model_params))
+            ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),
+            ("model", ElasticNet(random_state=random_state, max_iter=5000))
         ]),
         func=np.log1p,
         inverse_func=np.expm1
     )
-    best_en_results = train_and_evaluate(best_en_model, X_train, y_train, X_val, y_val, w_train, w_val)
+    best_en_model.regressor.set_params(**best_params)
+    
+    best_en_result = train_and_evaluate(
+        best_en_model, 
+        X_train, y_train, 
+        X_val, y_val, 
+        w_train, w_val
+    )
 
     # Persist results
     save_metrics(en_tuning_metrics, "../models/en_tuning_history.json", verbose=False)
-    print("  Saved tuned Elastic Net metrics to 'models/en_tuning_history.json'")
-    save_model(best_en_results["fitted_model"], "../models/en_tuned_model.joblib", verbose=False)
+    print("  Saved tuned Elastic Net history to 'models/en_tuning_history.json'")
+    
+    save_model(best_en_result["fitted_model"], "../models/en_tuned_model.joblib", verbose=False)
     print("  Saved best model to 'models/en_tuned_model.joblib'")
-    save_model(best_en_results["y_val_pred"], "../models/en_tuned_predictions.joblib", verbose=False)
+    
+    save_metrics({ "Elastic Net (Tuned)": {
+        "val_mdae": best_en_result["val_mdae"],
+        "val_mae": best_en_result["val_mae"],
+        "val_r2": best_en_result["val_r2"],
+        "train_mdae": best_en_result["train_mdae"],
+        "train_mae": best_en_result["train_mae"],
+        "train_r2": best_en_result["train_r2"],
+        "training_time": best_en_result["training_time"]
+    }}, "../models/en_tuned_metrics.json", verbose=False)
+    
+    save_metrics(get_core_model_params(best_en_result["fitted_model"]), "../models/en_tuned_params.json", verbose=False)
+    
+    save_model(best_en_result["y_val_pred"], "../models/en_tuned_predictions.joblib", verbose=False)
     print("  Saved predicted values of best model to 'models/en_tuned_predictions.joblib'")
     
-    return en_tuning_metrics, best_en_results
+    return en_tuning_metrics, best_en_result
 
 
 # Run tuning
@@ -1410,7 +1493,6 @@ display(
     .style
     .pipe(add_table_caption, "Elastic Net: Hyperparameter Tuning Results")
     .format({"val_mdae": "{:.2f}", "val_mae": "{:.2f}", "val_r2": "{:.4f}", "model__alpha": "{:.4f}", "model__l1_ratio": "{:.2f}"})
-    .highlight_min(subset=["val_mdae", "val_mae"], color="#d4edda")
     .highlight_max(subset=["val_r2"], color="#d4edda")
     .hide()
 )
