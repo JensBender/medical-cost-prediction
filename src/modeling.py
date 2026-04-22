@@ -21,6 +21,85 @@ from src.utils import weighted_median_absolute_error
 from src.constants import TARGET_COLUMN, RANDOM_STATE
 
 
+def get_baseline_models():
+    """
+    Define baseline machine learning models to predict out-of-pocket medical costs with distribution-aware 
+    hyperparameters.
+
+    Returns:
+        dict: A dictionary mapping model names (str) to Scikit-learn estimators or pipelines.
+    """
+    baseline_models = {
+        "Median Prediction": DummyRegressor(strategy="median"),  # Always predict median as a benchmark
+        "Linear Regression": TransformedTargetRegressor(      
+            regressor=LinearRegression(),  # Simple, linear predictions as an interpretable baseline
+            func=np.log1p,
+            inverse_func=np.expm1
+        ),
+        "Elastic Net": TransformedTargetRegressor(
+            regressor=Pipeline([
+                ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),  # Intercept (bias) handled by model 
+                ("model", ElasticNet())
+            ]),
+            func=np.log1p,
+            inverse_func=np.expm1
+        ),
+        "Decision Tree": TransformedTargetRegressor(
+            regressor=DecisionTreeRegressor(
+                criterion="absolute_error",  # Optimize for MAE of log-costs; corresponds to predicting the Median of raw costs
+                max_depth=12,          # Limits tree depth to prevent overfitting (Default: None)
+                min_samples_split=100, # Prevents splitting on tiny, noisy groups of patients (Default: 2)
+                min_samples_leaf=50,   # Ensures each leaf's cost prediction has enough support (Default: 1)
+                max_features="sqrt",   # Uses random feature subset for each split to prevent overfitting on individual features (Default: None)
+                random_state=RANDOM_STATE  
+            ),
+            func=np.log1p,
+            inverse_func=np.expm1
+        ),
+        "Random Forest": TransformedTargetRegressor(
+            regressor=RandomForestRegressor(
+                criterion="absolute_error",  # Optimize for MAE of log-costs; corresponds to predicting the Median of raw costs
+                n_estimators=200,      # More trees for more stable estimates (Default: 100)
+                max_depth=16,          # Limits tree depth to prevent overfitting (Default: None)
+                min_samples_split=50,  # Prevents splitting on tiny, noisy groups of patients (Default: 2)
+                min_samples_leaf=25,   # Ensures each leaf's cost prediction has enough support (Default: 1)
+                max_features="sqrt",   # Uses random feature subset for each split to prevent overfitting on individual features (Default: 1.0)
+                n_jobs=-1,             # Use all CPU cores to speed up training
+                random_state=RANDOM_STATE 
+            ),
+            func=np.log1p,
+            inverse_func=np.expm1
+        ),
+        "XGBoost": TransformedTargetRegressor(
+            regressor=XGBRegressor(
+                objective="reg:absoluteerror", # Optimized for MAE of log-costs; corresponds to predicting the Median raw costs (Default: "reg:squarederror")
+                n_estimators=600,      # More rounds with lower learning rate for smooth fitting (Default: 100)
+                learning_rate=0.05,    # Smaller steps to prevent overshooting noisy targets (Default: 0.3)
+                min_child_weight=10,   # Requires more "support" per node to split (Default: 1)
+                subsample=0.8,         # Uses random row subset (80%) to prevent overfitting (Default: 1)
+                colsample_bytree=0.5,  # Uses random feature subset (50%) for each split to prevent overfitting on individual features (Default: 1)
+                reg_lambda=2.0,        # L2 regularization on leaf weights to avoid sharp peaks (Default: 1)
+                tree_method="hist",    # Uses histogram algorithm for significantly faster training (Default: auto)
+                n_jobs=-1,             # Use all CPU cores to speed up training
+                random_state=RANDOM_STATE  
+            ),
+            func=np.log1p,
+            inverse_func=np.expm1
+        ),
+        "Support Vector Machine": TransformedTargetRegressor(
+            regressor=SVR(
+                kernel="rbf",    # Handles non-linearity and feature interactions (Default: same)
+                C=10.0,          # Slightly higher regularization strength for log-costs (Default: 1.0)
+                cache_size=1000  # Increase memory budget (1GB) to speed up training time (Default: 200)
+            ),
+            func=np.log1p,
+            inverse_func=np.expm1
+        )
+    }
+    
+    return baseline_models
+
+
 def train_and_evaluate(
     model, 
     X_train, y_train, 
@@ -155,82 +234,3 @@ def train_and_evaluate(
                 mlflow.sklearn.log_model(model, "model")
 
     return results
-
-
-def get_baseline_models():
-    """
-    Define baseline machine learning models to predict out-of-pocket medical costs with distribution-aware 
-    hyperparameters.
-
-    Returns:
-        dict: A dictionary mapping model names (str) to Scikit-learn estimators or pipelines.
-    """
-    baseline_models = {
-        "Median Prediction": DummyRegressor(strategy="median"),  # Always predict median as a benchmark
-        "Linear Regression": TransformedTargetRegressor(      
-            regressor=LinearRegression(),  # Simple, linear predictions as an interpretable baseline
-            func=np.log1p,
-            inverse_func=np.expm1
-        ),
-        "Elastic Net": TransformedTargetRegressor(
-            regressor=Pipeline([
-                ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),  # Intercept (bias) handled by model 
-                ("model", ElasticNet())
-            ]),
-            func=np.log1p,
-            inverse_func=np.expm1
-        ),
-        "Decision Tree": TransformedTargetRegressor(
-            regressor=DecisionTreeRegressor(
-                criterion="absolute_error",  # Optimize for MAE of log-costs; corresponds to predicting the Median of raw costs
-                max_depth=12,          # Limits tree depth to prevent overfitting (Default: None)
-                min_samples_split=100, # Prevents splitting on tiny, noisy groups of patients (Default: 2)
-                min_samples_leaf=50,   # Ensures each leaf's cost prediction has enough support (Default: 1)
-                max_features="sqrt",   # Uses random feature subset for each split to prevent overfitting on individual features (Default: None)
-                random_state=RANDOM_STATE  
-            ),
-            func=np.log1p,
-            inverse_func=np.expm1
-        ),
-        "Random Forest": TransformedTargetRegressor(
-            regressor=RandomForestRegressor(
-                criterion="absolute_error",  # Optimize for MAE of log-costs; corresponds to predicting the Median of raw costs
-                n_estimators=200,      # More trees for more stable estimates (Default: 100)
-                max_depth=16,          # Limits tree depth to prevent overfitting (Default: None)
-                min_samples_split=50,  # Prevents splitting on tiny, noisy groups of patients (Default: 2)
-                min_samples_leaf=25,   # Ensures each leaf's cost prediction has enough support (Default: 1)
-                max_features="sqrt",   # Uses random feature subset for each split to prevent overfitting on individual features (Default: 1.0)
-                n_jobs=-1,             # Use all CPU cores to speed up training
-                random_state=RANDOM_STATE 
-            ),
-            func=np.log1p,
-            inverse_func=np.expm1
-        ),
-        "XGBoost": TransformedTargetRegressor(
-            regressor=XGBRegressor(
-                objective="reg:absoluteerror", # Optimized for MAE of log-costs; corresponds to predicting the Median raw costs (Default: "reg:squarederror")
-                n_estimators=600,      # More rounds with lower learning rate for smooth fitting (Default: 100)
-                learning_rate=0.05,    # Smaller steps to prevent overshooting noisy targets (Default: 0.3)
-                min_child_weight=10,   # Requires more "support" per node to split (Default: 1)
-                subsample=0.8,         # Uses random row subset (80%) to prevent overfitting (Default: 1)
-                colsample_bytree=0.5,  # Uses random feature subset (50%) for each split to prevent overfitting on individual features (Default: 1)
-                reg_lambda=2.0,        # L2 regularization on leaf weights to avoid sharp peaks (Default: 1)
-                tree_method="hist",    # Uses histogram algorithm for significantly faster training (Default: auto)
-                n_jobs=-1,             # Use all CPU cores to speed up training
-                random_state=RANDOM_STATE  
-            ),
-            func=np.log1p,
-            inverse_func=np.expm1
-        ),
-        "Support Vector Machine": TransformedTargetRegressor(
-            regressor=SVR(
-                kernel="rbf",    # Handles non-linearity and feature interactions (Default: same)
-                C=10.0,          # Slightly higher regularization strength for log-costs (Default: 1.0)
-                cache_size=1000  # Increase memory budget (1GB) to speed up training time (Default: 200)
-            ),
-            func=np.log1p,
-            inverse_func=np.expm1
-        )
-    }
-    
-    return baseline_models
