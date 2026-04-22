@@ -738,19 +738,8 @@ def row_to_profile(row):
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Get LLM predictions via API request.
+#     📌 Build LLM prompt with prompt-batching.
 # </div> 
-
-# %%
-# Load API Key from .env file 
-api_key = os.environ.get("GEMINI_API_KEY")
-
-# Check existence of API key
-if not api_key:
-    print("❌ GEMINI_API_KEY environment variable not set.")
-    print("   Get a free API key at: https://aistudio.google.com/apikey")
-    print("   Then set it in .env: GEMINI_API_KEY=your_gemini_api_key_here")
-    sys.exit(1)
 
 # %%
 # System Prompt
@@ -804,6 +793,11 @@ def build_batch_prompt(profiles, start_idx):
 # print(batch_prompt)
 
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Query LLM with batch-prompt in single API request.
+# </div> 
+
 # %%
 def query_llm_batch(client, profiles, start_idx, batch_num):
     """Send a batch of profiles in a single prompt to the LLM API with retry logic."""
@@ -846,11 +840,17 @@ def query_llm_batch(client, profiles, start_idx, batch_num):
 
     
 # Example usage: Query a single batch of profiles via LLM API
+# api_key = os.environ.get("GEMINI_API_KEY")  
 # client = genai.Client(api_key=api_key)
 # batch_results = query_llm_batch(client, profiles[:BATCH_SIZE], start_idx=0, batch_num=1)
 # client.close()
 # print(batch_results)
 
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Parse LLM response.
+# </div> 
 
 # %%
 def parse_llm_response(response, expected_count):
@@ -901,6 +901,37 @@ def parse_llm_response(response, expected_count):
 # costs = parse_llm_response(response, expected_count=BATCH_SIZE)
 # print(costs)
 
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Compare performance of general intelligence LLM with specialized ML baseline models.
+# </div> 
+
+# %%
+# Load LLM metrics from JSON file
+llm_metrics = load_metrics("../models/llm_benchmark_metrics.json")
+
+# Load baseline model metrics from JSON files 
+baseline_models_to_evaluate = ["median", "lr", "en", "tree", "rf", "xgb", "svm"]
+baseline_metrics = {}
+for model in baseline_models_to_evaluate:
+    metrics = load_metrics(f"../models/{model}_baseline_metrics.json")
+    baseline_metrics.update(metrics)
+
+# Combine all metrics 
+all_metrics = {**llm_metrics, **baseline_metrics}
+
+# Display metric comparison table
+display(
+    pd.DataFrame(all_metrics).T[["val_mdae", "val_mae", "val_r2"]]
+    .rename(columns=lambda x: METRIC_LABELS.get(x, x).replace(" (Val)", ""))
+    .rename(index=lambda x: x.replace(" (Baseline)", "").replace("-preview", ""))
+    .style
+    .pipe(add_table_caption, "General LLM vs. Specialized ML Models")
+    .format("{:.2f}")
+    .highlight_min(subset=["MdAE", "MAE"], color="#d4edda")
+    .highlight_max(subset=["R²"], color="#d4edda")
+)
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
