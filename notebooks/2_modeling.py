@@ -503,9 +503,11 @@ import json
 
 # Third-party imports
 from google import genai
+from pydantic import BaseModel, Field
+from typing import Annotated
 from dotenv import load_dotenv
 
-# Local importsfrom src.constants import (
+# Local imports
 from src.constants import (
     RAW_COLUMNS_TO_KEEP, RAW_BINARY_FEATURES,
     MEPS_MISSING_CODES,
@@ -517,10 +519,12 @@ from src.constants import (
 load_dotenv()
 
 # Configuration
-LLM_MODEL = "gemini-3.1-flash-lite-preview"
-BATCH_SIZE = 25       # User profiles per API call (fits well within context window)
-DELAY_SECONDS = 20    # Seconds between API calls (~3 RPM, safely under 5 RPM free-tier limit)
-MAX_ATTEMPTS = 5      # Maximum times to try API call before giving up
+LLM_MODEL = "gemini-3-flash-preview"  # "gemini-3.1-flash-lite-preview" | "gemma-4-31b-it"
+LLM_TEMPERATURE = 0          # Almost deterministic model outputs (except for tiny variations due to floating-point math)
+LLM_THINKING_LEVEL = "high"  # Reasoning depth 
+BATCH_SIZE = 25              # User profiles per API call (fits well within context window)
+DELAY_SECONDS = 4            # Seconds between API calls to stay within free-tier limit (5 RPM for gemini-3-flash)
+MAX_ATTEMPTS = 5             # Maximum times to try API call before giving up
 
 # Paths (relative to /notebooks directory)
 RAW_DATA_PATH = "../data/h251.sas7bdat"
@@ -555,6 +559,20 @@ FUNCTIONAL_LIMITATIONS = {
     "COGLIM31": "Difficulty concentrating, remembering, or making decisions",
     "JTPAIN31_M18": "Joint pain, aching, or stiffness",
 }
+
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Define structured output schema.
+# </div> 
+
+# %%
+class PredictionBatch(BaseModel):
+    """
+    Schema for a batch of LLM cost predictions.
+    Annotated with Field(ge=0) to ensure costs are never negative.
+    """
+    costs: list[Annotated[float, Field(ge=0)]]
 
 
 # %% [markdown]
@@ -632,17 +650,15 @@ def prepare_human_readable_validation_data():
     return df_raw_val, y_val, w_val
 
 
-# Use function to prepare validation data for LLM benchmarking
-# print("Step 1: Preparing human-readable validation data...")
+# Example usage: Prepare validation data for LLM benchmarking
 # df_raw_val, y_val, w_val = prepare_human_readable_validation_data()
 
 # Align all arrays by common indices
-# print(f"  Aligning row indices with preprocessed validation data...")
 # common_ids = df_raw_val.dropna(how="all").index.intersection(y_val.index)
 # df_raw_val = df_raw_val.loc[common_ids]
 # y_val = y_val.loc[common_ids]
 # w_val = w_val.loc[common_ids]
-# print(f"  Aligned {len(common_ids):,} validation rows")
+# df_raw_val.head()
 
 
 # %% [markdown]
@@ -715,13 +731,9 @@ def row_to_profile(row):
 
     return "\n".join(lines)
 
-
-# print("Step 2: Converting features to natural language profiles...")
-# profiles = [row_to_profile(row) for _, row in df_raw_val.iterrows()]
-# print(f"  Created {len(profiles):,} profiles\n")
-
-# Display example profile
-# print("Example Profile:")
+    
+# Example usage: Create natural language profiles for LLM input
+# profiles = [row_to_profile(row) for _, row in df_raw_val.head(5).iterrows()]
 # print(profiles[0])
 
 # %% [markdown]
@@ -786,9 +798,9 @@ def build_batch_prompt(profiles, start_idx):
         + f"\n\nReturn the {n} estimates as an ordered array."
     )
 
-
-# Display example batch prompt
-# batch_prompt = build_batch_prompt(profiles[:25], 0)
+    
+# Example usage: Build a prompt containing multiple profiles for prompt-batching
+# batch_prompt = build_batch_prompt(profiles[:3], start_idx=0)
 # print(batch_prompt)
 
 
@@ -804,16 +816,14 @@ def query_llm_batch(client, profiles, start_idx, batch_num):
                 contents=batch_prompt,
                 config=genai.types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
-                    temperature=0,  # Almost deterministic model outputs (except for tiny variations due to floating-point math)
-                    # Use structured JSON output (array of numbers, or list of floats in python)
+                    temperature=LLM_TEMPERATURE,
+                    thinking_config=genai.types.ThinkingConfig(thinking_level=LLM_THINKING_LEVEL),                   
+                    # Use structured JSON output
                     response_mime_type="application/json",
-                    response_schema={
-                        "type": "ARRAY",
-                        "items": {"type": "NUMBER"}
-                    },
+                    response_schema=PredictionBatch,
                 ),
             )
-            return response.text
+            return parse_llm_response(response, len(profiles))
 
         except Exception as e:
             error_msg = str(e)
@@ -834,65 +844,63 @@ def query_llm_batch(client, profiles, start_idx, batch_num):
     print(f"    ❌ Batch {batch_num} failed after {MAX_ATTEMPTS} attempts")
     return [np.nan] * len(profiles)
 
-
-# Example usage on single batch prompt
+    
+# Example usage: Query a single batch of profiles via LLM API
 # client = genai.Client(api_key=api_key)
-# response = query_llm_batch(client, profiles[:25], start_idx=0, batch_num=1)
-# client.close()  # Close the API client to release resources
-
-# Display example API response 
-# print(response)
+# batch_results = query_llm_batch(client, profiles[:BATCH_SIZE], start_idx=0, batch_num=1)
+# client.close()
+# print(batch_results)
 
 
 # %%
-def parse_llm_response(response_text, expected_count):
+def parse_llm_response(response, expected_count):
     """
-    Parse the LLM's response into a list of floats.
+    Extract predictions from the LLM response object.
 
-    Strictness Rationale:
-    If the number of predictions does not exactly match `expected_count`, the 
-    entire batch is discarded (returned as NaNs). This "Strict Approach" 
-    prevents data shifting, where a single skipped profile in the LLM's 
-    output would cause all subsequent predictions in the batch to be 
-    misaligned with their ground-truth labels, ruining the benchmark's validity.
+    Handles the parsed Pydantic object if available, falling back to 
+    manual string parsing if the structured output failed.
 
-    Likely error scenarios handled:
-      - JSON format errors (invalid syntax or missing markdown fences).
-      - Count mismatch (LLM skips a profile or adds a summary value).
-      - Value errors (LLM returns non-numeric strings within the array).
+    Division of Labor:
+      1. Data Integrity (Pydantic): Ensures JSON is valid, values are floats, 
+         and costs are non-negative (Field ge=0). Errors here trigger a
+         ValidationError caught in the try/except block.
+      2. Contextual Alignment (Manual): Ensures the LLM didn't "hallucinate" 
+         extra values or omit profiles. If the count mismatches, the entire 
+         batch is discarded (returned as NaNs) to prevent data shifting, where 
+         a single skipped profile would cause all subsequent predictions to 
+         be misaligned with ground-truth labels.
     """
-    text = response_text.strip()
-
-    # Extract list of predictions
-    match = re.search(r"\[[\s\S]*?\]", text)  # extracts first [] with any characters within
-    if match:
-        try:
-            predictions = json.loads(match.group())  # converts str to list
+    try:
+        # Preferred: Use the SDK's parsed field (v1.0+)
+        if hasattr(response, "parsed") and response.parsed:
+            predictions = response.parsed.costs
             if len(predictions) == expected_count:
-                return [float(prediction) for prediction in predictions]
+                return predictions
             
-            print(f"    ⚠️  Count mismatch: Expected {expected_count}, got {len(predictions)}. Discarding batch to avoid alignment errors.")
+            print(f"    ⚠️  Count mismatch in parsed output: Expected {expected_count}, got {len(predictions)}. Returning NaNs for this batch.")
             return [np.nan] * expected_count
 
-        except (json.JSONDecodeError, ValueError, TypeError) as e:
-            print(f"    ⚠️  Parse error: {e}. Discarding batch.")
-            return [np.nan] * expected_count
+        # Fallback: Manual parsing of raw text if structured output is missing
+        text = response.text.strip()
+        match = re.search(r"\[[\s\S]*?\]", text)
+        if match:
+            predictions = json.loads(match.group())
+            if isinstance(predictions, list) and len(predictions) == expected_count:
+                return [float(p) for p in predictions]
 
-    # Fallback: extract numbers in case of missing list brackets []
-    numbers = re.findall(r"[\d,]+\.?\d*", text)
-    if len(numbers) == expected_count:  # only if number of predictions is as expected
-        try:
-            return [float(n.replace(",", "")) for n in numbers]
-        except ValueError:  # handles potential stray comma (which would match re)
-            pass
+    except (Exception) as e:
+        # Capture specific validation/parsing errors for easier debugging
+        err_msg = str(e).replace('\n', ' ')
+        print(f"    ⚠️  Parse/Validation error: {err_msg[:150]}... Returning NaNs for this batch.")
 
-    print(f"    ❌ Unparseable or mismatched response: {text[:200]}...")
+    print(f"    ❌ Unparseable or mismatched response. Returning NaNs for this batch.")
     return [np.nan] * expected_count
 
+    
+# Example usage: Extract costs from an LLM response object
+# costs = parse_llm_response(response, expected_count=BATCH_SIZE)
+# print(costs)
 
-# Extract predictions from LLM text response as a list of floats
-# predictions = parse_llm_response(response, expected_count=25)
-# predictions
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
