@@ -423,7 +423,7 @@ def main():
     print("Step 0: Setting up MLflow...")
     mlflow.set_tracking_uri("http://127.0.0.1:5000")  # Points to running MLflow UI server
     mlflow.set_experiment("LLM Benchmarks")
-    print(f"  Set up 'LLM Benchmarks' experiment in MLflow with URI '{mlflow.get_tracking_uri()}'\n")
+    print(f"  Set up 'LLM Benchmarks' experiment in MLflow with URI '{mlflow.get_tracking_uri()}'")
 
     # Start MLflow run to capture the entire process duration
     with mlflow.start_run(run_name=LLM_MODEL):
@@ -451,9 +451,10 @@ def main():
         # --- 2. Build Natural Language Profiles ---
         print("Step 2: Converting features to natural language profiles...")
         profiles = [row_to_profile(row) for _, row in df_raw_val.iterrows()]
-        print(f"  Created {len(profiles):,} profiles for LLM input\n")
+        print(f"  Created {len(profiles):,} profiles for LLM input")
 
         # --- 3. Query LLM in Batches ---
+        print(f"Step 3: Querying '{LLM_MODEL}' (Up to {MAX_REQUESTS_PER_RUN} new batches of {BATCH_SIZE})...")
         client = genai.Client(api_key=api_key)
         all_predictions = np.full(len(profiles), np.nan)  # Initialize with NaNs
         
@@ -468,7 +469,6 @@ def main():
             else:
                 print(f"  ⚠️ Existing predictions file size mismatch. Starting fresh.")
 
-        print(f"Step 3: Querying '{LLM_MODEL}' (Up to {MAX_REQUESTS_PER_RUN} new batches of {BATCH_SIZE})...")
         total_time = 0
         requests_sent = 0
 
