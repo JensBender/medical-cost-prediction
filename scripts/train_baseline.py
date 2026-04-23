@@ -30,8 +30,7 @@ import mlflow
 
 # Local imports
 from src.constants import TARGET_COLUMN, WEIGHT_COLUMN
-from src.modeling import get_baseline_models, train_and_evaluate, TRAIN_DATA_PATH, VAL_DATA_PATH
-from src.utils import save_model, save_metrics, get_core_model_params
+from src.modeling import get_baseline_models, train_and_evaluate, TRAIN_DATA_PATH, VAL_DATA_PATH, save_model, save_metrics, get_core_model_params
 
 # Suppress benign MLflow warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")

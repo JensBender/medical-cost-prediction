@@ -46,9 +46,8 @@ from sklearn.metrics import mean_absolute_error, r2_score
 
 # Local imports
 from src.constants import TARGET_COLUMN, WEIGHT_COLUMN, RANDOM_STATE
-from src.modeling import train_and_evaluate, TRAIN_DATA_PATH, VAL_DATA_PATH
+from src.modeling import train_and_evaluate, TRAIN_DATA_PATH, VAL_DATA_PATH, weighted_median_absolute_error, save_model, save_metrics, get_core_model_params
 from src.params import EN_PARAM_DISTRIBUTIONS, EN_N_ITER
-from src.utils import weighted_median_absolute_error, save_model, save_metrics, get_core_model_params
 
 # Suppress benign MLflow warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")

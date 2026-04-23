@@ -58,8 +58,7 @@ from src.constants import (
     MARRY31X_TRANSITION_CODES, EMPST31_TRANSITION_CODES,
     MARRY31X_COLLAPSE_MAP, EMPST31_COLLAPSE_MAP,
 )
-from src.utils import weighted_median_absolute_error, save_metrics, save_model, load_model
-from src.modeling import RAW_DATA_PATH, VAL_DATA_PATH
+from src.modeling import RAW_DATA_PATH, VAL_DATA_PATH, weighted_median_absolute_error, save_metrics, save_model, load_model
 
 # Suppress benign MLflow warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")

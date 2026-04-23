@@ -50,7 +50,7 @@ from src.constants import (
     PIPELINE_OPTIONAL_FEATURES
 )
 from src.pipeline import create_preprocessing_pipeline
-from src.utils import create_stratification_bins
+from src.data import create_stratification_bins
 
 
 # Paths (relative to project root)

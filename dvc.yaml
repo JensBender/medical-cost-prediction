@@ -13,7 +13,7 @@ stages:
       - src/pipeline.py                           # Preprocessing pipeline
       - src/transformers.py                       # Custom transformers
       - src/constants.py                          # Feature lists, label mappings, etc.
-      - src/utils.py                              # Helper functions
+      - src/data.py                               # Data helper functions
     outs:
       - data/training_data_preprocessed.parquet
       - data/validation_data_preprocessed.parquet
@@ -29,7 +29,6 @@ stages:
       - scripts/train_baseline.py                 # Training script for reproducible baseline models 
       - src/modeling.py                           # Model training and evaluation functions
       - src/constants.py                          # Feature lists, label mappings, etc.
-      - src/utils.py                              # Helper functions
     outs:
       - models/median_baseline_model.joblib
       - models/median_baseline_metrics.json

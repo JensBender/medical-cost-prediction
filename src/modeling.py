@@ -1,8 +1,11 @@
 # Standard library imports
 import contextlib  # to train model without MLflow tracking using a null context
+import json
 import time
+from pathlib import Path
 
 # Third-party library imports
+import joblib
 import mlflow
 import numpy as np
 from sklearn.compose import TransformedTargetRegressor
@@ -17,7 +20,6 @@ from xgboost import XGBRegressor
 from sklearn.metrics import mean_absolute_error, r2_score
 
 # Local imports
-from src.utils import weighted_median_absolute_error
 from src.constants import TARGET_COLUMN, RANDOM_STATE
 
 # Paths (relative to project root)
@@ -26,6 +28,10 @@ TRAIN_DATA_PATH = "data/training_data_preprocessed.parquet"
 VAL_DATA_PATH = "data/validation_data_preprocessed.parquet"
 TEST_DATA_PATH = "data/test_data_preprocessed.parquet"
 
+
+# =========================
+# Model Definitions
+# =========================
 
 def get_baseline_models():
     """
@@ -105,6 +111,42 @@ def get_baseline_models():
     
     return baseline_models
 
+
+# =========================
+# Metrics
+# =========================
+
+def weighted_median_absolute_error(y_true, y_pred, sample_weight):
+    """
+    Computes the population-representative Median Absolute Error.
+    
+    Args:
+        y_true (array-like): True target variable values.
+        y_pred (array-like): Predicted target variable values.
+        sample_weight (array-like): Weights for population-level estimates.
+
+    Returns:
+        float: The weighted median absolute error.
+    """
+    # Calculate absolute errors and ensure inputs are numpy arrays
+    abs_errors = np.abs(np.array(y_true) - np.array(y_pred))
+    weights = np.array(sample_weight)
+    
+    # Sort errors and weights by error magnitude
+    sorted_idx = np.argsort(abs_errors)
+    errors_sorted = abs_errors[sorted_idx]
+    weights_sorted = weights[sorted_idx]
+    
+    # Find the value where cumulative weight reaches 50%
+    cumulative_weight = np.cumsum(weights_sorted)
+    cutoff = 0.5 * np.sum(weights_sorted)
+    
+    return errors_sorted[np.searchsorted(cumulative_weight, cutoff)]
+
+
+# =============================
+# Model Training & Evaluation
+# =============================
 
 def train_and_evaluate(
     model, 
@@ -240,3 +282,128 @@ def train_and_evaluate(
                 mlflow.sklearn.log_model(model, "model")
 
     return results
+
+
+# =========================
+# Modeling Utilities
+# =========================
+
+def get_core_model_params(fitted_model):
+    """
+    Extract JSON-friendly core model params for persistence.
+
+    - Unwrap TransformedTargetRegressor to its inner regressor.
+    - For Pipeline models, persist only step parameters (e.g., polynomials__degree),
+      not estimator objects stored under top-level keys like "polynomials" or "model".
+    """
+    core_model = getattr(fitted_model, "regressor_", getattr(fitted_model, "regressor", fitted_model))
+
+    if isinstance(core_model, Pipeline):
+        params = {}
+        for step_name, step in core_model.named_steps.items():
+            step_params = step.get_params(deep=False)
+            for param_name, param_value in step_params.items():
+                params[f"{step_name}__{param_name}"] = param_value
+        return params
+
+    return core_model.get_params(deep=False)
+
+
+# =========================
+# Model Persistence
+# =========================
+
+def save_model(model, filepath, verbose=True):
+    """
+    Save a trained model or pipeline or a results dictionary to a file using joblib.
+
+    Args:
+        model: The model object or pipeline object or results dictionary to be saved.
+        filepath (str or Path): The destination file path (e.g., 'models/baseline.joblib').
+        verbose (bool): Whether to print a success message.
+    """
+    try:
+        # Ensure the parent directory exists
+        Path(filepath).parent.mkdir(parents=True, exist_ok=True)
+
+        joblib.dump(model, filepath)
+        if verbose:
+            print(f"Successfully saved model to '{filepath}'.")
+    except Exception as e:
+        print(f"Error while saving model: {e}")
+
+
+def load_model(filepath, verbose=True):
+    """
+    Load a trained model or pipeline or a results dictionary from a file using joblib.
+
+    Args:
+        filepath (str or Path): The file path to load from.
+        verbose (bool): Whether to print a success message.
+
+    Returns:
+        The loaded object (model, pipeline, or dictionary).
+    """
+    try:
+        model = joblib.load(filepath)
+        if verbose:
+            print(f"Successfully loaded model from '{filepath}'.")
+        return model
+    except Exception as e:
+        print(f"Error while loading model: {e}")
+        return None
+
+
+def save_metrics(metrics, filepath, verbose=True):
+    """
+    Save performance metrics to a JSON file, automatically converting 
+    NumPy types to Python floats for serialization.
+
+    Args:
+        metrics (dict or list): Metrics to save. Usually a dict of dicts 
+            or a list of dicts.
+        filepath (str or Path): Path to save the JSON file.
+        verbose (bool): Whether to print a success message.
+    """
+    try:
+        def clean_value(x):
+            """Recursively convert NumPy scalars to Python floats for JSON serialization."""
+            if isinstance(x, dict):
+                return {key: clean_value(value) for key, value in x.items()}
+            if isinstance(x, list):
+                return [clean_value(i) for i in x]
+            if hasattr(x, "dtype"):  # for single NumPy float
+                return float(x)
+            return x
+
+        clean_metrics = clean_value(metrics)
+
+        Path(filepath).parent.mkdir(parents=True, exist_ok=True)
+        with open(filepath, "w") as f:
+            json.dump(clean_metrics, f, indent=4)
+        if verbose:
+            print(f"Successfully saved metrics to '{filepath}'.")
+    except Exception as e:
+        print(f"Error while saving metrics: {e}")
+
+
+def load_metrics(filepath, verbose=True):
+    """
+    Load metrics from a JSON file.
+
+    Args:
+        filepath (str or Path): The file path to load from.
+        verbose (bool): Whether to print a success message.
+
+    Returns:
+        dict or list: The loaded metrics or None if an error occurred.
+    """
+    try:
+        with open(filepath, "r") as f:
+            metrics = json.load(f)
+        if verbose:
+            print(f"Successfully loaded metrics from '{filepath}'.")
+        return metrics
+    except Exception as e:
+        print(f"Error while loading metrics: {e}")
+        return None
