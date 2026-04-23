@@ -59,6 +59,7 @@ from src.constants import (
     MARRY31X_COLLAPSE_MAP, EMPST31_COLLAPSE_MAP,
 )
 from src.utils import weighted_median_absolute_error, save_metrics, save_model, load_model
+from src.modeling import RAW_DATA_PATH, VAL_DATA_PATH
 
 # Suppress benign MLflow warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
@@ -78,10 +79,6 @@ BATCH_SIZE = 25              # User profiles per API call (fits well within cont
 MAX_REQUESTS_PER_RUN = 20    # Stop after 20 API calls to stay within daily free-tier limit (20 RPD for gemini-3-flash)
 DELAY_SECONDS = 4            # Seconds between API calls to stay within free-tier limit (5 RPM for gemini-3-flash)
 MAX_ATTEMPTS = 5             # Maximum times to try API call before giving up
-
-# Paths (relative to project root)
-RAW_DATA_PATH = "data/h251.sas7bdat"
-VAL_DATA_PATH = "data/validation_data_preprocessed.parquet"
 
 
 # =========================

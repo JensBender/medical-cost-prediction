@@ -30,15 +30,11 @@ import mlflow
 
 # Local imports
 from src.constants import TARGET_COLUMN, WEIGHT_COLUMN
-from src.modeling import get_baseline_models, train_and_evaluate
+from src.modeling import get_baseline_models, train_and_evaluate, TRAIN_DATA_PATH, VAL_DATA_PATH
 from src.utils import save_model, save_metrics, get_core_model_params
 
 # Suppress benign MLflow warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
-
-# Paths (relative to project root)
-TRAIN_DATA_PATH = "data/training_data_preprocessed.parquet"
-VAL_DATA_PATH = "data/validation_data_preprocessed.parquet"
 
 
 # Main Baseline Model Training 

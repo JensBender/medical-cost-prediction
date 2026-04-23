@@ -20,6 +20,12 @@ from sklearn.metrics import mean_absolute_error, r2_score
 from src.utils import weighted_median_absolute_error
 from src.constants import TARGET_COLUMN, RANDOM_STATE
 
+# Paths (relative to project root)
+RAW_DATA_PATH = "data/h251.sas7bdat"
+TRAIN_DATA_PATH = "data/training_data_preprocessed.parquet"
+VAL_DATA_PATH = "data/validation_data_preprocessed.parquet"
+TEST_DATA_PATH = "data/test_data_preprocessed.parquet"
+
 
 def get_baseline_models():
     """
@@ -158,19 +164,19 @@ def train_and_evaluate(
     with run_context:
         if track_mlflow:
             # Tag raw data source
-            mlflow.set_tag("data_source", "h251.sas7bdat")
+            mlflow.set_tag("data_source", RAW_DATA_PATH.split("/")[-1])
 
             # Log data lineage
             data_train = mlflow.data.from_pandas(
                 X_train.assign(**{TARGET_COLUMN: y_train}), 
                 targets=TARGET_COLUMN,
-                source="../data/training_data_preprocessed.parquet", 
+                source=TRAIN_DATA_PATH, 
                 name="training_data"
             )
             data_val = mlflow.data.from_pandas(
                 X_val.assign(**{TARGET_COLUMN: y_val}), 
                 targets=TARGET_COLUMN,
-                source="../data/validation_data_preprocessed.parquet", 
+                source=VAL_DATA_PATH, 
                 name="validation_data"
             )
             mlflow.log_input(data_train, context="training")
