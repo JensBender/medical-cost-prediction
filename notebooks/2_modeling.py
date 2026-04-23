@@ -956,7 +956,7 @@ display(
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Tune the hyperparameters of Random Forest, XGBoost, and Elastic Net using randomized search on the fixed holdout validation set. 
+#     ℹ️ Tune the hyperparameters of Elastic Net, Random Forest, and XGBoost using randomized search on the fixed holdout validation set. 
 #     <br><br>
 #     <b>Tuning Framework (Shared Logic):</b>
 #     <ul>
@@ -964,7 +964,7 @@ display(
 #         <li><b>Target Transform:</b> <code>TransformedTargetRegressor(log1p)</code> to handle skewness and optimize in log-space.</li>
 #         <li><b>Sample Weights:</b> Normalized weights (mean=1.0) for training; raw survey weights for evaluation.</li>
 #         <li><b>Scoring:</b> Weighted Median Absolute Error (MdAE) on raw-dollar predictions.</li>
-#         <li><b>Iterations:</b> Small number (2-5) in notebook for prototyping. Scale to 50-100 in <code>scripts/tune_random_forest.py</code> for production.</li>
+#         <li><b>Iterations:</b> Small number (2-5) in notebook for prototyping. Scale to 50-100 in production scripts (e.g., <code>scripts/tune_random_forest.py</code>).</li>
 #     </ul>
 #     <b>Why not <code>RandomizedSearchCV</code>?</b><br>
 #     Avoids <code>sample_weight</code> routing complexities and ensures transparent weighted scoring on a fixed holdout set.
@@ -984,6 +984,174 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Elastic Net</h2>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Tune <code>ElasticNet</code> hyperparameters.
+#     <ul>
+#         <li><b>Squared Features:</b> Explores polynomial features with and without squared feature terms (parameter <code>interaction_only</code>).</li>
+#         <li><b>Regularization:</b> Explore various regularization strengths (<code>alpha</code>) and optimal L1/L2 penalty ratio (<code>l1_ratio</code>).</li>
+#     </ul>
+#     For hyperparameter details, refer to the official <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html" target="_blank">ElasticNet documentation</a> and the search space in <a href="../src/params.py">src/params.py</a>.
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Define the hyperparameter search space.
+# </div>
+
+# %%
+# Generate random parameter combinations
+N_ITER = 5  # Small for prototyping
+en_param_list = list(ParameterSampler(EN_PARAM_DISTRIBUTIONS, n_iter=N_ITER, random_state=RANDOM_STATE))
+
+print(f"Generated {len(en_param_list)} random hyperparameter combinations")
+print(f"Example: {en_param_list[0]}")
+
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Perform randomized search and persist model artifacts (best model weights as <code>.joblib</code>, metrics as <code>.json</code>, parameters as <code>.json</code>, predictions as <code>.joblib</code>, and full tuning history as <code>.json</code>).
+# </div>
+
+# %%
+def tune_elastic_net(X_train, y_train, X_val, y_val, w_train, w_val, param_list, random_state=RANDOM_STATE):
+    """
+    Perform randomized search for Elastic Net hyperparameters and persist results.
+    """
+    n_iter = len(param_list)
+    # Normalize training weights (mean=1.0) for numerical stability during model fitting
+    w_train_norm = w_train / w_train.mean()
+    
+    # Run randomized search
+    print(f"Tuning Elastic Net ({n_iter} iterations)...")    
+    en_tuning_metrics = []
+    best_mdae = np.inf
+    best_idx = -1
+    
+    for i, params in enumerate(param_list):
+        # Build model: Elastic Net with Polynomial Features wrapped in Target Log-Transformer
+        en_model = TransformedTargetRegressor(
+            regressor=Pipeline([
+                ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),
+                ("model", ElasticNet(random_state=random_state, max_iter=2000))
+            ]),
+            func=np.log1p,
+            inverse_func=np.expm1
+        )
+        # Set hyperparameters for the internal model in the pipeline
+        en_model.regressor.set_params(**params)
+        
+        # Train with normalized sample weights
+        start_time = time.time()
+        en_model.fit(X_train, y_train, model__sample_weight=w_train_norm)
+        training_time = time.time() - start_time
+        
+        # Predict on training and validation set (predictions are in raw dollars due to inverse_func)
+        y_train_pred = en_model.predict(X_train)
+        y_val_pred = en_model.predict(X_val)
+        
+        # Evaluate with raw survey weights
+        train_mdae = weighted_median_absolute_error(y_train, y_train_pred, sample_weight=w_train)
+        train_mae = mean_absolute_error(y_train, y_train_pred, sample_weight=w_train)
+        train_r2 = r2_score(y_train, y_train_pred, sample_weight=w_train)
+    
+        val_mdae = weighted_median_absolute_error(y_val, y_val_pred, sample_weight=w_val)
+        val_mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
+        val_r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
+        
+        en_tuning_metrics.append({
+            "params": params, 
+            "train_mdae": train_mdae, 
+            "train_mae": train_mae, 
+            "train_r2": train_r2,
+            "val_mdae": val_mdae, 
+            "val_mae": val_mae, 
+            "val_r2": val_r2,
+            "training_time": training_time
+        })
+        
+        if val_mdae < best_mdae:
+            best_mdae = val_mdae
+            best_idx = i
+
+        # Progress logging 
+        squares_label = "off" if params["polynomials__interaction_only"] else "on "
+        print(f"  [{i+1:3d}/{n_iter}] MdAE: {val_mdae:8.2f} | alpha={params['model__alpha']:.4f}, l1={params['model__l1_ratio']:.2f}, squares={squares_label:3} | fit: {training_time:5.1f} s")
+    
+    # Retrain best model 
+    print("\nRetraining best model...")
+    best_params = param_list[best_idx]
+    best_en_model = TransformedTargetRegressor(
+        regressor=Pipeline([
+            ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),
+            ("model", ElasticNet(random_state=random_state, max_iter=5000))
+        ]),
+        func=np.log1p,
+        inverse_func=np.expm1
+    )
+    best_en_model.regressor.set_params(**best_params)
+    
+    best_en_result = train_and_evaluate(
+        best_en_model, 
+        X_train, y_train, 
+        X_val, y_val, 
+        w_train, w_val,
+        track_mlflow=True,
+        model_name="Elastic Net (Tuned)"
+    )
+
+    # Persist results
+    save_metrics(en_tuning_metrics, "../models/en_tuning_history.json", verbose=False)
+    print("  Saved tuned Elastic Net history to 'models/en_tuning_history.json'")
+    
+    save_model(best_en_result["fitted_model"], "../models/en_tuned_model.joblib", verbose=False)
+    print("  Saved best model to 'models/en_tuned_model.joblib'")
+    
+    save_metrics({ "Elastic Net (Tuned)": {
+        "val_mdae": best_en_result["val_mdae"],
+        "val_mae": best_en_result["val_mae"],
+        "val_r2": best_en_result["val_r2"],
+        "train_mdae": best_en_result["train_mdae"],
+        "train_mae": best_en_result["train_mae"],
+        "train_r2": best_en_result["train_r2"],
+        "training_time": best_en_result["training_time"]
+    }}, "../models/en_tuned_metrics.json", verbose=False)
+    
+    save_metrics(get_core_model_params(best_en_result["fitted_model"]), "../models/en_tuned_params.json", verbose=False)
+    
+    save_model(best_en_result["y_val_pred"], "../models/en_tuned_predictions.joblib", verbose=False)
+    print("  Saved predicted values of best model to 'models/en_tuned_predictions.joblib'")
+    
+    return en_tuning_metrics, best_en_result
+
+
+# Run tuning
+# en_tuning_metrics, best_en_results = tune_elastic_net(X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val, en_param_list)
+
+
+# %%
+# Load tuned Elastic Net metrics from JSON file
+en_tuning_history = load_metrics("../models/en_tuning_history.json")
+
+# Display metric comparison table  
+en_tuning_df = pd.DataFrame(en_tuning_history)
+en_tuning_df = en_tuning_df.sort_values("val_mdae")  # sort by primary metric
+en_params_df = pd.json_normalize(en_tuning_df["params"])
+en_display_df = pd.concat([en_tuning_df[["val_mdae", "val_mae", "val_r2"]], en_params_df], axis=1) 
+
+display(
+    en_display_df
+    .style
+    .pipe(add_table_caption, "Elastic Net: Hyperparameter Tuning Results")
+    .format({"val_mdae": "{:.2f}", "val_mae": "{:.2f}", "val_r2": "{:.4f}", "model__alpha": "{:.4f}", "model__l1_ratio": "{:.2f}"})
+    .highlight_max(subset=["val_r2"], color="#d4edda")
+    .hide()
+)
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Random Forest</h2>
 # </div>
 #
@@ -993,7 +1161,7 @@ display(
 #         <li><b>Objective:</b> <code>criterion="absolute_error"</code> to minimize L1 loss on log-costs.</li>
 #         <li><b>Key Params:</b> Control variance via <code>min_samples_leaf</code> and <code>max_features</code>.</li>
 #     </ul>
-#     For hyperparameter details, refer to the official scikit-learn <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank">RandomForestRegressor documentation</a>.
+#     For hyperparameter details, refer to the official scikit-learn <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank">RandomForestRegressor documentation</a> and the search space in <a href="../src/params.py">src/params.py</a>.
 #
 # </div>
 
@@ -1013,7 +1181,7 @@ print(f"Example: {rf_param_list[0]}")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Perform randomized search and store results (best model as <code>.joblib</code>, metrics of all model runs as <code>.json</code>, predictions of best model as <code>.joblib</code>).
+#     📌 Perform randomized search and persist model artifacts (best model weights as <code>.joblib</code>, metrics as <code>.json</code>, parameters as <code>.json</code>, predictions as <code>.joblib</code>, and full tuning history as <code>.json</code>).
 # </div>
 
 # %%
@@ -1167,7 +1335,7 @@ display(
 #         <li><b>Objective:</b> <code>objective="reg:absoluteerror"</code> to minimize L1 loss on log-costs.</li>
 #         <li><b>Speed:</b> Uses <code>tree_method="hist"</code> for efficient histogram-based splitting.</li>
 #     </ul>
-#     For hyperparameter details, refer to the official <a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.XGBRegressor" target="_blank">XGBoost documentation</a>.
+#     For hyperparameter details, refer to the official <a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.XGBRegressor" target="_blank">XGBoost documentation</a> and the search space in <a href="../src/params.py">src/params.py</a>.
 # </div>
 
 # %% [markdown]
@@ -1186,7 +1354,7 @@ print(f"Example: {xgb_param_list[0]}")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Perform randomized search and store results (best model as <code>.joblib</code>, metrics of all model runs as <code>.json</code>, predictions of best model as <code>.joblib</code>).
+#     📌 Perform randomized search and persist model artifacts (best model weights as <code>.joblib</code>, metrics as <code>.json</code>, parameters as <code>.json</code>, predictions as <code>.joblib</code>, and full tuning history as <code>.json</code>).
 # </div>
 
 # %%
@@ -1311,6 +1479,11 @@ def tune_xgboost(X_train, y_train, X_val, y_val, w_train, w_val, param_list, ran
 #     📌 Evaluate tuning results. 
 # </div>
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Evaluate tuning results. 
+# </div>
+
 # %%
 # Load tuned XGBoost metrics from JSON file
 xgb_tuning_history = load_metrics("../models/xgb_tuning_history.json")
@@ -1331,176 +1504,3 @@ display(
     .hide()
 )
 
-
-# %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Elastic Net</h2>
-# </div>
-#
-# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Tune <code>ElasticNet</code> hyperparameters.
-#     <ul>
-#         <li><b>Complexity:</b> Explores both interaction-only and full polynomial features.</li>
-#         <li><b>Regularization:</b> Log-scaled <code>alpha</code> search for optimal L1/L2 penalty mix.</li>
-#     </ul>
-#     For hyperparameter details, refer to the official <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html" target="_blank">ElasticNet documentation</a>.
-# </div>
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Define the hyperparameter search space.
-# </div>
-
-# %%
-# Generate random parameter combinations
-N_ITER = 5  # Small for prototyping
-en_param_list = list(ParameterSampler(EN_PARAM_DISTRIBUTIONS, n_iter=N_ITER, random_state=RANDOM_STATE))
-
-print(f"Generated {len(en_param_list)} random hyperparameter combinations")
-print(f"Example: {en_param_list[0]}")
-
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Perform randomized search and store results (best model as <code>.joblib</code>, metrics of all model runs as <code>.json</code>, predictions of best model as <code>.joblib</code>).
-# </div>
-
-# %%
-def tune_elastic_net(X_train, y_train, X_val, y_val, w_train, w_val, param_list, random_state=RANDOM_STATE):
-    """
-    Perform randomized search for Elastic Net hyperparameters and persist results.
-    """
-    n_iter = len(param_list)
-    # Normalize training weights (mean=1.0) for numerical stability during model fitting
-    w_train_norm = w_train / w_train.mean()
-    
-    # Run randomized search
-    print(f"Tuning Elastic Net ({n_iter} iterations)...")    
-    en_tuning_metrics = []
-    best_mdae = np.inf
-    best_idx = -1
-    
-    for i, params in enumerate(param_list):
-        # Build model: Elastic Net with Polynomial Features wrapped in Target Log-Transformer
-        en_model = TransformedTargetRegressor(
-            regressor=Pipeline([
-                ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),
-                ("model", ElasticNet(random_state=random_state, max_iter=2000))
-            ]),
-            func=np.log1p,
-            inverse_func=np.expm1
-        )
-        # Set hyperparameters for the internal model in the pipeline
-        en_model.regressor.set_params(**params)
-        
-        # Train with normalized sample weights
-        start_time = time.time()
-        en_model.fit(X_train, y_train, model__sample_weight=w_train_norm)
-        training_time = time.time() - start_time
-        
-        # Predict on training and validation set (predictions are in raw dollars due to inverse_func)
-        y_train_pred = en_model.predict(X_train)
-        y_val_pred = en_model.predict(X_val)
-        
-        # Evaluate with raw survey weights
-        train_mdae = weighted_median_absolute_error(y_train, y_train_pred, sample_weight=w_train)
-        train_mae = mean_absolute_error(y_train, y_train_pred, sample_weight=w_train)
-        train_r2 = r2_score(y_train, y_train_pred, sample_weight=w_train)
-    
-        val_mdae = weighted_median_absolute_error(y_val, y_val_pred, sample_weight=w_val)
-        val_mae = mean_absolute_error(y_val, y_val_pred, sample_weight=w_val)
-        val_r2 = r2_score(y_val, y_val_pred, sample_weight=w_val)
-        
-        en_tuning_metrics.append({
-            "params": params, 
-            "train_mdae": train_mdae, 
-            "train_mae": train_mae, 
-            "train_r2": train_r2,
-            "val_mdae": val_mdae, 
-            "val_mae": val_mae, 
-            "val_r2": val_r2,
-            "training_time": training_time
-        })
-        
-        if val_mdae < best_mdae:
-            best_mdae = val_mdae
-            best_idx = i
-
-        # Progress logging 
-        squares_label = "off" if params["polynomials__interaction_only"] else "on "
-        print(f"  [{i+1:3d}/{n_iter}] MdAE: {val_mdae:8.2f} | alpha={params['model__alpha']:.4f}, l1={params['model__l1_ratio']:.2f}, squares={squares_label:3} | fit: {training_time:5.1f} s")
-    
-    # Retrain best model 
-    print("\nRetraining best model...")
-    best_params = param_list[best_idx]
-    best_en_model = TransformedTargetRegressor(
-        regressor=Pipeline([
-            ("polynomials", PolynomialFeatures(degree=2, include_bias=False)),
-            ("model", ElasticNet(random_state=random_state, max_iter=5000))
-        ]),
-        func=np.log1p,
-        inverse_func=np.expm1
-    )
-    best_en_model.regressor.set_params(**best_params)
-    
-    best_en_result = train_and_evaluate(
-        best_en_model, 
-        X_train, y_train, 
-        X_val, y_val, 
-        w_train, w_val,
-        track_mlflow=True,
-        model_name="Elastic Net (Tuned)"
-    )
-
-    # Persist results
-    save_metrics(en_tuning_metrics, "../models/en_tuning_history.json", verbose=False)
-    print("  Saved tuned Elastic Net history to 'models/en_tuning_history.json'")
-    
-    save_model(best_en_result["fitted_model"], "../models/en_tuned_model.joblib", verbose=False)
-    print("  Saved best model to 'models/en_tuned_model.joblib'")
-    
-    save_metrics({ "Elastic Net (Tuned)": {
-        "val_mdae": best_en_result["val_mdae"],
-        "val_mae": best_en_result["val_mae"],
-        "val_r2": best_en_result["val_r2"],
-        "train_mdae": best_en_result["train_mdae"],
-        "train_mae": best_en_result["train_mae"],
-        "train_r2": best_en_result["train_r2"],
-        "training_time": best_en_result["training_time"]
-    }}, "../models/en_tuned_metrics.json", verbose=False)
-    
-    save_metrics(get_core_model_params(best_en_result["fitted_model"]), "../models/en_tuned_params.json", verbose=False)
-    
-    save_model(best_en_result["y_val_pred"], "../models/en_tuned_predictions.joblib", verbose=False)
-    print("  Saved predicted values of best model to 'models/en_tuned_predictions.joblib'")
-    
-    return en_tuning_metrics, best_en_result
-
-
-# Run tuning
-# en_tuning_metrics, best_en_results = tune_elastic_net(X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val, en_param_list)
-
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Evaluate tuning results. 
-# </div>
-
-# %%
-# Load tuned Elastic Net metrics from JSON file
-en_tuning_history = load_metrics("../models/en_tuning_history.json")
-
-# Display metric comparison table  
-en_tuning_df = pd.DataFrame(en_tuning_history)
-en_tuning_df = en_tuning_df.sort_values("val_mdae")  # sort by primary metric
-en_params_df = pd.json_normalize(en_tuning_df["params"])
-en_display_df = pd.concat([en_tuning_df[["val_mdae", "val_mae", "val_r2"]], en_params_df], axis=1) 
-
-display(
-    en_display_df
-    .style
-    .pipe(add_table_caption, "Elastic Net: Hyperparameter Tuning Results")
-    .format({"val_mdae": "{:.2f}", "val_mae": "{:.2f}", "val_r2": "{:.4f}", "model__alpha": "{:.4f}", "model__l1_ratio": "{:.2f}"})
-    .highlight_max(subset=["val_r2"], color="#d4edda")
-    .hide()
-)
