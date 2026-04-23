@@ -82,15 +82,7 @@ import time  # to measure training time
 # Local imports
 from src.modeling import (
     train_and_evaluate,
-    get_baseline_models,
-    weighted_median_absolute_error,
-    save_model,
-    load_model,
-    save_metrics,
-    load_metrics,
-    get_core_model_params,
-    TRAIN_DATA_PATH, 
-    VAL_DATA_PATH
+    get_baseline_models
 )
 from src.constants import (
     ID_COLUMN,
@@ -101,9 +93,17 @@ from src.constants import (
 from src.display import (
     DISPLAY_LABELS, 
     METRIC_LABELS,
-    add_table_caption
 )
 from src.params import RF_PARAM_DISTRIBUTIONS, XGB_PARAM_DISTRIBUTIONS, EN_PARAM_DISTRIBUTIONS
+from src.utils import (
+    add_table_caption,
+    weighted_median_absolute_error,
+    save_model,
+    load_model,
+    save_metrics,
+    load_metrics,
+    get_core_model_params
+)
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
@@ -1096,7 +1096,9 @@ def tune_random_forest(X_train, y_train, X_val, y_val, w_train, w_val, param_lis
         best_rf_model, 
         X_train, y_train, 
         X_val, y_val, 
-        w_train, w_val
+        w_train, w_val,
+        track_mlflow=True,
+        model_name="Random Forest (Tuned)"
     )
 
     # Persist results
@@ -1264,11 +1266,13 @@ def tune_xgboost(X_train, y_train, X_val, y_val, w_train, w_val, param_list, ran
         inverse_func=np.expm1
     )
     
-    best_xgb_result = train_and_evaluate(
+    best_xgb_results = train_and_evaluate(
         best_xgb_model, 
         X_train, y_train, 
         X_val, y_val, 
-        w_train, w_val
+        w_train, w_val,
+        track_mlflow=True,
+        model_name="XGBoost (Tuned)"
     )
 
     # Persist results
@@ -1441,7 +1445,9 @@ def tune_elastic_net(X_train, y_train, X_val, y_val, w_train, w_val, param_list,
         best_en_model, 
         X_train, y_train, 
         X_val, y_val, 
-        w_train, w_val
+        w_train, w_val,
+        track_mlflow=True,
+        model_name="Elastic Net (Tuned)"
     )
 
     # Persist results

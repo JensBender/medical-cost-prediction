@@ -91,7 +91,6 @@ from src.display import (
     CATEGORY_LABELS_EDA,
     POP_COLOR,
     SAMPLE_COLOR,
-    add_table_caption
 )
 from src.transformers import (
     MedicalFeatureDeriver,
@@ -102,7 +101,10 @@ from src.pipeline import (
     create_preprocessing_pipeline, 
     create_missing_value_handling_pipeline
 )
-from src.data import create_stratification_bins
+from src.utils import (
+    add_table_caption,
+    create_stratification_bins
+)
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
