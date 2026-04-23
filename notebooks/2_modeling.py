@@ -1095,12 +1095,14 @@ def tune_elastic_net(X_train, y_train, X_val, y_val, w_train, w_val, param_list,
         best_en_model, 
         X_train, y_train, 
         X_val, y_val, 
-        w_train, w_val,
-        track_mlflow=True,
-        model_name="Elastic Net (Tuned)"
+        w_train, w_val
     )
+    print(f"  Best Tuned Elastic Net →  MdAE: {best_en_result['val_mdae']:.2f} | MAE: {best_en_result['val_mae']:.2f} | "
+          f"R²: {best_en_result['val_r2']:.4f} | Training Time: {best_en_result['training_time']:.2f}s")
 
     # Persist results
+    print("Step 6: Persisting hyperparameter tuning results...")
+
     save_metrics(en_tuning_metrics, "../models/en_tuning_history.json", verbose=False)
     print("  Saved tuned Elastic Net history to 'models/en_tuning_history.json'")
     
@@ -1116,11 +1118,15 @@ def tune_elastic_net(X_train, y_train, X_val, y_val, w_train, w_val, param_list,
         "train_r2": best_en_result["train_r2"],
         "training_time": best_en_result["training_time"]
     }}, "../models/en_tuned_metrics.json", verbose=False)
+    print("  Saved evaluation metrics of best model to 'models/en_tuned_metrics.json'")
     
     save_metrics(get_core_model_params(best_en_result["fitted_model"]), "../models/en_tuned_params.json", verbose=False)
+    print("  Saved hyperparameters of best model to 'models/en_tuned_params.json'")
     
     save_model(best_en_result["y_val_pred"], "../models/en_tuned_predictions.joblib", verbose=False)
     print("  Saved predicted values of best model to 'models/en_tuned_predictions.joblib'")
+    
+    print("\n✅ Elastic Net hyperparameter tuning complete.")
     
     return en_tuning_metrics, best_en_result
 
@@ -1264,12 +1270,14 @@ def tune_random_forest(X_train, y_train, X_val, y_val, w_train, w_val, param_lis
         best_rf_model, 
         X_train, y_train, 
         X_val, y_val, 
-        w_train, w_val,
-        track_mlflow=True,
-        model_name="Random Forest (Tuned)"
+        w_train, w_val
     )
+    print(f"  Best Tuned Random Forest →  MdAE: {best_rf_result['val_mdae']:.2f} | MAE: {best_rf_result['val_mae']:.2f} | "
+          f"R²: {best_rf_result['val_r2']:.4f} | Training Time: {best_rf_result['training_time']:.2f}s")
 
     # Persist results
+    print("Step 6: Persisting hyperparameter tuning results...")
+
     save_metrics(rf_tuning_metrics, "../models/rf_tuning_history.json", verbose=False)
     print("  Saved tuned random forest history to 'models/rf_tuning_history.json'")
     
@@ -1285,11 +1293,15 @@ def tune_random_forest(X_train, y_train, X_val, y_val, w_train, w_val, param_lis
         "train_r2": best_rf_result["train_r2"],
         "training_time": best_rf_result["training_time"]
     }}, "../models/rf_tuned_metrics.json", verbose=False)
+    print("  Saved evaluation metrics of best model to 'models/rf_tuned_metrics.json'")
     
     save_metrics(get_core_model_params(best_rf_result["fitted_model"]), "../models/rf_tuned_params.json", verbose=False)
+    print("  Saved hyperparameters of best model to 'models/rf_tuned_params.json'")
     
     save_model(best_rf_result["y_val_pred"], "../models/rf_tuned_predictions.joblib", verbose=False)
     print("  Saved predicted values of best model to 'models/rf_tuned_predictions.joblib'")
+    
+    print("\n✅ Random Forest hyperparameter tuning complete.")
     
     return rf_tuning_metrics, best_rf_result
 
@@ -1439,12 +1451,14 @@ def tune_xgboost(X_train, y_train, X_val, y_val, w_train, w_val, param_list, ran
         best_xgb_model, 
         X_train, y_train, 
         X_val, y_val, 
-        w_train, w_val,
-        track_mlflow=True,
-        model_name="XGBoost (Tuned)"
+        w_train, w_val
     )
+    print(f"  Best Tuned XGBoost  →  MdAE: {best_xgb_results['val_mdae']:.2f} | MAE: {best_xgb_results['val_mae']:.2f} | "
+          f"R²: {best_xgb_results['val_r2']:.4f} | Training Time: {best_xgb_results['training_time']:.2f}s")
 
     # Persist results
+    print("Step 6: Persisting hyperparameter tuning results...")
+
     save_metrics(xgb_tuning_metrics, "../models/xgb_tuning_history.json", verbose=False)
     print("  Saved tuned XGBoost history to 'models/xgb_tuning_history.json'")
     
@@ -1460,23 +1474,22 @@ def tune_xgboost(X_train, y_train, X_val, y_val, w_train, w_val, param_list, ran
         "train_r2": best_xgb_results["train_r2"],
         "training_time": best_xgb_results["training_time"]
     }}, "../models/xgb_tuned_metrics.json", verbose=False)
+    print("  Saved evaluation metrics of best model to 'models/xgb_tuned_metrics.json'")
     
     save_metrics(get_core_model_params(best_xgb_results["fitted_model"]), "../models/xgb_tuned_params.json", verbose=False)
+    print("  Saved hyperparameters of best model to 'models/xgb_tuned_params.json'")
     
     save_model(best_xgb_results["y_val_pred"], "../models/xgb_tuned_predictions.joblib", verbose=False)
     print("  Saved predicted values of best model to 'models/xgb_tuned_predictions.joblib'")
+    
+    print("\n✅ XGBoost hyperparameter tuning complete.")
     
     return xgb_tuning_metrics, best_xgb_results
 
 
 # Run tuning
-# xgb_tuning_metrics, best_xgb_results = tune_xgboost(X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val, xgb_param_list)
+xgb_tuning_metrics, best_xgb_results = tune_xgboost(X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val, xgb_param_list)
 
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Evaluate tuning results. 
-# </div>
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
