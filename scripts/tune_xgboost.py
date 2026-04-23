@@ -24,7 +24,8 @@ Reference:
     notebooks/2_modeling.ipynb
 
 Usage:
-    ./.venv-train/Scripts/python scripts/tune_xgboost.py
+    1. Start the MLflow UI server (in a separate terminal): ./run_mlflow_ui.sh
+    2. Run: ./.venv-train/Scripts/python scripts/tune_xgboost.py
 """
 
 # Standard library imports
