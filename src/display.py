@@ -10,7 +10,7 @@ from src.constants import CATEGORY_LABELS_PIPELINE
 
 
 # =========================
-# Constants
+# Display Constants
 # =========================
 
 # Mapping MEPS variable names to human-readable display labels (for notebook EDA and app UI)
@@ -132,9 +132,9 @@ POP_COLOR = "#084594"    # deep navy for population
 SAMPLE_COLOR = "#14b8a6" # vibrant teal for sample
 
 
-# =========================
-# Utility Functions
-# =========================
+# ===========================
+# Display Utility Functions
+# ===========================
 
 def add_table_caption(styler, caption, font_size="14px", font_weight="bold", text_align="left"):
     """
