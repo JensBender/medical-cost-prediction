@@ -5,13 +5,12 @@ This script performs a randomized search over a defined hyperparameter space
 with MLflow experiment tracking. It uses log-transformed targets 
 (TransformedTargetRegressor) and evaluates each configuration on the training 
 and validation set using weighted MdAE, MAE, and R². It then retrains the best 
-configuration using the train_and_evaluate function and persists the fitted 
-model, evaluation metrics, hyperparameters, validation predictions, and the 
-full randomized search history.
+model and persists the fitted model, evaluation metrics, hyperparameters, 
+predictions, and the full randomized search history.
 
 Workflow:
   1.  MLflow Setup: Initialize experiment tracking for "XGBoost Tuning".
-  2.  Preprocessed Data Loading: Load preprocessed Parquet datasets into memory.
+  2.  Preprocessed Data Loading: Load Parquet datasets into memory.
   3.  Feature-Target Separation: Separate features, target variable, and sample weights.
   4.  Hyperparameter Search: Evaluate N_ITER random configurations using 
       ParameterSampler. Track each trial as an MLflow child run with 
