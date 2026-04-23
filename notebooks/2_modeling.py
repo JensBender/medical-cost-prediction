@@ -989,11 +989,9 @@ display(
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Tune <code>ElasticNet</code> hyperparameters.
-#     <ul>
-#         <li><b>Squared Features:</b> Explores polynomial features with and without squared feature terms (parameter <code>interaction_only</code>).</li>
-#         <li><b>Regularization:</b> Explore various regularization strengths (<code>alpha</code>) and optimal L1/L2 penalty ratio (<code>l1_ratio</code>).</li>
-#     </ul>
-#     For hyperparameter details, refer to the official <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html" target="_blank">ElasticNet documentation</a> and the search space in <a href="../src/params.py">src/params.py</a>.
+#     <br><br>
+#     For hyperparameter details, refer to the official <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html" target="_blank">ElasticNet documentation</a>. <br> 
+#     For hyperparamter search space and rationale, refer to <a href="../src/params.py">src/params.py</a>.
 # </div>
 
 # %% [markdown]
@@ -1161,8 +1159,8 @@ display(
 #         <li><b>Objective:</b> <code>criterion="absolute_error"</code> to minimize L1 loss on log-costs.</li>
 #         <li><b>Key Params:</b> Control variance via <code>min_samples_leaf</code> and <code>max_features</code>.</li>
 #     </ul>
-#     For hyperparameter details, refer to the official scikit-learn <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank">RandomForestRegressor documentation</a> and the search space in <a href="../src/params.py">src/params.py</a>.
-#
+#     For hyperparameter details, refer to the official scikit-learn <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank">RandomForestRegressor documentation</a> <br> 
+#     For hyperparamter search space and rationale, refer to <a href="../src/params.py">src/params.py</a>.
 # </div>
 
 # %% [markdown]
@@ -1335,7 +1333,8 @@ display(
 #         <li><b>Objective:</b> <code>objective="reg:absoluteerror"</code> to minimize L1 loss on log-costs.</li>
 #         <li><b>Speed:</b> Uses <code>tree_method="hist"</code> for efficient histogram-based splitting.</li>
 #     </ul>
-#     For hyperparameter details, refer to the official <a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.XGBRegressor" target="_blank">XGBoost documentation</a> and the search space in <a href="../src/params.py">src/params.py</a>.
+#     For hyperparameter details, refer to the official <a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.XGBRegressor" target="_blank">XGBoost documentation</a>. <br> 
+#     For hyperparamter search space and rationale, refer to <a href="../src/params.py">src/params.py</a>.
 # </div>
 
 # %% [markdown]
