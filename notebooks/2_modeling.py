@@ -82,7 +82,18 @@ import time  # to measure training time
 # Local imports
 from src.modeling import (
     train_and_evaluate,
-    get_baseline_models
+    get_baseline_models,
+    weighted_median_absolute_error,
+    save_model,
+    load_model,
+    save_metrics,
+    load_metrics,
+    get_core_model_params
+)
+from src.params import (
+    EN_PARAM_DISTRIBUTIONS,
+    RF_PARAM_DISTRIBUTIONS, 
+    XGB_PARAM_DISTRIBUTIONS 
 )
 from src.constants import (
     ID_COLUMN,
@@ -93,16 +104,7 @@ from src.constants import (
 from src.display import (
     DISPLAY_LABELS, 
     METRIC_LABELS,
-)
-from src.params import RF_PARAM_DISTRIBUTIONS, XGB_PARAM_DISTRIBUTIONS, EN_PARAM_DISTRIBUTIONS
-from src.utils import (
-    add_table_caption,
-    weighted_median_absolute_error,
-    save_model,
-    load_model,
-    save_metrics,
-    load_metrics,
-    get_core_model_params
+    add_table_caption
 )
 
 # %% [markdown]
