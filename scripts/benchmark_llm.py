@@ -480,7 +480,7 @@ def main():
                 continue
                 
             if requests_sent >= MAX_REQUESTS_PER_RUN:
-                print(f"\n  🛑 Reached limit of {MAX_REQUESTS_PER_RUN} requests per run. Pausing for today.")
+                print(f"  🛑 Reached limit of {MAX_REQUESTS_PER_RUN} requests per run. Pausing for today.")
                 break
 
             batch = profiles[batch_slice]
@@ -513,7 +513,7 @@ def main():
 
         n_failed = np.isnan(y_llm_pred).sum()
         n_success = len(y_llm_pred) - n_failed
-        print(f"\n  Completed in {total_time:.0f}s | Predictions: {n_success:,}/{len(y_llm_pred):,} | Failed Predictions: {n_failed:,}\n")
+        print(f"  Completed in {total_time:.0f}s | Predictions: {n_success:,}/{len(y_llm_pred):,} | Failed Predictions: {n_failed:,}\n")
 
         # --- 4. Compute Weighted Metrics ---
         print("Step 4: Computing weighted evaluation metrics...")
