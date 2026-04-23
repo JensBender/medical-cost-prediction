@@ -1488,7 +1488,7 @@ def tune_xgboost(X_train, y_train, X_val, y_val, w_train, w_val, param_list, ran
 
 
 # Run tuning
-xgb_tuning_metrics, best_xgb_results = tune_xgboost(X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val, xgb_param_list)
+# xgb_tuning_metrics, best_xgb_results = tune_xgboost(X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val, xgb_param_list)
 
 
 # %% [markdown]
