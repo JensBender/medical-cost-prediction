@@ -105,6 +105,7 @@ from src.display import (
     DISPLAY_LABELS, 
     METRIC_LABELS,
     MODEL_DISPLAY_LABELS,
+    CATEGORY_LABELS_EDA,
     add_table_caption
 )
 
@@ -1627,3 +1628,73 @@ display(
     .format({"MdAE (Train)": "{:.2f}", "MdAE (Val)": "{:.2f}", "Delta": "{:.2f}", "Delta %": "{:+.1f}%"})
     .highlight_min(subset=["Delta %"], color="#d4edda")
 )
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>Stratified Error Analysis</strong><br>
+#     📌 Compare model performance across different population segments or groups.
+# </div> 
+# %%
+# Recover raw features of validation data for stratification
+# We need the original categorical codes (before one-hot encoding) to group the data.
+print("Recovering raw validation features...")
+df_raw_val, y_val_true, w_val_weights = prepare_human_readable_validation_data()
+
+# Load predictions (on validation data) of tuned XGBoost
+y_val_pred_xgb = load_model("../models/xgb_tuned_predictions.joblib", verbose=False)
+
+# Create chronic conditions counts
+chronic_cols = list(CHRONIC_CONDITIONS.keys())
+df_raw_val["CHRONIC_COUNT"] = df_raw_val[chronic_cols].sum(axis=1)
+
+# Define groups for stratified analysis
+strat_configs = [
+    {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "map": CATEGORY_LABELS_EDA["INSCOV23"]},
+    {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "map": CATEGORY_LABELS_EDA["POVCAT23"]},
+    {"col": "CHRONIC_COUNT", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "map": None}
+]
+
+# Calculate Weighted MdAE by Subgroup
+stratified_results = []
+for config in strat_configs:
+    col = config["col"]
+    label = config["label"]
+    mapping = config["map"]
+    
+    # Calculate weighted MdAE for each unique value in the column
+    groups = sorted(df_raw_val[col].dropna().unique())
+    for group_val in groups:
+        mask = (df_raw_val[col] == group_val)
+        
+        # Skip empty groups (unlikely here)
+        if not mask.any(): continue
+            
+        group_mdae = weighted_median_absolute_error(
+            y_val_true[mask], 
+            y_val_pred_xgb[mask], 
+            sample_weight=w_val_weights[mask]
+        )
+        
+        stratified_results.append({
+            "Category": label,
+            "Group": mapping.get(int(group_val), group_val) if mapping else f"{int(group_val)} Conditions",
+            "MdAE": group_mdae,
+            "Sample Count": mask.sum()
+        })
+
+# Display results table
+df_stratified = pd.DataFrame(stratified_results)
+display(
+    df_stratified.set_index(["Category", "Group"])
+    .style
+    .pipe(add_table_caption, "Tuned XGBoost: Stratified Error Analysis")
+    .format({"MdAE": "${:.2f}", "Sample Count": "{:,}"})
+    .background_gradient(subset=["MdAE"], cmap="Reds")
+)
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px; margin-bottom:16px;">
+#     💡 <strong>Insights from Stratified Error Analysis:</strong>
+#     <ul style="margin-top:8px; margin-bottom:8px">
+#     </ul>
+# </div>
