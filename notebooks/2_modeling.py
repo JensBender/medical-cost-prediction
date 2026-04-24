@@ -408,9 +408,9 @@ display(
 overfitting_data = []
 for model_name, metrics in baseline_metrics.items():
         overfitting_data.append({
-            "Model": model_name.replace(" (Baseline)", ""),
-            "MdAE (Train)": metrics["train_mdae"],
+            "Model": MODEL_DISPLAY_LABELS.get(model_name, model_name).replace(" (Baseline)", ""),
             "MdAE (Val)": metrics["val_mdae"],
+            "MdAE (Train)": metrics["train_mdae"],
             "Delta": metrics["val_mdae"] - metrics["train_mdae"],
             "Delta %": ((metrics["val_mdae"] - metrics["train_mdae"]) / metrics["train_mdae"]) * 100
         })
@@ -418,8 +418,9 @@ for model_name, metrics in baseline_metrics.items():
 # Display overfitting table
 display(
     pd.DataFrame(overfitting_data)
-    .set_index("Model")
     .style
+    .hide()
+    .set_properties(subset=["Model"], **{"font-weight": "bold"})
     .pipe(add_table_caption, "Baseline Models: Overfitting Analysis")
     .format({"MdAE (Train)": "{:.2f}", "MdAE (Val)": "{:.2f}", "Delta": "{:.2f}", "Delta %": "{:+.1f}%"})
 )
@@ -1574,23 +1575,28 @@ all_metrics
 
 # %%
 # Extract train MdAE, val MdAE, and calculate difference
+model_families = ["Elastic Net", "Random Forest", "XGBoost"]
 overfitting_data = []
-for model_name, metrics in all_metrics.items():
-    # Capture both (Baseline) and (Tuned) versions of the three target models
-    if any(model_name.startswith(model_id) for model_id in ["Elastic Net", "Random Forest", "XGBoost"]):
-        overfitting_data.append({
-            "Model": MODEL_DISPLAY_LABELS.get(model_name, model_name),
-            "MdAE (Train)": metrics["train_mdae"],
-            "MdAE (Val)": metrics["val_mdae"],
-            "Delta": metrics["val_mdae"] - metrics["train_mdae"],
-            "Delta %": ((metrics["val_mdae"] - metrics["train_mdae"]) / metrics["train_mdae"]) * 100
-        })
+
+for family in model_families:
+    for suffix in [" (Baseline)", " (Tuned)"]:
+        model_key = f"{family}{suffix}"
+        if model_key in all_metrics:
+            metrics = all_metrics[model_key]
+            overfitting_data.append({
+                "Model": MODEL_DISPLAY_LABELS.get(model_key, model_key),
+                "MdAE (Val)": metrics["val_mdae"],
+                "MdAE (Train)": metrics["train_mdae"],
+                "Delta": metrics["val_mdae"] - metrics["train_mdae"],
+                "Delta %": ((metrics["val_mdae"] - metrics["train_mdae"]) / metrics["train_mdae"]) * 100
+            })
 
 # Display overfitting table
 display(
     pd.DataFrame(overfitting_data)
-    .set_index("Model")
     .style
+    .hide()  # Hides index
+    .set_properties(subset=["Model"], **{"font-weight": "bold"})
     .pipe(add_table_caption, "Overfitting Analysis")
     .format({"MdAE (Train)": "{:.2f}", "MdAE (Val)": "{:.2f}", "Delta": "{:.2f}", "Delta %": "{:+.1f}%"})
 )
