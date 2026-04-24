@@ -1663,8 +1663,8 @@ for config in strat_configs:
     
     # Calculate weighted MdAE for each unique value in the column
     groups = sorted(df_raw_val[col].dropna().unique())
-    for group_val in groups:
-        mask = (df_raw_val[col] == group_val)
+    for group in groups:
+        mask = (df_raw_val[col] == group)
         
         # Skip empty groups (unlikely here)
         if not mask.any(): continue
@@ -1677,7 +1677,7 @@ for config in strat_configs:
         
         stratified_results.append({
             "Category": label,
-            "Group": mapping.get(int(group_val), group_val) if mapping else f"{int(group_val)} Conditions",
+            "Group": mapping.get(int(group), group) if mapping else f"{int(group)} Conditions",
             "MdAE": group_mdae,
             "Sample Count": mask.sum()
         })
