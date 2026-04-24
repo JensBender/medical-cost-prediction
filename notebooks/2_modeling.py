@@ -104,6 +104,7 @@ from src.constants import (
 from src.display import (
     DISPLAY_LABELS, 
     METRIC_LABELS,
+    MODEL_DISPLAY_LABELS,
     add_table_caption
 )
 
@@ -378,7 +379,7 @@ for model in baseline_models_to_evaluate:
 display(
     pd.DataFrame(baseline_metrics).T[["val_mdae", "val_mae", "val_r2"]]
     .rename(columns=lambda x: METRIC_LABELS.get(x, x).replace(" (Val)", ""))
-    .rename(index=lambda x: x.replace(" (Baseline)", ""))
+    .rename(index=lambda x: MODEL_DISPLAY_LABELS.get(x, x).replace(" (Baseline)", ""))
     .style
     .pipe(add_table_caption, "Baseline Model Metrics (Validation Data)")
     .format("{:.2f}")
@@ -932,7 +933,7 @@ all_metrics = {**llm_metrics, **baseline_metrics}
 display(
     pd.DataFrame(all_metrics).T[["val_mdae", "val_mae", "val_r2"]]
     .rename(columns=lambda x: METRIC_LABELS.get(x, x).replace(" (Val)", ""))
-    .rename(index=lambda x: x.replace(" (Baseline)", "").replace("gemini-3-flash-preview", "Gemini 3 Flash"))
+    .rename(index=lambda x: MODEL_DISPLAY_LABELS.get(x, x).replace(" (Baseline)", ""))
     .style
     .pipe(add_table_caption, "General LLM vs. Specialized ML Models")
     .format("{:.2f}")
@@ -1527,7 +1528,7 @@ display(
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>Metric Comparison Table</strong><br>
-#     📌 Compare evaluation metrics of all baseline models on the validation data.
+#     📌 Compare evaluation metrics of LLM benchmark, baseline models, and tuned models on the validation data.
 # </div> 
 
 # %%
@@ -1555,7 +1556,7 @@ all_metrics = {**llm_metrics, **baseline_metrics, **tuned_metrics}
 display(
     pd.DataFrame(all_metrics).T[["val_mdae", "val_mae", "val_r2"]]
     .rename(columns=lambda x: METRIC_LABELS.get(x, x).replace(" (Val)", ""))
-    .rename(index=lambda x: x.replace("gemini-3-flash-preview", "Gemini 3 Flash"))
+    .rename(index=lambda x: MODEL_DISPLAY_LABELS.get(x, x))
     .style
     .pipe(add_table_caption, "Tuned Model Metrics (Validation Data)")
     .format("{:.2f}")
