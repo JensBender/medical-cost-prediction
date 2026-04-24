@@ -1599,4 +1599,5 @@ display(
     .set_properties(subset=["Model"], **{"font-weight": "bold"})
     .pipe(add_table_caption, "Overfitting Analysis")
     .format({"MdAE (Train)": "{:.2f}", "MdAE (Val)": "{:.2f}", "Delta": "{:.2f}", "Delta %": "{:+.1f}%"})
+    .highlight_min(subset=["Delta %"], color="#d4edda")
 )
