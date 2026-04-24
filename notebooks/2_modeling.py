@@ -1565,14 +1565,40 @@ display(
     .highlight_max(subset=["R²"], color="#d4edda")
 )
 
+# %%
+# Define the curated list of finalists 
+finalists = [
+    f"LLM ({LLM_MODEL})",
+    "Median Prediction (Baseline)",
+    "Linear Regression (Baseline)",
+    "Elastic Net (Tuned)",
+    "Random Forest (Tuned)",
+    "XGBoost (Tuned)"
+]
+
+# Filter combined metrics for only the finalists
+final_metrics = {k: all_metrics[k] for k in finalists if k in all_metrics}
+
+# Display curated comparison table
+display(
+    pd.DataFrame(final_metrics).T[["val_mdae", "val_mae", "val_r2"]]
+    .rename(columns=lambda x: METRIC_LABELS.get(x, x).replace(" (Val)", ""))
+    .rename(index=lambda x: MODEL_DISPLAY_LABELS.get(x, x))
+    .reset_index().rename(columns={"index": "Model"})
+    .style
+    .hide()
+    .set_properties(subset=["Model"], **{"font-weight": "bold"})
+    .pipe(add_table_caption, "Tuned Model Metrics (Validation Data)")
+    .format({"MdAE": "{:.2f}", "MAE": "{:.2f}", "R²": "{:.2f}"})
+    .highlight_min(subset=["MdAE", "MAE"], color="#d4edda")
+    .highlight_max(subset=["R²"], color="#d4edda")
+)
+
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>Overfitting Analysis</strong><br>
 #     📌 Compare training vs. validation MdAE (primary metric) to identify overfitting.
 # </div> 
-# %%
-all_metrics
-
 # %%
 # Extract train MdAE, val MdAE, and calculate difference
 model_families = ["Elastic Net", "Random Forest", "XGBoost"]
