@@ -1563,3 +1563,34 @@ display(
     .highlight_min(subset=["MdAE", "MAE"], color="#d4edda")
     .highlight_max(subset=["R²"], color="#d4edda")
 )
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>Overfitting Analysis</strong><br>
+#     📌 Compare training vs. validation MdAE (primary metric) to identify overfitting.
+# </div> 
+# %%
+all_metrics
+
+# %%
+# Extract train MdAE, val MdAE, and calculate difference
+overfitting_data = []
+for model_name, metrics in all_metrics.items():
+    # Capture both (Baseline) and (Tuned) versions of the three target models
+    if any(model_name.startswith(model_id) for model_id in ["Elastic Net", "Random Forest", "XGBoost"]):
+        overfitting_data.append({
+            "Model": MODEL_DISPLAY_LABELS.get(model_name, model_name),
+            "MdAE (Train)": metrics["train_mdae"],
+            "MdAE (Val)": metrics["val_mdae"],
+            "Delta": metrics["val_mdae"] - metrics["train_mdae"],
+            "Delta %": ((metrics["val_mdae"] - metrics["train_mdae"]) / metrics["train_mdae"]) * 100
+        })
+
+# Display overfitting table
+display(
+    pd.DataFrame(overfitting_data)
+    .set_index("Model")
+    .style
+    .pipe(add_table_caption, "Overfitting Analysis")
+    .format({"MdAE (Train)": "{:.2f}", "MdAE (Val)": "{:.2f}", "Delta": "{:.2f}", "Delta %": "{:+.1f}%"})
+)
