@@ -81,6 +81,12 @@ METRIC_LABELS = {
     "training_time": "Training Time (s)"
 }
 
+# Mapping raw model keys (from metrics JSON files) to human-readable display labels (for notebook model evaluation)
+MODEL_DISPLAY_LABELS = {
+    "Median Prediction (Baseline)": "Median Benchmark",
+    "LLM (gemini-3-flash-preview)": "LLM Benchmark (Gemini 3 Flash)",
+}
+
 # Mapping categorical labels from numbers to strings (for notebook EDA)
 # Uses CATEGORY_LABELS_PIPELINE constant used by pipeline and adds the raw MEPS category codes (for EDA of raw features)
 CATEGORY_LABELS_EDA = {
