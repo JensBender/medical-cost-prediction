@@ -3,11 +3,10 @@ Hyperparameter tuning parameter configurations.
 
 This module centralizes the distributions used for hyperparameter tuning with 
 randomized search. It ensures consistency between exploratory notebooks 
-(notebooks/2_modeling.ipynb) and production scripts (e.g., scripts/tune_random_forest.py)
-and avoids unnecessary DVC pipeline reruns triggered by changes to src/constants.py.
+(notebooks/2_modeling.ipynb) and production scripts (e.g., scripts/tune_random_forest.py).
 
-Rationale: The chosen search spaces prioritize robustness to the heavy tail 
-and zero-inflation characteristic of medical cost data (MEPS).
+Rationale: The chosen search spaces prioritize robustness to the zero-inflated, heavy tail 
+distribution of medical costs.
 """
 
 from scipy.stats import randint, uniform, loguniform
@@ -17,18 +16,17 @@ from scipy.stats import randint, uniform, loguniform
 # =========================
 
 # Hyperparameter search space for ElasticNet
-# Note 1: Prefixed with step names (polynomials__, model__) to be compatible with Pipeline used in "scripts/tune_elastic_net.py"
-# Note 2: model__alpha uses 
+# Note: Prefixed with step names (polynomials__, model__) to be compatible with Pipeline used in "scripts/tune_elastic_net.py"
 EN_PARAM_DISTRIBUTIONS = {
-    # False captures non-linearities like Age^2, essential for U-shaped cost curves.
+    # False captures non-linear, squared effects like Age^2, essential for U-shaped cost curves.
     "polynomials__interaction_only": [True, False],  
     
     # Regularization strength. "loguniform" performs equal sampling across 
     # orders of magnitude (e.g., 0.01-0.1 has same chance as 0.1-1.0)
     "model__alpha": loguniform(0.01, 1.0),           
     
-    # Penalty mix. 0=Ridge (L2) to handle multicollinearity among medical conditions; 
-    # 1=Lasso (L1) for automated selection of only the most predictive features.
+    # Penalty mix. 0=Ridge (L2) to handle multicollinearity; 1=Lasso (L1) which 
+    # aggressively forces coefficients to zero (sparsity) for automated feature selection.
     "model__l1_ratio": uniform(0.0, 1.0),            
 }
 
@@ -40,12 +38,11 @@ EN_N_ITER = 50
 # Random Forest
 # =========================
 
-# Hyperparameter search space for RandomForestRegressor
-# Note: Used in "scripts/tune_random_forest.py"
+# Hyperparameter search space for RandomForestRegressor (for "scripts/tune_random_forest.py")
 RF_PARAM_DISTRIBUTIONS = {
     # More trees (200-500) increase stability and reduce the high 
     # variance of individual tree predictions on skewed cost data.
-    "n_estimators": [200, 300, 500],          
+    "n_estimators": [200, 300, 400],          
     
     # Baseline: 16. Moderate depth (8-25) balances the need to capture complex 
     # interactions (e.g., Age + Condition + Insurance) while preventing memorization.
@@ -69,15 +66,14 @@ RF_PARAM_DISTRIBUTIONS = {
 }
 
 # Number of hyperparameter combinations for tuning
-RF_N_ITER = 100
+RF_N_ITER = 50
 
 
 # =========================
 # XGBoost
 # =========================
 
-# Hyperparameter search space for XGBRegressor
-# Note: Used in "scripts/tune_xgboost.py"
+# Hyperparameter search space for XGBRegressor (for "scripts/tune_xgboost.py")
 XGB_PARAM_DISTRIBUTIONS = {
     # More rounds (400-800) with a lower learning rate allow the gradient 
     # booster to converge slowly and smoothly on the long tail of medical costs.
