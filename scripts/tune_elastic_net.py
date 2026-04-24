@@ -6,8 +6,7 @@ with MLflow experiment tracking. It uses a pipeline with second-degree polynomia
 features and log-transformed targets (TransformedTargetRegressor). It evaluates 
 each configuration on the training and validation set using weighted MdAE, MAE, 
 and R². It then retrains the best model and persists the fitted  model, evaluation 
-metrics, hyperparameters, validation predictions, and the full randomized search 
-history.
+metrics, hyperparameters, predictions, and the full randomized search history.
 
 Workflow:
   1.  MLflow Setup: Initialize experiment tracking for "Elastic Net Tuning".
@@ -18,7 +17,8 @@ Workflow:
       training/validation metrics and training time.
   5.  Best Model: Retrain the best configuration with full MLflow logging.
   6.  Model Persistence: Save the best tuned model as a Joblib file, evaluation metrics 
-      as JSON, parameters as JSON, and full random search history as JSON.
+      as JSON, parameters as JSON, predictions as Joblib, and full random search history 
+      as JSON.
 
 Reference:
     For tuning exploration and detailed rationale, see:

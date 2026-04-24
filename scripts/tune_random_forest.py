@@ -17,11 +17,11 @@ Workflow:
       training/validation metrics and training time.
   5.  Best Model: Retrain the best configuration with full MLflow logging.
   6.  Model Persistence: Save the best tuned model as a Joblib file, evaluation metrics 
-      as JSON, parameters as JSON, and full random search history as JSON.
+      as JSON, parameters as JSON, predictions as Joblib, and full random search history 
+      as JSON.
 
 Reference:
-    For tuning exploration and detailed rationale, see:
-    notebooks/2_modeling.ipynb
+    For tuning exploration and rationale, see: notebooks/2_modeling.ipynb
 
 Usage:
     1. Start the MLflow UI server (in a separate terminal): ./run_mlflow_ui.sh
