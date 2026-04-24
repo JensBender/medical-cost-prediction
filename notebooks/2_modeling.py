@@ -968,18 +968,6 @@ display(
 #     </ul>
 #     <b>Why not <code>RandomizedSearchCV</code>?</b><br>
 #     Avoids <code>sample_weight</code> routing complexities and ensures transparent weighted scoring on a fixed holdout set.
-#     <br><br>
-#     <b>Evaluate Model Performance:</b>
-#     <ul>
-#         <li>Metrics Comparison Tables</li>
-#         <li>Overfitting Analysis</li>
-#         <li>Error Analysis</li>
-#         <ul>
-#             <li>Heteroscedasticity (Residuals vs. Predicted)</li> 
-#             <li>Stratified Error Analysis</li>
-#             <li>(optionally) Feature Dependencies (Residuals vs. Features)</li> 
-#         </ul>
-#     </ul>
 # </div>
 
 # %% [markdown]
@@ -1150,6 +1138,7 @@ display(
     .style
     .pipe(add_table_caption, "Elastic Net: Hyperparameter Tuning Results")
     .format({"val_mdae": "{:.2f}", "val_mae": "{:.2f}", "val_r2": "{:.4f}", "model__alpha": "{:.4f}", "model__l1_ratio": "{:.2f}"})
+    .highlight_min(subset=["val_mdae", "val_mae"], color="#d4edda")
     .highlight_max(subset=["val_r2"], color="#d4edda")
     .hide()
 )
@@ -1516,3 +1505,60 @@ display(
     .hide()
 )
 
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Evaluation</h2>
+# </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     🎯 Evaluate Model Performance:
+#     <ul>
+#         <li>Metrics Comparison Tables</li>
+#         <li>Overfitting Analysis</li>
+#         <li>Error Analysis</li>
+#         <ul>
+#             <li>Heteroscedasticity (Residuals vs. Predicted)</li> 
+#             <li>Stratified Error Analysis</li>
+#             <li>(optionally) Feature Dependencies (Residuals vs. Features)</li> 
+#         </ul>
+#     </ul>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>Metric Comparison Table</strong><br>
+#     📌 Compare evaluation metrics of all baseline models on the validation data.
+# </div> 
+
+# %%
+# Load LLM metrics 
+llm_metrics = load_metrics("../models/llm_benchmark_metrics.json", verbose=False)
+
+# Load baseline model metrics
+baseline_models_to_evaluate = ["median", "lr", "en", "tree", "rf", "xgb", "svm"]
+baseline_metrics = {}
+for model in baseline_models_to_evaluate:
+    metrics = load_metrics(f"../models/{model}_baseline_metrics.json", verbose=False)
+    baseline_metrics.update(metrics)
+
+# Load tuned model metrics
+tuned_models_to_evaluate = ["en", "rf", "xgb"]
+tuned_metrics = {}
+for model in tuned_models_to_evaluate:
+    metrics = load_metrics(f"../models/{model}_tuned_metrics.json", verbose=False)
+    tuned_metrics.update(metrics)
+
+# Combine all metrics 
+all_metrics = {**llm_metrics, **baseline_metrics, **tuned_metrics}
+
+# Display metric comparison table
+display(
+    pd.DataFrame(all_metrics).T[["val_mdae", "val_mae", "val_r2"]]
+    .rename(columns=lambda x: METRIC_LABELS.get(x, x).replace(" (Val)", ""))
+    .rename(index=lambda x: x.replace("gemini-3-flash-preview", "Gemini 3 Flash"))
+    .style
+    .pipe(add_table_caption, "Tuned Model Metrics (Validation Data)")
+    .format("{:.2f}")
+    .highlight_min(subset=["MdAE", "MAE"], color="#d4edda")
+    .highlight_max(subset=["R²"], color="#d4edda")
+)
