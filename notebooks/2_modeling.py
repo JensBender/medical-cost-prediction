@@ -1635,25 +1635,33 @@ display(
 # </div> 
 # %%
 # Recover raw features of validation data for stratification
-# We need the original categorical codes (before one-hot encoding) to group the data.
+# We need the original categorical codes (before pipeline one-hot encoding) to group the data.
 print("Recovering raw validation features...")
 df_raw_val, y_val_true, w_val_weights = prepare_human_readable_validation_data()
 
 # Load predictions (on validation data) of tuned XGBoost
 y_val_pred_xgb = load_model("../models/xgb_tuned_predictions.joblib", verbose=False)
 
-# Create chronic conditions counts
+# Create medical cost quartiles
+df_raw_val["COST_RANGE"] = pd.qcut(
+    y_val_true, 
+    q=4, 
+    labels=["Q1 (Low Cost)", "Q2 (Mid-Low)", "Q3 (Mid-High)", "Q4 (High Cost)"]
+)
+
+# Create chronic conditions count feature 
 chronic_cols = list(CHRONIC_CONDITIONS.keys())
 df_raw_val["CHRONIC_COUNT"] = df_raw_val[chronic_cols].sum(axis=1)
 
 # Define groups for stratified analysis
 strat_configs = [
+    {"col": "COST_RANGE", "label": "Actual Cost Range", "category_map": None},
     {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "category_map": CATEGORY_LABELS_EDA["INSCOV23"]},
     {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},
     {"col": "CHRONIC_COUNT", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}
 ]
 
-# Calculate weighted MdAE by group
+# Calculate weighted MdAE for each column
 grouped_results = []
 for config in strat_configs:
     col = config["col"]
@@ -1671,9 +1679,12 @@ for config in strat_configs:
             sample_weight=w_val_weights[mask] # Aligns via Index
         )
         
+        # Determine group name (map code to label if available, otherwise use raw value/code)
+        group_name = category_map.get(int(group), group) if category_map else group
+
         grouped_results.append({
-            "Feature": label,
-            "Group": category_map.get(int(group), group) if category_map else f"{int(group)} Conditions",
+            "Column": label,
+            "Group": group_name,
             "MdAE": group_mdae,
             "Sample Size": mask.sum()
         })
@@ -1681,7 +1692,7 @@ for config in strat_configs:
 # Display results table
 df_grouped = pd.DataFrame(grouped_results)
 display(
-    df_grouped.set_index(["Feature", "Group"])
+    df_grouped.set_index(["Column", "Group"])
     .style
     .pipe(add_table_caption, "Tuned XGBoost: Stratified Error Analysis")
     .format({"MdAE": "${:.2f}", "Sample Size": "{:,}"})
