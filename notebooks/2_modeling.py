@@ -1723,16 +1723,24 @@ g = sns.catplot(
     height=4,
     aspect=1.5,
     sharex=False,  # Independent x-axes to handle different error scales
+    sharey=False,  # Independent y-axes to show only relevant groups per column
     palette="viridis",
     hue="Group",
     legend=False
 )
 
 # Refine styling and titles
-g.set_titles("{col_name}", weight="bold")
-g.set_axis_labels("Weighted MdAE ($)", "")
-plt.subplots_adjust(top=0.9)
-g.fig.suptitle("Tuned XGBoost: Stratified Error Analysis", fontsize=16, weight="bold")
+g.set_titles("{col_name}", weight="bold", size=14)
+plt.subplots_adjust(top=0.92, hspace=0.3)  # Increase spacing between subplots to prevent overlap
+g.fig.suptitle("Tuned XGBoost: Stratified Error Analysis", fontsize=18, weight="bold")
+
+# Iterate over each subplot to apply custom formatting
+for ax in g.axes.flat:
+    # Force x-label on every subplot
+    ax.set_xlabel("Weighted MdAE")
+    # Add comma separator to x-axis ticks (e.g., 10,000 instead of 10000)
+    ax.xaxis.set_major_formatter(mtick.StrMethodFormatter('{x:,.0f}$'))
+
 plt.show()
 
 # %% [markdown]
