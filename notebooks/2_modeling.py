@@ -1665,7 +1665,7 @@ chronic_cols = list(CHRONIC_CONDITIONS.keys())
 df_raw_val["CHRONIC_COUNT"] = df_raw_val[chronic_cols].sum(axis=1).astype(int)
 
 # Define groups for stratified analysis
-strat_configs = [
+stratified_error_configs = [
     {"col": "ACTUAL_COSTS", "label": "Medical Costs (Actual)", "category_map": COST_BIN_LABELS},
     {"col": "PREDICTED_COSTS", "label": "Medical Costs (Predicted)", "category_map": COST_BIN_LABELS},
     {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "category_map": CATEGORY_LABELS_EDA["INSCOV23"]},
@@ -1674,8 +1674,8 @@ strat_configs = [
 ]
 
 # Calculate weighted MdAE for each column
-grouped_results = []
-for config in strat_configs:
+stratified_error_results = []
+for config in stratified_error_configs:
     col = config["col"]
     label = config["label"]
     category_map = config["category_map"]
@@ -1694,7 +1694,7 @@ for config in strat_configs:
         # Determine group name (map code to label if available, otherwise use raw value/code)
         group_name = category_map.get(int(group), group) if category_map else group
 
-        grouped_results.append({
+        stratified_error_results.append({
             "Column": label,
             "Group": group_name,
             "MdAE": group_mdae,
@@ -1702,9 +1702,9 @@ for config in strat_configs:
         })
 
 # Display results table
-df_grouped = pd.DataFrame(grouped_results)
+stratified_error_df = pd.DataFrame(stratified_error_results)
 display(
-    df_grouped.set_index(["Column", "Group"])
+    stratified_error_df.set_index(["Column", "Group"])
     .style
     .pipe(add_table_caption, "Tuned XGBoost: Stratified Error Analysis")
     .format({"MdAE": "${:.2f}", "Sample Size": "{:,}"})
