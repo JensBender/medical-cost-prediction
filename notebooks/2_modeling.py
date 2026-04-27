@@ -70,7 +70,6 @@ from xgboost import XGBRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import ParameterSampler
-from scipy.stats import randint, uniform  # for random hyperparameter values
 
 # Model evaluation
 from sklearn.metrics import (
@@ -1649,46 +1648,43 @@ df_raw_val["CHRONIC_COUNT"] = df_raw_val[chronic_cols].sum(axis=1)
 
 # Define groups for stratified analysis
 strat_configs = [
-    {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "map": CATEGORY_LABELS_EDA["INSCOV23"]},
-    {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "map": CATEGORY_LABELS_EDA["POVCAT23"]},
-    {"col": "CHRONIC_COUNT", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "map": None}
+    {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "category_map": CATEGORY_LABELS_EDA["INSCOV23"]},
+    {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},
+    {"col": "CHRONIC_COUNT", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}
 ]
 
-# Calculate Weighted MdAE by Subgroup
-stratified_results = []
+# Calculate weighted MdAE by group
+grouped_results = []
 for config in strat_configs:
     col = config["col"]
     label = config["label"]
-    mapping = config["map"]
+    category_map = config["category_map"]
     
-    # Calculate weighted MdAE for each unique value in the column
+    # Calculate weighted MdAE for each group
     groups = sorted(df_raw_val[col].dropna().unique())
     for group in groups:
         mask = (df_raw_val[col] == group)
-        
-        # Skip empty groups (unlikely here)
-        if not mask.any(): continue
             
         group_mdae = weighted_median_absolute_error(
-            y_val_true[mask], 
-            y_val_pred_xgb[mask], 
-            sample_weight=w_val_weights[mask]
+            y_val_true[mask],      # Aligns via Index
+            y_val_pred_xgb[mask],  # Aligns via Position (df_raw_val was reindexed to match in prepare_human_readable_validation_data)
+            sample_weight=w_val_weights[mask] # Aligns via Index
         )
         
-        stratified_results.append({
-            "Category": label,
-            "Group": mapping.get(int(group), group) if mapping else f"{int(group)} Conditions",
+        grouped_results.append({
+            "Feature": label,
+            "Group": category_map.get(int(group), group) if category_map else f"{int(group)} Conditions",
             "MdAE": group_mdae,
-            "Sample Count": mask.sum()
+            "Sample Size": mask.sum()
         })
 
 # Display results table
-df_stratified = pd.DataFrame(stratified_results)
+df_grouped = pd.DataFrame(grouped_results)
 display(
-    df_stratified.set_index(["Category", "Group"])
+    df_grouped.set_index(["Feature", "Group"])
     .style
     .pipe(add_table_caption, "Tuned XGBoost: Stratified Error Analysis")
-    .format({"MdAE": "${:.2f}", "Sample Count": "{:,}"})
+    .format({"MdAE": "${:.2f}", "Sample Size": "{:,}"})
     .background_gradient(subset=["MdAE"], cmap="Reds")
 )
 
