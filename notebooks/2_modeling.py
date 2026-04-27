@@ -89,6 +89,7 @@ from src.modeling import (
     load_metrics,
     get_core_model_params
 )
+from src.data import create_stratification_bins
 from src.params import (
     EN_PARAM_DISTRIBUTIONS,
     RF_PARAM_DISTRIBUTIONS, 
@@ -1642,12 +1643,17 @@ df_raw_val, y_val_true, w_val_weights = prepare_human_readable_validation_data()
 # Load predictions (on validation data) of tuned XGBoost
 y_val_pred_xgb = load_model("../models/xgb_tuned_predictions.joblib", verbose=False)
 
-# Create medical cost quartiles
-df_raw_val["COST_RANGE"] = pd.qcut(
-    y_val_true, 
-    q=4, 
-    labels=["Q1 (Low Cost)", "Q2 (Mid-Low)", "Q3 (Mid-High)", "Q4 (High Cost)"]
-)
+# Create medical cost strata (consistent with preprocessing/EDA)
+COST_BIN_LABELS = {
+    0: "Zero Costs",
+    1: "Low Spend (0-50%)",
+    2: "Moderate  (50-80%)",
+    3: "High Spend (80-95%)",
+    4: "Very High (95-99%)",
+    5: "Massively High (99-99.9%)",
+    6: "Super Spenders (Top 0.1%)"
+}
+df_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_val_true)
 
 # Create chronic conditions count feature 
 chronic_cols = list(CHRONIC_CONDITIONS.keys())
@@ -1655,7 +1661,7 @@ df_raw_val["CHRONIC_COUNT"] = df_raw_val[chronic_cols].sum(axis=1)
 
 # Define groups for stratified analysis
 strat_configs = [
-    {"col": "COST_RANGE", "label": "Actual Cost Range", "category_map": None},
+    {"col": "ACTUAL_COSTS", "label": "Medical Costs (Actual)", "category_map": COST_BIN_LABELS},
     {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "category_map": CATEGORY_LABELS_EDA["INSCOV23"]},
     {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},
     {"col": "CHRONIC_COUNT", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}
