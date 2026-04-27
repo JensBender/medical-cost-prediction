@@ -1655,13 +1655,19 @@ COST_BIN_LABELS = {
 }
 df_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_val_true)
 
+# Create predicted cost strata (measures reliability of model predictions for high vs. low cost ranges)
+# Note: y_val_pred_xgb is a numpy array, so we convert to Series to use the helper's index-based logic
+y_val_pred_series = pd.Series(y_val_pred_xgb, index=y_val_true.index)
+df_raw_val["PREDICTED_COSTS"] = create_stratification_bins(y_val_pred_series)
+
 # Create chronic conditions count feature 
 chronic_cols = list(CHRONIC_CONDITIONS.keys())
-df_raw_val["CHRONIC_COUNT"] = df_raw_val[chronic_cols].sum(axis=1)
+df_raw_val["CHRONIC_COUNT"] = df_raw_val[chronic_cols].sum(axis=1).astype(int)
 
 # Define groups for stratified analysis
 strat_configs = [
     {"col": "ACTUAL_COSTS", "label": "Medical Costs (Actual)", "category_map": COST_BIN_LABELS},
+    {"col": "PREDICTED_COSTS", "label": "Medical Costs (Predicted)", "category_map": COST_BIN_LABELS},
     {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "category_map": CATEGORY_LABELS_EDA["INSCOV23"]},
     {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},
     {"col": "CHRONIC_COUNT", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}
