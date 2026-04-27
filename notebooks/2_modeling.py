@@ -1711,6 +1711,30 @@ display(
     .background_gradient(subset=["MdAE"], cmap="Reds")
 )
 
+# %%
+# Visualize stratified errors as a faceted bar plot grid
+g = sns.catplot(
+    data=stratified_error_df,
+    kind="bar",
+    x="MdAE",
+    y="Group",
+    col="Column",
+    col_wrap=2,
+    height=4,
+    aspect=1.5,
+    sharex=False,  # Independent x-axes to handle different error scales
+    palette="viridis",
+    hue="Group",
+    legend=False
+)
+
+# Refine styling and titles
+g.set_titles("{col_name}", weight="bold")
+g.set_axis_labels("Weighted MdAE ($)", "")
+plt.subplots_adjust(top=0.9)
+g.fig.suptitle("Tuned XGBoost: Stratified Error Analysis", fontsize=16, weight="bold")
+plt.show()
+
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px; margin-bottom:16px;">
 #     💡 <strong>Insights from Stratified Error Analysis:</strong>
