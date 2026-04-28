@@ -1747,87 +1747,65 @@ display(
 # </div> 
 
 # %%
+def plot_stratified_error(df, column_labels, title, color=POP_COLOR):
+    """
+    Visualizes stratified MdAE for a subset of columns (features or targets) as a faceted bar plot grid.
+    Encapsulates filtering, plotting, and custom formatting for consistent audits.
+    """
+    # Filter data to requested columns
+    plot_data = df[df["Column"].isin(column_labels)].copy()
+    
+    g = sns.catplot(
+        data=plot_data,
+        kind="bar",
+        x="MdAE",
+        y="Group",
+        col="Column",
+        col_wrap=2,
+        height=4,
+        aspect=1.5,
+        sharex=False,  # Independent x-axes to handle different error scales
+        sharey=False,  # Independent y-axes to show only relevant groups per column
+        color=color,
+        legend=False
+    )
+
+    # Customize title and spacing
+    g.set_titles("{col_name}", weight="bold", size=14)
+    g.fig.suptitle(title, fontsize=18, weight="bold")
+    plt.subplots_adjust(top=0.90, hspace=0.35)
+
+    # Apply custom formatting to each subplot
+    for ax in g.axes.flat:
+        ax.set_ylabel("")
+        ax.set_xlabel("Weighted MdAE")
+        ax.set_xticklabels([])          # Removes redundant numbers as bars are annotated
+        for c in ax.containers:
+            # Formats value labels with thousand separator and no decimals
+            value_labels = [f"${v:,.0f}" for v in c.datavalues]
+            ax.bar_label(c, labels=value_labels, padding=3, fontsize=9)
+        ax.margins(x=0.15)
+    
+    plt.show()
+
+
 # Prepare data for visualization (adds sample sizes to labels and cleans up names)
 plot_df = stratified_error_df.copy()
 plot_df["Group"] = plot_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})", axis=1)
 
-# 1. Model Reliability Audit
-# Focuses on performance across cost levels and medical complexity
+# Model reliability analysis 
 reliability_labels = [c["label"] for c in reliability_configs]
-plot_df_rel = plot_df[plot_df["Column"].isin(reliability_labels)].copy()
-
-g_rel = sns.catplot(
-    data=plot_df_rel,
-    kind="bar",
-    x="MdAE",
-    y="Group",
-    col="Column",
-    col_wrap=2,
-    height=4,
-    aspect=1.5,
-    sharex=False,  # Independent x-axes to handle different error scales
-    sharey=False,  # Independent y-axes to show only relevant groups per column
-    color=POP_COLOR,
-    legend=False
-)
-
-# Customize bar plot grid
-g_rel.set_titles("{col_name}", weight="bold", size=14)
-g_rel.fig.suptitle("Tuned XGBoost: Model Reliability Audit", fontsize=18, weight="bold")
-plt.subplots_adjust(top=0.90, hspace=0.3)  # Increases spacing between subplots to prevent overlap
-
-# Iterate and customize subplots
-for ax in g_rel.axes.flat:
-    ax.set_ylabel("")
-    ax.set_xlabel("Weighted MdAE")
-    ax.set_xticklabels([])
-    for c in ax.containers:
-        value_labels = [f"${v:,.0f}" for v in c.datavalues]  # Formats value labels with thousand separator and no decimals
-        ax.bar_label(c, labels=value_labels, padding=3, fontsize=9)
-    ax.margins(x=0.15)
-
-plt.show()
+plot_stratified_error(plot_df, reliability_labels, "Tuned XGBoost: Model Reliability Analysis")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>Fairness Audit</strong> <br>
-#     📌 Visualize stratified error for demographic groups relevant for fairness and bias assessment.
+#     📌 Visualize stratified error for protected/vulnerable demographic groups.
 # </div> 
 
 # %%
-# Focuses on performance across protected/vulnerable social groups
 fairness_labels = [c["label"] for c in fairness_configs]
-plot_df_fair = plot_df[plot_df["Column"].isin(fairness_labels)].copy()
-
-g_fair = sns.catplot(
-    data=plot_df_fair,
-    kind="bar",
-    x="MdAE",
-    y="Group",
-    col="Column",
-    col_wrap=2,
-    height=4,
-    aspect=1.5,
-    sharex=False,
-    sharey=False,
-    color=POP_COLOR,
-    legend=False
-)
-
-g_fair.set_titles("{col_name}", weight="bold", size=14)
-g_fair.fig.suptitle("Tuned XGBoost: Demographic Fairness Audit", fontsize=18, weight="bold")
-plt.subplots_adjust(top=0.88, hspace=0.3)
-
-for ax in g_fair.axes.flat:
-    ax.set_ylabel("")
-    ax.set_xlabel("Weighted MdAE")
-    ax.set_xticklabels([])
-    for c in ax.containers:
-        labels = [f"${v:,.0f}" for v in c.datavalues]
-        ax.bar_label(c, labels=labels, padding=3, fontsize=9)
-    ax.margins(x=0.15)
-
-plt.show()
+plot_stratified_error(plot_df, fairness_labels, "Tuned XGBoost: Demographic Fairness Audit")
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px; margin-bottom:16px;">
