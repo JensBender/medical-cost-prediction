@@ -1127,7 +1127,7 @@ en_tuning_history = load_metrics("../models/en_tuning_history.json")
 
 # Display metric comparison table  
 en_tuning_df = pd.DataFrame(en_tuning_history)
-en_tuning_df = en_tuning_df.sort_values("val_mdae")  # sort by primary metric
+en_tuning_df = en_tuning_df.sort_values("val_mdae")  # Sorts by primary metric
 en_params_df = pd.json_normalize(en_tuning_df["params"])
 en_display_df = pd.concat([en_tuning_df[["val_mdae", "val_mae", "val_r2"]], en_params_df], axis=1) 
 
@@ -1204,7 +1204,7 @@ def tune_random_forest(X_train, y_train, X_val, y_val, w_train, w_val, param_lis
         )
         
         # Train with normalized sample weights
-        start_time = time.time()  # Measure training time
+        start_time = time.time()  # To measure training time
         rf_model.fit(X_train, y_train, sample_weight=w_train_norm)
         training_time = time.time() - start_time
         
@@ -1307,7 +1307,7 @@ rf_tuning_metrics = load_metrics("../models/rf_tuning_history.json")
 
 # Display metric comparison table  
 rf_tuning_metrics_df = pd.DataFrame(rf_tuning_metrics)
-rf_tuning_metrics_df = rf_tuning_metrics_df.sort_values("val_mdae")  # sort by primary metric
+rf_tuning_metrics_df = rf_tuning_metrics_df.sort_values("val_mdae")  # Sorts by primary metric
 params_df = pd.json_normalize(rf_tuning_metrics_df["params"])
 rf_tuning_metrics_display = pd.concat([rf_tuning_metrics_df[["val_mdae", "val_mae", "val_r2"]], params_df], axis=1) 
 display(
@@ -1489,7 +1489,7 @@ xgb_tuning_history = load_metrics("../models/xgb_tuning_history.json")
 
 # Display metric comparison table  
 xgb_tuning_df = pd.DataFrame(xgb_tuning_history)
-xgb_tuning_df = xgb_tuning_df.sort_values("val_mdae")  # sort by primary metric
+xgb_tuning_df = xgb_tuning_df.sort_values("val_mdae")  # Sorts by primary metric
 xgb_params_df = pd.json_normalize(xgb_tuning_df["params"])
 xgb_display_df = pd.concat([xgb_tuning_df[["val_mdae", "val_mae", "val_r2"]], xgb_params_df], axis=1) 
 
@@ -1682,7 +1682,7 @@ for config in stratified_error_configs:
         group_mdae = weighted_median_absolute_error(
             y_val_true[mask],      # Aligns via Index
             y_val_pred_xgb[mask],  # Aligns via Position (df_raw_val was reindexed to match in prepare_human_readable_validation_data)
-            sample_weight=w_val_weights[mask] # Aligns via Index
+            sample_weight=w_val_weights[mask]  # Aligns via Index
         )
         
         # Determine group name (map code to label if available, otherwise use raw value/code)
@@ -1709,8 +1709,7 @@ display(
 # --- Stratified Error Analysis: Plot ---
 # Visualize stratified errors as a faceted bar plot grid
 plot_df = stratified_error_df.copy()
-# Add sample size to group labels and remove extra info in parentheses (e.g., "(0-50%)") to keep plot labels concise
-plot_df["Group"] = plot_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})", axis=1)
+plot_df["Group"] = plot_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})", axis=1)  # Adds sample size to group labels and removes extra info in parentheses (e.g., "(0-50%)") 
 
 g = sns.catplot(
     data=plot_df,
@@ -1729,21 +1728,21 @@ g = sns.catplot(
 
 # Refine styling and titles
 g.set_titles("{col_name}", weight="bold", size=14)
-plt.subplots_adjust(top=0.92, hspace=0.3)  # Increase spacing between subplots to prevent overlap
+plt.subplots_adjust(top=0.92, hspace=0.3)  # Increases spacing between subplots to prevent overlap
 g.fig.suptitle("Tuned XGBoost: Stratified Error Analysis", fontsize=18, weight="bold")
 
 # Iterate over each subplot to apply custom formatting
 for ax in g.axes.flat:
-    ax.set_ylabel("")  # Remove y-axis label
-    ax.set_xlabel("Weighted MdAE")  # Force x-label on every subplot
-    ax.set_xticklabels([])          # Remove redundant x-axis tick labels (numbers) since bars are annotated
+    ax.set_ylabel("")  # Removes y-axis label
+    ax.set_xlabel("Weighted MdAE")  # Forces x-label on every subplot
+    ax.set_xticklabels([])          # Removes redundant x-axis tick labels (numbers) since bars are annotated
     
     # Annotate bars with values
     for c in ax.containers:
-        value_labels = [f"${v:,.0f}" for v in c.datavalues]  # format value labels
+        value_labels = [f"${v:,.0f}" for v in c.datavalues]  # Formats value labels
         ax.bar_label(c, labels=value_labels, padding=3, fontsize=9)
 
-    ax.margins(x=0.15)  # Add spacing to the right to accommodate value labels
+    ax.margins(x=0.15)  # Adds spacing to the right to accommodate value labels
 
 plt.show()
 
