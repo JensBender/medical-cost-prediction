@@ -1519,9 +1519,13 @@ display(
 #         <li>(optionally) Feature Dependencies (Residuals vs. Features)</li> 
 #     </ul>
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Metric Comparison Tables</h3>
+# </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Metric Comparison Table</strong><br>
 #     📌 Compare evaluation metrics of LLM benchmark, baseline models, and tuned models on the validation data.
 # </div> 
 
@@ -1558,6 +1562,11 @@ display(
     .highlight_max(subset=["R²"], color="#d4edda")
 )
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Compare evaluation metrics of curated finalists: Best tuned models, LLM benchmark, median benchmark, and linear regression (interpretable baseline).
+# </div> 
+
 # %%
 # Define the curated list of finalists 
 finalists = [
@@ -1588,8 +1597,11 @@ display(
 )
 
 # %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Overfitting Analysis</h3>
+# </div>
+#
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Overfitting Analysis</strong><br>
 #     📌 Compare training vs. validation MdAE (primary metric) to identify overfitting.
 # </div> 
 # %%
@@ -1622,12 +1634,20 @@ display(
 )
 
 # %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Stratified Error Analysis</h3>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Compare model performance across different population segments or groups.
+# </div>
+# %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Stratified Error Analysis</strong><br>
-#     📌 Compare model performance across different population segments or groups.
+#     <strong>Stratified Error Analysis Table</strong> <br>
+#     📌 Recover raw feature values, stratify out-of-pocket costs and selected features, calculate weighted MdAE for each group, and display results table.
 # </div> 
+
 # %%
-# --- Stratified Error Analysis: Table ---
 # Recover raw features of validation data for stratification
 # We need the original categorical codes (before pipeline one-hot encoding) to group the data.
 print("Recovering raw validation features...")
@@ -1720,9 +1740,13 @@ display(
     .background_gradient(subset=["MdAE"], cmap="Reds")
 )
 
-# --- Stratified Analysis: Visualization ---
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>Model Reliability Analysis</strong> <br>
+#     📌 Visualize stratified error of actual and predicted out-of-pocket costs, as well as selected features.
+# </div> 
 
-# 1. Model Reliability Audit
+# %%
 # Focuses on performance across cost levels and medical complexity
 reliability_labels = [c["label"] for c in reliability_configs]
 plot_df_rel = plot_df[plot_df["Column"].isin(reliability_labels)].copy()
@@ -1759,7 +1783,13 @@ for ax in g_rel.axes.flat:
 
 plt.show()
 
-# 2. Demographic Fairness Audit
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>Fairness Audit</strong> <br>
+#     📌 Visualize stratified error for demographic groups relevant for fairness and bias assessment.
+# </div> 
+
+# %%
 # Focuses on performance across protected/vulnerable social groups
 fairness_labels = [c["label"] for c in fairness_configs]
 plot_df_fair = plot_df[plot_df["Column"].isin(fairness_labels)].copy()
