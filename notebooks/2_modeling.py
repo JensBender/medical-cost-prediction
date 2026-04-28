@@ -106,6 +106,7 @@ from src.display import (
     METRIC_LABELS,
     MODEL_DISPLAY_LABELS,
     CATEGORY_LABELS_EDA,
+    POP_COLOR,
     add_table_caption
 )
 
@@ -352,12 +353,6 @@ def persist_all_models(model_results):
 #             <ul>
 #                 <li>Metrics Comparison Tables</li>
 #                 <li>Overfitting Analysis</li>
-#                 <li>Error Analysis</li>
-#                 <ul>
-#                     <li>Heteroscedasticity (Residuals vs. Predicted)</li> 
-#                     <li>Feature Dependencies (Residuals vs. Features)</li> 
-#                     <li>Stratified Error Analysis</li>
-#                 </ul>
 #             </ul>
 #         </li>
 #     </ul>
@@ -1519,12 +1514,9 @@ display(
 #     <ul>
 #         <li>Metrics Comparison Tables</li>
 #         <li>Overfitting Analysis</li>
-#         <li>Error Analysis</li>
-#         <ul>
-#             <li>Heteroscedasticity (Residuals vs. Predicted)</li> 
-#             <li>Stratified Error Analysis</li>
-#             <li>(optionally) Feature Dependencies (Residuals vs. Features)</li> 
-#         </ul>
+#         <li>Stratified Error Analysis</li>
+#         <li>Heteroscedasticity (Residuals vs. Predicted)</li> 
+#         <li>(optionally) Feature Dependencies (Residuals vs. Features)</li> 
 #     </ul>
 # </div>
 #
@@ -1724,8 +1716,7 @@ g = sns.catplot(
     aspect=1.5,
     sharex=False,  # Independent x-axes to handle different error scales
     sharey=False,  # Independent y-axes to show only relevant groups per column
-    palette="viridis",
-    hue="Group",
+    color=POP_COLOR,
     legend=False
 )
 
@@ -1736,10 +1727,9 @@ g.fig.suptitle("Tuned XGBoost: Stratified Error Analysis", fontsize=18, weight="
 
 # Iterate over each subplot to apply custom formatting
 for ax in g.axes.flat:
-    # Force x-label on every subplot
-    ax.set_xlabel("Weighted MdAE")
-    # Add comma separator to x-axis ticks (e.g., 10,000 instead of 10000)
-    ax.xaxis.set_major_formatter(mtick.StrMethodFormatter('{x:,.0f}$'))
+    ax.set_ylabel("")  # Remove y-axis label
+    ax.set_xlabel("Weighted MdAE")  # Force x-label on every subplot
+    ax.xaxis.set_major_formatter(mtick.StrMethodFormatter('{x:,.0f}$'))  # comma thousand separator and no decimals
 
 plt.show()
 
