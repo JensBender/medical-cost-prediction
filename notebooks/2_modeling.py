@@ -1729,7 +1729,7 @@ g.fig.suptitle("Tuned XGBoost: Stratified Error Analysis", fontsize=18, weight="
 for ax in g.axes.flat:
     ax.set_ylabel("")  # Remove y-axis label
     ax.set_xlabel("Weighted MdAE")  # Force x-label on every subplot
-    ax.xaxis.set_major_formatter(mtick.StrMethodFormatter("${x:,.0f}"))  # foramt x-axis with thousand separator and no decimals
+    ax.set_xticklabels([])          # Remove redundant x-axis tick labels (numbers) since bars are annotated
     
     # Annotate bars with values
     for c in ax.containers:
