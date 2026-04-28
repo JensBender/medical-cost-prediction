@@ -1813,19 +1813,17 @@ plot_stratified_error(plot_df, reliability_labels, "Tuned XGBoost: Model Reliabi
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>Fairness Audit</strong> <br>
-#     📌 Visualize stratified error for protected/vulnerable demographic groups.
+#     Monitoring for performance disparities across <strong>protected classes</strong> and <strong>vulnerable populations</strong> as defined by:
+#     <ul style="margin-top:8px">
+#         <li><strong>US Market:</strong> ACA Section 1557 (Nondiscrimination), Civil Rights Act (Race, Sex), and ADEA (Age).</li>
+#         <li><strong>EU Market:</strong> EU AI Act (High-Risk bias monitoring) and GDPR Art. 9 (Special categories of data).</li>
+#     </ul>
+#     📌 <strong>Goal:</strong> Ensure that the model's prediction error (MdAE) does not disproportionately affect groups based on <strong>Sex</strong>, <strong>Age</strong>, <strong>Race</strong>, or <strong>Socioeconomic Status</strong>.
 # </div> 
 
 # %%
 fairness_labels = [c["label"] for c in fairness_configs]
 plot_stratified_error(plot_df, fairness_labels, "Tuned XGBoost: Demographic Fairness Audit")
-
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px; margin-bottom:16px;">
-#     💡 <strong>Insights from Stratified Error Analysis:</strong>
-#     <ul style="margin-top:8px; margin-bottom:8px">
-#     </ul>
-# </div>
 
 # %% [markdown]
 # <div style="background-color:#f0f7ff; padding:15px; border:3px solid #cfe2ff; border-radius:6px; margin-bottom:16px;">
