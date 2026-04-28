@@ -1656,6 +1656,7 @@ df_raw_val["PREDICTED_COSTS"] = create_stratification_bins(y_val_pred_series)
 # Create chronic conditions count feature 
 chronic_cols = list(CHRONIC_CONDITIONS.keys())
 df_raw_val["CHRONIC_COUNT"] = df_raw_val[chronic_cols].sum(axis=1).astype(int)
+df_raw_val["CHRONIC_COUNT_GRP"] = df_raw_val["CHRONIC_COUNT"].apply(lambda x: str(x) if x < 4 else "4+")  # Group the tail (4+) for better statistical stability
 
 # Define groups for stratified analysis
 stratified_error_configs = [
@@ -1663,7 +1664,7 @@ stratified_error_configs = [
     {"col": "PREDICTED_COSTS", "label": "Medical Costs (Predicted)", "category_map": COST_BIN_LABELS},
     {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "category_map": CATEGORY_LABELS_EDA["INSCOV23"]},
     {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},
-    {"col": "CHRONIC_COUNT", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}
+    {"col": "CHRONIC_COUNT_GRP", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}
 ]
 
 # Calculate weighted MdAE for each column
