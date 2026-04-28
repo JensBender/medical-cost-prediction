@@ -1658,14 +1658,29 @@ chronic_cols = list(CHRONIC_CONDITIONS.keys())
 df_raw_val["CHRONIC_COUNT"] = df_raw_val[chronic_cols].sum(axis=1).astype(int)
 df_raw_val["CHRONIC_COUNT_GRP"] = df_raw_val["CHRONIC_COUNT"].apply(lambda x: str(x) if x < 4 else "4+")  # Group the tail (4+) for better statistical stability
 
-# Define groups for stratified analysis
-stratified_error_configs = [
+# Create age groups for a more stable and interpretable Fairness Audit
+age_bins = [18, 35, 50, 65, 120]
+age_labels = ["18-34", "35-49", "50-64", "65+"]
+df_raw_val["AGE_GRP"] = pd.cut(df_raw_val["AGE23X"], bins=age_bins, labels=age_labels, right=False)
+
+# Define configurations for two distinct audits
+# 1. Model Reliability: Performance across cost levels and medical complexity
+reliability_configs = [
     {"col": "ACTUAL_COSTS", "label": "Medical Costs (Actual)", "category_map": COST_BIN_LABELS},
     {"col": "PREDICTED_COSTS", "label": "Medical Costs (Predicted)", "category_map": COST_BIN_LABELS},
     {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "category_map": CATEGORY_LABELS_EDA["INSCOV23"]},
-    {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},
     {"col": "CHRONIC_COUNT_GRP", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}
 ]
+
+# 2. Demographic Fairness: Performance across protected social attributes
+fairness_configs = [
+    {"col": "SEX", "label": DISPLAY_LABELS["SEX"], "category_map": CATEGORY_LABELS_EDA["SEX"]},
+    {"col": "AGE_GRP", "label": "Age Group", "category_map": None},
+    {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},
+]
+
+# Combine for the calculation loop
+stratified_error_configs = reliability_configs + fairness_configs
 
 # Calculate weighted MdAE for each column
 stratified_error_results = []
@@ -1705,14 +1720,15 @@ display(
     .background_gradient(subset=["MdAE"], cmap="Reds")
 )
 
-# %%
-# --- Stratified Error Analysis: Plot ---
-# Visualize stratified errors as a faceted bar plot grid
-plot_df = stratified_error_df.copy()
-plot_df["Group"] = plot_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})", axis=1)  # Adds sample size to group labels and removes extra info in parentheses (e.g., "(0-50%)") 
+# --- Stratified Analysis: Visualization ---
 
-g = sns.catplot(
-    data=plot_df,
+# 1. Model Reliability Audit
+# Focuses on performance across cost levels and medical complexity
+reliability_labels = [c["label"] for c in reliability_configs]
+plot_df_rel = plot_df[plot_df["Column"].isin(reliability_labels)].copy()
+
+g_rel = sns.catplot(
+    data=plot_df_rel,
     kind="bar",
     x="MdAE",
     y="Group",
@@ -1726,23 +1742,55 @@ g = sns.catplot(
     legend=False
 )
 
-# Refine styling and titles
-g.set_titles("{col_name}", weight="bold", size=14)
-plt.subplots_adjust(top=0.92, hspace=0.3)  # Increases spacing between subplots to prevent overlap
-g.fig.suptitle("Tuned XGBoost: Stratified Error Analysis", fontsize=18, weight="bold")
+# Customize bar plot grid
+g_rel.set_titles("{col_name}", weight="bold", size=14)
+g_rel.fig.suptitle("Tuned XGBoost: Model Reliability Audit", fontsize=18, weight="bold")
+plt.subplots_adjust(top=0.90, hspace=0.3)  # Increases spacing between subplots to prevent overlap
 
-# Iterate over each subplot to apply custom formatting
-for ax in g.axes.flat:
-    ax.set_ylabel("")  # Removes y-axis label
-    ax.set_xlabel("Weighted MdAE")  # Forces x-label on every subplot
-    ax.set_xticklabels([])          # Removes redundant x-axis tick labels (numbers) since bars are annotated
-    
-    # Annotate bars with values
+# Iterate and customize subplots
+for ax in g_rel.axes.flat:
+    ax.set_ylabel("")
+    ax.set_xlabel("Weighted MdAE")
+    ax.set_xticklabels([])
     for c in ax.containers:
-        value_labels = [f"${v:,.0f}" for v in c.datavalues]  # Formats value labels
+        value_labels = [f"${v:,.0f}" for v in c.datavalues]  # Formats value labels with thousand separator and no decimals
         ax.bar_label(c, labels=value_labels, padding=3, fontsize=9)
+    ax.margins(x=0.15)
 
-    ax.margins(x=0.15)  # Adds spacing to the right to accommodate value labels
+plt.show()
+
+# 2. Demographic Fairness Audit
+# Focuses on performance across protected/vulnerable social groups
+fairness_labels = [c["label"] for c in fairness_configs]
+plot_df_fair = plot_df[plot_df["Column"].isin(fairness_labels)].copy()
+
+g_fair = sns.catplot(
+    data=plot_df_fair,
+    kind="bar",
+    x="MdAE",
+    y="Group",
+    col="Column",
+    col_wrap=2,
+    height=4,
+    aspect=1.5,
+    sharex=False,
+    sharey=False,
+    color=POP_COLOR,
+    legend=False
+)
+
+g_fair.set_titles("{col_name}", weight="bold", size=14)
+g_fair.fig.suptitle("Tuned XGBoost: Demographic Fairness Audit", fontsize=18, weight="bold")
+plt.subplots_adjust(top=0.88, hspace=0.3)
+
+for ax in g_fair.axes.flat:
+    ax.set_ylabel("")
+    ax.set_xlabel("Weighted MdAE")
+    ax.set_xticklabels([])
+    for c in ax.containers:
+        labels = [f"${v:,.0f}" for v in c.datavalues]
+        ax.bar_label(c, labels=labels, padding=3, fontsize=9)
+    ax.margins(x=0.15)
 
 plt.show()
 
