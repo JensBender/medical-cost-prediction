@@ -1747,6 +1747,11 @@ display(
 # </div> 
 
 # %%
+# Prepare data for visualization (adds sample sizes to labels and cleans up names)
+plot_df = stratified_error_df.copy()
+plot_df["Group"] = plot_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})", axis=1)
+
+# 1. Model Reliability Audit
 # Focuses on performance across cost levels and medical complexity
 reliability_labels = [c["label"] for c in reliability_configs]
 plot_df_rel = plot_df[plot_df["Column"].isin(reliability_labels)].copy()
