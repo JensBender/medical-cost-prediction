@@ -593,7 +593,9 @@ def prepare_human_readable_validation_data():
     The saved parquet contains scaled/encoded features (after StandardScaler and
     OneHotEncoder). This function reloads the raw MEPS SAS file, applies the same
     cleaning steps 1-7 as preprocess.py (but NOT the sklearn pipeline), then filters
-    to only the validation set rows by matching DUPERSID indices.
+    to only the validation set rows by matching DUPERSID indices. It manually 
+    includes 'Race' for fairness audit while ensuring it remains excluded from model 
+    training and LLM benchmarking.
 
     Returns:
         tuple: (df_raw_val, y_val, w_val) where df_raw_val has human-readable
@@ -613,7 +615,9 @@ def prepare_human_readable_validation_data():
 
     # Step 2: Variable selection
     print("  Selecting variables...")
-    df = df[RAW_COLUMNS_TO_KEEP]
+    # Manually include 'Race' for fairness monitoring only; strictly excluded from model training and LLM benchmarking.
+    columns_to_load = list(set(RAW_COLUMNS_TO_KEEP + ["RACETHX"]))
+    df = df[columns_to_load]
 
     # Step 3: Population filtering (adults with positive weights)
     print("  Filtering target population...")
@@ -1683,8 +1687,8 @@ age_bins = [18, 35, 50, 65, 120]
 age_labels = ["18-34", "35-49", "50-64", "65+"]
 df_raw_val["AGE_GRP"] = pd.cut(df_raw_val["AGE23X"], bins=age_bins, labels=age_labels, right=False)
 
-# Define configurations for two distinct audits
-# 1. Model Reliability: Performance across cost levels and medical complexity
+# Define configurations for model reliability analysis and fairness audit
+# 1. Model Reliability: Performance across cost levels and various groups
 reliability_configs = [
     {"col": "ACTUAL_COSTS", "label": "Medical Costs (Actual)", "category_map": COST_BIN_LABELS},
     {"col": "PREDICTED_COSTS", "label": "Medical Costs (Predicted)", "category_map": COST_BIN_LABELS},
@@ -1692,11 +1696,12 @@ reliability_configs = [
     {"col": "CHRONIC_COUNT_GRP", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}
 ]
 
-# 2. Demographic Fairness: Performance across protected social attributes
+# 2. Demographic Fairness: Performance across protected social groups
 fairness_configs = [
     {"col": "SEX", "label": DISPLAY_LABELS["SEX"], "category_map": CATEGORY_LABELS_EDA["SEX"]},
     {"col": "AGE_GRP", "label": "Age Group", "category_map": None},
     {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},
+    {"col": "RACETHX", "label": DISPLAY_LABELS["RACETHX"], "category_map": CATEGORY_LABELS_EDA["RACETHX"]},
 ]
 
 # Combine for the calculation loop
