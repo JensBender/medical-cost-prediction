@@ -1627,6 +1627,7 @@ display(
 #     📌 Compare model performance across different population segments or groups.
 # </div> 
 # %%
+# --- Stratified Error Analysis: Table ---
 # Recover raw features of validation data for stratification
 # We need the original categorical codes (before pipeline one-hot encoding) to group the data.
 print("Recovering raw validation features...")
@@ -1704,9 +1705,14 @@ display(
 )
 
 # %%
+# --- Stratified Error Analysis: Plot ---
 # Visualize stratified errors as a faceted bar plot grid
+plot_df = stratified_error_df.copy()
+# Add sample size to group labels and remove extra info in parentheses (e.g., "(0-50%)") to keep plot labels concise
+plot_df["Group"] = plot_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})", axis=1)
+
 g = sns.catplot(
-    data=stratified_error_df,
+    data=plot_df,
     kind="bar",
     x="MdAE",
     y="Group",
