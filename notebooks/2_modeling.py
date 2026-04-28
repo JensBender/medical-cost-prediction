@@ -1749,10 +1749,18 @@ display(
 # %%
 def plot_stratified_error(df, column_labels, title, color=POP_COLOR):
     """
-    Visualizes stratified MdAE for a subset of columns (features or targets) as a faceted bar plot grid.
-    Encapsulates filtering, plotting, and custom formatting for consistent audits.
+    Visualizes stratified Median Absolute Error (MdAE) as a faceted bar plot grid.
+    
+    Filters the analysis dataframe to specific columns and generates a standardized 
+    visualization for stratified prediction performance analysis.
+
+    Args:
+        df (pd.DataFrame): Dataframe containing 'Column', 'Group', 'MdAE', and 'Sample Size'.
+        column_labels (list): List of display labels (e.g., from reliability_configs) to plot.
+        title (str): Main title for the figure.
+        color (str): Hex color code for the bars. Defaults to POP_COLOR.
     """
-    # Filter data to requested columns
+    # Filter data to requested columns 
     plot_data = df[df["Column"].isin(column_labels)].copy()
     
     g = sns.catplot(
@@ -1789,9 +1797,9 @@ def plot_stratified_error(df, column_labels, title, color=POP_COLOR):
     plt.show()
 
 
-# Prepare data for visualization (adds sample sizes to labels and cleans up names)
+# Prepare data for visualization 
 plot_df = stratified_error_df.copy()
-plot_df["Group"] = plot_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})", axis=1)
+plot_df["Group"] = plot_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})", axis=1)  # Adds sample sizes to group labels and cleans up names
 
 # Model reliability analysis 
 reliability_labels = [c["label"] for c in reliability_configs]
