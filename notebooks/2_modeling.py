@@ -1752,3 +1752,13 @@ plt.show()
 #     <ul style="margin-top:8px; margin-bottom:8px">
 #     </ul>
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#f0f7ff; padding:15px; border:3px solid #cfe2ff; border-radius:6px; margin-bottom:16px;">
+#     <strong>⚖️ Regulatory Compliance & Ethical AI</strong> <br>
+#     This project is designed for the US Market (NIST, FTC) with a roadmap for EU Expansion (AI Act, GDPR). To ensure responsible and compliant deployment, performed <b>stratified error analysis</b> to detect algorithmic bias and use <b>survey weights</b> to ensure population representativeness.
+#     <p style="margin-top:10px;">
+#         For a details on regulatory compliance and ethical AI, refer to: <a href="../docs/research/regulatory_compliance.md">docs/research/regulatory_compliance.md</a>
+#     </p>
+# </div>
+#
