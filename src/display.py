@@ -25,6 +25,7 @@ DISPLAY_LABELS = {
     "REGION23": "Region",
     "MARRY31X": "Marital Status",
     "FAMSZE23": "Family Size",
+    "RACETHX": "Race/Ethnicity",  # Used only for model fairness audit, not model training
     
     # Socioeconomic
     "POVCAT23": "Poverty Category",
@@ -96,6 +97,13 @@ CATEGORY_LABELS_EDA = {
     "MARRY31X": {
         1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married",
         7: "Married in Round", 8: "Widowed in Round", 9: "Divorced in Round", 10: "Separated in Round"
+    },
+    "RACETHX": {
+        1: "Hispanic",
+        2: "White",
+        3: "Black",
+        4: "Asian",
+        5: "Other/Multiple"
     },
     "MARRY31X_GRP": CATEGORY_LABELS_PIPELINE["MARRY31X_GRP"],
 
