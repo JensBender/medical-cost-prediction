@@ -1849,6 +1849,31 @@ vulnerable_and_proxy_labels = [c["label"] for c in vulnerable_and_proxy_configs]
 plot_stratified_error(plot_df, vulnerable_and_proxy_labels, "Tuned XGBoost: Fairness Audit (Vulnerable & Proxy Groups)")
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights: Stratified Error Analysis</b> 
+#     <br>
+#     <div style="margin-top:10px;"><strong>Model Reliability</strong></div>
+#     <ul>
+#         <li><strong>Actual cost range:</strong> MdAE escalates exponentially across actual cost strata — from \$29 (Zero Costs) to \$47,022 (Super Spenders). This confirms the model performs well for the majority of the population but struggles with extreme outliers, which is expected for tree-based models optimizing L1 loss on log-transformed targets.</li>
+#         <li><strong>Predicted cost range:</strong> Comparing actual vs. predicted cost strata reveals the model compresses its output range. Predicted "Very High" (\$865) and "Massively High" (\$1,413) MdAE are far below their actual counterparts (\$8,095 and \$22,862), indicating the model under-predicts extreme costs, a conservative bias that is acceptable for an advisory tool but important to disclose.</li>
+#         <li><strong>Health:</strong> Physical health errors rise monotonically from Excellent (\$180) to Poor (\$413), a 2.3× ratio. This is expected: poor health individuals have more variable and harder-to-predict costs, confirming the model captures the health-cost relationship but with decreasing precision for less good health.</li>
+#         <li><strong>Insurance:</strong> Private insurance (\$322) shows 2× the MdAE of Public Only (\$152) and 12× of Uninsured (\$26). Privately insured individuals access more services with wider cost ranges, while uninsured individuals have constrained (and more predictable) low spending.</li>
+#         <li><strong>Chronic conditions:</strong> MdAE rises from 0 conditions (\$108) through 3 conditions (\$533) but then slightly drops at 4+ (\$489). The plateau suggests a saturation effect where, beyond a threshold, chronic burden becomes a more stable (and thus more predictable) out-of-pocket cost driver.</li>
+#     </ul>
+#     <div style="margin-top:10px;"><strong>Fairness Audit</strong></div>
+#     <ul>
+#         <li><strong>Sex:</strong> Female MdAE (\$308) is 1.5× Male (\$207). This is a <em>diagnostic signal</em>, not an automatic failure. The disparity likely reflects higher healthcare utilization amongst women (reproductive care, preventive screenings) that creates genuinely wider cost variance, not necessarily algorithmic discrimination.</li>
+#         <li><strong>Age:</strong> Prediction error increases with age. From 18-34 year olds (\$116) to 65+ (\$471), a 4× ratio. This is consistent with the medical reality that older adults have more complex, variable care needs (e.g., specialist visits). The gradient tracks clinical complexity, not age-based bias.</li>
+#         <li><strong>Race/Ethnicity:</strong> White (\$336) shows the highest MdAE, while Hispanic (\$98) and Black (\$139) show lower errors. This pattern is counterintuitive if one expected bias against minorities. The lower MdAE for minority groups likely reflects more concentrated (and thus more predictable) spending distributions, while the White majority has the widest cost variance. No evidence of disparate impact against protected minorities.</li>
+#         <li><strong>Income gradient:</strong> MdAE rises from Poor/Negative (\$53) to High Income (\$354), a 6.7× ratio. This mirrors the insurance and access pattern by which higher-income individuals use more diverse and expensive services. Low-income groups have more constrained, predictable spending.</li>
+#         <li><strong>Education:</strong> A strong monotonic gradient from No Degree (\$70) to Doctorate (\$837), a 12× ratio. Education acts as a proxy for income and insurance quality. More educated individuals access broader care, introducing more prediction variance. This is a Legitimate Business Necessity disparity, not bias.</li>
+#         <li><strong>Mental health:</strong> Errors rise from Excellent (\$206) to Poor (\$594), a 2.9× ratio, paralleling physical health. Mental health severity correlates with complex comorbidities and unpredictable utilization patterns.</li>
+#         <li><strong>Walking limitations:</strong> Those with limitations (\$533) show 2.5× the MdAE of those without (\$216), reflecting the higher medical complexity and cost variability of walking impaired populations.</li>
+#         <li><strong>Region:</strong> Modest variation from South \$216 to Midwest \$322, a 1.5× ratio. The smallest disparity of any audited dimension. No evidence of geographic bias requiring intervention.</li>
+#     </ul>
+#     <div style="margin-top:10px;"><strong>Overall Assessment:</strong> All observed disparities are directionally consistent with medical complexity (sicker, older, more-insured populations have higher and more variable costs). No evidence of algorithmic disparate impact against legally protected or vulnerable groups. The model is suitable for deployment as an advisory tool under current NIST/FTC guidelines.</div>
+# </div>
+# %% [markdown]
 # <div style="background-color:#f0f7ff; padding:15px; border:3px solid #cfe2ff; border-radius:6px; margin-bottom:16px;">
 #     <strong>⚖️ Regulatory Compliance & Ethical AI</strong> <br>
 #     This project is designed for the US Market (NIST, FTC) with a roadmap for EU Expansion (AI Act, GDPR). To ensure responsible and compliant deployment, performed <b>stratified error analysis</b> to detect algorithmic bias and use <b>survey weights</b> to ensure population representativeness.
