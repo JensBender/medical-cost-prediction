@@ -1871,7 +1871,7 @@ plot_stratified_error(plot_df, vulnerable_and_proxy_labels, "Tuned XGBoost: Fair
 #         <li><strong>Walking limitations:</strong> Those with limitations (\$533) show 2.5× the MdAE of those without (\$216), reflecting the higher medical complexity and cost variability of walking impaired populations.</li>
 #         <li><strong>Region:</strong> Modest variation from South \$216 to Midwest \$322, a 1.5× ratio. The smallest disparity of any audited dimension. No evidence of geographic bias requiring intervention.</li>
 #     </ul>
-#     <div style="margin-top:10px;"><strong>Overall Assessment:</strong> All observed disparities are directionally consistent with medical complexity (sicker, older, more-insured populations have higher and more variable costs). No evidence of algorithmic disparate impact against legally protected or vulnerable groups. The model is suitable for deployment as an advisory tool under current NIST/FTC guidelines.</div>
+#     <div style="margin-top:10px;"><strong>Overall Assessment:</strong> Observed group disparities in prediction error are directionally consistent with medical reality (utilization patterns of less healthy and older populations). No evidence of discriminatory disparate impact against protected groups was found. The model is suitable for deployment as a low-risk advisory tool under NIST/FTC transparency guidelines.</div>
 # </div>
 # %% [markdown]
 # <div style="background-color:#f0f7ff; padding:15px; border:3px solid #cfe2ff; border-radius:6px; margin-bottom:16px;">
