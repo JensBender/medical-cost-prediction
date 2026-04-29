@@ -44,6 +44,20 @@ The regulatory requirements for this project depend heavily on its **Business Co
 | **Provider Financial Counseling** | **Medium Risk** | Requires clear documentation of "Advisory" status. |
 | **Insurance Underwriting/Pricing** | **High-Risk (Annex III)** | Requires formal **Conformity Assessments**, strict data quality audits, and human oversight logs. |
 
+## Free vs. Paid Tool
+
+The project is a **free, open-source helper tool**, which significantly influences its legal and regulatory risk profile compared to a commercial offering.
+
+| Feature | Free / Open-Source | Paid / Commercial App |
+| :--- | :--- | :--- |
+| **Legal Relationship** | Best-effort / Educational | Commercial Contract / Service |
+| **Liability Risk** | **Low**: Implied "As-Is" status; harder to prove financial damages from a free tool. | **High**: Users have a "Reasonable Expectation" of accuracy; potential for Breach of Contract claims. |
+| **Regulatory Focus** | Voluntary adherence (NIST) | Mandatory enforcement (FTC, EU AI Act). |
+| **"Profiting from Bias"** | Viewed as an ethical issue to be mitigated. | Viewed as a **Consumer Fraud** issue; potential for "Algorithmic Disgorgement" (mandatory model deletion). |
+| **EU AI Act Status** | Research / Development | **"Provider"** placing a system on the market. |
+
+Providing an open-source and free tool serves as a significant "Legal Shield." The project is research-driven and for public good, which typically faces less aggressive scrutiny than profit-motivated algorithmic systems. Any transition to a paid model would require a full legal conformity assessment** and professional-grade indemnity insurance.
+
 ## Detailed Regulatory Mapping
 
 | Dimension | Primary: US Market Perspective | Expansion: EU Market Roadmap | Implementation in this Project |
