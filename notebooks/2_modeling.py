@@ -1643,7 +1643,16 @@ display(
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Compare model performance across different population segments or groups.
+#     ℹ️ Compare model performance across different population segments or groups. 
+#     <br><br>
+#     <strong>Feature selection:</strong> To ensure a robust yet focused error analysis, features are selected for stratified analysis based on four core criteria:
+#     <ul style="margin-top:8px">
+#         <li><strong>Statistical Stability:</strong> Groups must have sufficient sample size (n > 100) to ensure MdAE metrics are stable and not driven by outliers.</li>
+#         <li><strong>Predictive Importance:</strong> Top-performing features that the model logic relies on must be audited for functional consistency (Model Reliability).</li>
+#         <li><strong>Legal Protection:</strong> Statutory protected groups (Age, Sex, Race) or proxies must be monitored for disparate impact (Fairness Audit).</li>
+#         <li><strong>Stakeholder Impact:</strong> Focus on segments where prediction errors have high financial or health consequences (e.g., high spenders).</li>
+#     </ul>
+#     📌 <strong>Goal:</strong> Avoid detecting false alarms through over-testing by auditing high-impact columns rather than all features.
 # </div>
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
