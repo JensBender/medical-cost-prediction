@@ -118,6 +118,8 @@ CATEGORY_LABELS_EDA = {
     "HAVEUS42": {**CATEGORY_LABELS_PIPELINE["HAVEUS42"], 2: "No"},
 
     # Perceived Health & Lifestyle
+    "RTHLTH31": {1: "Excellent", 2: "Very Good", 3: "Good", 4: "Fair", 5: "Poor"},
+    "MNHLTH31": {1: "Excellent", 2: "Very Good", 3: "Good", 4: "Fair", 5: "Poor"},
     "ADSMOK42": {**CATEGORY_LABELS_PIPELINE["ADSMOK42"], 2: "No"},
 
     # Limitations
