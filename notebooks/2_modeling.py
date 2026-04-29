@@ -1530,7 +1530,7 @@ display(
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Compare evaluation metrics of LLM benchmark, baseline models, and tuned models on the validation data.
+#     📌 Compare all baseline and tuned models.
 # </div> 
 
 # %%
@@ -1568,7 +1568,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Compare evaluation metrics of curated finalists: Best tuned models, LLM benchmark, median benchmark, and linear regression (interpretable baseline).
+#     📌 Compare curated finalists: Best tuned models, LLM benchmark, median benchmark, and linear regression (interpretable baseline).
 # </div> 
 
 # %%
@@ -1690,22 +1690,30 @@ df_raw_val["AGE_GRP"] = pd.cut(df_raw_val["AGE23X"], bins=age_bins, labels=age_l
 # Define configurations for model reliability analysis and fairness audit
 # 1. Model Reliability: Performance across cost levels and various groups
 reliability_configs = [
-    {"col": "ACTUAL_COSTS", "label": "Medical Costs (Actual)", "category_map": COST_BIN_LABELS},
-    {"col": "PREDICTED_COSTS", "label": "Medical Costs (Predicted)", "category_map": COST_BIN_LABELS},
-    {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "category_map": CATEGORY_LABELS_EDA["INSCOV23"]},
-    {"col": "CHRONIC_COUNT_GRP", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}
+    {"col": "ACTUAL_COSTS", "label": "Medical Costs (Actual)", "category_map": COST_BIN_LABELS},        # Performance across the cost distribution
+    {"col": "PREDICTED_COSTS", "label": "Medical Costs (Predicted)", "category_map": COST_BIN_LABELS},  # Reliability of model's own predictions
+    {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "category_map": CATEGORY_LABELS_EDA["INSCOV23"]}, # Stability across insurance types
+    {"col": "CHRONIC_COUNT_GRP", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}        # Stability across medical complexity
 ]
 
-# 2. Demographic Fairness: Performance across protected social groups
-fairness_configs = [
-    {"col": "SEX", "label": DISPLAY_LABELS["SEX"], "category_map": CATEGORY_LABELS_EDA["SEX"]},
-    {"col": "AGE_GRP", "label": "Age Group", "category_map": None},
-    {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},
-    {"col": "RACETHX", "label": DISPLAY_LABELS["RACETHX"], "category_map": CATEGORY_LABELS_EDA["RACETHX"]},
+# 2. Demographic Fairness: Performance across protected social groups and vulnerable populations
+# Legally Protected Groups (Direct attributes protected by law like Sex, Age, and Race)
+legally_protected_configs = [
+    {"col": "SEX", "label": DISPLAY_LABELS["SEX"], "category_map": CATEGORY_LABELS_EDA["SEX"]},             # Protected class: Sex
+    {"col": "AGE_GRP", "label": "Age Group", "category_map": None},                                         # Protected class: Age
+    {"col": "RACETHX", "label": DISPLAY_LABELS["RACETHX"], "category_map": CATEGORY_LABELS_EDA["RACETHX"]}, # Protected class: Race/Ethnicity
+]
+
+# Vulnerable & Proxy Groups (Ethically sensitive attributes or proxy variables for protected groups)
+vulnerable_and_proxy_configs = [
+    {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},  # Proxy for socioeconomic status 
+    {"col": "HIDEG", "label": DISPLAY_LABELS["HIDEG"], "category_map": CATEGORY_LABELS_EDA["HIDEG"]},           # Proxy for socioeconomic status
+    {"col": "REGION23", "label": DISPLAY_LABELS["REGION23"], "category_map": CATEGORY_LABELS_EDA["REGION23"]},  # Monitored for geographic equity
+    {"col": "WLKLIM31", "label": DISPLAY_LABELS["WLKLIM31"], "category_map": CATEGORY_LABELS_EDA["WLKLIM31"]},  # Walking limitation as a proxy for disability
 ]
 
 # Combine for the calculation loop
-stratified_error_configs = reliability_configs + fairness_configs
+stratified_error_configs = reliability_configs + legally_protected_configs + vulnerable_and_proxy_configs
 
 # Calculate weighted MdAE for each column
 stratified_error_results = []
@@ -1813,17 +1821,21 @@ plot_stratified_error(plot_df, reliability_labels, "Tuned XGBoost: Model Reliabi
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>Fairness Audit</strong> <br>
-#     Monitoring for performance disparities across <strong>protected classes</strong> and <strong>vulnerable populations</strong> as defined by:
-#     <ul style="margin-top:8px">
-#         <li><strong>US Market:</strong> ACA Section 1557 (Nondiscrimination), Civil Rights Act (Race, Sex), and ADEA (Age).</li>
-#         <li><strong>EU Market:</strong> EU AI Act (High-Risk bias monitoring) and GDPR Art. 9 (Special categories of data).</li>
-#     </ul>
-#     📌 <strong>Goal:</strong> Ensure that the model's prediction error (MdAE) does not disproportionately affect groups based on <strong>Sex</strong>, <strong>Age</strong>, <strong>Race</strong>, or <strong>Socioeconomic Status</strong>.
+#     <p style="margin-top:10px;">
+#     📌 <strong>Goal:</strong> Ensure that the model's prediction error (MdAE) does not disproportionately affect <strong>Legally Protected Groups</strong>, <strong>Vulnerable Populations</strong>, or <strong>Proxy Attributes</strong>. 
+#         <br><br>
+#         While technical reliability ensures the model works, the Fairness Audit ensures it works equitably. Detecting a disparity is a <b>diagnostic signal</b> (triggering investigation into "Legitimate Business Necessity") rather than an automatic failure of the model.
+#     </p>
 # </div> 
 
 # %%
-fairness_labels = [c["label"] for c in fairness_configs]
-plot_stratified_error(plot_df, fairness_labels, "Tuned XGBoost: Demographic Fairness Audit")
+# Legally Protected Groups
+legally_protected_labels = [c["label"] for c in legally_protected_configs]
+plot_stratified_error(plot_df, legally_protected_labels, "Tuned XGBoost: Fairness Audit (Legally Protected Groups)")
+
+# Vulnerable & Proxy Groups
+vulnerable_and_proxy_labels = [c["label"] for c in vulnerable_and_proxy_configs]
+plot_stratified_error(plot_df, vulnerable_and_proxy_labels, "Tuned XGBoost: Fairness Audit (Vulnerable & Proxy Groups)")
 
 # %% [markdown]
 # <div style="background-color:#f0f7ff; padding:15px; border:3px solid #cfe2ff; border-radius:6px; margin-bottom:16px;">
