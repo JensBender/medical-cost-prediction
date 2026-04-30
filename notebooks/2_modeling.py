@@ -1755,8 +1755,8 @@ for model_key, y_val_pred in tuned_model_predictions.items():
             
             # Calculate weighted MdAE
             group_mdae = weighted_median_absolute_error(
-                y_val_true[mask],      # Aligns via Index
-                y_val_pred_xgb[mask],  # Aligns via Position (df_raw_val was reindexed to match in prepare_human_readable_validation_data)
+                y_val_true[mask],  # Aligns via Index
+                y_val_pred[mask],  # Aligns via Position (df_raw_val was reindexed to match in prepare_human_readable_validation_data)
                 sample_weight=w_val_weights[mask]  # Aligns via Index
             )
             
@@ -1776,9 +1776,9 @@ stratified_error_df = pd.DataFrame(stratified_error_results)
 display(
     stratified_error_df.pivot(index=["Column", "Group"], columns="Model", values="MdAE")
     .style
-    .pipe(add_table_caption, "Tuned Model Comparison: Stratified MdAE Analysis")
+    .pipe(add_table_caption, "Tuned Models: Stratified Error Analysis")
     .format("${:.2f}")
-    .background_gradient(cmap="Reds", axis=1)
+    .background_gradient(cmap="RdYlGn_r", axis=1)  # Red-Yellow-Green reversed (lower MdAE is better) to make winning model pop out in green
 )
 
 # %% [markdown]
