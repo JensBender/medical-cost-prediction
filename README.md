@@ -55,6 +55,7 @@
       <li><a href="#distributions">Distributions</a></li>        
       <li><a href="#feature-target-relationships">Feature-Target Relationships</a></li>      
       <li><a href="#outlier-analysis">Outlier Analysis</a></li>      
+      <li><a href="#model-reliability--fairness-audit">Model Reliability & Fairness Audit</a></li>      
     </ul>
   </li>
 </ol>
@@ -366,6 +367,7 @@ This project was made possible with the help of the following resources:
 
 <!-- APPENDIX -->
 ## 📎 Appendix
+
 ### Candidate Features
 **Feature Selection**  
 Candidate features were selected from MEPS-HC 2023 based on the following criteria:
@@ -427,6 +429,7 @@ Table of population statistics for all numerical features:
 <a id="binary-distributions">![Binary Distributions](figures/eda/binary_distributions.png)</a>
 <p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
 
+
 ### Feature-Target Relationships
 <a id="numerical-feature-target-relationships">![Numerical Feature-Target Relationships](figures/eda/numerical_feature_target_relationships.png)</a>
 <p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
@@ -436,6 +439,7 @@ Table of population statistics for all numerical features:
 
 <a id="binary-feature-target-relationships">![Binary Feature-Target Relationships](figures/eda/binary_feature_target_relationships.png)</a>
 <p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
+
 
 ### Outlier Analysis
 **1. Outlier Detection:** Utilized an Isolation Forest (5% contamination) to identify multivariate outliers in training data.  
@@ -451,6 +455,14 @@ While outliers are only 1.1x more likely to cross the median cost threshold, the
 ![Outlier Profile for Categorical Features](figures/outliers/outlier_categorical_profile.png)
 
 <p align="right">(<a href="#-data-preprocessing">back to Preprocessing</a> | <a href="#readme-top">back to top</a>)</p>
+
+
+### Model Reliability & Fairness Audit
+![Model Reliability Analysis](figures/evaluation/stratified_reliability.png)
+![Fairness Audit: Protected Groups](figures/evaluation/fairness_audit_protected.png)
+![Fairness Audit: Vulnerable Groups](figures/evaluation/fairness_audit_vulnerable.png)
+
+<p align="right">(<a href="#-modeling">back to Modeling</a> | <a href="#readme-top">back to top</a>)</p>
 
 
 <!-- MARKDOWN LINKS -->
