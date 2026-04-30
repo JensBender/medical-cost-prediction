@@ -1793,7 +1793,7 @@ display(
 # </div> 
 
 # %%
-def plot_stratified_error(df, column_labels, title):
+def plot_stratified_error(df, column_labels, title, save_to_file=None):
     """
     Visualizes stratified Median Absolute Error (MdAE) as a faceted bar plot grid.
     
@@ -1804,6 +1804,7 @@ def plot_stratified_error(df, column_labels, title):
         df (pd.DataFrame): Dataframe containing 'Column', 'Group', 'MdAE', and 'Sample Size'.
         column_labels (list): List of display labels (e.g., from reliability_configs) to plot.
         title (str): Main title for the figure.
+        save_to_file (str, optional): Full path and filename to save the plot.
     """
     # Filter data to requested columns 
     plot_data = df[df["Column"].isin(column_labels)].copy()
@@ -1841,12 +1842,17 @@ def plot_stratified_error(df, column_labels, title):
         ax.margins(x=0.15)
     
     sns.move_legend(g, "upper right", bbox_to_anchor=(0.99, 0.98), frameon=True, title=None)
+    
+    # Save to file
+    if save_to_file:
+        plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
+        
     plt.show()
 
 
 # Model reliability analysis 
 reliability_labels = [c["label"] for c in reliability_configs]
-plot_stratified_error(stratified_error_df, reliability_labels, "Tuned Models: Reliability Analysis")
+plot_stratified_error(stratified_error_df, reliability_labels, "Tuned Models: Reliability Analysis", save_to_file="../figures/evaluation/stratified_reliability.png")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -1859,11 +1865,11 @@ plot_stratified_error(stratified_error_df, reliability_labels, "Tuned Models: Re
 # %%
 # Legally Protected Groups
 legally_protected_labels = [c["label"] for c in legally_protected_configs]
-plot_stratified_error(plot_df, legally_protected_labels, "Tuned Models: Fairness Audit (Legally Protected Groups)")
+plot_stratified_error(stratified_error_df, legally_protected_labels, "Tuned Models: Fairness Audit (Legally Protected Groups)", save_to_file="../figures/evaluation/fairness_audit_protected.png")
 
 # Vulnerable & Proxy Groups
 vulnerable_and_proxy_labels = [c["label"] for c in vulnerable_and_proxy_configs]
-plot_stratified_error(plot_df, vulnerable_and_proxy_labels, "Tuned Models: Fairness Audit (Vulnerable & Proxy Groups)")
+plot_stratified_error(stratified_error_df, vulnerable_and_proxy_labels, "Tuned Models: Fairness Audit (Vulnerable & Proxy Groups)", save_to_file="../figures/evaluation/fairness_audit_vulnerable.png")
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
