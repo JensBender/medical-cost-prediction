@@ -1816,7 +1816,7 @@ def plot_stratified_error(df, column_labels, title):
         aspect=1.4,
         sharex=False,  # Independent x-axes to handle different error scales for each column
         sharey=False,  # Independent y-axes 
-        palette="viridis",
+        palette="Set2",
         legend_out=False
     )
 
@@ -1839,12 +1839,11 @@ def plot_stratified_error(df, column_labels, title):
     plt.show()
 
 
-# Prepare data for visualization (Add sample sizes to labels once for the base DF)
+# Prepare data for visualization 
 plot_df = stratified_error_df.copy()
-# We use one sample size from the first model as they are all identical
-group_samples = plot_df[plot_df["Model"] == plot_df["Model"].unique()[0]][["Column", "Group", "Sample Size"]]
+group_samples = plot_df[plot_df["Model"] == plot_df["Model"].unique()[0]][["Column", "Group", "Sample Size"]]  # Uses sample size from first model as they are all identical
 plot_df = plot_df.merge(group_samples.rename(columns={"Sample Size": "N"}), on=["Column", "Group"])
-plot_df["Group"] = plot_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['N']:,})", axis=1)
+plot_df["Group"] = plot_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['N']:,})", axis=1)  # Cleans group labels and adds sample sizes
 
 # Model reliability analysis 
 reliability_labels = [c["label"] for c in reliability_configs]
