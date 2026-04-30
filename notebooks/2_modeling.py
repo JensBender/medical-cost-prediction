@@ -54,11 +54,9 @@ import numpy as np
 
 # Data visualization
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mtick  # to format axis ticks
 import seaborn as sns
-import math  # to calculate n_rows in subplot matrix
 
-# Target Preprocessing
+# Target preprocessing
 from sklearn.compose import TransformedTargetRegressor
 
 # Models
@@ -1772,6 +1770,9 @@ for model_key, y_val_pred in tuned_model_predictions.items():
 # Convert to DataFrame
 stratified_error_df = pd.DataFrame(stratified_error_results)
 
+# Clean group labels and add sample sizes 
+stratified_error_df["Group"] = stratified_error_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})", axis=1)
+
 # Display results table (pivoted for model comparison)
 display(
     stratified_error_df.pivot(index=["Column", "Group"], columns="Model", values="MdAE")
@@ -1839,15 +1840,9 @@ def plot_stratified_error(df, column_labels, title):
     plt.show()
 
 
-# Prepare data for visualization 
-plot_df = stratified_error_df.copy()
-group_samples = plot_df[plot_df["Model"] == plot_df["Model"].unique()[0]][["Column", "Group", "Sample Size"]]  # Uses sample size from first model as they are all identical
-plot_df = plot_df.merge(group_samples.rename(columns={"Sample Size": "N"}), on=["Column", "Group"])
-plot_df["Group"] = plot_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['N']:,})", axis=1)  # Cleans group labels and adds sample sizes
-
 # Model reliability analysis 
 reliability_labels = [c["label"] for c in reliability_configs]
-plot_stratified_error(plot_df, reliability_labels, "Tuned Models: Reliability Analysis")
+plot_stratified_error(stratified_error_df, reliability_labels, "Tuned Models: Reliability Analysis")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
