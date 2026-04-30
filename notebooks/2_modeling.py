@@ -1657,7 +1657,7 @@ display(
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>Stratified Error Analysis Table</strong> <br>
-#     📌 Recover raw feature values, stratify selected features and out-of-pocket costs, calculate weighted MdAE for each group, and display results table.
+#     📌 Recover raw feature values, stratify selected features and out-of-pocket costs, calculate weighted MdAE for each group, and display results table for all models.
 # </div> 
 
 # %%
@@ -1666,8 +1666,13 @@ display(
 print("Recovering raw validation features...")
 df_raw_val, y_val_true, w_val_weights = prepare_human_readable_validation_data()
 
-# Load predictions (on validation data) of tuned XGBoost
-y_val_pred_xgb = load_model("../models/xgb_tuned_predictions.joblib", verbose=False)
+# Load predictions (on validation data) for all tuned models
+print("Loading finalist model predictions...")
+tuned_model_predictions = {
+    "Elastic Net (Tuned)": load_model("../models/en_tuned_predictions.joblib", verbose=False),
+    "Random Forest (Tuned)": load_model("../models/rf_tuned_predictions.joblib", verbose=False),
+    "XGBoost (Tuned)": load_model("../models/xgb_tuned_predictions.joblib", verbose=False)
+}
 
 # Create medical cost strata (consistent with preprocessing/EDA)
 COST_BIN_LABELS = {
@@ -1681,15 +1686,16 @@ COST_BIN_LABELS = {
 }
 df_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_val_true)
 
-# Create predicted cost strata (measures reliability of model predictions for high vs. low cost ranges)
+# Create predicted cost strata for XGBoost (as a representative non-linear benchmark)
 # Note: y_val_pred_xgb is a numpy array, so we convert to Series to use the helper's index-based logic
+y_val_pred_xgb = tuned_model_predictions["XGBoost (Tuned)"]
 y_val_pred_series = pd.Series(y_val_pred_xgb, index=y_val_true.index)
 df_raw_val["PREDICTED_COSTS"] = create_stratification_bins(y_val_pred_series)
 
 # Create chronic conditions count feature 
 chronic_cols = list(CHRONIC_CONDITIONS.keys())
 df_raw_val["CHRONIC_COUNT"] = df_raw_val[chronic_cols].sum(axis=1).astype(int)
-df_raw_val["CHRONIC_COUNT_GRP"] = df_raw_val["CHRONIC_COUNT"].apply(lambda x: str(x) if x < 4 else "4+")  # Group the tail (4+) for better statistical stability
+df_raw_val["CHRONIC_COUNT_GRP"] = df_raw_val["CHRONIC_COUNT"].apply(lambda x: str(x) if x < 4 else "4+") 
 
 # Create age groups for a more stable and interpretable Fairness Audit
 age_bins = [18, 35, 50, 65, 120]
@@ -1726,53 +1732,63 @@ vulnerable_and_proxy_configs = [
 # Combine configurations 
 stratified_error_configs = reliability_configs + legally_protected_configs + vulnerable_and_proxy_configs
 
-# Calculate weighted MdAE for each column
+# Calculate weighted MdAE for each model, column, and group
 stratified_error_results = []
-for config in stratified_error_configs:
-    col = config["col"]
-    label = config["label"]
-    category_map = config["category_map"]
+
+for model_key, y_val_pred in tuned_model_predictions.items():
+    model_label = MODEL_DISPLAY_LABELS.get(model_key, model_key)
     
-    # Calculate weighted MdAE for each subgroup of current column
-    groups = sorted(df_raw_val[col].dropna().unique())
-    for group in groups:
-        mask = (df_raw_val[col] == group)
+    for config in stratified_error_configs:
+        col = config["col"]
+        label = config["label"]
+        category_map = config["category_map"]
+        
+        # Calculate weighted MdAE for each subgroup of current column
+        groups = sorted(df_raw_val[col].dropna().unique())
+        for group in groups:
+            mask = (df_raw_val[col] == group)
             
-        group_mdae = weighted_median_absolute_error(
+            # Calculate weighted MdAE
+            # Note: y_val_pred and y_val_true/w_val_weights are aligned by position 
+            # because df_raw_val was reindexed to match y_val.index order.
+            group_mdae = weighted_median_absolute_error(
             y_val_true[mask],      # Aligns via Index
             y_val_pred_xgb[mask],  # Aligns via Position (df_raw_val was reindexed to match in prepare_human_readable_validation_data)
             sample_weight=w_val_weights[mask]  # Aligns via Index
-        )
-        
-        # Map group label 
-        group_name = category_map.get(int(group), group) if category_map else group
+            )
+            
+            # Map group label 
+            group_name = category_map.get(int(group), group) if category_map else group
 
         # Add results of current column to list
-        stratified_error_results.append({
-            "Column": label,
-            "Group": group_name,
-            "MdAE": group_mdae,
-            "Sample Size": mask.sum()
-        })
+            stratified_error_results.append({
+                "Model": model_label,
+                "Column": label,
+                "Group": group_name,
+                "MdAE": group_mdae,
+                "Sample Size": mask.sum()
+            })
 
-# Display results table
+# Convert to DataFrame
 stratified_error_df = pd.DataFrame(stratified_error_results)
+
+# Display comparative results table (Pivoted for model benchmarking)
 display(
-    stratified_error_df.set_index(["Column", "Group"])
+    stratified_error_df.pivot(index=["Column", "Group"], columns="Model", values="MdAE")
     .style
-    .pipe(add_table_caption, "Tuned XGBoost: Stratified Error Analysis")
-    .format({"MdAE": "${:.2f}", "Sample Size": "{:,}"})
-    .background_gradient(subset=["MdAE"], cmap="Reds")
+    .pipe(add_table_caption, "Tuned Model Comparison: Stratified MdAE Analysis")
+    .format("${:.2f}")
+    .background_gradient(cmap="Reds", axis=1)
 )
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>Model Reliability Analysis</strong> <br>
-#     📌 Visualize stratified error of actual and predicted out-of-pocket costs, as well as selected features.
+#     📌 Visualize stratified error of actual and predicted out-of-pocket costs, as well as selected features across all tuned models.
 # </div> 
 
 # %%
-def plot_stratified_error(df, column_labels, title, color=POP_COLOR):
+def plot_stratified_error(df, column_labels, title):
     """
     Visualizes stratified Median Absolute Error (MdAE) as a faceted bar plot grid.
     
@@ -1783,31 +1799,31 @@ def plot_stratified_error(df, column_labels, title, color=POP_COLOR):
         df (pd.DataFrame): Dataframe containing 'Column', 'Group', 'MdAE', and 'Sample Size'.
         column_labels (list): List of display labels (e.g., from reliability_configs) to plot.
         title (str): Main title for the figure.
-        color (str): Hex color code for the bars. Defaults to POP_COLOR.
     """
     # Filter data to requested columns 
     plot_data = df[df["Column"].isin(column_labels)].copy()
 
-    # Create faceted bar plot grid
+    # Create faceted bar plot grid with Model as hue
     g = sns.catplot(
         data=plot_data,
         kind="bar",
         x="MdAE",
         y="Group",
+        hue="Model",
         col="Column",
         col_wrap=2,
-        height=4,
-        aspect=1.5,
+        height=5,
+        aspect=1.4,
         sharex=False,  # Independent x-axes to handle different error scales for each column
-        sharey=False,  # Independent y-axes to show only relevant groups per column
-        color=color,
-        legend=False
+        sharey=False,  # Independent y-axes 
+        palette="viridis",
+        legend_out=False
     )
 
     # Customize title and spacing
     g.set_titles("{col_name}", weight="bold", size=14)
     g.fig.suptitle(title, fontsize=18, weight="bold")
-    plt.subplots_adjust(top=0.90, hspace=0.35)
+    plt.subplots_adjust(top=0.90, hspace=0.4)
 
     # Apply custom formatting to each subplot
     for ax in g.axes.flat:
@@ -1819,21 +1835,25 @@ def plot_stratified_error(df, column_labels, title, color=POP_COLOR):
             ax.bar_label(c, labels=value_labels, padding=3, fontsize=9)
         ax.margins(x=0.15)
     
+    sns.move_legend(g, "upper right", bbox_to_anchor=(1, 1), frameon=True)
     plt.show()
 
 
-# Prepare data for visualization 
+# Prepare data for visualization (Add sample sizes to labels once for the base DF)
 plot_df = stratified_error_df.copy()
-plot_df["Group"] = plot_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})", axis=1)  # Adds sample sizes to group labels and cleans up names
+# We use one sample size from the first model as they are all identical
+group_samples = plot_df[plot_df["Model"] == plot_df["Model"].unique()[0]][["Column", "Group", "Sample Size"]]
+plot_df = plot_df.merge(group_samples.rename(columns={"Sample Size": "N"}), on=["Column", "Group"])
+plot_df["Group"] = plot_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['N']:,})", axis=1)
 
 # Model reliability analysis 
 reliability_labels = [c["label"] for c in reliability_configs]
-plot_stratified_error(plot_df, reliability_labels, "Tuned XGBoost: Model Reliability Analysis")
+plot_stratified_error(plot_df, reliability_labels, "Tuned Models: Reliability Analysis")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>Fairness Audit</strong> <br>
-#     📌 Visualize stratified error for legally protected groups, vulnerable populations, and proxy attributes. 
+#     📌 Visualize stratified error for legally protected groups, vulnerable populations, and proxy attributes across all tuned models. 
 #     <br><br>
 #     Ensures that the model's prediction error (MdAE) does not disproportionately affect protected groups. While model reliability analysis ensures the model works functionally, the Fairness Audit ensures it works equitably. Detecting a disparity is a diagnostic signal (triggering investigation into "Legitimate Business Necessity") rather than an automatic failure of the model.
 # </div> 
@@ -1841,11 +1861,11 @@ plot_stratified_error(plot_df, reliability_labels, "Tuned XGBoost: Model Reliabi
 # %%
 # Legally Protected Groups
 legally_protected_labels = [c["label"] for c in legally_protected_configs]
-plot_stratified_error(plot_df, legally_protected_labels, "Tuned XGBoost: Fairness Audit (Legally Protected Groups)")
+plot_stratified_error(plot_df, legally_protected_labels, "Tuned Models: Fairness Audit (Legally Protected Groups)")
 
 # Vulnerable & Proxy Groups
 vulnerable_and_proxy_labels = [c["label"] for c in vulnerable_and_proxy_configs]
-plot_stratified_error(plot_df, vulnerable_and_proxy_labels, "Tuned XGBoost: Fairness Audit (Vulnerable & Proxy Groups)")
+plot_stratified_error(plot_df, vulnerable_and_proxy_labels, "Tuned Models: Fairness Audit (Vulnerable & Proxy Groups)")
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
