@@ -1645,19 +1645,19 @@ display(
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Compare model performance across different population segments or groups. 
 #     <br><br>
-#     <strong>Feature selection:</strong> To ensure a robust yet focused error analysis, features are selected for stratified analysis based on four core criteria:
+#     <strong>Column selection for stratified analysis:</strong> To ensure a robust yet focused stratified analysis, features are selected based on four core criteria:
 #     <ul style="margin-top:8px">
 #         <li><strong>Statistical Stability:</strong> Groups must have sufficient sample size (n > 100) to ensure MdAE metrics are stable and not driven by outliers.</li>
-#         <li><strong>Predictive Importance:</strong> Top-performing features that the model logic relies on must be audited for functional consistency (Model Reliability).</li>
-#         <li><strong>Legal Protection:</strong> Statutory protected groups (Age, Sex, Race) or proxies must be monitored for disparate impact (Fairness Audit).</li>
-#         <li><strong>Stakeholder Impact:</strong> Focus on segments where prediction errors have high financial or health consequences (e.g., high spenders).</li>
+#         <li><strong>Feature Importance:</strong> Top-performing features that the model logic relies on must be audited for functional consistency (Model Reliability).</li>
+#         <li><strong>Legal Importance:</strong> Legally protected groups (Age, Sex, Race) or proxy variables for legally protected groups (e.g., walking limitations as a proxy for disability) must be monitored for disparate impact (Fairness Audit).</li>
+#         <li><strong>Stakeholder Importance:</strong> Focus on segments where prediction errors have high financial or health consequences (e.g., high spenders).</li>
 #     </ul>
 #     📌 <strong>Goal:</strong> Avoid detecting false alarms through over-testing by auditing high-impact columns rather than all features.
 # </div>
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>Stratified Error Analysis Table</strong> <br>
-#     📌 Recover raw feature values, stratify out-of-pocket costs and selected features, calculate weighted MdAE for each group, and display results table.
+#     📌 Recover raw feature values, stratify selected features and out-of-pocket costs, calculate weighted MdAE for each group, and display results table.
 # </div> 
 
 # %%
@@ -1696,34 +1696,34 @@ age_bins = [18, 35, 50, 65, 120]
 age_labels = ["18-34", "35-49", "50-64", "65+"]
 df_raw_val["AGE_GRP"] = pd.cut(df_raw_val["AGE23X"], bins=age_bins, labels=age_labels, right=False)
 
-# Define configurations for model reliability analysis and fairness audit
-# 1. Model Reliability: Performance across cost levels and various groups
+# Define configurations for stratified error analyis
+# 1. Model Reliability: Performance across selected groups and cost levels
 reliability_configs = [
-    {"col": "ACTUAL_COSTS", "label": "Medical Costs (Actual)", "category_map": COST_BIN_LABELS},        # Performance across the cost distribution
-    {"col": "PREDICTED_COSTS", "label": "Medical Costs (Predicted)", "category_map": COST_BIN_LABELS},  # Reliability of model's own predictions
-    {"col": "RTHLTH31", "label": DISPLAY_LABELS["RTHLTH31"], "category_map": CATEGORY_LABELS_EDA["RTHLTH31"]}, # Stability across self-reported health status
+    {"col": "ACTUAL_COSTS", "label": "Medical Costs (Actual)", "category_map": COST_BIN_LABELS},        # Reliability across actual cost ranges
+    {"col": "PREDICTED_COSTS", "label": "Medical Costs (Predicted)", "category_map": COST_BIN_LABELS},  # Reliability across predicted cost ranges
+    {"col": "RTHLTH31", "label": DISPLAY_LABELS["RTHLTH31"], "category_map": CATEGORY_LABELS_EDA["RTHLTH31"]}, # Stability across self-reported health levels
     {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "category_map": CATEGORY_LABELS_EDA["INSCOV23"]}, # Stability across insurance types
     {"col": "CHRONIC_COUNT_GRP", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}        # Stability across medical complexity
 ]
 
-# 2. Demographic Fairness: Performance across protected social groups and vulnerable populations
+# 2. Fairness Audit: Performance across protected social groups and vulnerable populations
 # Legally Protected Groups (Direct attributes protected by law like Sex, Age, and Race)
 legally_protected_configs = [
-    {"col": "SEX", "label": DISPLAY_LABELS["SEX"], "category_map": CATEGORY_LABELS_EDA["SEX"]},             # Protected class: Sex
-    {"col": "AGE_GRP", "label": "Age Group", "category_map": None},                                         # Protected class: Age
-    {"col": "RACETHX", "label": DISPLAY_LABELS["RACETHX"], "category_map": CATEGORY_LABELS_EDA["RACETHX"]}, # Protected class: Race/Ethnicity
+    {"col": "SEX", "label": DISPLAY_LABELS["SEX"], "category_map": CATEGORY_LABELS_EDA["SEX"]},            
+    {"col": "AGE_GRP", "label": "Age Group", "category_map": None},                                         
+    {"col": "RACETHX", "label": DISPLAY_LABELS["RACETHX"], "category_map": CATEGORY_LABELS_EDA["RACETHX"]}, 
 ]
 
 # Vulnerable & Proxy Groups (Ethically sensitive attributes or proxy variables for protected groups)
 vulnerable_and_proxy_configs = [
     {"col": "MNHLTH31", "label": DISPLAY_LABELS["MNHLTH31"], "category_map": CATEGORY_LABELS_EDA["MNHLTH31"]},  # Ethically sensitive mental health
-    {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},  # Proxy for socioeconomic status 
-    {"col": "HIDEG", "label": DISPLAY_LABELS["HIDEG"], "category_map": CATEGORY_LABELS_EDA["HIDEG"]},           # Proxy for socioeconomic status
-    {"col": "REGION23", "label": DISPLAY_LABELS["REGION23"], "category_map": CATEGORY_LABELS_EDA["REGION23"]},  # Monitored for geographic equity
+    {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},  # Family income as a proxy for socioeconomic status 
+    {"col": "HIDEG", "label": DISPLAY_LABELS["HIDEG"], "category_map": CATEGORY_LABELS_EDA["HIDEG"]},           # Education as a proxy for socioeconomic status
+    {"col": "REGION23", "label": DISPLAY_LABELS["REGION23"], "category_map": CATEGORY_LABELS_EDA["REGION23"]},  # Region for geographic equality
     {"col": "WLKLIM31", "label": DISPLAY_LABELS["WLKLIM31"], "category_map": CATEGORY_LABELS_EDA["WLKLIM31"]},  # Walking limitation as a proxy for disability
 ]
 
-# Combine for the calculation loop
+# Combine configurations 
 stratified_error_configs = reliability_configs + legally_protected_configs + vulnerable_and_proxy_configs
 
 # Calculate weighted MdAE for each column
@@ -1733,7 +1733,7 @@ for config in stratified_error_configs:
     label = config["label"]
     category_map = config["category_map"]
     
-    # Calculate weighted MdAE for each group
+    # Calculate weighted MdAE for each subgroup of current column
     groups = sorted(df_raw_val[col].dropna().unique())
     for group in groups:
         mask = (df_raw_val[col] == group)
@@ -1744,9 +1744,10 @@ for config in stratified_error_configs:
             sample_weight=w_val_weights[mask]  # Aligns via Index
         )
         
-        # Determine group name (map code to label if available, otherwise use raw value/code)
+        # Map group label 
         group_name = category_map.get(int(group), group) if category_map else group
 
+        # Add results of current column to list
         stratified_error_results.append({
             "Column": label,
             "Group": group_name,
@@ -1786,7 +1787,8 @@ def plot_stratified_error(df, column_labels, title, color=POP_COLOR):
     """
     # Filter data to requested columns 
     plot_data = df[df["Column"].isin(column_labels)].copy()
-    
+
+    # Create faceted bar plot grid
     g = sns.catplot(
         data=plot_data,
         kind="bar",
@@ -1796,7 +1798,7 @@ def plot_stratified_error(df, column_labels, title, color=POP_COLOR):
         col_wrap=2,
         height=4,
         aspect=1.5,
-        sharex=False,  # Independent x-axes to handle different error scales
+        sharex=False,  # Independent x-axes to handle different error scales for each column
         sharey=False,  # Independent y-axes to show only relevant groups per column
         color=color,
         legend=False
@@ -1811,10 +1813,9 @@ def plot_stratified_error(df, column_labels, title, color=POP_COLOR):
     for ax in g.axes.flat:
         ax.set_ylabel("")
         ax.set_xlabel("Weighted MdAE")
-        ax.set_xticklabels([])          # Removes redundant numbers as bars are annotated
-        for c in ax.containers:
-            # Formats value labels with thousand separator and no decimals
-            value_labels = [f"${v:,.0f}" for v in c.datavalues]
+        ax.set_xticklabels([])  # Removes redundant x-tick labels (since bars are annotated)
+        for c in ax.containers:          
+            value_labels = [f"${v:,.0f}" for v in c.datavalues]  # Formats value labels with thousand separator and no decimals
             ax.bar_label(c, labels=value_labels, padding=3, fontsize=9)
         ax.margins(x=0.15)
     
@@ -1832,11 +1833,9 @@ plot_stratified_error(plot_df, reliability_labels, "Tuned XGBoost: Model Reliabi
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>Fairness Audit</strong> <br>
-#     <p style="margin-top:10px;">
-#     📌 <strong>Goal:</strong> Ensure that the model's prediction error (MdAE) does not disproportionately affect <strong>Legally Protected Groups</strong>, <strong>Vulnerable Populations</strong>, or <strong>Proxy Attributes</strong>. 
-#         <br><br>
-#         While technical reliability ensures the model works, the Fairness Audit ensures it works equitably. Detecting a disparity is a <b>diagnostic signal</b> (triggering investigation into "Legitimate Business Necessity") rather than an automatic failure of the model.
-#     </p>
+#     📌 Visualize stratified error for legally protected groups, vulnerable populations, and proxy attributes. 
+#     <br><br>
+#     Ensures that the model's prediction error (MdAE) does not disproportionately affect protected groups. While model reliability analysis ensures the model works functionally, the Fairness Audit ensures it works equitably. Detecting a disparity is a diagnostic signal (triggering investigation into "Legitimate Business Necessity") rather than an automatic failure of the model.
 # </div> 
 
 # %%
