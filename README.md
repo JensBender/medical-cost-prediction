@@ -217,6 +217,12 @@ To reproduce these benchmarks:
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### 🎛️ Hyperparameter Tuning  
+Conducted extensive hyperparameter optimization using randomized search for the most promising model architectures derived from baseline model evaluation (Elastic Net, Random Forest, and XGBoost). 
+
+Performed **model reliability analysis** and **fairness audit** using stratified error analysis. Evaluated fairness for both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, poverty, education levels). 
+
+🔗 **[See Model Reliability & Fairness Audit](#model-reliability--fairness-audit)**
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### 🏆 Final Model
