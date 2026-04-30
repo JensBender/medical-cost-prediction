@@ -1661,13 +1661,26 @@ display(
 # </div> 
 
 # %%
+# --- Prepare Features ---
 # Recover raw features of validation data for stratification
-# We need the original categorical codes (before pipeline one-hot encoding) to group the data.
+# We need the original categorical codes (before pipeline one-hot encoding) to group the data
 print("Recovering raw validation features...")
 df_raw_val, y_val_true, w_val_weights = prepare_human_readable_validation_data()
 
-# Load predictions (on validation data) for all tuned models
-print("Loading finalist model predictions...")
+# Create chronic conditions count  
+chronic_cols = list(CHRONIC_CONDITIONS.keys())
+df_raw_val["CHRONIC_COUNT"] = df_raw_val[chronic_cols].sum(axis=1).astype(int)
+df_raw_val["CHRONIC_COUNT_GRP"] = df_raw_val["CHRONIC_COUNT"].apply(lambda x: str(x) if x < 4 else "4+")  # Merge 4 or more due to small group sample sizes
+
+# Create age groups for a more stable and interpretable Fairness Audit
+age_bins = [18, 35, 50, 65, 120]
+age_labels = ["18-34", "35-49", "50-64", "65+"]
+df_raw_val["AGE_GRP"] = pd.cut(df_raw_val["AGE23X"], bins=age_bins, labels=age_labels, right=False)
+
+
+# --- Prepare Target Variable ---
+# Load predictions of all tuned models (on validation data)
+print("Loading tuned model predictions...")
 tuned_model_predictions = {
     "Elastic Net (Tuned)": load_model("../models/en_tuned_predictions.joblib", verbose=False),
     "Random Forest (Tuned)": load_model("../models/rf_tuned_predictions.joblib", verbose=False),
@@ -1687,22 +1700,12 @@ COST_BIN_LABELS = {
 df_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_val_true)
 
 # Create predicted cost strata for XGBoost (as a representative non-linear benchmark)
-# Note: y_val_pred_xgb is a numpy array, so we convert to Series to use the helper's index-based logic
 y_val_pred_xgb = tuned_model_predictions["XGBoost (Tuned)"]
-y_val_pred_series = pd.Series(y_val_pred_xgb, index=y_val_true.index)
+y_val_pred_series = pd.Series(y_val_pred_xgb, index=y_val_true.index)  # Converts y_val_pred numpy array to Series for index-alignment later
 df_raw_val["PREDICTED_COSTS"] = create_stratification_bins(y_val_pred_series)
 
-# Create chronic conditions count feature 
-chronic_cols = list(CHRONIC_CONDITIONS.keys())
-df_raw_val["CHRONIC_COUNT"] = df_raw_val[chronic_cols].sum(axis=1).astype(int)
-df_raw_val["CHRONIC_COUNT_GRP"] = df_raw_val["CHRONIC_COUNT"].apply(lambda x: str(x) if x < 4 else "4+") 
 
-# Create age groups for a more stable and interpretable Fairness Audit
-age_bins = [18, 35, 50, 65, 120]
-age_labels = ["18-34", "35-49", "50-64", "65+"]
-df_raw_val["AGE_GRP"] = pd.cut(df_raw_val["AGE23X"], bins=age_bins, labels=age_labels, right=False)
-
-# Define configurations for stratified error analyis
+# --- Define Stratified Error Configurations ---
 # 1. Model Reliability: Performance across selected groups and cost levels
 reliability_configs = [
     {"col": "ACTUAL_COSTS", "label": "Medical Costs (Actual)", "category_map": COST_BIN_LABELS},        # Reliability across actual cost ranges
@@ -1712,15 +1715,15 @@ reliability_configs = [
     {"col": "CHRONIC_COUNT_GRP", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}        # Stability across medical complexity
 ]
 
-# 2. Fairness Audit: Performance across protected social groups and vulnerable populations
-# Legally Protected Groups (Direct attributes protected by law like Sex, Age, and Race)
+# 2. Fairness Audit: Performance across protected groups and vulnerable populations
+# 2.1 Legally Protected Groups (Direct attributes protected by law like Sex, Age, and Race)
 legally_protected_configs = [
     {"col": "SEX", "label": DISPLAY_LABELS["SEX"], "category_map": CATEGORY_LABELS_EDA["SEX"]},            
     {"col": "AGE_GRP", "label": "Age Group", "category_map": None},                                         
     {"col": "RACETHX", "label": DISPLAY_LABELS["RACETHX"], "category_map": CATEGORY_LABELS_EDA["RACETHX"]}, 
 ]
 
-# Vulnerable & Proxy Groups (Ethically sensitive attributes or proxy variables for protected groups)
+# 2.2 Vulnerable & Proxy Groups (Ethically sensitive attributes or proxy variables for protected groups)
 vulnerable_and_proxy_configs = [
     {"col": "MNHLTH31", "label": DISPLAY_LABELS["MNHLTH31"], "category_map": CATEGORY_LABELS_EDA["MNHLTH31"]},  # Ethically sensitive mental health
     {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},  # Family income as a proxy for socioeconomic status 
@@ -1732,6 +1735,8 @@ vulnerable_and_proxy_configs = [
 # Combine configurations 
 stratified_error_configs = reliability_configs + legally_protected_configs + vulnerable_and_proxy_configs
 
+
+# --- Stratified Error Analysis ---
 # Calculate weighted MdAE for each model, column, and group
 stratified_error_results = []
 
@@ -1749,22 +1754,17 @@ for model_key, y_val_pred in tuned_model_predictions.items():
             mask = (df_raw_val[col] == group)
             
             # Calculate weighted MdAE
-            # Note: y_val_pred and y_val_true/w_val_weights are aligned by position 
-            # because df_raw_val was reindexed to match y_val.index order.
             group_mdae = weighted_median_absolute_error(
-            y_val_true[mask],      # Aligns via Index
-            y_val_pred_xgb[mask],  # Aligns via Position (df_raw_val was reindexed to match in prepare_human_readable_validation_data)
-            sample_weight=w_val_weights[mask]  # Aligns via Index
+                y_val_true[mask],      # Aligns via Index
+                y_val_pred_xgb[mask],  # Aligns via Position (df_raw_val was reindexed to match in prepare_human_readable_validation_data)
+                sample_weight=w_val_weights[mask]  # Aligns via Index
             )
             
-            # Map group label 
-            group_name = category_map.get(int(group), group) if category_map else group
-
-        # Add results of current column to list
+            # Add results of current column to list
             stratified_error_results.append({
                 "Model": model_label,
                 "Column": label,
-                "Group": group_name,
+                "Group": category_map.get(int(group), group) if category_map else group,  # Maps group label 
                 "MdAE": group_mdae,
                 "Sample Size": mask.sum()
             })
@@ -1772,7 +1772,7 @@ for model_key, y_val_pred in tuned_model_predictions.items():
 # Convert to DataFrame
 stratified_error_df = pd.DataFrame(stratified_error_results)
 
-# Display comparative results table (Pivoted for model benchmarking)
+# Display results table (pivoted for model comparison)
 display(
     stratified_error_df.pivot(index=["Column", "Group"], columns="Model", values="MdAE")
     .style
