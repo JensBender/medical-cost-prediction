@@ -1828,7 +1828,7 @@ def plot_stratified_error(df, column_labels, title):
     # Customize title and spacing
     g.set_titles("{col_name}", weight="bold", size=14)
     g.fig.suptitle(title, fontsize=18, weight="bold")
-    plt.subplots_adjust(top=0.90, hspace=0.4)
+    plt.subplots_adjust(top=0.90, hspace=0.26)
 
     # Apply custom formatting to each subplot
     for ax in g.axes.flat:
@@ -1840,7 +1840,7 @@ def plot_stratified_error(df, column_labels, title):
             ax.bar_label(c, labels=value_labels, padding=3, fontsize=9)
         ax.margins(x=0.15)
     
-    sns.move_legend(g, "upper right", bbox_to_anchor=(1, 1), frameon=True)
+    sns.move_legend(g, "upper right", bbox_to_anchor=(0.99, 0.98), frameon=True, title=None)
     plt.show()
 
 
