@@ -1774,8 +1774,12 @@ stratified_error_df = pd.DataFrame(stratified_error_results)
 stratified_error_df["Group"] = stratified_error_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})", axis=1)
 
 # Display results table (pivoted for model comparison)
+# Reindex after pivoting to preserve the logical group order of features like income and education 
+pivoted_stratified_df = stratified_error_df.pivot(index=["Column", "Group"], columns="Model", values="MdAE")
+ordered_index = pd.MultiIndex.from_frame(stratified_error_df[["Column", "Group"]].drop_duplicates())
+
 display(
-    stratified_error_df.pivot(index=["Column", "Group"], columns="Model", values="MdAE")
+    pivoted_stratified_df.reindex(ordered_index)
     .style
     .pipe(add_table_caption, "Tuned Models: Stratified Error Analysis")
     .format("${:.2f}")
