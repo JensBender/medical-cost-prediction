@@ -468,26 +468,22 @@ While outliers are only 1.1x more likely to cross the median cost threshold, the
 
 
 ### Model Reliability & Fairness Audit
-Performed stratified error analysis with Median Absolute Error (MdAE) to evaluate model reliability and detect algorithmic bias across 13 relevant dimensions.
+Performed stratified error analysis with Median Absolute Error (MdAE) to evaluate the reliability of all tuned models and detect algorithmic bias across 13 relevant dimensions.
 
 ![Model Reliability Analysis](figures/evaluation/stratified_reliability.png)
 
 **Model Reliability Analysis**
-- **Cost Extremes:** All models converge on extreme error scales at the tails (Super Spenders: ~$47k MdAE), confirming that extreme-cost prediction difficulty is a data-driven limitation, not architecture-specific.
-- **Conservative Bias:** All models compress their output range. For predicted "Super Spenders," tree-based ensembles attenuate tail predictions more aggressively (~$400–$1,200 MdAE) than regularized linear models (~$2,200).
-- **Health Complexity:** Errors rise monotonically with declining health. Tree models (XGBoost, RF) significantly outperform Elastic Net for "Poor" physical health ($413 vs. $799 MdAE), better capturing non-linear medical risks.
-- **Insurance Constraints:** Tree models learn the sharp spending constraints of the Uninsured (~$30 MdAE) more precisely than linear models ($95 MdAE), which tend to overshoot near-zero cost clusters.
-- **Chronic Burden Saturation:** Tree models identify a predictability plateau at 4+ chronic conditions ($489 MdAE), where high health burden becomes a stable cost driver. Elastic Net fails to model this non-linear plateau.
+- **Tail Risks:** All models converge on high error for "Super Spenders" (~$47k MdAE), indicating a data-driven limit in predicting extreme outliers.
+- **Model Divergence:** Tree-based models (XGB/RF) significantly outperform Elastic Net in high-complexity segments (Uninsured, Poor Physical Health, 4+ Chronic Conditions) by capturing non-linear spending plateaus and sharp constraints.
+- **Output Compression:** All architectures under-predict extreme costs, with tree ensembles exhibiting more aggressive conservative bias than linear models.
 
 ![Fairness Audit: Protected Groups](figures/evaluation/fairness_audit_protected.png)
 ![Fairness Audit: Vulnerable Groups](figures/evaluation/fairness_audit_vulnerable.png)
 
 **Fairness Audit**
-- **Sex & Age:** The Female/Male disparity (1.5x) and Age gradient (4–6x) are consistent across all three architectures. This convergence suggests the gaps reflect genuine utilization variance (reproductive care, clinical complexity) rather than algorithmic discrimination.
-- **Race/Ethnicity:** All models show the highest error for White populations ($317–$336 MdAE), while Hispanic ($95–$103) and Black ($101–$139) show significantly lower errors. No evidence of disparate impact against protected minorities.
-- **Income & Education:** Error increases with socioeconomic status (High Income, Doctorate). These variables act as proxies for insurance quality and financial access, which introduce higher cost variance compared to the constrained spending of low-income groups.
-- **Disability Proxy:** All models show 2.5x to 4x higher error for individuals with walking limitations, tracking the inherent medical complexity and unpredictable utilization patterns associated with disability.
-- **Overall Verdict:** Cross-model agreement rules out architecture-specific bias. Observed disparities are legitimate diagnostic signals of healthcare utilization patterns, making the model suitable for advisory deployment under NIST/FTC and EU AI Act transparency standards.
+- **Similar Disparities across Models:** Consistent error ratios across architectures for **Sex** (1.5x), **Age** (4-6x), and **Disability Proxies** (2.5-4x) suggest these gaps track clinical complexity rather than algorithmic bias.
+- **Socioeconomic Proxies:** Higher prediction errors for higher **Income**, higher **Education**, and **White** ethnicity suggests larger spending variance due to more healthcare access and insurance quality.
+- **Audit Verdict:** No evidence of discriminatory disparate impact against protected minorities. Cross-model agreement confirms disparities reflect legitimate healthcare utilization patterns, meeting NIST/FTC transparency standards.
 
 <p align="right">(<a href="#-modeling">back to Modeling</a> | <a href="#readme-top">back to top</a>)</p>
 
