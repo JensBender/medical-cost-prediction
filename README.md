@@ -87,13 +87,13 @@ Currently developing an end-to-end machine learning application to predict annua
 
 
 ## 🗂️ Data
+![MEPS Data Infographic](assets/infographic_meps_data.jpg)
+
 The **Medical Expenditure Panel Survey (MEPS)**, administered by **AHRQ**, is the gold standard for U.S. healthcare cost and usage data. It provides nationally representative estimates for the **U.S. civilian noninstitutionalized population**, combining household reports with validated medical provider and insurance data.
 
 Utilized the **2023 Full-Year Consolidated Data File (HC-251)**:
 - **Sample Size:** 18,919 individuals
 - **Variables:** 1,374 variables
-
-![MEPS Data Infographic](assets/infographic_meps_data.jpg)
 
 **Target Variable**  
 The target variable is **total out-of-pocket health care costs in 2023** (`TOTSLF23`), including copays, deductibles, and uncovered services. The goal is to facilitate financial planning and healthcare budgeting. By estimating next year's out-of-pocket costs, users can make data-driven decisions about FSA/HSA contributions and better prepare for their financial exposure. For uninsured users, out-of-pocket costs approximate total costs.  
@@ -174,13 +174,15 @@ This stage converts the raw MEPS data to the clean format expected by the infere
 - **Train-Validation-Test Split:** Splits data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
 
 **Step 2: Inference Pipeline** (via `src/pipeline.py`)  
-Once the raw data is cleaned and prepared, the `preprocess.py` script *calls* a Scikit-learn pipeline that is used for both training and inference (Web UI and API), ensuring absolute consistency across all environments:
+Once the raw data is cleaned and prepared, the `preprocess.py` script *calls* a Scikit-learn pipeline that is used for both training and inference (Web UI and API), ensuring absolute consistency across all environments.
+
+![Preprocessing Pipeline](assets/pipeline.svg)
+
 - **Standardization:** Normalizes categorical inputs. Accepts both numeric codes (e.g. 0/1) and string labels (e.g. no/yes). 
 - **Validation & Imputation:** Implements a `MissingValueChecker` to catch required fields and a `RobustSimpleImputer` for median/mode-based imputation.
 - **Medical Feature Derivation:** Calculates aggregate chronic condition and functional limitation counts to capture health burden.
 - **Scaling & Encoding:** Implements a `ColumnTransformer` with `RobustStandardScaler` and `RobustOneHotEncoder`.
 
-![Preprocessing Pipeline](assets/pipeline.svg)
 
 **Step 3: Data Persistence** (via `scripts/preprocess.py`)  
  This stage is used during training. It verifies the preprocessed data (e.g., absence of missing, infinite, or constant values, unique IDs), merges features with target and sample weights, and stores them as `.parquet` files.
