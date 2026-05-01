@@ -132,22 +132,22 @@ Incorporated MEPS survey weights during training to account for the complex surv
 ## 🔍 Exploratory Data Analysis
 Analyzed distributions and relationships to inform data preprocessing, feature engineering, and modeling decisions.  
 
-**Distributions (Univariate EDA)** 
+**Distributions (Univariate EDA)**  
+![Lorenz Curve](figures/eda/lorenz_curve.png)
+**Key Insights:**
+- **Target Variable:** Identified a zero-inflated (22.3%) and extremely right-skewed distribution where the top 20% of spenders drive 79.3% of costs (see Lorenz curve above).
 - **Sample Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
-- **Target Variable:** Identified a zero-inflated (22.3%) and extremely right-skewed distribution where the top 20% of spenders drive 79.3% of costs (see Lorenz curve below).
 - **Numerical Features:** Visualized distribution of age, family size, and self-reported health, informing robust median-based imputation for right-skewed and discrete features. [🔗 **See Histograms**](#numerical-distributions)
 - **Categorical Features:** Revealed 66% hold private insurance, suggesting costs will be driven by plan-specific cost-sharing. Identified oversampling of healthy and low socio-economic status individuals, confirming the importance of sample weights. [🔗 **See Bar Plots**](#categorical-distributions)
 - **Binary Features:** Identified high prevalence of joint pain (45%), high bood pressure (32%), and high cholesterol (31%), while severe conditions such as cancer (11%), coronary heart disease (5%), and stroke (4%) are more sparse. [🔗 **See Bar Plots**](#binary-distributions)
 
-![Lorenz Curve](figures/eda/lorenz_curve.png)
-
 **Relationships (Bivariate EDA)** 
-- **Correlations:** Spearman rank correlations (see heatmap below) revealed age (0.30) and poverty category (0.26) as primary cost correlates, alongside arthritis, high cholesterol, and joint pain (~0.22).
+![Correlation Heatmap](figures/eda/correlation_heatmap.png)
+**Key Insights:**
+- **Correlations:** Spearman rank correlations (see heatmap above) revealed age (0.30) and poverty category (0.26) as primary cost correlates, alongside arthritis, high cholesterol, and joint pain (~0.22).
 - **Numerical Features vs. Target:** Visualized feature-target relationships, revealing age as the primary cost driver and a negative relationship with family size likely due to shared family insurance limits. [🔗 **See Scatter Plots**](#numerical-feature-target-relationships)
 - **Categorical Features vs. Target:** Grouped box plots revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization. [🔗 **See Grouped Box Plots**](#categorical-feature-target-relationships)
 - **Binary Features vs. Target:** Identified high-prevalence "global drivers" (arthritis) vs. high-severity "local triggers" (cancer), and confirmed a massive "utilization hurdle" where women and people with a usual source of care spend more. [🔗 **See Grouped Box Plots**](#binary-feature-target-relationships)
-
-![Correlation Heatmap](figures/eda/correlation_heatmap.png)
 
 **Modeling Strategy**  
 Based on EDA-driven insights, decided to implement sample weights for population representativeness and align models with the Median Absolute Error (MdAE) success metric through tailored loss functions, target log transformation, and polynomial features to effectively handle the zero-inflated, heavy-tailed cost distribution.
@@ -470,17 +470,17 @@ While outliers are only 1.1x more likely to cross the median cost threshold, the
 ### Model Reliability & Fairness Audit
 Performed stratified error analysis with Median Absolute Error (MdAE) to evaluate the reliability of all tuned models and detect algorithmic bias across 13 relevant dimensions.
 
-![Model Reliability Analysis](figures/evaluation/stratified_reliability.png)
-
 **Model Reliability Analysis**
+![Model Reliability Analysis](figures/evaluation/stratified_reliability.png)
+**Key Insights:**
 - **Tail Risks:** All models converge on high error for "Super Spenders" (~$47k MdAE), indicating a data-driven limit in predicting extreme outliers.
 - **Model Divergence:** Tree-based models (XGB/RF) significantly outperform Elastic Net in high-complexity segments (Uninsured, Poor Physical Health, 4+ Chronic Conditions) by capturing non-linear spending plateaus and sharp constraints.
 - **Output Compression:** All architectures under-predict extreme costs, with tree ensembles exhibiting more aggressive conservative bias than linear models.
 
+**Fairness Audit**
 ![Fairness Audit: Protected Groups](figures/evaluation/fairness_audit_protected.png)
 ![Fairness Audit: Vulnerable Groups](figures/evaluation/fairness_audit_vulnerable.png)
-
-**Fairness Audit**
+**Key Insights:**
 - **Similar Disparities across Models:** Consistent error ratios across architectures for **Sex** (1.5x), **Age** (4-6x), and **Disability Proxies** (2.5-4x) suggest these gaps track clinical complexity rather than algorithmic bias.
 - **Socioeconomic Proxies:** Higher prediction errors for higher **Income**, higher **Education**, and **White** ethnicity suggests larger spending variance due to more healthcare access and insurance quality.
 - **Audit Verdict:** No evidence of discriminatory disparate impact against protected minorities. Cross-model agreement confirms disparities reflect legitimate healthcare utilization patterns, meeting NIST/FTC transparency standards.
