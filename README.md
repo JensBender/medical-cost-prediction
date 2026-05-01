@@ -482,7 +482,7 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 **Model Reliability Analysis**
 ![Model Reliability Analysis](figures/evaluation/stratified_reliability.png)
 **Key Insights:**
-- **Tail Risks:** All models converge on high error for "Super Spenders" (~$47k MdAE), indicating a data-driven limit in predicting extreme outliers.
+- **Tail Risks:** All models converge on high error for "Very High Spend (Top 5%)" (~$9.5k MdAE), indicating a data-driven limit in predicting extreme outliers.
 - **Model Divergence:** Tree-based models (XGB/RF) significantly outperform Elastic Net in high-complexity segments (Uninsured, Poor Physical Health, 4+ Chronic Conditions) by capturing non-linear spending plateaus and sharp constraints.
 - **Output Compression:** All architectures under-predict extreme costs, with tree ensembles exhibiting more aggressive conservative bias than linear models.
 
