@@ -223,8 +223,8 @@ Conducted extensive hyperparameter optimization using randomized search for the 
 
 **Model Reliability & Fairness Audit**  
 To ensure responsible deployment, performed model reliability analysis and fairness audit using stratified error analysis across all three tuned model architectures. Evaluated fairness for both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, poverty, education levels).
-- **Key Finding:** Observed disparities in prediction error that are directionally consistent with medical reality (utilization patterns and access constraints of older and less healthy populations) rather than architecture-specific bias. 
-- **Cross-Model Convergence:** All tuned models (Elastic Net, Random Forest, XGBoost) converge on similar error patterns for protected groups, confirming these reflect data-generating characteristics.
+- **Model Reliability:** The audit confirms that tree-based models (XGB/RF) perform better in high-complexity segments (uninsured, poor physical health, 4+ chronic conditions), reducing prediction error by ~50% compared to elastic net for these populations.
+- **Fairness:** All models converge on similar error patterns for protected groups, confirming that observed disparities reflect variance in clinical utilization (e.g., reproductive care, age-related complexity) rather than algorithmic bias.
 - **Regulatory Verdict:** No evidence of discriminatory disparate impact was found. The system is suitable for deployment as a low-risk advisory tool under NIST/FTC transparency guidelines.
 
 🔗 **[See Detailed Model Reliability & Fairness Audit](#model-reliability--fairness-audit)**
