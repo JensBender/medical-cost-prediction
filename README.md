@@ -219,9 +219,13 @@ To reproduce these benchmarks:
 ### 🎛️ Hyperparameter Tuning  
 Conducted extensive hyperparameter optimization using randomized search for the most promising model architectures derived from baseline model evaluation (Elastic Net, Random Forest, and XGBoost). 
 
-Performed **model reliability analysis** and **fairness audit** using stratified error analysis. Evaluated fairness for both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, poverty, education levels). 
+**Model Reliability & Fairness Audit**  
+To ensure responsible deployment, performed model reliability analysis and fairness audit using stratified error analysis across all three tuned model architectures. Evaluated fairness for both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, poverty, education levels).
+- **Key Finding:** Observed disparities in prediction error that are directionally consistent with medical reality (utilization patterns and access constraints of older and less healthy populations) rather than architecture-specific bias. 
+- **Cross-Model Convergence:** All tuned models (Elastic Net, Random Forest, XGBoost) converge on similar error patterns for protected groups, confirming these reflect data-generating characteristics.
+- **Regulatory Verdict:** No evidence of discriminatory disparate impact was found. The system is suitable for deployment as a low-risk advisory tool under NIST/FTC transparency guidelines.
 
-🔗 **[See Model Reliability & Fairness Audit](#model-reliability--fairness-audit)**
+🔗 **[See Detailed Model Reliability & Fairness Audit](#model-reliability--fairness-audit)**
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -464,9 +468,26 @@ While outliers are only 1.1x more likely to cross the median cost threshold, the
 
 
 ### Model Reliability & Fairness Audit
+Performed stratified error analysis with Median Absolute Error (MdAE) to evaluate model reliability and detect algorithmic bias across 13 relevant dimensions.
+
 ![Model Reliability Analysis](figures/evaluation/stratified_reliability.png)
+
+**Model Reliability Analysis**
+- **Cost Extremes:** All models converge on extreme error scales at the tails (Super Spenders: ~$47k MdAE), confirming that extreme-cost prediction difficulty is a data-driven limitation, not architecture-specific.
+- **Conservative Bias:** All models compress their output range. For predicted "Super Spenders," tree-based ensembles attenuate tail predictions more aggressively (~$400–$1,200 MdAE) than regularized linear models (~$2,200).
+- **Health Complexity:** Errors rise monotonically with declining health. Tree models (XGBoost, RF) significantly outperform Elastic Net for "Poor" physical health ($413 vs. $799 MdAE), better capturing non-linear medical risks.
+- **Insurance Constraints:** Tree models learn the sharp spending constraints of the Uninsured (~$30 MdAE) more precisely than linear models ($95 MdAE), which tend to overshoot near-zero cost clusters.
+- **Chronic Burden Saturation:** Tree models identify a predictability plateau at 4+ chronic conditions ($489 MdAE), where high health burden becomes a stable cost driver. Elastic Net fails to model this non-linear plateau.
+
 ![Fairness Audit: Protected Groups](figures/evaluation/fairness_audit_protected.png)
 ![Fairness Audit: Vulnerable Groups](figures/evaluation/fairness_audit_vulnerable.png)
+
+**Fairness Audit**
+- **Sex & Age:** The Female/Male disparity (1.5x) and Age gradient (4–6x) are consistent across all three architectures. This convergence suggests the gaps reflect genuine utilization variance (reproductive care, clinical complexity) rather than algorithmic discrimination.
+- **Race/Ethnicity:** All models show the highest error for White populations ($317–$336 MdAE), while Hispanic ($95–$103) and Black ($101–$139) show significantly lower errors. No evidence of disparate impact against protected minorities.
+- **Income & Education:** Error increases with socioeconomic status (High Income, Doctorate). These variables act as proxies for insurance quality and financial access, which introduce higher cost variance compared to the constrained spending of low-income groups.
+- **Disability Proxy:** All models show 2.5x to 4x higher error for individuals with walking limitations, tracking the inherent medical complexity and unpredictable utilization patterns associated with disability.
+- **Overall Verdict:** Cross-model agreement rules out architecture-specific bias. Observed disparities are legitimate diagnostic signals of healthcare utilization patterns, making the model suitable for advisory deployment under NIST/FTC and EU AI Act transparency standards.
 
 <p align="right">(<a href="#-modeling">back to Modeling</a> | <a href="#readme-top">back to top</a>)</p>
 
