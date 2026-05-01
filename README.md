@@ -246,10 +246,17 @@ To ensure responsible deployment, performed model reliability analysis and fairn
 ├── scripts/                 # Reproducible pipeline scripts 
 │   ├── preprocess.py        # Production-ready data preprocessing
 │   ├── train_baseline.py    # Baseline model training 
-│   └── benchmark_llm.py     # LLM vs ML comparison benchmark
+│   ├── tune_elastic_net.py  # Hyperparameter tuning for Elastic Net
+│   ├── tune_random_forest.py # Hyperparameter tuning for Random Forest
+│   ├── tune_xgboost.py       # Hyperparameter tuning for XGBoost
+│   └── benchmark_llm.py     # LLM prediction benchmark
 │
 ├── src/                     # Core package source code 
+│   ├── data.py              # Custom cost stratification logic 
 │   ├── constants.py         # Feature lists and display labels
+│   ├── display.py           # Human-readable display labels and visualization styles (Notebook/UI)
+│   ├── modeling.py          # Core model training and evaluation functions
+│   ├── params.py            # Hyperparameter search spaces and configurations
 │   ├── transformers.py      # Custom Scikit-learn transformers
 │   └── pipeline.py          # Preprocessing and prediction pipelines
 │
@@ -264,19 +271,18 @@ To ensure responsible deployment, performed model reliability analysis and fairn
 ├── figures/                 # Generated figures
 │   ├── eda/                 # Distribution and relationship plots 
 │   ├── outliers/            # Outlier analysis plots 
-│   ├── training/            # (Planned) Training curves and learning rates (ignored by Git)
-│   ├── evaluation/          # (Planned) Model performance plots (ignored by Git)
-│   └── tuning/              # (Planned) Hyperparameter tuning results (ignored by Git)
+│   └── evaluation/          # Model performance plots
 │
 ├── assets/                  # Images and other assets for README
 │   ├── header.png           # Header image
-│   ├── data_infographic.jpg # MEPS data overview infographic
-│   └── healthcare_costs_infographic.png  # U.S. healthcare cost explainer
+│   ├── infographic_meps_data.jpg # MEPS data overview infographic
+│   ├── infographic_healthcare_costs.png  # U.S. healthcare cost explainer
+│   └── pipeline.svg         # Inference pipeline architecture diagram
 │
 ├── tests/                   # (Planned) Software testing for web application
-│   ├── unit/                # Unit tests
-│   ├── integration/         # Integration tests
-│   └── e2e/                 # End-to-end tests
+│   ├── unit/                # (Planned) Unit tests
+│   ├── integration/         # (Planned) Integration tests
+│   └── e2e/                 # (Planned) End-to-end tests
 │
 ├── docs/                    # Project documentation and resources
 │   ├── specs/               # PRD and tech specs
@@ -290,6 +296,7 @@ To ensure responsible deployment, performed model reliability analysis and fairn
 ├── requirements.txt         # Proxy for production dependencies 
 ├── requirements-train.txt   # Training dependencies 
 ├── requirements-test.txt    # Test dependencies 
+├── .env.example             # Template for environment variables
 │
 ├── dvc.yaml                 # Preprocessing and modeling pipeline definitions (stages, deps, outs)
 ├── dvc.lock                 # Hash-based data lineage lockfile
