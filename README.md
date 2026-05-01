@@ -55,6 +55,7 @@
       <li><a href="#distributions">Distributions</a></li>        
       <li><a href="#feature-target-relationships">Feature-Target Relationships</a></li>      
       <li><a href="#outlier-analysis">Outlier Analysis</a></li>      
+      <li><a href="#llm-benchmarking">LLM Benchmarking</a></li>      
       <li><a href="#model-reliability--fairness-audit">Model Reliability & Fairness Audit</a></li>      
     </ul>
   </li>
@@ -200,21 +201,13 @@ Utilized **MLflow** for experiment tracking to ensure all training runs were rep
 
 ### 📏 Baseline Models  
 
-#### LLM Benchmark
-Benchmarked performance against a general-purpose LLM (Gemini 3.1 Pro). This is to demonstrate added value of a specialized ML model against a state-of-the-art general intelligence LLM (**"Why not just ask Gemini?"**)
+**LLM Benchmark**  
+Benchmarked performance against a general-purpose LLM (Gemini 3 Flash) to demonstrate added value of a specialized ML model over a general intelligence LLM ("Why not just ask Gemini?").
 
-**The "High-Bar" Benchmarking Strategy**
-Set a high performance baseline for the LLM to ensure the benchmark is rigorous:
-*   **Expert Prompting:** The LLM is given expert-level definitions of out-of-pocket costs (e.g., excluding premiums).
-*   **Natural Language Profiles:** Converted structured MEPS data into natural-language user profiles to test Gemini's reasoning on realistic user inputs.
-*   **Consistency:** Weighted metrics (MdAE, MAE, R²) are computed on the exact same validation set for an "apples-to-apples" comparison.
+- **Rigorous Strategy:** Converted structured data into natural-language user profiles to test the LLM's clinical reasoning on the same validation data set.
+- **The Result:** Specialized ML models outperformed the general-purpose LLM in predictive performance (MdAE), confirming that domain-specific training captures cost nuances that general reasoning cannot.
 
-To reproduce these benchmarks:
-1.  **Configure API Key:** Create a `.env` file in the root directory (see [`.env.example`](.env.example)).
-2.  **Run Benchmark:**
-    ```bash
-    python scripts/benchmark_llm.py
-    ```
+🔗 [**See LLM Benchmarking Details**](#llm-benchmarking)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -474,6 +467,22 @@ While outliers are only 1.1x more likely to cross the median cost threshold, the
 ![Outlier Profile for Categorical Features](figures/outliers/outlier_categorical_profile.png)
 
 <p align="right">(<a href="#-data-preprocessing">back to Preprocessing</a> | <a href="#readme-top">back to top</a>)</p>
+
+
+### LLM Benchmarking
+To ensure a rigorous "High-Bar" benchmark, the LLM was evaluated using the following strategy:
+- **Expert Prompting:** The LLM was provided with expert-level definitions of out-of-pocket costs (e.g., distinguishing copays from premiums) to evaluate purely on clinical-cost logic.
+- **Natural Language Profiles:** Structured MEPS features were translated into cohesive "patient stories" to test the LLM’s ability to reason over holistic medical contexts rather than just raw tabular data.
+- **Identical Validation:** Both the ML models and the LLM were evaluated on the same validation set (n=1,425) to ensure an absolute "apples-to-apples" metric comparison.
+
+To reproduce the LLM benchmark:
+1. **Configure API Key:** Create a `.env` file in the root directory (refer to [`.env.example`](.env.example)).
+2. **Run Script:**
+   ```bash
+   python scripts/benchmark_llm.py
+   ```
+
+<p align="right">(<a href="#-baseline-models">back to Baseline Models</a> | <a href="#readme-top">back to top</a>)</p>
 
 
 ### Model Reliability & Fairness Audit
