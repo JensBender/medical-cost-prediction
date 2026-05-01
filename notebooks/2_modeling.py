@@ -1685,22 +1685,22 @@ tuned_model_predictions = {
     "XGBoost (Tuned)": load_model("../models/xgb_tuned_predictions.joblib", verbose=False)
 }
 
-# Create medical cost strata (consistent with preprocessing/EDA)
+# Create medical cost ranges for reporting 
+# NOTE: Using same create_stratification_bins function as for train-val-test split, but merge the
+# Top 5% extreme tail (bins 4, 5, 6) to ensure a robust sample size (n > 50) for MdAE estimates.
 COST_BIN_LABELS = {
     0: "Zero Costs",
     1: "Low Spend (0-50%)",
-    2: "Moderate  (50-80%)",
+    2: "Moderate (50-80%)",
     3: "High Spend (80-95%)",
-    4: "Very High (95-99%)",
-    5: "Massively High (99-99.9%)",
-    6: "Super Spenders (Top 0.1%)"
+    4: "Very High Spend (Top 5%)"
 }
-df_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_val_true)
+df_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_val_true).map({0:0, 1:1, 2:2, 3:3, 4:4, 5:4, 6:4}) 
 
 # Create predicted cost strata for XGBoost (as a representative non-linear benchmark)
 y_val_pred_xgb = tuned_model_predictions["XGBoost (Tuned)"]
 y_val_pred_series = pd.Series(y_val_pred_xgb, index=y_val_true.index)  # Converts y_val_pred numpy array to Series for index-alignment later
-df_raw_val["PREDICTED_COSTS"] = create_stratification_bins(y_val_pred_series)
+df_raw_val["PREDICTED_COSTS"] = create_stratification_bins(y_val_pred_series).map({0:0, 1:1, 2:2, 3:3, 4:4, 5:4, 6:4})
 
 
 # --- Define Stratified Error Configurations ---
