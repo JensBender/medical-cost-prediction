@@ -215,10 +215,10 @@ Benchmarked performance against a general-purpose LLM (Gemini 3 Flash) to demons
 Conducted extensive hyperparameter optimization using randomized search for the most promising model architectures derived from baseline model evaluation (Elastic Net, Random Forest, and XGBoost). 
 
 **Model Reliability & Fairness Audit**  
-To ensure responsible deployment, performed model reliability analysis and fairness audit using stratified error analysis across all three tuned model architectures. Evaluated fairness for both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, poverty, education levels).
-- **Model Reliability:** The audit confirms that tree-based models (XGB/RF) perform better in high-complexity segments (uninsured, poor physical health, 4+ chronic conditions), reducing prediction error by ~50% compared to elastic net for these populations.
-- **Fairness:** All models converge on similar error patterns for protected groups, confirming that observed disparities reflect variance in clinical utilization (e.g., reproductive care, age-related complexity) rather than algorithmic bias.
-- **Regulatory Verdict:** No evidence of discriminatory disparate impact was found. The system is suitable for deployment as a low-risk advisory tool under NIST/FTC transparency guidelines.
+To ensure responsible deployment, performed a reliability and fairness audit using stratified error analysis for all tuned models. The fairness audit included both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, income, education levels).
+- **Model Reliability:** While Elastic Net performs best overall and excels in low-complexity segments, tree-based models (XGB/RF) perform better in high-complexity segments (uninsured, poor physical health, 4+ chronic conditions), reducing prediction error by ~50% compared to Elastic Net for these populations.
+- **Fairness:** All models converge on similar error patterns for protected groups, confirming that observed disparities reflect variance in clinical utilization (e.g., reproductive care, age-related complexity) rather than algorithmic bias. Because the models actually perform better for several marginalized groups (e.g., Hispanic, Black, low income, low education), they effectively avoid the classic disparate impact trap. Conversely, where error is higher for vulnerable groups (e.g., females, older adults), it is justified by clinical complexity, satisfying the Legitimate Business Necessity defense.
+- **Regulatory Verdict:** No evidence of discriminatory disparate impact was found. The system is therefore suitable for deployment as a low-risk advisory tool under NIST/FTC transparency guidelines.
 
 🔗 **[See Detailed Model Reliability & Fairness Audit](#model-reliability--fairness-audit)**
 
@@ -505,17 +505,22 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 **Model Reliability Analysis**
 ![Model Reliability Analysis](figures/evaluation/stratified_reliability.png)
 **Key Insights:**
-- **Tail Risks:** All models converge on high error for "Very High Spend (Top 5%)" (~$9.5k MdAE), indicating a data-driven limit in predicting extreme outliers.
-- **Model Divergence:** Tree-based models (XGB/RF) significantly outperform Elastic Net in high-complexity segments (Uninsured, Poor Physical Health, 4+ Chronic Conditions) by capturing non-linear spending plateaus and sharp constraints.
-- **Output Compression:** All architectures under-predict extreme costs, with tree ensembles exhibiting more aggressive conservative bias than linear models.
+- **Actual Costs:** Models converge at the Top 5% (~$9.5k MdAE), highlighting the data's noise limit. Elastic Net struggles with Zero Costs ($90 vs. ~$30 for tree models) due to linear assumptions.
+- **Predicted Costs:** Random Forest is the most precise for "Very High Spend" predictions ($751 MdAE vs. $1,095 for Elastic Net), proving better calibration for high-risk identification.
+- **Health & Chronic Conditions:** Error rises with clinical complexity. Tree models plateau around $500 MdAE for 4+ conditions, capturing the "cost saturation effect," while Elastic Net jumps to $799.
+- **Insurance:** Elastic Net produces 3–4× the error of tree models for the Uninsured ($95 vs. ~$30), failing to capture near-zero spending constraints.
 
 **Fairness Audit**
 ![Fairness Audit: Protected Groups](figures/evaluation/fairness_audit_protected.png)
 ![Fairness Audit: Vulnerable Groups](figures/evaluation/fairness_audit_vulnerable.png)
 **Key Insights:**
-- **Similar Disparities across Models:** Consistent error ratios across architectures for **Sex** (1.5x), **Age** (4-6x), and **Disability Proxies** (2.5-4x) suggest these gaps track clinical complexity rather than algorithmic bias.
-- **Socioeconomic Proxies:** Higher prediction errors for higher **Income**, higher **Education**, and **White** ethnicity suggests larger spending variance due to more healthcare access and insurance quality.
-- **Audit Verdict:** No evidence of discriminatory disparate impact against protected minorities. Cross-model agreement confirms disparities reflect legitimate healthcare utilization patterns, meeting NIST/FTC transparency standards.
+- **Sex:** Consistent Female/Male disparity (~1.5×) across architectures reflects utilization variance (e.g., reproductive care), not algorithmic bias.
+- **Age:** Error increases 4–6× for older compared to young adults, reflecting clinical complexity.
+- **Race/Ethnicity:** Error is highest for White populations and lower for minority groups, naturally avoiding disparate impact against minorities.
+- **Socioeconomic Status (Income/Education):** Models perform better for high compared with low education and income. This is likely due to larger spending variance and better insurance quality. 
+- **Walking/Mental Health:** Higher errors for populations with walking limitations and poor mental health. Elastic Net performs better without limiations and for excellent mental health, tree models perform better in case of high clinical complexity.
+- **Region:** Smallest disparity dimension, with slightly lower errors in South and West.
+- **Audit Verdict:** No evidence of discriminatory disparate impact. The models achieve lower prediction error for several marginalized groups, avoiding the classic disparate impact trap. Where error is higher for vulnerable groups, it is justified by clinical complexity and utilization variance, satisfying the Legitimate Business Necessity defense under NIST/FTC guidelines.
 
 <p align="right">(<a href="#-modeling">back to Modeling</a> | <a href="#readme-top">back to top</a>)</p>
 
