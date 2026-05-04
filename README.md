@@ -201,6 +201,26 @@ Utilized **MLflow** for experiment tracking to ensure all training runs were rep
 
 ### 📏 Baseline Models  
 
+| Model | MdAE (Val) | Overfitting (Train/Val Δ) | MAE | R² |
+| :--- | :--- | :--- | :--- | :--- |
+| **Elastic Net** | **$163.17** | +6.6% | $1043.55 | -0.12 |
+| Linear Regression | $219.21 | +4.8% | $997.77 | -0.06 |
+| Random Forest | $231.59 | +9.6% | **$958.46** | -0.04 |
+| *Median Benchmark* | *$248.00* | *0.0%* | *$1040.80* | *-0.10* |
+| Decision Tree | $271.00 | +1.5% | $971.44 | -0.03 |
+| XGBoost | $280.81 | **+98.0%** | $961.00 | **-0.00** |
+| Support Vector Machine | $291.24 | **+190.7%** | $1026.52 | -0.03 |
+| *LLM (Gemini 3 Flash)* | *$518.00* | *N/A* | *$1168.23* | *0.04* |
+
+**Model Selection**  
+Evaluated a diverse set of baseline architectures (Linear Regression, Elastic Net, Decision Tree, Random Forest, XGBoost, SVM) to identify candidates for hyperparameter tuning.
+- **The Evaluation Trade-off:** Baseline results revealed a clear trade-off between median precision (MdAE) and tail accuracy (Log-Scale R²). 
+- **The Overfitting Paradox:** Complex models (XGBoost, SVM) exhibited extreme overfitting (+98% to +191% MdAE gap between train/validation), confirming that healthcare cost data is highly noisy and requires heavy regularization.
+- **Selected Finalists:** Based on these insights, selected three architectures for tuning:
+  1. **Elastic Net:** The baseline MdAE champion ($163). Its regularization proved highly effective at denoising medical features. Tuning goal: Improve tail accuracy.
+  2. **XGBoost:** The strongest overall predictive signal (highest Log R²). Tuning goal: Close the massive overfitting gap via aggressive regularization.
+  3. **Random Forest:** A highly stable ensemble learner. Tuning goal: Provide a resilient non-linear benchmark against XGBoost's volatility.
+
 **LLM Benchmark**  
 Benchmarked performance against a general-purpose LLM (Gemini 3 Flash) to demonstrate added value of a specialized ML model over a general intelligence LLM ("Why not just ask Gemini?").
 
