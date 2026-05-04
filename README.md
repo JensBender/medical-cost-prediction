@@ -74,7 +74,7 @@ Currently developing an end-to-end machine learning application to predict annua
 - [![DVC][DVC-badge]][DVC-url]
 - [![MLflow][MLflow-badge]][MLflow-url]
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 
 ## 💡 Motivation
@@ -84,7 +84,7 @@ Currently developing an end-to-end machine learning application to predict annua
 
 **How It Works:** The web app is powered by a machine learning model trained on the Medical Expenditure Panel Survey (MEPS), the gold standard for U.S. healthcare data. By analyzing what people with similar demographic and health profiles actually spent, our model learns real-world cost patterns and translates them into actionable financial insights without requiring complex medical records.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 
 ## 🗂️ Data
@@ -106,7 +106,7 @@ The target variable is **total out-of-pocket health care costs in 2023** (`TOTSL
 </details>
 <br>
 
-**Candidate Features**  
+<a id="main-candidate-features"></a>**Candidate Features**  
 Selected 26 features out of 1,374 MEPS variables based on consumer accessibility (no record-checking required), timing (beginning-of-year data to prevent leakage) and expected predictive power. 
 - **Demographics:** Age, Sex, Region, Marital Status, Family Size.
 - **Socioeconomics:** Education, Poverty Category, Employment Status.
@@ -127,13 +127,13 @@ Incorporated MEPS survey weights during training to account for the complex surv
 | Codebook | Variables, labels, coding schemes, and frequencies. | [View PDF](docs/h251cb.pdf) |
 | MEPS Overview | Background on MEPS components and larger survey history. | [Visit Page](https://meps.ahrq.gov/mepsweb/about_meps/survey_back.jsp) |
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 
 ## 🔍 Exploratory Data Analysis
 Analyzed distributions and relationships to inform data preprocessing, feature engineering, and modeling decisions.  
 
-**Distributions (Univariate EDA)**  
+<a id="main-distributions"></a>**Distributions (Univariate EDA)**  
 ![Lorenz Curve](figures/eda/lorenz_curve.png)
 **Key Insights:**
 - **Target Variable:** Identified a zero-inflated (22.3%) and extremely right-skewed distribution where the top 20% of spenders drive 79.3% of costs (see Lorenz curve above).
@@ -142,7 +142,7 @@ Analyzed distributions and relationships to inform data preprocessing, feature e
 - **Categorical Features:** Revealed 66% hold private insurance, suggesting costs will be driven by plan-specific cost-sharing. Identified oversampling of healthy and low socio-economic status individuals, confirming the importance of sample weights. [🔗 **See Bar Plots**](#categorical-distributions)
 - **Binary Features:** Identified high prevalence of joint pain (45%), high bood pressure (32%), and high cholesterol (31%), while severe conditions such as cancer (11%), coronary heart disease (5%), and stroke (4%) are more sparse. [🔗 **See Bar Plots**](#binary-distributions)
 
-**Relationships (Bivariate EDA)** 
+<a id="main-relationships"></a>**Relationships (Bivariate EDA)** 
 ![Correlation Heatmap](figures/eda/correlation_heatmap.png)
 **Key Insights:**
 - **Correlations:** Spearman rank correlations (see heatmap above) revealed age (0.30) and poverty category (0.26) as primary cost correlates, alongside arthritis, high cholesterol, and joint pain (~0.22).
@@ -188,12 +188,12 @@ Once the raw data is cleaned and prepared, the `preprocess.py` script *calls* a 
 **Step 3: Data Persistence** (via `scripts/preprocess.py`)  
  This stage is used during training. It verifies the preprocessed data (e.g., absence of missing, infinite, or constant values, unique IDs), merges features with target and sample weights, and stores them as `.parquet` files.
 
-**Exploratory Phase** (via `notebooks/1_eda_and_preprocessing.ipynb`):  
+<a id="main-outliers"></a>**Exploratory Phase** (via `notebooks/1_eda_and_preprocessing.ipynb`):  
 Additional steps explored in notebook without being implemented in production script.
 - **Handling Duplicates**: Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
 - **Handling Outliers**: Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs. [🔗 **See Outlier Analysis**](#outlier-analysis)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 
 ## 🧠 Modeling
@@ -230,12 +230,12 @@ Benchmarked performance against a general-purpose LLM (Gemini 3 Flash) to demons
 
 🔗 [**See LLM Benchmarking Details**](#llm-benchmarking)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 ### 🎛️ Hyperparameter Tuning  
 Conducted extensive hyperparameter optimization using randomized search for the most promising model architectures derived from baseline model evaluation (Elastic Net, Random Forest, and XGBoost). 
 
-**Model Reliability & Fairness Audit**  
+<a id="main-fairness-audit"></a>**Model Reliability & Fairness Audit**  
 To ensure responsible deployment, performed a reliability and fairness audit using stratified error analysis for all tuned models. The fairness audit included both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, income, education levels).
 - **Model Reliability:** While Elastic Net performs best overall and excels in low-complexity segments, tree-based models (XGB/RF) perform better in high-complexity segments (uninsured, poor physical health, 4+ chronic conditions), reducing prediction error by ~50% compared to Elastic Net for these populations.
 - **Fairness:** All models converge on similar error patterns for protected groups, confirming that observed disparities reflect variance in clinical utilization (e.g., reproductive care, age-related complexity) rather than algorithmic bias. Because the models actually perform better for several marginalized groups (e.g., Hispanic, Black, low income, low education), they effectively avoid the classic disparate impact trap. Conversely, where error is higher for vulnerable groups (e.g., females, older adults), it is justified by clinical complexity, satisfying the Legitimate Business Necessity defense.
@@ -243,10 +243,10 @@ To ensure responsible deployment, performed a reliability and fairness audit usi
 
 🔗 **[See Detailed Model Reliability & Fairness Audit](#model-reliability--fairness-audit)**
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 ### 🏆 Final Model
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 
 ## 📂 Project Structure
@@ -322,7 +322,7 @@ To ensure responsible deployment, performed a reliability and fairness audit usi
 └── .gitignore               # Files and directories excluded from version control
 ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 
 ## ⚙️ Getting Started
@@ -378,13 +378,13 @@ pip install -r requirements.txt
 ```
 Because `requirements.txt` contains `. [app]`, the platform installs the project itself as a package. This ensures your application can always find the `src` module regardless of the working directory.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 
 ## ©️ License
 This project is licensed under the [MIT License](LICENSE).
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 
 ## 👏 Credits
@@ -395,7 +395,7 @@ This project was made possible with the help of the following resources:
   - Infographics: The [MEPS data infographic](./assets/infographic_meps_data.jpg) and the [US healthcare costs infographic](./assets/infographic_healthcare_costs.png) were generated using [Gemini 3 Pro Image](https://deepmind.google/models/gemini-image/pro/) via the [Gemini app](https://gemini.google.com/app) by Google.
 - **AI Coding Assistant**: [Antigravity](https://antigravity.google/) by Google.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 
 <!-- APPENDIX -->
@@ -440,7 +440,7 @@ These 26 candidate features will be further reduced based on importance scores t
 | Arthritis | `ARTHDX` | Diagnosed with arthritis. | Binary (Int) | 1=Yes, 2=No |
 | Asthma | `ASTHDX` | Diagnosed with asthma. | Binary (Int) | 1=Yes, 2=No |
 
-<p align="right">(<a href="#️-data">back to Data</a> | <a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#main-candidate-features">Back to Candidate Features</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 ### Distributions
@@ -454,24 +454,24 @@ Table of population statistics for all numerical features:
 | Physical Health | 258,917,544 | 2.37  | 1.04  | 1.0  | 2.0  | 2.0  | 3.0  | 5.0  |
 | Mental Health   | 258,635,089 | 2.26  | 1.03  | 1.0  | 1.0  | 2.0  | 3.0  | 5.0  |
 
-<p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#main-distributions">Back to Distributions</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 <a id="categorical-distributions">![Categorical Distributions](figures/eda/categorical_distributions.png)</a>
-<p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#main-distributions">Back to Distributions</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 <a id="binary-distributions">![Binary Distributions](figures/eda/binary_distributions.png)</a>
-<p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#main-distributions">Back to Distributions</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 ### Feature-Target Relationships
 <a id="numerical-feature-target-relationships">![Numerical Feature-Target Relationships](figures/eda/numerical_feature_target_relationships.png)</a>
-<p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#main-relationships">Back to Relationships</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 <a id="categorical-feature-target-relationships">![Categorical Feature-Target Relationships](figures/eda/categorical_feature_target_relationships.png)</a>
-<p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#main-relationships">Back to Relationships</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 <a id="binary-feature-target-relationships">![Binary Feature-Target Relationships](figures/eda/binary_feature_target_relationships.png)</a>
-<p align="right">(<a href="#-exploratory-data-analysis-eda">back to EDA</a> | <a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#main-relationships">Back to Relationships</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 ### Outlier Analysis
@@ -487,7 +487,7 @@ While outliers are only 1.1x more likely to cross the median cost threshold, the
 ![Outlier Profile for Binary Features](figures/outliers/outlier_binary_profile.png)
 ![Outlier Profile for Categorical Features](figures/outliers/outlier_categorical_profile.png)
 
-<p align="right">(<a href="#-data-preprocessing">back to Preprocessing</a> | <a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#main-outliers">Back to Outlier Analysis</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 ### LLM Benchmarking
@@ -517,7 +517,7 @@ To reproduce the LLM benchmark:
    python scripts/benchmark_llm.py
    ```
 
-<p align="right">(<a href="#-baseline-models">back to Baseline Models</a> | <a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#-baseline-models">Back to Baseline Models</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 ### Model Reliability & Fairness Audit
@@ -543,7 +543,7 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 - **Region:** Smallest disparity dimension, with slightly lower errors in South and West.
 - **Audit Verdict:** No evidence of discriminatory disparate impact. The models achieve lower prediction error for several marginalized groups, avoiding the classic disparate impact trap. Where error is higher for vulnerable groups, it is justified by clinical complexity and utilization variance, satisfying the Legitimate Business Necessity defense under NIST/FTC guidelines.
 
-<p align="right">(<a href="#-modeling">back to Modeling</a> | <a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#main-fairness-audit">Back to Fairness Audit</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 <!-- MARKDOWN LINKS -->
