@@ -213,13 +213,13 @@ Utilized **MLflow** for experiment tracking to ensure all training runs were rep
 | *LLM (Gemini 3 Flash)* | *$518.00* | *N/A* | *$1168.23* | *0.04* |
 
 **Model Selection**  
-Evaluated a diverse set of baseline architectures (Linear Regression, Elastic Net, Decision Tree, Random Forest, XGBoost, SVM) to identify candidates for hyperparameter tuning.
-- **The Evaluation Trade-off:** Baseline results revealed a clear trade-off between median precision (MdAE) and tail accuracy (Log-Scale R²). 
-- **The Overfitting Paradox:** Complex models (XGBoost, SVM) exhibited extreme overfitting (+98% to +191% MdAE gap between train/validation), confirming that healthcare cost data is highly noisy and requires heavy regularization.
-- **Selected Finalists:** Based on these insights, selected three architectures for tuning:
-  1. **Elastic Net:** The baseline MdAE champion ($163). Its regularization proved highly effective at denoising medical features. Tuning goal: Improve tail accuracy.
-  2. **XGBoost:** The strongest overall predictive signal (highest Log R²). Tuning goal: Close the massive overfitting gap via aggressive regularization.
-  3. **Random Forest:** A highly stable ensemble learner. Tuning goal: Provide a resilient non-linear benchmark against XGBoost's volatility.
+Evaluated a diverse set of baseline architectures (Linear, Tree-based, Boosting, SVM) to identify candidates for hyperparameter tuning.
+- **Linear Stability:** Regularized linear models (Elastic Net) proved highly effective at denoising medical features, achieving the best median accuracy (MdAE) with minimal overfitting (+6.6%).
+- **The Overfitting Challenge:** While advanced non-linear models like XGBoost and SVM have high theoretical capacity, they exhibited extreme overfitting (+98% to +191% error gap between train/validation) out-of-the-box, confirming that healthcare cost data is highly noisy and requires heavy regularization.
+- **Selected Finalists:** Based on these results, we selected three architectures to carry forward into hyperparameter tuning:
+  1. **Elastic Net:** Selected as the highly stable baseline champion for median accuracy.
+  2. **XGBoost:** Selected for its ability to capture complex, non-linear health interactions, pending aggressive regularization to close the overfitting gap.
+  3. **Random Forest:** Selected as a robust ensemble learner that naturally resists the severe overfitting seen in XGBoost.
 
 **LLM Benchmark**  
 Benchmarked performance against a general-purpose LLM (Gemini 3 Flash) to demonstrate added value of a specialized ML model over a general intelligence LLM ("Why not just ask Gemini?").
