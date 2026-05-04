@@ -1697,11 +1697,6 @@ COST_BIN_LABELS = {
 }
 df_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_val_true).map({0:0, 1:1, 2:2, 3:3, 4:4, 5:4, 6:4}) 
 
-# Create predicted cost strata for XGBoost (as a representative non-linear benchmark)
-y_val_pred_xgb = tuned_model_predictions["XGBoost (Tuned)"]
-y_val_pred_series = pd.Series(y_val_pred_xgb, index=y_val_true.index)  # Converts y_val_pred numpy array to Series for index-alignment later
-df_raw_val["PREDICTED_COSTS"] = create_stratification_bins(y_val_pred_series).map({0:0, 1:1, 2:2, 3:3, 4:4, 5:4, 6:4})
-
 
 # --- Define Stratified Error Configurations ---
 # 1. Model Reliability: Performance across selected groups and cost levels
@@ -1746,10 +1741,17 @@ for model_key, y_val_pred in tuned_model_predictions.items():
         label = config["label"]
         category_map = config["category_map"]
         
+        # For predicted costs: Use each model's own predictions
+        if col == "PREDICTED_COSTS":
+            y_val_pred_series = pd.Series(y_val_pred, index=y_val_true.index)  # Converts y_val_pred numpy array to Series to align on index
+            col_bins = create_stratification_bins(y_val_pred_series).map({0:0, 1:1, 2:2, 3:3, 4:4, 5:4, 6:4})
+        else:
+            col_bins = df_raw_val[col]
+            
         # Calculate weighted MdAE for each subgroup of current column
-        groups = sorted(df_raw_val[col].dropna().unique())
+        groups = sorted(col_bins.dropna().unique())
         for group in groups:
-            mask = (df_raw_val[col] == group)
+            mask = (col_bins == group)
             
             # Calculate weighted MdAE
             group_mdae = weighted_median_absolute_error(
