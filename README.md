@@ -201,7 +201,7 @@ Utilized **MLflow** for experiment tracking to ensure all training runs were rep
 
 ### 📏 Baseline Models  
 
-| Model | MdAE (Val) | Overfitting (Train/Val Δ) | MAE | R² |
+| Model | MdAE (Val) | Overfitting (Train/Val MdAE Δ) | MAE | R² |
 | :--- | :--- | :--- | :--- | :--- |
 | **Elastic Net** | **$163.17** | +6.6% | $1043.55 | -0.12 |
 | Linear Regression | $219.21 | +4.8% | $997.77 | -0.06 |
@@ -218,7 +218,7 @@ Evaluated a diverse set of baseline architectures (Linear, Tree-based, Boosting,
 - **The Overfitting Challenge:** While advanced non-linear models like XGBoost and SVM have high theoretical capacity, they exhibited extreme overfitting (+98% to +191% error gap between train/validation) out-of-the-box, confirming that healthcare cost data is highly noisy and requires heavy regularization.
 - **Selected Finalists:** Based on these results, we selected three architectures to carry forward into hyperparameter tuning:
   1. **Elastic Net:** Selected as the highly stable baseline champion for median accuracy.
-  2. **XGBoost:** Selected for its ability to capture complex, non-linear health interactions, pending aggressive regularization to close the overfitting gap.
+  2. **XGBoost:** Selected for its ability to capture complex, non-linear health interactions, though it requires aggressive regularization during tuning to close the overfitting gap.
   3. **Random Forest:** Selected as a robust ensemble learner that naturally resists the severe overfitting seen in XGBoost.
 
 **LLM Benchmark**  

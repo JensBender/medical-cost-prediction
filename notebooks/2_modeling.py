@@ -1516,7 +1516,7 @@ display(
 #     <ul>
 #         <li>Metrics Comparison Tables</li>
 #         <li>Overfitting Analysis</li>
-#         <li>Stratified Error Analysis</li>
+#         <li>Stratified Error Analysis (Model Reliability & Fairness Audit)</li>
 #         <li>Heteroscedasticity (Residuals vs. Predicted)</li> 
 #         <li>(optionally) Feature Dependencies (Residuals vs. Features)</li> 
 #     </ul>
