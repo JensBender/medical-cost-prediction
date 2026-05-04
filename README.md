@@ -216,6 +216,7 @@ Utilized **MLflow** for experiment tracking to ensure all training runs were rep
 Evaluated a diverse set of baseline architectures (Linear, Tree-based, Boosting, SVM) to identify candidates for hyperparameter tuning.
 - **Linear Stability:** Regularized linear models (Elastic Net) proved highly effective at denoising medical features, achieving the best median accuracy (MdAE) with minimal overfitting (+6.6%).
 - **The Overfitting Challenge:** While advanced non-linear models like XGBoost and SVM have high theoretical capacity, they exhibited extreme overfitting (+98% to +191% error gap between train/validation) out-of-the-box, confirming that healthcare cost data is highly noisy and requires heavy regularization.
+- **The Heavy-Tail Skew (MAE & R²):** The massive gap between Median Error (MdAE ≈ $200) and Mean Error (MAE ≈ $1,000) reflects the extreme heavy-tail distribution of US healthcare costs. Rare "black swan" medical events mathematically skew mean-based metrics like MAE and raw R² (driving it negative), though log-scale evaluation confirms the models possess strong underlying predictive signal.
 - **Selected Finalists:** Based on these results, we selected three architectures to carry forward into hyperparameter tuning:
   1. **Elastic Net:** Selected as the highly stable baseline champion for median accuracy.
   2. **XGBoost:** Selected for its ability to capture complex, non-linear health interactions, though it requires aggressive regularization during tuning to close the overfitting gap.
