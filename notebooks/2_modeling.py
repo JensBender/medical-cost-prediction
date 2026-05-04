@@ -1643,9 +1643,9 @@ display(
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Compare model performance across different population segments or groups. 
 #     <br><br>
-#     <strong>Column selection for stratified analysis:</strong> To ensure a robust yet focused stratified analysis, features are selected based on four core criteria:
+#     <strong>Column selection</strong>: To ensure a robust yet focused stratified analysis, features are selected based on four core criteria:
 #     <ul style="margin-top:8px">
-#         <li><strong>Statistical Stability:</strong> Groups must have sufficient sample size (n > 100) to ensure MdAE metrics are stable and not driven by outliers.</li>
+#         <li><strong>Statistical Stability:</strong> Groups must have sufficient sample size (n ≥ 30) to ensure MdAE metrics are stable and not driven by outliers.</li>
 #         <li><strong>Feature Importance:</strong> Top-performing features that the model logic relies on must be audited for functional consistency (Model Reliability).</li>
 #         <li><strong>Legal Importance:</strong> Legally protected groups (Age, Sex, Race) or proxy variables for legally protected groups (e.g., walking limitations as a proxy for disability) must be monitored for disparate impact (Fairness Audit).</li>
 #         <li><strong>Stakeholder Importance:</strong> Focus on segments where prediction errors have high financial or health consequences (e.g., high spenders).</li>
@@ -1655,7 +1655,7 @@ display(
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>Stratified Error Analysis Table</strong> <br>
-#     📌 Recover raw feature values, stratify selected features and out-of-pocket costs, calculate weighted MdAE for each group, and display results table for all models.
+#     📌 Recover raw feature values, stratify selected features and out-of-pocket costs, calculate weighted MdAE by group, and display results table for all models.
 # </div> 
 
 # %%
@@ -1714,14 +1714,14 @@ reliability_configs = [
 ]
 
 # 2. Fairness Audit: Performance across protected groups and vulnerable populations
-# 2.1 Legally Protected Groups (Direct attributes protected by law like Sex, Age, and Race)
+# 2.1 Legally Protected Groups (Sex, Age, and Race)
 legally_protected_configs = [
     {"col": "SEX", "label": DISPLAY_LABELS["SEX"], "category_map": CATEGORY_LABELS_EDA["SEX"]},            
     {"col": "AGE_GRP", "label": "Age Group", "category_map": None},                                         
     {"col": "RACETHX", "label": DISPLAY_LABELS["RACETHX"], "category_map": CATEGORY_LABELS_EDA["RACETHX"]}, 
 ]
 
-# 2.2 Vulnerable & Proxy Groups (Ethically sensitive attributes or proxy variables for protected groups)
+# 2.2 Vulnerable & Proxy Groups (ethically sensitive groups or proxy variables for protected groups)
 vulnerable_and_proxy_configs = [
     {"col": "MNHLTH31", "label": DISPLAY_LABELS["MNHLTH31"], "category_map": CATEGORY_LABELS_EDA["MNHLTH31"]},  # Ethically sensitive mental health
     {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},  # Family income as a proxy for socioeconomic status 
@@ -1809,7 +1809,7 @@ def plot_stratified_error(df, column_labels, title, save_to_file=None):
     # Filter data to requested columns 
     plot_data = df[df["Column"].isin(column_labels)].copy()
 
-    # Create faceted bar plot grid with Model as hue
+    # Create faceted bar plot grid with model as hue
     g = sns.catplot(
         data=plot_data,
         kind="bar",
