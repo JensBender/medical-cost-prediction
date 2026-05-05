@@ -56,8 +56,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Target preprocessing
-from sklearn.compose import TransformedTargetRegressor
+# Preprocessing
+from sklearn.compose import TransformedTargetRegressor  # to log-transform target
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import Pipeline
 
 # Models
 from sklearn.linear_model import ElasticNet
@@ -65,8 +67,6 @@ from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 
 # Model selection
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import PolynomialFeatures
 from sklearn.model_selection import ParameterSampler
 
 # Model evaluation
@@ -232,13 +232,15 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 #         <li>Use sample weights for population representativeness. Normalize weights (mean=1.0) to maintain relative importance while ensuring numerical stability during training (especially for svr).</li>
 #         <li>Apply log-transformation of target variable for all baseline models using <code>TransformedTargetRegressor</code>. Use <code>log1p</code> instead of <code>log</code> to handle zeros in target (<code>log(0)</code> is undefined).</li>
 #         <li>Implement polynomial features for elastic net regression using second-degree <code>PolynomialFeatures</code> with a small <code>Pipeline</code>.</li>
-#         <li>Store each fitted model as an individual <code>.joblib</code> file, all evaluation metrics collectively as a <code>.json</code> file and all predictions collectively as a <code>.joblib</code> file.</li>
+#         <li>For each model, store the following artifacts: the fitted model as a <code>.joblib</code> file, evaluation metrics as a <code>.json</code> file, model parameters as a <code>.json</code> file, predictions as a <code>.joblib</code> file.</li>
 #     </ul>  
 #     For more details, see <a href="../src/modeling.py">src/modeling.py</a>.
+#     <br><br>
+#     Note: This notebook is used for prototyping, the production training run was executed via the reproducible script <code><a href="../scripts/train_baseline.py">scripts/train_baseline.py</a></code>.
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Train and evaluate each baseline model and store model results. 
+#     📌 Train and evaluate each baseline model and store model results.
 # </div> 
 
 # %%
@@ -494,7 +496,12 @@ display(
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     Setup
+#     ℹ️ Note: This notebook is used for prototyping, the entire benchmarking run was executed via the reproducible script <code><a href="../scripts/benchmark_llm.py">scripts/benchmark_llm.py</a></code>.
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Setup 
 # </div>
 
 # %%
@@ -979,7 +986,8 @@ display(
 #     ℹ️ Tune <code>ElasticNet</code> hyperparameters.
 #     <br><br>
 #     For hyperparameter details, refer to the official <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html" target="_blank">ElasticNet documentation</a>. <br> 
-#     For hyperparamter search space and rationale, refer to <a href="../src/params.py">src/params.py</a>.
+#     For hyperparamter search space and rationale, refer to <a href="../src/params.py">src/params.py</a>. <br> 
+#     Note: This notebook is used for prototyping, the production tuning run was executed via the reproducible script <code><a href="../scripts/train_baseline.py">scripts/tune_elastic_net.py</a></code>.
 # </div>
 
 # %% [markdown]
@@ -1155,7 +1163,8 @@ display(
 #         <li><b>Key Params:</b> Control variance via <code>min_samples_leaf</code> and <code>max_features</code>.</li>
 #     </ul>
 #     For hyperparameter details, refer to the official scikit-learn <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank">RandomForestRegressor documentation</a> <br> 
-#     For hyperparamter search space and rationale, refer to <a href="../src/params.py">src/params.py</a>.
+#     For hyperparamter search space and rationale, refer to <a href="../src/params.py">src/params.py</a>.<br>
+#         Note: This notebook is used for prototyping, the production tuning run was executed via the reproducible script <code><a href="../scripts/train_baseline.py">scripts/tune_random_forest.py</a></code>.
 # </div>
 
 # %% [markdown]
@@ -1335,7 +1344,8 @@ display(
 #         <li><b>Speed:</b> Uses <code>tree_method="hist"</code> for efficient histogram-based splitting.</li>
 #     </ul>
 #     For hyperparameter details, refer to the official <a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.XGBRegressor" target="_blank">XGBoost documentation</a>. <br> 
-#     For hyperparamter search space and rationale, refer to <a href="../src/params.py">src/params.py</a>.
+#     For hyperparamter search space and rationale, refer to <a href="../src/params.py">src/params.py</a>.<br>
+#         Note: This notebook is used for prototyping, the production tuning run was executed via the reproducible script <code><a href="../scripts/train_baseline.py">scripts/tune_xgboost.py</a></code>.
 # </div>
 
 # %% [markdown]
