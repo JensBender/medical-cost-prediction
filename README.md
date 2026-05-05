@@ -230,7 +230,23 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 
 
 ### 🎛️ Hyperparameter Tuning  
-Conducted extensive hyperparameter optimization using randomized search for the most promising model architectures derived from baseline model evaluation (Elastic Net, Random Forest, and XGBoost). 
+Conducted extensive hyperparameter optimization using randomized search for Elastic Net, Random Forest, and XGBoost. 
+
+| Model | MdAE | Overfitting | MAE | R² |
+| :--- | :---: | :---: | :---: | :---: |
+| Median Benchmark | $248.00 | 0.0% | $1,040.80 | -0.10 |
+| LLM (Gemini 3 Flash) | $518.00 | N/A | $1,168.23 | **0.04** |
+| Decision Tree (Baseline) | $271.00 | **+1.5%** | $971.44 | -0.03 |
+| Support Vector Machine (Baseline) | $291.24 | +190.7% | $1,026.52 | -0.03 |
+| Linear Regression (Baseline) | $219.21 | +4.8% | $997.77 | -0.06 |
+| Elastic Net (Baseline) | $163.17 | +6.6% | $1,043.55 | -0.12 |
+| **Elastic Net (Tuned)** | **$158.98** | +7.9% | $1,050.79 | -0.13 |
+| Random Forest (Baseline) | $231.59 | +9.6% | $958.46 | -0.04 |
+| Random Forest (Tuned) | $228.34 | +3.8% | $963.98 | -0.05 |
+| XGBoost (Baseline) | $280.81 | +98.0% | $961.00 | -0.00 |
+| XGBoost (Tuned) | $242.48 | +6.2% | **$953.98** | -0.02 |
+
+<sub>MdAE, MAE, and R² are evaluated on the validation set; Overfitting represents the percentage MdAE difference between the training and validation sets.</sub>
 
 <a id="main-fairness-audit"></a>**Model Reliability & Fairness Audit**  
 To ensure responsible deployment, performed a reliability and fairness audit using stratified error analysis for all tuned models. The fairness audit included both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, income, education levels).
