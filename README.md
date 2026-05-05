@@ -211,12 +211,13 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 | Decision Tree | $271.00 | **+1.5%** | $971.44 | -0.03 |
 | XGBoost | $280.81 | +98.0% | $961.00 | 0.00 |
 | Support Vector Machine | $291.24 | +190.7% | $1026.52 | -0.03 |
+| *LLM (Gemini 3 Flash)* | *$518.00* | *N/A* | *$1168.23* | **0.04** |
 
 <sub>MdAE, MAE, and R² are evaluated on the validation set; Overfitting represents the percentage MdAE difference between the training and validation sets.</sub>
 
 **Key Insights:**  
 - **Linear Stability:** Regularized linear models (Elastic Net) proved highly effective at denoising medical features, achieving the best median accuracy (MdAE) with minimal overfitting (+6.6%).
-- **The Overfitting Challenge:** While advanced non-linear models like XGBoost and SVM have high theoretical capacity, they exhibited extreme overfitting (+98% to +191% error gap between train/validation) out-of-the-box, confirming that healthcare cost data is highly noisy and requires heavy regularization.
+- **Overfitting:** While advanced non-linear models like XGBoost and SVM have highly capable in theory, they exhibited extreme overfitting (+98% to +191%) out-of-the-box, confirming that healthcare cost data is highly noisy and requires heavy regularization.
 - **Metric Paradox (MdAE vs. MAE vs. R²):** The massive gap between Median Error (MdAE ≈ $200) and Mean Error (MAE ≈ $1,000) reflects the extreme heavy-tail of US healthcare costs. While the LLM captures the most variance (best R²) by using clinical reasoning to identify high-cost "black swan" profiles, it struggles to pin down precise dollar amounts. Specialized ML models (Elastic Net) achieve 3.2x better performance for the typical user (MdAE), making them far superior budgeting tools despite their lower R² scores.
 
 **Selected Finalists:** 
