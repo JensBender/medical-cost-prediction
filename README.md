@@ -200,20 +200,20 @@ Additional steps explored in notebook without being implemented in production sc
 Utilized **MLflow** for experiment tracking to ensure all training runs were reproducible and comparable. To maintain a clean separation between development and production, MLflow tracking was exclusively integrated into the [reproducible scripts](scripts/), while [Jupyter notebooks](notebooks/) were reserved for quick prototyping and exploration.
 
 ### 📏 Baseline Models  
+Evaluated a diverse set of baseline model architectures to identify the best candidates for hyperparameter tuning.
 
-| Model | MdAE (Val) | Overfitting (Train/Val MdAE Δ) | MAE | R² |
+| Model | MdAE (Val) | Overfitting (MdAE Δ) | MAE | R² |
 | :--- | :--- | :--- | :--- | :--- |
 | **Elastic Net** | **$163.17** | +6.6% | $1043.55 | -0.12 |
 | Linear Regression | $219.21 | +4.8% | $997.77 | -0.06 |
 | Random Forest | $231.59 | +9.6% | **$958.46** | -0.04 |
 | *Median Benchmark* | *$248.00* | *0.0%* | *$1040.80* | *-0.10* |
-| Decision Tree | $271.00 | +1.5% | $971.44 | -0.03 |
-| XGBoost | $280.81 | **+98.0%** | $961.00 | **-0.00** |
-| Support Vector Machine | $291.24 | **+190.7%** | $1026.52 | -0.03 |
-| *LLM (Gemini 3 Flash)* | *$518.00* | *N/A* | *$1168.23* | *0.04* |
+| Decision Tree | $271.00 | **+1.5%** | $971.44 | -0.03 |
+| XGBoost | $280.81 | +98.0% | $961.00 | 0.00 |
+| Support Vector Machine | $291.24 | +190.7% | $1026.52 | -0.03 |
+| *LLM (Gemini 3 Flash)* | *$518.00* | *N/A* | *$1168.23* | **0.04** |
 
-**Model Selection**  
-Evaluated a diverse set of baseline architectures (Linear, Tree-based, Boosting, SVM) to identify candidates for hyperparameter tuning.
+**Key Insights:**  
 - **Linear Stability:** Regularized linear models (Elastic Net) proved highly effective at denoising medical features, achieving the best median accuracy (MdAE) with minimal overfitting (+6.6%).
 - **The Overfitting Challenge:** While advanced non-linear models like XGBoost and SVM have high theoretical capacity, they exhibited extreme overfitting (+98% to +191% error gap between train/validation) out-of-the-box, confirming that healthcare cost data is highly noisy and requires heavy regularization.
 - **The Heavy-Tail Skew (MAE & R²):** The massive gap between Median Error (MdAE ≈ $200) and Mean Error (MAE ≈ $1,000) reflects the extreme heavy-tail distribution of US healthcare costs. Rare "black swan" medical events mathematically skew mean-based metrics like MAE and raw R² (driving it negative), though log-scale evaluation confirms the models possess strong underlying predictive signal.
