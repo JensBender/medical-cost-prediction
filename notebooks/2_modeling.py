@@ -965,7 +965,7 @@ display(
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Tune the hyperparameters of Elastic Net, Random Forest, and XGBoost using randomized search on the fixed holdout validation set. 
 #     <br><br>
-#     <b>Tuning Framework (Shared Logic):</b>
+#     <b>Tuning Framework:</b>
 #     <ul>
 #         <li><b>Search Strategy:</b> Manual loop with <code>ParameterSampler</code> to avoid <code>sample_weight</code> routing issues.</li>
 #         <li><b>Target Transform:</b> <code>TransformedTargetRegressor(log1p)</code> to handle skewness and optimize in log-space.</li>
@@ -974,7 +974,7 @@ display(
 #         <li><b>Iterations:</b> Small number (2-5) in notebook for prototyping. Scale to 50-100 in production scripts (e.g., <code>scripts/tune_random_forest.py</code>).</li>
 #     </ul>
 #     <b>Why not <code>RandomizedSearchCV</code>?</b><br>
-#     Avoids <code>sample_weight</code> routing complexities and ensures transparent weighted scoring on a fixed holdout set.
+#     Avoids <code>sample_weight</code> routing complexities for nested objects (<code>TransformedTargetRegressor</code>, <code>Pipeline</code>) and ensures the weighted MdAE is calculated explicitly and correctly on the validation set.
 # </div>
 
 # %% [markdown]
@@ -986,8 +986,8 @@ display(
 #     ℹ️ Tune <code>ElasticNet</code> hyperparameters.
 #     <br><br>
 #     For hyperparameter details, refer to the official <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html" target="_blank">ElasticNet documentation</a>. <br> 
-#     For hyperparamter search space and rationale, refer to <a href="../src/params.py">src/params.py</a>. <br> 
-#     Note: This notebook is used for prototyping, the production tuning run was executed via the reproducible script <code><a href="../scripts/train_baseline.py">scripts/tune_elastic_net.py</a></code>.
+#     For hyperparameter search space and rationale, refer to <code><a href="../src/params.py">src/params.py</a></code>. <br> 
+#     Note: This notebook is used for prototyping, the production tuning run was executed via the reproducible script <code><a href="../scripts/tune_elastic_net.py">scripts/tune_elastic_net.py</a></code>.
 # </div>
 
 # %% [markdown]
@@ -1163,8 +1163,8 @@ display(
 #         <li><b>Key Params:</b> Control variance via <code>min_samples_leaf</code> and <code>max_features</code>.</li>
 #     </ul>
 #     For hyperparameter details, refer to the official scikit-learn <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank">RandomForestRegressor documentation</a> <br> 
-#     For hyperparamter search space and rationale, refer to <a href="../src/params.py">src/params.py</a>.<br>
-#         Note: This notebook is used for prototyping, the production tuning run was executed via the reproducible script <code><a href="../scripts/train_baseline.py">scripts/tune_random_forest.py</a></code>.
+#     For hyperparameter search space and rationale, refer to <code><a href="../src/params.py">src/params.py</a></code>.<br>
+#     Note: This notebook is used for prototyping, the production tuning run was executed via the reproducible script <code><a href="../scripts/tune_random_forest.py">scripts/tune_random_forest.py</a></code>.
 # </div>
 
 # %% [markdown]
@@ -1344,8 +1344,8 @@ display(
 #         <li><b>Speed:</b> Uses <code>tree_method="hist"</code> for efficient histogram-based splitting.</li>
 #     </ul>
 #     For hyperparameter details, refer to the official <a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.XGBRegressor" target="_blank">XGBoost documentation</a>. <br> 
-#     For hyperparamter search space and rationale, refer to <a href="../src/params.py">src/params.py</a>.<br>
-#         Note: This notebook is used for prototyping, the production tuning run was executed via the reproducible script <code><a href="../scripts/train_baseline.py">scripts/tune_xgboost.py</a></code>.
+#     For hyperparameter search space and rationale, refer to <code><a href="../src/params.py">src/params.py</a></code>.<br>
+#     Note: This notebook is used for prototyping, the production tuning run was executed via the reproducible script <code><a href="../scripts/tune_xgboost.py">scripts/tune_xgboost.py</a></code>.
 # </div>
 
 # %% [markdown]
