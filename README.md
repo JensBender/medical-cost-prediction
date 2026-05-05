@@ -499,7 +499,7 @@ While outliers are only 1.1x more likely to cross the median cost threshold, the
 ![Outlier Profile for Binary Features](figures/outliers/outlier_binary_profile.png)
 ![Outlier Profile for Categorical Features](figures/outliers/outlier_categorical_profile.png)
 
-<p align="right">(<a href="#main-outliers">Back to Outlier Analysis</a> | <a href="#readme-top">Back to Top</a>)</p>
+<p align="right">(<a href="#main-outliers">Back to Data Preprocessing</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 ### LLM Benchmarking
@@ -555,7 +555,7 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 - **Region:** Smallest disparity dimension, with slightly lower errors in South and West.
 - **Audit Verdict:** No evidence of discriminatory disparate impact. The models achieve lower prediction error for several marginalized groups, avoiding the classic disparate impact trap. Where error is higher for vulnerable groups, it is justified by clinical complexity and utilization variance, satisfying the Legitimate Business Necessity defense under NIST/FTC guidelines.
 
-<p align="right">(<a href="#main-fairness-audit">Back to Fairness Audit</a> | <a href="#readme-top">Back to Top</a>)</p>
+<p align="right">(<a href="#main-fairness-audit">Back to Hyperparameter Tuning</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 <!-- MARKDOWN LINKS -->
