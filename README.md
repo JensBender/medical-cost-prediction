@@ -234,8 +234,8 @@ Conducted extensive hyperparameter optimization using randomized search for Elas
 
 | Model | MdAE | Overfitting | MAE | R² |
 | :--- | :---: | :---: | :---: | :---: |
-| Median Benchmark | $248.00 | 0.0% | $1,040.80 | -0.10 |
-| LLM (Gemini 3 Flash) | $518.00 | N/A | $1,168.23 | **0.04** |
+| Median (Benchmark) | $248.00 | 0.0% | $1,040.80 | -0.10 |
+| LLM (Benchmark) | $518.00 | N/A | $1,168.23 | **0.04** |
 | Decision Tree (Baseline) | $271.00 | **+1.5%** | $971.44 | -0.03 |
 | Support Vector Machine (Baseline) | $291.24 | +190.7% | $1,026.52 | -0.03 |
 | Linear Regression (Baseline) | $219.21 | +4.8% | $997.77 | -0.06 |
@@ -247,6 +247,11 @@ Conducted extensive hyperparameter optimization using randomized search for Elas
 | XGBoost (Tuned) | $242.48 | +6.2% | **$953.98** | -0.02 |
 
 <sub>MdAE, MAE, and R² are evaluated on the validation set; Overfitting represents the percentage MdAE difference between the training and validation sets.</sub>
+
+**Key Insights:**
+- **Elastic Net:** Elastic Net remains the overall champion for median accuracy (**$158.98 MdAE**), confirming that simple linear models with regularization are extremely competitive for typical cost profiles.
+- **XGBoost:** Tuning successfully "tamed" XGBoost, reducing its extreme overfitting from +98.0% to just +6.2% while also improving validation error.
+- **Overfitting:** Hyperparameter tuning successfully brought overfitting below the 10% threshold for all models, ensuring they are reliable.
 
 <a id="main-fairness-audit"></a>**Model Reliability & Fairness Audit**  
 To ensure responsible deployment, performed a reliability and fairness audit using stratified error analysis for all tuned models. The fairness audit included both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, income, education levels).
