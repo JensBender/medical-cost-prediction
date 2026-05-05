@@ -935,15 +935,32 @@ for model in baseline_models_to_evaluate:
 # Combine all metrics 
 all_metrics = {**llm_metrics, **baseline_metrics}
 
+# Create DataFrame and calculate Overfitting (MdAE %Δ)
+comparison_df = pd.DataFrame(all_metrics).T
+comparison_df["overfitting_mdae"] = (
+    (comparison_df["val_mdae"] - comparison_df["train_mdae"]) / comparison_df["train_mdae"] * 100
+)
+
 # Display metric comparison table
 display(
-    pd.DataFrame(all_metrics).T[["val_mdae", "val_mae", "val_r2"]]
-    .rename(columns=lambda x: METRIC_LABELS.get(x, x).replace(" (Val)", ""))
+    comparison_df[["val_mdae", "overfitting_mdae", "val_mae", "val_r2"]]
+    .rename(columns={
+        "val_mdae": "MdAE",
+        "overfitting_mdae": "Overfitting (MdAE Δ)",
+        "val_mae": "MAE",
+        "val_r2": "R²"
+    })
     .rename(index=lambda x: MODEL_DISPLAY_LABELS.get(x, x).replace(" (Baseline)", ""))
+    .sort_values("MdAE")
     .style
     .pipe(add_table_caption, "General LLM vs. Specialized ML Models")
-    .format("{:.2f}")
-    .highlight_min(subset=["MdAE", "MAE"], color="#d4edda")
+    .format({
+        "MdAE": "${:.2f}",
+        "MAE": "${:.2f}",
+        "R²": "{:.2f}",
+        "Overfitting (MdAE Δ)": "{:+.1f}%"
+    }, na_rep="N/A")
+    .highlight_min(subset=["MdAE", "Overfitting (MdAE Δ)", "MAE"], color="#d4edda")
     .highlight_max(subset=["R²"], color="#d4edda")
 )
 
