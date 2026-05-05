@@ -444,7 +444,9 @@ These 26 candidate features will be further reduced based on importance scores t
 
 
 ### Distributions
-<a id="numerical-distributions">![Numerical Distributions](figures/eda/numerical_distributions.png)</a>
+<a id="numerical-distributions"></a>
+
+![Numerical Distributions](figures/eda/numerical_distributions.png)
 
 Table of population statistics for all numerical features:
 | Feature         | Count       | Mean  | Std   | Min  | 25%  | 50%  | 75%  | Max  |
@@ -454,24 +456,34 @@ Table of population statistics for all numerical features:
 | Physical Health | 258,917,544 | 2.37  | 1.04  | 1.0  | 2.0  | 2.0  | 3.0  | 5.0  |
 | Mental Health   | 258,635,089 | 2.26  | 1.03  | 1.0  | 1.0  | 2.0  | 3.0  | 5.0  |
 
-<p align="right">(<a href="#main-distributions">Back to Distributions</a> | <a href="#readme-top">Back to Top</a>)</p>
+<p align="right">(<a href="#main-distributions">Back to EDA</a> | <a href="#readme-top">Back to Top</a>)</p>
 
-<a id="categorical-distributions">![Categorical Distributions](figures/eda/categorical_distributions.png)</a>
-<p align="right">(<a href="#main-distributions">Back to Distributions</a> | <a href="#readme-top">Back to Top</a>)</p>
+<a id="categorical-distributions"></a>
 
-<a id="binary-distributions">![Binary Distributions](figures/eda/binary_distributions.png)</a>
-<p align="right">(<a href="#main-distributions">Back to Distributions</a> | <a href="#readme-top">Back to Top</a>)</p>
+![Categorical Distributions](figures/eda/categorical_distributions.png)
+<p align="right">(<a href="#main-distributions">Back to EDA</a> | <a href="#readme-top">Back to Top</a>)</p>
+
+<a id="binary-distributions"></a>
+
+![Binary Distributions](figures/eda/binary_distributions.png)
+<p align="right">(<a href="#main-distributions">Back to EDA</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 ### Feature-Target Relationships
-<a id="numerical-feature-target-relationships">![Numerical Feature-Target Relationships](figures/eda/numerical_feature_target_relationships.png)</a>
-<p align="right">(<a href="#main-relationships">Back to Relationships</a> | <a href="#readme-top">Back to Top</a>)</p>
+<a id="numerical-feature-target-relationships"></a>
 
-<a id="categorical-feature-target-relationships">![Categorical Feature-Target Relationships](figures/eda/categorical_feature_target_relationships.png)</a>
-<p align="right">(<a href="#main-relationships">Back to Relationships</a> | <a href="#readme-top">Back to Top</a>)</p>
+![Numerical Feature-Target Relationships](figures/eda/numerical_feature_target_relationships.png)
+<p align="right">(<a href="#main-relationships">Back to EDA</a> | <a href="#readme-top">Back to Top</a>)</p>
 
-<a id="binary-feature-target-relationships">![Binary Feature-Target Relationships](figures/eda/binary_feature_target_relationships.png)</a>
-<p align="right">(<a href="#main-relationships">Back to Relationships</a> | <a href="#readme-top">Back to Top</a>)</p>
+<a id="categorical-feature-target-relationships"></a>
+
+![Categorical Feature-Target Relationships](figures/eda/categorical_feature_target_relationships.png)
+<p align="right">(<a href="#main-relationships">Back to EDA</a> | <a href="#readme-top">Back to Top</a>)</p>
+
+<a id="binary-feature-target-relationships"></a>
+
+![Binary Feature-Target Relationships](figures/eda/binary_feature_target_relationships.png)
+<p align="right">(<a href="#main-relationships">Back to EDA</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 ### Outlier Analysis
