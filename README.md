@@ -500,24 +500,10 @@ While outliers are only 1.1x more likely to cross the median cost threshold, the
 
 
 ### LLM Benchmarking
-To ensure a rigorous "High-Bar" benchmark, the LLM was evaluated using the following strategy:
-- **Expert Prompting:** The LLM was provided with expert-level definitions of out-of-pocket costs (e.g., distinguishing copays from premiums) to evaluate purely on clinical-cost logic.
-- **Natural Language Profiles:** Structured MEPS features were translated into cohesive "patient stories" to test the LLM’s ability to reason over holistic medical contexts rather than just raw tabular data.
-- **Identical Validation:** Both the ML models and the LLM were evaluated on the same validation set (n=1,425) to ensure an absolute "apples-to-apples" metric comparison.
-
-**Model Performance Comparison**  
-The specialized ML models consistently outperformed the LLM across all predictive dimensions:
-
-| Model | MdAE | MAE | R² |
-| :--- | :--- | :--- | :--- |
-| **LLM Benchmark (Gemini 3 Flash)** | **$518.00** | **$1168.23** | **0.04** |
-| Median Benchmark | $248.00 | $1040.80 | -0.10 |
-| Linear Regression | $219.21 | $997.77 | -0.06 |
-| **Elastic Net (Best Baseline)** | **$163.17** | **$1043.55** | **-0.12** |
-| Decision Tree | $271.00 | $971.44 | -0.03 |
-| Random Forest | $231.59 | $958.46 | -0.04 |
-| XGBoost | $280.81 | $961.00 | -0.00 |
-| Support Vector Machine | $291.24 | $1026.52 | -0.03 |
+To ensure a rigorous "High-Bar" benchmark, the LLM (Gemini 3 Flash) was evaluated using the following strategy:
+- **System Prompt:** Configured the LLM with a specialized expert persona and precise US-specific medical cost definitions (explicitly distinguishing copays/deductibles from premiums) to evaluate out-of-pocket cost reasoning.
+- **Unstructured Feature Profiles:** Translated tabular features into clear, bulleted profiles. To establish a fair baseline, missing values were intentionally omitted rather than imputed, testing the LLM's performance on the same "incomplete" data.
+- **Prompt Batching:** Evaluated profiles in batches of 25 per prompt using structured JSON schema validation to ensure absolute metric consistency across the entire validation set (n=1,425).
 
 To reproduce the LLM benchmark:
 1. **Configure API Key:** Create a `.env` file in the root directory (refer to [`.env.example`](.env.example)).
