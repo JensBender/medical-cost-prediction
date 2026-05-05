@@ -1580,12 +1580,26 @@ comparison_df["overfitting_mdae"] = (
     (comparison_df["val_mdae"] - comparison_df["train_mdae"]) / comparison_df["train_mdae"] * 100
 )
 
+# Define custom order for model comparison: Benchmarks -> Baselines -> Tuned Model Pairs
+custom_order = [
+    "Median Prediction (Baseline)",
+    f"LLM ({LLM_MODEL})",
+    "Decision Tree (Baseline)",
+    "Support Vector Machine (Baseline)",
+    "Linear Regression (Baseline)",
+    "Elastic Net (Baseline)",
+    "Elastic Net (Tuned)",
+    "Random Forest (Baseline)",
+    "Random Forest (Tuned)",
+    "XGBoost (Baseline)",
+    "XGBoost (Tuned)"
+]
+
 # Display metric comparison table
 display(
-    comparison_df[["val_mdae", "overfitting_mdae", "val_mae", "val_r2"]]
+    comparison_df.reindex([m for m in custom_order if m in comparison_df.index])[["val_mdae", "overfitting_mdae", "val_mae", "val_r2"]]
     .rename(columns=lambda x: METRIC_LABELS.get(x, x).replace(" (Val)", ""))
     .rename(index=lambda x: MODEL_DISPLAY_LABELS.get(x, x))
-    .sort_values("MdAE")
     .style
     .pipe(add_table_caption, "Tuned Model Metrics")
     .format({
@@ -1619,6 +1633,7 @@ display(
     comparison_df.loc[[f for f in finalists if f in comparison_df.index], ["val_mdae", "overfitting_mdae", "val_mae", "val_r2"]]
     .rename(columns=lambda x: METRIC_LABELS.get(x, x).replace(" (Val)", ""))
     .rename(index=lambda x: MODEL_DISPLAY_LABELS.get(x, x))
+    .sort_values("MdAE")
     .reset_index().rename(columns={"index": "Model"})
     .style
     .hide()
