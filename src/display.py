@@ -79,6 +79,7 @@ METRIC_LABELS = {
     "mdae": "MdAE",
     "mae": "MAE",
     "r2": "R²",
+    "overfitting_mdae": "Overfitting (MdAE Δ)",
     "training_time": "Training Time (s)"
 }
 

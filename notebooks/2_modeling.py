@@ -944,12 +944,7 @@ comparison_df["overfitting_mdae"] = (
 # Display metric comparison table
 display(
     comparison_df[["val_mdae", "overfitting_mdae", "val_mae", "val_r2"]]
-    .rename(columns={
-        "val_mdae": "MdAE",
-        "overfitting_mdae": "Overfitting (MdAE Δ)",
-        "val_mae": "MAE",
-        "val_r2": "R²"
-    })
+    .rename(columns=lambda x: METRIC_LABELS.get(x, x).replace(" (Val)", ""))
     .rename(index=lambda x: MODEL_DISPLAY_LABELS.get(x, x).replace(" (Baseline)", ""))
     .sort_values("MdAE")
     .style
@@ -1579,15 +1574,27 @@ for model in tuned_models_to_evaluate:
 # Combine all metrics 
 all_metrics = {**llm_metrics, **baseline_metrics, **tuned_metrics}
 
+# Create DataFrame and calculate Overfitting (MdAE %Δ)
+comparison_df = pd.DataFrame(all_metrics).T
+comparison_df["overfitting_mdae"] = (
+    (comparison_df["val_mdae"] - comparison_df["train_mdae"]) / comparison_df["train_mdae"] * 100
+)
+
 # Display metric comparison table
 display(
-    pd.DataFrame(all_metrics).T[["val_mdae", "val_mae", "val_r2"]]
+    comparison_df[["val_mdae", "overfitting_mdae", "val_mae", "val_r2"]]
     .rename(columns=lambda x: METRIC_LABELS.get(x, x).replace(" (Val)", ""))
     .rename(index=lambda x: MODEL_DISPLAY_LABELS.get(x, x))
+    .sort_values("MdAE")
     .style
-    .pipe(add_table_caption, "Tuned Model Metrics (Validation Data)")
-    .format("{:.2f}")
-    .highlight_min(subset=["MdAE", "MAE"], color="#d4edda")
+    .pipe(add_table_caption, "Tuned Model Metrics")
+    .format({
+        "MdAE": "${:.2f}",
+        "Overfitting (MdAE Δ)": "{:+.1f}%",
+        "MAE": "${:.2f}",
+        "R²": "{:.2f}"
+    }, na_rep="N/A")
+    .highlight_min(subset=["MdAE", "Overfitting (MdAE Δ)", "MAE"], color="#d4edda")
     .highlight_max(subset=["R²"], color="#d4edda")
 )
 
@@ -1607,21 +1614,23 @@ finalists = [
     "XGBoost (Tuned)"
 ]
 
-# Filter combined metrics for only the finalists
-final_metrics = {k: all_metrics[k] for k in finalists if k in all_metrics}
-
-# Display curated comparison table
+# Display finalists comparison table
 display(
-    pd.DataFrame(final_metrics).T[["val_mdae", "val_mae", "val_r2"]]
+    comparison_df.loc[[f for f in finalists if f in comparison_df.index], ["val_mdae", "overfitting_mdae", "val_mae", "val_r2"]]
     .rename(columns=lambda x: METRIC_LABELS.get(x, x).replace(" (Val)", ""))
     .rename(index=lambda x: MODEL_DISPLAY_LABELS.get(x, x))
     .reset_index().rename(columns={"index": "Model"})
     .style
     .hide()
     .set_properties(subset=["Model"], **{"font-weight": "bold"})
-    .pipe(add_table_caption, "Tuned Model Metrics (Validation Data)")
-    .format({"MdAE": "{:.2f}", "MAE": "{:.2f}", "R²": "{:.2f}"})
-    .highlight_min(subset=["MdAE", "MAE"], color="#d4edda")
+    .pipe(add_table_caption, "Tuned Model Metrics (Finalists)")
+    .format({
+        "MdAE": "${:.2f}",
+        "Overfitting (MdAE Δ)": "{:+.1f}%",
+        "MAE": "${:.2f}",
+        "R²": "{:.2f}"
+    }, na_rep="N/A")
+    .highlight_min(subset=["MdAE", "Overfitting (MdAE Δ)", "MAE"], color="#d4edda")
     .highlight_max(subset=["R²"], color="#d4edda")
 )
 
