@@ -200,9 +200,9 @@ Additional steps explored in notebook without being implemented in production sc
 Utilized **MLflow** for experiment tracking to ensure all training runs were reproducible and comparable. To maintain a clean separation between development and production, MLflow tracking was exclusively integrated into the [reproducible scripts](scripts/), while [Jupyter notebooks](notebooks/) were reserved for quick prototyping and exploration.
 
 ### 📏 Baseline Models  
-Evaluated a diverse set of baseline model architectures to identify the best candidates for hyperparameter tuning.
+Evaluated a diverse set of baseline model architectures to identify candidates for hyperparameter tuning.
 
-| Model | MdAE (Val) | Overfitting (MdAE Δ) | MAE | R² |
+| Model | MdAE | Overfitting | MAE | R² |
 | :--- | :--- | :--- | :--- | :--- |
 | **Elastic Net** | **$163.17** | +6.6% | $1043.55 | -0.12 |
 | Linear Regression | $219.21 | +4.8% | $997.77 | -0.06 |
@@ -211,7 +211,8 @@ Evaluated a diverse set of baseline model architectures to identify the best can
 | Decision Tree | $271.00 | **+1.5%** | $971.44 | -0.03 |
 | XGBoost | $280.81 | +98.0% | $961.00 | 0.00 |
 | Support Vector Machine | $291.24 | +190.7% | $1026.52 | -0.03 |
-| *LLM (Gemini 3 Flash)* | *$518.00* | *N/A* | *$1168.23* | **0.04** |
+
+<sub>MdAE, MAE, and R² are evaluated on the validation set; Overfitting represents the percentage MdAE difference between the training and validation sets.</sub>
 
 **Key Insights:**  
 - **Linear Stability:** Regularized linear models (Elastic Net) proved highly effective at denoising medical features, achieving the best median accuracy (MdAE) with minimal overfitting (+6.6%).
