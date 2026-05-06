@@ -105,7 +105,9 @@ from src.display import (
     MODEL_DISPLAY_LABELS,
     CATEGORY_LABELS_EDA,
     POP_COLOR,
-    add_table_caption
+    add_table_caption,
+    weighted_quantile,
+    weighted_std
 )
 
 # %% [markdown]

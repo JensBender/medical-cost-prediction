@@ -91,7 +91,9 @@ from src.display import (
     CATEGORY_LABELS_EDA,
     POP_COLOR,
     SAMPLE_COLOR,
-    add_table_caption
+    add_table_caption,
+    weighted_quantile,
+    weighted_std
 )
 from src.transformers import (
     MedicalFeatureDeriver,
@@ -409,22 +411,6 @@ plt.gca().xaxis.set_major_formatter(mtick.StrMethodFormatter("{x:,.0f}"))
 # </div>
 
 # %%
-# Helper function to calculate weighted quantiles (using numpy; not available in pandas)
-def weighted_quantile(variable, weights, quantile):
-    sorter = np.argsort(variable)
-    values = variable.iloc[sorter]
-    weights = weights.iloc[sorter]
-    cumulative_weight = np.cumsum(weights) - 0.5 * weights
-    cumulative_weight /= np.sum(weights)
-    return np.interp(quantile, cumulative_weight, values)
-
-# Helper function to calculate weighted standard deviation (using numpy; not available in pandas)
-def weighted_std(variable, weights):
-    weighted_mean = np.average(variable, weights=weights)
-    weighted_variance = np.average((variable - weighted_mean)**2, weights=weights)
-    return np.sqrt(weighted_variance)
-
-
 # Calculate population statistics (weighted)
 pop_mean = np.average(df[TARGET_COLUMN], weights=df[WEIGHT_COLUMN])
 pop_std = weighted_std(df[TARGET_COLUMN], weights=df[WEIGHT_COLUMN])
