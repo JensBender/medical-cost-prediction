@@ -2005,9 +2005,12 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         residuals = np.array(y_true) - np.array(y_pred)
         predicted = np.array(y_pred)
         
-        # Clip axis limits (zoom in) for better readability
-        pred_clip = np.percentile(predicted, 99)  
-        res_clip = np.percentile(np.abs(residuals), 95)
+        # Convert weights to numpy for indexing
+        w = np.array(weights)
+        
+        # Clip axis limits (zoom in) for better readability using weighted quantiles
+        pred_clip = weighted_quantile(predicted, w, 0.99)  
+        res_clip = weighted_quantile(np.abs(residuals), w, 0.95)
         
         # Scatter plot 
         ax.scatter(
@@ -2030,9 +2033,12 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
             if mask.sum() >= 10:  # Require minimum sample size for stable statistics
                 bin_centers.append((bin_edges[b] + bin_edges[b + 1]) / 2)
                 bin_residuals = residuals[mask]
-                bin_medians.append(np.median(bin_residuals))
-                bin_q25.append(np.percentile(bin_residuals, 25))
-                bin_q75.append(np.percentile(bin_residuals, 75))
+                bin_weights = w[mask]
+                
+                # Use weighted quantiles for binned statistics
+                bin_medians.append(weighted_quantile(bin_residuals, bin_weights, 0.5))
+                bin_q25.append(weighted_quantile(bin_residuals, bin_weights, 0.25))
+                bin_q75.append(weighted_quantile(bin_residuals, bin_weights, 0.75))
         
         # Plot trend and bands
         ax.plot(bin_centers, bin_medians, color="#e74c3c", linewidth=2, label="Median Residual")
