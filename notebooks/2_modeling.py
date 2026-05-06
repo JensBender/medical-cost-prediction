@@ -2021,8 +2021,10 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         # Reference line at 0
         ax.axhline(y=0, color="black", linewidth=0.8, linestyle="--", alpha=0.5)
         
-        # Binned median trend line and IQR bands
-        bin_edges = np.linspace(0, pred_clip, n_bins + 1)
+        # Binned median trend line and IQR bands (where each bin represents ~5% of the population)
+        bin_probs = np.linspace(0, 0.99, n_bins + 1)
+        bin_edges = weighted_quantile(predicted, w, bin_probs)  # Uses weighted quantiles to ensure each bin represents population rather than sample
+        
         bin_centers = []
         bin_medians = []
         bin_q25 = []
