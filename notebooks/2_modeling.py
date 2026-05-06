@@ -996,10 +996,11 @@ display(
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Tune <code>ElasticNet</code> hyperparameters.
-#     <br><br>
-#     For hyperparameter details, refer to the official <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html" target="_blank">ElasticNet documentation</a>. <br> 
-#     For hyperparameter search space and rationale, refer to <code><a href="../src/params.py">src/params.py</a></code>. <br> 
-#     Note: This notebook is used for prototyping, the production tuning run was executed via the reproducible script <code><a href="../scripts/tune_elastic_net.py">scripts/tune_elastic_net.py</a></code>.
+#     <ul style="margin-top:10px; margin-bottom:0px">
+#         <li><b>Documentation:</b> Refer to the official <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html" target="_blank">ElasticNet documentation</a> for hyperparameter details.</li>
+#         <li><b>Search Space:</b> Refer to <code><a href="../src/params.py">src/params.py</a></code> for rationale and parameter distributions.</li>
+#         <li><b>Production Script:</b> This notebook is for prototyping; the production run was executed via <code><a href="../scripts/tune_elastic_net.py">scripts/tune_elastic_net.py</a></code>.</li>
+#     </ul>
 # </div>
 
 # %% [markdown]
@@ -1170,13 +1171,13 @@ display(
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Tune <code>RandomForestRegressor</code> hyperparameters.
-#     <ul>
+#     <ul style="margin-top:8px; margin-bottom:0px">
 #         <li><b>Objective:</b> <code>criterion="absolute_error"</code> to minimize L1 loss on log-costs.</li>
 #         <li><b>Key Params:</b> Control variance via <code>min_samples_leaf</code> and <code>max_features</code>.</li>
+#         <li><b>Documentation:</b> Refer to the official scikit-learn <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank">RandomForestRegressor documentation</a> for hyperparameter details.</li>
+#         <li><b>Search Space:</b> Refer to <code><a href="../src/params.py">src/params.py</a></code> for rationale and parameter distributions.</li>
+#         <li><b>Production Script:</b> This notebook is for prototyping; the production run was executed via <code><a href="../scripts/tune_random_forest.py">scripts/tune_random_forest.py</a></code>.</li>
 #     </ul>
-#     For hyperparameter details, refer to the official scikit-learn <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank">RandomForestRegressor documentation</a> <br> 
-#     For hyperparameter search space and rationale, refer to <code><a href="../src/params.py">src/params.py</a></code>.<br>
-#     Note: This notebook is used for prototyping, the production tuning run was executed via the reproducible script <code><a href="../scripts/tune_random_forest.py">scripts/tune_random_forest.py</a></code>.
 # </div>
 
 # %% [markdown]
@@ -1351,13 +1352,13 @@ display(
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Tune <code>XGBRegressor</code> hyperparameters.
-#     <ul>
+#     <ul style="margin-top:8px; margin-bottom:0px">
 #         <li><b>Objective:</b> <code>objective="reg:absoluteerror"</code> to minimize L1 loss on log-costs.</li>
 #         <li><b>Speed:</b> Uses <code>tree_method="hist"</code> for efficient histogram-based splitting.</li>
+#         <li><b>Documentation:</b> Refer to the official <a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.XGBRegressor" target="_blank">XGBoost documentation</a> for hyperparameter details.</li>
+#         <li><b>Search Space:</b> Refer to <code><a href="../src/params.py">src/params.py</a></code> for rationale and parameter distributions.</li>
+#         <li><b>Production Script:</b> This notebook is for prototyping; the production run was executed via <code><a href="../scripts/tune_xgboost.py">scripts/tune_xgboost.py</a></code>.</li>
 #     </ul>
-#     For hyperparameter details, refer to the official <a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.XGBRegressor" target="_blank">XGBoost documentation</a>. <br> 
-#     For hyperparameter search space and rationale, refer to <code><a href="../src/params.py">src/params.py</a></code>.<br>
-#     Note: This notebook is used for prototyping, the production tuning run was executed via the reproducible script <code><a href="../scripts/tune_xgboost.py">scripts/tune_xgboost.py</a></code>.
 # </div>
 
 # %% [markdown]
