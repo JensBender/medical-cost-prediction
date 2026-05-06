@@ -1966,18 +1966,19 @@ plot_stratified_error(stratified_error_df, vulnerable_and_proxy_labels, "Tuned M
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Visualize <strong>Residuals vs. Predicted</strong> to assess whether prediction error variance changes with predicted cost level.
+#     📌 Visualize residuals vs. predicted values to assess whether prediction error variance changes with predicted cost level.
 #     <br><br>
-#     <strong>Expected:</strong> Heteroscedasticity (increasing error variance at higher predicted costs) is expected in healthcare data due to the heavy-tailed cost distribution. The diagnostic confirms whether this pattern is consistent across model architectures.
+#     <strong>Expected:</strong> Heteroscedasticity (increasing error variance at higher predicted costs) is expected in healthcare data due to the heavy-tailed cost distribution. The diagnostic confirms whether this pattern is consistent across all three model architectures.
 # </div>
 
 # %%
-def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, save_to_file=None):
+def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_cols=2, save_to_file=None):
     """
-    Plots Residuals vs. Predicted scatter plots with binned median trend and IQR bands.
+    Plots residuals vs. predicted values scatter plots for multiple models 
+    in a structured grid with binned median trend and IQR bands.
     
-    Creates a faceted 1×N plot (one panel per model) showing signed residuals
-    against predicted values. Overlays binned median (robust trend) and 
+    Creates a faceted plot (N x n_cols) showing signed residuals against 
+    predicted values. Overlays binned median (robust trend) and 
     interquartile range bands to visualize heteroscedasticity.
     
     Args:
@@ -1985,15 +1986,17 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, sa
         predictions_dict (dict): {model_name: y_pred_array} for each model.
         weights (pd.Series): Survey weights for weighted statistics.
         n_bins (int): Number of bins for the trend line.
+        n_cols (int): Number of columns in the plot grid.
         save_to_file (str, optional): Full path to save the plot.
     """
     n_models = len(predictions_dict)
-    fig, axes = plt.subplots(1, n_models, figsize=(7 * n_models, 6), sharey=True)
+    n_rows = (n_models + n_cols - 1) // n_cols
     
-    if n_models == 1:
-        axes = [axes]
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(6 * n_cols, 5 * n_rows), sharey=True, squeeze=False)
+    axes_flat = axes.flatten()
     
-    for ax, (model_key, y_pred) in zip(axes, predictions_dict.items()):
+    for i, (model_key, y_pred) in enumerate(predictions_dict.items()):
+        ax = axes_flat[i]
         model_label = MODEL_DISPLAY_LABELS.get(model_key, model_key)
         residuals = np.array(y_true) - np.array(y_pred)
         predicted = np.array(y_pred)
@@ -2002,7 +2005,7 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, sa
         pred_clip = np.percentile(predicted, 99)
         res_clip = np.percentile(np.abs(residuals), 99)
         
-        # Scatter plot with transparency
+        # Scatter plot 
         ax.scatter(
             predicted, residuals, 
             alpha=0.08, s=6, color="#4e8ac8", edgecolors="none", rasterized=True
@@ -2018,10 +2021,10 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, sa
         bin_q25 = []
         bin_q75 = []
         
-        for i in range(n_bins):
-            mask = (predicted >= bin_edges[i]) & (predicted < bin_edges[i + 1])
+        for b in range(n_bins):
+            mask = (predicted >= bin_edges[b]) & (predicted < bin_edges[b + 1])
             if mask.sum() >= 10:  # Require minimum sample size for stable statistics
-                bin_centers.append((bin_edges[i] + bin_edges[i + 1]) / 2)
+                bin_centers.append((bin_edges[b] + bin_edges[b + 1]) / 2)
                 bin_residuals = residuals[mask]
                 bin_medians.append(np.median(bin_residuals))
                 bin_q25.append(np.percentile(bin_residuals, 25))
@@ -2038,12 +2041,19 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, sa
         ax.set_ylim(-res_clip * 1.1, res_clip * 1.1)
         ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"${x:,.0f}"))
         
-        if ax == axes[0]:
+        # Only show y-label on the first column of each row
+        if i % n_cols == 0:
             ax.set_ylabel("Residual: Actual − Predicted ($)")
             ax.legend(loc="upper left", fontsize=9, frameon=True)
+            
+        sns.despine(ax=ax)
+    
+    # Remove empty subplots if n_models < n_rows * n_cols
+    for j in range(i + 1, n_rows * n_cols):
+        fig.delaxes(axes_flat[j])
     
     fig.suptitle("Heteroscedasticity: Residuals vs. Predicted", fontsize=18, fontweight="bold")
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0, 1, 0.98], h_pad=2)
     
     if save_to_file:
         plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
@@ -2051,10 +2061,10 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, sa
     plt.show()
 
 
-# Plot heteroscedasticity diagnostic
+# Plot heteroscedasticity 
 plot_residuals_vs_predicted(
     y_val_true, 
     tuned_model_predictions, 
     w_val_weights,
-    save_to_file="../figures/evaluation/heteroscedasticity.png"
+    # save_to_file="../figures/evaluation/heteroscedasticity.png"
 )
