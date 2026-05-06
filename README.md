@@ -214,7 +214,7 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 | Support Vector Machine | $291.24 | +190.7% | $1026.52 | -0.03 |
 | *LLM (Gemini 3 Flash)* | *$518.00* | *N/A* | *$1168.23* | **0.04** |
 
-<sub>MdAE, MAE, and R² are evaluated on the validation set; Overfitting represents the percentage MdAE difference between the training and validation sets.</sub>
+<sub>*Note:* Metrics on validation set; Overfitting represents the % MdAE difference (Train vs. Val).</sub>
 
 **Key Insights:**  
 - **Linear Stability:** Regularized linear models (Elastic Net) proved highly effective at denoising medical features, achieving the best median accuracy (MdAE) with minimal overfitting (+6.6%).
@@ -247,7 +247,7 @@ Conducted extensive hyperparameter optimization using randomized search for Elas
 | XGBoost (Baseline) | $280.81 | +98.0% | $961.00 | -0.00 |
 | XGBoost (Tuned) | $242.48 | +6.2% | **$953.98** | -0.02 |
 
-<sub>MdAE, MAE, and R² are evaluated on the validation set; Overfitting represents the percentage MdAE difference between the training and validation sets.</sub>
+<sub>*Note:* Metrics on validation set; Overfitting represents the % MdAE difference (Train vs. Val).</sub>
 
 **Key Insights:**
 - **Elastic Net:** Elastic Net remains the overall champion for median accuracy (**$158.98 MdAE**), confirming that simple linear models with regularization are extremely competitive for typical cost profiles.
