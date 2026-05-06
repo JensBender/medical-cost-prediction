@@ -222,10 +222,10 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 - **Overfitting:** While advanced non-linear models like XGBoost and SVM are highly capable in theory, they exhibited extreme overfitting (+98% to +191%) out-of-the-box, confirming that healthcare cost data is highly noisy and requires heavy regularization.
 - **Metric Paradox (MdAE vs. MAE vs. R²):** The massive gap between Median Error (MdAE ≈ $200) and Mean Error (MAE ≈ $1,000) reflects the extreme heavy-tail of U.S. healthcare costs. While the LLM captures the most variance (best R²) by identifying high-cost "black swan" profiles through medical reasoning, it lacks precision for the majority of typical profiles.
 
-**Selected Finalists:** 
-1. **Elastic Net:** Selected as the highly stable baseline champion for median accuracy.
-2. **XGBoost:** Selected for its ability to capture complex, non-linear health interactions, though it requires aggressive regularization during tuning to close the overfitting gap.
-3. **Random Forest:** Selected as a robust ensemble learner that naturally resists the severe overfitting seen in XGBoost.
+**Selected Finalists:**  
+1. **Elastic Net:** The baseline champion; especially good for typical cost profiles.
+2. **XGBoost:** The promising candidate; captures complex, non-linear clinical interactions but prone to "chasing noise" without aggressive tuning.
+3. **Random Forest:** The robust ensemble; uses bagging to average out noise and prevent the extreme overfitting seen in sequential boosting.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
