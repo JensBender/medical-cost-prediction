@@ -150,6 +150,11 @@ Analyzed distributions and relationships to inform data preprocessing, feature e
 - **Categorical Features vs. Target:** Grouped box plots revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization. [🔗 **See Grouped Box Plots**](#categorical-feature-target-relationships)
 - **Binary Features vs. Target:** Identified high-prevalence "global drivers" (arthritis) vs. high-severity "local triggers" (cancer), and confirmed a massive "utilization hurdle" where women and people with a usual source of care spend more. [🔗 **See Grouped Box Plots**](#binary-feature-target-relationships)
 
+<a id="main-outliers"></a>**Data Quality & Outliers**  
+Conducted deep-dive diagnostics in [notebooks/1_eda_and_preprocessing.ipynb](notebooks/1_eda_and_preprocessing.ipynb) to ensure data integrity:
+- **Duplicates**: Verified the absence of duplicate records based on the ID column, complete rows, and all columns except ID.
+- **Outliers**: Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs. [🔗 **See Outlier Analysis**](#outlier-analysis)
+
 **Modeling Strategy**  
 Based on EDA-driven insights, decided to implement sample weights for population representativeness and align models with the Median Absolute Error (MdAE) success metric through tailored loss functions, target log transformation, and polynomial features to effectively handle the zero-inflated, heavy-tailed cost distribution.
 
@@ -188,10 +193,6 @@ Once the raw data is cleaned and prepared, the `preprocess.py` script *calls* a 
 **Step 3: Data Persistence** (via `scripts/preprocess.py`)  
  This stage is used during training. It verifies the preprocessed data (e.g., absence of missing, infinite, or constant values, unique IDs), merges features with target and sample weights, and stores them as `.parquet` files.
 
-<a id="main-outliers"></a>**Exploratory Phase** (via `notebooks/1_eda_and_preprocessing.ipynb`):  
-Additional steps explored in notebook without being implemented in production script.
-- **Handling Duplicates**: Verified the absence of duplicates based on the ID column, complete rows, and all columns except ID.
-- **Handling Outliers**: Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs. [🔗 **See Outlier Analysis**](#outlier-analysis)
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
@@ -517,7 +518,7 @@ While outliers are only 1.1x more likely to cross the median cost threshold, the
 ![Outlier Profile for Binary Features](figures/outliers/outlier_binary_profile.png)
 ![Outlier Profile for Categorical Features](figures/outliers/outlier_categorical_profile.png)
 
-<p align="right">(<a href="#main-outliers">Back to Data Preprocessing</a> | <a href="#readme-top">Back to Top</a>)</p>
+<p align="right">(<a href="#main-outliers">Back to EDA</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 ### LLM Benchmarking
