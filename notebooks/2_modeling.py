@@ -2036,14 +2036,18 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         
         # Formatting
         ax.set_title(model_label, fontsize=14, fontweight="bold")
-        ax.set_xlabel("Predicted Cost ($)")
+        ax.set_xlabel("Predicted Cost")
         ax.set_xlim(-pred_clip * 0.02, pred_clip * 1.05)
         ax.set_ylim(-res_clip * 1.1, res_clip * 1.1)
-        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"${x:,.0f}"))
+        
+        # Format ticks: -$500 instead of $-500
+        currency_fmt = plt.FuncFormatter(lambda x, _: f"{'-' if x < 0 else ''}${abs(x):,.0f}")
+        ax.xaxis.set_major_formatter(currency_fmt)
         
         # Only show y-label on the first column of each row
         if i % n_cols == 0:
-            ax.set_ylabel("Residual: Actual − Predicted ($)")
+            ax.set_ylabel("Residual (Actual − Predicted)")
+            ax.yaxis.set_major_formatter(currency_fmt)
             ax.legend(loc="upper left", fontsize=9, frameon=True)
             
         sns.despine(ax=ax)
