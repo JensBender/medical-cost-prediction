@@ -231,19 +231,16 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 
 
 ### 🎛️ Hyperparameter Tuning  
-Conducted extensive hyperparameter optimization using randomized search for Elastic Net, Random Forest, and XGBoost. 
+Conducted extensive hyperparameter optimization using randomized search for the three selected finalists. 
 
 | Model | MdAE | Overfitting | MAE | R² |
 | :--- | :---: | :---: | :---: | :---: |
 | *Median (Benchmark)* | *$248.00* | *0.0%* | *$1,040.80* | *-0.10* |
 | *LLM (Benchmark)* | *$518.00* | *N/A* | *$1,168.23* | **0.04** |
-| Decision Tree (Baseline) | $271.00 | **+1.5%** | $971.44 | -0.03 |
-| Support Vector Machine (Baseline) | $291.24 | +190.7% | $1,026.52 | -0.03 |
-| Linear Regression (Baseline) | $219.21 | +4.8% | $997.77 | -0.06 |
 | Elastic Net (Baseline) | $163.17 | +6.6% | $1,043.55 | -0.12 |
 | **Elastic Net (Tuned)** | **$158.98** | +7.9% | $1,050.79 | -0.13 |
 | Random Forest (Baseline) | $231.59 | +9.6% | $958.46 | -0.04 |
-| Random Forest (Tuned) | $228.34 | +3.8% | $963.98 | -0.05 |
+| Random Forest (Tuned) | $228.34 | **+3.8%** | $963.98 | -0.05 |
 | XGBoost (Baseline) | $280.81 | +98.0% | $961.00 | -0.00 |
 | XGBoost (Tuned) | $242.48 | +6.2% | **$953.98** | -0.02 |
 
@@ -252,7 +249,7 @@ Conducted extensive hyperparameter optimization using randomized search for Elas
 **Key Insights:**
 - **Tuned Champion:** Elastic Net remains the overall leader in median accuracy ($159 MdAE), confirming that regularized linear models are extremely competitive for typical cost profiles.
 - **Taming the Tail:** Hyperparameter tuning successfully "tamed" XGBoost, reducing its extreme overfitting from +98% to just +6% while simultaneously improving validation error.
-- **Improved Reliability:** Tuning successfully brought the generalization gap below the 10% threshold for all models, ensuring stable performance across both training and unseen data.
+- **Overfitting:** Tuning successfully brought the generalization gap below 10% for all models, ensuring stable performance across both training and unseen data.
 
 <a id="main-fairness-audit"></a>**Model Reliability & Fairness Audit**  
 To ensure responsible deployment, performed a reliability and fairness audit using stratified error analysis for all tuned models. The fairness audit included both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, income, education levels).
@@ -556,7 +553,7 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 - **Age:** Error increases 4–6× for older compared to young adults, reflecting clinical complexity.
 - **Race/Ethnicity:** Error is highest for White populations and lower for minority groups, naturally avoiding disparate impact against minorities.
 - **Socioeconomic Status (Income/Education):** Models perform better for high compared with low education and income. This is likely due to larger spending variance and better insurance quality. 
-- **Walking/Mental Health:** Higher errors for populations with walking limitations and poor mental health. Elastic Net performs better without limiations and for excellent mental health, tree models perform better in case of high clinical complexity.
+- **Walking/Mental Health:** Higher errors for populations with walking limitations and poor mental health. Elastic Net performs better without limitations and for excellent mental health, tree models perform better in case of high clinical complexity.
 - **Region:** Smallest disparity dimension, with slightly lower errors in South and West.
 - **Audit Verdict:** No evidence of discriminatory disparate impact. The models achieve lower prediction error for several marginalized groups, avoiding the classic disparate impact trap. Where error is higher for vulnerable groups, it is justified by clinical complexity and utilization variance, satisfying the Legitimate Business Necessity defense under NIST/FTC guidelines.
 
