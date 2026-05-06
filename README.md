@@ -217,10 +217,10 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 <sub>*Note:* Metrics on validation set; Overfitting represents the % MdAE difference (Train vs. Val).</sub>
 
 **Key Insights:**  
-- **Linear Stability:** Regularized linear models (Elastic Net) proved highly effective at denoising medical features, achieving the best median accuracy (MdAE) with minimal overfitting (+6.6%).
-- **LLM Benchmark:** Compared performance of specialized ML models over a general intelligence LLM ("Why not just ask Gemini?"). All specialized models significantly outperformed the general-purpose LLM (Gemini 3 Flash), with the best-performing baseline (Elastic Net) achieving a 3.2x improvement in predictive performance over Gemini (reducing MdAE from $518 to $163). This demonstrates added value of specialized ML models, which capture numerical cost nuances that general reasoning cannot. 🔗 [**See LLM Benchmarking Details**](#llm-benchmarking)
+- **Baseline Champion:** Elastic Net achieved the best median accuracy ($163 MdAE) with minimal overfitting (+6.6%), showing that regularized linear models are highly effective at denoising medical features.
+- **LLM Benchmark:** Compared performance of specialized ML models over a general intelligence LLM ("Why not just ask Gemini?"). All specialist models significantly outperformed the generalist LLM (Gemini 3 Flash), with the best-performing baseline (Elastic Net) achieving a 3.2x improvement in predictive performance over Gemini (reducing MdAE from $518 to $163). This demonstrates added value of specialist ML models, which capture numerical cost nuances that general reasoning cannot. 🔗 [**See LLM Benchmarking Details**](#llm-benchmarking)
 - **Overfitting:** While advanced non-linear models like XGBoost and SVM are highly capable in theory, they exhibited extreme overfitting (+98% to +191%) out-of-the-box, confirming that healthcare cost data is highly noisy and requires heavy regularization.
-- **Metric Paradox (MdAE vs. MAE vs. R²):** The massive gap between Median Error (MdAE ≈ $200) and Mean Error (MAE ≈ $1,000) reflects the extreme heavy-tail of U.S. healthcare costs. While the LLM captures the most variance (best R²) by identifying high-cost "black swan" profiles through medical reasoning, it lacks precision for the majority of typical users.
+- **Metric Paradox (MdAE vs. MAE vs. R²):** The massive gap between Median Error (MdAE ≈ $200) and Mean Error (MAE ≈ $1,000) reflects the extreme heavy-tail of U.S. healthcare costs. While the LLM captures the most variance (best R²) by identifying high-cost "black swan" profiles through medical reasoning, it lacks precision for the majority of typical profiles.
 
 **Selected Finalists:** 
 1. **Elastic Net:** Selected as the highly stable baseline champion for median accuracy.
@@ -250,9 +250,9 @@ Conducted extensive hyperparameter optimization using randomized search for Elas
 <sub>*Note:* Metrics on validation set; Overfitting represents the % MdAE difference (Train vs. Val).</sub>
 
 **Key Insights:**
-- **Elastic Net:** Elastic Net remains the overall champion for median accuracy (**$158.98 MdAE**), confirming that simple linear models with regularization are extremely competitive for typical cost profiles.
-- **XGBoost:** Tuning successfully "tamed" XGBoost, reducing its extreme overfitting from +98.0% to just +6.2% while also improving validation error.
-- **Overfitting:** Hyperparameter tuning successfully brought overfitting below the 10% threshold for all models, ensuring they are reliable.
+- **Tuned Champion:** Elastic Net remains the overall leader in median accuracy ($159 MdAE), confirming that regularized linear models are extremely competitive for typical cost profiles.
+- **Taming the Tail:** Hyperparameter tuning successfully "tamed" XGBoost, reducing its extreme overfitting from +98% to just +6% while simultaneously improving validation error.
+- **Improved Reliability:** Tuning successfully brought the generalization gap below the 10% threshold for all models, ensuring stable performance across both training and unseen data.
 
 <a id="main-fairness-audit"></a>**Model Reliability & Fairness Audit**  
 To ensure responsible deployment, performed a reliability and fairness audit using stratified error analysis for all tuned models. The fairness audit included both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, income, education levels).
