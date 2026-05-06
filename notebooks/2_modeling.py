@@ -2001,9 +2001,9 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         residuals = np.array(y_true) - np.array(y_pred)
         predicted = np.array(y_pred)
         
-        # Clip axis limits at 99th percentile to prevent extreme tail compression
-        pred_clip = np.percentile(predicted, 99)
-        res_clip = np.percentile(np.abs(residuals), 99)
+        # Clip axis limits (zoom in) for better readability
+        pred_clip = np.percentile(predicted, 99)  
+        res_clip = np.percentile(np.abs(residuals), 95)
         
         # Scatter plot 
         ax.scatter(
