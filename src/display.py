@@ -6,7 +6,6 @@
 # These do NOT affect pipeline logic and are intentionally kept separate from
 # src/constants.py to avoid triggering unnecessary DVC pipeline reruns.
 
-import numpy as np
 from src.constants import CATEGORY_LABELS_PIPELINE
 
 
@@ -149,50 +148,6 @@ CATEGORY_LABELS_EDA = {
 POP_COLOR = "#084594"    # deep navy for population
 SAMPLE_COLOR = "#14b8a6" # vibrant teal for sample
 
-
-# ===========================
-# Display Utility Functions
-# ===========================
-
-def weighted_quantile(variable, weights, quantile):
-    """
-    Compute a weighted quantile using a sorted cumulative-weight CDF.
-
-    Works with both pandas Series and numpy arrays as inputs.
-
-    Args:
-        variable (array-like): The values to compute the quantile over.
-        weights (array-like): Survey weights (positive, same length as variable).
-        quantile (float or array-like): Quantile(s) to compute, in [0, 1].
-
-    Returns:
-        float or np.ndarray: The weighted quantile value(s).
-    """
-    values = np.asarray(variable, dtype=float)
-    w = np.asarray(weights, dtype=float)
-    sorter = np.argsort(values)
-    values, w = values[sorter], w[sorter]
-    cumulative_weight = np.cumsum(w) - 0.5 * w  # midpoint convention
-    cumulative_weight /= np.sum(w)              # normalize to [0, 1]
-    return np.interp(quantile, cumulative_weight, values)
-
-
-def weighted_std(variable, weights):
-    """
-    Compute the weighted standard deviation.
-
-    Args:
-        variable (array-like): The values to compute the standard deviation over.
-        weights (array-like): Survey weights (positive, same length as variable).
-
-    Returns:
-        float: The weighted standard deviation.
-    """
-    values = np.asarray(variable, dtype=float)
-    w = np.asarray(weights, dtype=float)
-    weighted_mean = np.average(values, weights=w)
-    weighted_variance = np.average((values - weighted_mean) ** 2, weights=w)
-    return np.sqrt(weighted_variance)
 
 def add_table_caption(styler, caption, font_size="14px", font_weight="bold", text_align="left"):
     """

@@ -87,7 +87,11 @@ from src.modeling import (
     load_metrics,
     get_core_model_params
 )
-from src.data import create_stratification_bins
+from src.stats import (
+    weighted_quantile,
+    weighted_std,
+    create_stratification_bins
+)
 from src.params import (
     EN_PARAM_DISTRIBUTIONS,
     RF_PARAM_DISTRIBUTIONS, 
@@ -105,9 +109,7 @@ from src.display import (
     MODEL_DISPLAY_LABELS,
     CATEGORY_LABELS_EDA,
     POP_COLOR,
-    add_table_caption,
-    weighted_quantile,
-    weighted_std
+    add_table_caption
 )
 
 # %% [markdown]
