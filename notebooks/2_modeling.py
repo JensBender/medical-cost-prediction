@@ -2013,10 +2013,17 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         pred_clip = weighted_quantile(predicted, w, 0.99)  
         res_clip = weighted_quantile(np.abs(residuals), w, 0.95)
         
+        # Scale size of data points by weights to a reasonable range (between 1 and 40)
+        s_weights = 1 + (w / w.max()) * 39 
+
         # Scatter plot 
         ax.scatter(
             predicted, residuals, 
-            alpha=0.08, s=6, color=SAMPLE_COLOR, edgecolors="none", rasterized=True  # data point represents sample not population
+            alpha=0.08, 
+            color=SAMPLE_COLOR,  # data points represent survey respondents (sample)
+            s=s_weights,         # larger points represents more people in the population
+            edgecolors="none", 
+            rasterized=True  
         )
         
         # Reference line at 0
