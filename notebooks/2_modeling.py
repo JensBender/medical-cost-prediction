@@ -2003,22 +2003,18 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
     for i, (model_key, y_pred) in enumerate(predictions_dict.items()):
         ax = axes_flat[i]
         model_label = MODEL_DISPLAY_LABELS.get(model_key, model_key)
-        residuals = np.array(y_true) - np.array(y_pred)
-        predicted = np.array(y_pred)
         
-        # Convert weights to numpy for indexing
+        # Standardize core data as numpy arrays
+        y_pred = np.array(y_pred)
+        residuals = np.array(y_true) - y_pred
         w = np.array(weights)
         
-        # Clip axis limits (zoom in) for better readability using weighted quantiles
-        pred_clip = weighted_quantile(predicted, w, 0.99)  
-        res_clip = weighted_quantile(np.abs(residuals), w, 0.95)
-        
-        # Scale size of data points by weights to a reasonable range (between 1 and 40)
-        s_weights = 1 + (w / w.max()) * 39 
+        # Scale scatter points by weights
+        s_weights = 1 + (w / w.max()) * 39  # reasonable range between 1 and 40
 
         # Scatter plot 
         ax.scatter(
-            predicted, residuals, 
+            y_pred, residuals, 
             alpha=0.08, 
             color=SAMPLE_COLOR,  # data points represent survey respondents (sample)
             s=s_weights,         # larger points represents more people in the population
@@ -2031,7 +2027,7 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         
         # Binned median trend line and IQR bands (where each bin represents ~5% of the population)
         bin_probs = np.linspace(0, 0.99, n_bins + 1)
-        bin_edges = weighted_quantile(predicted, w, bin_probs)  # Uses weighted quantiles to ensure each bin represents population 
+        bin_edges = weighted_quantile(y_pred, w, bin_probs)  # Uses weighted quantiles to ensure each bin represents population 
         
         bin_centers = []
         bin_medians = []
@@ -2039,7 +2035,7 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         bin_q75 = []
         
         for b in range(n_bins):
-            mask = (predicted >= bin_edges[b]) & (predicted < bin_edges[b + 1])
+            mask = (y_pred >= bin_edges[b]) & (y_pred < bin_edges[b + 1])
             if mask.sum() >= 10:  # Require minimum sample size for stable statistics
                 bin_centers.append((bin_edges[b] + bin_edges[b + 1]) / 2)
                 bin_residuals = residuals[mask]
@@ -2057,8 +2053,13 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         # Formatting
         ax.set_title(model_label, fontsize=14, fontweight="bold")
         ax.set_xlabel("Predicted Cost")
-        ax.set_xlim(-pred_clip * 0.02, pred_clip * 1.05)
-        ax.set_ylim(-res_clip * 1.1, res_clip * 1.1)
+        
+        # Predictions and residuals axis limits for "zoomed-in" view (ignoring extreme outliers)
+        y_pred_limit = weighted_quantile(y_pred, w, 0.99)  
+        res_min = weighted_quantile(residuals, w, 0.05)     
+        res_max = weighted_quantile(residuals, w, 0.95)
+        ax.set_xlim(-y_pred_limit * 0.02, y_pred_limit * 1.05)
+        ax.set_ylim(res_min * 2.2, res_max * 1.2)
         
         # Format ticks: -$500 instead of $-500
         currency_fmt = plt.FuncFormatter(lambda x, _: f"{'-' if x < 0 else ''}${abs(x):,.0f}")
