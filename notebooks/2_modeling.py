@@ -2013,7 +2013,7 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
     
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(6 * n_cols, 5 * n_rows), sharey=True, squeeze=False)
     axes_flat = axes.flatten()
-    
+
     for i, (model_key, y_pred) in enumerate(predictions_dict.items()):
         ax = axes_flat[i]
         model_label = MODEL_DISPLAY_LABELS.get(model_key, model_key)
@@ -2069,10 +2069,11 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         ax.set_xlabel("Predicted Cost")
         
         # Predictions and residuals axis limits for "zoomed-in" view (ignoring extreme outliers)
-        # y_pred_limit = weighted_quantile(y_pred, w, 0.99)  
         res_min = weighted_quantile(residuals, w, 0.05)     
         res_max = weighted_quantile(residuals, w, 0.95)
-        ax.set_xlim(min(y_pred) * 0.02, max(y_pred) * 1.05)
+        pred_max = weighted_quantile(y_pred, w, 0.99)
+        
+        ax.set_xlim(0, pred_max * 1.01)
         ax.set_ylim(res_min * 2.2, res_max * 1.2)
         
         # Format ticks: -$500 instead of $-500
