@@ -2015,7 +2015,7 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         # Scatter plot 
         ax.scatter(
             y_pred, residuals, 
-            alpha=0.08, 
+            alpha=0.25, 
             color=SAMPLE_COLOR,  # data points represent survey respondents (sample)
             s=s_weights,         # larger points represents more people in the population
             edgecolors="none", 
