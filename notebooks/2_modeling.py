@@ -2069,12 +2069,12 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         ax.set_xlabel("Predicted Cost")
         
         # Predictions and residuals axis limits for "zoomed-in" view (ignoring extreme outliers)
-        res_min = weighted_quantile(residuals, w, 0.05)     
-        res_max = weighted_quantile(residuals, w, 0.95)
         pred_max = weighted_quantile(y_pred, w, 0.99)
-        
+        res_max = weighted_quantile(residuals, w, 0.95)
+        res_min = weighted_quantile(residuals, w, 0.01)
+
         ax.set_xlim(0, pred_max * 1.01)
-        ax.set_ylim(res_min * 2.2, res_max * 1.2)
+        ax.set_ylim(res_min * 1.5, res_max * 1.3)
         
         # Format ticks: -$500 instead of $-500
         currency_fmt = plt.FuncFormatter(lambda x, _: f"{'-' if x < 0 else ''}${abs(x):,.0f}")
