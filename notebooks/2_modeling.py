@@ -1977,6 +1977,20 @@ plot_stratified_error(stratified_error_df, vulnerable_and_proxy_labels, "Tuned M
 # </div>
 
 # %%
+# Display predicted cost ranges by tuned model
+pred_ranges = []
+for model_key, y_pred in tuned_model_predictions.items():
+    pred_ranges.append({
+        "Model": MODEL_DISPLAY_LABELS.get(model_key, model_key),
+        "Min Prediction": np.min(y_pred),
+        "Max Prediction": np.max(y_pred)
+    })
+
+pred_ranges_df = pd.DataFrame(pred_ranges).set_index("Model")
+display(pred_ranges_df.style.format("${:,.2f}").pipe(add_table_caption, "Predicted Cost Range"))
+
+
+# %%
 def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_cols=2, save_to_file=None):
     """
     Plots residuals vs. predicted values scatter plots for multiple models 
@@ -2055,10 +2069,10 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         ax.set_xlabel("Predicted Cost")
         
         # Predictions and residuals axis limits for "zoomed-in" view (ignoring extreme outliers)
-        y_pred_limit = weighted_quantile(y_pred, w, 0.99)  
+        # y_pred_limit = weighted_quantile(y_pred, w, 0.99)  
         res_min = weighted_quantile(residuals, w, 0.05)     
         res_max = weighted_quantile(residuals, w, 0.95)
-        ax.set_xlim(-y_pred_limit * 0.02, y_pred_limit * 1.05)
+        ax.set_xlim(min(y_pred) * 0.02, max(y_pred) * 1.05)
         ax.set_ylim(res_min * 2.2, res_max * 1.2)
         
         # Format ticks: -$500 instead of $-500
@@ -2093,3 +2107,4 @@ plot_residuals_vs_predicted(
     w_val_weights,
     # save_to_file="../figures/evaluation/heteroscedasticity.png"
 )
+
