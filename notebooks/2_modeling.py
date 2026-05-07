@@ -2110,3 +2110,14 @@ plot_residuals_vs_predicted(
     # save_to_file="../figures/evaluation/heteroscedasticity.png"
 )
 
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul>
+#         <li><strong>High Heteroscedasticity:</strong> All models exhibit the characteristic "fan" shape, where the variance of residuals increases alongside predicted costs. This confirms that high-cost medical events are inherently more difficult to predict precisely than low-cost routine care.</li>
+#         <li><strong>Elastic Net's Limited Range:</strong> The Elastic Net is severely conservative, with a maximum prediction of only \$217. While this results in a "stable" trend line, the model is effectively unable to identify high-cost individuals, treating almost the entire population as "low-risk."</li>
+#         <li><strong>XGBoost's Superior Range:</strong> XGBoost captures the widest prediction range (up to \$2,114). Combined with its smoother median trend line (even at high bin counts), it demonstrates the best local calibration and the highest responsiveness to complex, high-utilization patients. Notably, XGBoost produced a negative prediction (-$0.44). While negligible, it confirms the need for a zero-floor clipping transformer in the final production pipeline to ensure logical cost estimates.</li>
+#         <li><strong>Underestimating High Costs:</strong> All models maintain a median residual near zero for low-to-mid cost predictions, but the "upward drift" in the median trend line at higher costs across all architectures suggests a systematic under-prediction of top spenders at the tail-end of the distribution.</li>
+#     </ul>
+# </div>
