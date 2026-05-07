@@ -78,8 +78,8 @@ import time  # to measure training time
 
 # Local imports
 from src.modeling import (
-    train_and_evaluate,
     get_baseline_models,
+    train_and_evaluate,
     weighted_median_absolute_error,
     save_model,
     load_model,
@@ -109,6 +109,7 @@ from src.display import (
     MODEL_DISPLAY_LABELS,
     CATEGORY_LABELS_EDA,
     POP_COLOR,
+    SAMPLE_COLOR,
     add_table_caption
 )
 
@@ -1979,18 +1980,18 @@ plot_stratified_error(stratified_error_df, vulnerable_and_proxy_labels, "Tuned M
 def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_cols=2, save_to_file=None):
     """
     Plots residuals vs. predicted values scatter plots for multiple models 
-    in a structured grid with binned median trend and IQR bands.
+    with binned median trend and IQR bands.
     
-    Creates a faceted plot (N x n_cols) showing signed residuals against 
+    Creates a facet grid plot (N x n_cols) showing residuals against 
     predicted values. Overlays binned median (robust trend) and 
     interquartile range bands to visualize heteroscedasticity.
     
     Args:
         y_true (pd.Series): Actual target values.
         predictions_dict (dict): {model_name: y_pred_array} for each model.
-        weights (pd.Series): Survey weights for weighted statistics.
+        weights (pd.Series): Sample weights for weighted statistics.
         n_bins (int): Number of bins for the trend line.
-        n_cols (int): Number of columns in the plot grid.
+        n_cols (int): Number of columns in the facet grid plot.
         save_to_file (str, optional): Full path to save the plot.
     """
     n_models = len(predictions_dict)
@@ -2015,7 +2016,7 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         # Scatter plot 
         ax.scatter(
             predicted, residuals, 
-            alpha=0.08, s=6, color="#4e8ac8", edgecolors="none", rasterized=True
+            alpha=0.08, s=6, color=SAMPLE_COLOR, edgecolors="none", rasterized=True  # data point represents sample not population
         )
         
         # Reference line at 0
@@ -2023,7 +2024,7 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         
         # Binned median trend line and IQR bands (where each bin represents ~5% of the population)
         bin_probs = np.linspace(0, 0.99, n_bins + 1)
-        bin_edges = weighted_quantile(predicted, w, bin_probs)  # Uses weighted quantiles to ensure each bin represents population rather than sample
+        bin_edges = weighted_quantile(predicted, w, bin_probs)  # Uses weighted quantiles to ensure each bin represents population 
         
         bin_centers = []
         bin_medians = []
@@ -2042,9 +2043,9 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
                 bin_q25.append(weighted_quantile(bin_residuals, bin_weights, 0.25))
                 bin_q75.append(weighted_quantile(bin_residuals, bin_weights, 0.75))
         
-        # Plot trend and bands
-        ax.plot(bin_centers, bin_medians, color="#e74c3c", linewidth=2, label="Median Residual")
-        ax.fill_between(bin_centers, bin_q25, bin_q75, alpha=0.15, color="#e74c3c", label="IQR (25th–75th)")
+        # Plot trend line and range bands
+        ax.plot(bin_centers, bin_medians, color=POP_COLOR, linewidth=2, label="Median Residual")
+        ax.fill_between(bin_centers, bin_q25, bin_q75, alpha=0.15, color=POP_COLOR, label="IQR (25th–75th)")
         
         # Formatting
         ax.set_title(model_label, fontsize=14, fontweight="bold")
