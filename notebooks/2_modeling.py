@@ -1991,7 +1991,7 @@ display(pred_ranges_df.style.format("${:,.2f}").pipe(add_table_caption, "Predict
 
 
 # %%
-def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_cols=2, save_to_file=None):
+def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=15, n_cols=2, save_to_file=None):
     """
     Plots residuals vs. predicted values scatter plots for multiple models 
     with binned median trend and IQR bands.
@@ -2039,7 +2039,8 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=20, n_
         # Reference line at 0
         ax.axhline(y=0, color="black", linewidth=0.8, linestyle="--", alpha=0.5)
         
-        # Binned median trend line and IQR bands (where each bin represents ~5% of the population)
+        # Binned median trend line and IQR bands 
+        # Each bin represents ~6.7% of the population which is ~100 respondents in sample (validation set size n=1477)
         bin_probs = np.linspace(0, 0.99, n_bins + 1)
         bin_edges = weighted_quantile(y_pred, w, bin_probs)  # Uses weighted quantiles to ensure each bin represents population 
         
