@@ -2175,24 +2175,24 @@ plot_residuals_vs_predicted(
 #     <strong>Example Prediction Text</strong> (shown to app users)
 # <table style="width:100%; border-spacing: 10px; border-collapse: separate; margin-top: 10px;">
 #     <tr>
-#         <td style="background-color: #f8fff9; border: 1px solid #d4edda; padding: 15px; vertical-align: top; width: 50%; border-radius: 4px;">
-#             <strong>🟢 Low-Risk Profile</strong><br>
+#         <td style="background-color: #fcfcfc; border: 1px solid #ddd; padding: 15px; vertical-align: top; width: 50%; border-radius: 4px;">
+#             <strong>Low-Risk Profile</strong><br>
 #             <small>28-year-old with no chronic conditions</small><br><br>
-#             <b>Your Estimated Out-of-Pocket Costs</b><br><br>
-#             💰 <b>Most likely:</b> \$150<br>
-#             📊 <b>Typical range:</b> \$60 – \$340<br>
-#             🛡️ <b>To be safe, budget up to:</b> \$580<br><br>
-#             <span style="font-size: 0.85em; color: #555;">Half of people with a similar profile spend between \$60 and \$340 per year. To prepare for an unexpected illness or procedure, consider budgeting up to \$580.</span>
+#             <b>Your Estimated Out-of-Pocket Costs for the Upcoming Year</b><br><br>
+#             💰 <b>Most likely:</b> \$180<br>
+#             📊 <b>Typical range:</b> \$50 – \$450<br>
+#             🛡️ <b>To be safe, budget up to:</b> \$900<br><br>
+#             <span style="font-size: 0.85em; color: #555;">Half of people with a similar profile spend between \$50 and \$450 for the year. To prepare for an unexpected illness or procedure, consider budgeting up to \$900.</span>
 #         </td>
-#         <td style="background-color: #fff9fa; border: 1px solid #f8d7da; padding: 15px; vertical-align: top; width: 50%; border-radius: 4px;">
-#             <strong>🔴 High-Risk Profile</strong><br>
+#         <td style="background-color: #fcfcfc; border: 1px solid #ddd; padding: 15px; vertical-align: top; width: 50%; border-radius: 4px;">
+#             <strong>High-Risk Profile</strong><br>
 #             <small>68-year-old with multiple chronic conditions</small><br><br>
-#             <b>Your Estimated Out-of-Pocket Costs</b><br><br>
-#             💰 <b>Most likely:</b> \$2,800<br>
-#             📊 <b>Typical range:</b> \$1,400 – \$5,200<br>
-#             🛡️ <b>To be safe, budget up to:</b> \$8,500<br><br>
+#             <b>Your Estimated Out-of-Pocket Costs for the Upcoming Year</b><br><br>
+#             💰 <b>Most likely:</b> \$2,850<br>
+#             📊 <b>Typical range:</b> \$1,100 – \$7,200<br>
+#             🛡️ <b>To be safe, budget up to:</b> \$14,500<br><br>
 #             <span style="font-size: 0.85em; color: #555;">
-#                 Half of people with a similar profile spend between \$1,400 and \$5,200 per year. With your health profile, costs can vary significantly. Budgeting up to \$8,500 covers 9 out of 10 scenarios.
+#                 Half of people with a similar profile spend between \$1,100 and \$7,200 for the year. With your health profile, costs can vary significantly. Budgeting up to \$14,500 covers 9 out of 10 scenarios.
 #             </span>
 #         </td>
 #     </tr>
