@@ -56,6 +56,7 @@
       <li><a href="#feature-target-relationships">Feature-Target Relationships</a></li>      
       <li><a href="#outlier-analysis">Outlier Analysis</a></li>      
       <li><a href="#llm-benchmarking">LLM Benchmarking</a></li>      
+      <li><a href="#heteroscedasticity">Heteroscedasticity</a></li>      
       <li><a href="#model-reliability--fairness-audit">Model Reliability & Fairness Audit</a></li>      
     </ul>
   </li>
@@ -250,7 +251,7 @@ Conducted extensive hyperparameter optimization using randomized search for the 
 - **Tuned Champion:** Elastic Net remains the overall leader in median accuracy ($159 MdAE), confirming that regularized linear models are extremely competitive for typical cost profiles.
 - **Taming the Tail:** Hyperparameter tuning successfully "tamed" XGBoost, reducing its extreme overfitting from +98% to just +6% while simultaneously improving validation error.
 - **Overfitting:** Tuning successfully brought the generalization gap below 10% for all models, ensuring stable performance across both training and unseen data.
-- **Heteroscedasticity**: 🔗 [**See Heteroscedasticity Analysis**](#heteroscedasticity)
+- **Heteroscedasticity:** All models exhibit "fan-shaped" error spread, underestimating high out-of-pocket costs. While Elastic Net is the median accuracy leader, its limited range ($217 max) prevents differentiating high spenders. Tree models (XGB/RF) maintain near-zero bias across a wider range, providing better calibration for high-risk identification. 🔗 [**See Heteroscedasticity Analysis**](#heteroscedasticity)
 
 <a id="main-fairness-audit"></a>**Model Reliability & Fairness Audit**  
 To ensure responsible deployment, performed a reliability and fairness audit using stratified error analysis for all tuned models. The fairness audit included both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, income, education levels).
