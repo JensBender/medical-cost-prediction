@@ -250,6 +250,7 @@ Conducted extensive hyperparameter optimization using randomized search for the 
 - **Tuned Champion:** Elastic Net remains the overall leader in median accuracy ($159 MdAE), confirming that regularized linear models are extremely competitive for typical cost profiles.
 - **Taming the Tail:** Hyperparameter tuning successfully "tamed" XGBoost, reducing its extreme overfitting from +98% to just +6% while simultaneously improving validation error.
 - **Overfitting:** Tuning successfully brought the generalization gap below 10% for all models, ensuring stable performance across both training and unseen data.
+- **Heteroscedasticity**: 🔗 [**See Heteroscedasticity Analysis**](#heteroscedasticity)
 
 <a id="main-fairness-audit"></a>**Model Reliability & Fairness Audit**  
 To ensure responsible deployment, performed a reliability and fairness audit using stratified error analysis for all tuned models. The fairness audit included both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, income, education levels).
@@ -532,6 +533,17 @@ To reproduce the LLM benchmark:
    ```
 
 <p align="right">(<a href="#-baseline-models">Back to Baseline Models</a> | <a href="#readme-top">Back to Top</a>)</p>
+
+
+### Heteroscedasticity
+![Heteroscedasticity](figures/evaluation/heteroscedasticity.png)
+**Key Insights:**
+- **Fan-Shaped Errors:** Error spread widens with predicted cost across all models, reflecting the inherent unpredictability of rare, expensive medical events. Residuals skew heavily upward, confirming systematic underprediction of extreme costs.
+- **Elastic Net's Limited Range:** With a max prediction of only $217, Elastic Net treats the population as uniformly low-risk; its median residual trends upwards with its predictions, confirming systematic underestimation.
+- **XGBoost Differentiates Best:** XGBoost predictions span up to $2,114 (~10× Elastic Net, ~1.7× Random Forest), demonstrating superior separation of low- and high-cost individuals.
+- **Tree Model Calibration:** RF and XGBoost maintain near-zero median residuals across most predictions, with an inverted-U uncertainty pattern: the IQR peaks at mid-range, then narrows at the highest predictions, indicating well-calibrated high-cost estimates.
+
+<p align="right">(<a href="#️-hyperparameter-tuning">Back to Hyperparameter Tuning</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 ### Model Reliability & Fairness Audit
