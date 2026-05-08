@@ -2128,7 +2128,8 @@ plot_residuals_vs_predicted(
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Use a "Budget vs. Buffer" approach to give users of the medical cost planner app a helpful, accurate, and actionable prediction for next year's out-of-pocket costs.
+#     ℹ️ <strong>"Budget vs. Buffer" Approach</strong> <br> 
+#     Use a "Budget vs. Buffer" approach to give users of the medical cost planner app a helpful, accurate, and actionable prediction for next year's out-of-pocket costs.
 # <br><br>
 # <strong>Rationale: Why ranges matter</strong> <br>
 # Standard models (predicting the mean or median) provide a single point estimate that implies false precision. Heteroscedasticity analysis revealed that as medical complexity increases, the "fan shape" of our errors widens significantly.
@@ -2170,4 +2171,29 @@ plot_residuals_vs_predicted(
 #     </tbody>
 # </table>
 # By using this approach, a healthy user will see a very tight range (e.g., \$50 – \$200), while a user with high age and multiple chronic conditions will see a wide range (e.g., \$1,200 – \$8,500), accurately reflecting their higher financial risk.
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <strong>Implementation Decisions</strong>
+# <br><br>
+# <strong>1. Model Selection: XGBoost Only</strong> <br>
+# Train quantile regression using XGBoost only (not Elastic Net or Random Forest). Point-estimates and heteroscedasticity analysis already provided strong evidence:
+#     <ul style="margin-top:8px">
+#         <li><b>XGBoost differentiates best:</b> Predictions span up to \$2,114 (10× Elastic Net's \$217 and 1.7× Random Forest's \$1,273). A model that better separates low-cost from high-cost individuals will also produce more meaningful quantile ranges.</li>
+#         <li><b>Native multi-quantile support:</b> XGBoost's <code>reg:quantileerror</code> objective trains all four quantiles (0.25, 0.50, 0.75, 0.90) in a single model via the <code>quantile_alpha</code> parameter. Elastic Net would require <code>sklearn.linear_model.QuantileRegressor</code> (separate model per quantile) and Random Forest would require the external <code>quantile-forest</code> package, both adding complexity without changing the conclusion.</li>
+#         <li><b>Deployment efficiency:</b> A single multi-quantile XGBoost model produces one <code>.joblib</code> artifact instead of 4 separate model files.</li>
+#     </ul>
+# <strong>2. Explainability (SHAP): Median (q50) Only</strong> <br>
+# A quantile model predicts four numbers per user. SHAP values explain feature contributions for a <em>specific</em> prediction target. Those contributions differ across quantiles (e.g., "Diabetes: +1,200" for the median vs. "Diabetes: +3,800" for the 90th percentile). Showing multiple, contradictory SHAP explanations would confuse users.
+# <br><br>
+# <strong>Decision:</strong> Display SHAP values for the median (q50) prediction only. This gives users a single, coherent explanation of their "most likely" cost drivers. The wider prediction range and safety buffer are presented as context for better financial planning.
+# <br><br>
+# <strong>3. Calibration: Conformalized Quantile Regression (CQR)</strong> <br>
+# Raw quantile regression has no coverage guarantee. The predicted "Typical Range" (q25–q75) might actually contain only 40% or 60% of real outcomes, not the intended 50%. CQR adds a calibration step that adjusts the intervals to provide a finite-sample coverage guarantee (see <code><a href="../docs/specs/technical_specifications.md" target="_blank">technical specifications</a></code>  success metric ≥ 50% interval coverage).
+# <ul>
+#     <li><b>Phase 1 (QR):</b> Train and evaluate raw quantile regression. Measure empirical coverage on the validation set to establish a baseline.</li>
+#     <li><b>Phase 2 (CQR):</b> Add CQR calibration layer. Compare calibrated vs. uncalibrated coverage to quantify the improvement.</li>
+# </ul>
+# <b>Calibration Set (~1,000 samples of train):</b> CQR requires a hold-out calibration set to compute conformity scores. Hold out ~1,000 samples from the training set. This is large enough for stable conformity score estimation while small enough (~8.5% of 11,814 training samples) to not substantially reduce training data quality. The existing validation and test sets remain untouched for evaluation.
 # </div>
