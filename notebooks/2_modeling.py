@@ -1958,7 +1958,7 @@ plot_stratified_error(stratified_error_df, vulnerable_and_proxy_labels, "Tuned M
 # %% [markdown]
 # <div style="background-color:#f0f7ff; padding:15px; border:3px solid #cfe2ff; border-radius:6px; margin-bottom:16px;">
 #     <strong>⚖️ Regulatory Compliance & Ethical AI</strong> <br>
-#     This project is designed for the US Market (NIST, FTC) with a roadmap for EU Expansion (AI Act, GDPR). To ensure responsible and compliant deployment, performed <b>stratified error analysis</b> to detect algorithmic bias and use <b>survey weights</b> to ensure population representativeness.
+#     This project is designed for the US Market (NIST, FTC) with a roadmap for EU Expansion (AI Act, GDPR). To ensure responsible and compliant deployment, performed stratified error analysis to detect algorithmic bias and use sample weights to ensure population representativeness.
 #     <p style="margin-top:10px;">
 #         For a details on regulatory compliance and ethical AI, refer to: <a href="../docs/research/regulatory_compliance.md">docs/research/regulatory_compliance.md</a>
 #     </p>
@@ -1972,8 +1972,6 @@ plot_stratified_error(stratified_error_df, vulnerable_and_proxy_labels, "Tuned M
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Visualize residuals vs. predicted values to assess whether prediction error variance changes with predicted cost level.
-#     <br><br>
-#     <strong>Expected:</strong> Heteroscedasticity (increasing error variance at higher predicted costs) is expected in healthcare data due to the heavy-tailed cost distribution. The diagnostic confirms whether this pattern is consistent across all three model architectures.
 # </div>
 
 # %%
