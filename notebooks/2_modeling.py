@@ -2121,3 +2121,53 @@ plot_residuals_vs_predicted(
 #         <li><strong>Mid-range uncertainty peak ("inverted-U"):</strong> RF and XGBoost share a distinctive pattern: the IQR band widens through mid-range predictions, then narrows again at the highest predictions. This suggests that when tree models confidently predict high costs, those predictions are relatively well-calibrated.</li>
 #     </ul>
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Quantile Regression</h2>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Use a "Budget vs. Buffer" approach to give users of the medical cost planner app a helpful, accurate, and actionable prediction for next year's out-of-pocket costs.
+# <br><br>
+# <strong>Rationale: Why ranges matter</strong> <br>
+# Standard models (predicting the mean or median) provide a single point estimate that implies false precision. Heteroscedasticity analysis revealed that as medical complexity increases, the "fan shape" of our errors widens significantly.
+#
+# *   <b>Low-Risk Profiles:</b> Have a narrow error spread; a single number is mostly accurate.
+# *   <b>High-Risk Profiles:</b> Have a massive error spread; a single number is "precisely wrong" and usually underestimates actual costs.
+#
+# <strong>The Solution: Quantile Regression</strong> <br>
+# Instead of one "best guess," we train models to predict specific percentiles of the cost distribution. This allows the app to communicate uncertainty directly to the user without needing technical jargon:
+#
+# <table style="width:70%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em;">
+#     <thead>
+#         <tr style="border-bottom: 2px solid #d0e7fa; text-align: left;">
+#             <th style="padding: 8px; width: 18%;">Scenario</th>
+#             <th style="padding: 8px; width: 18%;">Quantile</th>
+#             <th style="padding: 8px; width: 28%;">Purpose</th>
+#             <th style="padding: 8px; width: 36%;">Actionable Insight</th>
+#         </tr>
+#     </thead>
+#     <tbody>
+#         <tr style="border-bottom: 1px solid #eef7fe;">
+#             <td style="padding: 8px;"><b>Typical Year</b></td>
+#             <td style="padding: 8px;"><code>0.50</code> (Median)</td>
+#             <td style="padding: 8px;">The most likely outcome.</td>
+#             <td style="padding: 8px;">The "Anchor" for basic budgeting.</td>
+#         </tr>
+#         <tr style="border-bottom: 1px solid #eef7fe;">
+#             <td style="padding: 8px;"><b>Likely Range</b></td>
+#             <td style="padding: 8px;"><code>0.25</code> to <code>0.75</code></td>
+#             <td style="padding: 8px;">Where 50% of profiles fall.</td>
+#             <td style="padding: 8px;">Safe zone for FSA/HSA contributions.</td>
+#         </tr>
+#         <tr>
+#             <td style="padding: 8px;"><b>Safety Buffer</b></td>
+#             <td style="padding: 8px;"><code>0.90</code></td>
+#             <td style="padding: 8px;">The "Worst Case" scenario.</td>
+#             <td style="padding: 8px;">Emergency fund & risk planning.</td>
+#         </tr>
+#     </tbody>
+# </table>
+# By using this approach, a healthy user will see a very tight range (e.g., \$50 – \$200), while a user with high age and multiple chronic conditions will see a wide range (e.g., \$1,200 – \$8,500), accurately reflecting their higher financial risk.
+# </div>
