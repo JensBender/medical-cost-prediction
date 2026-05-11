@@ -215,12 +215,12 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 | Support Vector Machine | $291.24 | +190.7% | $1026.52 | -0.03 |
 | *LLM (Benchmark)* | *$518.00* | *N/A* | *$1168.23* | **0.04** |
 
-<sub>*Note:* Metrics on validation set; Overfitting represents the % MdAE difference (Train vs. Val).</sub>
+<sub>*Note:* Metrics on validation set; Overfitting represents the percentage MdAE difference (Train vs. Val).</sub>
 
 **Key Insights:**  
 - **Baseline Champion:** Elastic Net achieved the best median accuracy ($163 MdAE) with minimal overfitting (+6.6%), showing that regularized linear models are highly effective at denoising medical features.
-- **LLM Benchmark:** Compared performance of specialized ML models over a general intelligence LLM ("Why not just ask Gemini?"). All specialist models significantly outperformed the generalist LLM (Gemini 3 Flash), with the best-performing baseline (Elastic Net) achieving a 3.2x improvement in predictive performance over Gemini (reducing MdAE from $518 to $163). This demonstrates added value of specialist ML models, which capture numerical cost nuances that general reasoning cannot. 🔗 [**See LLM Benchmarking Details**](#llm-benchmarking)
 - **Overfitting:** While advanced non-linear models like XGBoost and SVM are highly capable in theory, they exhibited extreme overfitting (+98% to +191%) out-of-the-box, confirming that healthcare cost data is highly noisy and requires heavy regularization.
+- **LLM Benchmark:** Compared performance of specialized ML models against a general intelligence LLM ("Why not just ask Gemini?"). All specialist models significantly outperformed the generalist LLM (Gemini 3 Flash), with the best-performing baseline (Elastic Net) achieving a 3.2x improvement in predictive performance over Gemini (reducing MdAE from $518 to $163). This demonstrates added value of specialist ML models, which capture numerical cost nuances that general reasoning cannot. 🔗 [**See LLM Benchmarking Details**](#llm-benchmarking)
 - **Metric Paradox (MdAE vs. MAE vs. R²):** The massive gap between Median Error (MdAE ≈ $200) and Mean Error (MAE ≈ $1,000) reflects the extreme heavy-tail of U.S. healthcare costs. While the LLM captures the most variance (best R²) by identifying high-cost "black swan" profiles through medical reasoning, it lacks precision for the majority of typical profiles.
 
 **Selected Finalists:**  
@@ -245,13 +245,13 @@ Conducted extensive hyperparameter optimization using randomized search for the 
 | XGBoost (Baseline) | $280.81 | +98.0% | $961.00 | -0.00 |
 | XGBoost (Tuned) | $242.48 | +6.2% | **$953.98** | -0.02 |
 
-<sub>*Note:* Metrics on validation set; Overfitting represents the % MdAE difference (Train vs. Val).</sub>
+<sub>*Note:* Metrics on validation set; Overfitting represents the percentage MdAE difference (Train vs. Val).</sub>
 
 **Key Insights:**
 - **Tuned Champion:** Elastic Net remains the overall leader in median accuracy ($159 MdAE), confirming that regularized linear models are extremely competitive for typical cost profiles.
 - **Taming the Tail:** Hyperparameter tuning successfully "tamed" XGBoost, reducing its extreme overfitting from +98% to just +6% while simultaneously improving validation error.
 - **Overfitting:** Tuning successfully brought the generalization gap below 10% for all models, ensuring stable performance across both training and unseen data.
-- **Heteroscedasticity:** All models exhibit "fan-shaped" error spread, underestimating high out-of-pocket costs. While Elastic Net is the median accuracy leader, its limited range ($217 max) prevents differentiating high spenders. Tree models (XGB/RF) maintain near-zero bias across a wider range, providing better calibration for high-risk identification. 🔗 [**See Heteroscedasticity Analysis**](#heteroscedasticity)
+- **Heteroscedasticity:** All models exhibit "fan-shaped" error spread, underestimating high out-of-pocket costs. While Elastic Net is the median accuracy leader, its limited prediction range ($217 max) prevents differentiating high spenders. Tree models (XGB/RF) maintain near-zero bias across a wider range, providing better calibration for high-risk identification. 🔗 [**See Heteroscedasticity Analysis**](#heteroscedasticity)
 
 <a id="main-fairness-audit"></a>**Model Reliability & Fairness Audit**  
 To ensure responsible deployment, performed a reliability and fairness audit using stratified error analysis for all tuned models. The fairness audit included both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, income, education levels).
@@ -269,19 +269,19 @@ To ensure responsible deployment, performed a reliability and fairness audit usi
 
 ## 📂 Project Structure
 ```text
-├── notebooks/               # Jupyter Notebooks 
+├── notebooks/                         # Jupyter Notebooks 
 │   ├── 1_eda_and_preprocessing.ipynb  # EDA, preprocessing, and pipeline development
 │   ├── 1_eda_and_preprocessing.py     # Script version (generated via Jupytext)
 │   ├── 2_modeling.ipynb               # Model training, evaluation and hyperparameter tuning 
 │   └── 2_modeling.py                  # Script version (generated via Jupytext)
 │
-├── scripts/                 # Reproducible pipeline scripts 
-│   ├── preprocess.py        # Production-ready data preprocessing
-│   ├── train_baseline.py    # Baseline model training 
-│   ├── tune_elastic_net.py  # Hyperparameter tuning for Elastic Net
-│   ├── tune_random_forest.py # Hyperparameter tuning for Random Forest
-│   ├── tune_xgboost.py       # Hyperparameter tuning for XGBoost
-│   └── benchmark_llm.py     # LLM prediction benchmark
+├── scripts/                   # Reproducible pipeline scripts 
+│   ├── preprocess.py          # Production-ready data preprocessing
+│   ├── train_baseline.py      # Baseline model training 
+│   ├── tune_elastic_net.py    # Hyperparameter tuning for Elastic Net
+│   ├── tune_random_forest.py  # Hyperparameter tuning for Random Forest
+│   ├── tune_xgboost.py        # Hyperparameter tuning for XGBoost
+│   └── benchmark_llm.py       # LLM prediction benchmark
 │
 ├── src/                     # Core package source code 
 │   ├── data.py              # Custom cost stratification logic 
@@ -307,7 +307,7 @@ To ensure responsible deployment, performed a reliability and fairness audit usi
 │
 ├── assets/                  # Images and other assets for README
 │   ├── header.png           # Header image
-│   ├── infographic_meps_data.jpg # MEPS data overview infographic
+│   ├── infographic_meps_data.jpg  # MEPS data overview infographic
 │   ├── infographic_healthcare_costs.png  # U.S. healthcare cost explainer
 │   └── pipeline.svg         # Inference pipeline architecture diagram
 │
@@ -330,7 +330,7 @@ To ensure responsible deployment, performed a reliability and fairness audit usi
 ├── requirements-test.txt    # Test dependencies 
 ├── .env.example             # Template for environment variables
 │
-├── dvc.yaml                 # Preprocessing and modeling pipeline definitions (stages, deps, outs)
+├── dvc.yaml                 # Preprocessing and modeling pipeline definitions
 ├── dvc.lock                 # Hash-based data lineage lockfile
 ├── .dvc/                    # DVC configuration 
 │
