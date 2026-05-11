@@ -72,6 +72,7 @@ from sklearn.model_selection import ParameterSampler
 # Model evaluation
 from sklearn.metrics import (
     mean_absolute_error, 
+    mean_pinball_loss,
     r2_score
 )
 import time  # to measure training time
@@ -2223,3 +2224,207 @@ plot_residuals_vs_predicted(
 # </ul>
 # <b>Calibration Set (~1,000 samples of train):</b> CQR requires a hold-out calibration set to compute conformity scores. Hold out ~1,000 samples from the training set. This is large enough for stable conformity score estimation while small enough (~8.5% of 11,814 training samples) to not substantially reduce training data quality. The existing validation and test sets remain untouched for evaluation.
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Train a multi-quantile XGBoost model that returns q25, q50, q75, and q90 predictions.
+# </div>
+
+# %%
+QUANTILE_ALPHAS = [0.25, 0.50, 0.75, 0.90]
+QUANTILE_COLUMNS = [f"q{int(alpha * 100):02d}" for alpha in QUANTILE_ALPHAS]
+
+
+def get_xgb_quantile_params(point_params_path="../models/xgb_tuned_params.json"):
+    """
+    Build quantile XGBoost parameters from the tuned point-estimate model.
+
+    The point model was tuned for robust median-like predictions on log-costs.
+    Reusing its structural hyperparameters gives the quantile model a strong
+    starting point without launching another expensive search.
+    """
+    tuned_params = load_metrics(point_params_path, verbose=False) or {}
+    keep_params = [
+        "n_estimators",
+        "max_depth",
+        "learning_rate",
+        "min_child_weight",
+        "subsample",
+        "colsample_bytree",
+        "reg_lambda",
+        "reg_alpha",
+    ]
+    quantile_params = {key: tuned_params[key] for key in keep_params if key in tuned_params}
+    quantile_params.update({
+        "objective": "reg:quantileerror",
+        "quantile_alpha": QUANTILE_ALPHAS,
+        "tree_method": "hist",
+        "n_jobs": -1,
+        "random_state": RANDOM_STATE,
+    })
+    return quantile_params
+
+
+def monotonic_quantile_predictions(y_pred):
+    """
+    Clip predictions to valid dollars and enforce q25 <= q50 <= q75 <= q90.
+    """
+    y_pred = np.asarray(y_pred)
+    if y_pred.ndim == 1:
+        y_pred = y_pred.reshape(-1, 1)
+    y_pred = np.clip(y_pred, 0, None)
+    return np.maximum.accumulate(y_pred, axis=1)
+
+
+def weighted_interval_coverage(y_true, lower, upper, sample_weight):
+    """
+    Share of population-weighted observations whose actual cost falls inside an interval.
+    """
+    covered = (np.asarray(y_true) >= np.asarray(lower)) & (np.asarray(y_true) <= np.asarray(upper))
+    return np.average(covered, weights=sample_weight)
+
+
+def evaluate_xgb_quantile_predictions(y_true, y_pred_quantiles, sample_weight):
+    """
+    Evaluate q50 point accuracy and interval calibration for quantile predictions.
+    """
+    y_pred_quantiles = monotonic_quantile_predictions(y_pred_quantiles)
+    q25, q50, q75, q90 = [y_pred_quantiles[:, i] for i in range(len(QUANTILE_ALPHAS))]
+
+    metrics = {
+        "q50_mdae": weighted_median_absolute_error(y_true, q50, sample_weight=sample_weight),
+        "q50_mae": mean_absolute_error(y_true, q50, sample_weight=sample_weight),
+        "q50_r2": r2_score(y_true, q50, sample_weight=sample_weight),
+        "q25_q75_coverage": weighted_interval_coverage(y_true, q25, q75, sample_weight),
+        "q90_coverage": np.average(np.asarray(y_true) <= q90, weights=sample_weight),
+        "mean_interval_width": np.average(q75 - q25, weights=sample_weight),
+        "mean_cushion_width": np.average(q90 - q50, weights=sample_weight),
+    }
+
+    for alpha, column in zip(QUANTILE_ALPHAS, QUANTILE_COLUMNS):
+        metrics[f"{column}_pinball_loss"] = mean_pinball_loss(
+            y_true,
+            y_pred_quantiles[:, QUANTILE_COLUMNS.index(column)],
+            alpha=alpha,
+            sample_weight=sample_weight,
+        )
+
+    return metrics
+
+
+def train_xgb_quantile_model(
+    X_train,
+    y_train,
+    X_val,
+    y_val,
+    w_train,
+    w_val,
+    params=None,
+):
+    """
+    Train native XGBoost quantile regression on log-costs and persist app-ready artifacts.
+    """
+    xgb_quantile_params = params or get_xgb_quantile_params()
+    w_train_norm = w_train / w_train.mean()
+
+    xgb_quantile_model = TransformedTargetRegressor(
+        regressor=XGBRegressor(**xgb_quantile_params),
+        func=np.log1p,
+        inverse_func=np.expm1,
+    )
+
+    print("Training XGBoost quantile regression...")
+    start_time = time.time()
+    xgb_quantile_model.fit(X_train, y_train, sample_weight=w_train_norm)
+    training_time = time.time() - start_time
+
+    y_train_pred_quantiles = monotonic_quantile_predictions(xgb_quantile_model.predict(X_train))
+    y_val_pred_quantiles = monotonic_quantile_predictions(xgb_quantile_model.predict(X_val))
+
+    train_metrics = evaluate_xgb_quantile_predictions(y_train, y_train_pred_quantiles, w_train)
+    val_metrics = evaluate_xgb_quantile_predictions(y_val, y_val_pred_quantiles, w_val)
+    metrics = {
+        "XGBoost Quantile": {
+            **{f"train_{key}": value for key, value in train_metrics.items()},
+            **{f"val_{key}": value for key, value in val_metrics.items()},
+            "training_time": training_time,
+        }
+    }
+
+    val_predictions_df = pd.DataFrame(
+        y_val_pred_quantiles,
+        index=X_val.index,
+        columns=QUANTILE_COLUMNS,
+    )
+
+    save_model(xgb_quantile_model, "../models/xgb_quantile_model.joblib", verbose=False)
+    save_model(val_predictions_df, "../models/xgb_quantile_predictions.joblib", verbose=False)
+    save_metrics(metrics, "../models/xgb_quantile_metrics.json", verbose=False)
+    save_metrics(xgb_quantile_params, "../models/xgb_quantile_params.json", verbose=False)
+
+    print(
+        "  XGBoost Quantile  →  "
+        f"q50 MdAE: {val_metrics['q50_mdae']:.2f} | "
+        f"q25-q75 coverage: {val_metrics['q25_q75_coverage']:.1%} | "
+        f"q90 coverage: {val_metrics['q90_coverage']:.1%} | "
+        f"training: {training_time:.1f}s"
+    )
+    print("  Saved artifacts to models/xgb_quantile_*.joblib/json")
+
+    return {
+        "fitted_model": xgb_quantile_model,
+        "metrics": metrics,
+        "y_val_pred_quantiles": val_predictions_df,
+    }
+
+
+# Run quantile regression
+# xgb_quantile_results = train_xgb_quantile_model(
+#     X_train_preprocessed,
+#     y_train,
+#     X_val_preprocessed,
+#     y_val,
+#     w_train,
+#     w_val,
+# )
+
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Evaluate persisted quantile-regression artifacts.
+# </div>
+
+# %%
+# xgb_quantile_metrics = load_metrics("../models/xgb_quantile_metrics.json")
+# xgb_quantile_metrics_df = pd.DataFrame(xgb_quantile_metrics).T
+# display(
+#     xgb_quantile_metrics_df[[
+#         "val_q50_mdae",
+#         "val_q50_mae",
+#         "val_q50_r2",
+#         "val_q25_q75_coverage",
+#         "val_q90_coverage",
+#         "val_mean_interval_width",
+#         "val_mean_cushion_width",
+#     ]]
+#     .rename(columns={
+#         "val_q50_mdae": "Median Estimate MdAE",
+#         "val_q50_mae": "Median Estimate MAE",
+#         "val_q50_r2": "Median Estimate R²",
+#         "val_q25_q75_coverage": "Common Range Coverage",
+#         "val_q90_coverage": "Extra Cushion Coverage",
+#         "val_mean_interval_width": "Avg Common Range Width",
+#         "val_mean_cushion_width": "Avg Cushion Above Median",
+#     })
+#     .style
+#     .pipe(add_table_caption, "XGBoost Quantile Regression Metrics (Validation Data)")
+#     .format({
+#         "Median Estimate MdAE": "${:,.2f}",
+#         "Median Estimate MAE": "${:,.2f}",
+#         "Median Estimate R²": "{:.3f}",
+#         "Common Range Coverage": "{:.1%}",
+#         "Extra Cushion Coverage": "{:.1%}",
+#         "Avg Common Range Width": "${:,.2f}",
+#         "Avg Cushion Above Median": "${:,.2f}",
+#     })
+# )
