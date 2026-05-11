@@ -2170,7 +2170,7 @@ plot_residuals_vs_predicted(
 #         </tr>
 #     </tbody>
 # </table>
-# By using this approach, a healthy user will see a very tight range (e.g., \$50 – \$200), while a user with high age and multiple chronic conditions will see a wide range (e.g., \$1,200 – \$8,500), accurately reflecting their higher financial risk. 
+# By using this approach, a low-risk user (predicted cost Median < \$1,000) will see a very tight range (e.g., \$50 – \$200), while a high-risk user (Median ≥ \$1,000) will see a wide range (e.g., \$1,200 – \$8,500), accurately reflecting their higher financial risk. 
 # <br><br>
 #     <strong>Example Prediction Text</strong> (shown to app users)
 # <table style="width:100%; border-spacing: 10px; border-collapse: separate; margin-top: 10px;">
@@ -2182,7 +2182,7 @@ plot_residuals_vs_predicted(
 #             💰 <b>Most likely:</b> \$180<br>
 #             📊 <b>Typical range:</b> \$50 – \$450<br>
 #             🛡️ <b>To be safe, budget up to:</b> \$900<br><br>
-#             <span style="font-size: 0.85em; color: #555;">Half of people with a similar profile spend between \$50 and \$450 for the year. To prepare for an unexpected illness or procedure, consider budgeting up to \$900.</span>
+#             <span style="font-size: 0.85em; color: #555;">Half of people with a similar profile spend between \$50 and \$450 for the year. To prepare for an unexpected illness or accident, consider budgeting up to \$900. This amount covers 9 out of 10 scenarios.</span>
 #         </td>
 #         <td style="background-color: #fcfcfc; border: 1px solid #ddd; padding: 15px; vertical-align: top; width: 50%; border-radius: 4px;">
 #             <strong>High-Risk Profile</strong><br>
@@ -2192,7 +2192,7 @@ plot_residuals_vs_predicted(
 #             📊 <b>Typical range:</b> \$1,100 – \$7,200<br>
 #             🛡️ <b>To be safe, budget up to:</b> \$14,500<br><br>
 #             <span style="font-size: 0.85em; color: #555;">
-#                 Half of people with a similar profile spend between \$1,100 and \$7,200 for the year. With your health profile, costs can vary significantly. Budgeting up to \$14,500 covers 9 out of 10 scenarios.
+#                 Half of people with a similar profile spend between \$1,100 and \$7,200 for the year. Because costs can vary significantly for your profile, budgeting up to \$14,500 protects you against 9 out of 10 scenarios (a high-utilization year).
 #             </span>
 #         </td>
 #     </tr>
@@ -2210,7 +2210,7 @@ plot_residuals_vs_predicted(
 #         <li><b>Native multi-quantile support:</b> XGBoost's <code>reg:quantileerror</code> objective trains all four quantiles (0.25, 0.50, 0.75, 0.90) in a single model via the <code>quantile_alpha</code> parameter. Elastic Net would require <code>sklearn.linear_model.QuantileRegressor</code> (separate model per quantile) and Random Forest would require the external <code>quantile-forest</code> package, both adding complexity without changing the conclusion.</li>
 #         <li><b>Deployment efficiency:</b> A single multi-quantile XGBoost model produces one <code>.joblib</code> artifact instead of 4 separate model files.</li>
 #     </ul>
-# <strong>2. Explainability (SHAP): Median (q50) Only</strong> <br>
+# <strong>2. Explainability (SHAP): Median Only</strong> <br>
 # A quantile model predicts four numbers per user. SHAP values explain feature contributions for a <em>specific</em> prediction target. Those contributions differ across quantiles (e.g., "Diabetes: +1,200" for the median vs. "Diabetes: +3,800" for the 90th percentile). Showing multiple, contradictory SHAP explanations would confuse users.
 # <br><br>
 # <strong>Decision:</strong> Display SHAP values for the median (q50) prediction only. This gives users a single, coherent explanation of their "most likely" cost drivers. The wider prediction range and safety buffer are presented as context for better financial planning.
