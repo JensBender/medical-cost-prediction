@@ -2132,7 +2132,7 @@ plot_residuals_vs_predicted(
 #     For the medical cost planner app, adopt a "Budget vs. Buffer" approach to give users a helpful, accurate, and actionable prediction for next year's out-of-pocket costs.
 # <br><br>
 # <strong>Rationale: Why prediction ranges matter</strong> <br>
-# Standard models provide a point estimate (a single mean or median) that implies false precision. A better approach is to use ranges to communicate the "confidence" of the prediction.
+# Standard models provide a point estimate (a single mean or median) that implies false precision. A better approach is to show a middle estimate, a common range, and a planning cushion so users can act on the result without needing technical jargon.
 #
 # *   <b>Heteroscedasticity:</b> Residual plots confirm a "fan shape" where error variance is not constant. As medical complexity increases, the spread of possible outcomes expands exponentially. A single number cannot capture this shifting uncertainty.
 # *   <b>Stratified Error:</b> Auditing performance across user segments demonstrated that "average error" is misleading. Healthy users have very predictable costs (narrow range), while high-risk users face extreme uncertainty (wide range). A single number would over-prepare the healthy and under-prepare the sick. 
@@ -2151,26 +2151,26 @@ plot_residuals_vs_predicted(
 #     </thead>
 #     <tbody>
 #         <tr style="border-bottom: 1px solid #eef7fe;">
-#             <td style="padding: 8px;"><b>Typical Year</b></td>
+#             <td style="padding: 8px;"><b>Middle Estimate</b></td>
 #             <td style="padding: 8px;"><code>0.50</code> (Median)</td>
-#             <td style="padding: 8px;">The most likely outcome.</td>
-#             <td style="padding: 8px;">The "Anchor" for basic budgeting.</td>
+#             <td style="padding: 8px;">Half of similar people spend less; half spend more.</td>
+#             <td style="padding: 8px;">Simple anchor for basic budgeting.</td>
 #         </tr>
 #         <tr style="border-bottom: 1px solid #eef7fe;">
-#             <td style="padding: 8px;"><b>Likely Range</b></td>
+#             <td style="padding: 8px;"><b>Common Range</b></td>
 #             <td style="padding: 8px;"><code>0.25</code> to <code>0.75</code></td>
-#             <td style="padding: 8px;">Where 50% of profiles fall.</td>
-#             <td style="padding: 8px;">Safe zone for FSA/HSA contributions.</td>
+#             <td style="padding: 8px;">Middle 50% of similar profiles.</td>
+#             <td style="padding: 8px;">Expected range for FSA/HSA planning.</td>
 #         </tr>
 #         <tr>
-#             <td style="padding: 8px;"><b>Safety Buffer</b></td>
+#             <td style="padding: 8px;"><b>Planning Cushion</b></td>
 #             <td style="padding: 8px;"><code>0.90</code></td>
-#             <td style="padding: 8px;">The "Worst Case" scenario.</td>
-#             <td style="padding: 8px;">Emergency fund & risk planning.</td>
+#             <td style="padding: 8px;">Higher-cost year.</td>
+#             <td style="padding: 8px;">Emergency fund and risk planning.</td>
 #         </tr>
 #     </tbody>
 # </table>
-# By using this approach, a low-risk user (predicted cost Median < \$1,000) will see a very tight range (e.g., \$50 – \$200), while a high-risk user (Median ≥ \$1,000) will see a wide range (e.g., \$1,200 – \$8,500), accurately reflecting their higher financial risk. 
+# Recommendation: Display the median as the main estimate, q25-q75 as the common range, and q90 as a planning cushion. By using this approach, a low-risk user (predicted cost Median < \$1,000) will see a tight range (e.g., \$50 – \$450), while a high-risk user (Median ≥ \$1,000) will see a wider range (e.g., \$1,100 – \$7,200), accurately reflecting their higher financial risk. For high-risk users, display a note on possible out-of-pocket insurance maximum. 
 # <br><br>
 #     <strong>Example Prediction Text</strong> (shown to app users)
 # <table style="width:100%; border-spacing: 10px; border-collapse: separate; margin-top: 10px;">
@@ -2178,21 +2178,21 @@ plot_residuals_vs_predicted(
 #         <td style="background-color: #fcfcfc; border: 1px solid #ddd; padding: 15px; vertical-align: top; width: 50%; border-radius: 4px;">
 #             <strong>Low-Risk Profile</strong><br>
 #             <small>28-year-old with no chronic conditions</small><br><br>
-#             <b>Your Estimated Out-of-Pocket Costs for the Upcoming Year</b><br><br>
-#             💰 <b>Most likely:</b> \$180<br>
-#             📊 <b>Typical range:</b> \$50 – \$450<br>
-#             🛡️ <b>To be safe, budget up to:</b> \$900<br><br>
-#             <span style="font-size: 0.85em; color: #555;">Half of people with a similar profile spend between \$50 and \$450 for the year. To prepare for an unexpected illness or accident, consider budgeting up to \$900. This amount covers 9 out of 10 scenarios.</span>
+#             <b>Your Estimated Out-of-Pocket Costs for Next Year</b><br><br>
+#             💰 <b>Plan around:</b> \$180<br>
+#             📊 <b>Common range:</b> \$50 – \$450<br>
+#             🛡️ <b>Extra cushion:</b> plan up to \$900<br><br>
+#             <span style="font-size: 0.85em; color: #555;">People with answers like yours often spend about \$180. Many spend between \$50 and \$450. If you want a cushion for a higher-cost year, planning up to \$900 would cover most similar cases.</span>
 #         </td>
 #         <td style="background-color: #fcfcfc; border: 1px solid #ddd; padding: 15px; vertical-align: top; width: 50%; border-radius: 4px;">
 #             <strong>High-Risk Profile</strong><br>
 #             <small>68-year-old with multiple chronic conditions</small><br><br>
-#             <b>Your Estimated Out-of-Pocket Costs for the Upcoming Year</b><br><br>
-#             💰 <b>Most likely:</b> \$2,850<br>
-#             📊 <b>Typical range:</b> \$1,100 – \$7,200<br>
-#             🛡️ <b>To be safe, budget up to:</b> \$14,500<br><br>
+#             <b>Your Estimated Out-of-Pocket Costs for Next Year</b><br><br>
+#             💰 <b>Plan around:</b> \$2,850<br>
+#             📊 <b>Common range:</b> \$1,100 – \$7,200<br>
+#             🛡️ <b>Extra cushion:</b> plan up to \$9,500<br><br>
 #             <span style="font-size: 0.85em; color: #555;">
-#                 Half of people with a similar profile spend between \$1,100 and \$7,200 for the year. Because costs can vary significantly for your profile, budgeting up to \$14,500 protects you against 9 out of 10 scenarios (a high-utilization year).
+#                 People with answers like yours often spend about \$2,850, but costs can change a lot from year to year. Many similar people spend between \$1,100 and \$7,200. If you want a cushion for a higher-cost year, planning up to \$9,500 would cover most similar cases. If you have insurance, your plan may have a yearly limit for covered in-network care; check that limit before setting aside more than that.
 #             </span>
 #         </td>
 #     </tr>
@@ -2213,7 +2213,7 @@ plot_residuals_vs_predicted(
 # <strong>2. Explainability (SHAP): Median Only</strong> <br>
 # A quantile model predicts four numbers per user. SHAP values explain feature contributions for a <em>specific</em> prediction target. Those contributions differ across quantiles (e.g., "Diabetes: +1,200" for the median vs. "Diabetes: +3,800" for the 90th percentile). Showing multiple, contradictory SHAP explanations would confuse users.
 # <br><br>
-# <strong>Decision:</strong> Display SHAP values for the median (q50) prediction only. This gives users a single, coherent explanation of their "most likely" cost drivers. The wider prediction range and safety buffer are presented as context for better financial planning.
+# <strong>Decision:</strong> Display SHAP values for the median prediction only. This gives users a single, coherent explanation of their "most likely" cost drivers. The wider prediction range and safety buffer are presented as context for better financial planning.
 # <br><br>
 # <strong>3. Calibration: Conformalized Quantile Regression (CQR)</strong> <br>
 # Raw quantile regression has no coverage guarantee. The predicted "Typical Range" (q25–q75) might actually contain only 40% or 60% of real outcomes, not the intended 50%. CQR adds a calibration step that adjusts the intervals to provide a finite-sample coverage guarantee (see <code><a href="../docs/specs/technical_specifications.md" target="_blank">technical specifications</a></code>  success metric ≥ 50% interval coverage).
