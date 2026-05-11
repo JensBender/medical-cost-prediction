@@ -2115,7 +2115,7 @@ plot_residuals_vs_predicted(
 #     <ul>
 #         <li><strong>Errors grow with predicted costs ("fan shape"):</strong> All three models show wider error spread as predictions increase. This is expected, because expensive medical events (surgeries, hospitalizations) are rare and hard to predict from survey data alone.</li>
 #         <li><strong>Errors are mostly underestimates:</strong> Residuals skew heavily upward, which means the model underpredicts actual costs. A few individuals incur extreme costs that no model can fully anticipate, so the models miss on the high side far more often than they overpredict.</li>
-#         <li><strong>Elastic Net can't separate patients:</strong> With a max prediction of only \$217, Elastic Net compresses nearly everyone into a narrow "low-cost" band. Its median residual climbs steeply, meaning the higher it tries to predict, the more it underestimates. It effectively treats the entire population as low-risk.</li>
+#         <li><strong>Elastic Net can't separate low vs. high costs:</strong> With a max prediction of only \$217, Elastic Net compresses nearly everyone into a narrow "low-cost" band. Its median residual climbs steeply, meaning the higher it tries to predict, the more it underestimates. It effectively treats the entire population as low-risk.</li>
 #         <li><strong>XGBoost differentiates best:</strong> XGBoost predictions span up to \$2,114, roughly 10× the range of Elastic Net and 1.7× Random Forest. A wider prediction range means the model better separates low-cost from high-cost individuals.</li>
 #         <li><strong>Tree models are less biased:</strong> Both RF and XGBoost keep their median residual near zero across most of their prediction range, indicating less systematic bias. Elastic Net's median drifts sharply upward, confirming it systematically underpredicts.</li>
 #         <li><strong>Mid-range uncertainty peak ("inverted-U"):</strong> RF and XGBoost share a distinctive pattern: the IQR band widens through mid-range predictions, then narrows again at the highest predictions. This suggests that when tree models confidently predict high costs, those predictions are relatively well-calibrated.</li>
@@ -2129,16 +2129,16 @@ plot_residuals_vs_predicted(
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ <strong>"Budget vs. Buffer" Approach</strong> <br> 
-#     Use a "Budget vs. Buffer" approach to give users of the medical cost planner app a helpful, accurate, and actionable prediction for next year's out-of-pocket costs.
+#     For the medical cost planner app, adopt a "Budget vs. Buffer" approach to give users a helpful, accurate, and actionable prediction for next year's out-of-pocket costs.
 # <br><br>
-# <strong>Rationale: Why ranges matter</strong> <br>
-# Standard models (predicting the mean or median) provide a single point estimate that implies false precision. Heteroscedasticity analysis revealed that as medical complexity increases, the "fan shape" of our errors widens significantly.
+# <strong>Rationale: Why prediction ranges matter</strong> <br>
+# Standard models provide a point estimate (a single mean or median) that implies false precision. A better approach is to use ranges to communicate the "confidence" of the prediction.
 #
-# *   <b>Low-Risk Profiles:</b> Have a narrow error spread; a single number is mostly accurate.
-# *   <b>High-Risk Profiles:</b> Have a massive error spread; a single number is "precisely wrong" and usually underestimates actual costs.
+# *   <b>Heteroscedasticity:</b> Residual plots confirm a "fan shape" where error variance is not constant. As medical complexity increases, the spread of possible outcomes expands exponentially. A single number cannot capture this shifting uncertainty.
+# *   <b>Stratified Error:</b> Auditing performance across user segments demonstrated that "average error" is misleading. Healthy users have very predictable costs (narrow range), while high-risk users face extreme uncertainty (wide range). A single number would over-prepare the healthy and under-prepare the sick. 
 #
 # <strong>The Solution: Quantile Regression</strong> <br>
-# Instead of one "best guess," we train models to predict specific percentiles of the cost distribution. This allows the app to communicate uncertainty directly to the user without needing technical jargon:
+# Instead of one "best guess", train models to predict specific percentiles of the cost distribution. This allows the medical cost planner to communicate uncertainty directly to the user without needing technical jargon:
 #
 # <table style="width:70%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em;">
 #     <thead>
