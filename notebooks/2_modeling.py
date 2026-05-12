@@ -2275,36 +2275,54 @@ xgb_quantile_model.fit(X_train_preprocessed, y_train, sample_weight=w_train_norm
 training_time = time.time() - start_time
 
 # --- 4. Predictions ---
-# Ensure non-negative and monotonic predictions: q25 <= q50 <= q75 <= q90 
+# Predict on training and validation set
+y_train_pred_raw = xgb_quantile_model.predict(X_train_preprocessed)
 y_val_pred_raw = xgb_quantile_model.predict(X_val_preprocessed)
-y_val_pred_non_negative = np.maximum(y_val_pred_raw, 0)  # Enforces non-negative predictions
-y_val_pred = np.maximum.accumulate(y_val_pred_non_negative, axis=1)  # Pulls lower estimates up (more conservative for financial planning)
+
+# Ensure non-negative predictions
+y_train_pred_non_negative = np.maximum(y_train_pred_raw, 0)  
+y_val_pred_non_negative = np.maximum(y_val_pred_raw, 0)
+
+# Ensure monotonic predictions (q25 <= q50 <= q75 <= q90) by pulling lower estimates up (more conservative for financial planning)
+y_train_pred = np.maximum.accumulate(y_train_pred_non_negative, axis=1)  
+y_val_pred = np.maximum.accumulate(y_val_pred_non_negative, axis=1)
 
 # --- 5. Evaluation ---
+# Unpack quantiles for coverage analysis
+y_train_pred_q25, _, y_train_pred_q75, y_train_pred_q90 = y_train_pred.T
 y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = y_val_pred.T
 
-# Calculate interval coverage (share of population whose actual cost is within the prediction range)
-q25_q75_coverage = np.average((y_val >= y_val_pred_q25) & (y_val <= y_val_pred_q75), weights=w_val)  # Evaluate with raw survey weights
-q90_coverage = np.average(y_val <= y_val_pred_q90, weights=w_val)
+# Calculate coverage (share of population whose actual cost is within the predicted range)
+train_q25_q75_coverage = np.average((y_train >= y_train_pred_q25) & (y_train <= y_train_pred_q75), weights=w_train)
+train_q90_coverage = np.average(y_train <= y_train_pred_q90, weights=w_train)
 
-val_metrics = {
-    "val_q50_mdae": weighted_median_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val),
-    "val_q50_mae": mean_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val),
-    "val_q25_q75_coverage": q25_q75_coverage,
-    "val_q90_coverage": q90_coverage,
-    "val_mean_interval_width": np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val),
-    "training_time": training_time,
+val_q25_q75_coverage = np.average((y_val >= y_val_pred_q25) & (y_val <= y_val_pred_q75), weights=w_val)
+val_q90_coverage = np.average(y_val <= y_val_pred_q90, weights=w_val)
+
+metrics = {
+    "XGBoost (Quantile)": {
+        "train_q25_q75_coverage": train_q25_q75_coverage,
+        "train_q90_coverage": train_q90_coverage,
+        "val_q50_mdae": weighted_median_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val),
+        "val_q50_mae": mean_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val),
+        "val_q25_q75_coverage": val_q25_q75_coverage,
+        "val_q90_coverage": val_q90_coverage,
+        "val_mean_interval_width": np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val),
+        "training_time": training_time,
+    }
 }
 
-# --- 6. Model Persistance ---
+# --- 6. Model Persistence ---
 val_predictions_df = pd.DataFrame(y_val_pred, index=X_val_preprocessed.index, columns=QUANTILE_LABELS)
 
 save_model(xgb_quantile_model, "../models/xgb_quantile_model.joblib", verbose=False)
 save_model(val_predictions_df, "../models/xgb_quantile_predictions.joblib", verbose=False)
-save_metrics({"XGBoost Quantile": val_metrics}, "../models/xgb_quantile_metrics.json", verbose=False)
+save_metrics(metrics, "../models/xgb_quantile_metrics.json", verbose=False)
 save_metrics(xgb_quantile_params, "../models/xgb_quantile_params.json", verbose=False)
 
-print(f"  Done in {training_time:.1f}s | q50 MdAE: ${val_metrics['val_q50_mdae']:.2f} | q25-q75 coverage: {val_metrics['val_q25_q75_coverage']:.1%}")
+print(f"  Done in {training_time:.1f}s | q50 MdAE: ${metrics['XGBoost Quantile']['val_q50_mdae']:.2f}")
+print(f"  q25-q75 coverage: [Train: {train_q25_q75_coverage:.1%} | Val: {val_q25_q75_coverage:.1%}]")
+print(f"  q90 coverage:     [Train: {train_q90_coverage:.1%} | Val: {val_q90_coverage:.1%}]")
 
 
 
