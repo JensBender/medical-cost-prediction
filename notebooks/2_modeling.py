@@ -2266,15 +2266,19 @@ xgb_quantile_model = TransformedTargetRegressor(
     inverse_func=np.expm1,
 )
 
+# Normalize training weights (mean=1.0) for numerical stability during model fitting
+w_train_norm = w_train / w_train.mean()
+
 print("Training XGBoost quantile regression...")
 start_time = time.time()
-xgb_quantile_model.fit(X_train_preprocessed, y_train, sample_weight=w_train / w_train.mean())
+xgb_quantile_model.fit(X_train_preprocessed, y_train, sample_weight=w_train_norm)
 training_time = time.time() - start_time
 
-# --- 4. Predictions & Monotonicity ---
-# Enforce q25 <= q50 <= q75 <= q90 (monotonicity)
+# --- 4. Predictions ---
+# Ensure non-negative and monotonic predictions: q25 <= q50 <= q75 <= q90 
 y_val_pred_raw = xgb_quantile_model.predict(X_val_preprocessed)
-y_val_pred = np.maximum.accumulate(np.clip(y_val_pred_raw, 0, None), axis=1)
+y_val_pred_non_negative = np.maximum(y_val_pred_raw, 0)  # Enforces non-negative predictions
+y_val_pred = np.maximum.accumulate(y_val_pred_non_negative, axis=1)  # Pulls lower estimates up (more conservative for financial planning)
 
 # --- 5. Evaluation ---
 q25, q50, q75, q90 = [y_val_pred[:, i] for i in range(len(QUANTILES))]
