@@ -2309,7 +2309,9 @@ val_q90_coverage = np.average(y_val <= y_val_pred_q90, weights=w_val)
 
 # Evaluate interval precision
 train_q25_q75_width = np.average(y_train_pred_q75 - y_train_pred_q25, weights=w_train)
+train_q50_q90_width = np.average(y_train_pred_q90 - y_train_pred_q50, weights=w_train)  # "Safety Cushion" width
 val_q25_q75_width = np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val)
+val_q50_q90_width = np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_val)
 
 metrics = {
     "XGBoost (Quantile)": {
@@ -2319,12 +2321,14 @@ metrics = {
         "train_q25_q75_coverage": train_q25_q75_coverage,
         "train_q90_coverage": train_q90_coverage,
         "train_q25_q75_width": train_q25_q75_width,
+        "train_q50_q90_width": train_q50_q90_width,
         "val_q50_mdae": val_q50_mdae,
         "val_q50_mae": val_q50_mae,
         "val_q50_r2": val_q50_r2,
         "val_q25_q75_coverage": val_q25_q75_coverage,
         "val_q90_coverage": val_q90_coverage,
         "val_q25_q75_width": val_q25_q75_width,
+        "val_q50_q90_width": val_q50_q90_width,
         "training_time": training_time,
     }
 }
@@ -2352,36 +2356,41 @@ print(f"  Median R²:        [Train: {m['train_q50_r2']:.4f} | Val: {m['val_q50_
 # </div>
 
 # %%
-# xgb_quantile_metrics = load_metrics("../models/xgb_quantile_metrics.json")
-# xgb_quantile_metrics_df = pd.DataFrame(xgb_quantile_metrics).T
-# display(
-#     xgb_quantile_metrics_df[[
-#         "val_q50_mdae",
-#         "val_q50_mae",
-#         "val_q50_r2",
-#         "val_q25_q75_coverage",
-#         "val_q90_coverage",
-#         "val_mean_interval_width",
-#         "val_mean_cushion_width",
-#     ]]
-#     .rename(columns={
-#         "val_q50_mdae": "Median Estimate MdAE",
-#         "val_q50_mae": "Median Estimate MAE",
-#         "val_q50_r2": "Median Estimate R²",
-#         "val_q25_q75_coverage": "Common Range Coverage",
-#         "val_q90_coverage": "Extra Cushion Coverage",
-#         "val_mean_interval_width": "Avg Common Range Width",
-#         "val_mean_cushion_width": "Avg Cushion Above Median",
-#     })
-#     .style
-#     .pipe(add_table_caption, "XGBoost Quantile Regression Metrics (Validation Data)")
-#     .format({
-#         "Median Estimate MdAE": "${:,.2f}",
-#         "Median Estimate MAE": "${:,.2f}",
-#         "Median Estimate R²": "{:.3f}",
-#         "Common Range Coverage": "{:.1%}",
-#         "Extra Cushion Coverage": "{:.1%}",
-#         "Avg Common Range Width": "${:,.2f}",
-#         "Avg Cushion Above Median": "${:,.2f}",
-#     })
-# )
+xgb_quantile_metrics = load_metrics("../models/xgb_quantile_metrics.json")
+xgb_quantile_metrics_df = pd.DataFrame(xgb_quantile_metrics).T
+
+display(
+    xgb_quantile_metrics_df[[
+        "val_q50_mdae",
+        "val_q50_r2",
+        "train_q25_q75_coverage",
+        "val_q25_q75_coverage",
+        "train_q90_coverage",
+        "val_q90_coverage",
+        "val_q25_q75_width",
+        "val_q50_q90_width",
+    ]]
+    .rename(columns={
+        "val_q50_mdae": "Median MdAE",
+        "val_q50_r2": "Median R²",
+        "train_q25_q75_coverage": "Range Coverage (Train)",
+        "val_q25_q75_coverage": "Range Coverage (Val)",
+        "train_q90_coverage": "Cushion Coverage (Train)",
+        "val_q90_coverage": "Cushion Coverage (Val)",
+        "val_q25_q75_width": "Avg Range Width",
+        "val_q50_q90_width": "Avg Cushion Width",
+    })
+    .style
+    .pipe(add_table_caption, "XGBoost Quantile Regression Summary")
+    .format({
+        "Median MdAE": "${:,.2f}",
+        "Median R²": "{:.4f}",
+        "Range Coverage (Train)": "{:.1%}",
+        "Range Coverage (Val)": "{:.1%}",
+        "Cushion Coverage (Train)": "{:.1%}",
+        "Cushion Coverage (Val)": "{:.1%}",
+        "Avg Range Width": "${:,.2f}",
+        "Avg Cushion Width": "${:,.2f}",
+    })
+)
+
