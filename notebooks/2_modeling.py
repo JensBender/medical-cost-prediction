@@ -2231,19 +2231,22 @@ plot_residuals_vs_predicted(
 # </div>
 
 # %%
-QUANTILE_ALPHAS = [0.25, 0.50, 0.75, 0.90]
-QUANTILE_COLUMNS = [f"q{int(alpha * 100):02d}" for alpha in QUANTILE_ALPHAS]
+QUANTILES = [0.25, 0.50, 0.75, 0.90]
+QUANTILE_LABELS = ["q25", "q50", "q75", "q90"]
 
 
 def get_xgb_quantile_params(point_params_path="../models/xgb_tuned_params.json"):
     """
     Build quantile XGBoost parameters from the tuned point-estimate model.
 
-    The point model was tuned for robust median-like predictions on log-costs.
-    Reusing its structural hyperparameters gives the quantile model a strong
-    starting point without launching another expensive search.
+    We continue to train on log-costs (via TransformedTargetRegressor) for two reasons:
+    1. Mathematical: Quantiles are invariant to monotonic transformations.
+    2. Optimization: Quantile loss (Pinball Loss) is essentially a weighted 
+       absolute error. On the raw dollar scale, extreme outliers create massive 
+       gradients that "hijack" the training process. Log-transforming levels the 
+       playing field, ensuring stable gradients and better convergence.
     """
-    tuned_params = load_metrics(point_params_path, verbose=False) or {}
+    tuned_params = load_metrics(point_params_path, verbose=False)
     keep_params = [
         "n_estimators",
         "max_depth",
@@ -2253,14 +2256,14 @@ def get_xgb_quantile_params(point_params_path="../models/xgb_tuned_params.json")
         "colsample_bytree",
         "reg_lambda",
         "reg_alpha",
+        "tree_method",
+        "n_jobs",
+        "random_state",
     ]
-    quantile_params = {key: tuned_params[key] for key in keep_params if key in tuned_params}
+    quantile_params = {key: tuned_params[key] for key in keep_params}
     quantile_params.update({
         "objective": "reg:quantileerror",
-        "quantile_alpha": QUANTILE_ALPHAS,
-        "tree_method": "hist",
-        "n_jobs": -1,
-        "random_state": RANDOM_STATE,
+        "quantile_alpha": QUANTILES,
     })
     return quantile_params
 
@@ -2289,7 +2292,7 @@ def evaluate_xgb_quantile_predictions(y_true, y_pred_quantiles, sample_weight):
     Evaluate q50 point accuracy and interval calibration for quantile predictions.
     """
     y_pred_quantiles = monotonic_quantile_predictions(y_pred_quantiles)
-    q25, q50, q75, q90 = [y_pred_quantiles[:, i] for i in range(len(QUANTILE_ALPHAS))]
+    q25, q50, q75, q90 = [y_pred_quantiles[:, i] for i in range(len(QUANTILES))]
 
     metrics = {
         "q50_mdae": weighted_median_absolute_error(y_true, q50, sample_weight=sample_weight),
@@ -2301,10 +2304,10 @@ def evaluate_xgb_quantile_predictions(y_true, y_pred_quantiles, sample_weight):
         "mean_cushion_width": np.average(q90 - q50, weights=sample_weight),
     }
 
-    for alpha, column in zip(QUANTILE_ALPHAS, QUANTILE_COLUMNS):
+    for alpha, column in zip(QUANTILES, QUANTILE_LABELS):
         metrics[f"{column}_pinball_loss"] = mean_pinball_loss(
             y_true,
-            y_pred_quantiles[:, QUANTILE_COLUMNS.index(column)],
+            y_pred_quantiles[:, QUANTILE_LABELS.index(column)],
             alpha=alpha,
             sample_weight=sample_weight,
         )
@@ -2354,7 +2357,7 @@ def train_xgb_quantile_model(
     val_predictions_df = pd.DataFrame(
         y_val_pred_quantiles,
         index=X_val.index,
-        columns=QUANTILE_COLUMNS,
+        columns=QUANTILE_LABELS,
     )
 
     save_model(xgb_quantile_model, "../models/xgb_quantile_model.joblib", verbose=False)
