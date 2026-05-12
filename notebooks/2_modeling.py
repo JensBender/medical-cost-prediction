@@ -2330,7 +2330,6 @@ print(f"  Avg Cushion Width:[Train: ${train_q50_q90_width:.2f} | Val: ${val_q50_
 
 # --- 6. Model Persistence ---
 print("Step 6: Persisting model results...")
-val_predictions_df = pd.DataFrame(y_val_pred, index=X_val_preprocessed.index, columns=QUANTILE_LABELS)
 
 save_model(xgb_quantile_model, "../models/xgb_quantile_model.joblib", verbose=False)
 print("  Saved XGBoost quantile regression model to 'models/xgb_quantile_model.joblib'")
@@ -2360,7 +2359,7 @@ print("  Saved evaluation metrics of XGBoost quantile regression to 'models/xgb_
 save_metrics(xgb_quantile_params, "../models/xgb_quantile_params.json", verbose=False)
 print("  Saved hyperparameters of XGBoost quantile regression to 'models/xgb_quantile_params.json'")
 
-save_model(val_predictions_df, "../models/xgb_quantile_predictions.joblib", verbose=False)
+save_model(y_val_pred, "../models/xgb_quantile_predictions.joblib", verbose=False)
 print("  Saved predicted values of XGBoost quantile regression to 'models/xgb_quantile_predictions.joblib'")
 
 print("\n✅ XGBoost quantile regression complete.")
