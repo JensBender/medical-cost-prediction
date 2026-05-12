@@ -2231,23 +2231,14 @@ plot_residuals_vs_predicted(
 # </div>
 
 # %%
+# --- 1. Configuration ---
 QUANTILES = [0.25, 0.50, 0.75, 0.90]
 QUANTILE_LABELS = ["q25", "q50", "q75", "q90"]
 
-
-def get_xgb_quantile_params(point_params_path="../models/xgb_tuned_params.json"):
-    """
-    Build quantile XGBoost parameters from the tuned point-estimate model.
-
-    We continue to train on log-costs (via TransformedTargetRegressor) for two reasons:
-    1. Mathematical: Quantiles are invariant to monotonic transformations.
-    2. Optimization: Quantile loss (Pinball Loss) is essentially a weighted 
-       absolute error. On the raw dollar scale, extreme outliers create massive 
-       gradients that "hijack" the training process. Log-transforming levels the 
-       playing field, ensuring stable gradients and better convergence.
-    """
-    tuned_params = load_metrics(point_params_path, verbose=False)
-    keep_params = [
+# --- 2. Model Parameters ---
+# Reuse hyperparameters from the tuned model and update with quantile regression objective. 
+tuned_params = load_metrics("../models/xgb_tuned_params.json")
+keep_params = [
         "n_estimators",
         "max_depth",
         "learning_rate",
@@ -2259,137 +2250,58 @@ def get_xgb_quantile_params(point_params_path="../models/xgb_tuned_params.json")
         "tree_method",
         "n_jobs",
         "random_state",
-    ]
-    quantile_params = {key: tuned_params[key] for key in keep_params}
-    quantile_params.update({
-        "objective": "reg:quantileerror",
-        "quantile_alpha": QUANTILES,
-    })
-    return quantile_params
+]
+xgb_quantile_params = {k: tuned_params[k] for k in keep_params}
+xgb_quantile_params.update({
+    "objective": "reg:quantileerror",
+    "quantile_alpha": QUANTILES,
+})
 
+# --- 3. Train Model ---
+# Train on log-costs: quantiles are invariant to monotonic transformations, and the log scale
+# stabilizes tree-splitting logic by preventing extreme outliers from dominating the partition search.
+xgb_quantile_model = TransformedTargetRegressor(
+    regressor=XGBRegressor(**xgb_quantile_params),
+    func=np.log1p,
+    inverse_func=np.expm1,
+)
 
-def monotonic_quantile_predictions(y_pred):
-    """
-    Clip predictions to valid dollars and enforce q25 <= q50 <= q75 <= q90.
-    """
-    y_pred = np.asarray(y_pred)
-    if y_pred.ndim == 1:
-        y_pred = y_pred.reshape(-1, 1)
-    y_pred = np.clip(y_pred, 0, None)
-    return np.maximum.accumulate(y_pred, axis=1)
+print("Training XGBoost quantile regression...")
+start_time = time.time()
+xgb_quantile_model.fit(X_train_preprocessed, y_train, sample_weight=w_train / w_train.mean())
+training_time = time.time() - start_time
 
+# --- 4. Predictions & Monotonicity ---
+# Enforce q25 <= q50 <= q75 <= q90 (monotonicity)
+y_val_pred_raw = xgb_quantile_model.predict(X_val_preprocessed)
+y_val_pred = np.maximum.accumulate(np.clip(y_val_pred_raw, 0, None), axis=1)
 
-def weighted_interval_coverage(y_true, lower, upper, sample_weight):
-    """
-    Share of population-weighted observations whose actual cost falls inside an interval.
-    """
-    covered = (np.asarray(y_true) >= np.asarray(lower)) & (np.asarray(y_true) <= np.asarray(upper))
-    return np.average(covered, weights=sample_weight)
+# --- 5. Evaluation ---
+q25, q50, q75, q90 = [y_val_pred[:, i] for i in range(len(QUANTILES))]
 
+# Calculate Interval Coverage (share of population whose actual cost is within the range)
+q25_q75_coverage = np.average((y_val >= q25) & (y_val <= q75), weights=w_val)
+q90_coverage = np.average(y_val <= q90, weights=w_val)
 
-def evaluate_xgb_quantile_predictions(y_true, y_pred_quantiles, sample_weight):
-    """
-    Evaluate q50 point accuracy and interval calibration for quantile predictions.
-    """
-    y_pred_quantiles = monotonic_quantile_predictions(y_pred_quantiles)
-    q25, q50, q75, q90 = [y_pred_quantiles[:, i] for i in range(len(QUANTILES))]
+val_metrics = {
+    "val_q50_mdae": weighted_median_absolute_error(y_val, q50, sample_weight=w_val),
+    "val_q50_mae": mean_absolute_error(y_val, q50, sample_weight=w_val),
+    "val_q25_q75_coverage": q25_q75_coverage,
+    "val_q90_coverage": q90_coverage,
+    "val_mean_interval_width": np.average(q75 - q25, weights=w_val),
+    "training_time": training_time,
+}
 
-    metrics = {
-        "q50_mdae": weighted_median_absolute_error(y_true, q50, sample_weight=sample_weight),
-        "q50_mae": mean_absolute_error(y_true, q50, sample_weight=sample_weight),
-        "q50_r2": r2_score(y_true, q50, sample_weight=sample_weight),
-        "q25_q75_coverage": weighted_interval_coverage(y_true, q25, q75, sample_weight),
-        "q90_coverage": np.average(np.asarray(y_true) <= q90, weights=sample_weight),
-        "mean_interval_width": np.average(q75 - q25, weights=sample_weight),
-        "mean_cushion_width": np.average(q90 - q50, weights=sample_weight),
-    }
+# --- 6. Persist Artifacts ---
+val_predictions_df = pd.DataFrame(y_val_pred, index=X_val_preprocessed.index, columns=QUANTILE_LABELS)
 
-    for alpha, column in zip(QUANTILES, QUANTILE_LABELS):
-        metrics[f"{column}_pinball_loss"] = mean_pinball_loss(
-            y_true,
-            y_pred_quantiles[:, QUANTILE_LABELS.index(column)],
-            alpha=alpha,
-            sample_weight=sample_weight,
-        )
+save_model(xgb_quantile_model, "../models/xgb_quantile_model.joblib", verbose=False)
+save_model(val_predictions_df, "../models/xgb_quantile_predictions.joblib", verbose=False)
+save_metrics({"XGBoost Quantile": val_metrics}, "../models/xgb_quantile_metrics.json", verbose=False)
+save_metrics(xgb_quantile_params, "../models/xgb_quantile_params.json", verbose=False)
 
-    return metrics
+print(f"  Done in {training_time:.1f}s | q50 MdAE: ${val_metrics['val_q50_mdae']:.2f} | q25-q75 coverage: {val_metrics['val_q25_q75_coverage']:.1%}")
 
-
-def train_xgb_quantile_model(
-    X_train,
-    y_train,
-    X_val,
-    y_val,
-    w_train,
-    w_val,
-    params=None,
-):
-    """
-    Train native XGBoost quantile regression on log-costs and persist app-ready artifacts.
-    """
-    xgb_quantile_params = params or get_xgb_quantile_params()
-    w_train_norm = w_train / w_train.mean()
-
-    xgb_quantile_model = TransformedTargetRegressor(
-        regressor=XGBRegressor(**xgb_quantile_params),
-        func=np.log1p,
-        inverse_func=np.expm1,
-    )
-
-    print("Training XGBoost quantile regression...")
-    start_time = time.time()
-    xgb_quantile_model.fit(X_train, y_train, sample_weight=w_train_norm)
-    training_time = time.time() - start_time
-
-    y_train_pred_quantiles = monotonic_quantile_predictions(xgb_quantile_model.predict(X_train))
-    y_val_pred_quantiles = monotonic_quantile_predictions(xgb_quantile_model.predict(X_val))
-
-    train_metrics = evaluate_xgb_quantile_predictions(y_train, y_train_pred_quantiles, w_train)
-    val_metrics = evaluate_xgb_quantile_predictions(y_val, y_val_pred_quantiles, w_val)
-    metrics = {
-        "XGBoost Quantile": {
-            **{f"train_{key}": value for key, value in train_metrics.items()},
-            **{f"val_{key}": value for key, value in val_metrics.items()},
-            "training_time": training_time,
-        }
-    }
-
-    val_predictions_df = pd.DataFrame(
-        y_val_pred_quantiles,
-        index=X_val.index,
-        columns=QUANTILE_LABELS,
-    )
-
-    save_model(xgb_quantile_model, "../models/xgb_quantile_model.joblib", verbose=False)
-    save_model(val_predictions_df, "../models/xgb_quantile_predictions.joblib", verbose=False)
-    save_metrics(metrics, "../models/xgb_quantile_metrics.json", verbose=False)
-    save_metrics(xgb_quantile_params, "../models/xgb_quantile_params.json", verbose=False)
-
-    print(
-        "  XGBoost Quantile  →  "
-        f"q50 MdAE: {val_metrics['q50_mdae']:.2f} | "
-        f"q25-q75 coverage: {val_metrics['q25_q75_coverage']:.1%} | "
-        f"q90 coverage: {val_metrics['q90_coverage']:.1%} | "
-        f"training: {training_time:.1f}s"
-    )
-    print("  Saved artifacts to models/xgb_quantile_*.joblib/json")
-
-    return {
-        "fitted_model": xgb_quantile_model,
-        "metrics": metrics,
-        "y_val_pred_quantiles": val_predictions_df,
-    }
-
-
-# Run quantile regression
-# xgb_quantile_results = train_xgb_quantile_model(
-#     X_train_preprocessed,
-#     y_train,
-#     X_val_preprocessed,
-#     y_val,
-#     w_train,
-#     w_val,
-# )
 
 
 # %% [markdown]
