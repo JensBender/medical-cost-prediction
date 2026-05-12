@@ -2232,11 +2232,13 @@ plot_residuals_vs_predicted(
 
 # %%
 # --- 1. Configuration ---
+print("Step 1: Configuring quantiles...")
 QUANTILES = [0.25, 0.50, 0.75, 0.90]
 QUANTILE_LABELS = ["q25", "q50", "q75", "q90"]
+print(f"  Targeting {len(QUANTILES)} quantiles: {QUANTILES}")
 
 # --- 2. Model Parameters ---
-# Reuse hyperparameters from the tuned model and update with quantile regression objective. 
+print("Step 2: Configuring XGBoost parameters...")
 tuned_params = load_metrics("../models/xgb_tuned_params.json")
 keep_params = [
         "n_estimators",
@@ -2256,8 +2258,10 @@ xgb_quantile_params.update({
     "objective": "reg:quantileerror",
     "quantile_alpha": QUANTILES,
 })
+print("  Successfully loaded hyperparameters of best tuned XGBoost model and updated them for quantile regression")
 
 # --- 3. Train Model ---
+print("Step 3: Training XGBoost multi-quantile regression model...")
 # Train on log-costs: quantiles are invariant to monotonic transformations, and the log scale
 # stabilizes tree-splitting logic by preventing extreme outliers from dominating the partition search.
 xgb_quantile_model = TransformedTargetRegressor(
@@ -2269,12 +2273,13 @@ xgb_quantile_model = TransformedTargetRegressor(
 # Normalize training weights (mean=1.0) for numerical stability during model fitting
 w_train_norm = w_train / w_train.mean()
 
-print("Training XGBoost quantile regression...")
 start_time = time.time()
 xgb_quantile_model.fit(X_train_preprocessed, y_train, sample_weight=w_train_norm)
 training_time = time.time() - start_time
+print(f"  Model training completed in {training_time:.1f} s")
 
 # --- 4. Predictions ---
+print("Step 4: Predicting on training and validation set...")
 # Predict on training and validation set
 y_train_pred_raw = xgb_quantile_model.predict(X_train_preprocessed)
 y_val_pred_raw = xgb_quantile_model.predict(X_val_preprocessed)
@@ -2286,8 +2291,10 @@ y_val_pred_non_negative = np.maximum(y_val_pred_raw, 0)
 # Ensure monotonic predictions (q25 <= q50 <= q75 <= q90) by pulling lower estimates up (more conservative for financial planning)
 y_train_pred = np.maximum.accumulate(y_train_pred_non_negative, axis=1)  
 y_val_pred = np.maximum.accumulate(y_val_pred_non_negative, axis=1)
+print(f"  Generated predictions for {len(y_train_pred):,} train and {len(y_val_pred):,} validation samples and ensured non-negative and monotonic predictions")
 
 # --- 5. Evaluation ---
+print("Step 5: Evaluating model performance...")
 # Unpack quantiles
 y_train_pred_q25, y_train_pred_q50, y_train_pred_q75, y_train_pred_q90 = y_train_pred.T
 y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = y_val_pred.T
@@ -2313,7 +2320,14 @@ train_q50_q90_width = np.average(y_train_pred_q90 - y_train_pred_q50, weights=w_
 val_q25_q75_width = np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val)
 val_q50_q90_width = np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_val)
 
-metrics = {
+# --- 6. Model Persistence ---
+print("Step 6: Persisting model results...")
+val_predictions_df = pd.DataFrame(y_val_pred, index=X_val_preprocessed.index, columns=QUANTILE_LABELS)
+
+save_model(xgb_quantile_model, "../models/xgb_quantile_model.joblib", verbose=False)
+print("  Saved XGBoost quantile regression model to 'models/xgb_quantile_model.joblib'")
+
+xgb_quantile_metrics = {
     "XGBoost (Quantile)": {
         "train_q50_mdae": train_q50_mdae,
         "train_q50_mae": train_q50_mae,
@@ -2332,16 +2346,18 @@ metrics = {
         "training_time": training_time,
     }
 }
+save_metrics(xgb_quantile_metrics, "../models/xgb_quantile_metrics.json", verbose=False)
+print("  Saved evaluation metrics of XGBoost quantile regression to 'models/xgb_quantile_metrics.json'")
 
-# --- 6. Model Persistence ---
-val_predictions_df = pd.DataFrame(y_val_pred, index=X_val_preprocessed.index, columns=QUANTILE_LABELS)
-
-save_model(xgb_quantile_model, "../models/xgb_quantile_model.joblib", verbose=False)
-save_model(val_predictions_df, "../models/xgb_quantile_predictions.joblib", verbose=False)
-save_metrics(metrics, "../models/xgb_quantile_metrics.json", verbose=False)
 save_metrics(xgb_quantile_params, "../models/xgb_quantile_params.json", verbose=False)
+print("  Saved hyperparameters of XGBoost quantile regression to 'models/xgb_quantile_params.json'")
 
-m = metrics["XGBoost (Quantile)"]
+save_model(val_predictions_df, "../models/xgb_quantile_predictions.joblib", verbose=False)
+print("  Saved predicted values of XGBoost quantile regression to 'models/xgb_quantile_predictions.joblib'")
+
+print("\n✅ XGBoost quantile regression complete.")
+
+m = xgb_quantile_metrics["XGBoost (Quantile)"]
 print(f"  Done in {training_time:.1f}s | Median MdAE: [Train: ${m['train_q50_mdae']:.2f} | Val: ${m['val_q50_mdae']:.2f}]")
 print(f"  q25-q75 coverage: [Train: {m['train_q25_q75_coverage']:.1%} | Val: {m['val_q25_q75_coverage']:.1%}]")
 print(f"  q90 coverage:     [Train: {m['train_q90_coverage']:.1%} | Val: {m['val_q90_coverage']:.1%}]")
