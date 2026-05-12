@@ -2288,26 +2288,43 @@ y_train_pred = np.maximum.accumulate(y_train_pred_non_negative, axis=1)
 y_val_pred = np.maximum.accumulate(y_val_pred_non_negative, axis=1)
 
 # --- 5. Evaluation ---
-# Unpack quantiles for coverage analysis
-y_train_pred_q25, _, y_train_pred_q75, y_train_pred_q90 = y_train_pred.T
+# Unpack quantiles
+y_train_pred_q25, y_train_pred_q50, y_train_pred_q75, y_train_pred_q90 = y_train_pred.T
 y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = y_val_pred.T
 
-# Calculate coverage (share of population whose actual cost is within the predicted range)
+# Evaluate median prediction
+train_q50_mdae = weighted_median_absolute_error(y_train, y_train_pred_q50, sample_weight=w_train)
+train_q50_mae = mean_absolute_error(y_train, y_train_pred_q50, sample_weight=w_train)
+train_q50_r2 = r2_score(y_train, y_train_pred_q50, sample_weight=w_train)
+
+val_q50_mdae = weighted_median_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val)
+val_q50_mae = mean_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val)
+val_q50_r2 = r2_score(y_val, y_val_pred_q50, sample_weight=w_val)
+
+# Evaluate coverage (share of population whose actual cost is within the predicted range)
 train_q25_q75_coverage = np.average((y_train >= y_train_pred_q25) & (y_train <= y_train_pred_q75), weights=w_train)
 train_q90_coverage = np.average(y_train <= y_train_pred_q90, weights=w_train)
-
 val_q25_q75_coverage = np.average((y_val >= y_val_pred_q25) & (y_val <= y_val_pred_q75), weights=w_val)
 val_q90_coverage = np.average(y_val <= y_val_pred_q90, weights=w_val)
 
+# Evaluate interval precision
+train_q25_q75_width = np.average(y_train_pred_q75 - y_train_pred_q25, weights=w_train)
+val_q25_q75_width = np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val)
+
 metrics = {
     "XGBoost (Quantile)": {
+        "train_q50_mdae": train_q50_mdae,
+        "train_q50_mae": train_q50_mae,
+        "train_q50_r2": train_q50_r2,
         "train_q25_q75_coverage": train_q25_q75_coverage,
         "train_q90_coverage": train_q90_coverage,
-        "val_q50_mdae": weighted_median_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val),
-        "val_q50_mae": mean_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val),
+        "train_q25_q75_width": train_q25_q75_width,
+        "val_q50_mdae": val_q50_mdae,
+        "val_q50_mae": val_q50_mae,
+        "val_q50_r2": val_q50_r2,
         "val_q25_q75_coverage": val_q25_q75_coverage,
         "val_q90_coverage": val_q90_coverage,
-        "val_mean_interval_width": np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val),
+        "val_q25_q75_width": val_q25_q75_width,
         "training_time": training_time,
     }
 }
@@ -2320,9 +2337,12 @@ save_model(val_predictions_df, "../models/xgb_quantile_predictions.joblib", verb
 save_metrics(metrics, "../models/xgb_quantile_metrics.json", verbose=False)
 save_metrics(xgb_quantile_params, "../models/xgb_quantile_params.json", verbose=False)
 
-print(f"  Done in {training_time:.1f}s | q50 MdAE: ${metrics['XGBoost Quantile']['val_q50_mdae']:.2f}")
-print(f"  q25-q75 coverage: [Train: {train_q25_q75_coverage:.1%} | Val: {val_q25_q75_coverage:.1%}]")
-print(f"  q90 coverage:     [Train: {train_q90_coverage:.1%} | Val: {val_q90_coverage:.1%}]")
+m = metrics["XGBoost (Quantile)"]
+print(f"  Done in {training_time:.1f}s | Median MdAE: [Train: ${m['train_q50_mdae']:.2f} | Val: ${m['val_q50_mdae']:.2f}]")
+print(f"  q25-q75 coverage: [Train: {m['train_q25_q75_coverage']:.1%} | Val: {m['val_q25_q75_coverage']:.1%}]")
+print(f"  q90 coverage:     [Train: {m['train_q90_coverage']:.1%} | Val: {m['val_q90_coverage']:.1%}]")
+print(f"  Avg Range Width:  [Train: ${m['train_q25_q75_width']:.2f} | Val: ${m['val_q25_q75_width']:.2f}]")
+print(f"  Median R²:        [Train: {m['train_q50_r2']:.4f} | Val: {m['val_q50_r2']:.4f}]")
 
 
 
