@@ -2320,6 +2320,14 @@ train_q50_q90_width = np.average(y_train_pred_q90 - y_train_pred_q50, weights=w_
 val_q25_q75_width = np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val)
 val_q50_q90_width = np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_val)
 
+print(f"  Median MdAE:      [Train: ${train_q50_mdae:.2f} | Val: ${val_q50_mdae:.2f}]")
+print(f"  Median MAE:       [Train: ${train_q50_mae:.2f} | Val: ${val_q50_mae:.2f}]")
+print(f"  Median R²:        [Train: {train_q50_r2:.4f} | Val: {val_q50_r2:.4f}]")
+print(f"  q25-q75 coverage: [Train: {train_q25_q75_coverage:.1%} | Val: {val_q25_q75_coverage:.1%}]")
+print(f"  q90 coverage:     [Train: {train_q90_coverage:.1%} | Val: {val_q90_coverage:.1%}]")
+print(f"  Avg Range Width:  [Train: ${train_q25_q75_width:.2f} | Val: ${val_q25_q75_width:.2f}]")
+print(f"  Avg Cushion Width:[Train: ${train_q50_q90_width:.2f} | Val: ${val_q50_q90_width:.2f}]")
+
 # --- 6. Model Persistence ---
 print("Step 6: Persisting model results...")
 val_predictions_df = pd.DataFrame(y_val_pred, index=X_val_preprocessed.index, columns=QUANTILE_LABELS)
@@ -2356,13 +2364,6 @@ save_model(val_predictions_df, "../models/xgb_quantile_predictions.joblib", verb
 print("  Saved predicted values of XGBoost quantile regression to 'models/xgb_quantile_predictions.joblib'")
 
 print("\n✅ XGBoost quantile regression complete.")
-
-m = xgb_quantile_metrics["XGBoost (Quantile)"]
-print(f"  Done in {training_time:.1f}s | Median MdAE: [Train: ${m['train_q50_mdae']:.2f} | Val: ${m['val_q50_mdae']:.2f}]")
-print(f"  q25-q75 coverage: [Train: {m['train_q25_q75_coverage']:.1%} | Val: {m['val_q25_q75_coverage']:.1%}]")
-print(f"  q90 coverage:     [Train: {m['train_q90_coverage']:.1%} | Val: {m['val_q90_coverage']:.1%}]")
-print(f"  Avg Range Width:  [Train: ${m['train_q25_q75_width']:.2f} | Val: ${m['val_q25_q75_width']:.2f}]")
-print(f"  Median R²:        [Train: {m['train_q50_r2']:.4f} | Val: {m['val_q50_r2']:.4f}]")
 
 
 
