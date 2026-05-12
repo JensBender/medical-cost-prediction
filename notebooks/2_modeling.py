@@ -2281,22 +2281,22 @@ y_val_pred_non_negative = np.maximum(y_val_pred_raw, 0)  # Enforces non-negative
 y_val_pred = np.maximum.accumulate(y_val_pred_non_negative, axis=1)  # Pulls lower estimates up (more conservative for financial planning)
 
 # --- 5. Evaluation ---
-q25, q50, q75, q90 = [y_val_pred[:, i] for i in range(len(QUANTILES))]
+y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = y_val_pred.T
 
-# Calculate Interval Coverage (share of population whose actual cost is within the range)
-q25_q75_coverage = np.average((y_val >= q25) & (y_val <= q75), weights=w_val)
-q90_coverage = np.average(y_val <= q90, weights=w_val)
+# Calculate interval coverage (share of population whose actual cost is within the prediction range)
+q25_q75_coverage = np.average((y_val >= y_val_pred_q25) & (y_val <= y_val_pred_q75), weights=w_val)  # Evaluate with raw survey weights
+q90_coverage = np.average(y_val <= y_val_pred_q90, weights=w_val)
 
 val_metrics = {
-    "val_q50_mdae": weighted_median_absolute_error(y_val, q50, sample_weight=w_val),
-    "val_q50_mae": mean_absolute_error(y_val, q50, sample_weight=w_val),
+    "val_q50_mdae": weighted_median_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val),
+    "val_q50_mae": mean_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val),
     "val_q25_q75_coverage": q25_q75_coverage,
     "val_q90_coverage": q90_coverage,
-    "val_mean_interval_width": np.average(q75 - q25, weights=w_val),
+    "val_mean_interval_width": np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val),
     "training_time": training_time,
 }
 
-# --- 6. Persist Artifacts ---
+# --- 6. Model Persistance ---
 val_predictions_df = pd.DataFrame(y_val_pred, index=X_val_preprocessed.index, columns=QUANTILE_LABELS)
 
 save_model(xgb_quantile_model, "../models/xgb_quantile_model.joblib", verbose=False)
