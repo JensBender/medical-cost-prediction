@@ -2193,7 +2193,7 @@ plot_residuals_vs_predicted(
 #             📊 <b>Common range:</b> \$1,100 – \$7,200<br>
 #             🛡️ <b>Extra cushion:</b> plan up to \$9,500<br><br>
 #             <span style="font-size: 0.85em; color: #555;">
-#                 People with answers like yours often spend about \$2,850, but costs can change a lot from year to year. Many similar people spend between \$1,100 and \$7,200. If you want a cushion for a higher-cost year, planning up to \$9,500 would cover most similar cases. If you have insurance, your plan may have a yearly limit for covered in-network care; check that limit before setting aside more than that.
+#                 People with answers like yours often spend about \$2,850, but costs can change a lot from year to year. Many similar people spend between \$1,100 and \$7,200. If you want a cushion for a higher-cost year, planning up to \$9,500 would cover most similar cases. If you have insurance, check your plan's out-of-pocket maximum for covered in-network care; you likely won't need to set aside more than that yearly limit.
 #             </span>
 #         </td>
 #     </tr>

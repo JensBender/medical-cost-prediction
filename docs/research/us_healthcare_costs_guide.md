@@ -32,6 +32,7 @@ When an American receives healthcare, the **total cost** is typically split amon
 | **Deductible** | Annual amount you must pay first before insurance starts sharing costs |
 | **Copay** | Fixed fee per visit (e.g., $30 per doctor visit) |
 | **Coinsurance** | Percentage you pay after deductible (e.g., 20% of hospital bill) |
+| **Out-of-Pocket Maximum** | The absolute most you pay in a year for covered in-network care |
 
 
 ## What Are FSAs and HSAs?
