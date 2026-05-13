@@ -2401,12 +2401,15 @@ metrics_display = {
     }
 }
 
+metrics_df = pd.DataFrame(metrics_display)
+metrics_df["Delta %"] = (metrics_df["Validation"] - metrics_df["Train"]) / metrics_df["Train"] * 100
+
 display(
-    pd.DataFrame(metrics_display)
-    .style
+    metrics_df.style
     .pipe(add_table_caption, "XGBoost Quantile Regression Metrics")
-    .format("${:,.2f}", subset=(["Median MdAE", "Median MAE", "Avg Range Width", "Avg Cushion Width"], slice(None)))
-    .format("{:.2f}", subset=(["Median R²"], slice(None)))
-    .format("{:.1%}", subset=(["Range Coverage (q25–q75)", "Cushion Coverage (q90)"], slice(None)))
+    .format("${:,.2f}", subset=(["Median MdAE", "Median MAE", "Avg Range Width", "Avg Cushion Width"], ["Train", "Validation"]))
+    .format("{:.2f}", subset=(["Median R²"], ["Train", "Validation"]))
+    .format("{:.1%}", subset=(["Range Coverage (q25–q75)", "Cushion Coverage (q90)"], ["Train", "Validation"]))
+    .format("{:+.1f}%", subset=(slice(None), "Delta %"))
 )
 
