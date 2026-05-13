@@ -1,10 +1,10 @@
 """
 Reproducible model training and evaluation script for XGBoost quantile regression.
 
-This script trains a multi-quantile XGBoost model using the tuned hyperparameters
-from the point-estimate tuning stage. It predicts four quantiles (q25, q50, q75, q90)
-to provide cost ranges for financial planning, logs the experiment to MLflow, and
-persists the model results.
+This script trains a multi-quantile XGBoost model using the hyperparameters from 
+the best tuned point-estimate model. It predicts four quantiles (q25, q50, q75, q90)
+to provide prediction ranges (q25-q75) and a cushion (q90) for financial planning, 
+logs the experiment to MLflow, and persists the model results.
 
 Workflow:
   1.  Model Configuration: Load tuned hyperparameters and adapt them for quantile regression.
@@ -16,6 +16,12 @@ Workflow:
   7.  Evaluation: Compute median accuracy, interval coverage, and interval width metrics.
   8.  Model Persistence: Save the fitted model, evaluation metrics, hyperparameters, and
       predicted values.
+
+Artifacts:
+  - models/xgb_quantile_model.joblib: Fitted model.
+  - models/xgb_quantile_metrics.json: Evaluation metrics.
+  - models/xgb_quantile_params.json: Hyperparameters used for training.
+  - models/xgb_quantile_predictions.joblib: Validation set predictions for all quantiles.
 
 Reference:
     For quantile regression exploration and detailed rationale, see:
