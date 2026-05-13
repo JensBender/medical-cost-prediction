@@ -2326,13 +2326,13 @@ train_q50_q90_width = np.average(y_train_pred_q90 - y_train_pred_q50, weights=w_
 val_q25_q75_width = np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val)
 val_q50_q90_width = np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_val)
 
-print(f"  Median MdAE       →  Train: ${train_q50_mdae:.2f} | Val: ${val_q50_mdae:.2f}")
-print(f"  Median MAE        →  Train: ${train_q50_mae:.2f} | Val: ${val_q50_mae:.2f}")
-print(f"  Median R²         →  Train: {train_q50_r2:.2f} | Val: {val_q50_r2:.2f}")
-print(f"  q25-q75 coverage  →  Train: {train_q25_q75_coverage:.1%} | Val: {val_q25_q75_coverage:.1%}")
-print(f"  q90 coverage      →  Train: {train_q90_coverage:.1%} | Val: {val_q90_coverage:.1%}")
-print(f"  Avg Range Width   →  Train: ${train_q25_q75_width:.0f} | Val: ${val_q25_q75_width:.0f}")
-print(f"  Avg Cushion Width →  Train: ${train_q50_q90_width:.0f} | Val: ${val_q50_q90_width:.0f}")
+print(f"  Median MdAE       →  Train: {f'${train_q50_mdae:,.2f}':>10} | Val: {f'${val_q50_mdae:,.2f}':>10}")
+print(f"  Median MAE        →  Train: {f'${train_q50_mae:,.2f}':>10} | Val: {f'${val_q50_mae:,.2f}':>10}")
+print(f"  Median R²         →  Train: {train_q50_r2:10.2f} | Val: {val_q50_r2:10.2f}")
+print(f"  q25-q75 coverage  →  Train: {train_q25_q75_coverage:10.1%} | Val: {val_q25_q75_coverage:10.1%}")
+print(f"  q90 coverage      →  Train: {train_q90_coverage:10.1%} | Val: {val_q90_coverage:10.1%}")
+print(f"  Avg Range Width   →  Train: {f'${train_q25_q75_width:,.0f}':>10} | Val: {f'${val_q25_q75_width:,.0f}':>10}")
+print(f"  Avg Cushion Width →  Train: {f'${train_q50_q90_width:,.0f}':>10} | Val: {f'${val_q50_q90_width:,.0f}':>10}")
 
 # --- 5. Model Persistence ---
 # Note: Persistence is handled by 'scripts/train_xgboost_quantile.py' to ensure reproducibility.

@@ -167,13 +167,13 @@ def main():
         val_q25_q75_width = np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val)
         val_q50_q90_width = np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_val)
 
-        print(f"  Median MdAE       ->  Train: ${train_q50_mdae:.2f} | Val: ${val_q50_mdae:.2f}")
-        print(f"  Median MAE        ->  Train: ${train_q50_mae:.2f} | Val: ${val_q50_mae:.2f}")
-        print(f"  Median R2         ->  Train: {train_q50_r2:.2f} | Val: {val_q50_r2:.2f}")
-        print(f"  q25-q75 coverage  ->  Train: {train_q25_q75_coverage:.1%} | Val: {val_q25_q75_coverage:.1%}")
-        print(f"  q90 coverage      ->  Train: {train_q90_coverage:.1%} | Val: {val_q90_coverage:.1%}")
-        print(f"  Avg Range Width   ->  Train: ${train_q25_q75_width:.0f} | Val: ${val_q25_q75_width:.0f}")
-        print(f"  Avg Cushion Width ->  Train: ${train_q50_q90_width:.0f} | Val: ${val_q50_q90_width:.0f}")
+        print(f"  Median MdAE       ->  Train: {f'${train_q50_mdae:,.2f}':>10} | Val: {f'${val_q50_mdae:,.2f}':>10}")
+        print(f"  Median MAE        ->  Train: {f'${train_q50_mae:,.2f}':>10} | Val: {f'${val_q50_mae:,.2f}':>10}")
+        print(f"  Median R2         ->  Train: {train_q50_r2:10.2f} | Val: {val_q50_r2:10.2f}")
+        print(f"  q25-q75 coverage  ->  Train: {train_q25_q75_coverage:10.1%} | Val: {val_q25_q75_coverage:10.1%}")
+        print(f"  q90 coverage      ->  Train: {train_q90_coverage:10.1%} | Val: {val_q90_coverage:10.1%}")
+        print(f"  Avg Range Width   ->  Train: {f'${train_q25_q75_width:,.0f}':>10} | Val: {f'${val_q25_q75_width:,.0f}':>10}")
+        print(f"  Avg Cushion Width ->  Train: {f'${train_q50_q90_width:,.0f}':>10} | Val: {f'${val_q50_q90_width:,.0f}':>10}")
 
         # Log metrics to MLflow
         mlflow.log_metrics({
@@ -198,7 +198,7 @@ def main():
     print("Step 8: Persisting model results...")
     # 8.1. Save fitted model as .joblib file
     save_model(xgb_quantile_model, "models/xgb_quantile_model.joblib", verbose=False)
-    print("  Saved XGBoost quantile regression model to 'models/xgb_quantile_model.joblib'")
+    print("  Saved fitted XGBoost quantile regression model to 'models/xgb_quantile_model.joblib'")
 
     # 8.2. Save evaluation metrics as JSON
     xgb_quantile_metrics = {
@@ -221,17 +221,17 @@ def main():
         }
     }
     save_metrics(xgb_quantile_metrics, "models/xgb_quantile_metrics.json", verbose=False)
-    print("  Saved evaluation metrics of XGBoost quantile regression to 'models/xgb_quantile_metrics.json'")
+    print("  Saved evaluation metrics to 'models/xgb_quantile_metrics.json'")
 
     # 8.3. Save hyperparameters as JSON
     save_metrics(xgb_quantile_params, "models/xgb_quantile_params.json", verbose=False)
-    print("  Saved hyperparameters of XGBoost quantile regression to 'models/xgb_quantile_params.json'")
+    print("  Saved hyperparameters to 'models/xgb_quantile_params.json'")
 
     # 8.4. Save predicted values as .joblib file
     save_model(y_val_pred, "models/xgb_quantile_predictions.joblib", verbose=False)
-    print("  Saved predicted values of XGBoost quantile regression to 'models/xgb_quantile_predictions.joblib'")
+    print("  Saved predicted values for the validation set to 'models/xgb_quantile_predictions.joblib'")
 
-    print("\n[OK] XGBoost quantile regression complete.")
+    print("\n✅ XGBoost quantile regression complete.")
 
 
 if __name__ == "__main__":
