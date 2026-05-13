@@ -2233,7 +2233,7 @@ plot_residuals_vs_predicted(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Train a multi-quantile XGBoost model that returns q25, q50, q75, and q90 predictions.
+#     📌 Train an XGBoost multi-quantile regression model that returns q25, q50, q75, and q90 predictions.
 # </div>
 
 # %%
@@ -2241,7 +2241,7 @@ plot_residuals_vs_predicted(
 print("Step 1: Configuring XGBoost multi-quantile model parameters...")
 QUANTILES = [0.25, 0.50, 0.75, 0.90]
 
-tuned_params = load_metrics("../models/xgb_tuned_params.json")
+tuned_params = load_metrics("../models/xgb_tuned_params.json", verbose=False)
 keep_params = [
         "n_estimators",
         "max_depth",
@@ -2260,7 +2260,7 @@ xgb_quantile_params.update({
     "objective": "reg:quantileerror",
     "quantile_alpha": QUANTILES,
 })
-print(f"  Successfully loaded hyperparameters of best tuned XGBoost model and updated them for {len(QUANTILES)} quantiles: {QUANTILES}")
+print(f"  Loaded hyperparameters of best tuned model and updated them for {len(QUANTILES)} quantiles: {QUANTILES}")
 
 # --- 2. Model Training ---
 print("Step 2: Training XGBoost quantile regression model...")
@@ -2279,7 +2279,7 @@ start_time = time.time()
 xgb_quantile_model.fit(X_train_preprocessed, y_train, sample_weight=w_train_norm)
 training_time = time.time() - start_time
 
-print(f"  Model training completed in {training_time:.1f} s")
+print(f"  Completed training in {training_time:.1f} s")
 
 # --- 3. Predictions ---
 print("Step 3: Predicting on training and validation set...")
@@ -2323,13 +2323,13 @@ train_q50_q90_width = np.average(y_train_pred_q90 - y_train_pred_q50, weights=w_
 val_q25_q75_width = np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val)
 val_q50_q90_width = np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_val)
 
-print(f"  Median MdAE:      [Train: ${train_q50_mdae:.2f} | Val: ${val_q50_mdae:.2f}]")
-print(f"  Median MAE:       [Train: ${train_q50_mae:.2f} | Val: ${val_q50_mae:.2f}]")
-print(f"  Median R²:        [Train: {train_q50_r2:.4f} | Val: {val_q50_r2:.4f}]")
-print(f"  q25-q75 coverage: [Train: {train_q25_q75_coverage:.1%} | Val: {val_q25_q75_coverage:.1%}]")
-print(f"  q90 coverage:     [Train: {train_q90_coverage:.1%} | Val: {val_q90_coverage:.1%}]")
-print(f"  Avg Range Width:  [Train: ${train_q25_q75_width:.2f} | Val: ${val_q25_q75_width:.2f}]")
-print(f"  Avg Cushion Width:[Train: ${train_q50_q90_width:.2f} | Val: ${val_q50_q90_width:.2f}]")
+print(f"  Median MdAE       →  Train: ${train_q50_mdae:.2f} | Val: ${val_q50_mdae:.2f}")
+print(f"  Median MAE        →  Train: ${train_q50_mae:.2f} | Val: ${val_q50_mae:.2f}")
+print(f"  Median R²         →  Train: {train_q50_r2:.2f} | Val: {val_q50_r2:.2f}")
+print(f"  q25-q75 coverage  →  Train: {train_q25_q75_coverage:.1%} | Val: {val_q25_q75_coverage:.1%}")
+print(f"  q90 coverage      →  Train: {train_q90_coverage:.1%} | Val: {val_q90_coverage:.1%}")
+print(f"  Avg Range Width   →  Train: ${train_q25_q75_width:.0f} | Val: ${val_q25_q75_width:.0f}")
+print(f"  Avg Cushion Width →  Train: ${train_q50_q90_width:.0f} | Val: ${val_q50_q90_width:.0f}")
 
 # --- 5. Model Persistence ---
 print("Step 5: Persisting model results...")
@@ -2372,7 +2372,7 @@ print("\n✅ XGBoost quantile regression complete.")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Evaluate persisted quantile-regression artifacts.
+#     📌 Evaluate XGBoost quantile regression.
 # </div>
 
 # %%
@@ -2401,7 +2401,7 @@ display(
         "val_q50_q90_width": "Avg Cushion Width",
     })
     .style
-    .pipe(add_table_caption, "XGBoost Quantile Regression Summary")
+    .pipe(add_table_caption, "XGBoost Quantile Regression Metrics")
     .format({
         "Median MdAE": "${:,.2f}",
         "Median R²": "{:.4f}",
