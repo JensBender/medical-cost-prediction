@@ -2233,7 +2233,10 @@ plot_residuals_vs_predicted(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Train an XGBoost multi-quantile regression model that returns q25, q50, q75, and q90 predictions.
+#     📌 Train an XGBoost multi-quantile regression model that returns q25, q50, q75, and q90 predictions. 
+#     <br><br>
+#     Production Script: This notebook is for prototyping; the production run was executed via <code><a href="../scripts/train_xgboost_quantile.py">scripts/train_xgboost_quantile.py</a></code>.
+#
 # </div>
 
 # %%
