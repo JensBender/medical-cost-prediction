@@ -7,10 +7,10 @@ to provide prediction ranges (q25-q75) and a cushion (q90) for financial plannin
 logs the experiment to MLflow, and persists the model results.
 
 Workflow:
-  1.  Model Configuration: Load tuned hyperparameters and adapt them for quantile regression.
-  2.  MLflow Setup: Initialize experiment tracking for "XGBoost Quantile".
-  3.  Preprocessed Data Loading: Load Parquet datasets into memory.
-  4.  Feature-Target Separation: Separate features, target variable, and sample weights.
+  1.  MLflow Setup: Initialize experiment tracking for "Quantile Regression".
+  2.  Preprocessed Data Loading: Load Parquet datasets into memory.
+  3.  Feature-Target Separation: Separate features, target variable, and sample weights.
+  4.  Model Configuration: Load tuned hyperparameters and adapt them for quantile regression.
   5.  Training: Fit the multi-quantile model on log-transformed targets.
   6.  Predictions: Generate and post-process predictions (non-negative, monotonic).
   7.  Evaluation: Compute median accuracy, interval coverage, and interval width metrics.
@@ -53,8 +53,32 @@ warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
 
 
 def main():
-    # --- 1. Model Configuration ---
-    print("Step 1: Configuring XGBoost multi-quantile model parameters...")
+    # --- 1. MLflow Setup ---
+    print("Step 1: Setting up MLflow...")
+    mlflow.set_tracking_uri("http://127.0.0.1:5000")  # Points to running MLflow UI server
+    mlflow.set_experiment("Quantile Regression")
+    print(f"  Set up 'Quantile Regression' experiment in MLflow with tracking URI '{mlflow.get_tracking_uri()}'")
+
+    # --- 2. Preprocessed Data Loading ---
+    print("Step 2: Loading preprocessed data...")
+    df_train = pd.read_parquet(TRAIN_DATA_PATH)
+    df_val = pd.read_parquet(VAL_DATA_PATH)
+    print(f"  Loaded '{TRAIN_DATA_PATH}' with {len(df_train):,} rows and {len(df_train.columns):,} columns")
+    print(f"  Loaded '{VAL_DATA_PATH}' with {len(df_val):,} rows and {len(df_val.columns):,} columns")
+
+    # --- 3. Feature-Target Separation ---
+    print("Step 3: Separating features and target...")
+    X_train = df_train.drop([TARGET_COLUMN, WEIGHT_COLUMN], axis=1)
+    y_train = df_train[TARGET_COLUMN]
+    w_train = df_train[WEIGHT_COLUMN]
+    X_val = df_val.drop([TARGET_COLUMN, WEIGHT_COLUMN], axis=1)
+    y_val = df_val[TARGET_COLUMN]
+    w_val = df_val[WEIGHT_COLUMN]
+    del df_train, df_val  # Free up memory
+    print("  Separated data into X features, y target variable, and w sample weights")
+
+    # --- 4. Model Configuration ---
+    print("Step 4: Configuring XGBoost multi-quantile model parameters...")
     QUANTILES = [0.25, 0.50, 0.75, 0.90]
 
     tuned_params = load_metrics("models/xgb_tuned_params.json", verbose=False)
@@ -78,30 +102,6 @@ def main():
     })
     print(f"  Loaded hyperparameters of best tuned model and updated them for {len(QUANTILES)} quantiles: {QUANTILES}")
 
-    # --- 2. MLflow Setup ---
-    print("Step 2: Setting up MLflow...")
-    mlflow.set_tracking_uri("http://127.0.0.1:5000")
-    mlflow.set_experiment("XGBoost Quantile")
-    print(f"  Set up 'XGBoost Quantile' experiment in MLflow with tracking URI '{mlflow.get_tracking_uri()}'")
-
-    # --- 3. Preprocessed Data Loading ---
-    print("Step 3: Loading preprocessed data...")
-    df_train = pd.read_parquet(TRAIN_DATA_PATH)
-    df_val = pd.read_parquet(VAL_DATA_PATH)
-    print(f"  Loaded '{TRAIN_DATA_PATH}' with {len(df_train):,} rows and {len(df_train.columns):,} columns")
-    print(f"  Loaded '{VAL_DATA_PATH}' with {len(df_val):,} rows and {len(df_val.columns):,} columns")
-
-    # --- 4. Feature-Target Separation ---
-    print("Step 4: Separating features and target...")
-    X_train = df_train.drop([TARGET_COLUMN, WEIGHT_COLUMN], axis=1)
-    y_train = df_train[TARGET_COLUMN]
-    w_train = df_train[WEIGHT_COLUMN]
-    X_val = df_val.drop([TARGET_COLUMN, WEIGHT_COLUMN], axis=1)
-    y_val = df_val[TARGET_COLUMN]
-    w_val = df_val[WEIGHT_COLUMN]
-    del df_train, df_val  # Free up memory
-    print("  Separated data into X features, y target variable, and w sample weights")
-
     # --- 5. Model Training ---
     print("Step 5: Training XGBoost quantile regression model...")
     # Train on log-costs: quantiles are invariant to monotonic transformations, and the log scale
@@ -115,7 +115,7 @@ def main():
     # Normalize training weights (mean=1.0) for numerical stability during model fitting
     w_train_norm = w_train / w_train.mean()
 
-    with mlflow.start_run(run_name="XGBoost (Quantile)"):
+    with mlflow.start_run(run_name="XGBoost Quantile"):
         mlflow.set_tag("stage", "quantile_training")
         mlflow.log_params(xgb_quantile_params)
 
