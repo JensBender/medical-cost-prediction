@@ -2,6 +2,7 @@
 # - Run all stages: dvc repro
 # - Run preprocessing stage only: dvc repro preprocess
 # - Run baseline model training only: dvc repro baseline
+# - Run quantile regression training only: dvc repro quantile
 
 stages:
   # Stage 1: Data Preprocessing
@@ -58,3 +59,19 @@ stages:
       - models/svm_baseline_metrics.json
       - models/svm_baseline_predictions.joblib
       - models/svm_baseline_params.json
+
+  # Stage 3: Quantile Regression
+  quantile:
+    cmd: .venv-train\Scripts\python scripts/train_xgboost_quantile.py
+    deps:
+      - data/training_data_preprocessed.parquet   # Dependency on Stage 1
+      - data/validation_data_preprocessed.parquet # Dependency on Stage 1
+      - scripts/train_xgboost_quantile.py         # Training script for reproducible quantile regression 
+      - models/xgb_tuned_params.json              # Hyperparameters of the best tuned (point-estimate) model
+      - src/modeling.py                           # Weighted MdAE function, data paths, model persistence functions
+      - src/constants.py                          # Column names for target and weights 
+    outs:
+      - models/xgb_quantile_model.joblib
+      - models/xgb_quantile_metrics.json
+      - models/xgb_quantile_params.json
+      - models/xgb_quantile_predictions.joblib
