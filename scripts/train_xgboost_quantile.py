@@ -116,13 +116,32 @@ def main():
     w_train_norm = w_train / w_train.mean()
 
     with mlflow.start_run(run_name="XGBoost Quantile"):
-        mlflow.set_tag("stage", "quantile_training")
+        # Tag raw MEPS SAS data source
+        mlflow.set_tag("data_source", "h251.sas7bdat")  
+        
+        # Log data lineage (preprocessed datasets used for training and evaluation)
+        data_train = mlflow.data.from_pandas(
+            X_train.assign(**{TARGET_COLUMN: y_train}), 
+            targets=TARGET_COLUMN,
+            source=TRAIN_DATA_PATH, 
+            name="training_data"
+        )
+        data_val = mlflow.data.from_pandas(
+            X_val.assign(**{TARGET_COLUMN: y_val}), 
+            targets=TARGET_COLUMN,
+            source=VAL_DATA_PATH, 
+            name="validation_data"
+        )
+        mlflow.log_input(data_train, context="training")
+        mlflow.log_input(data_val, context="validation")
+
+        # Log model hyperparameters
         mlflow.log_params(xgb_quantile_params)
 
+        # Fit model on training data
         start_time = time.time()
         xgb_quantile_model.fit(X_train, y_train, sample_weight=w_train_norm)
         training_time = time.time() - start_time
-
         print(f"  Completed training in {training_time:.1f} s")
 
         # --- 6. Predictions ---
