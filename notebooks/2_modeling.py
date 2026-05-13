@@ -2335,10 +2335,13 @@ print(f"  Avg Range Width   →  Train: ${train_q25_q75_width:.0f} | Val: ${val_
 print(f"  Avg Cushion Width →  Train: ${train_q50_q90_width:.0f} | Val: ${val_q50_q90_width:.0f}")
 
 # --- 5. Model Persistence ---
+# Note: Persistence is handled by 'scripts/train_xgboost_quantile.py' to ensure reproducibility.
+# The calls below are commented out to avoid overwriting production artifacts during notebook reruns.
+
 print("Step 5: Persisting model results...")
 # 5.1. Save fitted model as .joblib file
-save_model(xgb_quantile_model, "../models/xgb_quantile_model.joblib", verbose=False)
-print("  Saved XGBoost quantile regression model to 'models/xgb_quantile_model.joblib'")
+# save_model(xgb_quantile_model, "../models/xgb_quantile_model.joblib", verbose=False)
+# print("  Saved XGBoost quantile regression model to 'models/xgb_quantile_model.joblib'")
 
 # 5.2. Save evaluation metrics as JSON
 xgb_quantile_metrics = {
@@ -2360,16 +2363,16 @@ xgb_quantile_metrics = {
         "training_time": training_time,
     }
 }
-save_metrics(xgb_quantile_metrics, "../models/xgb_quantile_metrics.json", verbose=False)
-print("  Saved evaluation metrics of XGBoost quantile regression to 'models/xgb_quantile_metrics.json'")
+# save_metrics(xgb_quantile_metrics, "../models/xgb_quantile_metrics.json", verbose=False)
+# print("  Saved evaluation metrics of XGBoost quantile regression to 'models/xgb_quantile_metrics.json'")
 
 # 5.3. Save hyperparameters as JSON
-save_metrics(xgb_quantile_params, "../models/xgb_quantile_params.json", verbose=False)
-print("  Saved hyperparameters of XGBoost quantile regression to 'models/xgb_quantile_params.json'")
+# save_metrics(xgb_quantile_params, "../models/xgb_quantile_params.json", verbose=False)
+# print("  Saved hyperparameters of XGBoost quantile regression to 'models/xgb_quantile_params.json'")
 
 # 5.4. Save predicted values as .joblib file
-save_model(y_val_pred, "../models/xgb_quantile_predictions.joblib", verbose=False)
-print("  Saved predicted values of XGBoost quantile regression to 'models/xgb_quantile_predictions.joblib'")
+# save_model(y_val_pred, "../models/xgb_quantile_predictions.joblib", verbose=False)
+# print("  Saved predicted values of XGBoost quantile regression to 'models/xgb_quantile_predictions.joblib'")
 
 print("\n✅ XGBoost quantile regression complete.")
 
