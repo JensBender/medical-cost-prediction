@@ -2377,40 +2377,36 @@ print("\n✅ XGBoost quantile regression complete.")
 
 # %%
 xgb_quantile_metrics = load_metrics("../models/xgb_quantile_metrics.json")
-xgb_quantile_metrics_df = pd.DataFrame(xgb_quantile_metrics).T
+metrics = xgb_quantile_metrics["XGBoost (Quantile)"]
+
+# Reshape for metrics display table: Metrics in index, Train/Val in columns
+metrics_display = {
+    "Train": {
+        "Median MdAE": metrics["train_q50_mdae"],
+        "Median MAE": metrics["train_q50_mae"],
+        "Median R²": metrics["train_q50_r2"],
+        "Range Coverage (q25–q75)": metrics["train_q25_q75_coverage"],
+        "Cushion Coverage (q90)": metrics["train_q90_coverage"],
+        "Avg Range Width": metrics["train_q25_q75_width"],
+        "Avg Cushion Width": metrics["train_q50_q90_width"],
+    },
+    "Validation": {
+        "Median MdAE": metrics["val_q50_mdae"],
+        "Median MAE": metrics["val_q50_mae"],
+        "Median R²": metrics["val_q50_r2"],
+        "Range Coverage (q25–q75)": metrics["val_q25_q75_coverage"],
+        "Cushion Coverage (q90)": metrics["val_q90_coverage"],
+        "Avg Range Width": metrics["val_q25_q75_width"],
+        "Avg Cushion Width": metrics["val_q50_q90_width"],
+    }
+}
 
 display(
-    xgb_quantile_metrics_df[[
-        "val_q50_mdae",
-        "val_q50_r2",
-        "train_q25_q75_coverage",
-        "val_q25_q75_coverage",
-        "train_q90_coverage",
-        "val_q90_coverage",
-        "val_q25_q75_width",
-        "val_q50_q90_width",
-    ]]
-    .rename(columns={
-        "val_q50_mdae": "Median MdAE",
-        "val_q50_r2": "Median R²",
-        "train_q25_q75_coverage": "Range Coverage (Train)",
-        "val_q25_q75_coverage": "Range Coverage (Val)",
-        "train_q90_coverage": "Cushion Coverage (Train)",
-        "val_q90_coverage": "Cushion Coverage (Val)",
-        "val_q25_q75_width": "Avg Range Width",
-        "val_q50_q90_width": "Avg Cushion Width",
-    })
+    pd.DataFrame(metrics_display)
     .style
     .pipe(add_table_caption, "XGBoost Quantile Regression Metrics")
-    .format({
-        "Median MdAE": "${:,.2f}",
-        "Median R²": "{:.4f}",
-        "Range Coverage (Train)": "{:.1%}",
-        "Range Coverage (Val)": "{:.1%}",
-        "Cushion Coverage (Train)": "{:.1%}",
-        "Cushion Coverage (Val)": "{:.1%}",
-        "Avg Range Width": "${:,.2f}",
-        "Avg Cushion Width": "${:,.2f}",
-    })
+    .format("${:,.2f}", subset=(["Median MdAE", "Median MAE", "Avg Range Width", "Avg Cushion Width"], slice(None)))
+    .format("{:.2f}", subset=(["Median R²"], slice(None)))
+    .format("{:.1%}", subset=(["Range Coverage (q25–q75)", "Cushion Coverage (q90)"], slice(None)))
 )
 
