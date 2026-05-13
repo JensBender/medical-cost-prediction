@@ -12,6 +12,12 @@ Workflow:
   5.  Model Persistence: Save fitted models as individual Joblib files (DVC-tracked), evaluation metrics 
       as a collective JSON file (Git-tracked), and predicted values as a collective Joblib file (DVC-tracked).
 
+Artifacts:
+  - models/*_baseline_model.joblib: Fitted model.
+  - models/*_baseline_metrics.json: Evaluation metrics for each model.
+  - models/*_baseline_params.json: Hyperparameters for each model.
+  - models/*_baseline_predictions.joblib: Validation set predictions for each model.
+
 Reference:
     For model training exploration, in-depth model evaluation, error analysis, and detailed rationale, see:
     notebooks/2_modeling.ipynb

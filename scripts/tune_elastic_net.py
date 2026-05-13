@@ -20,6 +20,13 @@ Workflow:
       as JSON, parameters as JSON, predictions as Joblib, and full random search history 
       as JSON.
 
+Artifacts:
+  - models/en_tuned_model.joblib: Best fitted model.
+  - models/en_tuned_metrics.json: Evaluation metrics for the best tuned model.
+  - models/en_tuned_params.json: Hyperparameters of the best tuned model.
+  - models/en_tuned_predictions.joblib: Validation set predictions of the best tuned model.
+  - models/en_tuning_history.json: Metrics and params for entire random search history.
+
 Reference:
     For tuning exploration and detailed rationale, see:
     notebooks/2_modeling.ipynb
