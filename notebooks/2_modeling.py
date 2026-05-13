@@ -2238,9 +2238,8 @@ plot_residuals_vs_predicted(
 
 # %%
 # --- 1. Model Configuration ---
-print("Step 1: Configuring XGBoost multi-quantile parameters...")
+print("Step 1: Configuring XGBoost multi-quantile model parameters...")
 QUANTILES = [0.25, 0.50, 0.75, 0.90]
-QUANTILE_LABELS = ["q25", "q50", "q75", "q90"]
 
 tuned_params = load_metrics("../models/xgb_tuned_params.json")
 keep_params = [
@@ -2264,7 +2263,7 @@ xgb_quantile_params.update({
 print(f"  Successfully loaded hyperparameters of best tuned XGBoost model and updated them for {len(QUANTILES)} quantiles: {QUANTILES}")
 
 # --- 2. Model Training ---
-print("Step 2: Training XGBoost multi-quantile regression model...")
+print("Step 2: Training XGBoost quantile regression model...")
 # Train on log-costs: quantiles are invariant to monotonic transformations, and the log scale
 # stabilizes tree-splitting logic by preventing extreme outliers from dominating the partition search.
 xgb_quantile_model = TransformedTargetRegressor(
@@ -2334,10 +2333,11 @@ print(f"  Avg Cushion Width:[Train: ${train_q50_q90_width:.2f} | Val: ${val_q50_
 
 # --- 5. Model Persistence ---
 print("Step 5: Persisting model results...")
-
+# 5.1. Save fitted model as .joblib file
 save_model(xgb_quantile_model, "../models/xgb_quantile_model.joblib", verbose=False)
 print("  Saved XGBoost quantile regression model to 'models/xgb_quantile_model.joblib'")
 
+# 5.2. Save evaluation metrics as JSON
 xgb_quantile_metrics = {
     "XGBoost (Quantile)": {
         "train_q50_mdae": train_q50_mdae,
@@ -2360,15 +2360,15 @@ xgb_quantile_metrics = {
 save_metrics(xgb_quantile_metrics, "../models/xgb_quantile_metrics.json", verbose=False)
 print("  Saved evaluation metrics of XGBoost quantile regression to 'models/xgb_quantile_metrics.json'")
 
+# 5.3. Save hyperparameters as JSON
 save_metrics(xgb_quantile_params, "../models/xgb_quantile_params.json", verbose=False)
 print("  Saved hyperparameters of XGBoost quantile regression to 'models/xgb_quantile_params.json'")
 
+# 5.4. Save predicted values as .joblib file
 save_model(y_val_pred, "../models/xgb_quantile_predictions.joblib", verbose=False)
 print("  Saved predicted values of XGBoost quantile regression to 'models/xgb_quantile_predictions.joblib'")
 
 print("\n✅ XGBoost quantile regression complete.")
-
-
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
