@@ -21,7 +21,7 @@ The **Medical Cost Planner** is a consumer-facing web application that uses mach
 | Persona | Description | Primary Need |
 | :--- | :--- | :--- |
 | **The Open Enrollment Planner** | Employees deciding how much to contribute to FSAs/HSAs during open enrollment. | "Should I contribute $1,000 or $3,000?" |
-| **The Budgeter** | Individuals with tight budgets needing to anticipate potential medical expenses. | "What's the worst-case scenario I should prepare for?" |
+| **The Budgeter** | Individuals with tight budgets needing to anticipate potential medical expenses. | "How much cushion should I set aside for a higher-cost year?" |
 | **The Newly Diagnosed** | Users recently diagnosed with a chronic condition (e.g., Diabetes). | "How does this diagnosis impact my financial bottom line?" |
 | **The Gig Worker** | Uninsured or underinsured individuals weighing coverage options. | "What's the financial risk of skipping coverage vs. buying a plan?" |
 | **The Caregiver** | The "sandwich generation" estimating costs for an elderly parent. | "How much should I budget for my parent's healthcare?" |
@@ -70,11 +70,11 @@ We stand apart as the first consumer-centric planner for out-of-pocket healthcar
 | **Personalized Model**: Trained on 28k+ real profiles (MEPS). | **Averages**: Broad demographic buckets. |
 | **Granular Health Inputs**: Specific conditions (Diabetes, Hypertension) & 5-point health scales. | **Binary**: Often just "Good" vs. "Poor". |
 | **Explainable**: SHAP values reveal *why* costs are high (e.g., "Tobacco use: +$500"). | **Black Box**: No context provided. |
-| **Probabilistic**: Output includes 25th-75th percentile and "Worst Case" (90th%) ranges. | **Deterministic**: Single point estimates that imply false precision. |
+| **Probabilistic**: Output includes a 25th-75th percentile typical range and a 90th percentile budget-safe estimate. | **Deterministic**: Single point estimates that imply false precision. |
 | **Frictionless**: Quick, easy, and free to use, no login required. | **High Friction**: Requires CPT codes, logins, or deep insurance knowledge. |
 
 ### UX-First Rationale
-**Simplicity > Perfection**: Users need a "ballpark" estimate for decision making (e.g., $1k vs $3k FSA contribution), not a medical bill audit. By targeting form completion in **under 90 seconds** with ~10–12 high-impact inputs, we achieve user friendliness while remaining within $500 (MdAE) of actual costs—a helpful sweet spot for personal finance. The input count is a soft guideline; cognitive load and completion time are the true UX goals.
+**Simplicity > Perfection**: Users need a "ballpark" estimate for decision making (e.g., $1k vs $3k FSA contribution), not a medical bill audit. By targeting form completion in **under 90 seconds** with ~10–12 high-impact inputs, we achieve user friendliness while keeping the median/q50 estimate within a useful error range for personal finance. The input count is a soft guideline; cognitive load and completion time are the true UX goals.
 
 
 ## Out of Scope
@@ -144,7 +144,7 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 ### Result Display
 | ID | Component | Description | UI Element | Example |
 | :--- | :--- | :--- | :--- | :--- |
-| **UI-01** | **Cost Range** | Large, prominent display of out-of-pocket cost prediction as a typical range, plus a budget-safe estimate for worst-case planning. | `gr.Markdown` | "Estimated Out-of-Pocket Healthcare Cost for Next Year: **$1,450 – $2,100** (typical range)<br>To be safe, budget up to: **$3,200**" |
+| **UI-01** | **Cost Range** | Large, prominent display of out-of-pocket cost prediction as a typical range, plus a budget-safe estimate for higher-cost-year planning. | `gr.Markdown` | "Estimated Out-of-Pocket Healthcare Cost for Next Year: **$1,450 – $2,100** (typical range)<br>For a higher-cost year, consider budgeting up to: **$3,200**" |
 | **UI-02** | **Cost Drivers** | Explanation of key cost drivers and their dollar impact (SHAP). | `gr.Markdown` | "Your Diabetes Diagnosis (+$1,200), your Age (+$400), but your "Excellent" self-reported health lowered the estimate by (-$300)" |
 | **UI-03** | **Comparison Benchmarks** | Bar chart comparing user vs. national and age group benchmarks. | `gr.Plot` | "Typical American (median): $4,800 vs. Typical for Age 45–54 (median): $3,200" |
 | **UI-04** | **Limitations Notice** | Contextual guidance to help users interpret their prediction. | `gr.Markdown` | "**ℹ️ About This Estimate**<br>• Based on 2023 national survey data; recent policy changes may affect actual costs.<br>• Does not include insurance premiums or over-the-counter medications.<br>• This is a statistical estimate. Actual costs depend on your specific plan, providers, and health events." |
@@ -181,10 +181,12 @@ For technical implementation details such as data preprocessing, machine learnin
 
 
 ## Success Metrics
-*   **Predictive Performance:** Median Absolute Error (MdAE) on the test set is < $500 (i.e., for the typical user, the prediction is within $500 of the actual cost).
+*   **Predictive Performance:** Median Absolute Error (MdAE) for the median/q50 estimate on the unseen test set is < $500. This is the hard MVP gate; the product launch performance target is < $350 on test.
 *   **Interval Calibration:** Predicted ranges must demonstrate high reliability:
     *   **Typical Range (25th–75th%):** 50% ± 5% of actual costs fall within the predicted range.
     *   **Safety Cushion (90th%):** 90% ± 5% of actual costs fall below the predicted budget-safe estimate.
+*   **Interval Width:** Prediction intervals should be narrow enough to support decisions. The model should not meet coverage targets by returning overly wide ranges for most users.
+*   **Stratified Reliability:** Report MdAE and interval coverage by cost tier (e.g., low, middle, high) and key user groups before launch to confirm that strong overall metrics are not hiding weak subgroup performance.
 *   **Completion Rate:** > 70% of users who enter at least one value (e.g., select an age) successfully generate a cost prediction.
 *   **User Satisfaction:** Positive sentiment on "Was this helpful?" feedback (optional).
 
