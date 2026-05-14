@@ -182,7 +182,9 @@ For technical implementation details such as data preprocessing, machine learnin
 
 ## Success Metrics
 *   **Predictive Performance:** Median Absolute Error (MdAE) on the test set is < $500 (i.e., for the typical user, the prediction is within $500 of the actual cost).
-*   **Interval Coverage:** ≥ 50% of actual costs in the test set fall within the predicted 25th–75th percentile range.
+*   **Interval Calibration:** Predicted ranges must demonstrate high reliability:
+    *   **Typical Range (25th–75th%):** 50% ± 5% of actual costs fall within the predicted range.
+    *   **Safety Cushion (90th%):** 90% ± 5% of actual costs fall below the predicted budget-safe estimate.
 *   **Completion Rate:** > 70% of users who enter at least one value (e.g., select an age) successfully generate a cost prediction.
 *   **User Satisfaction:** Positive sentiment on "Was this helpful?" feedback (optional).
 
