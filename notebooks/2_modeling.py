@@ -2223,12 +2223,12 @@ plot_residuals_vs_predicted(
 # <strong>Decision:</strong> Display SHAP values for the median prediction only. This gives users a single, coherent explanation of their "most likely" cost drivers. The wider prediction range and safety buffer are presented as context for better financial planning.
 # <br><br>
 # <strong>3. Calibration: Conformalized Quantile Regression (CQR)</strong> <br>
-# Raw quantile regression has no coverage guarantee. The predicted "Typical Range" (q25–q75) might actually contain only 40% or 60% of real outcomes, not the intended 50%. CQR adds a calibration step that adjusts the intervals to provide a finite-sample coverage guarantee (see <code><a href="../docs/specs/technical_specifications.md" target="_blank">technical specifications</a></code>  success metric ≥ 50% interval coverage).
+# Raw quantile regression has no coverage guarantee. The predicted "Typical Range" (q25–q75) might actually contain only 40% or 60% of real outcomes, not the intended 50%. CQR adds a calibration step that adjusts the intervals to provide a finite-sample coverage guarantee.
 # <ul>
 #     <li><b>Phase 1 (QR):</b> Train and evaluate raw quantile regression. Measure empirical coverage on the validation set to establish a baseline.</li>
-#     <li><b>Phase 2 (CQR):</b> Add CQR calibration layer. Compare calibrated vs. uncalibrated coverage to quantify the improvement.</li>
+#     <li><b>Phase 2 (CQR - Optional):</b> If Phase 1 coverage deviates significantly from targets (e.g., > ±5%), add a CQR calibration layer to provide a finite-sample coverage guarantee (see <code><a href="../docs/specs/technical_specifications.md" target="_blank">technical specifications</a></code> success metrics).</li>
 # </ul>
-# <b>Calibration Set (~1,000 samples of train):</b> CQR requires a hold-out calibration set to compute conformity scores. Hold out ~1,000 samples from the training set. This is large enough for stable conformity score estimation while small enough (~8.5% of 11,814 training samples) to not substantially reduce training data quality. The existing validation and test sets remain untouched for evaluation.
+# <b>Calibration Set (~1,000 samples of train):</b> If Phase 2 is triggered, CQR requires a hold-out calibration set to compute conformity scores. Holding out ~1,000 samples from the training set (~8.5% of 11,814) is large enough for stable conformity score estimation while small enough to not substantially reduce training data quality.
 # </div>
 
 # %% [markdown]
@@ -2440,5 +2440,6 @@ display(
 #         <li><strong>Good Generalization:</strong> Extremely low performance deltas between training and validation (e.g., <3% variance in coverage and range widths) indicate that the model generalizes exceptionally well and is not overfitting to the training samples.</li>
 #         <li><strong>Manageable Estimates for Budgeting:</strong> An average "Common Range" width of ~\$890 provides users with a manageable window for standard HSA/FSA planning, while the ~\$1,980 "Safety Cushion" (q50–q90) offers a realistic, data-driven buffer for emergency fund planning.</li>
 #         <li><strong>MdAE vs. MAE:</strong> The large gap between MdAE (\$245) and MAE (\$955) reinforces that while the model is very precise for the "typical" user, rare high-cost outliers continue to drive the mean error, further justifying a probabilistic approach over simple point estimates.</li>
+#         <li><strong>Skip CQR Calibration:</strong> Decided not to implement conformalized quantile regression, because the raw quantile model achieved excellent out-of-the-box calibration (within 1.5% of targets). Using the leaner model simplifies deployment and maintenance while meeting all reliability standards.</li>
 #     </ul>
 # </div>
