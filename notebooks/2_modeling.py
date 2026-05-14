@@ -2421,3 +2421,14 @@ display(
     .format("{:+.1f}%", subset=(slice(None), "Delta %"))
 )
 
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul>
+#         <li><strong>Good Interval Calibration:</strong> The model is highly calibrated "out of the box," achieving 48.6% coverage for the typical range (Target: 50%) and 88.7% for the safety cushion (Target: 90%) on validation data. This confirms the predicted ranges are statistically reliable for user budgeting.</li>
+#         <li><strong>Good Generalization:</strong> Extremely low performance deltas between training and validation (e.g., <3% variance in coverage and range widths) indicate that the model generalizes exceptionally well and is not overfitting to the training samples.</li>
+#         <li><strong>Manageable Estimates for Budgeting:</strong> An average "Common Range" width of ~\$890 provides users with a manageable window for standard HSA/FSA planning, while the ~\$1,980 "Safety Cushion" (q50–q90) offers a realistic, data-driven buffer for emergency fund planning.</li>
+#         <li><strong>MdAE vs. MAE:</strong> The large gap between MdAE (\$245) and MAE (\$955) reinforces that while the model is very precise for the "typical" user, rare high-cost outliers continue to drive the mean error, further justifying a probabilistic approach over simple point estimates.</li>
+#     </ul>
+# </div>
