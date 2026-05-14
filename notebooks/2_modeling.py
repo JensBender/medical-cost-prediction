@@ -2423,6 +2423,16 @@ display(
 
 
 # %% [markdown]
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
+#     ℹ️ <b>How to Interpret Coverage</b> <br>
+#     Coverage measures reliability by showing the % of users whose actual costs fall within the predicted range.
+#     <ul style="margin-top:8px">
+#         <li><b>Rule of thumb:</b> ±2% of target is excellent; ±5% is acceptable; >10% is unacceptable (requires calibration).</li>
+#         <li><b>Under-coverage:</b> Intervals are too narrow (overconfident). Users encounter unexpected costs more often than predicted.</li>
+#         <li><b>Over-coverage:</b> Intervals are too wide (underconfident). Safer, but users tend to set aside more money than necessary (over-budgeting).</li>
+#     </ul>
+# </div>
+#
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> 
 #     <ul>
