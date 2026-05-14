@@ -2124,9 +2124,9 @@ plot_residuals_vs_predicted(
 # </div>
 
 # %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Quantile Regression</h2>
-# </div>
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Quantile Regression</h1>
+# </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ <strong>"Budget vs. Buffer" Approach</strong> <br> 
@@ -2232,11 +2232,14 @@ plot_residuals_vs_predicted(
 # </div>
 
 # %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Training</h2>
+# </div> 
+#
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Train an XGBoost multi-quantile regression model that returns q25, q50, q75, and q90 predictions. 
 #     <br><br>
 #     Production Script: This notebook is for prototyping; the production run was executed via <code><a href="../scripts/train_xgboost_quantile.py">scripts/train_xgboost_quantile.py</a></code>.
-#
 # </div>
 
 # %%
@@ -2379,6 +2382,10 @@ def train_xgboost_quantile():
 # train_xgboost_quantile()
 
 # %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Evaluation</h2>
+# </div> 
+#
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Evaluate XGBoost quantile regression.
 # </div>
