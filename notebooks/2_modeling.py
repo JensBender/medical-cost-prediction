@@ -341,6 +341,10 @@ def persist_all_models(model_results):
 #     <h2 style="margin:0px">Evaluation</h2>
 # </div> 
 #
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Metrics</h3>
+# </div>
+#
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     🎯 Evaluate model performance on the validation dataset.  
 #     <ul>
@@ -2395,6 +2399,11 @@ def train_xgboost_quantile():
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Evaluation</h2>
 # </div> 
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Metrics</h3>
+# </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Evaluate XGBoost quantile regression.
@@ -2441,12 +2450,22 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
-#     ℹ️ <b>How to Interpret Coverage</b> <br>
-#     Coverage measures reliability by showing the % of users whose actual costs fall within the predicted range.
+#     ℹ️ <b>Quantile Regression Evaluation Guidelines</b> <br>
+#     These thresholds are practical guidelines, not universal laws. They help decide whether the quantile model is useful for out-of-pocket cost planning. A good model should be calibrated, but it should also give ranges that are narrow enough to help users make decisions.
+#     <br><br>
+#     <b>How to Interpret Coverage</b> <br>
+#     Coverage measures reliability by showing the percentage of users whose actual costs fall within the predicted range.
 #     <ul style="margin-top:8px">
-#         <li><b>Rule of thumb:</b> ±2% of target is excellent; ±5% is acceptable; >10% is unacceptable (requires calibration).</li>
-#         <li><b>Under-coverage:</b> Intervals are too narrow (overconfident). Users encounter unexpected costs more often than predicted.</li>
-#         <li><b>Over-coverage:</b> Intervals are too wide (underconfident). Safer, but users tend to set aside more money than necessary (over-budgeting).</li>
+#         <li><b>Typical range (q25–q75):</b> Good = 48–52%, acceptable = 45–55%, poor = below 40% or above 60%.</li>
+#         <li><b>Budget-safe estimate (q90):</b> Good = 88–92%, acceptable = 85–95%, poor = below 80% or above 97%.</li>
+#         <li><b>Under-coverage:</b> Intervals are too narrow. Users encounter unexpectedly high costs more often than the app implies.</li>
+#         <li><b>Over-coverage:</b> Intervals are too wide. Safer, but the app may push users to over-budget.</li>
+#     </ul>
+#     <b>How to Interpret Interval Width</b> <br>
+#     Interval width measures usefulness by showing how wide the predicted dollar range is for planning.
+#     <ul style="margin-top:8px">
+#         <li><b>Average q25–q75 width:</b> Good &lt; \$1,000, acceptable &lt; \$1,500, poor &gt; \$2,000.</li>
+#         <li><b>Average q50–q90 cushion width:</b> Good &lt; \$2,500, acceptable &lt; \$3,500, poor &gt; \$5,000.</li>
 #     </ul>
 # </div>
 #
@@ -2458,5 +2477,23 @@ display(
 #         <li><strong>Manageable Estimates for Budgeting:</strong> An average "Common Range" width of ~\$890 provides users with a manageable window for standard HSA/FSA planning, while the ~\$1,980 "Safety Cushion" (q50–q90) offers a realistic, data-driven buffer for emergency fund planning.</li>
 #         <li><strong>MdAE vs. MAE:</strong> The large gap between MdAE (\$245) and MAE (\$955) reinforces that while the model is very precise for the "typical" user, rare high-cost outliers continue to drive the mean error, further justifying a probabilistic approach over simple point estimates.</li>
 #         <li><strong>Skip CQR Calibration:</strong> Decided not to implement conformalized quantile regression, because the raw quantile model achieved excellent out-of-the-box calibration (within 1.5% of targets). Using the leaner model simplifies deployment and maintenance while meeting all reliability standards.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Stratified Error Analysis</h3>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
+#     ℹ️ <b>Stratified Reliability: Where do the ranges work well or poorly?</b> <br>
+#     This is the quantile-model version of stratified error analysis. Reuse the same target-based, prediction-based, and feature-based groups, but evaluate both accuracy and interval usefulness.
+#     <ul style="margin-top:8px">
+#         <li><b>Groups to inspect:</b> actual cost tier, predicted q50/q90 cost tier, age, sex, insurance status, income, physical health, mental health, chronic condition count, limitation count, and fairness-audit groups.</li>
+#         <li><b>Metrics to inspect:</b> q50 MdAE, q25–q75 coverage, q90 coverage, average q25–q75 width, average q50–q90 cushion width, median actual cost, and sample size.</li>
+#         <li><b>Coverage guideline:</b> For major subgroups with enough samples, q25–q75 coverage should generally stay within 40–60%, and q90 coverage should generally stay within 80–97%.</li>
+#         <li><b>Width guideline:</b> Wider intervals are acceptable for genuinely higher-risk groups, but concerning for low-risk groups if they do not improve coverage or reflect clearly higher actual costs.</li>
+#         <li><b>Review trigger:</b> Any subgroup with q90 coverage below 75%, MdAE more than 3× the median subgroup MdAE, or very wide intervals for low-risk users needs review before launch.</li>
+#         <li>Use n ≥ 100 unweighted observations for launch gates when possible. Use n ≥ 30 only for diagnostic reporting.</li>
 #     </ul>
 # </div>
