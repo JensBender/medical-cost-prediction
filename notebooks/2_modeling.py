@@ -2121,6 +2121,14 @@ plot_residuals_vs_predicted(
 #         <li><strong>Tree models are less biased:</strong> Both RF and XGBoost keep their median residual near zero across most of their prediction range, indicating less systematic bias. Elastic Net's median drifts sharply upward, confirming it systematically underpredicts.</li>
 #         <li><strong>Mid-range uncertainty peak ("inverted-U"):</strong> RF and XGBoost share a distinctive pattern: the IQR band widens through mid-range predictions, then narrows again at the highest predictions. This suggests that when tree models confidently predict high costs, those predictions are relatively well-calibrated.</li>
 #     </ul>
+#     <hr style="border: 0; border-top: 1px solid #e0f0e0; margin: 15px 0;">
+#     <strong>Decision: Select XGBoost for Production</strong> <br>
+#     Despite <b>Elastic Net</b> being the "MdAE Champion" amongst baseline and tuned models, selected <b>XGBoost</b> for the final model. 
+#     <ul style="margin-top:8px">
+#         <li><b>The "Champion" Paradox:</b> Elastic Net achieves a low global error by staying "safe" in the middle, but it is effectively blind to risk (max prediction: \$217). It produces a more accurate average, but a less useful product.</li>
+#         <li><b>Capacity for Risk:</b> XGBoost's ability to differentiate high-cost individuals (max prediction: \$2,114) is essential for the "Budget vs. Buffer" product strategy of the medical cost planner. A model that can't "see" high costs cannot provide a meaningful "Safety Cushion."</li>
+#         <li><b>Strategic Pivot:</b> Move from global error minimization (predicting the typical person) to identifying risk levels. XGBoost’s high capacity for non-linear splits makes it the superior engine for Quantile Regression.</li>
+#     </ul>
 # </div>
 
 # %% [markdown]
