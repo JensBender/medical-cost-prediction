@@ -2123,11 +2123,12 @@ plot_residuals_vs_predicted(
 #     </ul>
 #     <hr style="border: 0; border-top: 1px solid #e0f0e0; margin: 15px 0;">
 #     <strong>Decision: Select XGBoost for Production</strong> <br>
-#     Despite <b>Elastic Net</b> being the "MdAE Champion" amongst baseline and tuned models, selected <b>XGBoost</b> for the final model. 
+#     Elastic Net is the best model if the product only needs one middle estimate. It has the lowest tuned validation MdAE, so it is the point-estimate champion. However, the production app is not a single-number estimator. It is a planning tool that needs a middle estimate, a typical range, and a budget-safe cushion. For that product goal, XGBoost is the better production choice.
 #     <ul style="margin-top:8px">
-#         <li><b>The "Champion" Paradox:</b> Elastic Net achieves a low global error by staying "safe" in the middle, but it is effectively blind to risk (max prediction: \$217). It produces a more accurate average, but a less useful product.</li>
-#         <li><b>Capacity for Risk:</b> XGBoost's ability to differentiate high-cost individuals (max prediction: \$2,114) is essential for the "Budget vs. Buffer" product strategy of the medical cost planner. A model that can't "see" high costs cannot provide a meaningful "Safety Cushion."</li>
-#         <li><b>Strategic Pivot:</b> Move from global error minimization (predicting the typical person) to identifying risk levels. XGBoost’s high capacity for non-linear splits makes it the superior engine for Quantile Regression.</li>
+#         <li><b>Point estimate vs. product usefulness:</b> Elastic Net wins MdAE by keeping most predictions close to the low-cost middle of the population. That lowers the typical error, but it also compresses predictions into a narrow band (max prediction: \$217). This makes it hard for the app to distinguish someone with low expected costs from someone with meaningfully higher financial risk.</li>
+#         <li><b>XGBoost separates risk levels better:</b> XGBoost predictions span up to \$2,114, roughly 10× wider than Elastic Net. This wider spread is useful because the app needs to tell users not only "what is typical?" but also "how much cushion should I consider?"</li>
+#         <li><b>Quantile regression fit:</b> XGBoost supports multi-quantile regression, so one model can produce the median estimate, the 25th-75th percentile range, and the 90th percentile budget-safe estimate. Elastic Net would need a more complicated setup and still show weaker ability to separate low-risk and high-risk profiles.</li>
+#         <li><b>Trade-off:</b> Accept a higher median error from XGBoost than Elastic Net because the production app values calibrated ranges and risk separation, not just the lowest possible single-number MdAE. Elastic Net remains a useful benchmark and challenger model for median/q50 accuracy.</li>
 #     </ul>
 # </div>
 
@@ -2219,11 +2220,12 @@ plot_residuals_vs_predicted(
 #     ℹ️ <strong>Implementation Decisions</strong>
 # <br><br>
 # <strong>1. Model Selection: XGBoost Only</strong> <br>
-# Train quantile regression using XGBoost only (not Elastic Net or Random Forest). Point-estimates and heteroscedasticity analysis already provided strong evidence:
+# Train quantile regression using XGBoost only (not Elastic Net or Random Forest). The goal is not just the lowest single-number error; the goal is a useful planning range:
 #     <ul style="margin-top:8px">
-#         <li><b>XGBoost differentiates best:</b> Predictions span up to \$2,114 (10× Elastic Net's \$217 and 1.7× Random Forest's \$1,273). A model that better separates low-cost from high-cost individuals will also produce more meaningful quantile ranges.</li>
+#         <li><b>XGBoost differentiates best:</b> Predictions span up to \$2,114 (10× Elastic Net's \$217 and 1.7× Random Forest's \$1,273). A model that better separates low-cost from high-cost individuals is more likely to produce useful quantile ranges.</li>
 #         <li><b>Native multi-quantile support:</b> XGBoost's <code>reg:quantileerror</code> objective trains all four quantiles (0.25, 0.50, 0.75, 0.90) in a single model via the <code>quantile_alpha</code> parameter. Elastic Net would require <code>sklearn.linear_model.QuantileRegressor</code> (separate model per quantile) and Random Forest would require the external <code>quantile-forest</code> package, both adding complexity without changing the conclusion.</li>
 #         <li><b>Deployment efficiency:</b> A single multi-quantile XGBoost model produces one <code>.joblib</code> artifact instead of 4 separate model files.</li>
+#         <li><b>Metrics to confirm before release:</b> Evaluate q50 MdAE, pinball loss for each quantile, interval coverage, interval width, and subgroup performance on the untouched test set. Coverage alone is not enough: intervals also need to be narrow enough to help users make decisions.</li>
 #     </ul>
 # <strong>2. Calibration: Conformalized Quantile Regression (CQR)</strong> <br>
 # Raw quantile regression has no coverage guarantee. The predicted "Typical Range" (q25–q75) might actually contain only 40% or 60% of real outcomes, not the intended 50%. CQR adds a calibration step that adjusts the intervals to provide a finite-sample coverage guarantee.
