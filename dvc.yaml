@@ -14,7 +14,7 @@ stages:
       - src/pipeline.py                           # Preprocessing pipeline
       - src/transformers.py                       # Custom transformers
       - src/constants.py                          # Feature lists, label mappings, etc.
-      - src/data.py                               # Data helper functions
+      - src/stats.py                              # Statistical helper function to stratify target variable 
     outs:
       - data/training_data_preprocessed.parquet
       - data/validation_data_preprocessed.parquet
