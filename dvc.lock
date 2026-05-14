@@ -9,7 +9,7 @@ stages:
       size: 207093760
     - path: scripts/preprocess.py
       hash: md5
-      md5: 58954079c9fa08e1400a5db463134b3a
+      md5: b8080c15bfb87a950959223a8da1ced6
       size: 9625
     - path: src/constants.py
       hash: md5
@@ -19,14 +19,14 @@ stages:
       hash: md5
       md5: 5b5d8dc9431ce299e68a21f08c1bae31
       size: 6850
+    - path: src/stats.py
+      hash: md5
+      md5: 72a169f9f274feffb68eb9c2e5b6c8d7
+      size: 2821
     - path: src/transformers.py
       hash: md5
       md5: 5920c0ca24641df700182ead056d0362
       size: 35874
-    - path: src/utils.py
-      hash: md5
-      md5: 0a04e09434e5c5c365a11a89b01d32c7
-      size: 7813
     outs:
     - path: data/test_data_preprocessed.parquet
       hash: md5
@@ -180,3 +180,47 @@ stages:
       hash: md5
       md5: 07d89f5d4e5e09caffa27b7a9c977f6f
       size: 6133
+  quantile:
+    cmd: .venv-train\Scripts\python scripts/train_xgboost_quantile.py
+    deps:
+    - path: data/training_data_preprocessed.parquet
+      hash: md5
+      md5: a045a49de975005c96adff5b20fa8756
+      size: 355338
+    - path: data/validation_data_preprocessed.parquet
+      hash: md5
+      md5: 88c1393d697a77b153796db97a5f6a64
+      size: 69302
+    - path: models/xgb_tuned_params.json
+      hash: md5
+      md5: c862480657c40723b58bd59d23dc62e8
+      size: 1193
+    - path: scripts/train_xgboost_quantile.py
+      hash: md5
+      md5: 7c4dc55f26e5dbd13406c5d533732694
+      size: 12322
+    - path: src/constants.py
+      hash: md5
+      md5: fb58d875a4e834067f7d11799ceb635e
+      size: 5111
+    - path: src/modeling.py
+      hash: md5
+      md5: 6f8f89fc43a22f9f02e1f6c3e8244f9b
+      size: 16740
+    outs:
+    - path: models/xgb_quantile_metrics.json
+      hash: md5
+      md5: 7b1d0589fffa370b8b3bf33b0b206546
+      size: 760
+    - path: models/xgb_quantile_model.joblib
+      hash: md5
+      md5: 437d32bb9c73d4283add5466871db940
+      size: 2671008
+    - path: models/xgb_quantile_params.json
+      hash: md5
+      md5: e84420a22b6962f46157ccc209cf4e4e
+      size: 484
+    - path: models/xgb_quantile_predictions.joblib
+      hash: md5
+      md5: c7fc4c7e94eec785cb03b8999334a064
+      size: 23873
