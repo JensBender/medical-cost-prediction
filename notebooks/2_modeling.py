@@ -2399,6 +2399,26 @@ def train_xgboost_quantile():
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Evaluation</h2>
 # </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
+#     ℹ️ <b>Quantile Regression Evaluation Guidelines</b> <br>
+#     The following are practical guidelines, not universal laws. They help decide whether the quantile model is useful for out-of-pocket cost planning. A good model should be calibrated (good coverage), but it should also give ranges that are narrow enough to help users make decisions (good interval width).
+#     <br><br>
+#     <b>How to Interpret Coverage</b> <br>
+#     Coverage measures reliability by showing the percentage of users whose actual costs fall within the predicted range.
+#     <ul style="margin-top:8px">
+#         <li><b>Typical range (q25–q75):</b> Good = 48–52%, acceptable = 45–55%, poor = below 40% or above 60%.</li>
+#         <li><b>Budget-safe estimate (q90):</b> Good = 88–92%, acceptable = 85–95%, poor = below 80% or above 97%.</li>
+#         <li><b>Under-coverage:</b> Intervals are too narrow. Users encounter unexpectedly high costs more often than the app implies.</li>
+#         <li><b>Over-coverage:</b> Intervals are too wide. Safer, but the app may push users to over-budget.</li>
+#     </ul>
+#     <b>How to Interpret Interval Width</b> <br>
+#     Interval width measures usefulness by showing how wide the predicted dollar range is for planning.
+#     <ul style="margin-top:8px">
+#         <li><b>Average q25–q75 width:</b> Good &lt; \$1,000, acceptable &lt; \$1,500, poor &gt; \$2,000.</li>
+#         <li><b>Average q50–q90 cushion width:</b> Good &lt; \$2,500, acceptable &lt; \$3,500, poor &gt; \$5,000.</li>
+#     </ul>
+# </div>
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
@@ -2449,30 +2469,10 @@ display(
 
 
 # %% [markdown]
-# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
-#     ℹ️ <b>Quantile Regression Evaluation Guidelines</b> <br>
-#     These thresholds are practical guidelines, not universal laws. They help decide whether the quantile model is useful for out-of-pocket cost planning. A good model should be calibrated, but it should also give ranges that are narrow enough to help users make decisions.
-#     <br><br>
-#     <b>How to Interpret Coverage</b> <br>
-#     Coverage measures reliability by showing the percentage of users whose actual costs fall within the predicted range.
-#     <ul style="margin-top:8px">
-#         <li><b>Typical range (q25–q75):</b> Good = 48–52%, acceptable = 45–55%, poor = below 40% or above 60%.</li>
-#         <li><b>Budget-safe estimate (q90):</b> Good = 88–92%, acceptable = 85–95%, poor = below 80% or above 97%.</li>
-#         <li><b>Under-coverage:</b> Intervals are too narrow. Users encounter unexpectedly high costs more often than the app implies.</li>
-#         <li><b>Over-coverage:</b> Intervals are too wide. Safer, but the app may push users to over-budget.</li>
-#     </ul>
-#     <b>How to Interpret Interval Width</b> <br>
-#     Interval width measures usefulness by showing how wide the predicted dollar range is for planning.
-#     <ul style="margin-top:8px">
-#         <li><b>Average q25–q75 width:</b> Good &lt; \$1,000, acceptable &lt; \$1,500, poor &gt; \$2,000.</li>
-#         <li><b>Average q50–q90 cushion width:</b> Good &lt; \$2,500, acceptable &lt; \$3,500, poor &gt; \$5,000.</li>
-#     </ul>
-# </div>
-#
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> 
 #     <ul>
-#         <li><strong>Good Interval Calibration:</strong> The model is highly calibrated "out of the box," achieving 48.6% coverage for the typical range (Target: 50%) and 88.7% for the safety cushion (Target: 90%) on validation data. This confirms the predicted ranges are statistically reliable for user budgeting.</li>
+#         <li><strong>Good Interval Calibration:</strong> The model is highly calibrated "out of the box," achieving 48.6% coverage for the typical range (Target: 50% ± 5%) and 88.7% for the safety cushion (Target: 90% ± 5%) on validation data. This confirms the predicted ranges are statistically reliable for user budgeting.</li>
 #         <li><strong>Good Generalization:</strong> Extremely low performance deltas between training and validation (e.g., <3% variance in coverage and range widths) indicate that the model generalizes exceptionally well and is not overfitting to the training samples.</li>
 #         <li><strong>Manageable Estimates for Budgeting:</strong> An average "Common Range" width of ~\$890 provides users with a manageable window for standard HSA/FSA planning, while the ~\$1,980 "Safety Cushion" (q50–q90) offers a realistic, data-driven buffer for emergency fund planning.</li>
 #         <li><strong>MdAE vs. MAE:</strong> The large gap between MdAE (\$245) and MAE (\$955) reinforces that while the model is very precise for the "typical" user, rare high-cost outliers continue to drive the mean error, further justifying a probabilistic approach over simple point estimates.</li>
