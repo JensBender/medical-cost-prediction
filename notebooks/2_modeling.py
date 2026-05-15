@@ -2542,3 +2542,177 @@ display(
 #         </tbody>
 #     </table>
 # </div>
+
+# %%
+# --- Prepare Features ---
+print("Recovering raw validation features...")
+df_quantile_raw_val, y_quantile_val_true, w_quantile_val = prepare_human_readable_validation_data()
+
+# Create chronic conditions count
+chronic_cols = list(CHRONIC_CONDITIONS.keys())
+df_quantile_raw_val["CHRONIC_COUNT"] = df_quantile_raw_val[chronic_cols].sum(axis=1).astype(int)
+df_quantile_raw_val["CHRONIC_COUNT_GRP"] = df_quantile_raw_val["CHRONIC_COUNT"].apply(lambda x: str(x) if x < 4 else "4+")
+
+# Create age groups for a more stable and interpretable fairness audit
+age_bins = [18, 35, 50, 65, 120]
+age_labels = ["18-34", "35-49", "50-64", "65+"]
+df_quantile_raw_val["AGE_GRP"] = pd.cut(df_quantile_raw_val["AGE23X"], bins=age_bins, labels=age_labels, right=False)
+
+
+# --- Prepare Quantile Predictions ---
+print("Loading XGBoost quantile predictions...")
+y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
+y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = [
+    pd.Series(values, index=y_quantile_val_true.index)
+    for values in y_val_quantile_pred.T
+]
+
+# Create medical cost ranges for reporting
+# NOTE: Using the same bins as the point-estimate stratified analysis, with the
+# Top 5% extreme tail merged for more stable subgroup estimates.
+COST_BIN_LABELS = {
+    0: "Zero Costs",
+    1: "Low Spend (0-50%)",
+    2: "Moderate (50-80%)",
+    3: "High Spend (80-95%)",
+    4: "Very High Spend (Top 5%)"
+}
+merged_tail_bins = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 4}
+
+df_quantile_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_quantile_val_true).map(merged_tail_bins)
+df_quantile_raw_val["PREDICTED_MEDIAN_COSTS"] = create_stratification_bins(y_val_pred_q50).map(merged_tail_bins)
+df_quantile_raw_val["PREDICTED_CUSHION_COSTS"] = create_stratification_bins(y_val_pred_q90).map(merged_tail_bins)
+
+
+# --- Stratification Configurations ---
+quantile_reliability_configs = [
+    {"col": "ACTUAL_COSTS", "label": "Medical Costs (Actual)", "category_map": COST_BIN_LABELS},
+    {"col": "PREDICTED_MEDIAN_COSTS", "label": "Medical Costs (Predicted Median)", "category_map": COST_BIN_LABELS},
+    {"col": "PREDICTED_CUSHION_COSTS", "label": "Medical Costs (Predicted Cushion)", "category_map": COST_BIN_LABELS},
+    {"col": "RTHLTH31", "label": DISPLAY_LABELS["RTHLTH31"], "category_map": CATEGORY_LABELS_EDA["RTHLTH31"]},
+    {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "category_map": CATEGORY_LABELS_EDA["INSCOV23"]},
+    {"col": "CHRONIC_COUNT_GRP", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}
+]
+
+quantile_fairness_configs = [
+    {"col": "SEX", "label": DISPLAY_LABELS["SEX"], "category_map": CATEGORY_LABELS_EDA["SEX"]},
+    {"col": "AGE_GRP", "label": "Age Group", "category_map": None},
+    {"col": "RACETHX", "label": DISPLAY_LABELS["RACETHX"], "category_map": CATEGORY_LABELS_EDA["RACETHX"]},
+    {"col": "MNHLTH31", "label": DISPLAY_LABELS["MNHLTH31"], "category_map": CATEGORY_LABELS_EDA["MNHLTH31"]},
+    {"col": "POVCAT23", "label": DISPLAY_LABELS["POVCAT23"], "category_map": CATEGORY_LABELS_EDA["POVCAT23"]},
+    {"col": "HIDEG", "label": DISPLAY_LABELS["HIDEG"], "category_map": CATEGORY_LABELS_EDA["HIDEG"]},
+    {"col": "REGION23", "label": DISPLAY_LABELS["REGION23"], "category_map": CATEGORY_LABELS_EDA["REGION23"]},
+    {"col": "WLKLIM31", "label": DISPLAY_LABELS["WLKLIM31"], "category_map": CATEGORY_LABELS_EDA["WLKLIM31"]},
+]
+
+quantile_stratified_configs = quantile_reliability_configs + quantile_fairness_configs
+
+
+def format_stratified_group_label(group, category_map):
+    """Map coded values to display labels while preserving string-based groups."""
+    if category_map is None:
+        return group
+    
+    try:
+        return category_map.get(int(group), group)
+    except (TypeError, ValueError):
+        return category_map.get(group, group)
+
+
+# --- Stratified Quantile Error Analysis ---
+quantile_stratified_results = []
+
+for config in quantile_stratified_configs:
+    col = config["col"]
+    label = config["label"]
+    category_map = config["category_map"]
+    col_bins = df_quantile_raw_val[col]
+
+    for group in sorted(col_bins.dropna().unique()):
+        mask = (col_bins == group)
+        y_group = y_quantile_val_true[mask]
+        w_group = w_quantile_val[mask]
+        q25_group = y_val_pred_q25[mask]
+        q50_group = y_val_pred_q50[mask]
+        q75_group = y_val_pred_q75[mask]
+        q90_group = y_val_pred_q90[mask]
+
+        quantile_stratified_results.append({
+            "Column": label,
+            "Group": format_stratified_group_label(group, category_map),
+            "Sample Size": mask.sum(),
+            "Median Actual Cost": weighted_quantile(y_group, w_group, 0.5),
+            "Median MdAE": weighted_median_absolute_error(y_group, q50_group, sample_weight=w_group),
+            "Prediction Range Coverage": np.average((y_group >= q25_group) & (y_group <= q75_group), weights=w_group),
+            "Prediction Range Width": np.average(q75_group - q25_group, weights=w_group),
+            "Safety Cushion Coverage": np.average(y_group <= q90_group, weights=w_group),
+            "Safety Cushion Width": np.average(q90_group - q50_group, weights=w_group),
+        })
+
+quantile_stratified_df = pd.DataFrame(quantile_stratified_results)
+
+
+# --- Subgroup Reliability Flags ---
+median_subgroup_mdae = quantile_stratified_df["Median MdAE"].median()
+overall_median_actual_cost = weighted_quantile(y_quantile_val_true, w_quantile_val, 0.5)
+overall_range_width = np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_quantile_val)
+overall_cushion_width = np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_quantile_val)
+
+
+def get_quantile_reliability_flags(row):
+    flags = []
+    
+    if row["Prediction Range Coverage"] < 0.40:
+        flags.append("Range Undercoverage")
+    elif row["Prediction Range Coverage"] > 0.60:
+        flags.append("Range Overcoverage")
+    
+    if row["Safety Cushion Coverage"] < 0.75:
+        flags.append("Severe Cushion Undercoverage")
+    elif row["Safety Cushion Coverage"] < 0.80:
+        flags.append("Cushion Undercoverage")
+    
+    if row["Median MdAE"] > 3 * median_subgroup_mdae:
+        flags.append("High Median Error")
+    
+    is_low_risk_group = row["Median Actual Cost"] <= overall_median_actual_cost
+    if is_low_risk_group and row["Prediction Range Width"] > overall_range_width:
+        flags.append("Wide Low-Risk Range")
+    if is_low_risk_group and row["Safety Cushion Width"] > overall_cushion_width:
+        flags.append("Wide Low-Risk Cushion")
+    
+    return ", ".join(flags) if flags else "None"
+
+
+quantile_stratified_df["Reliability Flags"] = quantile_stratified_df.apply(get_quantile_reliability_flags, axis=1)
+
+# Clean group labels after flag creation so calculations can still use numeric columns.
+quantile_stratified_df["Group"] = quantile_stratified_df.apply(
+    lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})",
+    axis=1
+)
+
+display_columns = [
+    "Column",
+    "Group",
+    "Median Actual Cost",
+    "Median MdAE",
+    "Prediction Range Coverage",
+    "Prediction Range Width",
+    "Safety Cushion Coverage",
+    "Safety Cushion Width",
+    "Reliability Flags",
+]
+
+display(
+    quantile_stratified_df[display_columns]
+    .style
+    .hide()
+    .pipe(add_table_caption, "XGBoost Quantile Regression: Stratified Error Analysis")
+    .format("${:,.2f}", subset=["Median Actual Cost", "Median MdAE", "Prediction Range Width", "Safety Cushion Width"])
+    .format("{:.1%}", subset=["Prediction Range Coverage", "Safety Cushion Coverage"])
+    .apply(
+        lambda row: ["background-color: #fff3cd" if row["Reliability Flags"] != "None" else "" for _ in row],
+        axis=1
+    )
+)
