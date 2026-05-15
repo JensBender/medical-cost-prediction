@@ -2490,14 +2490,55 @@ display(
 #     Stratified error analysis for quantile regression extends the point-estimate stratified analysis from a single error metric to a fuller audit of both accuracy and uncertainty. The goal is to confirm that the model's median estimate, typical prediction range, and budget safety cushion remain useful across important user segments.
 #     <ul style="margin-top:8px">
 #         <li><b>Reuse prior stratification design:</b> Keep the same reliability and fairness audit groups used for point-estimate models.</li>
-#         <li><b>Quantile-specific predicted cost groups:</b> Replace the point-estimate <code>Predicted Costs</code> grouping with <code>Predicted Median Costs</code> based on q50. Add <code>Predicted Cushion Costs</code> grouping based on q90 to audit the planning cushion directly.</li>
+#         <li><b>Quantile-specific predicted cost groups:</b> Replace the point-estimate <code>Predicted Costs</code> grouping with <code>Predicted Median Costs</code> based on q50, and add <code>Predicted Cushion Costs</code> based on q90 to audit the user-facing "plan up to" amount directly.</li>
 #         <li><b>Reliability groups:</b> Actual cost tier, predicted q50 cost tier, predicted q90 cushion tier, physical health, insurance status, and chronic condition count.</li>
 #         <li><b>Fairness audit groups:</b> Sex, age group, race/ethnicity, mental health, income, education, region, and walking limitation.</li>
 #         <li><b>Metrics by group:</b> Median MdAE, prediction range coverage, prediction range width, safety cushion coverage, and safety cushion width.</li>
 #         <li><b>Context columns:</b> Include sample size and weighted median actual cost to distinguish unfair or unreliable model behavior from genuinely higher-cost, higher-variance population segments.</li>
 #         <li><b>Coverage guideline:</b> For major subgroups with enough samples, q25–q75 coverage should generally stay within 40–60%, and q90 coverage should generally stay within 80–97%.</li>
 #         <li><b>Width guideline:</b> Wider intervals are acceptable for genuinely higher-risk groups, but concerning for low-risk groups if they do not improve coverage or reflect clearly higher actual costs.</li>
-#         <li><b>Review triggers:</b> Flag any subgroup with q90 coverage below 75%, q50 MdAE more than 3× the median subgroup MdAE, q25–q75 coverage outside the 40–60% band, or very wide intervals for low-risk users.</li>
+#         <li><b>Subgroup reliability flags:</b> Add diagnostic quality-control flags to identify groups that may need manual review before deployment. These flags are not automatic failure criteria; they highlight groups where the median estimate, typical range, or safety cushion may be unreliable or insufficiently useful.</li>
 #         <li><b>Interpretation principle:</b> Coverage alone is not enough. A useful interval must be calibrated and narrow enough to support budgeting decisions; a wide interval is acceptable only when it reflects real uncertainty for a higher-risk group.</li>
 #     </ul>
+#     <table style="width:100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em;">
+#         <thead>
+#             <tr style="background-color:#d0e7fa;">
+#                 <th style="padding:8px; border:1px solid #b7d7ef; text-align:left;">Flag</th>
+#                 <th style="padding:8px; border:1px solid #b7d7ef; text-align:left;">Trigger</th>
+#                 <th style="padding:8px; border:1px solid #b7d7ef; text-align:left;">Why It Matters</th>
+#             </tr>
+#         </thead>
+#         <tbody>
+#             <tr>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Range Undercoverage</code></td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">q25–q75 coverage &lt; 40%</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">The typical range is too narrow and misses too many actual outcomes.</td>
+#             </tr>
+#             <tr>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Range Overcoverage</code></td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">q25–q75 coverage &gt; 60%</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">The typical range may be wider than needed for practical budgeting.</td>
+#             </tr>
+#             <tr>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Cushion Undercoverage</code></td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">q90 coverage &lt; 80% (&lt; 75% severe)</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">The safety cushion underestimates actual costs for that subgroup, thus under-warning users.</td>
+#             </tr>
+#             <tr>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>High Median Error</code></td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">q50 MdAE &gt; 3× the median q50 MdAE among audited subgroup rows</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">The middle estimate is unusually inaccurate compared with the typical audited subgroup.</td>
+#             </tr>
+#             <tr>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Wide Low-Risk Range</code></td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">Low median actual cost and q25–q75 width &gt; overall average</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">Low-risk users may receive a range that is too broad to be actionable.</td>
+#             </tr>
+#             <tr>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Wide Low-Risk Cushion</code></td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">Low median actual cost and q50–q90 width &gt; overall average</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">Low-risk users may be encouraged to over-budget without clear risk justification.</td>
+#             </tr>
+#         </tbody>
+#     </table>
 # </div>
