@@ -1746,6 +1746,7 @@ tuned_model_predictions = {
     "Random Forest (Tuned)": load_model("../models/rf_tuned_predictions.joblib", verbose=False),
     "XGBoost (Tuned)": load_model("../models/xgb_tuned_predictions.joblib", verbose=False)
 }
+print(f"  Loaded predictions for {len(tuned_model_predictions)} tuned models on the validation set")
 
 # Create medical cost ranges for reporting 
 # NOTE: Using same create_stratification_bins function as for train-val-test split, but merge the
@@ -2559,13 +2560,15 @@ age_labels = ["18-34", "35-49", "50-64", "65+"]
 df_quantile_raw_val["AGE_GRP"] = pd.cut(df_quantile_raw_val["AGE23X"], bins=age_bins, labels=age_labels, right=False)
 
 
-# --- Prepare Quantile Predictions ---
+# --- Prepare Target Variable ---
+# Load quantile predictions (on validation data)
 print("Loading XGBoost quantile predictions...")
 y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
 y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = [
     pd.Series(values, index=y_quantile_val_true.index)
     for values in y_val_quantile_pred.T
 ]
+print(f"  Loaded predictions for {y_val_quantile_pred.shape[1]} quantiles on {len(y_val_quantile_pred)} validation set samples")
 
 # Create medical cost ranges for reporting
 # NOTE: Using the same bins as the point-estimate stratified analysis, with the
@@ -2711,8 +2714,5 @@ display(
     .pipe(add_table_caption, "XGBoost Quantile Regression: Stratified Error Analysis")
     .format("${:,.2f}", subset=["Median Actual Cost", "Median MdAE", "Prediction Range Width", "Safety Cushion Width"])
     .format("{:.1%}", subset=["Prediction Range Coverage", "Safety Cushion Coverage"])
-    .apply(
-        lambda row: ["background-color: #fff3cd" if row["Reliability Flags"] != "None" else "" for _ in row],
-        axis=1
-    )
+    .apply(lambda row: ["background-color: #fff3cd" if row["Reliability Flags"] != "None" else "" for _ in row], axis=1)
 )
