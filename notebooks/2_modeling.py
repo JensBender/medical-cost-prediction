@@ -1764,8 +1764,8 @@ df_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_val_true).map({0:0, 1:
 # --- Define Stratified Error Configurations ---
 # 1. Model Reliability: Performance across selected groups and cost levels
 reliability_configs = [
-    {"col": "ACTUAL_COSTS", "label": "Medical Costs (Actual)", "category_map": COST_BIN_LABELS},        # Reliability across actual cost ranges
-    {"col": "PREDICTED_COSTS", "label": "Medical Costs (Predicted)", "category_map": COST_BIN_LABELS},  # Reliability across predicted cost ranges
+    {"col": "ACTUAL_COSTS", "label": "Out-of-Pocket Costs (Actual)", "category_map": COST_BIN_LABELS},        # Reliability across actual cost ranges
+    {"col": "PREDICTED_COSTS", "label": "Out-of-Pocket Costs (Predicted)", "category_map": COST_BIN_LABELS},  # Reliability across predicted cost ranges
     {"col": "RTHLTH31", "label": DISPLAY_LABELS["RTHLTH31"], "category_map": CATEGORY_LABELS_EDA["RTHLTH31"]}, # Stability across self-reported health levels
     {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "category_map": CATEGORY_LABELS_EDA["INSCOV23"]}, # Stability across insurance types
     {"col": "CHRONIC_COUNT_GRP", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}        # Stability across medical complexity
@@ -2571,8 +2571,7 @@ y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = [
 print(f"  Loaded predictions for {y_val_quantile_pred.shape[1]} quantiles on {len(y_val_quantile_pred)} validation set samples")
 
 # Create medical cost ranges for reporting
-# NOTE: Using the same bins as the point-estimate stratified analysis, with the
-# Top 5% extreme tail merged for more stable subgroup estimates.
+# NOTE: Using the same bins as in the point-estimate stratified analysis, with the Top 5% cost bins merged
 COST_BIN_LABELS = {
     0: "Zero Costs",
     1: "Low Spend (0-50%)",
@@ -2589,9 +2588,9 @@ df_quantile_raw_val["PREDICTED_CUSHION_COSTS"] = create_stratification_bins(y_va
 
 # --- Stratification Configurations ---
 quantile_reliability_configs = [
-    {"col": "ACTUAL_COSTS", "label": "Medical Costs (Actual)", "category_map": COST_BIN_LABELS},
-    {"col": "PREDICTED_MEDIAN_COSTS", "label": "Medical Costs (Predicted Median)", "category_map": COST_BIN_LABELS},
-    {"col": "PREDICTED_CUSHION_COSTS", "label": "Medical Costs (Predicted Cushion)", "category_map": COST_BIN_LABELS},
+    {"col": "ACTUAL_COSTS", "label": "Out-of-Pocket Costs (Actual)", "category_map": COST_BIN_LABELS},
+    {"col": "PREDICTED_MEDIAN_COSTS", "label": "Out-of-Pocket Costs (Predicted Median)", "category_map": COST_BIN_LABELS},
+    {"col": "PREDICTED_CUSHION_COSTS", "label": "Out-of-Pocket Costs (Predicted Cushion)", "category_map": COST_BIN_LABELS},
     {"col": "RTHLTH31", "label": DISPLAY_LABELS["RTHLTH31"], "category_map": CATEGORY_LABELS_EDA["RTHLTH31"]},
     {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "category_map": CATEGORY_LABELS_EDA["INSCOV23"]},
     {"col": "CHRONIC_COUNT_GRP", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}
