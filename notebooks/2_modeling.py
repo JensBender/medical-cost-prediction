@@ -2513,22 +2513,22 @@ display(
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Range Undercoverage</code></td>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;">q25–q75 coverage &lt; 40%</td>
-#                 <td style="padding:8px; border:1px solid #d0e7fa;">The typical range is too narrow and misses too many actual outcomes.</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">The prediction range for this subgroup is too narrow and misses too many actual costs.</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Range Overcoverage</code></td>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;">q25–q75 coverage &gt; 60%</td>
-#                 <td style="padding:8px; border:1px solid #d0e7fa;">The typical range may be wider than needed for practical budgeting.</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">The prediction range for this subgroup may be wider than needed for practical budgeting.</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Cushion Undercoverage</code></td>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;">q90 coverage &lt; 80% (&lt; 75% severe)</td>
-#                 <td style="padding:8px; border:1px solid #d0e7fa;">The safety cushion underestimates actual costs for that subgroup, thus under-warning users.</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">The safety cushion for that subgroup underestimates actual costs, thus under-warning users.</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>High Median Error</code></td>
-#                 <td style="padding:8px; border:1px solid #d0e7fa;">q50 MdAE &gt; 3× the median q50 MdAE among audited subgroup rows</td>
-#                 <td style="padding:8px; border:1px solid #d0e7fa;">The middle estimate is unusually inaccurate compared with the typical audited subgroup.</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">q50 MdAE &gt; 3× the overall MdAE</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">The median estimate for that subgroup has an unusually high prediction error compared to the typical prediction error.</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Wide Low-Risk Range</code></td>
@@ -2610,17 +2610,6 @@ quantile_fairness_configs = [
 quantile_stratified_configs = quantile_reliability_configs + quantile_fairness_configs
 
 
-def format_stratified_group_label(group, category_map):
-    """Map coded values to display labels while preserving string-based groups."""
-    if category_map is None:
-        return group
-    
-    try:
-        return category_map.get(int(group), group)
-    except (TypeError, ValueError):
-        return category_map.get(group, group)
-
-
 # --- Stratified Quantile Error Analysis ---
 quantile_stratified_results = []
 
@@ -2641,7 +2630,7 @@ for config in quantile_stratified_configs:
 
         quantile_stratified_results.append({
             "Column": label,
-            "Group": format_stratified_group_label(group, category_map),
+            "Group": category_map.get(int(group), group) if category_map else group,
             "Sample Size": mask.sum(),
             "Median Actual Cost": weighted_quantile(y_group, w_group, 0.5),
             "Median MdAE": weighted_median_absolute_error(y_group, q50_group, sample_weight=w_group),
@@ -2655,7 +2644,7 @@ quantile_stratified_df = pd.DataFrame(quantile_stratified_results)
 
 
 # --- Subgroup Reliability Flags ---
-median_subgroup_mdae = quantile_stratified_df["Median MdAE"].median()
+overall_q50_mdae = weighted_median_absolute_error(y_quantile_val_true, y_val_pred_q50, sample_weight=w_quantile_val)
 overall_median_actual_cost = weighted_quantile(y_quantile_val_true, w_quantile_val, 0.5)
 overall_range_width = np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_quantile_val)
 overall_cushion_width = np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_quantile_val)
@@ -2674,7 +2663,7 @@ def get_quantile_reliability_flags(row):
     elif row["Safety Cushion Coverage"] < 0.80:
         flags.append("Cushion Undercoverage")
     
-    if row["Median MdAE"] > 3 * median_subgroup_mdae:
+    if row["Median MdAE"] > 3 * overall_q50_mdae:
         flags.append("High Median Error")
     
     is_low_risk_group = row["Median Actual Cost"] <= overall_median_actual_cost
