@@ -1749,8 +1749,7 @@ tuned_model_predictions = {
 print(f"  Loaded predictions for {len(tuned_model_predictions)} tuned models on the validation set")
 
 # Create medical cost ranges for reporting 
-# NOTE: Using same create_stratification_bins function as for train-val-test split, but merge the
-# Top 5% extreme tail (bins 4, 5, 6) to ensure a robust sample size (n > 50) for MdAE estimates.
+# Note: Use the same bins as in the train-val-test split, but merge the Top 5% cost bins (for n>30 subgroup sample size)
 COST_BIN_LABELS = {
     0: "Zero Costs",
     1: "Low Spend (0-50%)",
@@ -1758,7 +1757,11 @@ COST_BIN_LABELS = {
     3: "High Spend (80-95%)",
     4: "Very High Spend (Top 5%)"
 }
-df_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_val_true).map({0:0, 1:1, 2:2, 3:3, 4:4, 5:4, 6:4}) 
+actual_cost_bin_map = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 4}
+# For predicted costs, also merge the Zero Costs bin (0) into Low Spend (1) for n>30 subgroup sample size because tree model predictions are almost never zero
+predicted_cost_bin_map = {0: 1, 1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 4}
+
+df_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_val_true).map(actual_cost_bin_map) 
 
 
 # --- Define Stratified Error Configurations ---
@@ -1807,7 +1810,7 @@ for model_key, y_val_pred in tuned_model_predictions.items():
         # For predicted costs: Use each model's own predictions
         if col == "PREDICTED_COSTS":
             y_val_pred_series = pd.Series(y_val_pred, index=y_val_true.index)  # Converts y_val_pred numpy array to Series to align on index
-            col_bins = create_stratification_bins(y_val_pred_series).map({0:0, 1:1, 2:2, 3:3, 4:4, 5:4, 6:4})
+            col_bins = create_stratification_bins(y_val_pred_series).map(predicted_cost_bin_map)  
         else:
             col_bins = df_raw_val[col]
             
@@ -2571,7 +2574,7 @@ y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = [
 print(f"  Loaded predictions for {y_val_quantile_pred.shape[1]} quantiles on {len(y_val_quantile_pred)} validation set samples")
 
 # Create medical cost ranges for reporting
-# NOTE: Using the same bins as in the point-estimate stratified analysis, with the Top 5% cost bins merged
+# Note: Use the same bins as in the point-estimate stratified analysis, but merge the Top 5% cost bins (for n>30 subgroup sample size)
 COST_BIN_LABELS = {
     0: "Zero Costs",
     1: "Low Spend (0-50%)",
@@ -2579,11 +2582,13 @@ COST_BIN_LABELS = {
     3: "High Spend (80-95%)",
     4: "Very High Spend (Top 5%)"
 }
-merged_tail_bins = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 4}
+actual_cost_bin_map = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 4}
+# For predicted costs, also merge the Zero Costs bin (0) into Low Spend (1) for n>30 subgroup sample size because model predictions are almost never zero
+predicted_cost_bin_map = {0: 1, 1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 4}
 
-df_quantile_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_quantile_val_true).map(merged_tail_bins)
-df_quantile_raw_val["PREDICTED_MEDIAN_COSTS"] = create_stratification_bins(y_val_pred_q50).map(merged_tail_bins)
-df_quantile_raw_val["PREDICTED_CUSHION_COSTS"] = create_stratification_bins(y_val_pred_q90).map(merged_tail_bins)
+df_quantile_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_quantile_val_true).map(actual_cost_bin_map)
+df_quantile_raw_val["PREDICTED_MEDIAN_COSTS"] = create_stratification_bins(y_val_pred_q50).map(predicted_cost_bin_map)
+df_quantile_raw_val["PREDICTED_CUSHION_COSTS"] = create_stratification_bins(y_val_pred_q90).map(predicted_cost_bin_map)
 
 
 # --- Stratification Configurations ---
