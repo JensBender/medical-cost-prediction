@@ -2488,10 +2488,10 @@ display(
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
 #     ℹ️ <b>Stratified Reliability of Prediction Range and Cushion</b> <br>
-#     Stratified error analysis for quantile regression extends the point-estimate stratified analysis from a single error metric to a fuller audit of both accuracy and uncertainty. The goal is to confirm that the model's median estimate, typical prediction range, and budget safety cushion remain useful across important user segments.
+#     Stratified error analysis for quantile regression extends the point-estimate stratified analysis from a single error metric to a comprehensive audit of central accuracy, interval calibration, and prediction uncertainty. The goal is to confirm that the model's median estimate, typical prediction range, and budget safety cushion remain reliable and actionable across important user segments.
 #     <ul style="margin-top:8px">
-#         <li><b>Reuse prior stratification design:</b> Keep the same reliability and fairness audit groups used for point-estimate models.</li>
-#         <li><b>Quantile-specific predicted cost groups:</b> Replace the point-estimate <code>Predicted Costs</code> grouping with <code>Predicted Median Costs</code> based on q50, and add <code>Predicted Cushion Costs</code> based on q90 to audit the user-facing "plan up to" amount directly.</li>
+#         <li><b>Reuse stratification:</b> Keep the same reliability and fairness audit groups used for point-estimate models.</li>
+#         <li><b>Quantile-specific predicted cost groups:</b> Replace the point-estimate <code>Predicted Costs</code> grouping with <code>Predicted Median Costs</code> based on q50, and add <code>Predicted Cushion Costs</code> based on q90 to audit the "plan up to" amount directly.</li>
 #         <li><b>Reliability groups:</b> Actual cost tier, predicted q50 cost tier, predicted q90 cushion tier, physical health, insurance status, and chronic condition count.</li>
 #         <li><b>Fairness audit groups:</b> Sex, age group, race/ethnicity, mental health, income, education, region, and walking limitation.</li>
 #         <li><b>Metrics by group:</b> Median MdAE, prediction range coverage, prediction range width, safety cushion coverage, and safety cushion width.</li>
@@ -2499,7 +2499,7 @@ display(
 #         <li><b>Coverage guideline:</b> For major subgroups with enough samples, q25–q75 coverage should generally stay within 40–60%, and q90 coverage should generally stay within 80–97%.</li>
 #         <li><b>Width guideline:</b> Wider intervals are acceptable for genuinely higher-risk groups, but concerning for low-risk groups if they do not improve coverage or reflect clearly higher actual costs.</li>
 #         <li><b>Subgroup reliability flags:</b> Add diagnostic quality-control flags to identify groups that may need manual review before deployment. These flags are not automatic failure criteria; they highlight groups where the median estimate, typical range, or safety cushion may be unreliable or insufficiently useful.</li>
-#         <li><b>Interpretation principle:</b> Coverage alone is not enough. A useful interval must be calibrated and narrow enough to support budgeting decisions; a wide interval is acceptable only when it reflects real uncertainty for a higher-risk group.</li>
+#         <li><b>Interpretation principle:</b> Coverage alone is not enough. A useful interval must be calibrated and narrow enough to support budgeting decisions; a wide interval is acceptable only when it reflects real uncertainty for a higher-risk user group.</li>
 #     </ul>
 #     <table style="width:100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em;">
 #         <thead>
