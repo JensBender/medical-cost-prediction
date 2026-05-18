@@ -2531,14 +2531,14 @@ display(
 #                 <td style="padding:8px; border:1px solid #d0e7fa;">The median estimate for that subgroup has an unusually high prediction error compared to the typical prediction error.</td>
 #             </tr>
 #             <tr>
-#                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Wide Low-Risk Range</code></td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Wide Low-Cost Range</code></td>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;">Low median actual cost and q25–q75 width &gt; overall average</td>
-#                 <td style="padding:8px; border:1px solid #d0e7fa;">Low-risk users may receive a range that is too broad to be actionable.</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">Low-cost users may receive a prediction range that is too broad to be actionable.</td>
 #             </tr>
 #             <tr>
-#                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Wide Low-Risk Cushion</code></td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Wide Low-Cost Cushion</code></td>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;">Low median actual cost and q50–q90 width &gt; overall average</td>
-#                 <td style="padding:8px; border:1px solid #d0e7fa;">Low-risk users may be encouraged to over-budget without clear risk justification.</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">Low-cost users may be encouraged to over-budget without clear justification.</td>
 #             </tr>
 #         </tbody>
 #     </table>
@@ -2666,11 +2666,11 @@ def get_quantile_reliability_flags(row):
     if row["Median MdAE"] > 3 * overall_q50_mdae:
         flags.append("High Median Error")
     
-    is_low_risk_group = row["Median Actual Cost"] <= overall_median_actual_cost
-    if is_low_risk_group and row["Prediction Range Width"] > overall_range_width:
-        flags.append("Wide Low-Risk Range")
-    if is_low_risk_group and row["Safety Cushion Width"] > overall_cushion_width:
-        flags.append("Wide Low-Risk Cushion")
+    is_low_cost_group = row["Median Actual Cost"] <= overall_median_actual_cost
+    if is_low_cost_group and row["Prediction Range Width"] > overall_range_width:
+        flags.append("Wide Low-Cost Range")
+    if is_low_cost_group and row["Safety Cushion Width"] > overall_cushion_width:
+        flags.append("Wide Low-Cost Cushion")
     
     return ", ".join(flags) if flags else "None"
 
