@@ -2794,7 +2794,7 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
             padding=3,
             fontsize=8
         )
-        coverage_ax.set_xlim(0, 1.03)
+        coverage_ax.set_xlim(0, 1.01)  # x-axis up to 101% to prevent clipping
         coverage_ax.xaxis.set_major_formatter(percent_fmt)
         coverage_ax.set_title("Coverage", fontsize=12, fontweight="bold")
 
@@ -2828,7 +2828,7 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
         )
         width_ax.xaxis.set_major_formatter(currency_fmt)
         width_ax.set_title("Width", fontsize=12, fontweight="bold")
-        width_ax.margins(x=0.18)
+        width_ax.margins(x=0.10)  # Adds 10% of blank space on right of longest bar to prevent clipping
 
         # Shared row formatting
         coverage_ax.set_yticks(y_pos)
