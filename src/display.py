@@ -148,6 +148,11 @@ CATEGORY_LABELS_EDA = {
 POP_COLOR = "#084594"    # deep navy for population
 SAMPLE_COLOR = "#14b8a6" # vibrant teal for sample
 
+# Quantile Regression Colors (for modeling notebook eval plots)
+TYPICAL_RANGE_COLOR = "#0d9488"   # Slate Teal (prediction interval range q25-q75)
+SAFETY_CUSHION_COLOR = "#312e81"  # Indigo Blue (prediction safety cushion q90)
+
+
 
 def add_table_caption(styler, caption, font_size="14px", font_weight="bold", text_align="left"):
     """

@@ -111,6 +111,8 @@ from src.display import (
     CATEGORY_LABELS_EDA,
     POP_COLOR,
     SAMPLE_COLOR,
+    TYPICAL_RANGE_COLOR,
+    SAFETY_CUSHION_COLOR,
     add_table_caption
 )
 
@@ -2744,8 +2746,8 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
 
     bar_height = 0.36
     colors = {
-        "Range": SAMPLE_COLOR,
-        "Cushion": POP_COLOR,
+        "Range": TYPICAL_RANGE_COLOR,
+        "Cushion": SAFETY_CUSHION_COLOR,
     }
     percent_fmt = plt.FuncFormatter(lambda x, _: f"{x:.0%}")
     currency_fmt = plt.FuncFormatter(lambda x, _: f"${x:,.0f}")
@@ -2758,24 +2760,24 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
         width_ax = axes[row_idx, 1]
 
         # Coverage (left panel)
-        coverage_ax.axvspan(0.45, 0.55, color=SAMPLE_COLOR, alpha=0.12, zorder=0)
-        coverage_ax.axvspan(0.85, 0.95, color=POP_COLOR, alpha=0.10, zorder=0)
-        coverage_ax.axvline(0.50, color=SAMPLE_COLOR, linestyle="--", linewidth=1, alpha=0.8)
-        coverage_ax.axvline(0.90, color=POP_COLOR, linestyle="--", linewidth=1, alpha=0.8)
+        coverage_ax.axvspan(0.45, 0.55, color=TYPICAL_RANGE_COLOR, alpha=0.12, zorder=0)
+        coverage_ax.axvspan(0.85, 0.95, color=SAFETY_CUSHION_COLOR, alpha=0.10, zorder=0)
+        coverage_ax.axvline(0.50, color=TYPICAL_RANGE_COLOR, linestyle="--", linewidth=1, alpha=0.8)
+        coverage_ax.axvline(0.90, color=SAFETY_CUSHION_COLOR, linestyle="--", linewidth=1, alpha=0.8)
 
         coverage_bars_range = coverage_ax.barh(
             y_pos - bar_height / 2,
             col_data["Prediction Range Coverage"],
             height=bar_height,
             color=colors["Range"],
-            label="Range (q25-q75)"
+            label="Typical Range (q25-q75)"
         )
         coverage_bars_cushion = coverage_ax.barh(
             y_pos + bar_height / 2,
             col_data["Safety Cushion Coverage"],
             height=bar_height,
             color=colors["Cushion"],
-            label="Cushion (q90)"
+            label="Safety Cushion (q90)"
         )
 
         coverage_ax.bar_label(
@@ -2801,14 +2803,14 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
             col_data["Prediction Range Width"],
             height=bar_height,
             color=colors["Range"],
-            label="Range (q25-q75)"
+            label="Typical Range (q25-q75)"
         )
         width_bars_cushion = width_ax.barh(
             y_pos + bar_height / 2,
             col_data["Safety Cushion Width"],
             height=bar_height,
             color=colors["Cushion"],
-            label="Cushion (q50-q90)"
+            label="Safety Cushion (q50-q90)"
         )
 
         width_ax.bar_label(
@@ -2858,7 +2860,7 @@ plot_quantile_subgroup_performance(
     quantile_subgroup_df,
     quantile_reliability_labels,
     "XGBoost Quantile Regression: Subgroup Reliability Audit",
-    save_to_file="../figures/evaluation/quantile_subgroup_reliability.png"
+    # save_to_file="../figures/evaluation/quantile_subgroup_reliability.png"
 )
 
 quantile_fairness_labels = [c["label"] for c in quantile_fairness_configs]
@@ -2866,5 +2868,5 @@ plot_quantile_subgroup_performance(
     quantile_subgroup_df,
     quantile_fairness_labels,
     "XGBoost Quantile Regression: Subgroup Fairness Audit",
-    save_to_file="../figures/evaluation/quantile_subgroup_fairness.png"
+    # save_to_file="../figures/evaluation/quantile_subgroup_fairness.png"
 )
