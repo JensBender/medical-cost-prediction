@@ -2684,7 +2684,7 @@ quantile_stratified_df["Reliability Flags"] = quantile_stratified_df.apply(get_q
 
 # Clean group labels after flag creation so calculations can still use numeric columns.
 quantile_stratified_df["Group"] = quantile_stratified_df.apply(
-    lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})",
+    lambda x: f"{str(x['Group']).split(' (')[0]}\nn={x['Sample Size']:,} | act Mdn=${x['Median Actual Cost']:,.0f}",
     axis=1
 )
 
@@ -2708,4 +2708,163 @@ display(
     .format("${:,.2f}", subset=["Median Actual Cost", "Median MdAE", "Prediction Range Width", "Safety Cushion Width"])
     .format("{:.1%}", subset=["Prediction Range Coverage", "Safety Cushion Coverage"])
     .apply(lambda row: ["background-color: #fff3cd" if row["Reliability Flags"] != "None" else "" for _ in row], axis=1)
+)
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>Stratified Quantile Audit Plots</strong> <br>
+#     📌 Visualize coverage and interval width side-by-side for each stratification column. Coverage measures calibration; width measures practical usefulness. Both are needed to determine whether the prediction range and safety cushion are reliable for subgroup-level budgeting.
+# </div>
+
+# %%
+def plot_quantile_stratified_audit(df, column_labels, title, save_to_file=None):
+    """
+    Visualizes quantile regression subgroup performance as two-panel plots.
+
+    Each row is one stratification column. The left panel shows coverage for the
+    prediction range (q25-q75) and safety cushion (q90). The right panel shows
+    the corresponding range widths in USD.
+
+    Args:
+        df (pd.DataFrame): Stratified error analysis dataframe of quantile regression.
+        column_labels (list): Ordered list of column labels to include.
+        title (str): Main figure title.
+        save_to_file (str, optional): Full path and filename to save the plot.
+    """
+    plot_data = df[df["Column"].isin(column_labels)].copy()
+    n_rows = len(column_labels)
+
+    fig, axes = plt.subplots(
+        n_rows,
+        2,
+        figsize=(16, max(4, 3.2 * n_rows)),
+        squeeze=False,
+        gridspec_kw={"width_ratios": [1.0, 1.15]}
+    )
+
+    bar_height = 0.36
+    colors = {
+        "Range": SAMPLE_COLOR,
+        "Cushion": POP_COLOR,
+    }
+    percent_fmt = plt.FuncFormatter(lambda x, _: f"{x:.0%}")
+    currency_fmt = plt.FuncFormatter(lambda x, _: f"${x:,.0f}")
+
+    for row_idx, column_label in enumerate(column_labels):
+        col_data = plot_data[plot_data["Column"] == column_label].copy()
+        y_pos = np.arange(len(col_data))
+
+        coverage_ax = axes[row_idx, 0]
+        width_ax = axes[row_idx, 1]
+
+        # Coverage panel
+        coverage_ax.axvspan(0.45, 0.55, color=SAMPLE_COLOR, alpha=0.12, zorder=0)
+        coverage_ax.axvspan(0.85, 0.95, color=POP_COLOR, alpha=0.10, zorder=0)
+        coverage_ax.axvline(0.50, color=SAMPLE_COLOR, linestyle="--", linewidth=1, alpha=0.8)
+        coverage_ax.axvline(0.90, color=POP_COLOR, linestyle="--", linewidth=1, alpha=0.8)
+
+        coverage_bars_range = coverage_ax.barh(
+            y_pos - bar_height / 2,
+            col_data["Prediction Range Coverage"],
+            height=bar_height,
+            color=colors["Range"],
+            label="Range (q25-q75)"
+        )
+        coverage_bars_cushion = coverage_ax.barh(
+            y_pos + bar_height / 2,
+            col_data["Safety Cushion Coverage"],
+            height=bar_height,
+            color=colors["Cushion"],
+            label="Cushion (q90)"
+        )
+
+        coverage_ax.bar_label(
+            coverage_bars_range,
+            labels=[f"{v:.1%}" for v in col_data["Prediction Range Coverage"]],
+            padding=3,
+            fontsize=8
+        )
+        coverage_ax.bar_label(
+            coverage_bars_cushion,
+            labels=[f"{v:.1%}" for v in col_data["Safety Cushion Coverage"]],
+            padding=3,
+            fontsize=8
+        )
+        coverage_ax.set_xlim(0, 1.03)
+        coverage_ax.xaxis.set_major_formatter(percent_fmt)
+        coverage_ax.set_xlabel("Coverage")
+        coverage_ax.set_title("Coverage", fontsize=12, fontweight="bold")
+
+        # Width panel
+        width_bars_range = width_ax.barh(
+            y_pos - bar_height / 2,
+            col_data["Prediction Range Width"],
+            height=bar_height,
+            color=colors["Range"],
+            label="Range (q25-q75)"
+        )
+        width_bars_cushion = width_ax.barh(
+            y_pos + bar_height / 2,
+            col_data["Safety Cushion Width"],
+            height=bar_height,
+            color=colors["Cushion"],
+            label="Cushion (q50-q90)"
+        )
+
+        width_ax.bar_label(
+            width_bars_range,
+            labels=[f"${v:,.0f}" for v in col_data["Prediction Range Width"]],
+            padding=3,
+            fontsize=8
+        )
+        width_ax.bar_label(
+            width_bars_cushion,
+            labels=[f"${v:,.0f}" for v in col_data["Safety Cushion Width"]],
+            padding=3,
+            fontsize=8
+        )
+        width_ax.xaxis.set_major_formatter(currency_fmt)
+        width_ax.set_xlabel("Average Width")
+        width_ax.set_title("Width", fontsize=12, fontweight="bold")
+        width_ax.margins(x=0.18)
+
+        # Shared row formatting
+        coverage_ax.set_yticks(y_pos)
+        coverage_ax.set_yticklabels(col_data["Group"], fontsize=9)
+        width_ax.set_yticks(y_pos)
+        width_ax.set_yticklabels([])
+        coverage_ax.invert_yaxis()
+        width_ax.invert_yaxis()
+        coverage_ax.set_ylabel(column_label, fontsize=11, fontweight="bold")
+        width_ax.set_ylabel("")
+
+        for ax in [coverage_ax, width_ax]:
+            ax.grid(axis="x", alpha=0.20)
+            sns.despine(ax=ax, left=True)
+
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 0.985), ncol=2, frameon=True)
+    fig.suptitle(title, fontsize=18, fontweight="bold", y=1.01)
+    plt.tight_layout(rect=[0, 0, 1, 0.97], h_pad=2.0, w_pad=1.4)
+
+    if save_to_file:
+        plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
+
+    plt.show()
+
+
+quantile_reliability_labels = [c["label"] for c in quantile_reliability_configs]
+plot_quantile_stratified_audit(
+    quantile_stratified_df,
+    quantile_reliability_labels,
+    "XGBoost Quantile Regression: Reliability Audit",
+    save_to_file="../figures/evaluation/quantile_reliability_audit.png"
+)
+
+quantile_fairness_labels = [c["label"] for c in quantile_fairness_configs]
+plot_quantile_stratified_audit(
+    quantile_stratified_df,
+    quantile_fairness_labels,
+    "XGBoost Quantile Regression: Fairness Audit",
+    save_to_file="../figures/evaluation/quantile_fairness_audit.png"
 )
