@@ -2719,10 +2719,10 @@ display(
 # %%
 def plot_quantile_stratified_audit(df, column_labels, title, save_to_file=None):
     """
-    Visualizes quantile regression subgroup performance as two-panel plots.
+    Visualizes quantile regression performance across subgroups.
 
-    Each row is one stratification column. The left panel shows coverage for the
-    prediction range (q25-q75) and safety cushion (q90). The right panel shows
+    Each subplot row is one stratification column. The left panel shows coverage for 
+    the prediction range (q25-q75) and safety cushion (q90). The right panel shows
     the corresponding range widths in USD.
 
     Args:
@@ -2737,9 +2737,9 @@ def plot_quantile_stratified_audit(df, column_labels, title, save_to_file=None):
     fig, axes = plt.subplots(
         n_rows,
         2,
-        figsize=(16, max(4, 3.2 * n_rows)),
-        squeeze=False,
-        gridspec_kw={"width_ratios": [1.0, 1.15]}
+        figsize=(16, 3.2 * n_rows),
+        squeeze=False,  # Guarantees axes is always a 2D array
+        gridspec_kw={"width_ratios": [1.0, 1.15]}  # Right panel 15% wider than left panel
     )
 
     bar_height = 0.36
@@ -2757,7 +2757,7 @@ def plot_quantile_stratified_audit(df, column_labels, title, save_to_file=None):
         coverage_ax = axes[row_idx, 0]
         width_ax = axes[row_idx, 1]
 
-        # Coverage panel
+        # Coverage (left panel)
         coverage_ax.axvspan(0.45, 0.55, color=SAMPLE_COLOR, alpha=0.12, zorder=0)
         coverage_ax.axvspan(0.85, 0.95, color=POP_COLOR, alpha=0.10, zorder=0)
         coverage_ax.axvline(0.50, color=SAMPLE_COLOR, linestyle="--", linewidth=1, alpha=0.8)
@@ -2795,7 +2795,7 @@ def plot_quantile_stratified_audit(df, column_labels, title, save_to_file=None):
         coverage_ax.set_xlabel("Coverage")
         coverage_ax.set_title("Coverage", fontsize=12, fontweight="bold")
 
-        # Width panel
+        # Width (right panel)
         width_bars_range = width_ax.barh(
             y_pos - bar_height / 2,
             col_data["Prediction Range Width"],
