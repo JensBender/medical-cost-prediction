@@ -2845,9 +2845,9 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
             sns.despine(ax=ax, left=True)
 
     handles, labels = axes[0, 0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 0.985), ncol=2, frameon=True)
-    fig.suptitle(title, fontsize=18, fontweight="bold", y=1.01)
-    plt.tight_layout(rect=[0, 0, 1, 0.97], h_pad=2.0, w_pad=1.4)
+    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1), ncol=2, frameon=True)
+    fig.suptitle(title, fontsize=18, fontweight="bold", y=1.015)
+    plt.tight_layout(h_pad=2.0, w_pad=1.4)
 
     if save_to_file:
         plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
