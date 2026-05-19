@@ -1828,31 +1828,40 @@ for model_key, y_val_pred in tuned_model_predictions.items():
                 sample_weight=w_val_weights[mask]  # Aligns via Index
             )
             
+            # Calculate weighted median actual cost
+            group_median_actual = weighted_quantile(y_val_true[mask], w_val_weights[mask], 0.5)
+            
             # Add results of current column to list
             stratified_error_results.append({
                 "Model": model_label,
                 "Column": label,
                 "Group": category_map.get(int(group), group) if category_map else group,  # Maps group label 
                 "MdAE": group_mdae,
-                "Sample Size": mask.sum()
+                "Sample Size": mask.sum(),
+                "Median Actual Cost": group_median_actual
             })
 
 # Convert to DataFrame
 subgroup_df = pd.DataFrame(stratified_error_results)
 
-# Clean group labels and add sample sizes 
-subgroup_df["Group"] = subgroup_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})", axis=1)
-
 # Display results table (pivoted for model comparison)
-# Reindex after pivoting to preserve the logical group order of features like income and education 
-subgroup_pivoted_df = subgroup_df.pivot(index=["Column", "Group"], columns="Model", values="MdAE")
-ordered_index = pd.MultiIndex.from_frame(subgroup_df[["Column", "Group"]].drop_duplicates())
+# Pivot on Column, Group, Sample Size, and Median Actual Cost to keep metadata organized in separate columns
+subgroup_pivoted_df = subgroup_df.pivot(
+    index=["Column", "Group", "Sample Size", "Median Actual Cost"], 
+    columns="Model", 
+    values="MdAE"
+)
+ordered_index = pd.MultiIndex.from_frame(
+    subgroup_df[["Column", "Group", "Sample Size", "Median Actual Cost"]].drop_duplicates()
+)
 
 display(
     subgroup_pivoted_df.reindex(ordered_index)
     .style
     .pipe(add_table_caption, "Tuned Models: Stratified Error Analysis")
     .format("${:.2f}")
+    .format_index(formatter="{:,}", level="Sample Size")
+    .format_index(formatter="${:,.2f}", level="Median Actual Cost")
     .background_gradient(cmap="RdYlGn_r", axis=1)  # Red-Yellow-Green reversed (lower MdAE is better) to make winning model pop out in green
 )
 
@@ -1905,19 +1914,52 @@ def plot_subgroup_performance(df, column_labels, title, save_to_file=None):
     # Customize title and spacing
     g.set_titles("{col_name}", weight="bold", size=14)
     g.fig.suptitle(title, fontsize=18, weight="bold", y=title_y)
-    plt.subplots_adjust(top=subplots_top, hspace=0.26)
+    plt.subplots_adjust(top=subplots_top, bottom=0.06, hspace=0.26)
 
     # Apply custom formatting to each subplot
     for ax in g.axes.flat:
         ax.set_ylabel("")
         ax.set_xlabel("Weighted MdAE")
         ax.set_xticklabels([])  # Removes redundant x-tick labels (since bars are annotated)
+        
+        # Get y-tick labels and update them with Sample Size and Median Actual Cost
+        y_labels = [t.get_text() for t in ax.get_yticklabels()]
+        if not any(y_labels):
+            y_labels = [label.get_text() for label in ax.yaxis.get_ticklabels()]
+        
+        col_name = ax.get_title()
+        new_labels = []
+        for label in y_labels:
+            subgroup_data = plot_data[(plot_data["Column"] == col_name) & (plot_data["Group"] == label)]
+            if not subgroup_data.empty:
+                first_row = subgroup_data.iloc[0]
+                n = first_row["Sample Size"]
+                med = first_row["Median Actual Cost"]
+                clean_label = str(label).split(" (")[0]
+                new_labels.append(f"{clean_label}\nn={n:,} | ${med:,.0f}")
+            else:
+                new_labels.append(str(label).split(" (")[0])
+        
+        # Set ticks explicitly first to avoid matplotlib UserWarning
+        ax.set_yticks(ax.get_yticks())
+        ax.set_yticklabels(new_labels, fontsize=9)
+        
         for c in ax.containers:          
             value_labels = [f"${v:,.0f}" for v in c.datavalues]  # Formats value labels with thousand separator and no decimals
             ax.bar_label(c, labels=value_labels, padding=3, fontsize=9)
         ax.margins(x=0.15)
     
     sns.move_legend(g, "upper center", bbox_to_anchor=(0.5, legend_y), ncol=3, frameon=True, title=None)
+    
+    # Add footnote at the bottom
+    g.fig.text(
+        0.01, 
+        0.01, 
+        "Note: Dollar values in subgroup labels (e.g., $269) represent the actual median out-of-pocket costs of that subgroup.", 
+        fontsize=9, 
+        style="italic", 
+        ha="left"
+    )
     
     # Save to file
     if save_to_file:
