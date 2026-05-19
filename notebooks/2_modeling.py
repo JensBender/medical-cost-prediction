@@ -1836,18 +1836,18 @@ for model_key, y_val_pred in tuned_model_predictions.items():
             })
 
 # Convert to DataFrame
-stratified_error_df = pd.DataFrame(stratified_error_results)
+subgroup_df = pd.DataFrame(stratified_error_results)
 
 # Clean group labels and add sample sizes 
-stratified_error_df["Group"] = stratified_error_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})", axis=1)
+subgroup_df["Group"] = subgroup_df.apply(lambda x: f"{str(x['Group']).split(' (')[0]}\n(n={x['Sample Size']:,})", axis=1)
 
 # Display results table (pivoted for model comparison)
 # Reindex after pivoting to preserve the logical group order of features like income and education 
-pivoted_stratified_df = stratified_error_df.pivot(index=["Column", "Group"], columns="Model", values="MdAE")
-ordered_index = pd.MultiIndex.from_frame(stratified_error_df[["Column", "Group"]].drop_duplicates())
+subgroup_pivoted_df = subgroup_df.pivot(index=["Column", "Group"], columns="Model", values="MdAE")
+ordered_index = pd.MultiIndex.from_frame(subgroup_df[["Column", "Group"]].drop_duplicates())
 
 display(
-    pivoted_stratified_df.reindex(ordered_index)
+    subgroup_pivoted_df.reindex(ordered_index)
     .style
     .pipe(add_table_caption, "Tuned Models: Stratified Error Analysis")
     .format("${:.2f}")
@@ -1861,7 +1861,7 @@ display(
 # </div> 
 
 # %%
-def plot_stratified_error(df, column_labels, title, save_to_file=None):
+def plot_subgroup_performance(df, column_labels, title, save_to_file=None):
     """
     Visualizes stratified Median Absolute Error (MdAE) as a faceted bar plot grid.
     
@@ -1920,7 +1920,7 @@ def plot_stratified_error(df, column_labels, title, save_to_file=None):
 
 # Model reliability analysis 
 reliability_labels = [c["label"] for c in reliability_configs]
-plot_stratified_error(stratified_error_df, reliability_labels, "Tuned Models: Reliability Analysis", save_to_file="../figures/evaluation/stratified_reliability.png")
+plot_subgroup_performance(subgroup_df, reliability_labels, "Tuned Models: Subgroup Reliability Analysis", save_to_file="../figures/evaluation/subgroup_reliability.png")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -1933,11 +1933,11 @@ plot_stratified_error(stratified_error_df, reliability_labels, "Tuned Models: Re
 # %%
 # Legally Protected Groups
 legally_protected_labels = [c["label"] for c in legally_protected_configs]
-plot_stratified_error(stratified_error_df, legally_protected_labels, "Tuned Models: Fairness Audit (Legally Protected Groups)", save_to_file="../figures/evaluation/fairness_audit_protected.png")
+plot_subgroup_performance(subgroup_df, legally_protected_labels, "Tuned Models: Subgroup Fairness Analysis (Legally Protected Groups)", save_to_file="../figures/evaluation/subgroup_fairness_protected.png")
 
 # Vulnerable & Proxy Groups
 vulnerable_and_proxy_labels = [c["label"] for c in vulnerable_and_proxy_configs]
-plot_stratified_error(stratified_error_df, vulnerable_and_proxy_labels, "Tuned Models: Fairness Audit (Vulnerable & Proxy Groups)", save_to_file="../figures/evaluation/fairness_audit_vulnerable.png")
+plot_subgroup_performance(subgroup_df, vulnerable_and_proxy_labels, "Tuned Models: Subgroup Fairness Analysis (Vulnerable & Proxy Groups)", save_to_file="../figures/evaluation/subgroup_fairness_vulnerable.png")
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -2645,7 +2645,7 @@ for config in quantile_stratified_configs:
             "Safety Cushion Width": np.average(q90_group - q50_group, weights=w_group),
         })
 
-quantile_stratified_df = pd.DataFrame(quantile_stratified_results)
+quantile_subgroup_df = pd.DataFrame(quantile_stratified_results)
 
 
 # --- Subgroup Reliability Flags ---
@@ -2680,10 +2680,10 @@ def get_quantile_reliability_flags(subgroup):
     return ", ".join(flags) if flags else "None"
 
 
-quantile_stratified_df["Reliability Flags"] = quantile_stratified_df.apply(get_quantile_reliability_flags, axis=1)
+quantile_subgroup_df["Reliability Flags"] = quantile_subgroup_df.apply(get_quantile_reliability_flags, axis=1)
 
 # Clean group labels after flag creation so calculations can still use numeric columns.
-quantile_stratified_df["Group"] = quantile_stratified_df.apply(
+quantile_subgroup_df["Group"] = quantile_subgroup_df.apply(
     lambda x: f"{str(x['Group']).split(' (')[0]}\nn={x['Sample Size']:,} | act Mdn=${x['Median Actual Cost']:,.0f}",
     axis=1
 )
@@ -2701,7 +2701,7 @@ display_columns = [
 ]
 
 display(
-    quantile_stratified_df[display_columns]
+    quantile_subgroup_df[display_columns]
     .style
     .hide()
     .pipe(add_table_caption, "XGBoost Quantile Regression: Stratified Error Analysis")
@@ -2717,7 +2717,7 @@ display(
 # </div>
 
 # %%
-def plot_quantile_stratified_audit(df, column_labels, title, save_to_file=None):
+def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=None):
     """
     Visualizes quantile regression performance across subgroups.
 
@@ -2854,17 +2854,17 @@ def plot_quantile_stratified_audit(df, column_labels, title, save_to_file=None):
 
 
 quantile_reliability_labels = [c["label"] for c in quantile_reliability_configs]
-plot_quantile_stratified_audit(
-    quantile_stratified_df,
+plot_quantile_subgroup_performance(
+    quantile_subgroup_df,
     quantile_reliability_labels,
-    "XGBoost Quantile Regression: Reliability Audit",
-    save_to_file="../figures/evaluation/quantile_reliability_audit.png"
+    "XGBoost Quantile Regression: Subgroup Reliability Audit",
+    save_to_file="../figures/evaluation/quantile_subgroup_reliability.png"
 )
 
 quantile_fairness_labels = [c["label"] for c in quantile_fairness_configs]
-plot_quantile_stratified_audit(
-    quantile_stratified_df,
+plot_quantile_subgroup_performance(
+    quantile_subgroup_df,
     quantile_fairness_labels,
-    "XGBoost Quantile Regression: Fairness Audit",
-    save_to_file="../figures/evaluation/quantile_fairness_audit.png"
+    "XGBoost Quantile Regression: Subgroup Fairness Audit",
+    save_to_file="../figures/evaluation/quantile_subgroup_fairness.png"
 )
