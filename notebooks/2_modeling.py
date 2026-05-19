@@ -2837,7 +2837,7 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
         width_ax.set_yticklabels([])
         coverage_ax.invert_yaxis()
         width_ax.invert_yaxis()
-        coverage_ax.set_ylabel(column_label, fontsize=11, fontweight="bold")
+        coverage_ax.set_ylabel(column_label, fontsize=11, fontweight="bold", labelpad=12)
         width_ax.set_ylabel("")
 
         for ax in [coverage_ax, width_ax]:
