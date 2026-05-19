@@ -551,7 +551,7 @@ To reproduce the LLM benchmark:
 Performed stratified error analysis with Median Absolute Error (MdAE) to evaluate the reliability of all tuned models and detect algorithmic bias across 13 relevant dimensions.
 
 **Model Reliability Analysis**
-![Model Reliability Analysis](figures/evaluation/stratified_reliability.png)
+![Model Reliability Analysis](figures/evaluation/subgroup_reliability.png)
 **Key Insights:**
 - **Actual Costs:** Models converge at the Top 5% (~$9.5k MdAE), highlighting the data's noise limit. Elastic Net struggles with Zero Costs ($90 vs. ~$30 for tree models) due to linear assumptions.
 - **Predicted Costs:** Random Forest is the most precise for "Very High Spend" predictions ($751 MdAE vs. $1,095 for Elastic Net), proving better calibration for high-risk identification.
@@ -559,8 +559,8 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 - **Insurance:** Elastic Net produces 3–4× the error of tree models for the Uninsured ($95 vs. ~$30), failing to capture near-zero spending constraints.
 
 **Fairness Audit**
-![Fairness Audit: Protected Groups](figures/evaluation/fairness_audit_protected.png)
-![Fairness Audit: Vulnerable Groups](figures/evaluation/fairness_audit_vulnerable.png)
+![Fairness Audit: Protected Groups](figures/evaluation/subgroup_fairness_protected.png)
+![Fairness Audit: Vulnerable Groups](figures/evaluation/subgroup_fairness_vulnerable.png)
 **Key Insights:**
 - **Sex:** Consistent Female/Male disparity (~1.5×) across architectures reflects utilization variance (e.g., reproductive care), not algorithmic bias.
 - **Age:** Error increases 4–6× for older compared to young adults, reflecting clinical complexity.
