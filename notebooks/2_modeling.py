@@ -2686,15 +2686,10 @@ def get_quantile_reliability_flags(subgroup):
 
 quantile_subgroup_df["Reliability Flags"] = quantile_subgroup_df.apply(get_quantile_reliability_flags, axis=1)
 
-# Clean group labels after flag creation so calculations can still use numeric columns.
-quantile_subgroup_df["Group"] = quantile_subgroup_df.apply(
-    lambda x: f"{str(x['Group']).split(' (')[0]}\nn={x['Sample Size']:,}\nMdn=${x['Median Actual Cost']:,.0f}",
-    axis=1
-)
-
 display_columns = [
     "Column",
     "Group",
+    "Sample Size",
     "Median Actual Cost",
     "Median MdAE",
     "Prediction Range Coverage",
@@ -2709,6 +2704,7 @@ display(
     .style
     .hide()
     .pipe(add_table_caption, "XGBoost Quantile Regression: Stratified Error Analysis")
+    .format("{:,}", subset=["Sample Size"])
     .format("${:,.2f}", subset=["Median Actual Cost", "Median MdAE", "Prediction Range Width", "Safety Cushion Width"])
     .format("{:.1%}", subset=["Prediction Range Coverage", "Safety Cushion Coverage"])
     .apply(lambda row: ["background-color: #fff3cd" if row["Reliability Flags"] != "None" else "" for _ in row], axis=1)
@@ -2832,7 +2828,11 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
 
         # Shared row formatting
         coverage_ax.set_yticks(y_pos)
-        coverage_ax.set_yticklabels(col_data["Group"], fontsize=9)
+        yticklabels = [
+            f"{str(g).split(' (')[0]}\nn={n:,} | ${med:,.0f}"
+            for g, n, med in zip(col_data["Group"], col_data["Sample Size"], col_data["Median Actual Cost"])
+        ]
+        coverage_ax.set_yticklabels(yticklabels, fontsize=9)
         width_ax.set_yticks(y_pos)
         width_ax.set_yticklabels([])
         coverage_ax.invert_yaxis()
@@ -2847,7 +2847,18 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
     handles, labels = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1), ncol=2, frameon=True)
     fig.suptitle(title, fontsize=18, fontweight="bold", y=1.015)
-    plt.tight_layout(h_pad=2.0, w_pad=1.4)
+    
+    # Add footnote at the bottom
+    fig.text(
+        0.01, 
+        0.01, 
+        "Note: Dollar values in subgroup labels (e.g., $269) represent the actual median out-of-pocket costs of that subgroup.", 
+        fontsize=9, 
+        style="italic", 
+        ha="left"
+    )
+    
+    plt.tight_layout(rect=[0, 0.02, 1, 1], h_pad=2.0, w_pad=1.4)
 
     if save_to_file:
         plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
