@@ -2686,7 +2686,7 @@ quantile_subgroup_df["Reliability Flags"] = quantile_subgroup_df.apply(get_quant
 
 # Clean group labels after flag creation so calculations can still use numeric columns.
 quantile_subgroup_df["Group"] = quantile_subgroup_df.apply(
-    lambda x: f"{str(x['Group']).split(' (')[0]}\nn={x['Sample Size']:,} | act Mdn=${x['Median Actual Cost']:,.0f}",
+    lambda x: f"{str(x['Group']).split(' (')[0]}\nn={x['Sample Size']:,}\nMdn=${x['Median Actual Cost']:,.0f}",
     axis=1
 )
 
@@ -2739,7 +2739,7 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
     fig, axes = plt.subplots(
         n_rows,
         2,
-        figsize=(16, 3.2 * n_rows),
+        figsize=(16, 4 * n_rows),
         squeeze=False,  # Guarantees axes is always a 2D array
         gridspec_kw={"width_ratios": [1.0, 1.15]}  # Right panel 15% wider than left panel
     )
