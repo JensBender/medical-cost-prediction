@@ -2669,6 +2669,8 @@ def get_quantile_reliability_flags(subgroup):
         flags.append("Severe Cushion Undercoverage")
     elif subgroup["Safety Cushion Coverage"] < 0.80:
         flags.append("Cushion Undercoverage")
+    elif subgroup["Safety Cushion Coverage"] > 0.97:
+        flags.append("Cushion Overcoverage")
     
     if subgroup["Median MdAE"] > 3 * overall_q50_mdae:
         flags.append("High Median Error")
@@ -2760,8 +2762,8 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
         width_ax = axes[row_idx, 1]
 
         # Coverage (left panel)
-        coverage_ax.axvspan(0.45, 0.55, color=TYPICAL_RANGE_COLOR, alpha=0.12, zorder=0)
-        coverage_ax.axvspan(0.85, 0.95, color=SAFETY_CUSHION_COLOR, alpha=0.10, zorder=0)
+        coverage_ax.axvspan(0.40, 0.60, color=TYPICAL_RANGE_COLOR, alpha=0.12, zorder=0)
+        coverage_ax.axvspan(0.80, 0.97, color=SAFETY_CUSHION_COLOR, alpha=0.10, zorder=0)
         coverage_ax.axvline(0.50, color=TYPICAL_RANGE_COLOR, linestyle="--", linewidth=1, alpha=0.8)
         coverage_ax.axvline(0.90, color=SAFETY_CUSHION_COLOR, linestyle="--", linewidth=1, alpha=0.8)
 
