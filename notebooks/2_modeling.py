@@ -2794,7 +2794,6 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
         )
         coverage_ax.set_xlim(0, 1.03)
         coverage_ax.xaxis.set_major_formatter(percent_fmt)
-        coverage_ax.set_xlabel("Coverage")
         coverage_ax.set_title("Coverage", fontsize=12, fontweight="bold")
 
         # Width (right panel)
@@ -2826,7 +2825,6 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
             fontsize=8
         )
         width_ax.xaxis.set_major_formatter(currency_fmt)
-        width_ax.set_xlabel("Average Width")
         width_ax.set_title("Width", fontsize=12, fontweight="bold")
         width_ax.margins(x=0.18)
 
