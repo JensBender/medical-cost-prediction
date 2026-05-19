@@ -2655,26 +2655,26 @@ overall_range_width = np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_quan
 overall_cushion_width = np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_quantile_val)
 
 
-def get_quantile_reliability_flags(row):
+def get_quantile_reliability_flags(subgroup):
     flags = []
     
-    if row["Prediction Range Coverage"] < 0.40:
+    if subgroup["Prediction Range Coverage"] < 0.40:
         flags.append("Range Undercoverage")
-    elif row["Prediction Range Coverage"] > 0.60:
+    elif subgroup["Prediction Range Coverage"] > 0.60:
         flags.append("Range Overcoverage")
     
-    if row["Safety Cushion Coverage"] < 0.75:
+    if subgroup["Safety Cushion Coverage"] < 0.75:
         flags.append("Severe Cushion Undercoverage")
-    elif row["Safety Cushion Coverage"] < 0.80:
+    elif subgroup["Safety Cushion Coverage"] < 0.80:
         flags.append("Cushion Undercoverage")
     
-    if row["Median MdAE"] > 3 * overall_q50_mdae:
+    if subgroup["Median MdAE"] > 3 * overall_q50_mdae:
         flags.append("High Median Error")
     
-    is_low_cost_group = row["Median Actual Cost"] <= overall_median_actual_cost
-    if is_low_cost_group and row["Prediction Range Width"] > overall_range_width:
+    is_low_cost_group = subgroup["Median Actual Cost"] <= overall_median_actual_cost
+    if is_low_cost_group and subgroup["Prediction Range Width"] > overall_range_width:
         flags.append("Wide Low-Cost Range")
-    if is_low_cost_group and row["Safety Cushion Width"] > overall_cushion_width:
+    if is_low_cost_group and subgroup["Safety Cushion Width"] > overall_cushion_width:
         flags.append("Wide Low-Cost Cushion")
     
     return ", ".join(flags) if flags else "None"
