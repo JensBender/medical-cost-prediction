@@ -1947,9 +1947,14 @@ def plot_subgroup_performance(df, column_labels, title, save_to_file=None):
     
     sns.move_legend(g, "upper center", bbox_to_anchor=(0.5, legend_y), ncol=3, frameon=True, title=None)
     
-    # Add footnote at the bottom
+    # Add footnote
+    # Compute final layout, then align footnote with the first subplot's leftmost label
+    g.fig.canvas.draw()
+    footnote_x = g.axes.flat[0].get_tightbbox(g.fig.canvas.get_renderer()).transformed(g.fig.transFigure.inverted()).x0
+
+    # Add footnote at the bottom, aligned with the leftmost label/title
     g.fig.text(
-        0.01, 
+        footnote_x, 
         0.01, 
         "Note: Dollar values in subgroup labels (e.g., $269) represent the actual median out-of-pocket costs of that subgroup.", 
         fontsize=9, 
@@ -2756,7 +2761,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Stratified Quantile Audit Plots</strong> <br>
+#     <strong>XGBoost Quantile Regression: Subgroup Performance Plots</strong> <br>
 #     📌 Visualize coverage and interval width side-by-side for each stratification column. Coverage measures calibration; width measures practical usefulness. Both are needed to determine whether the prediction range and safety cushion are reliable for subgroup-level budgeting.
 # </div>
 
@@ -2892,17 +2897,22 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
     fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1), ncol=2, frameon=True)
     fig.suptitle(title, fontsize=18, fontweight="bold", y=1.015)
     
-    # Add footnote at the bottom
+    plt.tight_layout(rect=[0, 0.02, 1, 1], h_pad=2.0, w_pad=1.4)
+
+    # Add footnote
+    # Compute final layout, then align footnote with the first subplot's leftmost label
+    fig.canvas.draw()
+    footnote_x = axes[0, 0].get_tightbbox(fig.canvas.get_renderer()).transformed(fig.transFigure.inverted()).x0
+
+    # Add footnote at the bottom, aligned with the leftmost label/title
     fig.text(
-        0.01, 
+        footnote_x, 
         0.01, 
         "Note: Dollar values in subgroup labels (e.g., $269) represent the actual median out-of-pocket costs of that subgroup.", 
         fontsize=9, 
         style="italic", 
         ha="left"
     )
-    
-    plt.tight_layout(rect=[0, 0.02, 1, 1], h_pad=2.0, w_pad=1.4)
 
     if save_to_file:
         plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
