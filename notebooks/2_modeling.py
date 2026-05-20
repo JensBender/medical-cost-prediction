@@ -1906,11 +1906,12 @@ def plot_subgroup_performance(df, column_labels, title, save_to_file=None):
     title_y = 1.0 - (0.18 / fig_height)
     legend_y = 1.0 - (0.50 / fig_height)
     subplots_top = 1.0 - (1.3 / fig_height)
+    subplots_bottom = 0.80 / fig_height
 
     # Customize title and spacing
     g.set_titles("{col_name}", weight="bold", size=14)
     g.fig.suptitle(title, fontsize=18, weight="bold", y=title_y)
-    plt.subplots_adjust(top=subplots_top, bottom=0.06, hspace=0.26)
+    plt.subplots_adjust(top=subplots_top, bottom=subplots_bottom, hspace=0.25, wspace=0.25)
 
     # Apply custom formatting to each subplot
     for ax in g.axes.flat:
