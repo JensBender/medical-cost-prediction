@@ -57,7 +57,7 @@
       <li><a href="#outlier-analysis">Outlier Analysis</a></li>      
       <li><a href="#llm-benchmarking">LLM Benchmarking</a></li>      
       <li><a href="#heteroscedasticity">Heteroscedasticity</a></li>      
-      <li><a href="#model-reliability--fairness-audit">Model Reliability & Fairness Audit</a></li>      
+      <li><a href="#tuned-models-reliability--fairness">Tuned Models: Reliability & Fairness</a></li>      
     </ul>
   </li>
 </ol>
@@ -551,7 +551,7 @@ To reproduce the LLM benchmark:
 Performed stratified error analysis with Median Absolute Error (MdAE) to evaluate model reliability across subgroups for all tuned models and detect algorithmic bias across 13 relevant dimensions.
 
 **Reliability**
-![Subgroup Reliability Analysis](figures/evaluation/subgroup_reliability.png)
+![Tuned Models: Subgroup Reliability](figures/evaluation/subgroup_reliability.png)
 **Key Insights:**
 - **Actual Costs:** Models converge at the Top 5% (~$9.5k MdAE), highlighting the data's noise limit. Elastic Net struggles with Zero Costs ($90 vs. ~$30 for tree models) due to linear assumptions.
 - **Predicted Costs:** Random Forest is the most precise for "Very High Spend" predictions ($751 MdAE vs. $1,095 for Elastic Net), proving better calibration for high-risk identification.
@@ -559,8 +559,8 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 - **Insurance:** Elastic Net produces 3–4× the error of tree models for the Uninsured ($95 vs. ~$30), failing to capture near-zero spending constraints.
 
 **Fairness**
-![Subgroup Fairness Analysis: Protected Groups](figures/evaluation/subgroup_fairness_protected.png)
-![Subgroup Fairness Analysis: Vulnerable Groups](figures/evaluation/subgroup_fairness_vulnerable.png)
+![Tuned Models: Subgroup Fairness (Protected Groups)](figures/evaluation/subgroup_fairness_protected.png)
+![Tuned Models: Subgroup Fairness (Vulnerable Groups)](figures/evaluation/subgroup_fairness_vulnerable.png)
 **Key Insights:**
 - **Sex:** Consistent Female/Male disparity (~1.5×) across architectures reflects utilization variance (e.g., reproductive care), not algorithmic bias.
 - **Age:** Error increases 4–6× for older compared to young adults, reflecting clinical complexity.
@@ -571,6 +571,17 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 - **Audit Verdict:** No evidence of discriminatory disparate impact. The models achieve lower prediction error for several marginalized groups, avoiding the classic disparate impact trap. Where error is higher for vulnerable groups, it is justified by clinical complexity and utilization variance, satisfying the Legitimate Business Necessity defense under NIST/FTC guidelines.
 
 <p align="right">(<a href="#main-fairness-audit">Back to Hyperparameter Tuning</a> | <a href="#readme-top">Back to Top</a>)</p>
+
+
+### XGBoost Quantile Regression: Reliability & Fairness
+
+**Reliability**
+![XGBoost Quantile Regression: Subgroup Reliability](figures/evaluation/quantile_subgroup_reliability.png)
+
+**Fairness**
+![XGBoost Quantile Regression: Subgroup Fairness](figures/evaluation/quantile_subgroup_fairness.png)
+
+<p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 <!-- MARKDOWN LINKS -->
