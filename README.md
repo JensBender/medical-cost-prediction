@@ -58,6 +58,7 @@
       <li><a href="#llm-benchmarking">LLM Benchmarking</a></li>      
       <li><a href="#heteroscedasticity">Heteroscedasticity</a></li>      
       <li><a href="#tuned-models-reliability--fairness">Tuned Models: Reliability & Fairness</a></li>      
+      <li><a href="#xgboost-quantile-regression-reliability--fairness">XGBoost Quantile Regression: Reliability & Fairness</a></li>      
     </ul>
   </li>
 </ol>
@@ -574,7 +575,7 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 
 
 ### XGBoost Quantile Regression: Reliability & Fairness
-Extended the stratified error analysis to evaluate the prediction intervals of the final XGBoost Quantile Regression model. This audit assesses both the **typical range** ($25^{\text{th}}$–$75^{\text{th}}$ percentiles) and the **safety cushion** ($90^{\text{th}}$ percentile) across subgroups. By evaluating both **interval coverage** (statistical calibration) and **width** (practical budgeting utility in USD) to ensure predictions remain reliable and actionable for all user groups.
+Extended the stratified error analysis to evaluate the prediction intervals of the final XGBoost Quantile Regression model. This audit assesses both the **typical range** ($`25^{\text{th}}`$–$`75^{\text{th}}`$ percentiles) and the **safety cushion** ($`90^{\text{th}}`$ percentile) across subgroups. By evaluating both **interval coverage** (statistical calibration) and **width** (practical budgeting utility in USD) to ensure predictions remain reliable and actionable for all user groups.
 
 **Reliability**
 ![XGBoost Quantile Regression: Subgroup Reliability](figures/evaluation/quantile_subgroup_reliability.png)
