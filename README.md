@@ -253,13 +253,13 @@ Conducted extensive hyperparameter optimization using randomized search for the 
 - **Overfitting:** Tuning successfully brought the generalization gap below 10% for all models, ensuring stable performance across both training and unseen data.
 - **Heteroscedasticity:** All models exhibit "fan-shaped" error spread, underestimating high out-of-pocket costs. While Elastic Net is the median accuracy leader, its limited prediction range ($217 max) prevents differentiating high spenders. Tree models (XGB/RF) maintain near-zero bias across a wider range, providing better calibration for high-risk identification. 🔗 [**See Heteroscedasticity Analysis**](#heteroscedasticity)
 
-<a id="main-fairness-audit"></a>**Model Reliability & Fairness Audit**  
-To ensure responsible deployment, performed a reliability and fairness audit using stratified error analysis for all tuned models. The fairness audit included both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, income, education levels).
-- **Model Reliability:** While Elastic Net performs best overall and excels in low-complexity segments, tree-based models (XGB/RF) perform better in high-complexity segments (uninsured, poor physical health, 4+ chronic conditions), reducing prediction error by ~50% compared to Elastic Net for these populations.
+<a id="main-fairness-audit"></a>**Model Reliability & Fairness**  
+To ensure responsible deployment, evaluated model reliability and fairness across subgroups using stratified error analysis for all tuned models. The fairness analysis included both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, income, education levels).
+- **Reliability:** While Elastic Net performs best overall and excels in low-complexity segments, tree-based models (XGB/RF) perform better in high-complexity segments (uninsured, poor physical health, 4+ chronic conditions), reducing prediction error by ~50% compared to Elastic Net for these populations.
 - **Fairness:** All models converge on similar error patterns for protected groups, confirming that observed disparities reflect variance in clinical utilization (e.g., reproductive care, age-related complexity) rather than algorithmic bias. Because the models actually perform better for several marginalized groups (e.g., Hispanic, Black, low income, low education), they effectively avoid the classic disparate impact trap. Conversely, where error is higher for vulnerable groups (e.g., females, older adults), it is justified by clinical complexity, satisfying the Legitimate Business Necessity defense.
 - **Regulatory Verdict:** No evidence of discriminatory disparate impact was found. The system is therefore suitable for deployment as a low-risk advisory tool under NIST/FTC transparency guidelines.
 
-🔗 **[See Detailed Model Reliability & Fairness Audit](#model-reliability--fairness-audit)**
+🔗 **[See Detailed Reliability & Fairness Analysis](#tuned-models-reliability--fairness)**
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
@@ -547,20 +547,20 @@ To reproduce the LLM benchmark:
 <p align="right">(<a href="#️-hyperparameter-tuning">Back to Hyperparameter Tuning</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
-### Model Reliability & Fairness Audit
-Performed stratified error analysis with Median Absolute Error (MdAE) to evaluate the reliability of all tuned models and detect algorithmic bias across 13 relevant dimensions.
+### Tuned Models: Reliability & Fairness
+Performed stratified error analysis with Median Absolute Error (MdAE) to evaluate model reliability across subgroups for all tuned models and detect algorithmic bias across 13 relevant dimensions.
 
-**Model Reliability Analysis**
-![Model Reliability Analysis](figures/evaluation/subgroup_reliability.png)
+**Reliability**
+![Subgroup Reliability Analysis](figures/evaluation/subgroup_reliability.png)
 **Key Insights:**
 - **Actual Costs:** Models converge at the Top 5% (~$9.5k MdAE), highlighting the data's noise limit. Elastic Net struggles with Zero Costs ($90 vs. ~$30 for tree models) due to linear assumptions.
 - **Predicted Costs:** Random Forest is the most precise for "Very High Spend" predictions ($751 MdAE vs. $1,095 for Elastic Net), proving better calibration for high-risk identification.
 - **Health & Chronic Conditions:** Error rises with clinical complexity. Tree models plateau around $500 MdAE for 4+ conditions, capturing the "cost saturation effect," while Elastic Net jumps to $799.
 - **Insurance:** Elastic Net produces 3–4× the error of tree models for the Uninsured ($95 vs. ~$30), failing to capture near-zero spending constraints.
 
-**Fairness Audit**
-![Fairness Audit: Protected Groups](figures/evaluation/subgroup_fairness_protected.png)
-![Fairness Audit: Vulnerable Groups](figures/evaluation/subgroup_fairness_vulnerable.png)
+**Fairness**
+![Subgroup Fairness Analysis: Protected Groups](figures/evaluation/subgroup_fairness_protected.png)
+![Subgroup Fairness Analysis: Vulnerable Groups](figures/evaluation/subgroup_fairness_vulnerable.png)
 **Key Insights:**
 - **Sex:** Consistent Female/Male disparity (~1.5×) across architectures reflects utilization variance (e.g., reproductive care), not algorithmic bias.
 - **Age:** Error increases 4–6× for older compared to young adults, reflecting clinical complexity.
