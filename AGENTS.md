@@ -64,6 +64,7 @@ The project supports three distinct user groups, which informs our data intake a
 ### Documentation and Commits
 - PRD vs Tech Spec: The `specs/product_requirements.md` defines the problem and requirements. The `specs/technical_specifications.md` defines the implementation details.
 - Atomic Commits: All commits must follow the conventions defined in `docs/workflow/git_conventions.md`.
+- Suggested Commit Messages: For every code change you propose or make, you must suggest a Git commit message matching the conventions in `docs/workflow/git_conventions.md` at the end of your response so the user can review and apply it. Do not commit directly.
 
 ## Task-Specific Instructions
 - Model Files: Do not commit large binary files in `models/`. Instead, document the scripts or parameters used to generate them.
