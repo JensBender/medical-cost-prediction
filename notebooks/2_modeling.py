@@ -2601,7 +2601,7 @@ df_quantile_raw_val, y_quantile_val_true, w_quantile_val = prepare_human_readabl
 # Create chronic conditions count
 chronic_cols = list(CHRONIC_CONDITIONS.keys())
 df_quantile_raw_val["CHRONIC_COUNT"] = df_quantile_raw_val[chronic_cols].sum(axis=1).astype(int)
-df_quantile_raw_val["CHRONIC_COUNT_GRP"] = df_quantile_raw_val["CHRONIC_COUNT"].apply(lambda x: str(x) if x < 4 else "4+")
+df_quantile_raw_val["CHRONIC_COUNT_GRP"] = df_quantile_raw_val["CHRONIC_COUNT"].apply(lambda x: f"{x} Condition" if x == 1 else (f"{x} Conditions" if x < 4 else "4+ Conditions"))
 
 # Create age groups for a more stable and interpretable fairness audit
 age_bins = [18, 35, 50, 65, 120]
