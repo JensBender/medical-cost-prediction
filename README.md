@@ -574,12 +574,23 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 
 
 ### XGBoost Quantile Regression: Reliability & Fairness
+Extended the stratified error analysis to evaluate the prediction intervals of the final XGBoost Quantile Regression model. This audit assesses both the **typical range** ($25^{\text{th}}$–$75^{\text{th}}$ percentiles) and the **safety cushion** ($90^{\text{th}}$ percentile) across subgroups. By evaluating both **interval coverage** (statistical calibration) and **width** (practical budgeting utility in USD) to ensure predictions remain reliable and actionable for all user groups.
 
 **Reliability**
 ![XGBoost Quantile Regression: Subgroup Reliability](figures/evaluation/quantile_subgroup_reliability.png)
+**Key Insights:**
+- **Out-of-the-Box Calibration:** The model achieves excellent overall interval calibration on the validation set, with 48.6% typical range coverage (Target: 50%) and 88.7% safety cushion coverage (Target: 90%).
+- **Spend Tiers:** Coverage is highly consistent across predicted median cost categories (ranging from 46.4% to 58.2% for typical range coverage), showing that predicted intervals are equally reliable for low- and high-spending users.
+- **Clinical Complexity:** Interval widths automatically adjust to the user's risk level. For users with 0 chronic conditions, the safety cushion width averages $1,402 (92.5% coverage). For users with 4+ conditions, it widens to $3,366 (83.0% coverage), accurately reflecting the increased financial volatility.
+- **Insurance Status:** The uninsured receive a much narrower typical range width ($250 vs. $1,039 for private insurance) matching their lower spending constraints, while maintaining robust cushion coverage of 85.7%.
 
 **Fairness**
 ![XGBoost Quantile Regression: Subgroup Fairness](figures/evaluation/quantile_subgroup_fairness.png)
+**Key Insights:**
+- **Demographics (Sex/Age/Race):** Interval coverage remains extremely stable across protected groups. Typical range coverage is 52.2% for females and 44.7% for males, while cushion coverage stays close to the target for all categories (e.g., 92.5% for Hispanic, 86.1% for White, 94.9% for Black, 90.3% for Asian).
+- **Socioeconomic Status:** Low-income (Poor/Negative) users receive narrower typical range widths ($389) compared to high-income users ($1,190), aligning with actual median costs ($10 vs. $456). Both subgroups maintain identical interval calibration (~46% range and ~88% cushion coverage).
+- **Health Limitations:** Users with walking limitations are automatically allocated wider ranges ($1,614) and cushions ($3,501) due to clinical complexity, maintaining a stable 89.8% safety cushion coverage.
+- **Audit Verdict:** The quantile model shows no signs of disparate coverage or under-protection of vulnerable or protected groups. It dynamically scales prediction intervals based on objective clinical and socioeconomic factors, ensuring that all subgroups receive equally calibrated and actionable budgeting ranges.
 
 <p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
 
