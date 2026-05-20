@@ -343,10 +343,6 @@ def persist_all_models(model_results):
 #     <h2 style="margin:0px">Evaluation</h2>
 # </div> 
 #
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Metrics</h3>
-# </div>
-#
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     🎯 Evaluate model performance on the validation dataset.  
 #     <ul>
@@ -1732,7 +1728,7 @@ df_raw_val, y_val_true, w_val_weights = prepare_human_readable_validation_data()
 # Create chronic conditions count  
 chronic_cols = list(CHRONIC_CONDITIONS.keys())
 df_raw_val["CHRONIC_COUNT"] = df_raw_val[chronic_cols].sum(axis=1).astype(int)
-df_raw_val["CHRONIC_COUNT_GRP"] = df_raw_val["CHRONIC_COUNT"].apply(lambda x: str(x) if x < 4 else "4+")  # Merge 4 or more due to small group sample sizes
+df_raw_val["CHRONIC_COUNT_GRP"] = df_raw_val["CHRONIC_COUNT"].apply(lambda x: f"{x} Condition" if x == 1 else (f"{x} Conditions" if x < 4 else "4+ Conditions"))  # Merge 4 or more due to small group sample sizes
 
 # Create age groups for a more stable and interpretable Fairness Audit
 age_bins = [18, 35, 50, 65, 120]
