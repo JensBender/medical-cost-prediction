@@ -575,13 +575,13 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 
 
 ### XGBoost Quantile Regression: Reliability & Fairness
-Extended the stratified error analysis to evaluate the prediction intervals of the final XGBoost Quantile Regression model. This audit assesses both the **typical range** ($`25^{\text{th}}`$–$`75^{\text{th}}`$ percentiles) and the **safety cushion** ($`90^{\text{th}}`$ percentile) across subgroups. By evaluating both **interval coverage** (statistical calibration) and **width** (practical budgeting utility in USD) to ensure predictions remain reliable and actionable for all user groups.
+Extended the stratified error analysis to evaluate the prediction intervals of the final XGBoost Quantile Regression model. Assessed both the **typical range** ($`25^{\text{th}}`$–$`75^{\text{th}}`$ percentiles) and the **safety cushion** ($`90^{\text{th}}`$ percentile) across subgroups. Evaluated both **interval coverage** (statistical calibration) and **width** (practical budgeting utility in USD) to ensure predictions remain reliable and actionable for all user groups.
 
 **Reliability**
 ![XGBoost Quantile Regression: Subgroup Reliability](figures/evaluation/quantile_subgroup_reliability.png)
 **Key Insights:**
 - **Out-of-the-Box Calibration:** The model achieves excellent overall interval calibration on the validation set, with 48.6% typical range coverage (Target: 50%) and 88.7% safety cushion coverage (Target: 90%).
-- **Spend Tiers:** Coverage is highly consistent across predicted median cost categories (ranging from 46.4% to 58.2% for typical range coverage), showing that predicted intervals are equally reliable for low- and high-spending users.
+- **Spend Tiers:** Coverage is highly consistent across predicted plan-around cost categories (`q50`; ranging from 46.4% to 58.2% for typical range coverage), showing that predicted intervals are equally reliable for low- and high-spending users.
 - **Clinical Complexity:** Interval widths automatically adjust to the user's risk level. For users with 0 chronic conditions, the safety cushion width averages $1,402 (92.5% coverage). For users with 4+ conditions, it widens to $3,366 (83.0% coverage), accurately reflecting the increased financial volatility.
 - **Insurance Status:** The uninsured receive a much narrower typical range width ($250 vs. $1,039 for private insurance) matching their lower spending constraints, while maintaining robust cushion coverage of 85.7%.
 
