@@ -2794,6 +2794,8 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
     """
     plot_data = df[df["Column"].isin(column_labels)].copy()
     n_rows = len(column_labels)
+    max_width = plot_data[["Typical Range Width (q25–q75)", "Safety Cushion Width (q50–q90)"]].max().max()
+    width_axis_max = np.ceil(max_width / 500) * 500
 
     fig, axes = plt.subplots(
         n_rows,
@@ -2884,8 +2886,8 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
             fontsize=8
         )
         width_ax.xaxis.set_major_formatter(currency_fmt)
+        width_ax.set_xlim(0, width_axis_max)
         width_ax.set_title("Width", fontsize=12, fontweight="bold")
-        width_ax.margins(x=0.10)  # Adds 10% of blank space on right of longest bar to prevent clipping
 
         # Shared row formatting
         coverage_ax.set_yticks(y_pos)
@@ -2937,7 +2939,7 @@ plot_quantile_subgroup_performance(
     quantile_subgroup_df,
     quantile_reliability_labels,
     "XGBoost Quantile Regression: Subgroup Reliability Audit",
-    # save_to_file="../figures/evaluation/quantile_subgroup_reliability.png"
+    save_to_file="../figures/evaluation/quantile_subgroup_reliability.png"
 )
 
 quantile_fairness_labels = [c["label"] for c in quantile_fairness_configs]
@@ -2945,5 +2947,5 @@ plot_quantile_subgroup_performance(
     quantile_subgroup_df,
     quantile_fairness_labels,
     "XGBoost Quantile Regression: Subgroup Fairness Audit",
-    # save_to_file="../figures/evaluation/quantile_subgroup_fairness.png"
+    save_to_file="../figures/evaluation/quantile_subgroup_fairness.png"
 )
