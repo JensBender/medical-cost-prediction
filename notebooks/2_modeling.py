@@ -2698,6 +2698,10 @@ for config in quantile_stratified_configs:
             "Group": category_map.get(int(group), group) if category_map else group,
             "Sample Size": mask.sum(),
             "Median Actual Cost": weighted_quantile(y_group, w_group, 0.5),
+            "Predicted Typical Low (q25)": np.average(q25_group, weights=w_group),
+            "Predicted Plan Around (q50)": np.average(q50_group, weights=w_group),
+            "Predicted Typical High (q75)": np.average(q75_group, weights=w_group),
+            "Predicted Safety Cushion (q90)": np.average(q90_group, weights=w_group),
             "Plan Around MdAE (q50)": weighted_median_absolute_error(y_group, q50_group, sample_weight=w_group),
             "Typical Range Coverage (q25–q75)": np.average((y_group >= q25_group) & (y_group <= q75_group), weights=w_group),
             "Typical Range Width (q25–q75)": np.average(q75_group - q25_group, weights=w_group),
@@ -2948,4 +2952,151 @@ plot_quantile_subgroup_performance(
     quantile_fairness_labels,
     "XGBoost Quantile Regression: Subgroup Fairness Audit",
     save_to_file="../figures/evaluation/quantile_subgroup_fairness.png"
+)
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>XGBoost Quantile Regression: Predicted Costs by Subgroup</strong> <br>
+#     📌 Visualize predicted out-of-pocket costs by subgroup. Unlike the coverage/width audit above, this diagnostic shows where the model places each subgroup on the dollar costs scale: plan-around estimate (q50), typical range (q25-q75), and safety cushion (q90). Use this to inspect risk separation and whether uncertainty grows in clinically plausible places.
+# </div>
+
+# %%
+def plot_quantile_subgroup_predictions(df, column_labels, title, save_to_file=None):
+    """
+    Visualizes quantile regression predicted costs across subgroups.
+
+    Each subplot row is one stratification column. The teal segment shows the
+    predicted typical range (q25-q75), the black marker shows the plan-around
+    estimate (q50), and the purple segment shows the safety cushion from q50 to q90.
+
+    Args:
+        df (pd.DataFrame): Stratified error analysis dataframe of quantile regression.
+        column_labels (list): Ordered list of column labels to include.
+        title (str): Main figure title.
+        save_to_file (str, optional): Full path and filename to save the plot.
+    """
+    plot_data = df[df["Column"].isin(column_labels)].copy()
+    n_rows = len(column_labels)
+    max_cost = plot_data["Predicted Safety Cushion (q90)"].max()
+    cost_axis_max = np.ceil((max_cost * 1.12) / 1000) * 1000
+
+    fig, axes = plt.subplots(
+        n_rows,
+        1,
+        figsize=(16, 3.2 * n_rows),
+        squeeze=False
+    )
+
+    currency_fmt = plt.FuncFormatter(lambda x, _: f"${x:,.0f}")
+    label_pad = cost_axis_max * 0.01
+
+    for row_idx, column_label in enumerate(column_labels):
+        ax = axes[row_idx, 0]
+        col_data = plot_data[plot_data["Column"] == column_label].copy()
+        y_pos = np.arange(len(col_data))
+
+        typical_lines = ax.hlines(
+            y_pos - 0.10,
+            col_data["Predicted Typical Low (q25)"],
+            col_data["Predicted Typical High (q75)"],
+            color=TYPICAL_RANGE_COLOR,
+            linewidth=8,
+            alpha=0.85,
+            label="Typical Range (q25-q75)"
+        )
+        cushion_lines = ax.hlines(
+            y_pos + 0.10,
+            col_data["Predicted Plan Around (q50)"],
+            col_data["Predicted Safety Cushion (q90)"],
+            color=SAFETY_CUSHION_COLOR,
+            linewidth=5,
+            alpha=0.85,
+            label="Safety Cushion (q50-q90)"
+        )
+        plan_points = ax.scatter(
+            col_data["Predicted Plan Around (q50)"],
+            y_pos + 0.10,
+            color="#222222",
+            s=30,
+            zorder=3,
+            label="Plan Around (q50)"
+        )
+        safety_points = ax.scatter(
+            col_data["Predicted Safety Cushion (q90)"],
+            y_pos + 0.10,
+            color=SAFETY_CUSHION_COLOR,
+            marker="D",
+            s=34,
+            zorder=3,
+            label="Safety Cushion (q90)"
+        )
+
+        for _, row in col_data.iterrows():
+            y = y_pos[col_data.index.get_loc(row.name)]
+            typical_width = row["Typical Range Width (q25–q75)"]
+            cushion_width = row["Safety Cushion Width (q50–q90)"]
+            ax.text(
+                row["Predicted Typical High (q75)"] + label_pad,
+                y - 0.10,
+                f"range ${typical_width:,.0f}",
+                va="center",
+                fontsize=8,
+                color=TYPICAL_RANGE_COLOR
+            )
+            ax.text(
+                row["Predicted Safety Cushion (q90)"] + label_pad,
+                y + 0.10,
+                f"cushion ${cushion_width:,.0f}",
+                va="center",
+                fontsize=8,
+                color=SAFETY_CUSHION_COLOR
+            )
+
+        yticklabels = [
+            f"{str(g).split(' (')[0]}\nn={n:,} | ${med:,.0f}"
+            for g, n, med in zip(col_data["Group"], col_data["Sample Size"], col_data["Median Actual Cost"])
+        ]
+        ax.set_yticks(y_pos)
+        ax.set_yticklabels(yticklabels, fontsize=9)
+        ax.invert_yaxis()
+        ax.set_xlim(0, cost_axis_max)
+        ax.xaxis.set_major_formatter(currency_fmt)
+        ax.set_title(column_label, loc="left", fontsize=12, fontweight="bold", pad=8)
+        ax.set_ylabel("")
+        ax.grid(axis="x", alpha=0.20)
+        sns.despine(ax=ax, left=True)
+
+    handles = [typical_lines, plan_points, cushion_lines, safety_points]
+    labels = [h.get_label() for h in handles]
+    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1), ncol=4, frameon=True)
+    fig.suptitle(title, fontsize=18, fontweight="bold", y=1.015)
+    plt.tight_layout(rect=[0, 0.02, 1, 1], h_pad=2.0)
+
+    fig.canvas.draw()
+    footnote_x = axes[0, 0].get_tightbbox(fig.canvas.get_renderer()).transformed(fig.transFigure.inverted()).x0
+    fig.text(
+        footnote_x,
+        0.01,
+        "Note: Predicted dollar values are weighted average quantile predictions for each subgroup; Dollar values in subgroup labels (e.g., $269) represent the actual median out-of-pocket costs of that subgroup.",
+        fontsize=9,
+        style="italic",
+        ha="left"
+    )
+
+    if save_to_file:
+        plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
+
+    plt.show()
+
+
+plot_quantile_subgroup_predictions(
+    quantile_subgroup_df,
+    quantile_reliability_labels,
+    "XGBoost Quantile Regression: Predicted Cost by Reliability Subgroup"
+)
+
+plot_quantile_subgroup_predictions(
+    quantile_subgroup_df,
+    quantile_fairness_labels,
+    "XGBoost Quantile Regression: Predicted Cost by Fairness Subgroup"
 )
