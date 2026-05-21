@@ -1705,7 +1705,7 @@ display(
 #     <br><br>
 #     <strong>Column selection</strong>: To ensure a robust yet focused stratified analysis, features are selected based on four core criteria:
 #     <ul style="margin-top:8px">
-#         <li><strong>Statistical Stability:</strong> Groups must have sufficient sample size (n ≥ 30) to ensure MdAE metrics are stable and not driven by outliers.</li>
+#         <li><strong>Statistical Stability:</strong> Groups should have sufficient sample size (target n ≥ 30) to ensure MdAE metrics are stable and not driven by outliers.</li>
 #         <li><strong>Feature Importance:</strong> Top-performing features that the model logic relies on must be audited for functional consistency (Model Reliability).</li>
 #         <li><strong>Legal Importance:</strong> Legally protected groups (Age, Sex, Race) or proxy variables for legally protected groups (e.g., walking limitations as a proxy for disability) must be monitored for disparate impact (Fairness Audit).</li>
 #         <li><strong>Stakeholder Importance:</strong> Focus on segments where prediction errors have high financial or health consequences (e.g., high spenders).</li>
@@ -2458,15 +2458,18 @@ def train_xgboost_quantile():
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
 #     ℹ️ <b>Quantile Regression Evaluation Guidelines</b> <br>
-#     The following are practical guidelines, not universal laws. They help decide whether the quantile model is useful for out-of-pocket cost planning. A good model should be calibrated (good coverage), but it should also give ranges that are narrow enough to help users make decisions (good interval width).
+#     The following are release guidelines and diagnostic guardrails, not universal laws. They help decide whether the quantile model is useful for out-of-pocket cost planning. A good model should be calibrated (good coverage), but it should also give ranges that are narrow enough to help users make decisions (good interval width).
 #     <br><br>
 #     <b>How to Interpret Coverage</b> <br>
-#     Coverage measures reliability by showing the percentage of users whose actual costs fall within the predicted range.
+#     Coverage measures reliability by showing the percentage of users whose actual costs fall within the predicted range. Overall validation coverage uses tighter release targets because it is estimated on the full validation set. Subgroup coverage uses wider diagnostic guardrails because subgroup estimates are noisier and should be interpreted only when the subgroup has enough observations.
 #     <ul style="margin-top:8px">
-#         <li><b>Typical range (q25–q75):</b> Good = 48–52%, acceptable = 45–55%, poor = below 40% or above 60%.</li>
-#         <li><b>Safety cushion (q90):</b> Good = 88–92%, acceptable = 85–95%, poor = below 80% or above 97%.</li>
+#         <li><b>Overall typical range (q25–q75):</b> Target = 50%, release-acceptable = 45–55%.</li>
+#         <li><b>Overall safety cushion (q90):</b> Target = 90%, release-acceptable = 85–95%.</li>
+#         <li><b>Subgroup typical range guardrail:</b> Generally acceptable = 40–60% for subgroups with n ≥ 30.</li>
+#         <li><b>Subgroup safety cushion guardrail:</b> Generally acceptable = 80–97% for subgroups with n ≥ 30; below 75% is severe undercoverage.</li>
 #         <li><b>Under-coverage:</b> Intervals are too narrow. Users encounter unexpectedly high costs more often than the app implies.</li>
 #         <li><b>Over-coverage:</b> Intervals are too wide. Safer, but the app may push users to over-budget.</li>
+#         <li><b>Small subgroups:</b> Coverage flags for n &lt; 30 are review-only because one or two outcomes can move the percentage materially.</li>
 #     </ul>
 #     <b>How to Interpret Interval Width</b> <br>
 #     Interval width measures usefulness by showing how wide the predicted dollar range is for planning.
@@ -2551,7 +2554,7 @@ display(
 #         <li><b>Fairness audit groups:</b> Sex, age group, race/ethnicity, mental health, income, education, region, and walking limitation.</li>
 #         <li><b>Metrics by group:</b> Plan-around MdAE (q50), typical range coverage/width (q25-q75), and safety cushion coverage/width (q90 and q50-q90).</li>
 #         <li><b>Context columns:</b> Include sample size and weighted median actual cost to distinguish unfair or unreliable model behavior from genuinely higher-cost, higher-variance population segments.</li>
-#         <li><b>Coverage guideline:</b> For major subgroups with enough samples, q25–q75 coverage should generally stay within 40–60%, and q90 coverage should generally stay within 80–97%.</li>
+#         <li><b>Coverage guideline:</b> For subgroups with n ≥ 30, q25–q75 coverage should generally stay within 40–60%, and q90 coverage should generally stay within 80–97%. Subgroups with n &lt; 30 are flagged as review-only because their coverage estimates are less stable.</li>
 #         <li><b>Width guideline:</b> Wider intervals are acceptable for genuinely higher-risk groups, but concerning for low-risk groups if they do not improve coverage or reflect clearly higher actual costs.</li>
 #         <li><b>Subgroup reliability flags:</b> Add diagnostic quality-control flags to identify groups that may need manual review before deployment. These flags are not automatic failure criteria; they highlight groups where the plan-around estimate, typical range, or safety cushion may be unreliable or insufficiently useful.</li>
 #         <li><b>Interpretation principle:</b> Coverage alone is not enough. A useful interval must be calibrated and narrow enough to support budgeting decisions; a wide interval is acceptable only when it reflects real uncertainty for a higher-risk user group.</li>
@@ -2565,6 +2568,11 @@ display(
 #             </tr>
 #         </thead>
 #         <tbody>
+#             <tr>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Small Sample</code></td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">Subgroup sample size &lt; 30</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">Coverage and width metrics for this subgroup are less stable and should be treated as review-only diagnostics.</td>
+#             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Typical Range Undercoverage</code></td>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;">q25–q75 coverage &lt; 40%</td>
@@ -2709,6 +2717,9 @@ overall_cushion_width = np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_qu
 
 def get_quantile_reliability_flags(subgroup):
     flags = []
+
+    if subgroup["Sample Size"] < 30:
+        flags.append("Small Sample")
     
     if subgroup["Typical Range Coverage (q25–q75)"] < 0.40:
         flags.append("Typical Range Undercoverage")
