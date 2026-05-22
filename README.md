@@ -580,11 +580,11 @@ Extended the stratified error analysis to evaluate the prediction intervals of t
 **Reliability**
 ![XGBoost Quantile Regression: Subgroup Reliability](figures/evaluation/quantile_subgroup_reliability.png)
 **Key Insights:**
-- **Predicted Costs:** Intervals are well calibrated when stratified by predicted costs (`q50` / `q90` bins stay near 50% / 90% coverage across tiers).
-- **Actual Costs:** Severe under-coverage for high and very high actual costs (e.g., 0% for very high actual spend). Expected when tail costs exceed predicted quantiles.
-- **Physical Health:** Coverage is stable across self-ratings except "poor" (81.2% safety cushion); interval width rises with declining health (~$1,540 to ~$3,355 safety cushion).
-- **Insurance:** Uninsured users have a narrow typical range (31.4% coverage) but usable safety-cushion coverage (85.7%); private insurance has the widest intervals, reflecting higher spending variance.
-- **Chronic Conditions:** Coverage stays near target as medical conditions increase; width scales with medical complexity (safety cushion ~$1,440 for 0 conditions vs. ~$3,386 for 4+).
+- **Predicted vs. Actual Costs:** Intervals are well calibrated when stratified by predicted cost tiers (coverage stays near 50%/90% targets), but collapse when stratified by actual costs — dropping to 0%/0% for Very High actual spenders, confirming the model cannot capture tail events it has never "seen" in its features.
+- **Zero Actual Costs:** Show only 24.9% typical-range coverage but 100% safety-cushion coverage, meaning the model's typical-range prediction overshoots (interval sits above $0) while the safety cushion contains the true $0 value.
+- **Physical Health:** Coverage remains stable (45–53% typical, 81–92% safety cushion) across all self-ratings; the key differentiator is interval width, which nearly doubles from "Excellent" ($1,541 safety cushion) to "Poor" ($2,856), reflecting growing cost volatility with declining health.
+- **Insurance:** Uninsured users have the narrowest intervals ($250 typical range, $1,037 safety cushion) with slight under-coverage (34.9% typical range) but adequate safety-cushion coverage (85.7%). Private insurance produces the widest intervals ($1,039 / $2,230), reflecting greater spending variance.
+- **Chronic Conditions:** Coverage stays near target regardless of condition count; safety-cushion width grows from $1,402 (0 conditions) to $3,366 (4+), reflecting the compounding cost uncertainty of comorbidity.
 
 **Fairness**
 ![XGBoost Quantile Regression: Subgroup Fairness](figures/evaluation/quantile_subgroup_fairness.png)
