@@ -589,10 +589,13 @@ Extended the stratified error analysis to evaluate the prediction intervals of t
 **Fairness**
 ![XGBoost Quantile Regression: Subgroup Fairness](figures/evaluation/quantile_subgroup_fairness.png)
 **Key Insights:**
-- **Coverage:** Calibration is near the performance target for most legally protected and vulnerable subgroups (typical range 40–60%; safety cushion 80–97%).
-- **Width:** Largest gaps are in interval width, not coverage. Older adults, higher income/education, and walking limitations get wider (less precise) intervals that still calibrate well.
-- **Mental Health:** Poor mental health is the main outlier (37.8% / 71.9% coverage), warranting review.
-- **Audit Verdict:** No systematic under-protection of protected classes; subgroup disparities reflect volatility in out-of-pocket costs.
+- **Coverage:** Calibration stays near target for nearly all protected and vulnerable subgroups (typical range 40–57%; safety cushion 84–95%), confirming consistent statistical reliability.
+- **Sex:** Females get wider intervals than Males ($1,028 vs. $742 typical range) due to higher spending variance, but both groups calibrate well (52% vs. 45%).
+- **Age & Walking Limitations:** Width roughly triples from youngest to oldest ($476 vs. $1,408 typical range) and doubles from no walking limitation to walking limitation ($794 vs. $1,614), reflecting medical cost volatility rather than algorithmic bias.
+- **Race/Ethnicity:** Coverage is equitable across all groups (47–57%); minority groups (Hispanic $546, Black $768) get narrower, more precise intervals than White ($1,024).
+- **Mental Health:** Poor mental health is the main outlier as safety-cushion coverage drops to 72% (below the 80% guardrail) despite the widest intervals ($2,763), suggesting extreme cost volatility that the model underestimates.
+- **Socioeconomic Status (Income/Education):** Largest width disparities across all dimensions. Safety cushion spans $968 (No Degree) to $2,887 (Master's), and $1,077 (Poor) to $2,540 (High Income), driven by greater spending variance among higher socioeconomic groups.
+- **Audit Verdict:** No systematic under-protection of protected classes. Disparities manifest in interval width (precision), not coverage (reliability), and reflect spending volatility rather than algorithmic bias.
 
 <p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
 
