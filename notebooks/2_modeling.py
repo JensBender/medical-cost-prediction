@@ -2966,7 +2966,53 @@ def _format_cost_label(value):
     return f"\\${value:,.0f}"
 
 
-def _annotate_quantile_timeline(ax, y, q25, q50, q75, q90, axis_max):
+def _estimate_figure_x_right(plot_data, column_labels):
+    """Provisional shared x-limit for cramped-label logic before final bbox trim."""
+    col_max_q90 = plot_data.loc[plot_data["Column"].isin(column_labels), "Predicted Safety Cushion (q90)"].max()
+    label_pad = max(col_max_q90 * 0.10, 400)
+    x_right = np.ceil((col_max_q90 + label_pad) / 500) * 500
+    if x_right < 1000:
+        x_right = max(np.ceil((col_max_q90 + label_pad) / 100) * 100, 500)
+    return x_right
+
+
+def _panel_content_right(ax, renderer):
+    """Rightmost data-coordinate extent of rendered artists in one subplot."""
+    content_right = 0.0
+    for artist in ax.get_children():
+        try:
+            bbox = artist.get_window_extent(renderer)
+        except (ValueError, TypeError):
+            continue
+        bbox_data = bbox.transformed(ax.transData.inverted())
+        if np.isfinite(bbox_data.x1):
+            content_right = max(content_right, bbox_data.x1)
+    return content_right
+
+
+def _round_x_right(content_right, pad_frac=0.04, min_pad=200):
+    if content_right <= 0:
+        return None
+    pad = max(content_right * pad_frac, min_pad)
+    x_right = np.ceil((content_right + pad) / 500) * 500
+    if x_right < 1000:
+        x_right = max(np.ceil((content_right + pad) / 100) * 100, 500)
+    return x_right
+
+
+def _finalize_figure_xlim(axes, fig, pad_frac=0.02, min_pad=200):
+    """Apply one shared xlim to every subplot so x-axes are directly comparable."""
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    max_content_right = max(_panel_content_right(ax, renderer) for ax in axes)
+    x_right = _round_x_right(max_content_right, pad_frac=pad_frac, min_pad=min_pad)
+    if x_right is None:
+        return
+    for ax in axes:
+        ax.set_xlim(0, x_right)
+
+
+def _annotate_quantile_timeline(ax, y, q25, q50, q75, q90, x_right):
     """
     Annotate a single quantile timeline. Uses split labels when there is room;
     falls back to one compact right-aligned summary when labels would overlap.
@@ -2976,7 +3022,7 @@ def _annotate_quantile_timeline(ax, y, q25, q50, q75, q90, axis_max):
     range_label = f"{_format_cost_label(q25)}-{_format_cost_label(q75)}"
     cushion_label = _format_cost_label(q90)
     span = max(q90 - q25, 1.0)
-    min_sep = axis_max * 0.07
+    min_sep = x_right * 0.07
     cramped = (
         span < min_sep * 2.5
         or (q75 + min_sep > q90)
@@ -2984,7 +3030,7 @@ def _annotate_quantile_timeline(ax, y, q25, q50, q75, q90, axis_max):
     )
 
     if cramped:
-        summary_x = min(q90 + axis_max * 0.02, axis_max * 0.99)
+        summary_x = q90 + max(x_right * 0.015, 75)
         ax.text(
             summary_x,
             y,
@@ -3055,8 +3101,6 @@ def plot_quantile_subgroup_predictions(df, column_labels, title, save_to_file=No
 
     plot_data = df[df["Column"].isin(column_labels)].copy()
     n_rows = len(column_labels)
-    max_cost = plot_data["Predicted Safety Cushion (q90)"].max()
-    cost_axis_max = np.ceil((max_cost * 1.22) / 1000) * 1000
 
     fig, axes = plt.subplots(
         n_rows,
@@ -3068,11 +3112,14 @@ def plot_quantile_subgroup_predictions(df, column_labels, title, save_to_file=No
     currency_fmt = plt.FuncFormatter(lambda x, _: f"${x:,.0f}")
     cap_half_height = 0.14
     plan_color = "#222222"
+    figure_x_right = _estimate_figure_x_right(plot_data, column_labels)
+    panel_axes = [axes[row_idx, 0] for row_idx in range(n_rows)]
 
     for row_idx, column_label in enumerate(column_labels):
         ax = axes[row_idx, 0]
         col_data = plot_data[plot_data["Column"] == column_label].copy()
         y_pos = np.arange(len(col_data))
+        ax.set_xlim(0, figure_x_right)
 
         for tick_idx, (_, row) in enumerate(col_data.iterrows()):
             y = y_pos[tick_idx]
@@ -3129,7 +3176,7 @@ def plot_quantile_subgroup_predictions(df, column_labels, title, save_to_file=No
                 edgecolors="white",
                 linewidths=0.6,
             )
-            _annotate_quantile_timeline(ax, y, q25, q50, q75, q90, cost_axis_max)
+            _annotate_quantile_timeline(ax, y, q25, q50, q75, q90, figure_x_right)
 
         yticklabels = [
             f"{str(g).split(' (')[0]}\nn={n:,} | ${med:,.0f}"
@@ -3138,7 +3185,6 @@ def plot_quantile_subgroup_predictions(df, column_labels, title, save_to_file=No
         ax.set_yticks(y_pos)
         ax.set_yticklabels(yticklabels, fontsize=9)
         ax.invert_yaxis()
-        ax.set_xlim(0, cost_axis_max)
         ax.xaxis.set_major_formatter(currency_fmt)
         ax.set_title(column_label, loc="left", fontsize=12, fontweight="bold", pad=8)
         ax.set_ylabel("")
@@ -3146,7 +3192,6 @@ def plot_quantile_subgroup_predictions(df, column_labels, title, save_to_file=No
         sns.despine(ax=ax, left=True)
 
     legend_elements = [
-        Line2D([0], [0], color=TYPICAL_RANGE_COLOR, linewidth=8, label="Typical Range (q25–q75)"),
         Line2D(
             [0], [0],
             marker="o",
@@ -3156,6 +3201,7 @@ def plot_quantile_subgroup_predictions(df, column_labels, title, save_to_file=No
             markersize=8,
             label="Plan Around (q50)",
         ),
+        Line2D([0], [0], color=TYPICAL_RANGE_COLOR, linewidth=8, label="Typical Range (q25–q75)"),
         Line2D(
             [0], [0],
             marker="D",
@@ -3176,13 +3222,14 @@ def plot_quantile_subgroup_predictions(df, column_labels, title, save_to_file=No
     fig.suptitle(title, fontsize=18, fontweight="bold", y=1.015)
     plt.tight_layout(rect=[0, 0.02, 1, 1], h_pad=2.0)
 
+    _finalize_figure_xlim(panel_axes, fig)
+
     fig.canvas.draw()
     footnote_x = axes[0, 0].get_tightbbox(fig.canvas.get_renderer()).transformed(fig.transFigure.inverted()).x0
     fig.text(
         footnote_x,
         0.01,
-        "Note: Predicted values are survey-weighted subgroup means. Y-axis labels show actual median out-of-pocket cost. "
-        "Annotations follow app wording: plan-around (q50), typical range endpoints (q25–q75), safety cushion cap (q90).",
+        "Note: Dollar values in subgroup labels (e.g., $269) represent the actual median out-of-pocket costs of that subgroup.",
         fontsize=9,
         style="italic",
         ha="left",
