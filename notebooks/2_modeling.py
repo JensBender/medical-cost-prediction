@@ -2545,7 +2545,7 @@ display(
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
-#     ℹ️ <b>Stratified Reliability of Typical Range and Safety Cushion</b> <br>
+#     ℹ️ <b>Subgroup Performance: Typical Range and Safety Cushion</b> <br>
 #     Stratified error analysis for quantile regression extends the point-estimate stratified analysis from a single error metric to a comprehensive audit of central accuracy, interval calibration, and prediction uncertainty. The goal is to confirm that the model's plan-around estimate (q50), typical range (q25-q75), and safety cushion (q90) remain reliable and actionable across important user segments.
 #     <ul style="margin-top:8px">
 #         <li><b>Reuse stratification:</b> Keep the same reliability and fairness audit groups used for point-estimate models.</li>
@@ -2777,7 +2777,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>XGBoost Quantile Regression: Subgroup Performance Plots</strong> <br>
+#     <strong>XGBoost Quantile Regression: Subgroup Reliability and Fairness</strong> <br>
 #     📌 Visualize coverage and interval width side-by-side for each stratification column. Coverage measures calibration; width measures practical usefulness. Both are needed to determine whether the typical range and safety cushion are reliable for subgroup-level budgeting.
 # </div>
 
