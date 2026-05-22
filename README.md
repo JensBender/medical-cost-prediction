@@ -575,7 +575,7 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 
 
 ### XGBoost Quantile Regression: Reliability & Fairness
-Extended the stratified error analysis to evaluate the prediction intervals of the final XGBoost Quantile Regression model. Assessed both the **typical range** ($`25^{\text{th}}`$–$`75^{\text{th}}`$ percentiles) and the **safety cushion** ($`90^{\text{th}}`$ percentile) across subgroups. Overall validation coverage uses tighter release targets (50% ±5 points for the typical range; 90% ±5 points for the safety cushion), while subgroup coverage uses wider diagnostic guardrails (40–60% and 80–97%) for groups with sufficient sample size (`n ≥ 30`). Evaluated both **interval coverage** (statistical calibration) and **width** (practical budgeting utility in USD) to ensure predictions remain reliable and actionable for all user groups.
+Extended the stratified error analysis to evaluate the prediction intervals of the final XGBoost Quantile Regression model. Assessed both the **typical range** ($`25^{\text{th}}`$–$`75^{\text{th}}`$ percentiles) and the **safety cushion** ($`90^{\text{th}}`$ percentile) across subgroups. Overall coverage uses tighter performance targets (45–55% for the typical range; 85–95% for the safety cushion), while subgroup coverage uses wider performance guardrails (40–60% and 80–97%) for groups with sufficient sample size (`n ≥ 30`). Evaluated both **interval coverage** (statistical calibration) and **width** (usefulness for budgeting in USD) to ensure predictions remain reliable and actionable for all user groups.
 
 **Reliability**
 ![XGBoost Quantile Regression: Subgroup Reliability](figures/evaluation/quantile_subgroup_reliability.png)
