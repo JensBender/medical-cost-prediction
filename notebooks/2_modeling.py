@@ -2961,13 +2961,89 @@ plot_quantile_subgroup_performance(
 # </div>
 
 # %%
+def _format_cost_label(value):
+    # Escape $ so Matplotlib does not treat it as mathtext delimiters.
+    return f"\\${value:,.0f}"
+
+
+def _annotate_quantile_timeline(ax, y, q25, q50, q75, q90, axis_max):
+    """
+    Annotate a single quantile timeline. Uses split labels when there is room;
+    falls back to one compact right-aligned summary when labels would overlap.
+    """
+    range_mid = (q25 + q75) / 2
+    plan_label = _format_cost_label(q50)
+    range_label = f"{_format_cost_label(q25)}-{_format_cost_label(q75)}"
+    cushion_label = _format_cost_label(q90)
+    span = max(q90 - q25, 1.0)
+    min_sep = axis_max * 0.07
+    cramped = (
+        span < min_sep * 2.5
+        or (q75 + min_sep > q90)
+        or (q50 + min_sep > range_mid and q50 - min_sep < range_mid)
+    )
+
+    if cramped:
+        summary_x = min(q90 + axis_max * 0.02, axis_max * 0.99)
+        ax.text(
+            summary_x,
+            y,
+            f"{plan_label} | {range_label} | {cushion_label}",
+            va="center",
+            ha="left",
+            fontsize=7.5,
+            color="#333333",
+            clip_on=True,
+        )
+        return
+
+    ax.annotate(
+        plan_label,
+        (q50, y),
+        xytext=(0, -11),
+        textcoords="offset points",
+        ha="center",
+        va="top",
+        fontsize=8,
+        fontweight="bold",
+        color="#222222",
+        clip_on=True,
+    )
+    ax.annotate(
+        range_label,
+        (range_mid, y),
+        xytext=(0, 9),
+        textcoords="offset points",
+        ha="center",
+        va="bottom",
+        fontsize=7.5,
+        color=TYPICAL_RANGE_COLOR,
+        clip_on=True,
+    )
+    ax.annotate(
+        cushion_label,
+        (q90, y),
+        xytext=(6, 0),
+        textcoords="offset points",
+        ha="left",
+        va="center",
+        fontsize=7.5,
+        color=SAFETY_CUSHION_COLOR,
+        clip_on=True,
+    )
+
+
 def plot_quantile_subgroup_predictions(df, column_labels, title, save_to_file=None):
     """
     Visualizes quantile regression predicted costs across subgroups.
 
-    Each subplot row is one stratification column. The teal segment shows the
-    predicted typical range (q25-q75), the black marker shows the plan-around
-    estimate (q50), and the purple segment shows the safety cushion from q50 to q90.
+    Each subgroup is a single horizontal timeline (left to right):
+    teal q25–q75 (typical range), purple q75–q90 (upper tail to cushion),
+    a black marker at q50 (plan around), and a diamond at q90 (safety cushion).
+
+    Annotations mirror the app copy: plan-around below the line, typical range
+    endpoints above the teal segment, and q90 at the cushion marker. Cramped rows use
+    one compact right-aligned summary to avoid overlap.
 
     Args:
         df (pd.DataFrame): Stratified error analysis dataframe of quantile regression.
@@ -2975,82 +3051,85 @@ def plot_quantile_subgroup_predictions(df, column_labels, title, save_to_file=No
         title (str): Main figure title.
         save_to_file (str, optional): Full path and filename to save the plot.
     """
+    from matplotlib.lines import Line2D
+
     plot_data = df[df["Column"].isin(column_labels)].copy()
     n_rows = len(column_labels)
     max_cost = plot_data["Predicted Safety Cushion (q90)"].max()
-    cost_axis_max = np.ceil((max_cost * 1.12) / 1000) * 1000
+    cost_axis_max = np.ceil((max_cost * 1.22) / 1000) * 1000
 
     fig, axes = plt.subplots(
         n_rows,
         1,
-        figsize=(16, 3.2 * n_rows),
-        squeeze=False
+        figsize=(16, 3.0 * n_rows),
+        squeeze=False,
     )
 
     currency_fmt = plt.FuncFormatter(lambda x, _: f"${x:,.0f}")
-    label_pad = cost_axis_max * 0.01
+    cap_half_height = 0.14
+    plan_color = "#222222"
 
     for row_idx, column_label in enumerate(column_labels):
         ax = axes[row_idx, 0]
         col_data = plot_data[plot_data["Column"] == column_label].copy()
         y_pos = np.arange(len(col_data))
 
-        typical_lines = ax.hlines(
-            y_pos - 0.10,
-            col_data["Predicted Typical Low (q25)"],
-            col_data["Predicted Typical High (q75)"],
-            color=TYPICAL_RANGE_COLOR,
-            linewidth=8,
-            alpha=0.85,
-            label="Typical Range (q25-q75)"
-        )
-        cushion_lines = ax.hlines(
-            y_pos + 0.10,
-            col_data["Predicted Plan Around (q50)"],
-            col_data["Predicted Safety Cushion (q90)"],
-            color=SAFETY_CUSHION_COLOR,
-            linewidth=5,
-            alpha=0.85,
-            label="Safety Cushion (q50-q90)"
-        )
-        plan_points = ax.scatter(
-            col_data["Predicted Plan Around (q50)"],
-            y_pos + 0.10,
-            color="#222222",
-            s=30,
-            zorder=3,
-            label="Plan Around (q50)"
-        )
-        safety_points = ax.scatter(
-            col_data["Predicted Safety Cushion (q90)"],
-            y_pos + 0.10,
-            color=SAFETY_CUSHION_COLOR,
-            marker="D",
-            s=34,
-            zorder=3,
-            label="Safety Cushion (q90)"
-        )
+        for tick_idx, (_, row) in enumerate(col_data.iterrows()):
+            y = y_pos[tick_idx]
+            q25 = row["Predicted Typical Low (q25)"]
+            q50 = row["Predicted Plan Around (q50)"]
+            q75 = row["Predicted Typical High (q75)"]
+            q90 = row["Predicted Safety Cushion (q90)"]
 
-        for _, row in col_data.iterrows():
-            y = y_pos[col_data.index.get_loc(row.name)]
-            typical_width = row["Typical Range Width (q25–q75)"]
-            cushion_width = row["Safety Cushion Width (q50–q90)"]
-            ax.text(
-                row["Predicted Typical High (q75)"] + label_pad,
-                y - 0.10,
-                f"range ${typical_width:,.0f}",
-                va="center",
-                fontsize=8,
-                color=TYPICAL_RANGE_COLOR
+            ax.plot(
+                [q25, q75],
+                [y, y],
+                color=TYPICAL_RANGE_COLOR,
+                linewidth=9,
+                alpha=0.9,
+                solid_capstyle="round",
+                zorder=2,
             )
-            ax.text(
-                row["Predicted Safety Cushion (q90)"] + label_pad,
-                y + 0.10,
-                f"cushion ${cushion_width:,.0f}",
-                va="center",
-                fontsize=8,
-                color=SAFETY_CUSHION_COLOR
+            if q90 > q75:
+                ax.plot(
+                    [q75, q90],
+                    [y, y],
+                    color=SAFETY_CUSHION_COLOR,
+                    linewidth=5,
+                    alpha=0.9,
+                    solid_capstyle="round",
+                    zorder=2,
+                )
+            for cap_x in (q25, q75):
+                ax.vlines(
+                    cap_x,
+                    y - cap_half_height,
+                    y + cap_half_height,
+                    color=TYPICAL_RANGE_COLOR,
+                    linewidth=1.5,
+                    alpha=0.85,
+                    zorder=3,
+                )
+            ax.scatter(
+                [q50],
+                [y],
+                color=plan_color,
+                s=42,
+                zorder=4,
+                edgecolors="white",
+                linewidths=0.6,
             )
+            ax.scatter(
+                [q90],
+                [y],
+                color=SAFETY_CUSHION_COLOR,
+                marker="D",
+                s=46,
+                zorder=4,
+                edgecolors="white",
+                linewidths=0.6,
+            )
+            _annotate_quantile_timeline(ax, y, q25, q50, q75, q90, cost_axis_max)
 
         yticklabels = [
             f"{str(g).split(' (')[0]}\nn={n:,} | ${med:,.0f}"
@@ -3066,9 +3145,34 @@ def plot_quantile_subgroup_predictions(df, column_labels, title, save_to_file=No
         ax.grid(axis="x", alpha=0.20)
         sns.despine(ax=ax, left=True)
 
-    handles = [typical_lines, plan_points, cushion_lines, safety_points]
-    labels = [h.get_label() for h in handles]
-    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1), ncol=4, frameon=True)
+    legend_elements = [
+        Line2D([0], [0], color=TYPICAL_RANGE_COLOR, linewidth=8, label="Typical Range (q25–q75)"),
+        Line2D(
+            [0], [0],
+            marker="o",
+            color="w",
+            markerfacecolor=plan_color,
+            markeredgecolor=plan_color,
+            markersize=8,
+            label="Plan Around (q50)",
+        ),
+        Line2D(
+            [0], [0],
+            marker="D",
+            color="w",
+            markerfacecolor=SAFETY_CUSHION_COLOR,
+            markeredgecolor=SAFETY_CUSHION_COLOR,
+            markersize=8,
+            label="Safety Cushion (q90)",
+        ),
+    ]
+    fig.legend(
+        handles=legend_elements,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1),
+        ncol=3,
+        frameon=True,
+    )
     fig.suptitle(title, fontsize=18, fontweight="bold", y=1.015)
     plt.tight_layout(rect=[0, 0.02, 1, 1], h_pad=2.0)
 
@@ -3077,10 +3181,11 @@ def plot_quantile_subgroup_predictions(df, column_labels, title, save_to_file=No
     fig.text(
         footnote_x,
         0.01,
-        "Note: Predicted dollar values are weighted average quantile predictions for each subgroup; Dollar values in subgroup labels (e.g., $269) represent the actual median out-of-pocket costs of that subgroup.",
+        "Note: Predicted values are survey-weighted subgroup means. Y-axis labels show actual median out-of-pocket cost. "
+        "Annotations follow app wording: plan-around (q50), typical range endpoints (q25–q75), safety cushion cap (q90).",
         fontsize=9,
         style="italic",
-        ha="left"
+        ha="left",
     )
 
     if save_to_file:
