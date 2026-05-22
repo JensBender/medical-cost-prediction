@@ -3037,7 +3037,7 @@ def _annotate_quantile_timeline(ax, y, q25, q50, q75, q90, x_right):
             f"{plan_label} | {range_label} | {cushion_label}",
             va="center",
             ha="left",
-            fontsize=7.5,
+            fontsize=8.5,
             color="#333333",
             clip_on=True,
         )
@@ -3050,7 +3050,7 @@ def _annotate_quantile_timeline(ax, y, q25, q50, q75, q90, x_right):
         textcoords="offset points",
         ha="center",
         va="top",
-        fontsize=8,
+        fontsize=9,
         fontweight="bold",
         color="#222222",
         clip_on=True,
@@ -3062,7 +3062,7 @@ def _annotate_quantile_timeline(ax, y, q25, q50, q75, q90, x_right):
         textcoords="offset points",
         ha="center",
         va="bottom",
-        fontsize=7.5,
+        fontsize=8.5,
         color=TYPICAL_RANGE_COLOR,
         clip_on=True,
     )
@@ -3073,7 +3073,7 @@ def _annotate_quantile_timeline(ax, y, q25, q50, q75, q90, x_right):
         textcoords="offset points",
         ha="left",
         va="center",
-        fontsize=7.5,
+        fontsize=8.5,
         color=SAFETY_CUSHION_COLOR,
         clip_on=True,
     )
