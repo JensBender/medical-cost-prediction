@@ -3280,3 +3280,14 @@ plot_residuals_vs_predicted(
     save_to_file="../figures/evaluation/quantile_heteroscedasticity.png"
 )
 
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul>
+#         <li><strong>Identical Error Profiles (No Degradation):</strong> The side-by-side comparison shows virtually identical residual spreads and binned median trends. This confirms that jointly training a single multi-quantile model (minimizing pinball loss across 4 quantiles) does not degrade the median prediction quality compared to a dedicated point-estimate model (minimizing L1 absolute error).</li>
+#         <li><strong>Unbiased Median Predictions:</strong> For both models, the binned median residual line remains close to zero across the entire prediction range, demonstrating that predictions are stable and free of systematic bias for typical healthcare costs.</li>
+#         <li><strong>Shared Fan-Shaped Uncertainty:</strong> Both plots display a widening "fan shape" (heteroscedasticity) and a heavy upward skew of positive residuals. This indicates that predicting out-of-pocket costs becomes increasingly uncertain as expected health risk rises, and both models systematically underpredict extreme catastrophic expenditures (outliers).</li>
+#         <li><strong>Justification for Range Modeling:</strong> The presence of heteroscedasticity confirms that a single point estimate (q50) is insufficient for high-risk patients. A range model with prediction intervals (q25-q75) and safety cushions (q90) is necessary to communicate this uncertainty to users.</li>
+#     </ul>
+# </div>
