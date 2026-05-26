@@ -3291,3 +3291,69 @@ plot_residuals_vs_predicted(
 #         <li><strong>Justification for Range Modeling:</strong> The presence of heteroscedasticity confirms that a single point estimate (q50) is insufficient for high-risk patients. A range model with prediction intervals (q25-q75) and safety cushions (q90) is necessary to communicate this uncertainty to users.</li>
 #     </ul>
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Pinball Loss</h3>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Evaluate the calibration and predictive accuracy of each target quantile using the <b>Pinball Loss</b> metric. 
+#     Compare the model's loss to a naive baseline (constant weighted quantile) to calculate the <b>Pinball $R^2$ (Quantile Skill Score)</b>, 
+#     measuring improvement over a dummy model, and audit overfitting via the training vs. validation delta.
+# </div>
+
+# %%
+# Load validation and train predictions
+xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
+y_train_quantile_pred = xgb_quantile_model.predict(X_train_preprocessed)
+y_train_quantile_pred = np.maximum(y_train_quantile_pred, 0)
+y_train_quantile_pred = np.maximum.accumulate(y_train_quantile_pred, axis=1)
+
+y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
+
+quantiles = [0.25, 0.50, 0.75, 0.90]
+pinball_results = []
+
+for idx, q in enumerate(quantiles):
+    # Model predictions
+    y_train_pred_q = y_train_quantile_pred[:, idx]
+    y_val_pred_q = y_val_quantile_pred[:, idx]
+    
+    # Naive baseline predictions (overall weighted quantile of training target)
+    train_naive_val = weighted_quantile(y_train, w_train, q)
+    y_train_naive = np.full_like(y_train, fill_value=train_naive_val)
+    y_val_naive = np.full_like(y_val, fill_value=train_naive_val)
+    
+    # Calculate weighted pinball loss
+    train_loss_model = mean_pinball_loss(y_train, y_train_pred_q, alpha=q, sample_weight=w_train)
+    val_loss_model = mean_pinball_loss(y_val, y_val_pred_q, alpha=q, sample_weight=w_val)
+    
+    train_loss_naive = mean_pinball_loss(y_train, y_train_naive, alpha=q, sample_weight=w_train)
+    val_loss_naive = mean_pinball_loss(y_val, y_val_naive, alpha=q, sample_weight=w_val)
+    
+    # Calculate Pinball R² (Skill Score)
+    train_pinball_r2 = 1.0 - (train_loss_model / train_loss_naive)
+    val_pinball_r2 = 1.0 - (val_loss_model / val_loss_naive)
+    
+    # Train/Val delta (overfitting measure)
+    delta_percent = ((val_loss_model - train_loss_model) / train_loss_model) * 100
+    
+    pinball_results.append({
+        "Quantile": f"q{int(q*100)}",
+        "Train Loss": train_loss_model,
+        "Val Loss": val_loss_model,
+        "Train R² (Skill)": train_pinball_r2,
+        "Val R² (Skill)": val_pinball_r2,
+        "Delta %": delta_percent
+    })
+
+pinball_df = pd.DataFrame(pinball_results)
+display(
+    pinball_df.style
+    .hide()
+    .pipe(add_table_caption, "XGBoost Quantile Regression: Pinball Loss & Skill Scores")
+    .format("${:,.2f}", subset=["Train Loss", "Val Loss"])
+    .format("{:.2%}", subset=["Train R² (Skill)", "Val R² (Skill)"])
+    .format("{:+.2f}%", subset=["Delta %"])
+)
