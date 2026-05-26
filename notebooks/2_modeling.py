@@ -3252,3 +3252,27 @@ plot_quantile_subgroup_predictions(
     quantile_fairness_labels,
     "XGBoost Quantile Regression: Predicted Cost by Fairness Subgroup"
 )
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Heteroscedasticity</h3>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Plot residuals vs. predicted values for the XGBoost quantile regression model's q50 (median) estimate on the validation set.
+# </div>
+
+# %%
+# Load XGBoost quantile predictions
+y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
+y_val_pred_q50 = y_val_quantile_pred[:, 1]  # q50 is at index 1
+
+# Plot heteroscedasticity for the q50 estimate
+plot_residuals_vs_predicted(
+    y_val, 
+    {"XGBoost Quantile Regression (q50)": y_val_pred_q50}, 
+    w_val,
+    n_cols=1,
+    save_to_file="../figures/evaluation/quantile_heteroscedasticity.png"
+)
+
