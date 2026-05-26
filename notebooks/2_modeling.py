@@ -3259,20 +3259,24 @@ plot_quantile_subgroup_predictions(
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Plot residuals vs. predicted values for the XGBoost quantile regression model's q50 (median) estimate on the validation set.
+#     📌 Plot residuals vs. predicted values for the XGBoost quantile regression model's q50 (median) estimate on the validation set. Compare with the tuned XGBoost point-estimate model.
 # </div>
 
 # %%
-# Load XGBoost quantile predictions
+# Load predictions 
+xgb_tuned_pred = load_model("../models/xgb_tuned_predictions.joblib", verbose=False)
 y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
 y_val_pred_q50 = y_val_quantile_pred[:, 1]  # q50 is at index 1
 
-# Plot heteroscedasticity for the q50 estimate
+# Plot heteroscedasticity of quantile vs. point-estimate model side-by-side
 plot_residuals_vs_predicted(
     y_val, 
-    {"XGBoost Quantile Regression (q50)": y_val_pred_q50}, 
+    {
+        "XGBoost (Tuned Point-Estimate)": xgb_tuned_pred,
+        "XGBoost Quantile (q50)": y_val_pred_q50
+    }, 
     w_val,
-    n_cols=1,
+    n_cols=2,
     save_to_file="../figures/evaluation/quantile_heteroscedasticity.png"
 )
 
