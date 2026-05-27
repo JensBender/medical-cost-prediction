@@ -3320,13 +3320,34 @@ plot_residuals_vs_predicted(
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Pinball Loss</h3>
+#     <h3 style="margin:0px">Pinball Loss & Quantile Skill Score</h3>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     💡 <b>What is a Quantile Skill Score (QSS)?</b>
+#     <br>
+#     The QSS measures the <b>improvement</b> of our model compared to a naive baseline (always predicting the same population-level quantile). 
+#     <ul style="margin-top:10px">
+#         <li><b>0%:</b> The model is no better than a simple "guess" of the population average.</li>
+#         <li><b>100%:</b> The model is a "Perfect Oracle" with zero prediction error.</li>
+#         <li><b>Interpretation:</b> A score of 11% means the model's intelligence (using health features) reduced the error penalty by 11% compared to a model with no data.</li>
+#     </ul>
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Evaluate the calibration and predictive accuracy of each target quantile using the <b>Pinball Loss</b> metric. 
-#     Compare the model's loss to a naive baseline (constant weighted quantile) to calculate the <b>Pinball $R^2$ (Quantile Skill Score)</b>, 
-#     measuring improvement over a dummy model, and audit overfitting via the training vs. validation delta.
+#     📌 Evaluate each quantile's calibration and predictive accuracy using the Pinball Loss and Quantile Skill Score.
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     💡 <b>What is a Quantile Skill Score (QSS)?</b>
+#     <br>
+#     The QSS measures the <b>improvement</b> of our model compared to a naive baseline (always predicting the same population percentile). 
+#     <ul style="margin-top:10px">
+#         <li><b>0%:</b> The model is no better than a simple "guess" of the population percentile.</li>
+#         <li><b>100%:</b> The model is a "Perfect Oracle" with zero prediction error.</li>
+#         <li><b>Interpretation:</b> A score of 10% for q75 means the model's intelligence (using health features) reduced the error penalty by 10% compared to always predicting the 75th percentile.</li>
+#     </ul>
 # </div>
 
 # %%
@@ -3361,20 +3382,20 @@ for idx, q in enumerate(quantiles):
     train_loss_naive = mean_pinball_loss(y_train, y_train_naive, alpha=q, sample_weight=w_train)
     val_loss_naive = mean_pinball_loss(y_val, y_val_naive, alpha=q, sample_weight=w_val)
     
-    # Calculate Pinball R² (Skill Score)
-    train_pinball_r2 = 1.0 - (train_loss_model / train_loss_naive)
-    val_pinball_r2 = 1.0 - (val_loss_model / val_loss_naive)
+    # Calculate Quantile Skill Score (QSS)
+    train_qss = 1.0 - (train_loss_model / train_loss_naive)
+    val_qss = 1.0 - (val_loss_model / val_loss_naive)
     
     # Train/Val delta (overfitting measure)
     delta_percent = ((val_loss_model - train_loss_model) / train_loss_model) * 100
     
     pinball_results.append({
         "Quantile": f"q{int(q*100)}",
-        "Train Loss": train_loss_model,
-        "Val Loss": val_loss_model,
-        "Train R² (Skill)": train_pinball_r2,
-        "Val R² (Skill)": val_pinball_r2,
-        "Delta %": delta_percent
+        "Pinball Loss (Train)": train_loss_model,
+        "Pinball Loss (Val)": val_loss_model,
+        "Pinball Delta %": delta_percent,
+        "Quantile Skill Score (Train)": train_qss,
+        "Quantile Skill Score (Val)": val_qss,
     })
 
 pinball_df = pd.DataFrame(pinball_results)
@@ -3382,9 +3403,9 @@ display(
     pinball_df.style
     .hide()
     .pipe(add_table_caption, "XGBoost Quantile Regression: Pinball Loss & Skill Scores")
-    .format("${:,.2f}", subset=["Train Loss", "Val Loss"])
-    .format("{:.2%}", subset=["Train R² (Skill)", "Val R² (Skill)"])
-    .format("{:+.2f}%", subset=["Delta %"])
+    .format("${:,.2f}", subset=["Pinball Loss (Train)", "Pinball Loss (Val)"])
+    .format("{:.2%}", subset=["Quantile Skill Score (Train)", "Quantile Skill Score (Val)"])
+    .format("{:+.2f}%", subset=["Pinball Delta %"])
 )
 
 # %% [markdown]
