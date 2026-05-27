@@ -2481,6 +2481,107 @@ def train_xgboost_quantile():
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Pinball Loss & Quantile Skill Score</h3>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     💡 <b>What is Pinball Loss?</b>
+#     <br>
+#     Pinball loss is an <b>asymmetric</b> penalty function used to estimate specific quantiles. Unlike standard metrics (MSE/MAE) that treat all errors the same, pinball loss penalizes errors differently based on our target:
+#     <ul style="margin-top:10px">
+#         <li><b>For q90:</b> Under-predicting is 9x more "expensive" (0.90 weight) than over-predicting (0.10). This forces the model to "overshoot" 90% of the data to create a safety cushion.</li>
+#         <li><b>For q25:</b> Over-predicting is 3x more "expensive" (0.75 weight) than under-predicting (0.25), forcing the model toward the lower end of costs.</li>
+#         <li><b>At q50:</b> Penalties are symmetric (0.50 on both sides). Because every error is multiplied by 0.5, the mean pinball loss is exactly 0.5 * MAE.</li>
+#     </ul>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     💡 <b>What is a Quantile Skill Score (QSS)?</b>
+#     <br>
+#     The QSS measures the <b>improvement</b> of our model compared to a naive baseline (always predicting the same population-level quantile). 
+#     <ul style="margin-top:10px">
+#         <li><b>0%:</b> The model is no better than a simple "guess" of the population average.</li>
+#         <li><b>100%:</b> The model is a "Perfect Oracle" with zero prediction error.</li>
+#         <li><b>Interpretation:</b> A score of 11% means the model's intelligence (using health features) reduced the error penalty by 11% compared to a model with no data.</li>
+#     </ul>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Evaluate each quantile's calibration and predictive accuracy using the Pinball Loss and Quantile Skill Score.
+# </div>
+
+# %%
+# Load model 
+xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
+
+# Predict on training data
+y_train_quantile_pred = xgb_quantile_model.predict(X_train_preprocessed)
+y_train_quantile_pred = np.maximum(y_train_quantile_pred, 0)
+y_train_quantile_pred = np.maximum.accumulate(y_train_quantile_pred, axis=1)
+
+# Load predictions on validation data
+y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
+
+quantiles = [0.25, 0.50, 0.75, 0.90]
+pinball_results = []
+
+for idx, q in enumerate(quantiles):
+    # Model predictions
+    y_train_pred_q = y_train_quantile_pred[:, idx]
+    y_val_pred_q = y_val_quantile_pred[:, idx]
+    
+    # Naive baseline predictions (overall weighted quantile of training target)
+    train_naive_val = weighted_quantile(y_train, w_train, q)
+    y_train_naive = np.full_like(y_train, fill_value=train_naive_val)
+    y_val_naive = np.full_like(y_val, fill_value=train_naive_val)
+    
+    # Calculate weighted pinball loss
+    train_loss_model = mean_pinball_loss(y_train, y_train_pred_q, alpha=q, sample_weight=w_train)
+    val_loss_model = mean_pinball_loss(y_val, y_val_pred_q, alpha=q, sample_weight=w_val)
+    
+    train_loss_naive = mean_pinball_loss(y_train, y_train_naive, alpha=q, sample_weight=w_train)
+    val_loss_naive = mean_pinball_loss(y_val, y_val_naive, alpha=q, sample_weight=w_val)
+    
+    # Calculate Quantile Skill Score (QSS)
+    train_qss = 1.0 - (train_loss_model / train_loss_naive)
+    val_qss = 1.0 - (val_loss_model / val_loss_naive)
+    
+    # Train/Val delta (overfitting measure)
+    delta_percent = ((val_loss_model - train_loss_model) / train_loss_model) * 100
+    
+    pinball_results.append({
+        "Quantile": f"q{int(q*100)}",
+        "Pinball Loss (Train)": train_loss_model,
+        "Pinball Loss (Val)": val_loss_model,
+        "Pinball Delta %": delta_percent,
+        "Quantile Skill Score (Train)": train_qss,
+        "Quantile Skill Score (Val)": val_qss,
+    })
+
+pinball_df = pd.DataFrame(pinball_results)
+display(
+    pinball_df.style
+    .hide()
+    .pipe(add_table_caption, "XGBoost Quantile Regression: Pinball Loss & Skill Scores")
+    .format("${:,.2f}", subset=["Pinball Loss (Train)", "Pinball Loss (Val)"])
+    .format("{:.2%}", subset=["Quantile Skill Score (Train)", "Quantile Skill Score (Val)"])
+    .format("{:+.2f}%", subset=["Pinball Delta %"])
+)
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul>
+#         <li><strong>Higher Skill at Upper Quantiles:</strong> The Quantile Skill Score on validation triples from q25 (3.7%) to q75 (11.1%), confirming that the model's features are more informative for predicting high out-of-pocket costs than the lower end of the distribution, where costs are dominated by noise from low-cost healthy behavior.</li>
+#         <li><strong>q75 vs. q90 Pinball Loss:</strong> While the absolute Pinball Loss peaks at q75 (\$580), it drops at q90 (\$502) due to the asymmetric penalty structure: at q90, over-predictions are penalized at only 10% weight, allowing the model to provide a conservative safety cushion with lower overall penalty.</li>
+#         <li><strong>q90 Overfitting:</strong> Pinball loss deltas are small for q25–q75 (absolute delta ≤ 1.3%), but the q90 delta jumps to +5.8%. More tellingly, the q90 QSS drops from 18.7% (train) to 10.8% (val), a 7.8 percentage point gap, far larger than the ~3% gaps at other quantiles. This indicates that the model's tail predictions are sensitive to training data outliers, and the apparent q90 superiority on train does not fully generalize.</li>
+#         <li><strong>Practical Implication:</strong> On validation data, q75 (11.1%) and q90 (10.8%) achieve nearly identical skill scores. The safety cushion (q90) remains useful as a conservative upper bound for budgeting, but users should be aware that its precision is no better than the typical range upper bound (q75). Its value lies in the asymmetric "better safe than sorry" design, not in superior predictive accuracy.</li>
+#     </ul>
+# </div>
+
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">Metrics</h3>
 # </div>
 #
@@ -2536,6 +2637,45 @@ display(
 #         <li><strong>Manageable Typical Range Width for Budgeting:</strong> An average typical range width of ~\$890 provides users with a manageable window for standard HSA/FSA planning, while the ~\$1,980 safety cushion width (q50–q90) offers a realistic buffer for emergency fund planning.</li>
 #         <li><strong>MdAE vs. MAE:</strong> The large gap between MdAE (\$245) and MAE (\$955) reinforces that while the model is very precise for the "typical" user, rare high-cost outliers continue to drive the mean error, further justifying a "plan around + safety cushion" approach over simple point estimates.</li>
 #         <li><strong>Skip CQR Calibration:</strong> Decided not to implement conformalized quantile regression, because the raw quantile model achieved excellent out-of-the-box calibration (within 1.5% of targets). Using the leaner model simplifies deployment and maintenance while meeting all reliability standards.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Heteroscedasticity</h3>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Plot residuals vs. predicted values for the XGBoost quantile regression model's q50 (median) estimate on the validation set. Compare with the tuned XGBoost point-estimate model.
+# </div>
+
+# %%
+# Load predictions 
+xgb_tuned_pred = load_model("../models/xgb_tuned_predictions.joblib", verbose=False)
+y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
+y_val_pred_q50 = y_val_quantile_pred[:, 1]  # q50 is at index 1
+
+# Plot heteroscedasticity of quantile vs. point-estimate model side-by-side
+plot_residuals_vs_predicted(
+    y_val, 
+    {
+        "XGBoost (Tuned Point-Estimate)": xgb_tuned_pred,
+        "XGBoost Quantile (q50)": y_val_pred_q50
+    }, 
+    w_val,
+    n_cols=2,
+    save_to_file="../figures/evaluation/quantile_heteroscedasticity.png"
+)
+
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul>
+#         <li><strong>Identical Error Profiles (No Degradation):</strong> The side-by-side comparison shows virtually identical residual spreads and binned median trends. This confirms that jointly training a single multi-quantile model (minimizing pinball loss across 4 quantiles) does not degrade the median prediction quality compared to a dedicated point-estimate model (minimizing L1 absolute error).</li>
+#         <li><strong>Unbiased Median Predictions:</strong> For both models, the binned median residual line remains close to zero across the entire prediction range, demonstrating that predictions are stable and free of systematic bias for typical healthcare costs.</li>
+#         <li><strong>Shared Fan-Shaped Uncertainty:</strong> Both plots display a widening "fan shape" (heteroscedasticity) and a heavy upward skew of positive residuals. This indicates that predicting out-of-pocket costs becomes increasingly uncertain as expected health risk rises, and both models systematically underpredict extreme catastrophic expenditures (outliers).</li>
+#         <li><strong>Justification for Range Modeling:</strong> The presence of heteroscedasticity confirms that a single point estimate (q50) is insufficient for high-risk patients. A range model with prediction intervals (q25-q75) and safety cushions (q90) is necessary to communicate this uncertainty to users.</li>
 #     </ul>
 # </div>
 
@@ -3276,145 +3416,6 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Safety Cushion:</strong> For most demographic groups (sex, age, race), the safety cushion (q90) provides a buffer of roughly \$1,400–\$3,000 above the plan-around estimate. This represents a meaningful safety boundary for budgeting without encouraging excessive over-allocation.</li>
 #         <li><strong>Chronic Conditions:</strong> Each additional condition raises both the plan-around and the safety cushion. From 0 conditions (q50=\$128, q90=\$1,530) through 4+ conditions (q50=\$724, q90=\$4,090), the plan-around scales ~5.7× while the safety cushion scales ~2.7×, reflecting higher expected costs and greater cost uncertainty.</li>
 #         <li><strong>Underestimating High Costs:</strong> Even for the highest predicted cost tier, the safety cushion tops out around \$6,250, whereas the actual Very High Spend group has a median of \$10,086. The model's predicted range compresses for extreme actual spenders: high-spend and very-high-spend actual cost groups receive near-identical predictions (q50 \$570 vs. \$674), confirming that the model cannot distinguish high from extreme costs.</li>
-#     </ul>
-# </div>
-
-# %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Heteroscedasticity</h3>
-# </div>
-#
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Plot residuals vs. predicted values for the XGBoost quantile regression model's q50 (median) estimate on the validation set. Compare with the tuned XGBoost point-estimate model.
-# </div>
-
-# %%
-# Load predictions 
-xgb_tuned_pred = load_model("../models/xgb_tuned_predictions.joblib", verbose=False)
-y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
-y_val_pred_q50 = y_val_quantile_pred[:, 1]  # q50 is at index 1
-
-# Plot heteroscedasticity of quantile vs. point-estimate model side-by-side
-plot_residuals_vs_predicted(
-    y_val, 
-    {
-        "XGBoost (Tuned Point-Estimate)": xgb_tuned_pred,
-        "XGBoost Quantile (q50)": y_val_pred_q50
-    }, 
-    w_val,
-    n_cols=2,
-    save_to_file="../figures/evaluation/quantile_heteroscedasticity.png"
-)
-
-
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insights:</b> 
-#     <ul>
-#         <li><strong>Identical Error Profiles (No Degradation):</strong> The side-by-side comparison shows virtually identical residual spreads and binned median trends. This confirms that jointly training a single multi-quantile model (minimizing pinball loss across 4 quantiles) does not degrade the median prediction quality compared to a dedicated point-estimate model (minimizing L1 absolute error).</li>
-#         <li><strong>Unbiased Median Predictions:</strong> For both models, the binned median residual line remains close to zero across the entire prediction range, demonstrating that predictions are stable and free of systematic bias for typical healthcare costs.</li>
-#         <li><strong>Shared Fan-Shaped Uncertainty:</strong> Both plots display a widening "fan shape" (heteroscedasticity) and a heavy upward skew of positive residuals. This indicates that predicting out-of-pocket costs becomes increasingly uncertain as expected health risk rises, and both models systematically underpredict extreme catastrophic expenditures (outliers).</li>
-#         <li><strong>Justification for Range Modeling:</strong> The presence of heteroscedasticity confirms that a single point estimate (q50) is insufficient for high-risk patients. A range model with prediction intervals (q25-q75) and safety cushions (q90) is necessary to communicate this uncertainty to users.</li>
-#     </ul>
-# </div>
-
-# %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Pinball Loss & Quantile Skill Score</h3>
-# </div>
-#
-# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     💡 <b>What is Pinball Loss?</b>
-#     <br>
-#     Pinball loss is an <b>asymmetric</b> penalty function used to estimate specific quantiles. Unlike standard metrics (MSE/MAE) that treat all errors the same, pinball loss penalizes errors differently based on our target:
-#     <ul style="margin-top:10px">
-#         <li><b>For q90:</b> Under-predicting is 9x more "expensive" (0.90 weight) than over-predicting (0.10). This forces the model to "overshoot" 90% of the data to create a safety cushion.</li>
-#         <li><b>For q25:</b> Over-predicting is 3x more "expensive" (0.75 weight) than under-predicting (0.25), forcing the model toward the lower end of costs.</li>
-#         <li><b>At q50:</b> Penalties are symmetric (0.50 on both sides). Because every error is multiplied by 0.5, the mean pinball loss is exactly 0.5 * MAE.</li>
-#     </ul>
-# </div>
-#
-# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     💡 <b>What is a Quantile Skill Score (QSS)?</b>
-#     <br>
-#     The QSS measures the <b>improvement</b> of our model compared to a naive baseline (always predicting the same population-level quantile). 
-#     <ul style="margin-top:10px">
-#         <li><b>0%:</b> The model is no better than a simple "guess" of the population average.</li>
-#         <li><b>100%:</b> The model is a "Perfect Oracle" with zero prediction error.</li>
-#         <li><b>Interpretation:</b> A score of 11% means the model's intelligence (using health features) reduced the error penalty by 11% compared to a model with no data.</li>
-#     </ul>
-# </div>
-#
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Evaluate each quantile's calibration and predictive accuracy using the Pinball Loss and Quantile Skill Score.
-# </div>
-
-# %%
-# Load model 
-xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
-
-# Predict on training data
-y_train_quantile_pred = xgb_quantile_model.predict(X_train_preprocessed)
-y_train_quantile_pred = np.maximum(y_train_quantile_pred, 0)
-y_train_quantile_pred = np.maximum.accumulate(y_train_quantile_pred, axis=1)
-
-# Load predictions on validation data
-y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
-
-quantiles = [0.25, 0.50, 0.75, 0.90]
-pinball_results = []
-
-for idx, q in enumerate(quantiles):
-    # Model predictions
-    y_train_pred_q = y_train_quantile_pred[:, idx]
-    y_val_pred_q = y_val_quantile_pred[:, idx]
-    
-    # Naive baseline predictions (overall weighted quantile of training target)
-    train_naive_val = weighted_quantile(y_train, w_train, q)
-    y_train_naive = np.full_like(y_train, fill_value=train_naive_val)
-    y_val_naive = np.full_like(y_val, fill_value=train_naive_val)
-    
-    # Calculate weighted pinball loss
-    train_loss_model = mean_pinball_loss(y_train, y_train_pred_q, alpha=q, sample_weight=w_train)
-    val_loss_model = mean_pinball_loss(y_val, y_val_pred_q, alpha=q, sample_weight=w_val)
-    
-    train_loss_naive = mean_pinball_loss(y_train, y_train_naive, alpha=q, sample_weight=w_train)
-    val_loss_naive = mean_pinball_loss(y_val, y_val_naive, alpha=q, sample_weight=w_val)
-    
-    # Calculate Quantile Skill Score (QSS)
-    train_qss = 1.0 - (train_loss_model / train_loss_naive)
-    val_qss = 1.0 - (val_loss_model / val_loss_naive)
-    
-    # Train/Val delta (overfitting measure)
-    delta_percent = ((val_loss_model - train_loss_model) / train_loss_model) * 100
-    
-    pinball_results.append({
-        "Quantile": f"q{int(q*100)}",
-        "Pinball Loss (Train)": train_loss_model,
-        "Pinball Loss (Val)": val_loss_model,
-        "Pinball Delta %": delta_percent,
-        "Quantile Skill Score (Train)": train_qss,
-        "Quantile Skill Score (Val)": val_qss,
-    })
-
-pinball_df = pd.DataFrame(pinball_results)
-display(
-    pinball_df.style
-    .hide()
-    .pipe(add_table_caption, "XGBoost Quantile Regression: Pinball Loss & Skill Scores")
-    .format("${:,.2f}", subset=["Pinball Loss (Train)", "Pinball Loss (Val)"])
-    .format("{:.2%}", subset=["Quantile Skill Score (Train)", "Quantile Skill Score (Val)"])
-    .format("{:+.2f}%", subset=["Pinball Delta %"])
-)
-
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insights:</b> 
-#     <ul>
-#         <li><strong>Higher Skill at Upper Quantiles:</strong> The Quantile Skill Score on validation triples from q25 (3.7%) to q75 (11.1%), confirming that the model's features are more informative for predicting high out-of-pocket costs than the lower end of the distribution, where costs are dominated by noise from low-cost healthy behavior.</li>
-#         <li><strong>q75 vs. q90 Pinball Loss:</strong> While the absolute Pinball Loss peaks at q75 (\$580), it drops at q90 (\$502) due to the asymmetric penalty structure: at q90, over-predictions are penalized at only 10% weight, allowing the model to provide a conservative safety cushion with lower overall penalty.</li>
-#         <li><strong>q90 Overfitting:</strong> Pinball loss deltas are small for q25–q75 (absolute delta ≤ 1.3%), but the q90 delta jumps to +5.8%. More tellingly, the q90 QSS drops from 18.7% (train) to 10.8% (val), a 7.8 percentage point gap, far larger than the ~3% gaps at other quantiles. This indicates that the model's tail predictions are sensitive to training data outliers, and the apparent q90 superiority on train does not fully generalize.</li>
-#         <li><strong>Practical Implication:</strong> On validation data, q75 (11.1%) and q90 (10.8%) achieve nearly identical skill scores. The safety cushion (q90) remains useful as a conservative upper bound for budgeting, but users should be aware that its precision is no better than the typical range upper bound (q75). Its value lies in the asymmetric "better safe than sorry" design, not in superior predictive accuracy.</li>
 #     </ul>
 # </div>
 
