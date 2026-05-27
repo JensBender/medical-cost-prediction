@@ -3330,12 +3330,15 @@ plot_residuals_vs_predicted(
 # </div>
 
 # %%
-# Load validation and train predictions
+# Load model 
 xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
+
+# Predict on training data
 y_train_quantile_pred = xgb_quantile_model.predict(X_train_preprocessed)
 y_train_quantile_pred = np.maximum(y_train_quantile_pred, 0)
 y_train_quantile_pred = np.maximum.accumulate(y_train_quantile_pred, axis=1)
 
+# Load predictions on validation data
 y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
 
 quantiles = [0.25, 0.50, 0.75, 0.90]
@@ -3383,3 +3386,15 @@ display(
     .format("{:.2%}", subset=["Train R² (Skill)", "Val R² (Skill)"])
     .format("{:+.2f}%", subset=["Delta %"])
 )
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul>
+#         <li><strong>Better Predictions for Higher Risk:</strong> The Quantile Skill Score triples from q25 (3.7%) to q75/q90 (~11%). This confirms that the model's features are significantly more effective at identifying drivers of high out-of-pocket costs than predicting the "noise" of low-cost healthy behavior.</li>
+#         <li><strong>Quantile Regression Justified:</strong> The higher skill at the upper quantiles justifies the project's shift toward multi-quantile modeling. The model is better at higher predicted costs used for financial planning (q90) rather than a precision instrument for low-cost budgeting.</li>
+#         <li><strong>Pinball Loss q75 vs q90:</strong> While the absolute Pinball Loss peaks at q75 ($580), the drop at q90 ($502) is a result of the asymmetric penalty structure (over-predictions are penalized only 10% at q90), allowing the model to provide a conservative "safety cushion" with lower overall penalty.</li>
+#         <li><strong>Overfitting:</strong> Performance is remarkably stable across q25-q75 (Delta < 1%). However, the +5.8% overfitting gap at q90 indicates that the "tail" of the distribution is sensitive to training-set outliers, suggesting that further regularization or more high-cost training samples could improve the stability of the safety cushion.</li>
+#     </ul>
+# </div>
+
