@@ -2955,6 +2955,18 @@ plot_quantile_subgroup_performance(
 )
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul>
+#         <li><strong>Undercoverage for High Spenders:</strong> For high spenders, typical range coverage is merely 10.9% with safety cushion coverage of 48.7%. For the top 5% actual spenders, coverage for both range and cushion drops to 0.0%, indicating that the model severely underpredicts extreme costs.</li>
+#         <li><strong>Insurance:</strong> Private and public insurance groups are well-calibrated. However, the uninsured group has a typical range coverage of only 34.9% (below the 40% threshold), indicating that predicted ranges are slightly too narrow or miscalibrated for the uninsured.</li>
+#         <li><strong>Sex, Age, Race:</strong> Coverages are well within target ranges (Typical: 44.7%–56.9%; Safety Cushion: 86.1%–95.2%). This shows that the model does not suffer from systematic calibration bias against demographic subgroups.</li>
+#         <li><strong>Logical Width Scaling:</strong> Interval widths scale proportionally with group risk: older cohorts (65+), individuals with walking limitations, and groups with poorer health status receive wider typical ranges and safety cushions, aligning with their higher median costs and cost variance.</li>
+#         <li><strong>Subgroup Risk Flagging:</strong> Individuals with 'Poor' perceived mental health (n=29) show typical range (37.8%) and severe cushion (71.7%) undercoverage. Doctorate holders also show cushion undercoverage (78.1%) combined with high plan-around error ($833.12). These groups represent high-volatility segments where predicted ranges are less reliable.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>XGBoost Quantile Regression: Predicted Costs by Subgroup</strong> <br>
 #     📌 Visualize predicted out-of-pocket costs by subgroup. Unlike the coverage/width audit above, this diagnostic shows where the model places each subgroup on the dollar costs scale: plan-around estimate (q50), typical range (q25-q75), and safety cushion (q90). Use this to inspect risk separation and whether uncertainty grows in clinically plausible places.
@@ -3252,6 +3264,17 @@ plot_quantile_subgroup_predictions(
     quantile_fairness_labels,
     "XGBoost Quantile Regression: Predicted Cost by Fairness Subgroup"
 )
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul>
+#         <li><strong>Clear Risk Separation:</strong> The timeline plots reveal that the model successfully differentiates risk profiles across subgroups. Plan-around (q50) estimates and safety cushions (q90) shift progressively higher (to the right) for subgroups with higher actual costs, such as older cohorts, individuals with walking limitations, or those in poorer physical health.</li>
+#         <li><strong>Uncertainty-Aware Interval Expansion:</strong> The widths of the typical range and safety cushion expand in clinically plausible areas. For example, individuals with Poor physical health or walking limitations receive much wider intervals (typical ranges > $1,300) compared to healthy individuals (Excellent health typical range < $700), reflecting the higher financial volatility of high-risk medical states.</li>
+#         <li><strong>Cushion Adequacy:</strong> For the majority of demographic groups (Sex, Age, Race), the safety cushion (q90) provides a robust buffer of $1,200 to $3,000 above the plan-around estimate. This cushion represents a meaningful safety boundary to prevent under-budgeting without encouraging excessive over-budgeting.</li>
+#         <li><strong>Underestimation of Tail Spenders:</strong> Consistent with the reliability audit, even for the highest predicted cost groups (e.g., predicted Very High Spend), the safety cushion (q90) is capped around $4,800 to $5,600, whereas actual top-tail spenders have medians exceeding $10,000. This confirms that the model's safety cushion remains conservative and will not capture catastrophic outliers.</li>
+#     </ul>
+# </div>
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
