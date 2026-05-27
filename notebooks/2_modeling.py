@@ -2455,29 +2455,6 @@ def train_xgboost_quantile():
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Evaluation</h2>
 # </div> 
-#
-# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
-#     ℹ️ <b>Quantile Regression Evaluation Guidelines</b> <br>
-#     The following are release guidelines and diagnostic guardrails, not universal laws. They help decide whether the quantile model is useful for out-of-pocket cost planning. A good model should be calibrated (good coverage), but it should also give ranges that are narrow enough to help users make decisions (good interval width).
-#     <br><br>
-#     <b>How to Interpret Coverage</b> <br>
-#     Coverage measures reliability by showing the percentage of users whose actual costs fall within the predicted range. Overall validation coverage uses tighter release targets because it is estimated on the full validation set. Subgroup coverage uses wider diagnostic guardrails because subgroup estimates are noisier and should be interpreted only when the subgroup has enough observations.
-#     <ul style="margin-top:8px">
-#         <li><b>Overall typical range (q25–q75):</b> Target = 50%, release-acceptable = 45–55%.</li>
-#         <li><b>Overall safety cushion (q90):</b> Target = 90%, release-acceptable = 85–95%.</li>
-#         <li><b>Subgroup typical range guardrail:</b> Generally acceptable = 40–60% for subgroups with n ≥ 30.</li>
-#         <li><b>Subgroup safety cushion guardrail:</b> Generally acceptable = 80–97% for subgroups with n ≥ 30; below 75% is severe undercoverage.</li>
-#         <li><b>Under-coverage:</b> Intervals are too narrow. Users encounter unexpectedly high costs more often than the app implies.</li>
-#         <li><b>Over-coverage:</b> Intervals are too wide. Safer, but the app may push users to over-budget.</li>
-#         <li><b>Small subgroups:</b> Coverage flags for n &lt; 30 are review-only because one or two outcomes can move the percentage materially.</li>
-#     </ul>
-#     <b>How to Interpret Interval Width</b> <br>
-#     Interval width measures usefulness by showing how wide the predicted dollar range is for planning.
-#     <ul style="margin-top:8px">
-#         <li><b>Average q25–q75 width:</b> Good &lt; \$1,000, acceptable &lt; \$1,500, poor &gt; \$2,000.</li>
-#         <li><b>Average q50–q90 cushion width:</b> Good &lt; \$2,500, acceptable &lt; \$3,500, poor &gt; \$5,000.</li>
-#     </ul>
-# </div>
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
@@ -2585,6 +2562,29 @@ display(
 #     <h3 style="margin:0px">Metrics</h3>
 # </div>
 #
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
+#     ℹ️ <b>Quantile Regression Evaluation Guidelines</b> <br>
+#     The following are release guidelines and diagnostic guardrails, not universal laws. They help decide whether the quantile model is useful for out-of-pocket cost planning. A good model should be calibrated (good coverage), but it should also give ranges that are narrow enough to help users make decisions (good interval width).
+#     <br><br>
+#     <b>How to Interpret Coverage</b> <br>
+#     Coverage measures reliability by showing the percentage of users whose actual costs fall within the predicted range. Overall validation coverage uses tighter release targets because it is estimated on the full validation set. Subgroup coverage uses wider diagnostic guardrails because subgroup estimates are noisier and should be interpreted only when the subgroup has enough observations.
+#     <ul style="margin-top:8px">
+#         <li><b>Overall typical range (q25–q75):</b> Target = 50%, release-acceptable = 45–55%.</li>
+#         <li><b>Overall safety cushion (q90):</b> Target = 90%, release-acceptable = 85–95%.</li>
+#         <li><b>Subgroup typical range guardrail:</b> Generally acceptable = 40–60% for subgroups with n ≥ 30.</li>
+#         <li><b>Subgroup safety cushion guardrail:</b> Generally acceptable = 80–97% for subgroups with n ≥ 30; below 75% is severe undercoverage.</li>
+#         <li><b>Under-coverage:</b> Intervals are too narrow. Users encounter unexpectedly high costs more often than the app implies.</li>
+#         <li><b>Over-coverage:</b> Intervals are too wide. Safer, but the app may push users to over-budget.</li>
+#         <li><b>Small subgroups:</b> Coverage flags for n &lt; 30 are review-only because one or two outcomes can move the percentage materially.</li>
+#     </ul>
+#     <b>How to Interpret Interval Width</b> <br>
+#     Interval width measures usefulness by showing how wide the predicted dollar range is for planning.
+#     <ul style="margin-top:8px">
+#         <li><b>Average q25–q75 width:</b> Good &lt; \$1,000, acceptable &lt; \$1,500, poor &gt; \$2,000.</li>
+#         <li><b>Average q50–q90 cushion width:</b> Good &lt; \$2,500, acceptable &lt; \$3,500, poor &gt; \$5,000.</li>
+#     </ul>
+# </div>
+#
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Evaluate XGBoost quantile regression metrics for the plan-around estimate (q50), typical range (q25-q75), and safety cushion (q90).
 # </div>
@@ -2601,8 +2601,8 @@ metrics_display = {
         "Plan Around R² (q50)": metrics["train_q50_r2"],
         "Typical Range Coverage (q25–q75)": metrics["train_q25_q75_coverage"],
         "Safety Cushion Coverage (q90)": metrics["train_q90_coverage"],
-        "Avg Typical Range Width": metrics["train_q25_q75_width"],
-        "Avg Safety Cushion Width": metrics["train_q50_q90_width"],
+        "Typical Range Width": metrics["train_q25_q75_width"],
+        "Safety Cushion Width": metrics["train_q50_q90_width"],
     },
     "Validation": {
         "Plan Around MdAE (q50)": metrics["val_q50_mdae"],
@@ -2610,8 +2610,8 @@ metrics_display = {
         "Plan Around R² (q50)": metrics["val_q50_r2"],
         "Typical Range Coverage (q25–q75)": metrics["val_q25_q75_coverage"],
         "Safety Cushion Coverage (q90)": metrics["val_q90_coverage"],
-        "Avg Typical Range Width": metrics["val_q25_q75_width"],
-        "Avg Safety Cushion Width": metrics["val_q50_q90_width"],
+        "Typical Range Width": metrics["val_q25_q75_width"],
+        "Safety Cushion Width": metrics["val_q50_q90_width"],
     }
 }
 
@@ -2621,7 +2621,7 @@ metrics_df["Delta %"] = (metrics_df["Validation"] - metrics_df["Train"]) / metri
 display(
     metrics_df.style
     .pipe(add_table_caption, "XGBoost Quantile Regression Metrics")
-    .format("${:,.2f}", subset=(["Plan Around MdAE (q50)", "Plan Around MAE (q50)", "Avg Typical Range Width", "Avg Safety Cushion Width"], ["Train", "Validation"]))
+    .format("${:,.2f}", subset=(["Plan Around MdAE (q50)", "Plan Around MAE (q50)", "Typical Range Width", "Safety Cushion Width"], ["Train", "Validation"]))
     .format("{:.2f}", subset=(["Plan Around R² (q50)"], ["Train", "Validation"]))
     .format("{:.1%}", subset=(["Typical Range Coverage (q25–q75)", "Safety Cushion Coverage (q90)"], ["Train", "Validation"]))
     .format("{:+.1f}%", subset=(slice(None), "Delta %"))
