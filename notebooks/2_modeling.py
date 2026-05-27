@@ -3324,6 +3324,17 @@ plot_residuals_vs_predicted(
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     💡 <b>What is Pinball Loss?</b>
+#     <br>
+#     Pinball loss is an <b>asymmetric</b> penalty function used to estimate specific quantiles. Unlike standard metrics (MSE/MAE) that treat all errors the same, pinball loss penalizes errors differently based on our target:
+#     <ul style="margin-top:10px">
+#         <li><b>For q90:</b> Under-predicting is 9x more "expensive" (0.90 weight) than over-predicting (0.10). This forces the model to "overshoot" 90% of the data to create a safety cushion.</li>
+#         <li><b>For q25:</b> Over-predicting is 3x more "expensive" (0.75 weight) than under-predicting (0.25), forcing the model toward the lower end of costs.</li>
+#         <li><b>At q50:</b> Penalties are symmetric (0.50 on both sides). Because every error is multiplied by 0.5, the mean pinball loss is exactly 0.5 * MAE.</li>
+#     </ul>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     💡 <b>What is a Quantile Skill Score (QSS)?</b>
 #     <br>
 #     The QSS measures the <b>improvement</b> of our model compared to a naive baseline (always predicting the same population-level quantile). 
@@ -3336,18 +3347,6 @@ plot_residuals_vs_predicted(
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Evaluate each quantile's calibration and predictive accuracy using the Pinball Loss and Quantile Skill Score.
-# </div>
-
-# %% [markdown]
-# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     💡 <b>What is a Quantile Skill Score (QSS)?</b>
-#     <br>
-#     The QSS measures the <b>improvement</b> of our model compared to a naive baseline (always predicting the same population percentile). 
-#     <ul style="margin-top:10px">
-#         <li><b>0%:</b> The model is no better than a simple "guess" of the population percentile.</li>
-#         <li><b>100%:</b> The model is a "Perfect Oracle" with zero prediction error.</li>
-#         <li><b>Interpretation:</b> A score of 10% for q75 means the model's intelligence (using health features) reduced the error penalty by 10% compared to always predicting the 75th percentile.</li>
-#     </ul>
 # </div>
 
 # %%
@@ -3414,7 +3413,7 @@ display(
 #     <ul>
 #         <li><strong>Better Predictions for Higher Risk:</strong> The Quantile Skill Score triples from q25 (3.7%) to q75/q90 (~11%). This confirms that the model's features are significantly more effective at identifying drivers of high out-of-pocket costs than predicting the "noise" of low-cost healthy behavior.</li>
 #         <li><strong>Quantile Regression Justified:</strong> The higher skill at the upper quantiles justifies the project's shift toward multi-quantile modeling. The model is better at higher predicted costs used for financial planning (q90) rather than a precision instrument for low-cost budgeting.</li>
-#         <li><strong>Pinball Loss q75 vs q90:</strong> While the absolute Pinball Loss peaks at q75 ($580), the drop at q90 ($502) is a result of the asymmetric penalty structure (over-predictions are penalized only 10% at q90), allowing the model to provide a conservative "safety cushion" with lower overall penalty.</li>
+#         <li><strong>q75 vs q90:</strong> While the absolute Pinball Loss peaks at q75 (\$580), the drop at q90 (\$502) is a result of the asymmetric penalty structure (over-predictions are penalized only 10% at q90), allowing the model to provide a conservative "safety cushion" with lower overall penalty.</li>
 #         <li><strong>Overfitting:</strong> Performance is remarkably stable across q25-q75 (Delta < 1%). However, the +5.8% overfitting gap at q90 indicates that the "tail" of the distribution is sensitive to training-set outliers, suggesting that further regularization or more high-cost training samples could improve the stability of the safety cushion.</li>
 #     </ul>
 # </div>
