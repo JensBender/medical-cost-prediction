@@ -2484,8 +2484,14 @@ def train_xgboost_quantile():
 #     💡 <b>What is a Quantile Skill Score (QSS)?</b>
 #     <br>
 #     The QSS measures the improvement of our model compared to a naive baseline (always predicting the same population-level quantile). E.g., a score of 11% for the q90 safety cushion means the model's intelligence (using health features) reduced the error penalty by 11% compared to a always predicting the 90th percentile.
+#     <br><br>
+#     <b>Interpretation:</b> Across most forecasting domains (finance, weather, supply chain), QSS is often interpreted as follows.
 #     <ul style="margin-top:10px">
-#         <li><b>0%:</b> The model is no better than a simple "guess" of the population quantile.</li>
+#         <li><b>0% (Zero Skill):</b> The model is no better than a simple "guess" of the population average or quantile.</li>
+#         <li><b>< 5% (Low Skill):</b> The model is barely better than a guess. This usually means the features you are using don't have a strong relationship with the outcome, or the data is extremely noisy.</li>
+#         <li><b>5% – 15% (Moderate Skill):</b> This is the "sweet spot" for many complex real-world problems. It indicates the model has captured meaningful patterns and provides real value over a simple average.</li>
+#         <li><b>> 15% (High Skill):</b> The model is very strong. This is typical for problems with clear physical or logical rules (like electricity demand based on temperature).</li>
+#         <li><b>> 30% (Exceptional):</b> Rare in human-behavior data. If you see this in medical costs, you should double-check for "data leakage".</li>
 #         <li><b>100%:</b> The model is a "Perfect Oracle" with zero prediction error.</li>
 #     </ul>
 # </div>
@@ -2538,8 +2544,8 @@ for idx, q in enumerate(quantiles):
         "Pinball Loss (Val)": val_loss_model,
         "Pinball Loss (Train)": train_loss_model,
         "Pinball Delta %": delta_percent,
-        "Quantile Skill Score (Train)": train_qss,
         "Quantile Skill Score (Val)": val_qss,
+        "Quantile Skill Score (Train)": train_qss,
     })
 
 pinball_df = pd.DataFrame(pinball_results)
@@ -2548,7 +2554,7 @@ display(
     .hide()
     .pipe(add_table_caption, "XGBoost Quantile Regression: Pinball Loss & Skill Scores")
     .format("${:,.2f}", subset=["Pinball Loss (Val)", "Pinball Loss (Train)"])
-    .format("{:.2%}", subset=["Quantile Skill Score (Train)", "Quantile Skill Score (Val)"])
+    .format("{:.2%}", subset=["Quantile Skill Score (Val)", "Quantile Skill Score (Train)"])
     .format("{:+.2f}%", subset=["Pinball Delta %"])
 )
 
@@ -2556,9 +2562,9 @@ display(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> 
 #     <ul>
-#         <li><strong>Higher Skill at Upper Quantiles:</strong> The Quantile Skill Score on validation triples from q25 (3.7%) to q75 (11.1%), confirming that the model's features are more informative for predicting high out-of-pocket costs than the lower end of the distribution, where costs are dominated by noise from low-cost healthy behavior.</li>
-#         <li><strong>q75 vs. q90 Pinball Loss:</strong> While the absolute Pinball Loss peaks at q75 (\$580), it drops at q90 (\$502) due to the asymmetric penalty structure: at q90, over-predictions are penalized at only 10% weight, allowing the model to provide a conservative safety cushion with lower overall penalty.</li>
+#         <li><strong>Higher Skill at Upper Quantiles:</strong> The Quantile Skill Score triples from q25 (3.7%) to q75 (11.1%) on the validation set. This shows the model's features are more informative for predicting high compared to low out-of-pocket costs. At the low end, costs are mostly "noise" (random office visits, one-off prescriptions). There isn't much "skill" to be had, because low costs are somewhat random for everyone.</li>
 #         <li><strong>q90 Overfitting:</strong> Pinball loss deltas are small for q25–q75 (absolute delta ≤ 1.3%), but the q90 delta jumps to +5.8%. More tellingly, the q90 QSS drops from 18.7% (train) to 10.8% (val), a 7.8 percentage point gap, far larger than the ~3% gaps at other quantiles. This indicates that the model's tail predictions are sensitive to training data outliers, and the apparent q90 superiority on train does not fully generalize.</li>
+#         <li><strong>q75 vs. q90 Pinball Loss:</strong> While the absolute Pinball Loss peaks at q75 (\$580), it drops at q90 (\$502) due to the asymmetric penalty structure: at q90, over-predictions are penalized at only 10% weight, allowing the model to provide a conservative safety cushion with lower overall penalty.</li>
 #         <li><strong>Practical Implication:</strong> On validation data, q75 (11.1%) and q90 (10.8%) achieve nearly identical skill scores. The safety cushion (q90) remains useful as a conservative upper bound for budgeting, but users should be aware that its precision is no better than the typical range upper bound (q75). Its value lies in the asymmetric "better safe than sorry" design, not in superior predictive accuracy.</li>
 #     </ul>
 # </div>
