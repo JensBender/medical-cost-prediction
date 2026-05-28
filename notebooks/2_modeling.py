@@ -1547,8 +1547,8 @@ display(
 #     <ul>
 #         <li>Metrics Comparison Tables</li>
 #         <li>Overfitting Analysis</li>
-#         <li>Stratified Error Analysis (Model Reliability & Fairness Audit)</li>
 #         <li>Heteroscedasticity (Residuals vs. Predicted)</li> 
+#         <li>Stratified Error Analysis (Model Reliability & Fairness Audit)</li>
 #         <li>(optionally) Feature Dependencies (Residuals vs. Features)</li> 
 #     </ul>
 # </div>
@@ -2472,27 +2472,26 @@ def train_xgboost_quantile():
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     💡 <b>What is Pinball Loss?</b>
 #     <br>
-#     Pinball loss is an <b>asymmetric</b> penalty function used to estimate specific quantiles. Unlike standard metrics (MSE/MAE) that treat all errors the same, pinball loss penalizes errors differently based on our target:
+#     Pinball loss is an asymmetric penalty function used to estimate the prediction performance for specific quantiles. Unlike standard metrics (MSE/MAE) that treat all errors the same, pinball loss penalizes errors differently based on our target:
 #     <ul style="margin-top:10px">
 #         <li><b>For q90:</b> Under-predicting is 9x more "expensive" (0.90 weight) than over-predicting (0.10). This forces the model to "overshoot" 90% of the data to create a safety cushion.</li>
 #         <li><b>For q25:</b> Over-predicting is 3x more "expensive" (0.75 weight) than under-predicting (0.25), forcing the model toward the lower end of costs.</li>
-#         <li><b>At q50:</b> Penalties are symmetric (0.50 on both sides). Because every error is multiplied by 0.5, the mean pinball loss is exactly 0.5 * MAE.</li>
+#         <li><b>For q50:</b> Penalties are symmetric (0.50 on both sides). Because every error is multiplied by 0.5, the mean pinball loss is exactly 0.5 * MAE.</li>
 #     </ul>
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     💡 <b>What is a Quantile Skill Score (QSS)?</b>
 #     <br>
-#     The QSS measures the <b>improvement</b> of our model compared to a naive baseline (always predicting the same population-level quantile). 
+#     The QSS measures the improvement of our model compared to a naive baseline (always predicting the same population-level quantile). E.g., a score of 11% for the q90 safety cushion means the model's intelligence (using health features) reduced the error penalty by 11% compared to a always predicting the 90th percentile.
 #     <ul style="margin-top:10px">
-#         <li><b>0%:</b> The model is no better than a simple "guess" of the population average.</li>
+#         <li><b>0%:</b> The model is no better than a simple "guess" of the population quantile.</li>
 #         <li><b>100%:</b> The model is a "Perfect Oracle" with zero prediction error.</li>
-#         <li><b>Interpretation:</b> A score of 11% means the model's intelligence (using health features) reduced the error penalty by 11% compared to a model with no data.</li>
 #     </ul>
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Evaluate each quantile's calibration and predictive accuracy using the Pinball Loss and Quantile Skill Score.
+#     📌 Evaluate each quantile using the Pinball Loss and Quantile Skill Score.
 # </div>
 
 # %%
@@ -2536,8 +2535,8 @@ for idx, q in enumerate(quantiles):
     
     pinball_results.append({
         "Quantile": f"q{int(q*100)}",
-        "Pinball Loss (Train)": train_loss_model,
         "Pinball Loss (Val)": val_loss_model,
+        "Pinball Loss (Train)": train_loss_model,
         "Pinball Delta %": delta_percent,
         "Quantile Skill Score (Train)": train_qss,
         "Quantile Skill Score (Val)": val_qss,
@@ -2548,7 +2547,7 @@ display(
     pinball_df.style
     .hide()
     .pipe(add_table_caption, "XGBoost Quantile Regression: Pinball Loss & Skill Scores")
-    .format("${:,.2f}", subset=["Pinball Loss (Train)", "Pinball Loss (Val)"])
+    .format("${:,.2f}", subset=["Pinball Loss (Val)", "Pinball Loss (Train)"])
     .format("{:.2%}", subset=["Quantile Skill Score (Train)", "Quantile Skill Score (Val)"])
     .format("{:+.2f}%", subset=["Pinball Delta %"])
 )
