@@ -1697,6 +1697,179 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Heteroscedasticity</h3>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Visualize residuals vs. predicted values to assess whether prediction error variance changes with predicted cost level.
+# </div>
+
+# %%
+# Load predictions of all tuned models (on validation data)
+print("Loading tuned model predictions...")
+tuned_model_predictions = {
+    "Elastic Net (Tuned)": load_model("../models/en_tuned_predictions.joblib", verbose=False),
+    "Random Forest (Tuned)": load_model("../models/rf_tuned_predictions.joblib", verbose=False),
+    "XGBoost (Tuned)": load_model("../models/xgb_tuned_predictions.joblib", verbose=False)
+}
+
+# Display predicted cost ranges by model
+pred_ranges = []
+for model_key, y_pred in tuned_model_predictions.items():
+    pred_ranges.append({
+        "Model": MODEL_DISPLAY_LABELS.get(model_key, model_key),
+        "Min Prediction": np.min(y_pred),
+        "Max Prediction": np.max(y_pred)
+    })
+
+pred_ranges_df = pd.DataFrame(pred_ranges).set_index("Model")
+display(pred_ranges_df.style.format("${:,.2f}").pipe(add_table_caption, "Predicted Cost Range"))
+
+
+# %%
+def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=15, n_cols=2, save_to_file=None):
+    """
+    Plots residuals vs. predicted values scatter plots for multiple models 
+    with binned median trend and IQR bands.
+    
+    Creates a facet grid plot (N x n_cols) showing residuals against 
+    predicted values. Overlays binned median (robust trend) and 
+    interquartile range bands to visualize heteroscedasticity.
+    
+    Args:
+        y_true (pd.Series): Actual target values.
+        predictions_dict (dict): {model_name: y_pred_array} for each model.
+        weights (pd.Series): Sample weights for weighted statistics.
+        n_bins (int): Number of bins for the trend line.
+        n_cols (int): Number of columns in the facet grid plot.
+        save_to_file (str, optional): Full path to save the plot.
+    """
+    n_models = len(predictions_dict)
+    n_rows = (n_models + n_cols - 1) // n_cols
+    
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(6 * n_cols, 5 * n_rows), sharey=True, squeeze=False)
+    axes_flat = axes.flatten()
+
+    for i, (model_key, y_pred) in enumerate(predictions_dict.items()):
+        ax = axes_flat[i]
+        model_label = MODEL_DISPLAY_LABELS.get(model_key, model_key)
+        
+        # Standardize core data as numpy arrays
+        y_pred = np.array(y_pred)
+        residuals = np.array(y_true) - y_pred
+        w = np.array(weights)
+        
+        # Scale scatter points by weights
+        s_weights = 1 + (w / w.max()) * 39  # reasonable range between 1 and 40
+
+        # Scatter plot 
+        ax.scatter(
+            y_pred, residuals, 
+            alpha=0.25, 
+            color=SAMPLE_COLOR,  # data points represent survey respondents (sample)
+            s=s_weights,         # larger points represents more people in the population
+            edgecolors="none", 
+            rasterized=True  
+        )
+        
+        # Reference line at 0
+        ax.axhline(y=0, color="black", linewidth=0.8, linestyle="--", alpha=0.5)
+        
+        # Binned median trend line and IQR bands 
+        # Each bin represents ~6.7% of the population which is ~100 respondents in sample (validation set size n=1477)
+        bin_probs = np.linspace(0, 0.99, n_bins + 1)
+        bin_edges = weighted_quantile(y_pred, w, bin_probs)  # Uses weighted quantiles to ensure each bin represents population 
+        
+        bin_centers = []
+        bin_medians = []
+        bin_q25 = []
+        bin_q75 = []
+        
+        for b in range(n_bins):
+            mask = (y_pred >= bin_edges[b]) & (y_pred < bin_edges[b + 1])
+            if mask.sum() >= 10:  # Require minimum sample size for stable statistics
+                bin_centers.append((bin_edges[b] + bin_edges[b + 1]) / 2)
+                bin_residuals = residuals[mask]
+                bin_weights = w[mask]
+                
+                # Use weighted quantiles for binned statistics
+                bin_medians.append(weighted_quantile(bin_residuals, bin_weights, 0.5))
+                bin_q25.append(weighted_quantile(bin_residuals, bin_weights, 0.25))
+                bin_q75.append(weighted_quantile(bin_residuals, bin_weights, 0.75))
+        
+        # Plot trend line and range bands
+        ax.plot(bin_centers, bin_medians, color=POP_COLOR, linewidth=2, label="Median Residual")
+        ax.fill_between(bin_centers, bin_q25, bin_q75, alpha=0.15, color=POP_COLOR, label="IQR (25th–75th)")
+        
+        # Formatting
+        ax.set_title(model_label, fontsize=14, fontweight="bold")
+        ax.set_xlabel("Predicted Cost")
+        
+        # Predictions and residuals axis limits for "zoomed-in" view (ignoring extreme outliers)
+        pred_max = weighted_quantile(y_pred, w, 0.99)
+        res_max = weighted_quantile(residuals, w, 0.95)
+        res_min = weighted_quantile(residuals, w, 0.01)
+
+        ax.set_xlim(0, pred_max * 1.01)
+        ax.set_ylim(res_min * 1.5, res_max * 1.3)
+        
+        # Format ticks: -$500 instead of $-500
+        currency_fmt = plt.FuncFormatter(lambda x, _: f"{'-' if x < 0 else ''}${abs(x):,.0f}")
+        ax.xaxis.set_major_formatter(currency_fmt)
+        
+        # Only show y-label on the first column of each row
+        if i % n_cols == 0:
+            ax.set_ylabel("Residual (Actual − Predicted)")
+            ax.yaxis.set_major_formatter(currency_fmt)
+            ax.legend(loc="upper left", fontsize=9, frameon=True)
+            
+        sns.despine(ax=ax)
+    
+    # Remove empty subplots if n_models < n_rows * n_cols
+    for j in range(i + 1, n_rows * n_cols):
+        fig.delaxes(axes_flat[j])
+    
+    fig.suptitle("Heteroscedasticity: Residuals vs. Predicted", fontsize=18, fontweight="bold")
+    plt.tight_layout(rect=[0, 0, 1, 0.98], h_pad=2)
+    
+    if save_to_file:
+        plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
+    
+    plt.show()
+
+
+# Plot heteroscedasticity 
+plot_residuals_vs_predicted(
+    y_val, 
+    tuned_model_predictions, 
+    w_val,
+    save_to_file="../figures/evaluation/heteroscedasticity.png"
+)
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul>
+#         <li><strong>Errors grow with predicted costs ("fan shape"):</strong> All three models show wider error spread as predictions increase. This is expected, because expensive medical events (surgeries, hospitalizations) are rare and hard to predict from survey data alone.</li>
+#         <li><strong>Errors are mostly underestimates:</strong> Residuals skew heavily upward, which means the model underpredicts actual costs. A few individuals incur extreme costs that no model can fully anticipate, so the models miss on the high side far more often than they overpredict.</li>
+#         <li><strong>Elastic Net can't separate low vs. high costs:</strong> With a max prediction of only \$217, Elastic Net compresses nearly everyone into a narrow "low-cost" band. Its median residual climbs steeply, meaning the higher it tries to predict, the more it underestimates. It effectively treats the entire population as low-risk.</li>
+#         <li><strong>XGBoost differentiates best:</strong> XGBoost predictions span up to \$2,114, roughly 10× the range of Elastic Net and 1.7× Random Forest. A wider prediction range means the model better separates low-cost from high-cost individuals.</li>
+#         <li><strong>Tree models are less biased:</strong> Both RF and XGBoost keep their median residual near zero across most of their prediction range, indicating less systematic bias. Elastic Net's median drifts sharply upward, confirming it systematically underpredicts.</li>
+#         <li><strong>Mid-range uncertainty peak ("inverted-U"):</strong> RF and XGBoost share a distinctive pattern: the IQR band widens through mid-range predictions, then narrows again at the highest predictions. This suggests that when tree models confidently predict high costs, those predictions are relatively well-calibrated.</li>
+#     </ul>
+#     <hr style="border: 0; border-top: 1px solid #e0f0e0; margin: 15px 0;">
+#     <strong>Decision: Select XGBoost for Production</strong> <br>
+#     Elastic Net is the best model if the product only needs one middle estimate. It has the lowest tuned validation MdAE, so it is the point-estimate champion. However, the production app is not a single-number estimator. It is a planning tool that needs a plan-around estimate, a typical range, and a safety cushion. For that product goal, XGBoost is the better production choice.
+#     <ul style="margin-top:8px">
+#         <li><b>Point estimate vs. product usefulness:</b> Elastic Net wins MdAE by keeping most predictions close to the low-cost middle of the population. That lowers the typical error, but it also compresses predictions into a narrow band (max prediction: \$217). This makes it hard for the app to distinguish someone with low expected costs from someone with meaningfully higher financial risk.</li>
+#         <li><b>XGBoost separates risk levels better:</b> XGBoost predictions span up to \$2,114, roughly 10× wider than Elastic Net. This wider spread is useful because the app needs to tell users not only "what is typical?" but also "how much cushion should I consider?"</li>
+#         <li><b>Quantile regression fit:</b> XGBoost supports multi-quantile regression, so one model can produce the plan-around estimate (median/q50), the typical range (q25-q75), and the safety cushion (q90). Elastic Net would need a more complicated setup and still show weaker ability to separate low-risk and high-risk profiles.</li>
+#         <li><b>Trade-off:</b> Accept a higher median error from XGBoost than Elastic Net because the production app values calibrated ranges and risk separation, not just the lowest possible single-number MdAE. Elastic Net remains a useful benchmark and challenger model for median/q50 accuracy.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">Stratified Error Analysis</h3>
 # </div>
 #
@@ -1991,6 +2164,7 @@ plot_subgroup_performance(subgroup_df, legally_protected_labels, "Tuned Models: 
 vulnerable_and_proxy_labels = [c["label"] for c in vulnerable_and_proxy_configs]
 plot_subgroup_performance(subgroup_df, vulnerable_and_proxy_labels, "Tuned Models: Subgroup Fairness Analysis (Vulnerable & Proxy Groups)", save_to_file="../figures/evaluation/subgroup_fairness_vulnerable.png")
 
+
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights: Stratified Error Analysis (Model Comparison)</b> 
@@ -2025,172 +2199,6 @@ plot_subgroup_performance(subgroup_df, vulnerable_and_proxy_labels, "Tuned Model
 #     </p>
 # </div>
 #
-
-# %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Heteroscedasticity</h3>
-# </div>
-#
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Visualize residuals vs. predicted values to assess whether prediction error variance changes with predicted cost level.
-# </div>
-
-# %%
-# Display predicted cost ranges by tuned model
-pred_ranges = []
-for model_key, y_pred in tuned_model_predictions.items():
-    pred_ranges.append({
-        "Model": MODEL_DISPLAY_LABELS.get(model_key, model_key),
-        "Min Prediction": np.min(y_pred),
-        "Max Prediction": np.max(y_pred)
-    })
-
-pred_ranges_df = pd.DataFrame(pred_ranges).set_index("Model")
-display(pred_ranges_df.style.format("${:,.2f}").pipe(add_table_caption, "Predicted Cost Range"))
-
-
-# %%
-def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=15, n_cols=2, save_to_file=None):
-    """
-    Plots residuals vs. predicted values scatter plots for multiple models 
-    with binned median trend and IQR bands.
-    
-    Creates a facet grid plot (N x n_cols) showing residuals against 
-    predicted values. Overlays binned median (robust trend) and 
-    interquartile range bands to visualize heteroscedasticity.
-    
-    Args:
-        y_true (pd.Series): Actual target values.
-        predictions_dict (dict): {model_name: y_pred_array} for each model.
-        weights (pd.Series): Sample weights for weighted statistics.
-        n_bins (int): Number of bins for the trend line.
-        n_cols (int): Number of columns in the facet grid plot.
-        save_to_file (str, optional): Full path to save the plot.
-    """
-    n_models = len(predictions_dict)
-    n_rows = (n_models + n_cols - 1) // n_cols
-    
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(6 * n_cols, 5 * n_rows), sharey=True, squeeze=False)
-    axes_flat = axes.flatten()
-
-    for i, (model_key, y_pred) in enumerate(predictions_dict.items()):
-        ax = axes_flat[i]
-        model_label = MODEL_DISPLAY_LABELS.get(model_key, model_key)
-        
-        # Standardize core data as numpy arrays
-        y_pred = np.array(y_pred)
-        residuals = np.array(y_true) - y_pred
-        w = np.array(weights)
-        
-        # Scale scatter points by weights
-        s_weights = 1 + (w / w.max()) * 39  # reasonable range between 1 and 40
-
-        # Scatter plot 
-        ax.scatter(
-            y_pred, residuals, 
-            alpha=0.25, 
-            color=SAMPLE_COLOR,  # data points represent survey respondents (sample)
-            s=s_weights,         # larger points represents more people in the population
-            edgecolors="none", 
-            rasterized=True  
-        )
-        
-        # Reference line at 0
-        ax.axhline(y=0, color="black", linewidth=0.8, linestyle="--", alpha=0.5)
-        
-        # Binned median trend line and IQR bands 
-        # Each bin represents ~6.7% of the population which is ~100 respondents in sample (validation set size n=1477)
-        bin_probs = np.linspace(0, 0.99, n_bins + 1)
-        bin_edges = weighted_quantile(y_pred, w, bin_probs)  # Uses weighted quantiles to ensure each bin represents population 
-        
-        bin_centers = []
-        bin_medians = []
-        bin_q25 = []
-        bin_q75 = []
-        
-        for b in range(n_bins):
-            mask = (y_pred >= bin_edges[b]) & (y_pred < bin_edges[b + 1])
-            if mask.sum() >= 10:  # Require minimum sample size for stable statistics
-                bin_centers.append((bin_edges[b] + bin_edges[b + 1]) / 2)
-                bin_residuals = residuals[mask]
-                bin_weights = w[mask]
-                
-                # Use weighted quantiles for binned statistics
-                bin_medians.append(weighted_quantile(bin_residuals, bin_weights, 0.5))
-                bin_q25.append(weighted_quantile(bin_residuals, bin_weights, 0.25))
-                bin_q75.append(weighted_quantile(bin_residuals, bin_weights, 0.75))
-        
-        # Plot trend line and range bands
-        ax.plot(bin_centers, bin_medians, color=POP_COLOR, linewidth=2, label="Median Residual")
-        ax.fill_between(bin_centers, bin_q25, bin_q75, alpha=0.15, color=POP_COLOR, label="IQR (25th–75th)")
-        
-        # Formatting
-        ax.set_title(model_label, fontsize=14, fontweight="bold")
-        ax.set_xlabel("Predicted Cost")
-        
-        # Predictions and residuals axis limits for "zoomed-in" view (ignoring extreme outliers)
-        pred_max = weighted_quantile(y_pred, w, 0.99)
-        res_max = weighted_quantile(residuals, w, 0.95)
-        res_min = weighted_quantile(residuals, w, 0.01)
-
-        ax.set_xlim(0, pred_max * 1.01)
-        ax.set_ylim(res_min * 1.5, res_max * 1.3)
-        
-        # Format ticks: -$500 instead of $-500
-        currency_fmt = plt.FuncFormatter(lambda x, _: f"{'-' if x < 0 else ''}${abs(x):,.0f}")
-        ax.xaxis.set_major_formatter(currency_fmt)
-        
-        # Only show y-label on the first column of each row
-        if i % n_cols == 0:
-            ax.set_ylabel("Residual (Actual − Predicted)")
-            ax.yaxis.set_major_formatter(currency_fmt)
-            ax.legend(loc="upper left", fontsize=9, frameon=True)
-            
-        sns.despine(ax=ax)
-    
-    # Remove empty subplots if n_models < n_rows * n_cols
-    for j in range(i + 1, n_rows * n_cols):
-        fig.delaxes(axes_flat[j])
-    
-    fig.suptitle("Heteroscedasticity: Residuals vs. Predicted", fontsize=18, fontweight="bold")
-    plt.tight_layout(rect=[0, 0, 1, 0.98], h_pad=2)
-    
-    if save_to_file:
-        plt.savefig(save_to_file, bbox_inches="tight", dpi=200)
-    
-    plt.show()
-
-
-# Plot heteroscedasticity 
-plot_residuals_vs_predicted(
-    y_val_true, 
-    tuned_model_predictions, 
-    w_val_weights,
-    save_to_file="../figures/evaluation/heteroscedasticity.png"
-)
-
-
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insights:</b> 
-#     <ul>
-#         <li><strong>Errors grow with predicted costs ("fan shape"):</strong> All three models show wider error spread as predictions increase. This is expected, because expensive medical events (surgeries, hospitalizations) are rare and hard to predict from survey data alone.</li>
-#         <li><strong>Errors are mostly underestimates:</strong> Residuals skew heavily upward, which means the model underpredicts actual costs. A few individuals incur extreme costs that no model can fully anticipate, so the models miss on the high side far more often than they overpredict.</li>
-#         <li><strong>Elastic Net can't separate low vs. high costs:</strong> With a max prediction of only \$217, Elastic Net compresses nearly everyone into a narrow "low-cost" band. Its median residual climbs steeply, meaning the higher it tries to predict, the more it underestimates. It effectively treats the entire population as low-risk.</li>
-#         <li><strong>XGBoost differentiates best:</strong> XGBoost predictions span up to \$2,114, roughly 10× the range of Elastic Net and 1.7× Random Forest. A wider prediction range means the model better separates low-cost from high-cost individuals.</li>
-#         <li><strong>Tree models are less biased:</strong> Both RF and XGBoost keep their median residual near zero across most of their prediction range, indicating less systematic bias. Elastic Net's median drifts sharply upward, confirming it systematically underpredicts.</li>
-#         <li><strong>Mid-range uncertainty peak ("inverted-U"):</strong> RF and XGBoost share a distinctive pattern: the IQR band widens through mid-range predictions, then narrows again at the highest predictions. This suggests that when tree models confidently predict high costs, those predictions are relatively well-calibrated.</li>
-#     </ul>
-#     <hr style="border: 0; border-top: 1px solid #e0f0e0; margin: 15px 0;">
-#     <strong>Decision: Select XGBoost for Production</strong> <br>
-#     Elastic Net is the best model if the product only needs one middle estimate. It has the lowest tuned validation MdAE, so it is the point-estimate champion. However, the production app is not a single-number estimator. It is a planning tool that needs a plan-around estimate, a typical range, and a safety cushion. For that product goal, XGBoost is the better production choice.
-#     <ul style="margin-top:8px">
-#         <li><b>Point estimate vs. product usefulness:</b> Elastic Net wins MdAE by keeping most predictions close to the low-cost middle of the population. That lowers the typical error, but it also compresses predictions into a narrow band (max prediction: \$217). This makes it hard for the app to distinguish someone with low expected costs from someone with meaningfully higher financial risk.</li>
-#         <li><b>XGBoost separates risk levels better:</b> XGBoost predictions span up to \$2,114, roughly 10× wider than Elastic Net. This wider spread is useful because the app needs to tell users not only "what is typical?" but also "how much cushion should I consider?"</li>
-#         <li><b>Quantile regression fit:</b> XGBoost supports multi-quantile regression, so one model can produce the plan-around estimate (median/q50), the typical range (q25-q75), and the safety cushion (q90). Elastic Net would need a more complicated setup and still show weaker ability to separate low-risk and high-risk profiles.</li>
-#         <li><b>Trade-off:</b> Accept a higher median error from XGBoost than Elastic Net because the production app values calibrated ranges and risk separation, not just the lowest possible single-number MdAE. Elastic Net remains a useful benchmark and challenger model for median/q50 accuracy.</li>
-#     </ul>
-# </div>
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
