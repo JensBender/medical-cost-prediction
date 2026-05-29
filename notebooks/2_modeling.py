@@ -2572,6 +2572,109 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Quantile Calibration</h3>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     💡 <b>What is Quantile Calibration?</b>
+#     <br>
+#     A well-calibrated model should have empirical coverage close to the nominal target for each quantile prediction. I.e., the q25 prediction should sit above the actual cost for about 25% of the population, q50 for about 50%, q75 for about 75%, and q90 for about 90%. 
+#     <br><br>
+#     <b>Quantile Coverage vs. Interval Coverage</b> <br> 
+#     Quantile coverage checks each predicted quantile directly, while typical range interval coverage checks whether actual costs fall between two endpoints such as q25 and q75. If q25 and q75 are both shifted in the same direction, the q25–q75 interval can still show acceptable 50% coverage while both endpoints are biased. Reporting each quantile makes that failure mode visible.
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Compare nominal quantiles with empirical weighted coverage on the validation set.
+# </div>
+
+# %%
+quantile_coverage_results = []
+
+for idx, q in enumerate(quantiles):
+    train_coverage = np.average(y_train <= y_train_quantile_pred[:, idx], weights=w_train)
+    val_coverage = np.average(y_val <= y_val_quantile_pred[:, idx], weights=w_val)
+
+    quantile_coverage_results.append({
+        "Quantile": f"q{int(q * 100)}",
+        "Nominal Coverage": q,
+        "Empirical Coverage (Train)": train_coverage,
+        "Empirical Coverage (Val)": val_coverage,
+        "Validation Gap": val_coverage - q,
+        "Train/Val Delta": val_coverage - train_coverage,
+    })
+
+quantile_coverage_df = pd.DataFrame(quantile_coverage_results)
+
+display(
+    quantile_coverage_df.style
+    .hide()
+    .pipe(add_table_caption, "XGBoost Quantile Calibration")
+    .format("{:.1%}", subset=[
+        "Nominal Coverage",
+        "Empirical Coverage (Train)",
+        "Empirical Coverage (Val)",
+        "Validation Gap",
+        "Train/Val Delta",
+    ])
+)
+
+# %%
+fig, ax = plt.subplots(figsize=(7, 5))
+
+ax.plot([0, 1], [0, 1], color="#4A4A4A", linestyle="--", linewidth=1.5, label="Perfect calibration")
+ax.plot(
+    quantile_coverage_df["Nominal Coverage"],
+    quantile_coverage_df["Empirical Coverage (Train)"],
+    marker="o",
+    linewidth=2,
+    color=SAMPLE_COLOR,
+    label="Training",
+)
+ax.plot(
+    quantile_coverage_df["Nominal Coverage"],
+    quantile_coverage_df["Empirical Coverage (Val)"],
+    marker="o",
+    linewidth=2,
+    color=POP_COLOR,
+    label="Validation",
+)
+
+for _, row in quantile_coverage_df.iterrows():
+    ax.annotate(
+        row["Quantile"],
+        xy=(row["Nominal Coverage"], row["Empirical Coverage (Val)"]),
+        xytext=(0, 8),
+        textcoords="offset points",
+        ha="center",
+        fontsize=9,
+        color="#333333",
+    )
+
+percent_fmt = plt.FuncFormatter(lambda x, _: f"{x:.0%}")
+ax.xaxis.set_major_formatter(percent_fmt)
+ax.yaxis.set_major_formatter(percent_fmt)
+ax.set_xlim(0.15, 0.95)
+ax.set_ylim(0.15, 0.95)
+ax.set_xlabel("Nominal Coverage")
+ax.set_ylabel("Empirical Coverage (Weighted)")
+ax.set_title("XGBoost Quantile Calibration: Nominal vs. Empirical Coverage", fontsize=13, fontweight="bold")
+ax.grid(alpha=0.25)
+ax.legend(frameon=False)
+
+plt.tight_layout()
+plt.show()
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul>
+#     </ul>
+# </div>
+
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">Metrics</h3>
 # </div>
 #
@@ -3431,4 +3534,3 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Underestimating High Costs:</strong> Even for the highest predicted cost tier, the safety cushion tops out around \$6,250, whereas the actual Very High Spend group has a median of \$10,086. The model's predicted range compresses for extreme actual spenders: high-spend and very-high-spend actual cost groups receive near-identical predictions (q50 \$570 vs. \$674), confirming that the model cannot distinguish high from extreme costs.</li>
 #     </ul>
 # </div>
-
