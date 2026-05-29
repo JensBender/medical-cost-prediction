@@ -2642,14 +2642,38 @@ ax.plot(
 )
 
 for _, row in quantile_coverage_df.iterrows():
+    calibration_error = row["Calibration Error (Val)"]
+    nominal_level = row["Nominal Level"]
+    empirical_coverage = row["Empirical Coverage (Val)"]
+
+    ax.vlines(
+        x=nominal_level,
+        ymin=nominal_level,
+        ymax=empirical_coverage,
+        color=POP_COLOR,
+        linewidth=1.2,
+        alpha=0.55,
+    )
     ax.annotate(
         row["Quantile"],
-        xy=(row["Nominal Level"], row["Empirical Coverage (Val)"]),
+        xy=(nominal_level, empirical_coverage),
         xytext=(0, 13),
         textcoords="offset points",
         ha="center",
+        va="bottom",
         fontsize=9,
         color="#333333",
+    )
+
+    ax.annotate(
+        f"{calibration_error:+.1%}",
+        xy=(nominal_level, nominal_level + calibration_error / 2),
+        xytext=(-12, 0),
+        textcoords="offset points",
+        ha="right",
+        va="center",
+        fontsize=8,
+        color=POP_COLOR,
     )
 
 percent_fmt = plt.FuncFormatter(lambda x, _: f"{x:.0%}")
@@ -2659,13 +2683,22 @@ ax.set_xlim(0, 1)
 ax.set_ylim(0, 1)
 ax.set_xlabel("Nominal Quantile Level")
 ax.set_ylabel("Empirical Coverage (Weighted)")
-ax.set_title("XGBoost Quantile Calibration: Nominal vs. Empirical Coverage", fontsize=13, fontweight="bold", pad=18)
+ax.set_title("XGBoost Quantile Calibration: Nominal vs. Empirical Coverage", fontsize=13, fontweight="bold", pad=20)
 ax.set_xticks([0, 0.25, 0.5, 0.75, 0.9, 1.0])
 ax.set_yticks([0, 0.25, 0.5, 0.75, 0.9, 1.0])
 ax.grid(alpha=0.25)
 ax.legend(frameon=False)
 
-plt.tight_layout()
+fig.text(
+    0.01,
+    0.01,
+    "Note: Annotated percentages show calibration error on the validation data.",
+    ha="left",
+    fontsize=8,
+    color="#666666",
+)
+
+plt.tight_layout(rect=[0, 0.03, 1, 1])
 plt.show()
 
 # %% [markdown]
