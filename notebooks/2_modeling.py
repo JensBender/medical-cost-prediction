@@ -2578,13 +2578,16 @@ display(
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     💡 <b>What is Quantile Calibration?</b>
 #     <br>
-#     Quanitle regression models should be well calibrated (good coverage) showing that each predicted quantile means what it claims. Coverage measures the percentage of people whose actual costs fall within the predicted range. A well-calibrated q25 should be greater than or equal to the actual cost for about 25% of the population, q50 for about 50%, q75 for about 75%, and q90 for about 90%.
+#     Quantile regression models should be well calibrated, meaning each predicted quantile behaves like the probability level it claims. A well-calibrated q25 should be greater than or equal to the actual cost for about 25% of the population, q50 for about 50%, q75 for about 75%, and q90 for about 90%.
 #     <br><br>
 #     <b>Quantile Coverage vs. Interval Coverage</b> <br> 
 #     Quantile coverage checks each predicted quantile directly. Interval coverage checks whether actual costs fall between two endpoints, such as q25 and q75. Reporting both matters because the q25–q75 interval can have acceptable 50% coverage even when both endpoints are shifted in the same direction.
 #     <br><br>
 #     <b>How to Interpret Calibration Error</b> <br>
 #     Calibration error is empirical coverage minus the nominal quantile level. Positive values mean the quantile is too high/conservative; negative values mean it is too low/aggressive. For this project, errors within about 5% are acceptable validation diagnostics; errors beyond about 10% would usually require recalibration or a clearer release warning.
+#     <br><br>
+#     <b>Metric Confidence Intervals</b> <br>
+#     Bootstrap confidence intervals are calculated for metrics on the validation data. They are for the metrics, not prediction intervals for individual users. Each bootstrap sample resamples validation rows with replacement while keeping actual cost, predicted quantiles, and survey weight together.
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -2592,16 +2595,107 @@ display(
 # </div>
 
 # %%
+def summarize_bootstrap_ci(samples, confidence=0.95):
+    """
+    Summarize bootstrap samples with a percentile confidence interval.
+
+    Args:
+        samples (array-like): Bootstrap metric values.
+        confidence (float): Confidence level for the percentile interval.
+
+    Returns:
+        tuple: Lower and upper confidence interval bounds.
+    """
+    alpha = 1 - confidence
+    return np.percentile(samples, [100 * alpha / 2, 100 * (1 - alpha / 2)])
+
+
+def bootstrap_validation_quantile_metrics(y_true, y_pred, weights, quantiles, n_bootstrap=1000, random_state=RANDOM_STATE):
+    """
+    Bootstrap key quantile regression validation metrics.
+
+    Args:
+        y_true (array-like): Actual validation costs.
+        y_pred (np.ndarray): Validation predictions with one column per quantile.
+        weights (array-like): Validation survey weights.
+        quantiles (list): Quantile levels matching prediction columns.
+        n_bootstrap (int): Number of bootstrap resamples.
+        random_state (int): Random seed for reproducibility.
+
+    Returns:
+        dict: Bootstrap samples for calibration and product metrics.
+    """
+    rng = np.random.default_rng(random_state)
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+    weights = np.asarray(weights)
+    n_obs = len(y_true)
+
+    bootstrap_samples = {
+        **{f"q{int(q * 100)}_coverage": np.empty(n_bootstrap) for q in quantiles},
+        "q50_mdae": np.empty(n_bootstrap),
+        "q50_mae": np.empty(n_bootstrap),
+        "q25_q75_coverage": np.empty(n_bootstrap),
+        "q25_q75_width": np.empty(n_bootstrap),
+        "q50_q90_width": np.empty(n_bootstrap),
+    }
+
+    for sample_idx in range(n_bootstrap):
+        row_idx = rng.integers(0, n_obs, size=n_obs)
+        y_boot = y_true[row_idx]
+        pred_boot = y_pred[row_idx]
+        w_boot = weights[row_idx]
+
+        q25_pred, q50_pred, q75_pred, q90_pred = pred_boot.T
+
+        for quantile_idx, q in enumerate(quantiles):
+            bootstrap_samples[f"q{int(q * 100)}_coverage"][sample_idx] = np.average(
+                y_boot <= pred_boot[:, quantile_idx],
+                weights=w_boot,
+            )
+
+        bootstrap_samples["q50_mdae"][sample_idx] = weighted_median_absolute_error(
+            y_boot,
+            q50_pred,
+            sample_weight=w_boot,
+        )
+        bootstrap_samples["q50_mae"][sample_idx] = mean_absolute_error(
+            y_boot,
+            q50_pred,
+            sample_weight=w_boot,
+        )
+        bootstrap_samples["q25_q75_coverage"][sample_idx] = np.average(
+            (y_boot >= q25_pred) & (y_boot <= q75_pred),
+            weights=w_boot,
+        )
+        bootstrap_samples["q25_q75_width"][sample_idx] = np.average(q75_pred - q25_pred, weights=w_boot)
+        bootstrap_samples["q50_q90_width"][sample_idx] = np.average(q90_pred - q50_pred, weights=w_boot)
+
+    return bootstrap_samples
+
+
+N_BOOTSTRAP = 1000
+quantile_bootstrap_samples = bootstrap_validation_quantile_metrics(
+    y_val,
+    y_val_quantile_pred,
+    w_val,
+    quantiles,
+    n_bootstrap=N_BOOTSTRAP,
+)
+
 quantile_coverage_results = []
 
 for idx, q in enumerate(quantiles):
+    quantile_label = f"q{int(q * 100)}"
     train_coverage = np.average(y_train <= y_train_quantile_pred[:, idx], weights=w_train)
     val_coverage = np.average(y_val <= y_val_quantile_pred[:, idx], weights=w_val)
+    ci_lower, ci_upper = summarize_bootstrap_ci(quantile_bootstrap_samples[f"{quantile_label}_coverage"])
 
     quantile_coverage_results.append({
-        "Quantile": f"q{int(q * 100)}",
+        "Quantile": quantile_label,
         "Nominal Level": q,
         "Empirical Coverage (Train)": train_coverage,
+        "Empirical Coverage (Val, 95% CI)": f"{val_coverage:.1%} [{ci_lower:.1%}, {ci_upper:.1%}]",
         "Empirical Coverage (Val)": val_coverage,
         "Calibration Error (Val)": val_coverage - q,
     })
@@ -2615,9 +2709,9 @@ display(
     .format("{:.1%}", subset=[
         "Nominal Level",
         "Empirical Coverage (Train)",
-        "Empirical Coverage (Val)",
     ])
     .format("{:+.1%}", subset=["Calibration Error (Val)"])
+    .hide(axis="columns", subset=["Empirical Coverage (Val)"])
 )
 
 # %%
@@ -2710,227 +2804,18 @@ plt.show()
 #     </ul>
 # </div>
 
-
-# %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Bootstrap Confidence Intervals</h3>
-# </div>
-#
-# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     💡 <b>What Are Bootstrap Confidence Intervals?</b>
-#     <br>
-#     The prediction intervals above describe uncertainty for an individual user's out-of-pocket costs. Bootstrap confidence intervals describe uncertainty in the validation metrics themselves: how much the measured MdAE, coverage, or width might move if we had drawn a different validation sample from the same population.
-#     <br><br>
-#     This is an approximate row bootstrap: each bootstrap sample resamples validation rows with replacement while keeping the actual cost, predicted quantiles, and survey weight together. Because MEPS has a complex survey design, these intervals should be interpreted as practical stability diagnostics rather than formal survey-design confidence intervals.
-# </div>
-#
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Estimate 95% bootstrap confidence intervals for key validation metrics.
-# </div>
-
-# %%
-def summarize_bootstrap_ci(samples, confidence=0.95):
-    """
-    Summarize bootstrap samples with a percentile confidence interval.
-
-    Args:
-        samples (array-like): Bootstrap metric values.
-        confidence (float): Confidence level for the percentile interval.
-
-    Returns:
-        tuple: Lower and upper confidence interval bounds.
-    """
-    alpha = 1 - confidence
-    return np.percentile(samples, [100 * alpha / 2, 100 * (1 - alpha / 2)])
-
-
-def bootstrap_validation_quantile_metrics(y_true, y_pred, weights, quantiles, n_bootstrap=1000, random_state=RANDOM_STATE):
-    """
-    Bootstrap key quantile regression validation metrics.
-
-    Args:
-        y_true (array-like): Actual validation costs.
-        y_pred (np.ndarray): Validation predictions with one column per quantile.
-        weights (array-like): Validation survey weights.
-        quantiles (list): Quantile levels matching prediction columns.
-        n_bootstrap (int): Number of bootstrap resamples.
-        random_state (int): Random seed for reproducibility.
-
-    Returns:
-        dict: Bootstrap samples for calibration and product metrics.
-    """
-    rng = np.random.default_rng(random_state)
-    y_true = np.asarray(y_true)
-    y_pred = np.asarray(y_pred)
-    weights = np.asarray(weights)
-    n_obs = len(y_true)
-
-    bootstrap_samples = {
-        **{f"q{int(q * 100)}_coverage": np.empty(n_bootstrap) for q in quantiles},
-        "q50_mdae": np.empty(n_bootstrap),
-        "q50_mae": np.empty(n_bootstrap),
-        "q25_q75_coverage": np.empty(n_bootstrap),
-        "q25_q75_width": np.empty(n_bootstrap),
-        "q50_q90_width": np.empty(n_bootstrap),
-    }
-
-    for sample_idx in range(n_bootstrap):
-        row_idx = rng.integers(0, n_obs, size=n_obs)
-        y_boot = y_true[row_idx]
-        pred_boot = y_pred[row_idx]
-        w_boot = weights[row_idx]
-
-        q25_pred, q50_pred, q75_pred, q90_pred = pred_boot.T
-
-        for quantile_idx, q in enumerate(quantiles):
-            bootstrap_samples[f"q{int(q * 100)}_coverage"][sample_idx] = np.average(
-                y_boot <= pred_boot[:, quantile_idx],
-                weights=w_boot,
-            )
-
-        bootstrap_samples["q50_mdae"][sample_idx] = weighted_median_absolute_error(
-            y_boot,
-            q50_pred,
-            sample_weight=w_boot,
-        )
-        bootstrap_samples["q50_mae"][sample_idx] = mean_absolute_error(
-            y_boot,
-            q50_pred,
-            sample_weight=w_boot,
-        )
-        bootstrap_samples["q25_q75_coverage"][sample_idx] = np.average(
-            (y_boot >= q25_pred) & (y_boot <= q75_pred),
-            weights=w_boot,
-        )
-        bootstrap_samples["q25_q75_width"][sample_idx] = np.average(q75_pred - q25_pred, weights=w_boot)
-        bootstrap_samples["q50_q90_width"][sample_idx] = np.average(q90_pred - q50_pred, weights=w_boot)
-
-    return bootstrap_samples
-
-
-N_BOOTSTRAP = 1000
-quantile_bootstrap_samples = bootstrap_validation_quantile_metrics(
-    y_val,
-    y_val_quantile_pred,
-    w_val,
-    quantiles,
-    n_bootstrap=N_BOOTSTRAP,
-)
-
-# %%
-quantile_calibration_ci_results = []
-
-for idx, q in enumerate(quantiles):
-    quantile_label = f"q{int(q * 100)}"
-    coverage_estimate = np.average(y_val <= y_val_quantile_pred[:, idx], weights=w_val)
-    ci_lower, ci_upper = summarize_bootstrap_ci(quantile_bootstrap_samples[f"{quantile_label}_coverage"])
-
-    quantile_calibration_ci_results.append({
-        "Quantile": quantile_label,
-        "Nominal Level": q,
-        "Empirical Coverage (Val)": coverage_estimate,
-        "95% Bootstrap CI": f"[{ci_lower:.1%}, {ci_upper:.1%}]",
-        "Calibration Error (Val)": coverage_estimate - q,
-    })
-
-quantile_calibration_ci_df = pd.DataFrame(quantile_calibration_ci_results)
-
-display(
-    quantile_calibration_ci_df.style
-    .hide()
-    .pipe(add_table_caption, f"XGBoost Quantile Calibration with 95% Bootstrap CIs (Validation)")
-    .format("{:.1%}", subset=[
-        "Nominal Level",
-        "Empirical Coverage (Val)",
-        "Calibration Error (Val)",
-    ])
-)
-
-# %%
-y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = y_val_quantile_pred.T
-
-product_metric_specs = [
-    {
-        "Metric": "Plan Around MdAE (q50)",
-        "Estimate": weighted_median_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val),
-        "Samples": quantile_bootstrap_samples["q50_mdae"],
-        "Format": "currency_2",
-    },
-    {
-        "Metric": "Plan Around MAE (q50)",
-        "Estimate": mean_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val),
-        "Samples": quantile_bootstrap_samples["q50_mae"],
-        "Format": "currency_2",
-    },
-    {
-        "Metric": "Typical Range Coverage (q25–q75)",
-        "Estimate": np.average((y_val >= y_val_pred_q25) & (y_val <= y_val_pred_q75), weights=w_val),
-        "Samples": quantile_bootstrap_samples["q25_q75_coverage"],
-        "Format": "percent",
-    },
-    {
-        "Metric": "Typical Range Width",
-        "Estimate": np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val),
-        "Samples": quantile_bootstrap_samples["q25_q75_width"],
-        "Format": "currency_0",
-    },
-    {
-        "Metric": "Safety Cushion Width",
-        "Estimate": np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_val),
-        "Samples": quantile_bootstrap_samples["q50_q90_width"],
-        "Format": "currency_0",
-    },
-]
-
-
-def format_bootstrap_estimate(value, metric_format):
-    """Format bootstrap estimates for display."""
-    if metric_format == "percent":
-        return f"{value:.1%}"
-    if metric_format == "currency_0":
-        return f"${value:,.0f}"
-    return f"${value:,.2f}"
-
-
-product_metric_ci_results = []
-
-for metric_spec in product_metric_specs:
-    ci_lower, ci_upper = summarize_bootstrap_ci(metric_spec["Samples"])
-    metric_format = metric_spec["Format"]
-
-    product_metric_ci_results.append({
-        "Metric": metric_spec["Metric"],
-        "Estimate": format_bootstrap_estimate(metric_spec["Estimate"], metric_format),
-        "95% Bootstrap CI": f"[{format_bootstrap_estimate(ci_lower, metric_format)}, {format_bootstrap_estimate(ci_upper, metric_format)}]",
-    })
-
-product_metric_ci_df = pd.DataFrame(product_metric_ci_results)
-
-display(
-    product_metric_ci_df.style
-    .hide()
-    .pipe(add_table_caption, f"Product Metrics with 95% Bootstrap CIs (Validation)")
-)
-
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insights:</b> 
-#     <ul>
-#     </ul>
-# </div>
-
-
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">Product Metrics</h3>
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
-#     ℹ️ <b>Product-Facing Evaluation Guidelines</b> <br>
+#     ℹ️ <b>Product-Facing Evaluation Metrics</b> <br>
 #     The calibration section above checks whether each quantile endpoint is statistically trustworthy. This section translates those endpoints into the user-facing prediction estimates: plan-around estimate (q50), typical range (q25–q75), and safety cushion (q90). A prediction model must be both reliable and specific enough to be useful for out-of-pocket cost planning.
 #     <br><br>
 #     <b>Product Coverage</b> <br>
 #     Typical range coverage measures how often actual costs fall between q25 and q75. Safety cushion coverage is the q90 coverage already checked in the calibration section, repeated here because it is also a release metric for the product.
+#     Validation confidence intervals are approximate row-bootstrap intervals for the metric estimate, not prediction intervals for individual users.
 #     <ul style="margin-top:8px">
 #         <li><b>Typical range (q25–q75):</b> Target = 50%, release-acceptable = 45–55%.</li>
 #         <li><b>Safety cushion (q90):</b> Target = 90%, release-acceptable = 85–95%.</li>
@@ -2952,39 +2837,110 @@ display(
 # %%
 xgb_quantile_metrics = load_metrics("../models/xgb_quantile_metrics.json")
 metrics = xgb_quantile_metrics["XGBoost (Quantile)"]
+y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = y_val_quantile_pred.T
+
+
+def format_metric_value(value, metric_format):
+    """Format product metric values for display."""
+    if metric_format == "percent":
+        return f"{value:.1%}"
+    if metric_format == "decimal":
+        return f"{value:.2f}"
+    if metric_format == "currency_0":
+        return f"${value:,.0f}"
+    return f"${value:,.2f}"
+
+
+def format_validation_metric_with_ci(value, samples, metric_format):
+    """Format validation metric estimates with an inline bootstrap confidence interval."""
+    ci_lower, ci_upper = summarize_bootstrap_ci(samples)
+    return (
+        f"{format_metric_value(value, metric_format)} "
+        f"[{format_metric_value(ci_lower, metric_format)}, {format_metric_value(ci_upper, metric_format)}]"
+    )
+
+
+def format_metric_delta(train_value, val_value):
+    """Format validation-vs-training relative delta."""
+    if train_value == 0:
+        return "n/a"
+    return f"{((val_value - train_value) / train_value) * 100:+.1f}%"
 
 # Reshape for metrics display table: Metrics in index, Train/Val in columns
-metrics_display = {
-    "Train": {
-        "Plan Around MdAE (q50)": metrics["train_q50_mdae"],
-        "Plan Around MAE (q50)": metrics["train_q50_mae"],
-        "Plan Around R² (q50)": metrics["train_q50_r2"],
-        "Typical Range Coverage (q25–q75)": metrics["train_q25_q75_coverage"],
-        "Safety Cushion Coverage (q90)": metrics["train_q90_coverage"],
-        "Typical Range Width": metrics["train_q25_q75_width"],
-        "Safety Cushion Width": metrics["train_q50_q90_width"],
+product_metric_specs = [
+    {
+        "Metric": "Plan Around MdAE (q50)",
+        "Train": metrics["train_q50_mdae"],
+        "Validation": metrics["val_q50_mdae"],
+        "Samples": quantile_bootstrap_samples["q50_mdae"],
+        "Format": "currency_2",
     },
-    "Validation": {
-        "Plan Around MdAE (q50)": metrics["val_q50_mdae"],
-        "Plan Around MAE (q50)": metrics["val_q50_mae"],
-        "Plan Around R² (q50)": metrics["val_q50_r2"],
-        "Typical Range Coverage (q25–q75)": metrics["val_q25_q75_coverage"],
-        "Safety Cushion Coverage (q90)": metrics["val_q90_coverage"],
-        "Typical Range Width": metrics["val_q25_q75_width"],
-        "Safety Cushion Width": metrics["val_q50_q90_width"],
-    }
-}
+    {
+        "Metric": "Plan Around MAE (q50)",
+        "Train": metrics["train_q50_mae"],
+        "Validation": metrics["val_q50_mae"],
+        "Samples": quantile_bootstrap_samples["q50_mae"],
+        "Format": "currency_2",
+    },
+    {
+        "Metric": "Plan Around R² (q50)",
+        "Train": metrics["train_q50_r2"],
+        "Validation": metrics["val_q50_r2"],
+        "Samples": None,
+        "Format": "decimal",
+    },
+    {
+        "Metric": "Typical Range Coverage (q25–q75)",
+        "Train": metrics["train_q25_q75_coverage"],
+        "Validation": metrics["val_q25_q75_coverage"],
+        "Samples": quantile_bootstrap_samples["q25_q75_coverage"],
+        "Format": "percent",
+    },
+    {
+        "Metric": "Safety Cushion Coverage (q90)",
+        "Train": metrics["train_q90_coverage"],
+        "Validation": metrics["val_q90_coverage"],
+        "Samples": quantile_bootstrap_samples["q90_coverage"],
+        "Format": "percent",
+    },
+    {
+        "Metric": "Typical Range Width",
+        "Train": metrics["train_q25_q75_width"],
+        "Validation": metrics["val_q25_q75_width"],
+        "Samples": quantile_bootstrap_samples["q25_q75_width"],
+        "Format": "currency_0",
+    },
+    {
+        "Metric": "Safety Cushion Width",
+        "Train": metrics["train_q50_q90_width"],
+        "Validation": metrics["val_q50_q90_width"],
+        "Samples": quantile_bootstrap_samples["q50_q90_width"],
+        "Format": "currency_0",
+    },
+]
 
-metrics_df = pd.DataFrame(metrics_display)
-metrics_df["Delta %"] = (metrics_df["Validation"] - metrics_df["Train"]) / metrics_df["Train"] * 100
+metrics_display = []
+
+for metric_spec in product_metric_specs:
+    metric_format = metric_spec["Format"]
+    validation_display = (
+        format_metric_value(metric_spec["Validation"], metric_format)
+        if metric_spec["Samples"] is None
+        else format_validation_metric_with_ci(metric_spec["Validation"], metric_spec["Samples"], metric_format)
+    )
+
+    metrics_display.append({
+        "Metric": metric_spec["Metric"],
+        "Train": format_metric_value(metric_spec["Train"], metric_format),
+        "Validation (95% CI)": validation_display,
+        "Delta %": format_metric_delta(metric_spec["Train"], metric_spec["Validation"]),
+    })
+
+metrics_df = pd.DataFrame(metrics_display).set_index("Metric")
 
 display(
     metrics_df.style
     .pipe(add_table_caption, "XGBoost Quantile Regression Metrics")
-    .format("${:,.2f}", subset=(["Plan Around MdAE (q50)", "Plan Around MAE (q50)", "Typical Range Width", "Safety Cushion Width"], ["Train", "Validation"]))
-    .format("{:.2f}", subset=(["Plan Around R² (q50)"], ["Train", "Validation"]))
-    .format("{:.1%}", subset=(["Typical Range Coverage (q25–q75)", "Safety Cushion Coverage (q90)"], ["Train", "Validation"]))
-    .format("{:+.1f}%", subset=(slice(None), "Delta %"))
 )
 
 
