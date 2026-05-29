@@ -2578,14 +2578,17 @@ display(
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     💡 <b>What is Quantile Calibration?</b>
 #     <br>
-#     A well-calibrated model should have empirical coverage close to the nominal target for each quantile prediction. I.e., the q25 prediction should sit above the actual cost for about 25% of the population, q50 for about 50%, q75 for about 75%, and q90 for about 90%. 
+#     A well-calibrated quantile model should have empirical coverage close to the nominal quantile level. In other words, the q25 prediction should be greater than or equal to the actual cost for about 25% of the population, q50 for about 50%, q75 for about 75%, and q90 for about 90%.
 #     <br><br>
 #     <b>Quantile Coverage vs. Interval Coverage</b> <br> 
-#     Quantile coverage checks each predicted quantile directly, while typical range interval coverage checks whether actual costs fall between two endpoints such as q25 and q75. If q25 and q75 are both shifted in the same direction, the q25–q75 interval can still show acceptable 50% coverage while both endpoints are biased. Reporting each quantile makes that failure mode visible.
+#     Quantile coverage checks each predicted quantile directly, while interval coverage checks whether actual costs fall between two endpoints, such as q25 and q75. If q25 and q75 are both shifted in the same direction, the q25–q75 interval can still show acceptable 50% coverage while both endpoints are biased. Reporting each quantile makes that failure mode visible.
+#     <br><br>
+#     <b>How to Interpret Calibration Error</b> <br>
+#     Calibration error (e.g., 2%) shows the difference between nominal quantile level (25%) and the empirical coverage (27%). Positive values mean the quantile is too high/conservative; negative values mean it is too low/aggressive. Small deviations are expected from sampling noise, especially in heavy-tailed medical cost data. For this project, absolute errors within ~5% are acceptable validation diagnostics; larger errors should trigger review, and errors beyond ~10% would usually require recalibration or a clearer release warning.
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Compare nominal quantiles with empirical weighted coverage on the validation set.
+#     📌 Compare nominal quantile levels with empirical weighted coverage.
 # </div>
 
 # %%
@@ -2597,11 +2600,10 @@ for idx, q in enumerate(quantiles):
 
     quantile_coverage_results.append({
         "Quantile": f"q{int(q * 100)}",
-        "Nominal Coverage": q,
+        "Nominal Level": q,
         "Empirical Coverage (Train)": train_coverage,
         "Empirical Coverage (Val)": val_coverage,
-        "Validation Gap": val_coverage - q,
-        "Train/Val Delta": val_coverage - train_coverage,
+        "Calibration Error (Val)": val_coverage - q,
     })
 
 quantile_coverage_df = pd.DataFrame(quantile_coverage_results)
@@ -2611,12 +2613,11 @@ display(
     .hide()
     .pipe(add_table_caption, "XGBoost Quantile Calibration")
     .format("{:.1%}", subset=[
-        "Nominal Coverage",
+        "Nominal Level",
         "Empirical Coverage (Train)",
         "Empirical Coverage (Val)",
-        "Validation Gap",
-        "Train/Val Delta",
     ])
+    .format(lambda x: f"{x * 100:+.1f} pp", subset=["Calibration Error (Val)"])
 )
 
 # %%
@@ -2624,7 +2625,7 @@ fig, ax = plt.subplots(figsize=(7, 5))
 
 ax.plot([0, 1], [0, 1], color="#4A4A4A", linestyle="--", linewidth=1.5, label="Perfect calibration")
 ax.plot(
-    quantile_coverage_df["Nominal Coverage"],
+    quantile_coverage_df["Nominal Level"],
     quantile_coverage_df["Empirical Coverage (Train)"],
     marker="o",
     linewidth=2,
@@ -2632,7 +2633,7 @@ ax.plot(
     label="Training",
 )
 ax.plot(
-    quantile_coverage_df["Nominal Coverage"],
+    quantile_coverage_df["Nominal Level"],
     quantile_coverage_df["Empirical Coverage (Val)"],
     marker="o",
     linewidth=2,
@@ -2643,7 +2644,7 @@ ax.plot(
 for _, row in quantile_coverage_df.iterrows():
     ax.annotate(
         row["Quantile"],
-        xy=(row["Nominal Coverage"], row["Empirical Coverage (Val)"]),
+        xy=(row["Nominal Level"], row["Empirical Coverage (Val)"]),
         xytext=(0, 8),
         textcoords="offset points",
         ha="center",
@@ -2654,11 +2655,13 @@ for _, row in quantile_coverage_df.iterrows():
 percent_fmt = plt.FuncFormatter(lambda x, _: f"{x:.0%}")
 ax.xaxis.set_major_formatter(percent_fmt)
 ax.yaxis.set_major_formatter(percent_fmt)
-ax.set_xlim(0.15, 0.95)
-ax.set_ylim(0.15, 0.95)
-ax.set_xlabel("Nominal Coverage")
+ax.set_xlim(0, 1)
+ax.set_ylim(0, 1)
+ax.set_xlabel("Nominal Quantile Level")
 ax.set_ylabel("Empirical Coverage (Weighted)")
 ax.set_title("XGBoost Quantile Calibration: Nominal vs. Empirical Coverage", fontsize=13, fontweight="bold")
+ax.set_xticks([0, 0.25, 0.5, 0.75, 0.9, 1.0])
+ax.set_yticks([0, 0.25, 0.5, 0.75, 0.9, 1.0])
 ax.grid(alpha=0.25)
 ax.legend(frameon=False)
 
@@ -2669,6 +2672,9 @@ plt.show()
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> 
 #     <ul>
+#         <li><strong>Strong Median and Upper-Tail Calibration:</strong> q50, q75, and q90 are close to their nominal levels on validation data, with calibration errors of roughly +0.2, -1.6, and -1.3 percentage points respectively. This supports the model's plan-around estimate and safety cushion.</li>
+#         <li><strong>q25 is Conservative:</strong> The q25 prediction covers about 30.4% of validation outcomes instead of the nominal 25%, a +5.4 percentage-point calibration error. This means the lower endpoint of the typical range is somewhat too high, so the displayed q25–q75 range may be slightly narrower or shifted upward at the low end.</li>
+#         <li><strong>Deployment Readiness:</strong> The q25 deviation is near the review threshold but not a blocker by itself because the business-facing q25–q75 interval coverage remains within the release target. This should be revisited after bootstrap confidence intervals and final holdout test evaluation.</li>
 #     </ul>
 # </div>
 
