@@ -2839,6 +2839,8 @@ xgb_quantile_metrics = load_metrics("../models/xgb_quantile_metrics.json")
 metrics = xgb_quantile_metrics["XGBoost (Quantile)"]
 y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = y_val_quantile_pred.T
 
+DOLLAR = r"\$"
+
 
 def format_metric_value(value, metric_format):
     """Format product metric values for display."""
@@ -2847,8 +2849,8 @@ def format_metric_value(value, metric_format):
     if metric_format == "decimal":
         return f"{value:.2f}"
     if metric_format == "currency_0":
-        return f"${value:,.0f}"
-    return f"${value:,.2f}"
+        return f"{DOLLAR}{value:,.0f}"
+    return f"{DOLLAR}{value:,.2f}"
 
 
 def format_validation_metric_with_ci(value, samples, metric_format):
@@ -2866,53 +2868,53 @@ def format_metric_delta(train_value, val_value):
         return "n/a"
     return f"{((val_value - train_value) / train_value) * 100:+.1f}%"
 
-# Reshape for metrics display table: Metrics in index, Train/Val in columns
+# Reshape for metrics display table: Metrics in index, Training/Validation in columns
 product_metric_specs = [
     {
         "Metric": "Plan Around MdAE (q50)",
-        "Train": metrics["train_q50_mdae"],
+        "Training": metrics["train_q50_mdae"],
         "Validation": metrics["val_q50_mdae"],
         "Samples": quantile_bootstrap_samples["q50_mdae"],
         "Format": "currency_2",
     },
     {
         "Metric": "Plan Around MAE (q50)",
-        "Train": metrics["train_q50_mae"],
+        "Training": metrics["train_q50_mae"],
         "Validation": metrics["val_q50_mae"],
         "Samples": quantile_bootstrap_samples["q50_mae"],
         "Format": "currency_2",
     },
     {
         "Metric": "Plan Around R² (q50)",
-        "Train": metrics["train_q50_r2"],
+        "Training": metrics["train_q50_r2"],
         "Validation": metrics["val_q50_r2"],
         "Samples": None,
         "Format": "decimal",
     },
     {
         "Metric": "Typical Range Coverage (q25–q75)",
-        "Train": metrics["train_q25_q75_coverage"],
+        "Training": metrics["train_q25_q75_coverage"],
         "Validation": metrics["val_q25_q75_coverage"],
         "Samples": quantile_bootstrap_samples["q25_q75_coverage"],
         "Format": "percent",
     },
     {
         "Metric": "Safety Cushion Coverage (q90)",
-        "Train": metrics["train_q90_coverage"],
+        "Training": metrics["train_q90_coverage"],
         "Validation": metrics["val_q90_coverage"],
         "Samples": quantile_bootstrap_samples["q90_coverage"],
         "Format": "percent",
     },
     {
         "Metric": "Typical Range Width",
-        "Train": metrics["train_q25_q75_width"],
+        "Training": metrics["train_q25_q75_width"],
         "Validation": metrics["val_q25_q75_width"],
         "Samples": quantile_bootstrap_samples["q25_q75_width"],
         "Format": "currency_0",
     },
     {
         "Metric": "Safety Cushion Width",
-        "Train": metrics["train_q50_q90_width"],
+        "Training": metrics["train_q50_q90_width"],
         "Validation": metrics["val_q50_q90_width"],
         "Samples": quantile_bootstrap_samples["q50_q90_width"],
         "Format": "currency_0",
@@ -2931,12 +2933,13 @@ for metric_spec in product_metric_specs:
 
     metrics_display.append({
         "Metric": metric_spec["Metric"],
-        "Train": format_metric_value(metric_spec["Train"], metric_format),
+        "Training": format_metric_value(metric_spec["Training"], metric_format),
         "Validation (95% CI)": validation_display,
-        "Delta %": format_metric_delta(metric_spec["Train"], metric_spec["Validation"]),
+        "Val-Train Delta %": format_metric_delta(metric_spec["Training"], metric_spec["Validation"]),
     })
 
 metrics_df = pd.DataFrame(metrics_display).set_index("Metric")
+metrics_df.index.name = None
 
 display(
     metrics_df.style
