@@ -2466,7 +2466,7 @@ def train_xgboost_quantile():
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Pinball Loss & Quantile Skill Score</h3>
+#     <h3 style="margin:0px">Pinball Loss & Skill Score</h3>
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
@@ -2578,13 +2578,13 @@ display(
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     💡 <b>What is Quantile Calibration?</b>
 #     <br>
-#     A well-calibrated quantile model should have empirical coverage close to the nominal quantile level. In other words, the q25 prediction should be greater than or equal to the actual cost for about 25% of the population, q50 for about 50%, q75 for about 75%, and q90 for about 90%.
+#     Quanitle regression models should be well calibrated (good coverage) showing that each predicted quantile means what it claims. Coverage measures the percentage of people whose actual costs fall within the predicted range. A well-calibrated q25 should be greater than or equal to the actual cost for about 25% of the population, q50 for about 50%, q75 for about 75%, and q90 for about 90%.
 #     <br><br>
 #     <b>Quantile Coverage vs. Interval Coverage</b> <br> 
-#     Quantile coverage checks each predicted quantile directly, while interval coverage checks whether actual costs fall between two endpoints, such as q25 and q75. If q25 and q75 are both shifted in the same direction, the q25–q75 interval can still show acceptable 50% coverage while both endpoints are biased. Reporting each quantile makes that failure mode visible.
+#     Quantile coverage checks each predicted quantile directly. Interval coverage checks whether actual costs fall between two endpoints, such as q25 and q75. Reporting both matters because the q25–q75 interval can have acceptable 50% coverage even when both endpoints are shifted in the same direction.
 #     <br><br>
 #     <b>How to Interpret Calibration Error</b> <br>
-#     Calibration error is empirical coverage minus the nominal quantile level. Positive values mean the quantile is too high/conservative; negative values mean it is too low/aggressive. For this project, absolute errors within about 5% are acceptable validation diagnostics; larger errors should trigger review, and errors beyond about 10% would usually require recalibration or a clearer release warning.
+#     Calibration error is empirical coverage minus the nominal quantile level. Positive values mean the quantile is too high/conservative; negative values mean it is too low/aggressive. For this project, errors within about 5% are acceptable validation diagnostics; errors beyond about 10% would usually require recalibration or a clearer release warning.
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -2713,26 +2713,23 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Metrics</h3>
+#     <h3 style="margin:0px">Product Metrics</h3>
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
-#     ℹ️ <b>Quantile Regression Evaluation Guidelines</b> <br>
-#     The following are release guidelines and diagnostic guardrails, not universal laws. They help decide whether the quantile model is useful for out-of-pocket cost planning. A good model should be calibrated (good coverage), but it should also give ranges that are narrow enough to help users make decisions (good interval width).
+#     ℹ️ <b>Product-Facing Evaluation Guidelines</b> <br>
+#     The calibration section above checks whether each quantile endpoint is statistically trustworthy. This section translates those endpoints into the user-facing prediction estimates: plan-around estimate (q50), typical range (q25–q75), and safety cushion (q90). A prediction model must be both reliable and specific enough to be useful for out-of-pocket cost planning.
 #     <br><br>
-#     <b>How to Interpret Coverage</b> <br>
-#     Coverage measures reliability by showing the percentage of users whose actual costs fall within the predicted range. Overall validation coverage uses tighter release targets because it is estimated on the full validation set. Subgroup coverage uses wider diagnostic guardrails because subgroup estimates are noisier and should be interpreted only when the subgroup has enough observations.
+#     <b>Product Coverage</b> <br>
+#     Typical range coverage measures how often actual costs fall between q25 and q75. Safety cushion coverage is the q90 coverage already checked in the calibration section, repeated here because it is also a release metric for the product.
 #     <ul style="margin-top:8px">
-#         <li><b>Overall typical range (q25–q75):</b> Target = 50%, release-acceptable = 45–55%.</li>
-#         <li><b>Overall safety cushion (q90):</b> Target = 90%, release-acceptable = 85–95%.</li>
-#         <li><b>Subgroup typical range guardrail:</b> Generally acceptable = 40–60% for subgroups with n ≥ 30.</li>
-#         <li><b>Subgroup safety cushion guardrail:</b> Generally acceptable = 80–97% for subgroups with n ≥ 30; below 75% is severe undercoverage.</li>
-#         <li><b>Under-coverage:</b> Intervals are too narrow. Users encounter unexpectedly high costs more often than the app implies.</li>
-#         <li><b>Over-coverage:</b> Intervals are too wide. Safer, but the app may push users to over-budget.</li>
-#         <li><b>Small subgroups:</b> Coverage flags for n &lt; 30 are review-only because one or two outcomes can move the percentage materially.</li>
+#         <li><b>Typical range (q25–q75):</b> Target = 50%, release-acceptable = 45–55%.</li>
+#         <li><b>Safety cushion (q90):</b> Target = 90%, release-acceptable = 85–95%.</li>
+#         <li><b>Under-coverage:</b> Ranges are too narrow; users encounter unexpectedly high costs more often than the app implies.</li>
+#         <li><b>Over-coverage:</b> Ranges are too wide; safer, but less useful for concrete budgeting.</li>
 #     </ul>
 #     <b>How to Interpret Interval Width</b> <br>
-#     Interval width measures usefulness by showing how wide the predicted dollar range is for planning.
+#     Interval width measures sharpness: how specific the predicted dollar range is. Coverage without reasonable width is not enough, because a model can meet coverage targets by returning overly broad ranges.
 #     <ul style="margin-top:8px">
 #         <li><b>Average q25–q75 width:</b> Good &lt; \$1,000, acceptable &lt; \$1,500, poor &gt; \$2,000.</li>
 #         <li><b>Average q50–q90 cushion width:</b> Good &lt; \$2,500, acceptable &lt; \$3,500, poor &gt; \$5,000.</li>
@@ -2848,7 +2845,7 @@ plot_residuals_vs_predicted(
 #         <li><b>Fairness audit groups:</b> Sex, age group, race/ethnicity, mental health, income, education, region, and walking limitation.</li>
 #         <li><b>Metrics by group:</b> Plan-around MdAE (q50), typical range coverage/width (q25-q75), and safety cushion coverage/width (q90 and q50-q90).</li>
 #         <li><b>Context columns:</b> Include sample size and weighted median actual cost to distinguish unfair or unreliable model behavior from genuinely higher-cost, higher-variance population segments.</li>
-#         <li><b>Coverage guideline:</b> For subgroups with n ≥ 30, q25–q75 coverage should generally stay within 40–60%, and q90 coverage should generally stay within 80–97%. Subgroups with n &lt; 30 are flagged as review-only because their coverage estimates are less stable.</li>
+#         <li><b>Coverage guardrails:</b> Overall coverage targets are release gates; subgroup thresholds are diagnostic review triggers. For subgroups with n ≥ 30, q25–q75 coverage should generally stay within 40–60%, and q90 coverage should generally stay within 80–97%. q90 coverage below 75% indicates severe undercoverage. Subgroups with n &lt; 30 are flagged as review-only because their coverage estimates are less stable.</li>
 #         <li><b>Width guideline:</b> Wider intervals are acceptable for genuinely higher-risk groups, but concerning for low-risk groups if they do not improve coverage or reflect clearly higher actual costs.</li>
 #         <li><b>Subgroup reliability flags:</b> Add diagnostic quality-control flags to identify groups that may need manual review before deployment. These flags are not automatic failure criteria; they highlight groups where the plan-around estimate, typical range, or safety cushion may be unreliable or insufficiently useful.</li>
 #         <li><b>Interpretation principle:</b> Coverage alone is not enough. A useful interval must be calibrated and narrow enough to support budgeting decisions; a wide interval is acceptable only when it reflects real uncertainty for a higher-risk user group.</li>
