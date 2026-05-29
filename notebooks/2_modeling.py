@@ -2584,7 +2584,7 @@ display(
 #     Quantile coverage checks each predicted quantile directly, while interval coverage checks whether actual costs fall between two endpoints, such as q25 and q75. If q25 and q75 are both shifted in the same direction, the q25–q75 interval can still show acceptable 50% coverage while both endpoints are biased. Reporting each quantile makes that failure mode visible.
 #     <br><br>
 #     <b>How to Interpret Calibration Error</b> <br>
-#     Calibration error (e.g., 2%) shows the difference between nominal quantile level (25%) and the empirical coverage (27%). Positive values mean the quantile is too high/conservative; negative values mean it is too low/aggressive. Small deviations are expected from sampling noise, especially in heavy-tailed medical cost data. For this project, absolute errors within ~5% are acceptable validation diagnostics; larger errors should trigger review, and errors beyond ~10% would usually require recalibration or a clearer release warning.
+#     Calibration error is empirical coverage minus the nominal quantile level. Positive values mean the quantile is too high/conservative; negative values mean it is too low/aggressive. For this project, absolute errors within about 5% are acceptable validation diagnostics; larger errors should trigger review, and errors beyond about 10% would usually require recalibration or a clearer release warning.
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -2617,7 +2617,7 @@ display(
         "Empirical Coverage (Train)",
         "Empirical Coverage (Val)",
     ])
-    .format(lambda x: f"{x * 100:+.1f} pp", subset=["Calibration Error (Val)"])
+    .format("{:+.1%}", subset=["Calibration Error (Val)"])
 )
 
 # %%
@@ -2645,7 +2645,7 @@ for _, row in quantile_coverage_df.iterrows():
     ax.annotate(
         row["Quantile"],
         xy=(row["Nominal Level"], row["Empirical Coverage (Val)"]),
-        xytext=(0, 8),
+        xytext=(0, 13),
         textcoords="offset points",
         ha="center",
         fontsize=9,
@@ -2659,7 +2659,7 @@ ax.set_xlim(0, 1)
 ax.set_ylim(0, 1)
 ax.set_xlabel("Nominal Quantile Level")
 ax.set_ylabel("Empirical Coverage (Weighted)")
-ax.set_title("XGBoost Quantile Calibration: Nominal vs. Empirical Coverage", fontsize=13, fontweight="bold")
+ax.set_title("XGBoost Quantile Calibration: Nominal vs. Empirical Coverage", fontsize=13, fontweight="bold", pad=18)
 ax.set_xticks([0, 0.25, 0.5, 0.75, 0.9, 1.0])
 ax.set_yticks([0, 0.25, 0.5, 0.75, 0.9, 1.0])
 ax.grid(alpha=0.25)
@@ -2672,9 +2672,8 @@ plt.show()
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> 
 #     <ul>
-#         <li><strong>Strong Median and Upper-Tail Calibration:</strong> q50, q75, and q90 are close to their nominal levels on validation data, with calibration errors of roughly +0.2, -1.6, and -1.3 percentage points respectively. This supports the model's plan-around estimate and safety cushion.</li>
-#         <li><strong>q25 is Conservative:</strong> The q25 prediction covers about 30.4% of validation outcomes instead of the nominal 25%, a +5.4 percentage-point calibration error. This means the lower endpoint of the typical range is somewhat too high, so the displayed q25–q75 range may be slightly narrower or shifted upward at the low end.</li>
-#         <li><strong>Deployment Readiness:</strong> The q25 deviation is near the review threshold but not a blocker by itself because the business-facing q25–q75 interval coverage remains within the release target. This should be revisited after bootstrap confidence intervals and final holdout test evaluation.</li>
+#         <li><strong>Good Overall Calibration:</strong> q50, q75, and q90 are close to their nominal levels, supporting the plan-around estimate and safety cushion.</li>
+#         <li><strong>q25 is Slightly Conservative:</strong> q25 covers about 30% instead of 25%, so the lower endpoint of the typical range is somewhat high. Decision: Monitor, Not Block. The q25 error is worth revisiting on final holdout test set.</li>
 #     </ul>
 # </div>
 
