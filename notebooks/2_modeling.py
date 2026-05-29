@@ -2713,6 +2713,215 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Bootstrap Confidence Intervals</h3>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     💡 <b>What Are Bootstrap Confidence Intervals?</b>
+#     <br>
+#     The prediction intervals above describe uncertainty for an individual user's out-of-pocket costs. Bootstrap confidence intervals describe uncertainty in the validation metrics themselves: how much the measured MdAE, coverage, or width might move if we had drawn a different validation sample from the same population.
+#     <br><br>
+#     This is an approximate row bootstrap: each bootstrap sample resamples validation rows with replacement while keeping the actual cost, predicted quantiles, and survey weight together. Because MEPS has a complex survey design, these intervals should be interpreted as practical stability diagnostics rather than formal survey-design confidence intervals.
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Estimate 95% bootstrap confidence intervals for key validation metrics.
+# </div>
+
+# %%
+def summarize_bootstrap_ci(samples, confidence=0.95):
+    """
+    Summarize bootstrap samples with a percentile confidence interval.
+
+    Args:
+        samples (array-like): Bootstrap metric values.
+        confidence (float): Confidence level for the percentile interval.
+
+    Returns:
+        tuple: Lower and upper confidence interval bounds.
+    """
+    alpha = 1 - confidence
+    return np.percentile(samples, [100 * alpha / 2, 100 * (1 - alpha / 2)])
+
+
+def bootstrap_validation_quantile_metrics(y_true, y_pred, weights, quantiles, n_bootstrap=1000, random_state=RANDOM_STATE):
+    """
+    Bootstrap key quantile regression validation metrics.
+
+    Args:
+        y_true (array-like): Actual validation costs.
+        y_pred (np.ndarray): Validation predictions with one column per quantile.
+        weights (array-like): Validation survey weights.
+        quantiles (list): Quantile levels matching prediction columns.
+        n_bootstrap (int): Number of bootstrap resamples.
+        random_state (int): Random seed for reproducibility.
+
+    Returns:
+        dict: Bootstrap samples for calibration and product metrics.
+    """
+    rng = np.random.default_rng(random_state)
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+    weights = np.asarray(weights)
+    n_obs = len(y_true)
+
+    bootstrap_samples = {
+        **{f"q{int(q * 100)}_coverage": np.empty(n_bootstrap) for q in quantiles},
+        "q50_mdae": np.empty(n_bootstrap),
+        "q50_mae": np.empty(n_bootstrap),
+        "q25_q75_coverage": np.empty(n_bootstrap),
+        "q25_q75_width": np.empty(n_bootstrap),
+        "q50_q90_width": np.empty(n_bootstrap),
+    }
+
+    for sample_idx in range(n_bootstrap):
+        row_idx = rng.integers(0, n_obs, size=n_obs)
+        y_boot = y_true[row_idx]
+        pred_boot = y_pred[row_idx]
+        w_boot = weights[row_idx]
+
+        q25_pred, q50_pred, q75_pred, q90_pred = pred_boot.T
+
+        for quantile_idx, q in enumerate(quantiles):
+            bootstrap_samples[f"q{int(q * 100)}_coverage"][sample_idx] = np.average(
+                y_boot <= pred_boot[:, quantile_idx],
+                weights=w_boot,
+            )
+
+        bootstrap_samples["q50_mdae"][sample_idx] = weighted_median_absolute_error(
+            y_boot,
+            q50_pred,
+            sample_weight=w_boot,
+        )
+        bootstrap_samples["q50_mae"][sample_idx] = mean_absolute_error(
+            y_boot,
+            q50_pred,
+            sample_weight=w_boot,
+        )
+        bootstrap_samples["q25_q75_coverage"][sample_idx] = np.average(
+            (y_boot >= q25_pred) & (y_boot <= q75_pred),
+            weights=w_boot,
+        )
+        bootstrap_samples["q25_q75_width"][sample_idx] = np.average(q75_pred - q25_pred, weights=w_boot)
+        bootstrap_samples["q50_q90_width"][sample_idx] = np.average(q90_pred - q50_pred, weights=w_boot)
+
+    return bootstrap_samples
+
+
+N_BOOTSTRAP = 1000
+quantile_bootstrap_samples = bootstrap_validation_quantile_metrics(
+    y_val,
+    y_val_quantile_pred,
+    w_val,
+    quantiles,
+    n_bootstrap=N_BOOTSTRAP,
+)
+
+# %%
+quantile_calibration_ci_results = []
+
+for idx, q in enumerate(quantiles):
+    quantile_label = f"q{int(q * 100)}"
+    coverage_estimate = np.average(y_val <= y_val_quantile_pred[:, idx], weights=w_val)
+    ci_lower, ci_upper = summarize_bootstrap_ci(quantile_bootstrap_samples[f"{quantile_label}_coverage"])
+
+    quantile_calibration_ci_results.append({
+        "Quantile": quantile_label,
+        "Nominal Level": q,
+        "Empirical Coverage (Val)": coverage_estimate,
+        "95% Bootstrap CI": f"[{ci_lower:.1%}, {ci_upper:.1%}]",
+        "Calibration Error (Val)": coverage_estimate - q,
+    })
+
+quantile_calibration_ci_df = pd.DataFrame(quantile_calibration_ci_results)
+
+display(
+    quantile_calibration_ci_df.style
+    .hide()
+    .pipe(add_table_caption, f"XGBoost Quantile Calibration with 95% Bootstrap CIs (Validation)")
+    .format("{:.1%}", subset=[
+        "Nominal Level",
+        "Empirical Coverage (Val)",
+        "Calibration Error (Val)",
+    ])
+)
+
+# %%
+y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = y_val_quantile_pred.T
+
+product_metric_specs = [
+    {
+        "Metric": "Plan Around MdAE (q50)",
+        "Estimate": weighted_median_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val),
+        "Samples": quantile_bootstrap_samples["q50_mdae"],
+        "Format": "currency_2",
+    },
+    {
+        "Metric": "Plan Around MAE (q50)",
+        "Estimate": mean_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val),
+        "Samples": quantile_bootstrap_samples["q50_mae"],
+        "Format": "currency_2",
+    },
+    {
+        "Metric": "Typical Range Coverage (q25–q75)",
+        "Estimate": np.average((y_val >= y_val_pred_q25) & (y_val <= y_val_pred_q75), weights=w_val),
+        "Samples": quantile_bootstrap_samples["q25_q75_coverage"],
+        "Format": "percent",
+    },
+    {
+        "Metric": "Typical Range Width",
+        "Estimate": np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val),
+        "Samples": quantile_bootstrap_samples["q25_q75_width"],
+        "Format": "currency_0",
+    },
+    {
+        "Metric": "Safety Cushion Width",
+        "Estimate": np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_val),
+        "Samples": quantile_bootstrap_samples["q50_q90_width"],
+        "Format": "currency_0",
+    },
+]
+
+
+def format_bootstrap_estimate(value, metric_format):
+    """Format bootstrap estimates for display."""
+    if metric_format == "percent":
+        return f"{value:.1%}"
+    if metric_format == "currency_0":
+        return f"${value:,.0f}"
+    return f"${value:,.2f}"
+
+
+product_metric_ci_results = []
+
+for metric_spec in product_metric_specs:
+    ci_lower, ci_upper = summarize_bootstrap_ci(metric_spec["Samples"])
+    metric_format = metric_spec["Format"]
+
+    product_metric_ci_results.append({
+        "Metric": metric_spec["Metric"],
+        "Estimate": format_bootstrap_estimate(metric_spec["Estimate"], metric_format),
+        "95% Bootstrap CI": f"[{format_bootstrap_estimate(ci_lower, metric_format)}, {format_bootstrap_estimate(ci_upper, metric_format)}]",
+    })
+
+product_metric_ci_df = pd.DataFrame(product_metric_ci_results)
+
+display(
+    product_metric_ci_df.style
+    .hide()
+    .pipe(add_table_caption, f"Product Metrics with 95% Bootstrap CIs (Validation)")
+)
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul>
+#     </ul>
+# </div>
+
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">Product Metrics</h3>
 # </div>
 #
