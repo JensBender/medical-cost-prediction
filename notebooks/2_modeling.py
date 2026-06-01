@@ -2133,6 +2133,7 @@ def plot_subgroup_performance(df, column_labels, title, save_to_file=None):
         "Note: Dollar values in subgroup labels (e.g., $269) represent the actual median out-of-pocket costs of that subgroup.", 
         fontsize=9, 
         style="italic", 
+        color="#555555",
         ha="left"
     )
     
@@ -2788,8 +2789,9 @@ fig.text(
     0.01,
     "Note: Annotated percentages show calibration error on the validation data.",
     ha="left",
-    fontsize=8,
-    color="#666666",
+    fontsize=9,
+    style="italic",
+    color="#555555",
 )
 
 plt.tight_layout(rect=[0, 0.03, 1, 1])
@@ -3388,6 +3390,7 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
         "Note: Dollar values in subgroup labels (e.g., $269) represent the actual median out-of-pocket costs of that subgroup.", 
         fontsize=9, 
         style="italic", 
+        color="#555555",
         ha="left"
     )
 
@@ -3705,6 +3708,7 @@ def plot_quantile_subgroup_predictions(df, column_labels, title, save_to_file=No
         "Note: Dollar values in subgroup labels (e.g., $269) represent the actual median out-of-pocket costs of that subgroup.",
         fontsize=9,
         style="italic",
+        color="#555555",
         ha="left",
     )
 
