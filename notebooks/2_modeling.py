@@ -2961,7 +2961,7 @@ display(
 #     <br>
 #     Coverage and width diagnose intervals separately. The Winkler interval score evaluates both together: it rewards narrow intervals when the actual cost falls inside the range and adds a penalty when the actual cost falls below q25 or above q75. Lower scores are better.
 #     <br><br>
-#     The interval skill score compares the model's q25–q75 interval score with a naive baseline that always predicts the same population q25–q75 interval from the training data. Positive skill means the personalized model provides better typical ranges than a generic population range.
+#     The interval skill score compares the model's q25–q75 interval score with a naive baseline that always predicts the same population q25–q75 interval from the training data. Positive skill means the personalized model provides better typical ranges than a generic population range. 
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -3095,25 +3095,22 @@ interval_skill_score = 1 - (model_interval_score / naive_interval_score)
 
 interval_score_specs = [
     {
-        "Metric": "XGBoost Typical Range Interval Score",
+        "Metric": "XGBoost Interval Score",
         "Validation": model_interval_score,
         "Samples": interval_score_bootstrap_samples["model_interval_score"],
         "Format": "currency_0",
-        "Interpretation": "Lower is better",
     },
     {
-        "Metric": "Naive Population Interval Score",
+        "Metric": "Naive Interval Score",
         "Validation": naive_interval_score,
         "Samples": interval_score_bootstrap_samples["naive_interval_score"],
         "Format": "currency_0",
-        "Interpretation": "Lower is better",
     },
     {
         "Metric": "Interval Skill Score",
         "Validation": interval_skill_score,
         "Samples": interval_score_bootstrap_samples["interval_skill_score"],
         "Format": "percent",
-        "Interpretation": "Higher is better",
     },
 ]
 
@@ -3127,7 +3124,6 @@ for metric_spec in interval_score_specs:
             metric_spec["Samples"],
             metric_spec["Format"],
         ),
-        "Interpretation": metric_spec["Interpretation"],
     })
 
 interval_score_df = pd.DataFrame(interval_score_display).set_index("Metric")
@@ -3135,9 +3131,8 @@ interval_score_df.index.name = None
 
 display(
     interval_score_df.style
-    .pipe(add_table_caption, "Typical Range Winkler Interval Score")
+    .pipe(add_table_caption, "Typical Range: Winkler Interval Score")
 )
-
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -3146,7 +3141,7 @@ display(
 #         <li><strong>Good Interval Calibration (Release Ready):</strong> The model is highly calibrated "out of the box," achieving 48.6% coverage for the typical range (Target: 50%) and 88.7% for the safety cushion (Target: 90%). Crucially, their 95% CIs ([45.2%, 51.6%] and [86.7%, 90.6%]) lie completely within the product release tolerances (45%–55% and 85%–95%), confirming they are statistically reliable and ready for deployment.</li>
 #         <li><strong>Excellent Generalization:</strong> The training values for MdAE (\$229.14), MAE (\$957.21), typical range width (\$917), and safety cushion width (\$2,019) all fall within the validation 95% bootstrap confidence intervals. This shows that the model generalizes exceptionally well and shows no significant overfitting.</li>
 #         <li><strong>Manageable Typical Range Width for Budgeting:</strong> An average typical range width of \$891 (95% CI: [\$851, \$929]) provides users with a narrow, manageable window for standard HSA/FSA planning, while the \$1,980 safety cushion width (95% CI: [\$1,904, \$2,057]) offers a stable, realistic buffer for emergency fund planning.</li>
-#         <li><strong>Personalized Intervals Add Value:</strong> The q25–q75 Winkler score improves from \$3,707 for the naive population interval to \$3,376 for XGBoost, an interval skill score of 8.9%. This confirms the typical range is not just calibrated; it is more useful than showing every user the same generic MEPS range.</li>
+#         <li><strong>Typical Range Adds Value:</strong> The Winkler score for the q25–q75 typical range interval improves from \$3,707 for the naive population interval to \$3,376 for XGBoost. This corresponds to an 8.9% interval skill improvement. This confirms the typical range is not just calibrated; it is more useful than showing every user the same generic MEPS range.</li>
 #         <li><strong>MdAE vs. MAE:</strong> The large gap between MdAE (\$244.54) and MAE (\$954.70) reinforces that while the model is very precise for the "typical" user, rare high-cost outliers continue to drive the mean error, further justifying a "plan around + safety cushion" approach over simple point estimates.</li>
 #         <li><strong>Skip CQR Calibration:</strong> Decided not to implement conformalized quantile regression, because the raw quantile model achieved excellent out-of-the-box calibration (within 1.5% of targets). Using the leaner model simplifies deployment and maintenance while meeting all reliability standards.</li>
 #     </ul>
