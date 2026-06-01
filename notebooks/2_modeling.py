@@ -3138,12 +3138,12 @@ display(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> 
 #     <ul>
-#         <li><strong>Good Interval Calibration (Release Ready):</strong> The model is highly calibrated "out of the box," achieving 48.6% coverage for the typical range (Target: 50%) and 88.7% for the safety cushion (Target: 90%). Crucially, their 95% CIs ([45.2%, 51.6%] and [86.7%, 90.6%]) lie completely within the product release tolerances (45%–55% and 85%–95%), confirming they are statistically reliable and ready for deployment.</li>
+#         <li><strong>Good Interval Calibration:</strong> The model achieves 48.6% coverage for the typical range (Target: 50%) and 88.7% for the safety cushion (Target: 90%). Their approximate 95% bootstrap CIs ([45.2%, 51.6%] and [86.7%, 90.6%]) fall within the product release tolerances (45%–55% and 85%–95%), supporting release readiness pending final holdout test confirmation.</li>
 #         <li><strong>Excellent Generalization:</strong> The training values for MdAE (\$229.14), MAE (\$957.21), typical range width (\$917), and safety cushion width (\$2,019) all fall within the validation 95% bootstrap confidence intervals. This shows that the model generalizes exceptionally well and shows no significant overfitting.</li>
 #         <li><strong>Manageable Typical Range Width for Budgeting:</strong> An average typical range width of \$891 (95% CI: [\$851, \$929]) provides users with a narrow, manageable window for standard HSA/FSA planning, while the \$1,980 safety cushion width (95% CI: [\$1,904, \$2,057]) offers a stable, realistic buffer for emergency fund planning.</li>
 #         <li><strong>Typical Range Adds Value:</strong> The Winkler score for the q25–q75 typical range interval improves from \$3,707 for the naive population interval to \$3,376 for XGBoost. This corresponds to an 8.9% interval skill improvement. This confirms the typical range is not just calibrated; it is more useful than showing every user the same generic MEPS range.</li>
 #         <li><strong>MdAE vs. MAE:</strong> The large gap between MdAE (\$244.54) and MAE (\$954.70) reinforces that while the model is very precise for the "typical" user, rare high-cost outliers continue to drive the mean error, further justifying a "plan around + safety cushion" approach over simple point estimates.</li>
-#         <li><strong>Skip CQR Calibration:</strong> Decided not to implement conformalized quantile regression, because the raw quantile model achieved excellent out-of-the-box calibration (within 1.5% of targets). Using the leaner model simplifies deployment and maintenance while meeting all reliability standards.</li>
+#         <li><strong>CQR Not Needed at Validation Stage:</strong> Conformalized quantile regression is not triggered because validation coverage falls within product tolerances. Revisit CQR if holdout test coverage falls outside release targets or if the q25 conservative bias worsens.</li>
 #     </ul>
 # </div>
 
@@ -3925,5 +3925,17 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Safety Cushion:</strong> For most demographic groups (sex, age, race), the safety cushion (q90) provides a buffer of roughly \$1,400–\$3,000 above the plan-around estimate. This represents a meaningful safety boundary for budgeting without encouraging excessive over-allocation.</li>
 #         <li><strong>Chronic Conditions:</strong> Each additional condition raises both the plan-around and the safety cushion. From 0 conditions (q50=\$128, q90=\$1,530) through 4+ conditions (q50=\$724, q90=\$4,090), the plan-around scales ~5.7× while the safety cushion scales ~2.7×, reflecting higher expected costs and greater cost uncertainty.</li>
 #         <li><strong>Underestimating High Costs:</strong> Even for the highest predicted cost tier, the safety cushion tops out around \$6,250, whereas the actual Very High Spend group has a median of \$10,086. The model's predicted range compresses for extreme actual spenders: high-spend and very-high-spend actual cost groups receive near-identical predictions (q50 \$570 vs. \$674), confirming that the model cannot distinguish high from extreme costs.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <b>Final Candidate Decision</b>
+#     <ul style="margin-top:8px">
+#         <li><b>Selected final candidate:</b> XGBoost quantile regression with q25, q50, q75, and q90 outputs.</li>
+#         <li><b>Rationale:</b> The q50 plan-around estimate meets the accuracy target; q25–q75 and q90 coverage pass validation gates; intervals are narrow enough for budgeting; subgroup diagnostics show no broad demographic calibration failure; and Winkler interval score beats the naive population interval baseline.</li>
+#         <li><b>Known risks:</b> q25 is slightly conservative, the uninsured group shows typical-range undercoverage, and very high actual spenders remain difficult to distinguish from high spenders.</li>
+#         <li><b>CQR decision:</b> Do not add conformalized quantile regression at this stage. Revisit if the untouched test set misses coverage targets or shows stronger endpoint bias.</li>
+#         <li><b>Next step:</b> Lock this model choice and evaluate once on the untouched test set.</li>
 #     </ul>
 # </div>
