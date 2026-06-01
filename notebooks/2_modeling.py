@@ -2851,6 +2851,15 @@ y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = y_val_quantile_
 DOLLAR = r"\$"
 
 
+def style_status_cells(value):
+    """Color-code compact status cells."""
+    if value in ["Pass", "Pass product target", "Pass MVP target", "Good", "Acceptable"]:
+        return "background-color: #d4edda"
+    if value in ["Review", "Miss"]:
+        return "background-color: #fff3cd"
+    return ""
+
+
 def format_metric_value(value, metric_format):
     """Format product metric values for display."""
     if metric_format == "percent":
@@ -3974,7 +3983,7 @@ test_quantile_bootstrap_samples = bootstrap_quantile_metrics(
     w_test,
     quantiles,
     n_bootstrap=N_BOOTSTRAP,
-    random_state=RANDOM_STATE + 1,
+    random_state=RANDOM_STATE,
 )
 
 print(f"Generated quantile predictions for {len(y_test_quantile_pred):,} test samples.")
@@ -4013,7 +4022,7 @@ display(
     .pipe(add_table_caption, "Final Model: Quantile Calibration")
     .format("{:.1%}", subset=["Nominal Level"])
     .format("{:+.1%}", subset=["Calibration Error (Test)"])
-    .apply(lambda row: ["background-color: #fff3cd" if row["Status"] == "Review" else "" for _ in row], axis=1)
+    .map(style_status_cells, subset=["Status"])
 )
 
 # %% [markdown]
@@ -4060,21 +4069,21 @@ test_product_metric_specs = [
         "Test": weighted_median_absolute_error(y_test, y_test_pred_q50, sample_weight=w_test),
         "Samples": test_quantile_bootstrap_samples["q50_mdae"],
         "Format": "currency_2",
-        "Target / Guardrail": "< $500 MVP; < $350 product target",
+        "Target / Guardrail": f"MVP < {DOLLAR}500; product target < {DOLLAR}350",
     },
     {
         "Metric": "Plan Around MAE (q50)",
         "Test": mean_absolute_error(y_test, y_test_pred_q50, sample_weight=w_test),
         "Samples": test_quantile_bootstrap_samples["q50_mae"],
         "Format": "currency_2",
-        "Target / Guardrail": "Diagnostic",
+        "Target / Guardrail": "Secondary Metric (No Target)",
     },
     {
         "Metric": "Plan Around R² (q50)",
         "Test": r2_score(y_test, y_test_pred_q50, sample_weight=w_test),
         "Samples": None,
         "Format": "decimal",
-        "Target / Guardrail": "Diagnostic",
+        "Target / Guardrail": "Secondary Metric (No Target)",
     },
     {
         "Metric": "Typical Range Coverage (q25–q75)",
@@ -4095,14 +4104,14 @@ test_product_metric_specs = [
         "Test": np.average(y_test_pred_q75 - y_test_pred_q25, weights=w_test),
         "Samples": test_quantile_bootstrap_samples["q25_q75_width"],
         "Format": "currency_0",
-        "Target / Guardrail": "Good < $1,000",
+        "Target / Guardrail": f"Good < {DOLLAR}1,000",
     },
     {
         "Metric": "Safety Cushion Width",
         "Test": np.average(y_test_pred_q90 - y_test_pred_q50, weights=w_test),
         "Samples": test_quantile_bootstrap_samples["q50_q90_width"],
         "Format": "currency_0",
-        "Target / Guardrail": "Good < $2,500",
+        "Target / Guardrail": f"Good < {DOLLAR}2,500",
     },
 ]
 
@@ -4129,7 +4138,7 @@ test_product_metrics_df.index.name = None
 display(
     test_product_metrics_df.style
     .pipe(add_table_caption, "Final Model: Product Metrics (Test)")
-    .apply(lambda row: ["background-color: #fff3cd" if row["Status"] in ["Review", "Miss"] else "" for _ in row], axis=1)
+    .map(style_status_cells, subset=["Status"])
 )
 
 # %%
@@ -4141,7 +4150,7 @@ test_interval_score_bootstrap_samples = bootstrap_interval_score_metrics(
     naive_q25,
     naive_q75,
     n_bootstrap=N_BOOTSTRAP,
-    random_state=RANDOM_STATE + 2,
+    random_state=RANDOM_STATE,
 )
 
 test_model_interval_score = interval_score(
