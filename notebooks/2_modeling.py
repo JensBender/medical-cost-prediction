@@ -2611,7 +2611,49 @@ def summarize_bootstrap_ci(samples, confidence=0.95):
     return np.percentile(samples, [100 * alpha / 2, 100 * (1 - alpha / 2)])
 
 
-def bootstrap_validation_quantile_metrics(y_true, y_pred, weights, quantiles, n_bootstrap=1000, random_state=RANDOM_STATE):
+def interval_score(y_true, lower_pred, upper_pred, alpha):
+    """
+    Calculate interval scores for central prediction intervals.
+
+    Lower scores are better. The score rewards narrow intervals when actual values fall 
+    inside the interval and penalizes misses by distance outside the interval.
+
+    Args:
+        y_true (array-like): Actual values.
+        lower_pred (array-like): Lower interval bounds.
+        upper_pred (array-like): Upper interval bounds.
+        alpha (float): Miss probability. For q25-q75, alpha=0.50.
+
+    Returns:
+        np.ndarray: Interval score for each observation.
+    """
+    y_true = np.asarray(y_true)
+    lower_pred = np.asarray(lower_pred)
+    upper_pred = np.asarray(upper_pred)
+
+    width = upper_pred - lower_pred
+    below_penalty = np.where(y_true < lower_pred, (2 / alpha) * (lower_pred - y_true), 0)
+    above_penalty = np.where(y_true > upper_pred, (2 / alpha) * (y_true - upper_pred), 0)
+
+    return width + below_penalty + above_penalty
+
+
+def weighted_interval_score(y_true, lower_pred, upper_pred, weights, alpha):
+    """Calculate weighted average interval score."""
+    scores = interval_score(y_true, lower_pred, upper_pred, alpha)
+    return np.average(scores, weights=weights)
+
+
+def bootstrap_validation_quantile_metrics(
+    y_true,
+    y_pred,
+    weights,
+    quantiles,
+    naive_lower=None,
+    naive_upper=None,
+    n_bootstrap=1000,
+    random_state=RANDOM_STATE,
+):
     """
     Bootstrap key quantile regression validation metrics.
 
@@ -2620,6 +2662,8 @@ def bootstrap_validation_quantile_metrics(y_true, y_pred, weights, quantiles, n_
         y_pred (np.ndarray): Validation predictions with one column per quantile.
         weights (array-like): Validation survey weights.
         quantiles (list): Quantile levels matching prediction columns.
+        naive_lower (float, optional): Naive lower interval bound for interval score baseline.
+        naive_upper (float, optional): Naive upper interval bound for interval score baseline.
         n_bootstrap (int): Number of bootstrap resamples.
         random_state (int): Random seed for reproducibility.
 
@@ -2639,7 +2683,12 @@ def bootstrap_validation_quantile_metrics(y_true, y_pred, weights, quantiles, n_
         "q25_q75_coverage": np.empty(n_bootstrap),
         "q25_q75_width": np.empty(n_bootstrap),
         "q50_q90_width": np.empty(n_bootstrap),
+        "q25_q75_interval_score": np.empty(n_bootstrap),
     }
+    include_naive_interval = naive_lower is not None and naive_upper is not None
+    if include_naive_interval:
+        bootstrap_samples["naive_q25_q75_interval_score"] = np.empty(n_bootstrap)
+        bootstrap_samples["q25_q75_interval_skill_score"] = np.empty(n_bootstrap)
 
     for sample_idx in range(n_bootstrap):
         row_idx = rng.integers(0, n_obs, size=n_obs)
@@ -2671,16 +2720,40 @@ def bootstrap_validation_quantile_metrics(y_true, y_pred, weights, quantiles, n_
         )
         bootstrap_samples["q25_q75_width"][sample_idx] = np.average(q75_pred - q25_pred, weights=w_boot)
         bootstrap_samples["q50_q90_width"][sample_idx] = np.average(q90_pred - q50_pred, weights=w_boot)
+        bootstrap_samples["q25_q75_interval_score"][sample_idx] = weighted_interval_score(
+            y_boot,
+            q25_pred,
+            q75_pred,
+            w_boot,
+            alpha=0.50,
+        )
+
+        if include_naive_interval:
+            naive_interval_score = weighted_interval_score(
+                y_boot,
+                np.full_like(y_boot, naive_lower, dtype=float),
+                np.full_like(y_boot, naive_upper, dtype=float),
+                w_boot,
+                alpha=0.50,
+            )
+            bootstrap_samples["naive_q25_q75_interval_score"][sample_idx] = naive_interval_score
+            bootstrap_samples["q25_q75_interval_skill_score"][sample_idx] = (
+                1 - (bootstrap_samples["q25_q75_interval_score"][sample_idx] / naive_interval_score)
+            )
 
     return bootstrap_samples
 
 
 N_BOOTSTRAP = 1000
+naive_q25 = weighted_quantile(y_train, w_train, 0.25)
+naive_q75 = weighted_quantile(y_train, w_train, 0.75)
 quantile_bootstrap_samples = bootstrap_validation_quantile_metrics(
     y_val,
     y_val_quantile_pred,
     w_val,
     quantiles,
+    naive_lower=naive_q25,
+    naive_upper=naive_q75,
     n_bootstrap=N_BOOTSTRAP,
 )
 
@@ -2948,6 +3021,81 @@ display(
     .pipe(add_table_caption, "XGBoost Quantile Regression Metrics")
 )
 
+# %% [markdown]
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     💡 <b>Winkler Interval Score</b>
+#     <br>
+#     Coverage and width diagnose intervals separately. The Winkler interval score evaluates both together: it rewards narrow intervals when the actual cost falls inside the range and adds a penalty when the actual cost falls below q25 or above q75. Lower scores are better.
+#     <br><br>
+#     The interval skill score compares the model's q25–q75 interval score with a naive baseline that always predicts the same population q25–q75 interval from the training data. Positive skill means the personalized model provides better typical ranges than a generic population range.
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Evaluate the q25–q75 typical range using Winkler interval score and compare it with a naive population interval baseline.
+# </div>
+
+# %%
+model_interval_score = weighted_interval_score(
+    y_val,
+    y_val_pred_q25,
+    y_val_pred_q75,
+    w_val,
+    alpha=0.50,
+)
+naive_interval_score = weighted_interval_score(
+    y_val,
+    np.full_like(y_val, naive_q25, dtype=float),
+    np.full_like(y_val, naive_q75, dtype=float),
+    w_val,
+    alpha=0.50,
+)
+interval_skill_score = 1 - (model_interval_score / naive_interval_score)
+
+interval_score_specs = [
+    {
+        "Metric": "XGBoost Typical Range Interval Score",
+        "Validation": model_interval_score,
+        "Samples": quantile_bootstrap_samples["q25_q75_interval_score"],
+        "Format": "currency_0",
+        "Interpretation": "Lower is better",
+    },
+    {
+        "Metric": "Naive Population Interval Score",
+        "Validation": naive_interval_score,
+        "Samples": quantile_bootstrap_samples["naive_q25_q75_interval_score"],
+        "Format": "currency_0",
+        "Interpretation": "Lower is better",
+    },
+    {
+        "Metric": "Interval Skill Score",
+        "Validation": interval_skill_score,
+        "Samples": quantile_bootstrap_samples["q25_q75_interval_skill_score"],
+        "Format": "percent",
+        "Interpretation": "Higher is better",
+    },
+]
+
+interval_score_display = []
+
+for metric_spec in interval_score_specs:
+    interval_score_display.append({
+        "Metric": metric_spec["Metric"],
+        "Validation (95% CI)": format_validation_metric_with_ci(
+            metric_spec["Validation"],
+            metric_spec["Samples"],
+            metric_spec["Format"],
+        ),
+        "Interpretation": metric_spec["Interpretation"],
+    })
+
+interval_score_df = pd.DataFrame(interval_score_display).set_index("Metric")
+interval_score_df.index.name = None
+
+display(
+    interval_score_df.style
+    .pipe(add_table_caption, "Typical Range Winkler Interval Score")
+)
+
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -2956,6 +3104,7 @@ display(
 #         <li><strong>Good Interval Calibration (Release Ready):</strong> The model is highly calibrated "out of the box," achieving 48.6% coverage for the typical range (Target: 50%) and 88.7% for the safety cushion (Target: 90%). Crucially, their 95% CIs ([45.2%, 51.6%] and [86.7%, 90.6%]) lie completely within the product release tolerances (45%–55% and 85%–95%), confirming they are statistically reliable and ready for deployment.</li>
 #         <li><strong>Excellent Generalization:</strong> The training values for MdAE (\$229.14), MAE (\$957.21), typical range width (\$917), and safety cushion width (\$2,019) all fall within the validation 95% bootstrap confidence intervals. This shows that the model generalizes exceptionally well and shows no significant overfitting.</li>
 #         <li><strong>Manageable Typical Range Width for Budgeting:</strong> An average typical range width of \$891 (95% CI: [\$851, \$929]) provides users with a narrow, manageable window for standard HSA/FSA planning, while the \$1,980 safety cushion width (95% CI: [\$1,904, \$2,057]) offers a stable, realistic buffer for emergency fund planning.</li>
+#         <li><strong>Personalized Intervals Add Value:</strong> The q25–q75 Winkler score improves from \$3,707 for the naive population interval to \$3,376 for XGBoost, an interval skill score of 8.9%. This confirms the typical range is not just calibrated; it is more useful than showing every user the same generic MEPS range.</li>
 #         <li><strong>MdAE vs. MAE:</strong> The large gap between MdAE (\$244.54) and MAE (\$954.70) reinforces that while the model is very precise for the "typical" user, rare high-cost outliers continue to drive the mean error, further justifying a "plan around + safety cushion" approach over simple point estimates.</li>
 #         <li><strong>Skip CQR Calibration:</strong> Decided not to implement conformalized quantile regression, because the raw quantile model achieved excellent out-of-the-box calibration (within 1.5% of targets). Using the leaner model simplifies deployment and maintenance while meeting all reliability standards.</li>
 #     </ul>
