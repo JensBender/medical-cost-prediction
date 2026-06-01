@@ -2853,9 +2853,9 @@ DOLLAR = r"\$"
 
 def style_status_cells(value):
     """Color-code compact status cells."""
-    if value in ["Pass", "Pass product target", "Pass MVP target", "Good", "Acceptable"]:
+    if value == "Pass":
         return "background-color: #d4edda"
-    if value in ["Review", "Miss"]:
+    if value == "Review":
         return "background-color: #fff3cd"
     return ""
 
@@ -4026,6 +4026,13 @@ display(
 )
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights</b> 
+#     <ul>
+#     </ul>
+# </div>
+
+# %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Product Metrics</h2>
 # </div> 
@@ -4039,27 +4046,15 @@ display(
 def get_test_metric_status(metric, value):
     """Return a compact release status for final test metrics."""
     if metric == "Plan Around MdAE (q50)":
-        if value < 350:
-            return "Pass product target"
-        if value < 500:
-            return "Pass MVP target"
-        return "Miss"
+        return "Pass" if value < 500 else "Review"
     if metric == "Typical Range Coverage (q25–q75)":
         return "Pass" if 0.45 <= value <= 0.55 else "Review"
     if metric == "Safety Cushion Coverage (q90)":
         return "Pass" if 0.85 <= value <= 0.95 else "Review"
     if metric == "Typical Range Width":
-        if value < 1000:
-            return "Good"
-        if value < 1500:
-            return "Acceptable"
-        return "Review"
+        return "Pass" if value < 1500 else "Review"
     if metric == "Safety Cushion Width":
-        if value < 2500:
-            return "Good"
-        if value < 3500:
-            return "Acceptable"
-        return "Review"
+        return "Pass" if value < 3500 else "Review"
     return "Diagnostic"
 
 
@@ -4069,21 +4064,21 @@ test_product_metric_specs = [
         "Test": weighted_median_absolute_error(y_test, y_test_pred_q50, sample_weight=w_test),
         "Samples": test_quantile_bootstrap_samples["q50_mdae"],
         "Format": "currency_2",
-        "Target / Guardrail": f"MVP < {DOLLAR}500; product target < {DOLLAR}350",
+        "Target / Guardrail": f"MVP < {DOLLAR}500; Desirable < {DOLLAR}350",
     },
     {
         "Metric": "Plan Around MAE (q50)",
         "Test": mean_absolute_error(y_test, y_test_pred_q50, sample_weight=w_test),
         "Samples": test_quantile_bootstrap_samples["q50_mae"],
         "Format": "currency_2",
-        "Target / Guardrail": "Secondary Metric (No Target)",
+        "Target / Guardrail": "None",
     },
     {
         "Metric": "Plan Around R² (q50)",
         "Test": r2_score(y_test, y_test_pred_q50, sample_weight=w_test),
         "Samples": None,
         "Format": "decimal",
-        "Target / Guardrail": "Secondary Metric (No Target)",
+        "Target / Guardrail": "None",
     },
     {
         "Metric": "Typical Range Coverage (q25–q75)",
@@ -4104,14 +4099,14 @@ test_product_metric_specs = [
         "Test": np.average(y_test_pred_q75 - y_test_pred_q25, weights=w_test),
         "Samples": test_quantile_bootstrap_samples["q25_q75_width"],
         "Format": "currency_0",
-        "Target / Guardrail": f"Good < {DOLLAR}1,000",
+        "Target / Guardrail": f"Good < {DOLLAR}1,000; Acceptable < {DOLLAR}1,500",
     },
     {
         "Metric": "Safety Cushion Width",
         "Test": np.average(y_test_pred_q90 - y_test_pred_q50, weights=w_test),
         "Samples": test_quantile_bootstrap_samples["q50_q90_width"],
         "Format": "currency_0",
-        "Target / Guardrail": f"Good < {DOLLAR}2,500",
+        "Target / Guardrail": f"Good < {DOLLAR}2,500; Acceptable < {DOLLAR}3,500",
     },
 ]
 
