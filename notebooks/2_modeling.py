@@ -2801,8 +2801,8 @@ plt.show()
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> 
 #     <ul>
-#         <li><strong>Good Overall Calibration:</strong> q50, q75, and q90 are close to their nominal levels, supporting the plan-around estimate and safety cushion.</li>
-#         <li><strong>q25 is Slightly Conservative:</strong> q25 covers about 30% instead of 25%, so the lower endpoint of the typical range is somewhat high. Decision: Monitor, Not Block. The q25 error is worth revisiting on final holdout test set.</li>
+#         <li><strong>Good Overall Calibration:</strong> q50, q75, and q90 are close to their nominal levels and the 95% confidence intervals contain the nominal levels. This confirms good calibration for the plan-around estimate and safety cushion.</li>
+#         <li><strong>q25 is Slightly Conservative:</strong> q25 covers about 30.4% instead of 25% on the validation data. Since the nominal 25% fall outside the 95% CI [27.6%, 33.4%], this over-coverage is statistically significant. Decision: Monitor, Not Block. The q25 systematic shift is worth revisiting on the final holdout test set.</li>
 #     </ul>
 # </div>
 
