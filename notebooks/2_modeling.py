@@ -24,7 +24,7 @@
 #     <div style="font-size:14px; font-weight:normal; color:#666; margin-top:16px;">
 #         Author: Jens Bender <br> 
 #         Created: March 2026<br>
-#         Last updated: May 2026
+#         Last updated: June 2026
 #     </div>
 # </div>
 
@@ -1545,7 +1545,7 @@ display(
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     🎯 Evaluate Model Performance:
 #     <ul>
-#         <li>Metrics Comparison Tables</li>
+#         <li>Metrics Comparison Tables (MdAE, MAE, R²)</li>
 #         <li>Overfitting Analysis</li>
 #         <li>Heteroscedasticity (Residuals vs. Predicted)</li> 
 #         <li>Stratified Error Analysis (Model Reliability & Fairness Audit)</li>
@@ -2195,7 +2195,7 @@ plot_subgroup_performance(subgroup_df, vulnerable_and_proxy_labels, "Tuned Model
 #     <strong>⚖️ Regulatory Compliance & Ethical AI</strong> <br>
 #     This project is designed for the US Market (NIST, FTC) with a roadmap for EU Expansion (AI Act, GDPR). To ensure responsible and compliant deployment, performed stratified error analysis to detect algorithmic bias and use sample weights to ensure population representativeness.
 #     <p style="margin-top:10px;">
-#         For a details on regulatory compliance and ethical AI, refer to: <a href="../docs/research/regulatory_compliance.md">docs/research/regulatory_compliance.md</a>
+#         For details on regulatory compliance and ethical AI, refer to: <a href="../docs/research/regulatory_compliance.md">docs/research/regulatory_compliance.md</a>
 #     </p>
 # </div>
 #
@@ -2497,7 +2497,7 @@ def train_xgboost_quantile():
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Evaluate each quantile using the Pinball Loss and Quantile Skill Score.
+#     📌 Evaluate each quantile using the Pinball Loss and Skill Score.
 # </div>
 
 # %%
@@ -2544,8 +2544,8 @@ for idx, q in enumerate(quantiles):
         "Pinball Loss (Val)": val_loss_model,
         "Pinball Loss (Train)": train_loss_model,
         "Pinball Delta %": delta_percent,
-        "Quantile Skill Score (Val)": val_qss,
-        "Quantile Skill Score (Train)": train_qss,
+        "Skill Score (Val)": val_qss,
+        "Skill Score (Train)": train_qss,
     })
 
 pinball_df = pd.DataFrame(pinball_results)
@@ -2554,7 +2554,7 @@ display(
     .hide()
     .pipe(add_table_caption, "XGBoost Quantile Regression: Pinball Loss & Skill Scores")
     .format("${:,.2f}", subset=["Pinball Loss (Val)", "Pinball Loss (Train)"])
-    .format("{:.2%}", subset=["Quantile Skill Score (Val)", "Quantile Skill Score (Train)"])
+    .format("{:.2%}", subset=["Skill Score (Val)", "Skill Score (Train)"])
     .format("{:+.2f}%", subset=["Pinball Delta %"])
 )
 
@@ -2815,7 +2815,7 @@ plt.show()
 #     <br><br>
 #     <b>Product Coverage</b> <br>
 #     Typical range coverage measures how often actual costs fall between q25 and q75. Safety cushion coverage is the q90 coverage already checked in the calibration section, repeated here because it is also a release metric for the product.
-#     Validation confidence intervals are approximate row-bootstrap intervals for the metric estimate, not prediction intervals for individual users.
+#     Validation bootstrap confidence intervals are for the metric estimate, not prediction intervals for individual users.
 #     <ul style="margin-top:8px">
 #         <li><b>Typical range (q25–q75):</b> Target = 50%, release-acceptable = 45–55%.</li>
 #         <li><b>Safety cushion (q90):</b> Target = 90%, release-acceptable = 85–95%.</li>
