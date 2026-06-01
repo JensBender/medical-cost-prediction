@@ -2588,7 +2588,7 @@ display(
 #     Calibration error is empirical coverage minus the nominal quantile level. Positive values mean the quantile is too high/conservative; negative values mean it is too low/aggressive. For this project, errors within about 5% are acceptable validation diagnostics; errors beyond about 10% would usually require recalibration or a clearer release warning.
 #     <br><br>
 #     <b>Metric Confidence Intervals</b> <br>
-#     Bootstrap confidence intervals are calculated for metrics on the validation data. They are for the metrics, not prediction intervals for individual users. Each bootstrap sample resamples validation rows with replacement while keeping actual cost, predicted quantiles, and survey weight together.
+#     Bootstrap confidence intervals are calculated for metrics on the evaluation data. They are for the metrics, not prediction intervals for individual users. Each bootstrap sample resamples rows with replacement while keeping actual cost, predicted quantiles, and survey weight together.
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -2611,7 +2611,7 @@ def summarize_bootstrap_ci(samples, confidence=0.95):
     return np.percentile(samples, [100 * alpha / 2, 100 * (1 - alpha / 2)])
 
 
-def bootstrap_validation_quantile_metrics(
+def bootstrap_quantile_metrics(
     y_true,
     y_pred,
     weights,
@@ -2620,12 +2620,12 @@ def bootstrap_validation_quantile_metrics(
     random_state=RANDOM_STATE,
 ):
     """
-    Bootstrap key quantile regression validation metrics.
+    Bootstrap key quantile regression metrics.
 
     Args:
-        y_true (array-like): Actual validation costs.
-        y_pred (np.ndarray): Validation predictions with one column per quantile.
-        weights (array-like): Validation survey weights.
+        y_true (array-like): Actual costs.
+        y_pred (np.ndarray): Predictions with one column per quantile.
+        weights (array-like): Survey weights.
         quantiles (list): Quantile levels matching prediction columns.
         n_bootstrap (int): Number of bootstrap resamples.
         random_state (int): Random seed for reproducibility.
@@ -2683,7 +2683,7 @@ def bootstrap_validation_quantile_metrics(
 
 
 N_BOOTSTRAP = 1000
-quantile_bootstrap_samples = bootstrap_validation_quantile_metrics(
+quantile_bootstrap_samples = bootstrap_quantile_metrics(
     y_val,
     y_val_quantile_pred,
     w_val,
@@ -2862,8 +2862,8 @@ def format_metric_value(value, metric_format):
     return f"{DOLLAR}{value:,.2f}"
 
 
-def format_validation_metric_with_ci(value, samples, metric_format):
-    """Format validation metric estimates with an inline bootstrap confidence interval."""
+def format_metric_with_ci(value, samples, metric_format):
+    """Format metric estimates with an inline bootstrap confidence interval."""
     ci_lower, ci_upper = summarize_bootstrap_ci(samples)
     return (
         f"{format_metric_value(value, metric_format)} "
@@ -2937,7 +2937,7 @@ for metric_spec in product_metric_specs:
     validation_display = (
         format_metric_value(metric_spec["Validation"], metric_format)
         if metric_spec["Samples"] is None
-        else format_validation_metric_with_ci(metric_spec["Validation"], metric_spec["Samples"], metric_format)
+        else format_metric_with_ci(metric_spec["Validation"], metric_spec["Samples"], metric_format)
     )
 
     metrics_display.append({
@@ -3119,7 +3119,7 @@ interval_score_display = []
 for metric_spec in interval_score_specs:
     interval_score_display.append({
         "Metric": metric_spec["Metric"],
-        "Validation (95% CI)": format_validation_metric_with_ci(
+        "Validation (95% CI)": format_metric_with_ci(
             metric_spec["Validation"],
             metric_spec["Samples"],
             metric_spec["Format"],
@@ -3937,5 +3937,273 @@ plot_quantile_subgroup_predictions(
 #         <li><b>Known risks:</b> q25 is slightly conservative, the uninsured group shows typical-range undercoverage, and very high actual spenders remain difficult to distinguish from high spenders.</li>
 #         <li><b>CQR decision:</b> Do not add conformalized quantile regression at this stage. Revisit if the untouched test set misses coverage targets or shows stronger endpoint bias.</li>
 #         <li><b>Next step:</b> Lock this model choice and evaluate once on the untouched test set.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Final Model Evaluation</h1>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <b>Holdout Test Set Evaluation</b> <br>
+#     The model choice, calibration decision, and release guardrails are now locked. This section evaluates the selected XGBoost quantile model once on the untouched test set. These results estimate performance in terms of generalization to unseen data and should not be used to tune the model further.
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Predictions</h2>
+# </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Generate q25, q50, q75, and q90 predictions for the test set using the selected XGBoost quantile model.
+# </div>
+
+# %%
+xgb_quantile_final_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
+
+y_test_quantile_pred_raw = xgb_quantile_final_model.predict(X_test_preprocessed)
+y_test_quantile_pred = np.maximum(y_test_quantile_pred_raw, 0)
+y_test_quantile_pred = np.maximum.accumulate(y_test_quantile_pred, axis=1)
+
+y_test_pred_q25, y_test_pred_q50, y_test_pred_q75, y_test_pred_q90 = y_test_quantile_pred.T
+
+test_quantile_bootstrap_samples = bootstrap_quantile_metrics(
+    y_test,
+    y_test_quantile_pred,
+    w_test,
+    quantiles,
+    n_bootstrap=N_BOOTSTRAP,
+    random_state=RANDOM_STATE + 1,
+)
+
+print(f"Generated quantile predictions for {len(y_test_quantile_pred):,} test samples.")
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Quantile Calibration</h2>
+# </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Check whether each predicted quantile remains calibrated on the untouched test set.
+# </div>
+
+# %%
+test_quantile_coverage_results = []
+
+for idx, q in enumerate(quantiles):
+    quantile_label = f"q{int(q * 100)}"
+    test_coverage = np.average(y_test <= y_test_quantile_pred[:, idx], weights=w_test)
+    ci_lower, ci_upper = summarize_bootstrap_ci(test_quantile_bootstrap_samples[f"{quantile_label}_coverage"])
+    calibration_error = test_coverage - q
+
+    test_quantile_coverage_results.append({
+        "Quantile": quantile_label,
+        "Nominal Level": q,
+        "Empirical Coverage (Test, 95% CI)": f"{test_coverage:.1%} [{ci_lower:.1%}, {ci_upper:.1%}]",
+        "Calibration Error (Test)": calibration_error,
+        "Status": "Pass" if abs(calibration_error) <= 0.05 else "Review",
+    })
+
+test_quantile_coverage_df = pd.DataFrame(test_quantile_coverage_results)
+
+display(
+    test_quantile_coverage_df.style
+    .hide()
+    .pipe(add_table_caption, "Final Model: Quantile Calibration")
+    .format("{:.1%}", subset=["Nominal Level"])
+    .format("{:+.1%}", subset=["Calibration Error (Test)"])
+    .apply(lambda row: ["background-color: #fff3cd" if row["Status"] == "Review" else "" for _ in row], axis=1)
+)
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Product Metrics</h2>
+# </div> 
+#
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Evaluate final model q50 accuracy, product coverage, interval width, and Winkler interval score on the untouched test set.
+# </div>
+
+# %%
+def get_test_metric_status(metric, value):
+    """Return a compact release status for final test metrics."""
+    if metric == "Plan Around MdAE (q50)":
+        if value < 350:
+            return "Pass product target"
+        if value < 500:
+            return "Pass MVP target"
+        return "Miss"
+    if metric == "Typical Range Coverage (q25–q75)":
+        return "Pass" if 0.45 <= value <= 0.55 else "Review"
+    if metric == "Safety Cushion Coverage (q90)":
+        return "Pass" if 0.85 <= value <= 0.95 else "Review"
+    if metric == "Typical Range Width":
+        if value < 1000:
+            return "Good"
+        if value < 1500:
+            return "Acceptable"
+        return "Review"
+    if metric == "Safety Cushion Width":
+        if value < 2500:
+            return "Good"
+        if value < 3500:
+            return "Acceptable"
+        return "Review"
+    return "Diagnostic"
+
+
+test_product_metric_specs = [
+    {
+        "Metric": "Plan Around MdAE (q50)",
+        "Test": weighted_median_absolute_error(y_test, y_test_pred_q50, sample_weight=w_test),
+        "Samples": test_quantile_bootstrap_samples["q50_mdae"],
+        "Format": "currency_2",
+        "Target / Guardrail": "< $500 MVP; < $350 product target",
+    },
+    {
+        "Metric": "Plan Around MAE (q50)",
+        "Test": mean_absolute_error(y_test, y_test_pred_q50, sample_weight=w_test),
+        "Samples": test_quantile_bootstrap_samples["q50_mae"],
+        "Format": "currency_2",
+        "Target / Guardrail": "Diagnostic",
+    },
+    {
+        "Metric": "Plan Around R² (q50)",
+        "Test": r2_score(y_test, y_test_pred_q50, sample_weight=w_test),
+        "Samples": None,
+        "Format": "decimal",
+        "Target / Guardrail": "Diagnostic",
+    },
+    {
+        "Metric": "Typical Range Coverage (q25–q75)",
+        "Test": np.average((y_test >= y_test_pred_q25) & (y_test <= y_test_pred_q75), weights=w_test),
+        "Samples": test_quantile_bootstrap_samples["q25_q75_coverage"],
+        "Format": "percent",
+        "Target / Guardrail": "45%–55%",
+    },
+    {
+        "Metric": "Safety Cushion Coverage (q90)",
+        "Test": np.average(y_test <= y_test_pred_q90, weights=w_test),
+        "Samples": test_quantile_bootstrap_samples["q90_coverage"],
+        "Format": "percent",
+        "Target / Guardrail": "85%–95%",
+    },
+    {
+        "Metric": "Typical Range Width",
+        "Test": np.average(y_test_pred_q75 - y_test_pred_q25, weights=w_test),
+        "Samples": test_quantile_bootstrap_samples["q25_q75_width"],
+        "Format": "currency_0",
+        "Target / Guardrail": "Good < $1,000",
+    },
+    {
+        "Metric": "Safety Cushion Width",
+        "Test": np.average(y_test_pred_q90 - y_test_pred_q50, weights=w_test),
+        "Samples": test_quantile_bootstrap_samples["q50_q90_width"],
+        "Format": "currency_0",
+        "Target / Guardrail": "Good < $2,500",
+    },
+]
+
+test_product_metrics_display = []
+
+for metric_spec in test_product_metric_specs:
+    metric_format = metric_spec["Format"]
+    test_display = (
+        format_metric_value(metric_spec["Test"], metric_format)
+        if metric_spec["Samples"] is None
+        else format_metric_with_ci(metric_spec["Test"], metric_spec["Samples"], metric_format)
+    )
+
+    test_product_metrics_display.append({
+        "Metric": metric_spec["Metric"],
+        "Test (95% CI)": test_display,
+        "Target / Guardrail": metric_spec["Target / Guardrail"],
+        "Status": get_test_metric_status(metric_spec["Metric"], metric_spec["Test"]),
+    })
+
+test_product_metrics_df = pd.DataFrame(test_product_metrics_display).set_index("Metric")
+test_product_metrics_df.index.name = None
+
+display(
+    test_product_metrics_df.style
+    .pipe(add_table_caption, "Final Model: Product Metrics (Test)")
+    .apply(lambda row: ["background-color: #fff3cd" if row["Status"] in ["Review", "Miss"] else "" for _ in row], axis=1)
+)
+
+# %%
+test_interval_score_bootstrap_samples = bootstrap_interval_score_metrics(
+    y_test,
+    y_test_pred_q25,
+    y_test_pred_q75,
+    w_test,
+    naive_q25,
+    naive_q75,
+    n_bootstrap=N_BOOTSTRAP,
+    random_state=RANDOM_STATE + 2,
+)
+
+test_model_interval_score = interval_score(
+    y_test,
+    y_test_pred_q25,
+    y_test_pred_q75,
+    alpha=0.50,
+    sample_weight=w_test,
+)
+test_naive_interval_score = interval_score(
+    y_test,
+    np.full_like(y_test, naive_q25, dtype=float),
+    np.full_like(y_test, naive_q75, dtype=float),
+    alpha=0.50,
+    sample_weight=w_test,
+)
+test_interval_skill_score = 1 - (test_model_interval_score / test_naive_interval_score)
+
+test_interval_score_specs = [
+    {
+        "Metric": "XGBoost Interval Score",
+        "Test": test_model_interval_score,
+        "Samples": test_interval_score_bootstrap_samples["model_interval_score"],
+        "Format": "currency_0",
+    },
+    {
+        "Metric": "Naive Interval Score",
+        "Test": test_naive_interval_score,
+        "Samples": test_interval_score_bootstrap_samples["naive_interval_score"],
+        "Format": "currency_0",
+    },
+    {
+        "Metric": "Interval Skill Score",
+        "Test": test_interval_skill_score,
+        "Samples": test_interval_score_bootstrap_samples["interval_skill_score"],
+        "Format": "percent",
+    },
+]
+
+test_interval_score_display = []
+
+for metric_spec in test_interval_score_specs:
+    test_interval_score_display.append({
+        "Metric": metric_spec["Metric"],
+        "Test (95% CI)": format_metric_with_ci(
+            metric_spec["Test"],
+            metric_spec["Samples"],
+            metric_spec["Format"],
+        ),
+    })
+
+test_interval_score_df = pd.DataFrame(test_interval_score_display).set_index("Metric")
+test_interval_score_df.index.name = None
+
+display(
+    test_interval_score_df.style
+    .pipe(add_table_caption, "Typical Range: Winkler Interval Score (Test)")
+)
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights</b> 
+#     <ul>
 #     </ul>
 # </div>
