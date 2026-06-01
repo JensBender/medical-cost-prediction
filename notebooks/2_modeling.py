@@ -2611,46 +2611,11 @@ def summarize_bootstrap_ci(samples, confidence=0.95):
     return np.percentile(samples, [100 * alpha / 2, 100 * (1 - alpha / 2)])
 
 
-def interval_score(y_true, lower_pred, upper_pred, alpha):
-    """
-    Calculate interval scores for central prediction intervals.
-
-    Lower scores are better. The score rewards narrow intervals when actual values fall 
-    inside the interval and penalizes misses by distance outside the interval.
-
-    Args:
-        y_true (array-like): Actual values.
-        lower_pred (array-like): Lower interval bounds.
-        upper_pred (array-like): Upper interval bounds.
-        alpha (float): Miss probability. For q25-q75, alpha=0.50.
-
-    Returns:
-        np.ndarray: Interval score for each observation.
-    """
-    y_true = np.asarray(y_true)
-    lower_pred = np.asarray(lower_pred)
-    upper_pred = np.asarray(upper_pred)
-
-    width = upper_pred - lower_pred
-    below_penalty = np.where(y_true < lower_pred, (2 / alpha) * (lower_pred - y_true), 0)
-    above_penalty = np.where(y_true > upper_pred, (2 / alpha) * (y_true - upper_pred), 0)
-
-    return width + below_penalty + above_penalty
-
-
-def weighted_interval_score(y_true, lower_pred, upper_pred, weights, alpha):
-    """Calculate weighted average interval score."""
-    scores = interval_score(y_true, lower_pred, upper_pred, alpha)
-    return np.average(scores, weights=weights)
-
-
 def bootstrap_validation_quantile_metrics(
     y_true,
     y_pred,
     weights,
     quantiles,
-    naive_lower=None,
-    naive_upper=None,
     n_bootstrap=1000,
     random_state=RANDOM_STATE,
 ):
@@ -2662,8 +2627,6 @@ def bootstrap_validation_quantile_metrics(
         y_pred (np.ndarray): Validation predictions with one column per quantile.
         weights (array-like): Validation survey weights.
         quantiles (list): Quantile levels matching prediction columns.
-        naive_lower (float, optional): Naive lower interval bound for interval score baseline.
-        naive_upper (float, optional): Naive upper interval bound for interval score baseline.
         n_bootstrap (int): Number of bootstrap resamples.
         random_state (int): Random seed for reproducibility.
 
@@ -2683,12 +2646,7 @@ def bootstrap_validation_quantile_metrics(
         "q25_q75_coverage": np.empty(n_bootstrap),
         "q25_q75_width": np.empty(n_bootstrap),
         "q50_q90_width": np.empty(n_bootstrap),
-        "q25_q75_interval_score": np.empty(n_bootstrap),
     }
-    include_naive_interval = naive_lower is not None and naive_upper is not None
-    if include_naive_interval:
-        bootstrap_samples["naive_q25_q75_interval_score"] = np.empty(n_bootstrap)
-        bootstrap_samples["q25_q75_interval_skill_score"] = np.empty(n_bootstrap)
 
     for sample_idx in range(n_bootstrap):
         row_idx = rng.integers(0, n_obs, size=n_obs)
@@ -2720,40 +2678,16 @@ def bootstrap_validation_quantile_metrics(
         )
         bootstrap_samples["q25_q75_width"][sample_idx] = np.average(q75_pred - q25_pred, weights=w_boot)
         bootstrap_samples["q50_q90_width"][sample_idx] = np.average(q90_pred - q50_pred, weights=w_boot)
-        bootstrap_samples["q25_q75_interval_score"][sample_idx] = weighted_interval_score(
-            y_boot,
-            q25_pred,
-            q75_pred,
-            w_boot,
-            alpha=0.50,
-        )
-
-        if include_naive_interval:
-            naive_interval_score = weighted_interval_score(
-                y_boot,
-                np.full_like(y_boot, naive_lower, dtype=float),
-                np.full_like(y_boot, naive_upper, dtype=float),
-                w_boot,
-                alpha=0.50,
-            )
-            bootstrap_samples["naive_q25_q75_interval_score"][sample_idx] = naive_interval_score
-            bootstrap_samples["q25_q75_interval_skill_score"][sample_idx] = (
-                1 - (bootstrap_samples["q25_q75_interval_score"][sample_idx] / naive_interval_score)
-            )
 
     return bootstrap_samples
 
 
 N_BOOTSTRAP = 1000
-naive_q25 = weighted_quantile(y_train, w_train, 0.25)
-naive_q75 = weighted_quantile(y_train, w_train, 0.75)
 quantile_bootstrap_samples = bootstrap_validation_quantile_metrics(
     y_val,
     y_val_quantile_pred,
     w_val,
     quantiles,
-    naive_lower=naive_q25,
-    naive_upper=naive_q75,
     n_bootstrap=N_BOOTSTRAP,
 )
 
@@ -3035,19 +2969,127 @@ display(
 # </div>
 
 # %%
-model_interval_score = weighted_interval_score(
+def interval_score(y_true, lower_pred, upper_pred, alpha, sample_weight=None):
+    """
+    Calculate the average interval score for prediction intervals.
+
+    Lower scores are better. The score rewards narrow intervals when actual values fall 
+    inside the interval and penalizes misses by distance outside the interval.
+
+    Args:
+        y_true (array-like): Actual values.
+        lower_pred (array-like): Lower interval bounds.
+        upper_pred (array-like): Upper interval bounds.
+        alpha (float): Miss probability. For q25-q75, alpha=0.50.
+        sample_weight (array-like, optional): Sample weights.
+
+    Returns:
+        float: Average interval score.
+    """
+    y_true = np.asarray(y_true)
+    lower_pred = np.asarray(lower_pred)
+    upper_pred = np.asarray(upper_pred)
+
+    width = upper_pred - lower_pred
+    below_penalty = np.where(y_true < lower_pred, (2 / alpha) * (lower_pred - y_true), 0)
+    above_penalty = np.where(y_true > upper_pred, (2 / alpha) * (y_true - upper_pred), 0)
+    scores = width + below_penalty + above_penalty
+
+    if sample_weight is None:
+        return np.mean(scores)
+    return np.average(scores, weights=sample_weight)
+
+
+def bootstrap_interval_score_metrics(
+    y_true,
+    lower_pred,
+    upper_pred,
+    weights,
+    naive_lower,
+    naive_upper,
+    alpha=0.50,
+    n_bootstrap=1000,
+    random_state=RANDOM_STATE,
+):
+    """
+    Bootstrap model, naive, and skill-score interval metrics.
+
+    Args:
+        y_true (array-like): Actual validation costs.
+        lower_pred (array-like): Model lower interval bounds.
+        upper_pred (array-like): Model upper interval bounds.
+        weights (array-like): Validation survey weights.
+        naive_lower (float): Naive lower interval bound.
+        naive_upper (float): Naive upper interval bound.
+        alpha (float): Miss probability.
+        n_bootstrap (int): Number of bootstrap resamples.
+        random_state (int): Random seed for reproducibility.
+
+    Returns:
+        dict: Bootstrap samples for model, naive, and skill-score interval metrics.
+    """
+    rng = np.random.default_rng(random_state)
+    y_true = np.asarray(y_true)
+    lower_pred = np.asarray(lower_pred)
+    upper_pred = np.asarray(upper_pred)
+    weights = np.asarray(weights)
+    n_obs = len(y_true)
+
+    bootstrap_samples = {
+        "model_interval_score": np.empty(n_bootstrap),
+        "naive_interval_score": np.empty(n_bootstrap),
+        "interval_skill_score": np.empty(n_bootstrap),
+    }
+
+    for sample_idx in range(n_bootstrap):
+        row_idx = rng.integers(0, n_obs, size=n_obs)
+        y_boot = y_true[row_idx]
+        lower_boot = lower_pred[row_idx]
+        upper_boot = upper_pred[row_idx]
+        w_boot = weights[row_idx]
+
+        model_score = interval_score(y_boot, lower_boot, upper_boot, alpha, sample_weight=w_boot)
+        naive_score = interval_score(
+            y_boot,
+            np.full_like(y_boot, naive_lower, dtype=float),
+            np.full_like(y_boot, naive_upper, dtype=float),
+            alpha,
+            sample_weight=w_boot,
+        )
+
+        bootstrap_samples["model_interval_score"][sample_idx] = model_score
+        bootstrap_samples["naive_interval_score"][sample_idx] = naive_score
+        bootstrap_samples["interval_skill_score"][sample_idx] = 1 - (model_score / naive_score)
+
+    return bootstrap_samples
+
+
+naive_q25 = weighted_quantile(y_train, w_train, 0.25)
+naive_q75 = weighted_quantile(y_train, w_train, 0.75)
+
+interval_score_bootstrap_samples = bootstrap_interval_score_metrics(
     y_val,
     y_val_pred_q25,
     y_val_pred_q75,
     w_val,
-    alpha=0.50,
+    naive_q25,
+    naive_q75,
+    n_bootstrap=N_BOOTSTRAP,
 )
-naive_interval_score = weighted_interval_score(
+
+model_interval_score = interval_score(
+    y_val,
+    y_val_pred_q25,
+    y_val_pred_q75,
+    alpha=0.50,
+    sample_weight=w_val,
+)
+naive_interval_score = interval_score(
     y_val,
     np.full_like(y_val, naive_q25, dtype=float),
     np.full_like(y_val, naive_q75, dtype=float),
-    w_val,
     alpha=0.50,
+    sample_weight=w_val,
 )
 interval_skill_score = 1 - (model_interval_score / naive_interval_score)
 
@@ -3055,21 +3097,21 @@ interval_score_specs = [
     {
         "Metric": "XGBoost Typical Range Interval Score",
         "Validation": model_interval_score,
-        "Samples": quantile_bootstrap_samples["q25_q75_interval_score"],
+        "Samples": interval_score_bootstrap_samples["model_interval_score"],
         "Format": "currency_0",
         "Interpretation": "Lower is better",
     },
     {
         "Metric": "Naive Population Interval Score",
         "Validation": naive_interval_score,
-        "Samples": quantile_bootstrap_samples["naive_q25_q75_interval_score"],
+        "Samples": interval_score_bootstrap_samples["naive_interval_score"],
         "Format": "currency_0",
         "Interpretation": "Lower is better",
     },
     {
         "Metric": "Interval Skill Score",
         "Validation": interval_skill_score,
-        "Samples": quantile_bootstrap_samples["q25_q75_interval_skill_score"],
+        "Samples": interval_score_bootstrap_samples["interval_skill_score"],
         "Format": "percent",
         "Interpretation": "Higher is better",
     },
