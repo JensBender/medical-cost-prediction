@@ -2592,9 +2592,9 @@ display(
 # </div>
 
 # %%
-def summarize_bootstrap_ci(samples, confidence=0.95):
+def get_bootstrap_ci(samples, confidence=0.95):
     """
-    Summarize bootstrap metric samples with a percentile confidence interval.
+    Get a percentile confidence interval from bootstrap metric samples.
 
     Args:
         samples (array-like): Recomputed metric values from bootstrap resamples.
@@ -2619,8 +2619,17 @@ def bootstrap_quantile_metric_samples(
     Generate bootstrap samples for key quantile regression metrics.
 
     This function returns the bootstrap distribution for each metric, not the
-    summarized confidence intervals. Use summarize_bootstrap_ci() to convert
+    summarized confidence intervals. Use get_bootstrap_ci() to convert
     any returned metric sample into a confidence interval.
+
+    Metrics returned:
+        - q25/q50/q75/q90 empirical coverage, based on quantiles
+        - q50 MdAE
+        - q50 MAE
+        - q50 R²
+        - q25-q75 interval coverage
+        - q25-q75 average interval width
+        - q50-q90 average safety cushion width
 
     Args:
         y_true (array-like): Actual costs.
@@ -2643,6 +2652,7 @@ def bootstrap_quantile_metric_samples(
         **{f"q{int(q * 100)}_coverage": np.empty(n_bootstrap) for q in quantiles},
         "q50_mdae": np.empty(n_bootstrap),
         "q50_mae": np.empty(n_bootstrap),
+        "q50_r2": np.empty(n_bootstrap),
         "q25_q75_coverage": np.empty(n_bootstrap),
         "q25_q75_width": np.empty(n_bootstrap),
         "q50_q90_width": np.empty(n_bootstrap),
@@ -2672,6 +2682,11 @@ def bootstrap_quantile_metric_samples(
             q50_pred,
             sample_weight=w_boot,
         )
+        bootstrap_samples["q50_r2"][sample_idx] = r2_score(
+            y_boot,
+            q50_pred,
+            sample_weight=w_boot,
+        )
         bootstrap_samples["q25_q75_coverage"][sample_idx] = np.average(
             (y_boot >= q25_pred) & (y_boot <= q75_pred),
             weights=w_boot,
@@ -2697,7 +2712,7 @@ for idx, q in enumerate(quantiles):
     quantile_label = f"q{int(q * 100)}"
     train_coverage = np.average(y_train <= y_train_quantile_pred[:, idx], weights=w_train)
     val_coverage = np.average(y_val <= y_val_quantile_pred[:, idx], weights=w_val)
-    ci_lower, ci_upper = summarize_bootstrap_ci(quantile_bootstrap_samples[f"{quantile_label}_coverage"])
+    ci_lower, ci_upper = get_bootstrap_ci(quantile_bootstrap_samples[f"{quantile_label}_coverage"])
 
     quantile_coverage_results.append({
         "Quantile": quantile_label,
@@ -2870,7 +2885,7 @@ def format_metric_value(value, metric_format):
 
 def format_metric_with_ci(value, samples, metric_format):
     """Format metric estimates with an inline bootstrap confidence interval."""
-    ci_lower, ci_upper = summarize_bootstrap_ci(samples)
+    ci_lower, ci_upper = get_bootstrap_ci(samples)
     return (
         f"{format_metric_value(value, metric_format)} "
         f"[{format_metric_value(ci_lower, metric_format)}, {format_metric_value(ci_upper, metric_format)}]"
@@ -2903,7 +2918,7 @@ product_metric_specs = [
         "Metric": "Plan Around R² (q50)",
         "Training": metrics["train_q50_r2"],
         "Validation": metrics["val_q50_r2"],
-        "Samples": None,
+        "Samples": quantile_bootstrap_samples["q50_r2"],
         "Format": "decimal",
     },
     {
@@ -3021,8 +3036,13 @@ def bootstrap_interval_score_metric_samples(
     Generate bootstrap samples for model, naive, and skill-score interval metrics.
 
     This function returns the bootstrap distribution for each metric, not the
-    summarized confidence intervals. Use summarize_bootstrap_ci() to convert
+    summarized confidence intervals. Use get_bootstrap_ci() to convert
     any returned metric sample into a percentile confidence interval.
+
+    Metrics returned:
+        - XGBoost q25-q75 Winkler interval score
+        - Naive population q25-q75 Winkler interval score
+        - Interval skill score, comparing XGBoost against the naive baseline
 
     Args:
         y_true (array-like): Actual validation costs.
@@ -4003,7 +4023,7 @@ test_quantile_coverage_results = []
 for idx, q in enumerate(quantiles):
     quantile_label = f"q{int(q * 100)}"
     test_coverage = np.average(y_test <= y_test_quantile_pred[:, idx], weights=w_test)
-    ci_lower, ci_upper = summarize_bootstrap_ci(test_quantile_bootstrap_samples[f"{quantile_label}_coverage"])
+    ci_lower, ci_upper = get_bootstrap_ci(test_quantile_bootstrap_samples[f"{quantile_label}_coverage"])
     calibration_error = test_coverage - q
 
     test_quantile_coverage_results.append({
@@ -4076,7 +4096,7 @@ test_product_metric_specs = [
     {
         "Metric": "Plan Around R² (q50)",
         "Test": r2_score(y_test, y_test_pred_q50, sample_weight=w_test),
-        "Samples": None,
+        "Samples": test_quantile_bootstrap_samples["q50_r2"],
         "Format": "decimal",
         "Target / Guardrail": "None",
     },
