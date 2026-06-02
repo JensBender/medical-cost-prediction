@@ -86,7 +86,8 @@ from src.modeling import (
     load_model,
     save_metrics,
     load_metrics,
-    get_core_model_params
+    get_core_model_params,
+    postprocess_quantile_predictions
 )
 from src.stats import (
     weighted_quantile,
@@ -2373,13 +2374,9 @@ def train_xgboost_quantile():
     y_train_pred_raw = xgb_quantile_model.predict(X_train_preprocessed)
     y_val_pred_raw = xgb_quantile_model.predict(X_val_preprocessed)
 
-    # Ensure non-negative predictions
-    y_train_pred_non_negative = np.maximum(y_train_pred_raw, 0)  
-    y_val_pred_non_negative = np.maximum(y_val_pred_raw, 0)
-
-    # Ensure monotonic predictions (q25 <= q50 <= q75 <= q90) by pulling lower estimates up (more conservative for financial planning)
-    y_train_pred = np.maximum.accumulate(y_train_pred_non_negative, axis=1)  
-    y_val_pred = np.maximum.accumulate(y_val_pred_non_negative, axis=1)
+    # Ensure valid cost quantiles (non-negative and monotonic q25 <= q50 <= q75 <= q90)
+    y_train_pred = postprocess_quantile_predictions(y_train_pred_raw)
+    y_val_pred = postprocess_quantile_predictions(y_val_pred_raw)
     print(f"  Generated predictions for {len(y_train_pred):,} train and {len(y_val_pred):,} validation samples and ensured non-negative and monotonic predictions")
 
     # --- 4. Evaluation ---
@@ -2507,8 +2504,7 @@ xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=F
 
 # Predict on training data
 y_train_quantile_pred = xgb_quantile_model.predict(X_train_preprocessed)
-y_train_quantile_pred = np.maximum(y_train_quantile_pred, 0)
-y_train_quantile_pred = np.maximum.accumulate(y_train_quantile_pred, axis=1)
+y_train_quantile_pred = postprocess_quantile_predictions(y_train_quantile_pred)
 
 # Load predictions on validation data
 y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
@@ -3941,8 +3937,8 @@ plot_quantile_subgroup_predictions(
 #         <li><b>Selected final candidate:</b> XGBoost quantile regression with q25, q50, q75, and q90 outputs.</li>
 #         <li><b>Rationale:</b> The q50 plan-around estimate meets the accuracy target; q25–q75 and q90 coverage pass validation gates; intervals are narrow enough for budgeting; subgroup diagnostics show no broad demographic calibration failure; and Winkler interval score beats the naive population interval baseline.</li>
 #         <li><b>Known risks:</b> q25 is slightly conservative, the uninsured group shows typical-range undercoverage, and very high actual spenders remain difficult to distinguish from high spenders.</li>
-#         <li><b>CQR decision:</b> Do not add conformalized quantile regression at this stage. Revisit if the untouched test set misses coverage targets or shows stronger endpoint bias.</li>
-#         <li><b>Next step:</b> Lock this model choice and evaluate once on the untouched test set.</li>
+#         <li><b>CQR decision:</b> Do not add conformalized quantile regression at this stage. Revisit if the unseen test set misses coverage targets or shows stronger endpoint bias.</li>
+#         <li><b>Next step:</b> Lock this model choice and evaluate once on the unseen test set.</li>
 #     </ul>
 # </div>
 
@@ -3953,7 +3949,7 @@ plot_quantile_subgroup_predictions(
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ <b>Holdout Test Set Evaluation</b> <br>
-#     The model choice, calibration decision, and release guardrails are now locked. This section evaluates the selected XGBoost quantile model once on the untouched test set. These results estimate performance in terms of generalization to unseen data and should not be used to tune the model further.
+#     The model choice, calibration decision, and release guardrails are now locked. This section evaluates the selected XGBoost quantile regression model once on the untouched test set. These results estimate performance in terms of generalization to unseen data and should not be used to tune the model further.
 # </div>
 
 # %% [markdown]
@@ -3969,8 +3965,7 @@ plot_quantile_subgroup_predictions(
 xgb_quantile_final_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
 
 y_test_quantile_pred_raw = xgb_quantile_final_model.predict(X_test_preprocessed)
-y_test_quantile_pred = np.maximum(y_test_quantile_pred_raw, 0)
-y_test_quantile_pred = np.maximum.accumulate(y_test_quantile_pred, axis=1)
+y_test_quantile_pred = postprocess_quantile_predictions(y_test_quantile_pred_raw)
 
 y_test_pred_q25, y_test_pred_q50, y_test_pred_q75, y_test_pred_q90 = y_test_quantile_pred.T
 

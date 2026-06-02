@@ -46,7 +46,15 @@ from sklearn.metrics import mean_absolute_error, r2_score
 
 # Local imports
 from src.constants import TARGET_COLUMN, WEIGHT_COLUMN
-from src.modeling import TRAIN_DATA_PATH, VAL_DATA_PATH, weighted_median_absolute_error, save_model, save_metrics, load_metrics
+from src.modeling import (
+    TRAIN_DATA_PATH,
+    VAL_DATA_PATH,
+    weighted_median_absolute_error,
+    postprocess_quantile_predictions,
+    save_model,
+    save_metrics,
+    load_metrics,
+)
 
 # Suppress benign MLflow warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
@@ -150,13 +158,9 @@ def main():
         y_train_pred_raw = xgb_quantile_model.predict(X_train)
         y_val_pred_raw = xgb_quantile_model.predict(X_val)
 
-        # Ensure non-negative predictions
-        y_train_pred_non_negative = np.maximum(y_train_pred_raw, 0)
-        y_val_pred_non_negative = np.maximum(y_val_pred_raw, 0)
-
-        # Ensure monotonic predictions (q25 <= q50 <= q75 <= q90) by pulling lower estimates up (more conservative for financial planning)
-        y_train_pred = np.maximum.accumulate(y_train_pred_non_negative, axis=1)
-        y_val_pred = np.maximum.accumulate(y_val_pred_non_negative, axis=1)
+        # Ensure valid cost quantiles (non-negative and monotonic q25 <= q50 <= q75 <= q90)
+        y_train_pred = postprocess_quantile_predictions(y_train_pred_raw)
+        y_val_pred = postprocess_quantile_predictions(y_val_pred_raw)
         print(f"  Generated predictions for {len(y_train_pred):,} train and {len(y_val_pred):,} validation samples and ensured non-negative and monotonic predictions")
 
         # --- 7. Evaluation ---
