@@ -3994,21 +3994,12 @@ plot_quantile_subgroup_predictions(
 # </div>
 
 # %%
-xgb_quantile_final_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
+xgb_quantile_final_model = load_model("../models/xgb_quantile_model.joblib")
 
 y_test_quantile_pred_raw = xgb_quantile_final_model.predict(X_test_preprocessed)
 y_test_quantile_pred = postprocess_quantile_predictions(y_test_quantile_pred_raw)
 
 y_test_pred_q25, y_test_pred_q50, y_test_pred_q75, y_test_pred_q90 = y_test_quantile_pred.T
-
-test_quantile_bootstrap_samples = bootstrap_quantile_metric_samples(
-    y_test,
-    y_test_quantile_pred,
-    w_test,
-    quantiles,
-    n_bootstrap=N_BOOTSTRAP,
-    random_state=RANDOM_STATE,
-)
 
 print(f"Generated quantile predictions for {len(y_test_quantile_pred):,} test samples.")
 
@@ -4022,6 +4013,15 @@ print(f"Generated quantile predictions for {len(y_test_quantile_pred):,} test sa
 # </div>
 
 # %%
+test_quantile_bootstrap_samples = bootstrap_quantile_metric_samples(
+    y_test,
+    y_test_quantile_pred,
+    w_test,
+    quantiles,
+    n_bootstrap=N_BOOTSTRAP,
+    random_state=RANDOM_STATE,
+)
+
 test_quantile_coverage_results = []
 
 for idx, q in enumerate(quantiles):
@@ -4033,8 +4033,8 @@ for idx, q in enumerate(quantiles):
     test_quantile_coverage_results.append({
         "Quantile": quantile_label,
         "Nominal Level": q,
-        "Empirical Coverage (Test, 95% CI)": f"{test_coverage:.1%} [{ci_lower:.1%}, {ci_upper:.1%}]",
-        "Calibration Error (Test)": calibration_error,
+        "Empirical Coverage (95% CI)": f"{test_coverage:.1%} [{ci_lower:.1%}, {ci_upper:.1%}]",
+        "Calibration Error": calibration_error,
         "Status": "Pass" if abs(calibration_error) <= 0.05 else "Review",
     })
 
@@ -4043,9 +4043,9 @@ test_quantile_coverage_df = pd.DataFrame(test_quantile_coverage_results)
 display(
     test_quantile_coverage_df.style
     .hide()
-    .pipe(add_table_caption, "Final Model: Quantile Calibration")
+    .pipe(add_table_caption, "Final Model: Quantile Calibration (Test)")
     .format("{:.1%}", subset=["Nominal Level"])
-    .format("{:+.1%}", subset=["Calibration Error (Test)"])
+    .format("{:+.1%}", subset=["Calibration Error"])
     .map(style_status_cells, subset=["Status"])
 )
 
@@ -4146,7 +4146,7 @@ for metric_spec in test_product_metric_specs:
 
     test_product_metrics_display.append({
         "Metric": metric_spec["Metric"],
-        "Test (95% CI)": test_display,
+        "Estimate (95% CI)": test_display,
         "Target / Guardrail": metric_spec["Target / Guardrail"],
         "Status": get_test_metric_status(metric_spec["Metric"], metric_spec["Test"]),
     })
@@ -4214,7 +4214,7 @@ test_interval_score_display = []
 for metric_spec in test_interval_score_specs:
     test_interval_score_display.append({
         "Metric": metric_spec["Metric"],
-        "Test (95% CI)": format_metric_with_ci(
+        "Estimate (95% CI)": format_metric_with_ci(
             metric_spec["Test"],
             metric_spec["Samples"],
             metric_spec["Format"],
