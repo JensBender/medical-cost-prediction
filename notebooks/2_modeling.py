@@ -2610,7 +2610,7 @@ def get_bootstrap_ci(samples, confidence=0.95):
     return np.percentile(samples, [100 * alpha / 2, 100 * (1 - alpha / 2)])
 
 
-def bootstrap_quantile_metric_samples(
+def generate_quantile_metric_bootstrap_samples(
     y_true,
     y_pred,
     weights,
@@ -2700,7 +2700,7 @@ def bootstrap_quantile_metric_samples(
     return bootstrap_samples
 
 
-quantile_bootstrap_samples = bootstrap_quantile_metric_samples(
+val_quantile_metric_bootstrap_samples = generate_quantile_metric_bootstrap_samples(
     y_val,
     y_val_quantile_pred,
     w_val,
@@ -2714,7 +2714,7 @@ for idx, q in enumerate(quantiles):
     quantile_label = f"q{int(q * 100)}"
     train_coverage = np.average(y_train <= y_train_quantile_pred[:, idx], weights=w_train)
     val_coverage = np.average(y_val <= y_val_quantile_pred[:, idx], weights=w_val)
-    ci_lower, ci_upper = get_bootstrap_ci(quantile_bootstrap_samples[f"{quantile_label}_coverage"])
+    ci_lower, ci_upper = get_bootstrap_ci(val_quantile_metric_bootstrap_samples[f"{quantile_label}_coverage"])
 
     quantile_coverage_results.append({
         "Quantile": quantile_label,
@@ -2908,49 +2908,49 @@ product_metric_specs = [
         "Metric": "Plan Around MdAE (q50)",
         "Training": metrics["train_q50_mdae"],
         "Validation": metrics["val_q50_mdae"],
-        "Samples": quantile_bootstrap_samples["q50_mdae"],
+        "Samples": val_quantile_metric_bootstrap_samples["q50_mdae"],
         "Format": "currency_2",
     },
     {
         "Metric": "Plan Around MAE (q50)",
         "Training": metrics["train_q50_mae"],
         "Validation": metrics["val_q50_mae"],
-        "Samples": quantile_bootstrap_samples["q50_mae"],
+        "Samples": val_quantile_metric_bootstrap_samples["q50_mae"],
         "Format": "currency_2",
     },
     {
         "Metric": "Plan Around R² (q50)",
         "Training": metrics["train_q50_r2"],
         "Validation": metrics["val_q50_r2"],
-        "Samples": quantile_bootstrap_samples["q50_r2"],
+        "Samples": val_quantile_metric_bootstrap_samples["q50_r2"],
         "Format": "decimal",
     },
     {
         "Metric": "Typical Range Coverage (q25–q75)",
         "Training": metrics["train_q25_q75_coverage"],
         "Validation": metrics["val_q25_q75_coverage"],
-        "Samples": quantile_bootstrap_samples["q25_q75_coverage"],
+        "Samples": val_quantile_metric_bootstrap_samples["q25_q75_coverage"],
         "Format": "percent",
     },
     {
         "Metric": "Safety Cushion Coverage (q90)",
         "Training": metrics["train_q90_coverage"],
         "Validation": metrics["val_q90_coverage"],
-        "Samples": quantile_bootstrap_samples["q90_coverage"],
+        "Samples": val_quantile_metric_bootstrap_samples["q90_coverage"],
         "Format": "percent",
     },
     {
         "Metric": "Typical Range Width",
         "Training": metrics["train_q25_q75_width"],
         "Validation": metrics["val_q25_q75_width"],
-        "Samples": quantile_bootstrap_samples["q25_q75_width"],
+        "Samples": val_quantile_metric_bootstrap_samples["q25_q75_width"],
         "Format": "currency_0",
     },
     {
         "Metric": "Safety Cushion Width",
         "Training": metrics["train_q50_q90_width"],
         "Validation": metrics["val_q50_q90_width"],
-        "Samples": quantile_bootstrap_samples["q50_q90_width"],
+        "Samples": val_quantile_metric_bootstrap_samples["q50_q90_width"],
         "Format": "currency_0",
     },
 ]
@@ -3025,7 +3025,7 @@ def interval_score(y_true, lower_pred, upper_pred, alpha, sample_weight=None):
     return np.average(scores, weights=sample_weight)
 
 
-def bootstrap_interval_score_metric_samples(
+def generate_interval_score_bootstrap_samples(
     y_true,
     lower_pred,
     upper_pred,
@@ -3101,7 +3101,7 @@ def bootstrap_interval_score_metric_samples(
 naive_q25 = weighted_quantile(y_train, w_train, 0.25)
 naive_q75 = weighted_quantile(y_train, w_train, 0.75)
 
-interval_score_bootstrap_samples = bootstrap_interval_score_metric_samples(
+val_interval_score_bootstrap_samples = generate_interval_score_bootstrap_samples(
     y_val,
     y_val_pred_q25,
     y_val_pred_q75,
@@ -3131,19 +3131,19 @@ interval_score_specs = [
     {
         "Metric": "XGBoost Winkler Interval Score",
         "Validation": model_interval_score,
-        "Samples": interval_score_bootstrap_samples["model_interval_score"],
+        "Samples": val_interval_score_bootstrap_samples["model_interval_score"],
         "Format": "currency_0",
     },
     {
         "Metric": "Naive Winkler Interval Score",
         "Validation": naive_interval_score,
-        "Samples": interval_score_bootstrap_samples["naive_interval_score"],
+        "Samples": val_interval_score_bootstrap_samples["naive_interval_score"],
         "Format": "currency_0",
     },
     {
         "Metric": "Interval Skill Score",
         "Validation": interval_skill_score,
-        "Samples": interval_score_bootstrap_samples["interval_skill_score"],
+        "Samples": val_interval_score_bootstrap_samples["interval_skill_score"],
         "Format": "percent",
     },
 ]
@@ -3153,7 +3153,7 @@ interval_score_display = []
 for metric_spec in interval_score_specs:
     interval_score_display.append({
         "Metric": metric_spec["Metric"],
-        "Validation (95% CI)": format_metric_with_ci(
+        "Estimate (95% CI)": format_metric_with_ci(
             metric_spec["Validation"],
             metric_spec["Samples"],
             metric_spec["Format"],
@@ -4013,7 +4013,7 @@ print(f"Generated quantile predictions for {len(y_test_quantile_pred):,} test sa
 # </div>
 
 # %%
-test_quantile_bootstrap_samples = bootstrap_quantile_metric_samples(
+test_quantile_metric_bootstrap_samples = generate_quantile_metric_bootstrap_samples(
     y_test,
     y_test_quantile_pred,
     w_test,
@@ -4027,7 +4027,7 @@ test_quantile_coverage_results = []
 for idx, q in enumerate(quantiles):
     quantile_label = f"q{int(q * 100)}"
     test_coverage = np.average(y_test <= y_test_quantile_pred[:, idx], weights=w_test)
-    ci_lower, ci_upper = get_bootstrap_ci(test_quantile_bootstrap_samples[f"{quantile_label}_coverage"])
+    ci_lower, ci_upper = get_bootstrap_ci(test_quantile_metric_bootstrap_samples[f"{quantile_label}_coverage"])
     calibration_error = test_coverage - q
 
     test_quantile_coverage_results.append({
@@ -4086,49 +4086,49 @@ test_product_metric_specs = [
     {
         "Metric": "Plan Around MdAE (q50)",
         "Test": weighted_median_absolute_error(y_test, y_test_pred_q50, sample_weight=w_test),
-        "Samples": test_quantile_bootstrap_samples["q50_mdae"],
+        "Samples": test_quantile_metric_bootstrap_samples["q50_mdae"],
         "Format": "currency_2",
         "Target / Guardrail": f"MVP < {DOLLAR}500; Desirable < {DOLLAR}350",
     },
     {
         "Metric": "Plan Around MAE (q50)",
         "Test": mean_absolute_error(y_test, y_test_pred_q50, sample_weight=w_test),
-        "Samples": test_quantile_bootstrap_samples["q50_mae"],
+        "Samples": test_quantile_metric_bootstrap_samples["q50_mae"],
         "Format": "currency_2",
         "Target / Guardrail": "None",
     },
     {
         "Metric": "Plan Around R² (q50)",
         "Test": r2_score(y_test, y_test_pred_q50, sample_weight=w_test),
-        "Samples": test_quantile_bootstrap_samples["q50_r2"],
+        "Samples": test_quantile_metric_bootstrap_samples["q50_r2"],
         "Format": "decimal",
         "Target / Guardrail": "None",
     },
     {
         "Metric": "Typical Range Coverage (q25–q75)",
         "Test": np.average((y_test >= y_test_pred_q25) & (y_test <= y_test_pred_q75), weights=w_test),
-        "Samples": test_quantile_bootstrap_samples["q25_q75_coverage"],
+        "Samples": test_quantile_metric_bootstrap_samples["q25_q75_coverage"],
         "Format": "percent",
         "Target / Guardrail": "45%–55%",
     },
     {
         "Metric": "Safety Cushion Coverage (q90)",
         "Test": np.average(y_test <= y_test_pred_q90, weights=w_test),
-        "Samples": test_quantile_bootstrap_samples["q90_coverage"],
+        "Samples": test_quantile_metric_bootstrap_samples["q90_coverage"],
         "Format": "percent",
         "Target / Guardrail": "85%–95%",
     },
     {
         "Metric": "Typical Range Width",
         "Test": np.average(y_test_pred_q75 - y_test_pred_q25, weights=w_test),
-        "Samples": test_quantile_bootstrap_samples["q25_q75_width"],
+        "Samples": test_quantile_metric_bootstrap_samples["q25_q75_width"],
         "Format": "currency_0",
         "Target / Guardrail": f"Good < {DOLLAR}1,000; Acceptable < {DOLLAR}1,500",
     },
     {
         "Metric": "Safety Cushion Width",
         "Test": np.average(y_test_pred_q90 - y_test_pred_q50, weights=w_test),
-        "Samples": test_quantile_bootstrap_samples["q50_q90_width"],
+        "Samples": test_quantile_metric_bootstrap_samples["q50_q90_width"],
         "Format": "currency_0",
         "Target / Guardrail": f"Good < {DOLLAR}2,500; Acceptable < {DOLLAR}3,500",
     },
@@ -4161,7 +4161,7 @@ display(
 )
 
 # %%
-test_interval_score_bootstrap_samples = bootstrap_interval_score_metric_samples(
+test_interval_score_bootstrap_samples = generate_interval_score_bootstrap_samples(
     y_test,
     y_test_pred_q25,
     y_test_pred_q75,
@@ -4235,3 +4235,4 @@ display(
 #     <ul>
 #     </ul>
 # </div>
+
