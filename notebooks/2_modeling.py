@@ -2503,8 +2503,8 @@ def train_xgboost_quantile():
 xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
 
 # Predict on training data
-y_train_quantile_pred = xgb_quantile_model.predict(X_train_preprocessed)
-y_train_quantile_pred = postprocess_quantile_predictions(y_train_quantile_pred)
+y_train_quantile_pred_raw = xgb_quantile_model.predict(X_train_preprocessed)
+y_train_quantile_pred = postprocess_quantile_predictions(y_train_quantile_pred_raw)
 
 # Load predictions on validation data
 y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
@@ -2594,11 +2594,11 @@ display(
 # %%
 def summarize_bootstrap_ci(samples, confidence=0.95):
     """
-    Summarize bootstrap samples with a percentile confidence interval.
+    Summarize bootstrap metric samples with a percentile confidence interval.
 
     Args:
-        samples (array-like): Bootstrap metric values.
-        confidence (float): Confidence level for the percentile interval.
+        samples (array-like): Recomputed metric values from bootstrap resamples.
+        confidence (float): Confidence level for the percentile interval. Defaults to 95%.
 
     Returns:
         tuple: Lower and upper confidence interval bounds.
@@ -2607,7 +2607,7 @@ def summarize_bootstrap_ci(samples, confidence=0.95):
     return np.percentile(samples, [100 * alpha / 2, 100 * (1 - alpha / 2)])
 
 
-def bootstrap_quantile_metrics(
+def bootstrap_quantile_metric_samples(
     y_true,
     y_pred,
     weights,
@@ -2616,7 +2616,11 @@ def bootstrap_quantile_metrics(
     random_state=RANDOM_STATE,
 ):
     """
-    Bootstrap key quantile regression metrics.
+    Generate bootstrap samples for key quantile regression metrics.
+
+    This function returns the bootstrap distribution for each metric, not the
+    summarized confidence intervals. Use summarize_bootstrap_ci() to convert
+    any returned metric sample into a confidence interval.
 
     Args:
         y_true (array-like): Actual costs.
@@ -2627,7 +2631,7 @@ def bootstrap_quantile_metrics(
         random_state (int): Random seed for reproducibility.
 
     Returns:
-        dict: Bootstrap samples for calibration and product metrics.
+        dict: Recomputed metric samples for calibration and product metrics.
     """
     rng = np.random.default_rng(random_state)
     y_true = np.asarray(y_true)
@@ -2679,7 +2683,7 @@ def bootstrap_quantile_metrics(
 
 
 N_BOOTSTRAP = 1000
-quantile_bootstrap_samples = bootstrap_quantile_metrics(
+quantile_bootstrap_samples = bootstrap_quantile_metric_samples(
     y_val,
     y_val_quantile_pred,
     w_val,
@@ -3002,7 +3006,7 @@ def interval_score(y_true, lower_pred, upper_pred, alpha, sample_weight=None):
     return np.average(scores, weights=sample_weight)
 
 
-def bootstrap_interval_score_metrics(
+def bootstrap_interval_score_metric_samples(
     y_true,
     lower_pred,
     upper_pred,
@@ -3014,7 +3018,11 @@ def bootstrap_interval_score_metrics(
     random_state=RANDOM_STATE,
 ):
     """
-    Bootstrap model, naive, and skill-score interval metrics.
+    Generate bootstrap samples for model, naive, and skill-score interval metrics.
+
+    This function returns the bootstrap distribution for each metric, not the
+    summarized confidence intervals. Use summarize_bootstrap_ci() to convert
+    any returned metric sample into a percentile confidence interval.
 
     Args:
         y_true (array-like): Actual validation costs.
@@ -3028,7 +3036,7 @@ def bootstrap_interval_score_metrics(
         random_state (int): Random seed for reproducibility.
 
     Returns:
-        dict: Bootstrap samples for model, naive, and skill-score interval metrics.
+        dict: Recomputed metric samples for model, naive, and skill-score interval metrics.
     """
     rng = np.random.default_rng(random_state)
     y_true = np.asarray(y_true)
@@ -3069,7 +3077,7 @@ def bootstrap_interval_score_metrics(
 naive_q25 = weighted_quantile(y_train, w_train, 0.25)
 naive_q75 = weighted_quantile(y_train, w_train, 0.75)
 
-interval_score_bootstrap_samples = bootstrap_interval_score_metrics(
+interval_score_bootstrap_samples = bootstrap_interval_score_metric_samples(
     y_val,
     y_val_pred_q25,
     y_val_pred_q75,
@@ -3969,7 +3977,7 @@ y_test_quantile_pred = postprocess_quantile_predictions(y_test_quantile_pred_raw
 
 y_test_pred_q25, y_test_pred_q50, y_test_pred_q75, y_test_pred_q90 = y_test_quantile_pred.T
 
-test_quantile_bootstrap_samples = bootstrap_quantile_metrics(
+test_quantile_bootstrap_samples = bootstrap_quantile_metric_samples(
     y_test,
     y_test_quantile_pred,
     w_test,
@@ -4129,7 +4137,7 @@ display(
 )
 
 # %%
-test_interval_score_bootstrap_samples = bootstrap_interval_score_metrics(
+test_interval_score_bootstrap_samples = bootstrap_interval_score_metric_samples(
     y_test,
     y_test_pred_q25,
     y_test_pred_q75,
