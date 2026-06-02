@@ -2584,11 +2584,11 @@ display(
 #     <b>Quantile Coverage vs. Interval Coverage</b> <br> 
 #     Quantile coverage checks each predicted quantile directly. Interval coverage checks whether actual costs fall between two endpoints, such as q25 and q75. Reporting both matters because the q25–q75 interval can have acceptable 50% coverage even when both endpoints are shifted in the same direction.
 #     <br><br>
-#     <b>How to Interpret Calibration Error</b> <br>
+#     <b>Calibration Error</b> <br>
 #     Calibration error is empirical coverage minus the nominal quantile level. Positive values mean the quantile is too high/conservative; negative values mean it is too low/aggressive. For this project, errors within about 5% are acceptable validation diagnostics; errors beyond about 10% would usually require recalibration or a clearer release warning.
 #     <br><br>
 #     <b>Metric Confidence Intervals</b> <br>
-#     Bootstrap confidence intervals are calculated for metrics on the evaluation data. They are for the metrics, not prediction intervals for individual users. Each bootstrap sample resamples rows with replacement while keeping actual cost, predicted quantiles, and survey weight together.
+#     Bootstrap confidence intervals are calculated for metrics on the validation data. They are for the metrics, not prediction intervals for individual users. Each bootstrap sample resamples rows with replacement while keeping actual cost, predicted quantiles, and survey weight together.
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -2831,11 +2831,11 @@ plt.show()
 #         <li><b>Under-coverage:</b> Ranges are too narrow; users encounter unexpectedly high costs more often than the app implies.</li>
 #         <li><b>Over-coverage:</b> Ranges are too wide; safer, but less useful for concrete budgeting.</li>
 #     </ul>
-#     <b>How to Interpret Interval Width</b> <br>
-#     Interval width measures sharpness: how specific the predicted dollar range is. Coverage without reasonable width is not enough, because a model can meet coverage targets by returning overly broad ranges.
+#     <b>Interval Width</b> <br>
+#     Interval width measures sharpness: how specific the predicted dollar range is. Coverage without reasonable width is not enough, because a model can meet coverage targets by returning overly broad ranges. Typical range width is q75 - q25. Safety cushion width is q90 - q50, measuring how much extra budget the safety cushion adds above the plan-around estimate. Reported widths are weighted averages across users, not the range for any single individual. 
 #     <ul style="margin-top:8px">
-#         <li><b>Average q25–q75 width:</b> Good &lt; \$1,000, acceptable &lt; \$1,500, poor &gt; \$2,000.</li>
-#         <li><b>Average q50–q90 cushion width:</b> Good &lt; \$2,500, acceptable &lt; \$3,500, poor &gt; \$5,000.</li>
+#         <li><b>Typical range width (q25–q75):</b> Good &lt; \$1,000, acceptable &lt; \$1,500, poor &gt; \$2,000.</li>
+#         <li><b>Safety cushion width (q50–q90):</b> Good &lt; \$2,500, acceptable &lt; \$3,500, poor &gt; \$5,000.</li>
 #     </ul>
 # </div>
 #
@@ -3140,7 +3140,7 @@ interval_score_df.index.name = None
 
 display(
     interval_score_df.style
-    .pipe(add_table_caption, "Typical Range: Winkler Interval Score")
+    .pipe(add_table_caption, "Typical Range: Winkler Interval Score (Validation)")
 )
 
 # %% [markdown]
