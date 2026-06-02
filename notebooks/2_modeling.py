@@ -2592,6 +2592,9 @@ display(
 # </div>
 
 # %%
+N_BOOTSTRAP = 1000
+
+
 def get_bootstrap_ci(samples, confidence=0.95):
     """
     Get a percentile confidence interval from bootstrap metric samples.
@@ -2697,7 +2700,6 @@ def bootstrap_quantile_metric_samples(
     return bootstrap_samples
 
 
-N_BOOTSTRAP = 1000
 quantile_bootstrap_samples = bootstrap_quantile_metric_samples(
     y_val,
     y_val_quantile_pred,
@@ -2860,8 +2862,6 @@ xgb_quantile_metrics = load_metrics("../models/xgb_quantile_metrics.json")
 metrics = xgb_quantile_metrics["XGBoost (Quantile)"]
 y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = y_val_quantile_pred.T
 
-DOLLAR = r"\$"
-
 
 def style_status_cells(value):
     """Color-code compact status cells."""
@@ -2870,6 +2870,9 @@ def style_status_cells(value):
     if value == "Review":
         return "background-color: #fff3cd"
     return ""
+
+
+DOLLAR = r"\$"  # Escape dollar signs so Jupyter Notebook renders table cells correctly.
 
 
 def format_metric_value(value, metric_format):
@@ -2897,6 +2900,7 @@ def format_metric_delta(train_value, val_value):
     if train_value == 0:
         return "n/a"
     return f"{((val_value - train_value) / train_value) * 100:+.1f}%"
+
 
 # Reshape for metrics display table: Metrics in index, Training/Validation in columns
 product_metric_specs = [
