@@ -4051,8 +4051,12 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insights</b> 
+#     💡 <b>Insights:</b> 
 #     <ul>
+#         <li><strong>Calibration Passed:</strong> All four predicted quantiles pass the final test calibration guardrail. q50, q75, and q90 are close to their nominal levels, confirming that the plan-around estimate, upper typical-range bound, and safety cushion remain well calibrated on unseen data.</li>
+#         <li><strong>q25 Remains Slightly Conservative:</strong> q25 covers 29.9% of test outcomes instead of the nominal 25.0%, matching the validation pattern. This means the lower endpoint of the typical range is still somewhat high, but the +4.9% calibration error stays within the ±5% guardrail.</li>
+#         <li><strong>Strong Safety Cushion:</strong> q90 coverage is 91.0% with a 95% CI of [89.2%, 92.6%], comfortably within the 85%–95% product tolerance. This supports using q90 as the budget-safe estimate.</li>
+#         <li><strong>No Test-Set Surprise:</strong> Test calibration is consistent with validation, indicating that the validation-stage calibration decision was not a fluke.</li>
 #     </ul>
 # </div>
 
@@ -4235,4 +4239,3 @@ display(
 #     <ul>
 #     </ul>
 # </div>
-
