@@ -2967,7 +2967,7 @@ display(
 #     <br>
 #     Coverage and width diagnose intervals separately. The Winkler interval score evaluates both together: it rewards narrow intervals when the actual cost falls inside the range and adds a penalty when the actual cost falls below q25 or above q75. Lower scores are better.
 #     <br><br>
-#     The interval skill score compares the model's q25–q75 interval score with a naive baseline that always predicts the same population q25–q75 interval from the training data. Positive skill means the personalized model provides better typical ranges than a generic population range. 
+#     The interval skill score compares the model's Winkler interval score with a naive baseline that always predicts the same population q25–q75 interval from the training data. Positive skill means the personalized model provides better typical ranges than a generic population range. 
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -3101,13 +3101,13 @@ interval_skill_score = 1 - (model_interval_score / naive_interval_score)
 
 interval_score_specs = [
     {
-        "Metric": "XGBoost Interval Score",
+        "Metric": "XGBoost Winkler Interval Score",
         "Validation": model_interval_score,
         "Samples": interval_score_bootstrap_samples["model_interval_score"],
         "Format": "currency_0",
     },
     {
-        "Metric": "Naive Interval Score",
+        "Metric": "Naive Winkler Interval Score",
         "Validation": naive_interval_score,
         "Samples": interval_score_bootstrap_samples["naive_interval_score"],
         "Format": "currency_0",
@@ -3147,7 +3147,7 @@ display(
 #         <li><strong>Good Interval Calibration:</strong> The model achieves 48.6% coverage for the typical range (Target: 50%) and 88.7% for the safety cushion (Target: 90%). Their approximate 95% bootstrap CIs ([45.2%, 51.6%] and [86.7%, 90.6%]) fall within the product release tolerances (45%–55% and 85%–95%), supporting release readiness pending final holdout test confirmation.</li>
 #         <li><strong>Excellent Generalization:</strong> The training values for MdAE (\$229.14), MAE (\$957.21), typical range width (\$917), and safety cushion width (\$2,019) all fall within the validation 95% bootstrap confidence intervals. This shows that the model generalizes exceptionally well and shows no significant overfitting.</li>
 #         <li><strong>Manageable Typical Range Width for Budgeting:</strong> An average typical range width of \$891 (95% CI: [\$851, \$929]) provides users with a narrow, manageable window for standard HSA/FSA planning, while the \$1,980 safety cushion width (95% CI: [\$1,904, \$2,057]) offers a stable, realistic buffer for emergency fund planning.</li>
-#         <li><strong>Typical Range Adds Value:</strong> The Winkler score for the q25–q75 typical range interval improves from \$3,707 for the naive population interval to \$3,376 for XGBoost. This corresponds to an 8.9% interval skill improvement. This confirms the typical range is not just calibrated; it is more useful than showing every user the same generic MEPS range.</li>
+#         <li><strong>Typical Range Adds Value:</strong> The Winkler interval score for the q25–q75 typical range improves from \$3,707 for the naive population interval to \$3,376 for XGBoost. This corresponds to an 8.9% interval skill score. This confirms the typical range is not just calibrated, it is more useful than showing every user the same generic MEPS range.</li>
 #         <li><strong>MdAE vs. MAE:</strong> The large gap between MdAE (\$244.54) and MAE (\$954.70) reinforces that while the model is very precise for the "typical" user, rare high-cost outliers continue to drive the mean error, further justifying a "plan around + safety cushion" approach over simple point estimates.</li>
 #         <li><strong>CQR Not Needed at Validation Stage:</strong> Conformalized quantile regression is not triggered because validation coverage falls within product tolerances. Revisit CQR if holdout test coverage falls outside release targets or if the q25 conservative bias worsens.</li>
 #     </ul>
@@ -4163,13 +4163,13 @@ test_interval_skill_score = 1 - (test_model_interval_score / test_naive_interval
 
 test_interval_score_specs = [
     {
-        "Metric": "XGBoost Interval Score",
+        "Metric": "XGBoost Winkler Interval Score",
         "Test": test_model_interval_score,
         "Samples": test_interval_score_bootstrap_samples["model_interval_score"],
         "Format": "currency_0",
     },
     {
-        "Metric": "Naive Interval Score",
+        "Metric": "Naive Winkler Interval Score",
         "Test": test_naive_interval_score,
         "Samples": test_interval_score_bootstrap_samples["naive_interval_score"],
         "Format": "currency_0",
