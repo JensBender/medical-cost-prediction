@@ -2719,10 +2719,10 @@ for idx, q in enumerate(quantiles):
     quantile_coverage_results.append({
         "Quantile": quantile_label,
         "Nominal Level": q,
-        "Empirical Coverage (Train)": train_coverage,
-        "Empirical Coverage (Val, 95% CI)": f"{val_coverage:.1%} [{ci_lower:.1%}, {ci_upper:.1%}]",
+        "Coverage (Val, 95% CI)": f"{val_coverage:.1%} [{ci_lower:.1%}, {ci_upper:.1%}]",
+        "Calibration Error": val_coverage - q,
+        "Coverage (Train)": train_coverage,
         "Empirical Coverage (Val)": val_coverage,
-        "Calibration Error (Val)": val_coverage - q,
     })
 
 quantile_coverage_df = pd.DataFrame(quantile_coverage_results)
@@ -2730,12 +2730,12 @@ quantile_coverage_df = pd.DataFrame(quantile_coverage_results)
 display(
     quantile_coverage_df.style
     .hide()
-    .pipe(add_table_caption, "XGBoost Quantile Calibration")
+    .pipe(add_table_caption, "XGBoost Quantile Calibration (Validation)")
     .format("{:.1%}", subset=[
         "Nominal Level",
-        "Empirical Coverage (Train)",
+        "Coverage (Train)",
     ])
-    .format("{:+.1%}", subset=["Calibration Error (Val)"])
+    .format("{:+.1%}", subset=["Calibration Error"])
     .hide(axis="columns", subset=["Empirical Coverage (Val)"])
 )
 
@@ -2745,7 +2745,7 @@ fig, ax = plt.subplots(figsize=(7, 5))
 ax.plot([0, 1], [0, 1], color="#4A4A4A", linestyle="--", linewidth=1.5, label="Perfect calibration")
 ax.plot(
     quantile_coverage_df["Nominal Level"],
-    quantile_coverage_df["Empirical Coverage (Train)"],
+    quantile_coverage_df["Coverage (Train)"],
     marker="o",
     linewidth=2,
     color=SAMPLE_COLOR,
@@ -2761,7 +2761,7 @@ ax.plot(
 )
 
 for _, row in quantile_coverage_df.iterrows():
-    calibration_error = row["Calibration Error (Val)"]
+    calibration_error = row["Calibration Error"]
     nominal_level = row["Nominal Level"]
     empirical_coverage = row["Empirical Coverage (Val)"]
 
@@ -2801,7 +2801,7 @@ ax.yaxis.set_major_formatter(percent_fmt)
 ax.set_xlim(0, 1)
 ax.set_ylim(0, 1)
 ax.set_xlabel("Nominal Quantile Level")
-ax.set_ylabel("Empirical Coverage (Weighted)")
+ax.set_ylabel("Coverage (Weighted)")
 ax.set_title("XGBoost Quantile Calibration: Nominal vs. Empirical Coverage", fontsize=13, fontweight="bold", pad=20)
 ax.set_xticks([0, 0.25, 0.5, 0.75, 0.9, 1.0])
 ax.set_yticks([0, 0.25, 0.5, 0.75, 0.9, 1.0])
@@ -4056,7 +4056,7 @@ display(
 #         <li><strong>Calibration Passed:</strong> All four predicted quantiles pass the final test calibration guardrail. q50, q75, and q90 are close to their nominal levels, confirming that the plan-around estimate, upper typical-range bound, and safety cushion remain well calibrated on unseen data.</li>
 #         <li><strong>q25 Remains Slightly Conservative:</strong> q25 covers 29.9% of test outcomes instead of the nominal 25.0%, matching the validation pattern. This means the lower endpoint of the typical range is still somewhat high, but the +4.9% calibration error stays within the ±5% guardrail.</li>
 #         <li><strong>Strong Safety Cushion:</strong> q90 coverage is 91.0% with a 95% CI of [89.2%, 92.6%], comfortably within the 85%–95% product tolerance. This supports using q90 as the budget-safe estimate.</li>
-#         <li><strong>No Test-Set Surprise:</strong> Test calibration is consistent with validation, indicating that the validation-stage calibration decision was not a fluke.</li>
+#         <li><strong>No Test-Set Surprise:</strong> Test calibration is consistent with validation. With ~1,477 rows in both data sets, a <3% difference in coverage between validation and test is very normal. We are estimating population-level coverage from two finite samples, and healthcare cost outcomes are noisy, weighted, zero-inflated, and heavy-tailed. It would actually be suspicious if every quantile matched almost exactly.</li>
 #     </ul>
 # </div>
 
