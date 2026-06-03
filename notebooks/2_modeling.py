@@ -2842,8 +2842,8 @@ plt.show()
 #     <b>Release Gate vs. Product Target</b> <br>
 #     For any given metric, defined release gates and product target performance or clarified whenever a metric is only for additional diagnostic purposes.
 #     <ul style="margin-top:8px">
-#         <li><b>Release gate:</b> Minimum acceptable performance required to ship.</li>
-#         <li><b>Product target:</b> Stronger performance that means the model is genuinely useful for budgeting.</li>
+#         <li><b>Release gate:</b> Minimum acceptable performance required to ship. Used for pass/fail decisions.</li>
+#         <li><b>Product target:</b> Stronger performance that means the model has high useful for budgeting.</li>
 #         <li><b>Diagnostic metric:</b> Monitored for model understanding, but not used as a pass/fail requirement.</li>
 #     </ul>
 #     <b>Product Coverage</b> <br>
@@ -2910,13 +2910,34 @@ def format_metric_delta(train_value, val_value):
 
 
 PRODUCT_METRIC_GATES_AND_TARGETS = {
-    "Plan Around MdAE (q50)": f"Release gate < {DOLLAR}500; product target < {DOLLAR}350",
-    "Plan Around MAE (q50)": "Diagnostic",
-    "Plan Around R² (q50)": "Diagnostic",
-    "Typical Range Coverage (q25–q75)": "Release gate 45%–55%; product target 50%",
-    "Safety Cushion Coverage (q90)": "Release gate 85%–95%; product target 90%",
-    "Typical Range Width": f"Release gate < {DOLLAR}1,500; product target < {DOLLAR}1,000",
-    "Safety Cushion Width": f"Release gate < {DOLLAR}3,500; product target < {DOLLAR}2,500",
+    "Plan Around MdAE (q50)": {
+        "Release Gate": f"< {DOLLAR}500",
+        "Product Target": f"< {DOLLAR}350",
+    },
+    "Plan Around MAE (q50)": {
+        "Release Gate": "Diagnostic",
+        "Product Target": "Diagnostic",
+    },
+    "Plan Around R² (q50)": {
+        "Release Gate": "Diagnostic",
+        "Product Target": "Diagnostic",
+    },
+    "Typical Range Coverage (q25–q75)": {
+        "Release Gate": "45%–55%",
+        "Product Target": "50%",
+    },
+    "Safety Cushion Coverage (q90)": {
+        "Release Gate": "85%–95%",
+        "Product Target": "90%",
+    },
+    "Typical Range Width": {
+        "Release Gate": f"< {DOLLAR}1,500",
+        "Product Target": f"< {DOLLAR}1,000",
+    },
+    "Safety Cushion Width": {
+        "Release Gate": f"< {DOLLAR}3,500",
+        "Product Target": f"< {DOLLAR}2,500",
+    },
 }
 
 
@@ -2986,7 +3007,8 @@ for metric_spec in product_metric_specs:
     metrics_display.append({
         "Metric": metric_spec["Metric"],
         "Validation (95% CI)": validation_display,
-        "Release Gate / Product Target": PRODUCT_METRIC_GATES_AND_TARGETS[metric_spec["Metric"]],
+        "Release Gate": PRODUCT_METRIC_GATES_AND_TARGETS[metric_spec["Metric"]]["Release Gate"],
+        "Product Target": PRODUCT_METRIC_GATES_AND_TARGETS[metric_spec["Metric"]]["Product Target"],
         "Training": format_metric_value(metric_spec["Training"], metric_format),
         "Val-Train Delta %": format_metric_delta(metric_spec["Training"], metric_spec["Validation"]),
     })
@@ -4163,7 +4185,8 @@ for metric_spec in test_product_metric_specs:
     test_product_metrics_display.append({
         "Metric": metric_spec["Metric"],
         "Estimate (95% CI)": test_display,
-        "Release Gate / Product Target": PRODUCT_METRIC_GATES_AND_TARGETS[metric_spec["Metric"]],
+        "Release Gate": PRODUCT_METRIC_GATES_AND_TARGETS[metric_spec["Metric"]]["Release Gate"],
+        "Product Target": PRODUCT_METRIC_GATES_AND_TARGETS[metric_spec["Metric"]]["Product Target"],
         "Status": get_test_metric_status(metric_spec["Metric"], metric_spec["Test"]),
     })
 
