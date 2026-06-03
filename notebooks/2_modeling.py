@@ -4050,7 +4050,7 @@ print(f"Generated quantile predictions for {len(y_test_quantile_pred):,} test sa
 # </div> 
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Confirm final model quantile prediction quality on the untouched test set using pinball loss and quantile skill score against the naive population-quantile baseline.
+#     📌 Evaluate final model on test set using pinball loss and quantile skill score (against the naive population-quantile baseline).
 # </div>
 
 # %%
@@ -4101,8 +4101,9 @@ display(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> 
 #     <ul>
-#         <li><strong>Technical Confirmation:</strong> Pinball loss evaluates each quantile with the asymmetric penalty that the model was trained to optimize. The skill score shows whether the personalized model improves over a naive baseline that gives every user the same population-level quantile.</li>
-#         <li><strong>Decision Role:</strong> These metrics are technical diagnostics, not product release gates. They confirm that the final quantile model adds predictive value beyond calibration and product-facing coverage checks.</li>
+#         <li><strong>All Quantiles Beat Naive:</strong> Every test-set quantile has lower pinball loss than the naive population-quantile baseline. This confirms that the model adds value across the full q25-q90 range, not only for the median plan-around estimate.</li>
+#         <li><strong>Skill Improves Toward Higher Costs:</strong> Quantile skill score rises from 4.90% at q25 to 15.63% at q90. This means the model is most useful where personalization matters most for budgeting: identifying users who need a larger safety cushion.</li>
+#         <li><strong>Decision Role:</strong> Pinball loss and skill score remain technical diagnostics, not product release gates. They support the final decision by showing that the quantile model improves on a simple baseline while the product metrics decide whether the model is useful enough to ship.</li>
 #     </ul>
 # </div>
 
