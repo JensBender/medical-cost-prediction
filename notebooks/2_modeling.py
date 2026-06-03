@@ -4046,6 +4046,68 @@ print(f"Generated quantile predictions for {len(y_test_quantile_pred):,} test sa
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Pinball Loss & Skill Score</h2>
+# </div> 
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Confirm final model quantile prediction quality on the untouched test set using pinball loss and quantile skill score against the naive population-quantile baseline.
+# </div>
+
+# %%
+test_pinball_results = []
+
+for idx, q in enumerate(quantiles):
+    quantile_label = f"q{int(q * 100)}"
+    y_test_pred_q = y_test_quantile_pred[:, idx]
+
+    naive_quantile_value = weighted_quantile(y_train, w_train, q)
+    y_test_naive_q = np.full_like(y_test, fill_value=naive_quantile_value)
+
+    test_pinball_loss = mean_pinball_loss(
+        y_test,
+        y_test_pred_q,
+        alpha=q,
+        sample_weight=w_test,
+    )
+    test_naive_pinball_loss = mean_pinball_loss(
+        y_test,
+        y_test_naive_q,
+        alpha=q,
+        sample_weight=w_test,
+    )
+    test_quantile_skill_score = 1.0 - (test_pinball_loss / test_naive_pinball_loss)
+
+    test_pinball_results.append({
+        "Quantile": quantile_label,
+        "Model Pinball Loss": test_pinball_loss,
+        "Naive Pinball Loss": test_naive_pinball_loss,
+        "Skill Score": test_quantile_skill_score,
+    })
+
+test_pinball_df = pd.DataFrame(test_pinball_results)
+
+display(
+    test_pinball_df.style
+    .hide()
+    .pipe(add_table_caption, "Final Model: Pinball Loss & Skill Scores (Test)")
+    .format(
+        lambda value: f"{DOLLAR}{value:,.2f}",
+        subset=["Model Pinball Loss", "Naive Pinball Loss"],
+    )
+    .format("{:.2%}", subset=["Skill Score"])
+)
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul>
+#         <li><strong>Technical Confirmation:</strong> Pinball loss evaluates each quantile with the asymmetric penalty that the model was trained to optimize. The skill score shows whether the personalized model improves over a naive baseline that gives every user the same population-level quantile.</li>
+#         <li><strong>Decision Role:</strong> These metrics are technical diagnostics, not product release gates. They confirm that the final quantile model adds predictive value beyond calibration and product-facing coverage checks.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Quantile Calibration</h2>
 # </div> 
 #
@@ -4089,6 +4151,7 @@ display(
     .format("{:+.1%}", subset=["Calibration Error"])
     .map(style_status_cells, subset=["Status"])
 )
+
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
