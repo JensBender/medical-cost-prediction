@@ -2839,17 +2839,24 @@ plt.show()
 #     ℹ️ <b>Product-Facing Evaluation Metrics</b> <br>
 #     The calibration section above checks whether each quantile endpoint is statistically trustworthy. This section translates those endpoints into the user-facing prediction estimates: plan-around estimate (q50), typical range (q25–q75), and safety cushion (q90). A prediction model must be both reliable and specific enough to be useful for out-of-pocket cost planning.
 #     <br><br>
+#     <b>Release Gate vs. Product Target</b> <br>
+#     For any given metric, defined release gates and product target performance or clarified whenever a metric is only for additional diagnostic purposes.
+#     <ul style="margin-top:8px">
+#         <li><b>Release gate:</b> Minimum acceptable performance required to ship.</li>
+#         <li><b>Product target:</b> Stronger performance that means the model is genuinely useful for budgeting.</li>
+#         <li><b>Diagnostic metric:</b> Monitored for model understanding, but not used as a pass/fail requirement.</li>
+#     </ul>
 #     <b>Product Coverage</b> <br>
 #     Typical range coverage measures how often actual costs fall between q25 and q75. Safety cushion coverage is the q90 coverage already checked in the calibration section, repeated here because it is also a release metric for the product. Under-coverage means ranges are too narrow so that users encounter unexpectedly high costs more often than the app implies. Over-coverage means ranges are too wide, which is safer, but less useful for concrete budgeting.
 #     <ul style="margin-top:8px">
-#         <li><b>Typical range coverage (q25–q75):</b> Target = 50%; release gate = 45–55%.</li>
-#         <li><b>Safety cushion coverage (q90):</b> Target = 90%; release gate = 85–95%.</li>
+#         <li><b>Typical range coverage (q25–q75):</b> Release gate = 45–55%; product target = 50%.</li>
+#         <li><b>Safety cushion coverage (q90):</b> Release gate = 85–95%; product target = 90%.</li>
 #     </ul>
 #     <b>Interval Width</b> <br>
 #     Interval width measures sharpness: how specific the predicted dollar range is. Coverage without reasonable width is not enough, because a model can meet coverage targets by returning overly broad ranges. Typical range width is q75 - q25. Safety cushion width is q90 - q50, measuring how much extra budget the safety cushion adds above the plan-around estimate. Reported widths are weighted averages across users, not the range for any single individual. 
 #     <ul style="margin-top:8px">
-#         <li><b>Typical range width (q25–q75):</b> Desirable &lt; \$1,000; release gate &lt; \$1,500.</li>
-#         <li><b>Safety cushion width (q50–q90):</b> Desirable &lt; \$2,500; release gate &lt; \$3,500.</li>
+#         <li><b>Typical range width (q25–q75):</b> Release gate &lt; \$1,500; product target &lt; \$1,000.</li>
+#         <li><b>Safety cushion width (q50–q90):</b> Release gate &lt; \$3,500; product target &lt; \$2,500.</li>
 #     </ul>
 # </div>
 #
@@ -2902,14 +2909,14 @@ def format_metric_delta(train_value, val_value):
     return f"{((val_value - train_value) / train_value) * 100:+.1f}%"
 
 
-PRODUCT_METRIC_RELEASE_TARGETS = {
-    "Plan Around MdAE (q50)": f"Release gate < {DOLLAR}500; desirable < {DOLLAR}350",
+PRODUCT_METRIC_GATES_AND_TARGETS = {
+    "Plan Around MdAE (q50)": f"Release gate < {DOLLAR}500; product target < {DOLLAR}350",
     "Plan Around MAE (q50)": "Diagnostic",
     "Plan Around R² (q50)": "Diagnostic",
-    "Typical Range Coverage (q25–q75)": "Target 50%; release gate 45%–55%",
-    "Safety Cushion Coverage (q90)": "Target 90%; release gate 85%–95%",
-    "Typical Range Width": f"Desirable < {DOLLAR}1,000; release gate < {DOLLAR}1,500",
-    "Safety Cushion Width": f"Desirable < {DOLLAR}2,500; release gate < {DOLLAR}3,500",
+    "Typical Range Coverage (q25–q75)": "Release gate 45%–55%; product target 50%",
+    "Safety Cushion Coverage (q90)": "Release gate 85%–95%; product target 90%",
+    "Typical Range Width": f"Release gate < {DOLLAR}1,500; product target < {DOLLAR}1,000",
+    "Safety Cushion Width": f"Release gate < {DOLLAR}3,500; product target < {DOLLAR}2,500",
 }
 
 
@@ -2979,7 +2986,7 @@ for metric_spec in product_metric_specs:
     metrics_display.append({
         "Metric": metric_spec["Metric"],
         "Validation (95% CI)": validation_display,
-        "Release Gate / Target": PRODUCT_METRIC_RELEASE_TARGETS[metric_spec["Metric"]],
+        "Release Gate / Product Target": PRODUCT_METRIC_GATES_AND_TARGETS[metric_spec["Metric"]],
         "Training": format_metric_value(metric_spec["Training"], metric_format),
         "Val-Train Delta %": format_metric_delta(metric_spec["Training"], metric_spec["Validation"]),
     })
@@ -4156,7 +4163,7 @@ for metric_spec in test_product_metric_specs:
     test_product_metrics_display.append({
         "Metric": metric_spec["Metric"],
         "Estimate (95% CI)": test_display,
-        "Release Gate / Target": PRODUCT_METRIC_RELEASE_TARGETS[metric_spec["Metric"]],
+        "Release Gate / Product Target": PRODUCT_METRIC_GATES_AND_TARGETS[metric_spec["Metric"]],
         "Status": get_test_metric_status(metric_spec["Metric"], metric_spec["Test"]),
     })
 
@@ -4242,8 +4249,8 @@ display(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> The final model passes all product-facing release gates on the holdout test set. 
 #     <ul>
-#         <li><b>Plan Around:</b> The q50 estimate achieves MdAE = &#36;239.54, comfortably below both the release gate and desirable target.</li>
-#         <li><b>Typical Range and Safety Cushion:</b> Coverage remains within release gates for both, while average interval widths meet the desirable targets. This suggests the model is calibrated without making the ranges overly broad.</li>
+#         <li><b>Plan Around:</b> The q50 estimate achieves MdAE = &#36;239.54, comfortably below both the release gate and product target.</li>
+#         <li><b>Typical Range and Safety Cushion:</b> Coverage remains within release gates for both, while average interval widths meet the product targets. This suggests the model is calibrated without making the ranges overly broad.</li>
 #         <li><b>Interval Skill Score:</b> The positive 11.2% interval skill score shows that the model's q25-q75 typical range improves on a naive population interval.</li>
 #         <li><b>Remaining Risk:</b> The model struggles with the rare high-cost cases, reflected by the large MAE-vs-MdAE gap and near-zero raw-scale R².</li>
 #     </ul>
