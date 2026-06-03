@@ -2538,10 +2538,10 @@ for idx, q in enumerate(quantiles):
     
     pinball_results.append({
         "Quantile": f"q{int(q*100)}",
-        "Pinball Loss (Val)": val_loss_model,
+        "Model Pinball Loss": val_loss_model,
         "Pinball Loss (Train)": train_loss_model,
         "Pinball Delta %": delta_percent,
-        "Skill Score (Val)": val_qss,
+        "Skill Score": val_qss,
         "Skill Score (Train)": train_qss,
     })
 
@@ -2549,9 +2549,9 @@ pinball_df = pd.DataFrame(pinball_results)
 display(
     pinball_df.style
     .hide()
-    .pipe(add_table_caption, "XGBoost Quantile Regression: Pinball Loss & Skill Scores")
-    .format("${:,.2f}", subset=["Pinball Loss (Val)", "Pinball Loss (Train)"])
-    .format("{:.2%}", subset=["Skill Score (Val)", "Skill Score (Train)"])
+    .pipe(add_table_caption, "XGBoost Quantile Regression: Pinball Loss & Skill Scores (Validation)")
+    .format("${:,.2f}", subset=["Model Pinball Loss", "Pinball Loss (Train)"])
+    .format("{:.2%}", subset=["Skill Score", "Skill Score (Train)"])
     .format("{:+.2f}%", subset=["Pinball Delta %"])
 )
 
