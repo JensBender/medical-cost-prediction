@@ -2967,8 +2967,8 @@ for metric_spec in product_metric_specs:
 
     metrics_display.append({
         "Metric": metric_spec["Metric"],
-        "Training": format_metric_value(metric_spec["Training"], metric_format),
         "Validation (95% CI)": validation_display,
+        "Training": format_metric_value(metric_spec["Training"], metric_format),
         "Val-Train Delta %": format_metric_delta(metric_spec["Training"], metric_spec["Validation"]),
     })
 
@@ -3449,7 +3449,7 @@ display(
     quantile_subgroup_df[display_columns]
     .style
     .hide()
-    .pipe(add_table_caption, "XGBoost Quantile Regression: Stratified Error Analysis")
+    .pipe(add_table_caption, "XGBoost Quantile Regression: Stratified Error Analysis (Validation)")
     .format("{:,}", subset=["Sample Size"])
     .format("${:,.2f}", subset=["Median Actual Cost", "Plan Around MdAE (q50)", "Typical Range Width (q25–q75)", "Safety Cushion Width (q50–q90)"])
     .format("{:.1%}", subset=["Typical Range Coverage (q25–q75)", "Safety Cushion Coverage (q90)"])
@@ -4033,7 +4033,7 @@ for idx, q in enumerate(quantiles):
     test_quantile_coverage_results.append({
         "Quantile": quantile_label,
         "Nominal Level": q,
-        "Empirical Coverage (95% CI)": f"{test_coverage:.1%} [{ci_lower:.1%}, {ci_upper:.1%}]",
+        "Coverage (95% CI)": f"{test_coverage:.1%} [{ci_lower:.1%}, {ci_upper:.1%}]",
         "Calibration Error": calibration_error,
         "Status": "Pass" if abs(calibration_error) <= 0.05 else "Review",
     })
@@ -4235,7 +4235,11 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insights</b> 
+#     💡 <b>Insights:</b> The final model passes all product-facing quality guardrails on the holdout test set. 
 #     <ul>
+#         <li><b>Plan Around:</b> The q50 estimate achieves MdAE = $239.54, comfortably below both the MVP and desirable targets.</li>
+#         <li><b>Typical Range and Safety Cushion:</b> Coverage remains within release tolerances for both, while average interval widths stay in the good range. This suggests the model is calibrated without making the ranges overly broad.</li>
+#         <li><b>Interval Skill Score:</b> The positive 11.2% interval skill score shows that the model's q25-q75 typical range improves on a naive population interval.</li>
+#         <li><b>Remaining Risk:</b> The model struggles with the rare high-cost cases, reflected by the large MAE-vs-MdAE gap and near-zero raw-scale R².</li>
 #     </ul>
 # </div>
