@@ -4103,6 +4103,7 @@ display(
 #     <ul>
 #         <li><strong>All Quantiles Beat Naive:</strong> Every test-set quantile has lower pinball loss than the naive population-quantile baseline. This confirms that the model adds value across the full q25-q90 range, not only for the median plan-around estimate.</li>
 #         <li><strong>Skill Improves Toward Higher Costs:</strong> Quantile skill score rises from 4.90% at q25 to 15.63% at q90. This means the model is most useful where personalization matters most for budgeting: identifying users who need a larger safety cushion.</li>
+#         <li><strong>Generalization Looks Good:</strong> Skill scores are slightly higher on test than validation set. q90 skill remains below training skill, so the earlier tail-overfitting concern still exists, but it does not translate into a test-set failure.</li>
 #         <li><strong>Decision Role:</strong> Pinball loss and skill score remain technical diagnostics, not product release gates. They support the final decision by showing that the quantile model improves on a simple baseline while the product metrics decide whether the model is useful enough to ship.</li>
 #     </ul>
 # </div>
