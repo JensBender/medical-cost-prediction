@@ -678,22 +678,8 @@ def prepare_human_readable_split_data(split_data_path=VAL_DATA_PATH, split_label
     return df_raw_split, y_split, w_split
 
 
-def prepare_human_readable_validation_data():
-    """
-    Recover human-readable feature values for the validation set.
-    """
-    return prepare_human_readable_split_data(VAL_DATA_PATH, "validation")
-
-
-def prepare_human_readable_test_data():
-    """
-    Recover human-readable feature values for the locked test set.
-    """
-    return prepare_human_readable_split_data(TEST_DATA_PATH, "test")
-
-
 # Example usage: Prepare validation data for LLM benchmarking
-# df_raw_val, y_val, w_val = prepare_human_readable_validation_data()
+# df_raw_val, y_val, w_val = prepare_human_readable_split_data(VAL_DATA_PATH, "validation")
 
 # Align all arrays by common indices
 # common_ids = df_raw_val.dropna(how="all").index.intersection(y_val.index)
@@ -1916,7 +1902,7 @@ plot_residuals_vs_predicted(
 # Recover raw features of validation data for stratification
 # We need the original categorical codes (before pipeline one-hot encoding) to group the data
 print("Recovering raw validation features...")
-df_raw_val, y_val_true, w_val_weights = prepare_human_readable_validation_data()
+df_raw_val, y_val_true, w_val_weights = prepare_human_readable_split_data(VAL_DATA_PATH, "validation")
 
 # Create chronic conditions count  
 chronic_cols = list(CHRONIC_CONDITIONS.keys())
@@ -2013,7 +1999,7 @@ for model_key, y_val_pred in tuned_model_predictions.items():
             # Calculate weighted MdAE
             group_mdae = weighted_median_absolute_error(
                 y_val_true[mask],  # Aligns via Index
-                y_val_pred[mask],  # Aligns via Position (df_raw_val was reindexed to match in prepare_human_readable_validation_data)
+                y_val_pred[mask],  # Aligns via Position (df_raw_val was reindexed to match the validation parquet)
                 sample_weight=w_val_weights[mask]  # Aligns via Index
             )
             
@@ -3351,7 +3337,7 @@ plot_residuals_vs_predicted(
 # %%
 # --- Prepare Features ---
 print("Recovering raw validation features...")
-df_quantile_raw_val, y_quantile_val_true, w_quantile_val = prepare_human_readable_validation_data()
+df_quantile_raw_val, y_quantile_val_true, w_quantile_val = prepare_human_readable_split_data(VAL_DATA_PATH, "validation")
 
 # Create chronic conditions count
 chronic_cols = list(CHRONIC_CONDITIONS.keys())
@@ -4382,7 +4368,7 @@ display(
 # %%
 # --- Prepare Features ---
 print("Recovering raw test features...")
-df_quantile_raw_test, y_quantile_test_true, w_quantile_test = prepare_human_readable_test_data()
+df_quantile_raw_test, y_quantile_test_true, w_quantile_test = prepare_human_readable_split_data(TEST_DATA_PATH, "test")
 
 # Create chronic conditions count
 df_quantile_raw_test["CHRONIC_COUNT"] = df_quantile_raw_test[chronic_cols].sum(axis=1).astype(int)
