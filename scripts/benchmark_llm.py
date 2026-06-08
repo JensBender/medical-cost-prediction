@@ -139,25 +139,29 @@ returned in the requested list format."""
 # Data Preparation
 # =========================
 
-def prepare_human_readable_validation_data():
+def prepare_human_readable_split_data(split_data_path=VAL_DATA_PATH, split_label="validation"):
     """
-    Recover human-readable feature values for the validation set.
+    Recover human-readable feature values for a preprocessed split (like val or test).
 
     The saved parquet contains scaled/encoded features (after StandardScaler and
     OneHotEncoder). This function reloads the raw MEPS SAS file, applies the same
     cleaning steps 1-7 as preprocess.py (but NOT the sklearn pipeline), then filters
-    to only the validation set rows by matching DUPERSID indices.
+    to only the requested split rows by matching DUPERSID indices.
+
+    Args:
+        split_data_path (str): Path to the preprocessed split parquet file.
+        split_label (str): Human-readable split name for progress messages.
 
     Returns:
-        tuple: (df_raw_val, y_val, w_val) where df_raw_val has human-readable
-               feature values, y_val is the target, and w_val are sample weights.
+        tuple: (df_raw_split, y_split, w_split) where df_raw_split has human-readable
+               feature values, y_split is the target, and w_split are sample weights.
                All aligned by DUPERSID index in parquet row order.
     """
-    # Load preprocessed validation data to get row IDs, target, and weights
-    df_val = pd.read_parquet(VAL_DATA_PATH)
-    val_ids = set(df_val.index.astype(str))
-    y_val = df_val[TARGET_COLUMN]
-    w_val = df_val[WEIGHT_COLUMN]
+    # Load preprocessed split data to get row IDs, target, and weights
+    df_split = pd.read_parquet(split_data_path)
+    split_ids = set(df_split.index.astype(str))
+    y_split = df_split[TARGET_COLUMN]
+    w_split = df_split[WEIGHT_COLUMN]
 
     # --- Data Preparation (mirrors preprocess.py steps 1-7) ---
     # Step 1: Load raw MEPS data
@@ -198,14 +202,14 @@ def prepare_human_readable_validation_data():
     df["MARRY31X_GRP"] = df["MARRY31X"].replace(MARRY31X_COLLAPSE_MAP)
     df["EMPST31_GRP"] = df["EMPST31"].replace(EMPST31_COLLAPSE_MAP)
 
-    # Filter to validation set rows and align to preprocessed data row order
-    print("  Filtering rows to match preprocessed validation data...")
-    df_raw_val = df.loc[df.index.isin(val_ids)].reindex(y_val.index)
-    n_matched = df_raw_val.index.isin(val_ids).sum()
-    n_complete = df_raw_val.notna().all(axis=1).sum()
-    print(f"  Matched {n_matched:,} out of {len(val_ids):,} rows of the preprocessed validation data ({n_complete:,} complete, {n_matched - n_complete:,} with missing values)")
+    # Filter to requested split rows and align to preprocessed data row order
+    print(f"  Filtering rows to match preprocessed {split_label} data...")
+    df_raw_split = df.loc[df.index.isin(split_ids)].reindex(y_split.index)
+    n_matched = df_raw_split.index.isin(split_ids).sum()
+    n_complete = df_raw_split.notna().all(axis=1).sum()
+    print(f"  Matched {n_matched:,} out of {len(split_ids):,} rows of the preprocessed {split_label} data ({n_complete:,} complete, {n_matched - n_complete:,} with missing values)")
 
-    return df_raw_val, y_val, w_val
+    return df_raw_split, y_split, w_split
 
 
 # =========================
@@ -438,7 +442,7 @@ def main():
         
         # --- 1. Data Preparation ---
         print("Step 1: Preparing human-readable validation data...")
-        df_raw_val, y_val, w_val = prepare_human_readable_validation_data()
+        df_raw_val, y_val, w_val = prepare_human_readable_split_data(VAL_DATA_PATH, "validation")
 
         # Ensure indices are aligned between raw features and preprocessed targets
         print(f"  Aligning row indices with preprocessed validation data...")
