@@ -217,7 +217,7 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Baseline Models</h1>
-# </div> 
+# </div>
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
@@ -548,6 +548,7 @@ MAX_ATTEMPTS = 5             # Maximum times to try API call before giving up
 # Paths (relative to /notebooks directory)
 RAW_DATA_PATH = "../data/h251.sas7bdat"
 VAL_DATA_PATH = "../data/validation_data_preprocessed.parquet"
+TEST_DATA_PATH = "../data/test_data_preprocessed.parquet"
 
 # Human-Readable Label Maps
 SEX_LABELS = {1: "Male", 0: "Female"}
@@ -600,27 +601,31 @@ class PredictionBatch(BaseModel):
 # </div> 
 
 # %%
-def prepare_human_readable_validation_data():
+def prepare_human_readable_split_data(split_data_path=VAL_DATA_PATH, split_label="validation"):
     """
-    Recover human-readable feature values for the validation set.
+    Recover human-readable feature values for a preprocessed split.
 
     The saved parquet contains scaled/encoded features (after StandardScaler and
     OneHotEncoder). This function reloads the raw MEPS SAS file, applies the same
     cleaning steps 1-7 as preprocess.py (but NOT the sklearn pipeline), then filters
-    to only the validation set rows by matching DUPERSID indices. It manually 
-    includes 'Race' for fairness audit while ensuring it remains excluded from model 
+    to only the requested split rows by matching DUPERSID indices. It manually
+    includes 'Race' for fairness audit while ensuring it remains excluded from model
     training and LLM benchmarking.
 
+    Args:
+        split_data_path (str): Path to the preprocessed split parquet file.
+        split_label (str): Human-readable split name for progress messages.
+
     Returns:
-        tuple: (df_raw_val, y_val, w_val) where df_raw_val has human-readable
-               feature values, y_val is the target, and w_val are sample weights.
+        tuple: (df_raw_split, y_split, w_split) where df_raw_split has human-readable
+               feature values, y_split is the target, and w_split are sample weights.
                All aligned by DUPERSID index in parquet row order.
     """
-    # Load preprocessed validation data to get row IDs, target, and weights
-    df_val = pd.read_parquet(VAL_DATA_PATH)
-    val_ids = set(df_val.index.astype(str))
-    y_val = df_val[TARGET_COLUMN]
-    w_val = df_val[WEIGHT_COLUMN]
+    # Load preprocessed split data to get row IDs, target, and weights
+    df_split = pd.read_parquet(split_data_path)
+    split_ids = set(df_split.index.astype(str))
+    y_split = df_split[TARGET_COLUMN]
+    w_split = df_split[WEIGHT_COLUMN]
 
     # --- Data Preparation (mirrors preprocess.py steps 1-7) ---
     # Step 1: Load raw MEPS data
@@ -663,14 +668,28 @@ def prepare_human_readable_validation_data():
     df["MARRY31X_GRP"] = df["MARRY31X"].replace(MARRY31X_COLLAPSE_MAP)
     df["EMPST31_GRP"] = df["EMPST31"].replace(EMPST31_COLLAPSE_MAP)
 
-    # Filter to validation set rows and align to preprocessed data row order
-    print("  Filtering rows to match preprocessed validation data...")
-    df_raw_val = df.loc[df.index.isin(val_ids)].reindex(y_val.index)
-    n_matched = df_raw_val.index.isin(val_ids).sum()
-    n_complete = df_raw_val.notna().all(axis=1).sum()
-    print(f"  Matched {n_matched:,} of {len(val_ids):,} rows of the preprocessed validation data ({n_complete:,} complete, {n_matched - n_complete:,} with missing values)")
+    # Filter to requested split rows and align to preprocessed data row order
+    print(f"  Filtering rows to match preprocessed {split_label} data...")
+    df_raw_split = df.loc[df.index.isin(split_ids)].reindex(y_split.index)
+    n_matched = df_raw_split.index.isin(split_ids).sum()
+    n_complete = df_raw_split.notna().all(axis=1).sum()
+    print(f"  Matched {n_matched:,} of {len(split_ids):,} rows of the preprocessed {split_label} data ({n_complete:,} complete, {n_matched - n_complete:,} with missing values)")
 
-    return df_raw_val, y_val, w_val
+    return df_raw_split, y_split, w_split
+
+
+def prepare_human_readable_validation_data():
+    """
+    Recover human-readable feature values for the validation set.
+    """
+    return prepare_human_readable_split_data(VAL_DATA_PATH, "validation")
+
+
+def prepare_human_readable_test_data():
+    """
+    Recover human-readable feature values for the locked test set.
+    """
+    return prepare_human_readable_split_data(TEST_DATA_PATH, "test")
 
 
 # Example usage: Prepare validation data for LLM benchmarking
@@ -4341,5 +4360,168 @@ display(
 #         <li><b>Typical Range and Safety Cushion:</b> Coverage remains within release gates. Interval widths meet the product targets. This suggests the model is calibrated without making the ranges overly broad.</li>
 #         <li><b>Interval Skill Score:</b> The positive 11.2% interval skill score shows that the model's q25-q75 typical range improves on a naive population interval.</li>
 #         <li><b>Remaining Risk:</b> The model struggles with the rare high-cost cases, reflected by the large MAE-vs-MdAE gap and near-zero R².</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Stratified Error Analysis</h2>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
+#     ℹ️ <b>Subgroup Reliability and Fairness Audit (Test)</b> <br>
+#     Reuse the same stratification columns from validation to audit the final XGBoost quantile regression model on the untouched test set. Because these subgroup definitions were chosen before test-set evaluation, this section is a final reporting check rather than another model-selection loop.
+#     <ul style="margin-top:8px">
+#         <li><b>Reliability groups:</b> actual cost tier, predicted plan-around cost tier (q50), predicted safety-cushion cost tier (q90), physical health, insurance status, and chronic condition count.</li>
+#         <li><b>Fairness audit groups:</b> sex, age group, race/ethnicity, mental health, income, education, region, and walking limitation.</li>
+#         <li><b>Metrics by group:</b> plan-around MdAE (q50), typical range coverage/width (q25-q75), and safety cushion coverage/width (q90 and q50-q90).</li>
+#         <li><b>Interpretation:</b> Overall test-set release gates remain the pass/fail criteria. Subgroup flags are diagnostic review triggers used to identify where final reporting needs caveats or post-launch monitoring.</li>
+#     </ul>
+# </div>
+
+# %%
+# --- Prepare Features ---
+print("Recovering raw test features...")
+df_quantile_raw_test, y_quantile_test_true, w_quantile_test = prepare_human_readable_test_data()
+
+# Create chronic conditions count
+df_quantile_raw_test["CHRONIC_COUNT"] = df_quantile_raw_test[chronic_cols].sum(axis=1).astype(int)
+df_quantile_raw_test["CHRONIC_COUNT_GRP"] = df_quantile_raw_test["CHRONIC_COUNT"].apply(lambda x: f"{x} Condition" if x == 1 else (f"{x} Conditions" if x < 4 else "4+ Conditions"))
+
+# Create age groups for a more stable and interpretable fairness audit
+df_quantile_raw_test["AGE_GRP"] = pd.cut(df_quantile_raw_test["AGE23X"], bins=age_bins, labels=age_labels, right=False)
+
+# Align test-set quantile predictions to the raw test rows
+y_test_pred_q25_series, y_test_pred_q50_series, y_test_pred_q75_series, y_test_pred_q90_series = [
+    pd.Series(values, index=y_quantile_test_true.index)
+    for values in y_test_quantile_pred.T
+]
+
+# Create medical cost ranges for reporting
+df_quantile_raw_test["ACTUAL_COSTS"] = create_stratification_bins(y_quantile_test_true).map(actual_cost_bin_map)
+df_quantile_raw_test["PREDICTED_MEDIAN_COSTS"] = create_stratification_bins(y_test_pred_q50_series).map(predicted_cost_bin_map)
+df_quantile_raw_test["PREDICTED_CUSHION_COSTS"] = create_stratification_bins(y_test_pred_q90_series).map(predicted_cost_bin_map)
+
+
+# --- Stratified Quantile Error Analysis ---
+test_quantile_stratified_results = []
+
+for config in quantile_stratified_configs:
+    col = config["col"]
+    label = config["label"]
+    category_map = config["category_map"]
+    col_bins = df_quantile_raw_test[col]
+
+    for group in sorted(col_bins.dropna().unique()):
+        mask = (col_bins == group)
+        y_group = y_quantile_test_true[mask]
+        w_group = w_quantile_test[mask]
+        q25_group = y_test_pred_q25_series[mask]
+        q50_group = y_test_pred_q50_series[mask]
+        q75_group = y_test_pred_q75_series[mask]
+        q90_group = y_test_pred_q90_series[mask]
+
+        test_quantile_stratified_results.append({
+            "Column": label,
+            "Group": category_map.get(int(group), group) if category_map else group,
+            "Sample Size": mask.sum(),
+            "Median Actual Cost": weighted_quantile(y_group, w_group, 0.5),
+            "Predicted Typical Low (q25)": np.average(q25_group, weights=w_group),
+            "Predicted Plan Around (q50)": np.average(q50_group, weights=w_group),
+            "Predicted Typical High (q75)": np.average(q75_group, weights=w_group),
+            "Predicted Safety Cushion (q90)": np.average(q90_group, weights=w_group),
+            "Plan Around MdAE (q50)": weighted_median_absolute_error(y_group, q50_group, sample_weight=w_group),
+            "Typical Range Coverage (q25–q75)": np.average((y_group >= q25_group) & (y_group <= q75_group), weights=w_group),
+            "Typical Range Width (q25–q75)": np.average(q75_group - q25_group, weights=w_group),
+            "Safety Cushion Coverage (q90)": np.average(y_group <= q90_group, weights=w_group),
+            "Safety Cushion Width (q50–q90)": np.average(q90_group - q50_group, weights=w_group),
+        })
+
+test_quantile_subgroup_df = pd.DataFrame(test_quantile_stratified_results)
+
+
+# --- Subgroup Reliability Flags ---
+test_overall_q50_mdae = weighted_median_absolute_error(y_quantile_test_true, y_test_pred_q50_series, sample_weight=w_quantile_test)
+test_overall_median_actual_cost = weighted_quantile(y_quantile_test_true, w_quantile_test, 0.5)
+test_overall_range_width = np.average(y_test_pred_q75_series - y_test_pred_q25_series, weights=w_quantile_test)
+test_overall_cushion_width = np.average(y_test_pred_q90_series - y_test_pred_q50_series, weights=w_quantile_test)
+
+
+def get_test_quantile_reliability_flags(subgroup):
+    flags = []
+
+    if subgroup["Sample Size"] < 30:
+        flags.append("Small Sample")
+
+    if subgroup["Typical Range Coverage (q25–q75)"] < 0.40:
+        flags.append("Typical Range Undercoverage")
+    elif subgroup["Typical Range Coverage (q25–q75)"] > 0.60:
+        flags.append("Typical Range Overcoverage")
+
+    if subgroup["Safety Cushion Coverage (q90)"] < 0.75:
+        flags.append("Severe Cushion Undercoverage")
+    elif subgroup["Safety Cushion Coverage (q90)"] < 0.80:
+        flags.append("Cushion Undercoverage")
+    elif subgroup["Safety Cushion Coverage (q90)"] > 0.97:
+        flags.append("Cushion Overcoverage")
+
+    if subgroup["Plan Around MdAE (q50)"] > 3 * test_overall_q50_mdae:
+        flags.append("High Plan-Around Error")
+
+    is_low_cost_group = subgroup["Median Actual Cost"] <= test_overall_median_actual_cost
+    if is_low_cost_group and subgroup["Typical Range Width (q25–q75)"] > test_overall_range_width:
+        flags.append("Wide Low-Cost Typical Range")
+    if is_low_cost_group and subgroup["Safety Cushion Width (q50–q90)"] > test_overall_cushion_width:
+        flags.append("Wide Low-Cost Cushion")
+
+    return ", ".join(flags) if flags else "None"
+
+
+test_quantile_subgroup_df["Reliability Flags"] = test_quantile_subgroup_df.apply(get_test_quantile_reliability_flags, axis=1)
+
+display(
+    test_quantile_subgroup_df[display_columns]
+    .style
+    .hide()
+    .pipe(add_table_caption, "Final Model: Stratified Error Analysis (Test)")
+    .format("{:,}", subset=["Sample Size"])
+    .format("${:,.2f}", subset=["Median Actual Cost", "Plan Around MdAE (q50)", "Typical Range Width (q25–q75)", "Safety Cushion Width (q50–q90)"])
+    .format("{:.1%}", subset=["Typical Range Coverage (q25–q75)", "Safety Cushion Coverage (q90)"])
+    .apply(lambda row: ["background-color: #fff3cd" if row["Reliability Flags"] != "None" else "" for _ in row], axis=1)
+)
+
+# %%
+plot_quantile_subgroup_performance(
+    test_quantile_subgroup_df,
+    quantile_reliability_labels,
+    "Final Model: Test-Set Subgroup Reliability",
+    save_to_file="../figures/evaluation/final_test_subgroup_reliability.png"
+)
+
+plot_quantile_subgroup_performance(
+    test_quantile_subgroup_df,
+    quantile_fairness_labels,
+    "Final Model: Test-Set Subgroup Fairness",
+    save_to_file="../figures/evaluation/final_test_subgroup_fairness.png"
+)
+
+plot_quantile_subgroup_predictions(
+    test_quantile_subgroup_df,
+    quantile_reliability_labels,
+    "Final Model: Test-Set Predicted Cost by Reliability Subgroup",
+    save_to_file="../figures/evaluation/final_test_predicted_cost_reliability.png"
+)
+
+plot_quantile_subgroup_predictions(
+    test_quantile_subgroup_df,
+    quantile_fairness_labels,
+    "Final Model: Test-Set Predicted Cost by Fairness Subgroup",
+    save_to_file="../figures/evaluation/final_test_predicted_cost_fairness.png"
+)
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b> 
+#     <ul>
 #     </ul>
 # </div>
