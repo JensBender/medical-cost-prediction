@@ -2152,7 +2152,12 @@ def plot_subgroup_performance(df, column_labels, title, save_to_file=None):
 
 # Model reliability analysis 
 reliability_labels = [c["label"] for c in reliability_configs]
-plot_subgroup_performance(subgroup_df, reliability_labels, "Tuned Models: Subgroup Reliability Analysis", save_to_file="../figures/evaluation/subgroup_reliability.png")
+plot_subgroup_performance(
+    subgroup_df,
+    reliability_labels,
+    "Tuned Models: Subgroup Reliability (Validation)",
+    save_to_file="../figures/evaluation/tuned_models_validation_subgroup_reliability.png"
+)
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -2165,11 +2170,21 @@ plot_subgroup_performance(subgroup_df, reliability_labels, "Tuned Models: Subgro
 # %%
 # Legally Protected Groups
 legally_protected_labels = [c["label"] for c in legally_protected_configs]
-plot_subgroup_performance(subgroup_df, legally_protected_labels, "Tuned Models: Subgroup Fairness Analysis (Legally Protected Groups)", save_to_file="../figures/evaluation/subgroup_fairness_protected.png")
+plot_subgroup_performance(
+    subgroup_df,
+    legally_protected_labels,
+    "Tuned Models: Subgroup Fairness - Protected Groups (Validation)",
+    save_to_file="../figures/evaluation/tuned_models_validation_subgroup_fairness_protected.png"
+)
 
 # Vulnerable & Proxy Groups
 vulnerable_and_proxy_labels = [c["label"] for c in vulnerable_and_proxy_configs]
-plot_subgroup_performance(subgroup_df, vulnerable_and_proxy_labels, "Tuned Models: Subgroup Fairness Analysis (Vulnerable & Proxy Groups)", save_to_file="../figures/evaluation/subgroup_fairness_vulnerable.png")
+plot_subgroup_performance(
+    subgroup_df,
+    vulnerable_and_proxy_labels,
+    "Tuned Models: Subgroup Fairness - Vulnerable & Proxy Groups (Validation)",
+    save_to_file="../figures/evaluation/tuned_models_validation_subgroup_fairness_vulnerable_proxy.png"
+)
 
 
 # %% [markdown]
@@ -3688,16 +3703,16 @@ quantile_reliability_labels = [c["label"] for c in quantile_reliability_configs]
 plot_quantile_subgroup_performance(
     quantile_subgroup_df,
     quantile_reliability_labels,
-    "XGBoost Quantile Regression: Subgroup Reliability Audit",
-    save_to_file="../figures/evaluation/quantile_subgroup_reliability.png"
+    "XGBoost Quantile Regression: Subgroup Reliability (Validation)",
+    save_to_file="../figures/evaluation/xgb_quantile_validation_subgroup_reliability.png"
 )
 
 quantile_fairness_labels = [c["label"] for c in quantile_fairness_configs]
 plot_quantile_subgroup_performance(
     quantile_subgroup_df,
     quantile_fairness_labels,
-    "XGBoost Quantile Regression: Subgroup Fairness Audit",
-    save_to_file="../figures/evaluation/quantile_subgroup_fairness.png"
+    "XGBoost Quantile Regression: Subgroup Fairness (Validation)",
+    save_to_file="../figures/evaluation/xgb_quantile_validation_subgroup_fairness.png"
 )
 
 # %% [markdown]
@@ -4005,13 +4020,13 @@ def plot_quantile_subgroup_predictions(df, column_labels, title, save_to_file=No
 plot_quantile_subgroup_predictions(
     quantile_subgroup_df,
     quantile_reliability_labels,
-    "XGBoost Quantile Regression: Predicted Cost by Reliability Subgroup"
+    "XGBoost Quantile Regression: Predicted Cost by Reliability Subgroup (Validation)"
 )
 
 plot_quantile_subgroup_predictions(
     quantile_subgroup_df,
     quantile_fairness_labels,
-    "XGBoost Quantile Regression: Predicted Cost by Fairness Subgroup"
+    "XGBoost Quantile Regression: Predicted Cost by Fairness Subgroup (Validation)"
 )
 
 # %% [markdown]
@@ -4423,27 +4438,27 @@ display(
 plot_quantile_subgroup_performance(
     test_quantile_subgroup_df,
     quantile_reliability_labels,
-    "Final Model: Test-Set Subgroup Reliability",
-    save_to_file="../figures/evaluation/final_test_subgroup_reliability.png"
+    "XGBoost Quantile Regression: Subgroup Reliability (Test)",
+    save_to_file="../figures/evaluation/xgb_quantile_test_subgroup_reliability.png"
 )
 
 plot_quantile_subgroup_performance(
     test_quantile_subgroup_df,
     quantile_fairness_labels,
-    "Final Model: Test-Set Subgroup Fairness",
-    save_to_file="../figures/evaluation/final_test_subgroup_fairness.png"
+    "XGBoost Quantile Regression: Subgroup Fairness (Test)",
+    save_to_file="../figures/evaluation/xgb_quantile_test_subgroup_fairness.png"
 )
 
 plot_quantile_subgroup_predictions(
     test_quantile_subgroup_df,
     quantile_reliability_labels,
-    "Final Model: Test-Set Predicted Cost by Reliability Subgroup"
+    "XGBoost Quantile Regression: Predicted Cost by Reliability Subgroup (Test)"
 )
 
 plot_quantile_subgroup_predictions(
     test_quantile_subgroup_df,
     quantile_fairness_labels,
-    "Final Model: Test-Set Predicted Cost by Fairness Subgroup"
+    "XGBoost Quantile Regression: Predicted Cost by Fairness Subgroup (Test)"
 )
 
 # %% [markdown]

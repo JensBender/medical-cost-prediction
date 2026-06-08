@@ -552,7 +552,7 @@ To reproduce the LLM benchmark:
 Performed stratified error analysis with Median Absolute Error (MdAE) to evaluate model reliability across subgroups for all tuned models and detect algorithmic bias across 13 relevant dimensions.
 
 **Reliability**
-![Tuned Models: Subgroup Reliability](figures/evaluation/subgroup_reliability.png)
+![Tuned Models: Subgroup Reliability (Validation)](figures/evaluation/tuned_models_validation_subgroup_reliability.png)
 **Key Insights:**
 - **Actual Costs:** Models converge at the Top 5% (~$9.5k MdAE), highlighting the data's noise limit. Elastic Net struggles with Zero Costs ($90 vs. ~$30 for tree models) due to linear assumptions.
 - **Predicted Costs:** Random Forest is the most precise for "Very High Spend" predictions ($751 MdAE vs. $1,095 for Elastic Net), proving better calibration for high-risk identification.
@@ -560,8 +560,8 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 - **Insurance:** Elastic Net produces 3–4× the error of tree models for the Uninsured ($95 vs. ~$30), failing to capture near-zero spending constraints.
 
 **Fairness**
-![Tuned Models: Subgroup Fairness (Protected Groups)](figures/evaluation/subgroup_fairness_protected.png)
-![Tuned Models: Subgroup Fairness (Vulnerable Groups)](figures/evaluation/subgroup_fairness_vulnerable.png)
+![Tuned Models: Subgroup Fairness - Protected Groups (Validation)](figures/evaluation/tuned_models_validation_subgroup_fairness_protected.png)
+![Tuned Models: Subgroup Fairness - Vulnerable & Proxy Groups (Validation)](figures/evaluation/tuned_models_validation_subgroup_fairness_vulnerable_proxy.png)
 **Key Insights:**
 - **Sex:** Consistent Female/Male disparity (~1.5×) across architectures reflects utilization variance (e.g., reproductive care), not algorithmic bias.
 - **Age:** Error increases 4–6× for older compared to young adults, reflecting clinical complexity.
@@ -578,7 +578,7 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 Extended the stratified error analysis to evaluate the prediction intervals of the final XGBoost Quantile Regression model. Assessed both the **typical range** ($`25^{\text{th}}`$–$`75^{\text{th}}`$ percentiles) and the **safety cushion** ($`90^{\text{th}}`$ percentile) across subgroups. Overall coverage uses tighter performance targets (45–55% for the typical range; 85–95% for the safety cushion), while subgroup coverage uses wider performance guardrails (40–60% and 80–97%) for groups with sufficient sample size (`n ≥ 30`). Evaluated both **interval coverage** (statistical calibration) and **width** (usefulness for budgeting in USD) to ensure predictions remain reliable and actionable for all user groups.
 
 **Reliability**
-![XGBoost Quantile Regression: Subgroup Reliability](figures/evaluation/quantile_subgroup_reliability.png)
+![XGBoost Quantile Regression: Subgroup Reliability (Validation)](figures/evaluation/xgb_quantile_validation_subgroup_reliability.png)
 **Key Insights:**
 - **Predicted vs. Actual Costs:** Intervals are well calibrated when stratified by predicted cost tiers (coverage stays near 50%/90% targets), but collapse when stratified by actual costs — dropping to 0%/0% for Very High actual spenders, confirming the model cannot capture tail events it has never "seen" in its features.
 - **Zero Actual Costs:** Show only 24.9% typical-range coverage but 100% safety-cushion coverage, meaning the model's typical-range prediction overshoots (interval sits above $0) while the safety cushion contains the true $0 value.
@@ -587,7 +587,7 @@ Extended the stratified error analysis to evaluate the prediction intervals of t
 - **Chronic Conditions:** Coverage stays near target regardless of condition count; safety-cushion width grows from $1,402 (0 conditions) to $3,366 (4+), reflecting the compounding cost uncertainty of comorbidity.
 
 **Fairness**
-![XGBoost Quantile Regression: Subgroup Fairness](figures/evaluation/quantile_subgroup_fairness.png)
+![XGBoost Quantile Regression: Subgroup Fairness (Validation)](figures/evaluation/xgb_quantile_validation_subgroup_fairness.png)
 **Key Insights:**
 - **Coverage:** Calibration stays near target for nearly all protected and vulnerable subgroups (typical range 40–57%; safety cushion 84–95%), confirming consistent statistical reliability.
 - **Sex:** Females get wider intervals than Males ($1,028 vs. $742 typical range) due to higher spending variance, but both groups calibrate well (52% vs. 45%).
