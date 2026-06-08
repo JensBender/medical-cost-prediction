@@ -603,7 +603,7 @@ class PredictionBatch(BaseModel):
 # %%
 def prepare_human_readable_split_data(split_data_path=VAL_DATA_PATH, split_label="validation"):
     """
-    Recover human-readable feature values for a preprocessed split.
+    Recover human-readable feature values for a preprocessed split (like val or test).
 
     The saved parquet contains scaled/encoded features (after StandardScaler and
     OneHotEncoder). This function reloads the raw MEPS SAS file, applies the same
@@ -3335,32 +3335,11 @@ plot_residuals_vs_predicted(
 # </div>
 
 # %%
-# --- Prepare Features ---
-print("Recovering raw validation features...")
-df_quantile_raw_val, y_quantile_val_true, w_quantile_val = prepare_human_readable_split_data(VAL_DATA_PATH, "validation")
-
-# Create chronic conditions count
+# --- Stratification Setup ---
 chronic_cols = list(CHRONIC_CONDITIONS.keys())
-df_quantile_raw_val["CHRONIC_COUNT"] = df_quantile_raw_val[chronic_cols].sum(axis=1).astype(int)
-df_quantile_raw_val["CHRONIC_COUNT_GRP"] = df_quantile_raw_val["CHRONIC_COUNT"].apply(lambda x: f"{x} Condition" if x == 1 else (f"{x} Conditions" if x < 4 else "4+ Conditions"))
-
-# Create age groups for a more stable and interpretable fairness audit
 age_bins = [18, 35, 50, 65, 120]
 age_labels = ["18-34", "35-49", "50-64", "65+"]
-df_quantile_raw_val["AGE_GRP"] = pd.cut(df_quantile_raw_val["AGE23X"], bins=age_bins, labels=age_labels, right=False)
 
-
-# --- Prepare Target Variable ---
-# Load quantile predictions (on validation data)
-print("Loading XGBoost quantile predictions...")
-y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
-y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = [
-    pd.Series(values, index=y_quantile_val_true.index)
-    for values in y_val_quantile_pred.T
-]
-print(f"  Loaded predictions for {y_val_quantile_pred.shape[1]} quantiles on {len(y_val_quantile_pred)} validation set samples")
-
-# Create medical cost ranges for reporting
 # Note: Use the same bins as in the point-estimate stratified analysis, but merge the Top 5% cost bins (for n>30 subgroup sample size)
 COST_BIN_LABELS = {
     0: "Zero Costs",
@@ -3370,15 +3349,11 @@ COST_BIN_LABELS = {
     4: "Very High Spend (Top 5%)"
 }
 actual_cost_bin_map = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 4}
-# For predicted costs, also merge the Zero Costs bin (0) into Low Spend (1) for n>30 subgroup sample size because model predictions are almost never zero
+
+# For predicted costs, also merge the Zero Costs bin (0) into Low Spend (1)
+# Reason: To achieve n>30 subgroup sample size because model predictions are almost never zero
 predicted_cost_bin_map = {0: 1, 1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 4}
 
-df_quantile_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_quantile_val_true).map(actual_cost_bin_map)
-df_quantile_raw_val["PREDICTED_MEDIAN_COSTS"] = create_stratification_bins(y_val_pred_q50).map(predicted_cost_bin_map)
-df_quantile_raw_val["PREDICTED_CUSHION_COSTS"] = create_stratification_bins(y_val_pred_q90).map(predicted_cost_bin_map)
-
-
-# --- Stratification Configurations ---
 quantile_reliability_configs = [
     {"col": "ACTUAL_COSTS", "label": "Out-of-Pocket Costs (Actual)", "category_map": COST_BIN_LABELS},
     {"col": "PREDICTED_MEDIAN_COSTS", "label": "Out-of-Pocket Costs (Plan Around, q50)", "category_map": COST_BIN_LABELS},
@@ -3402,81 +3377,124 @@ quantile_fairness_configs = [
 quantile_stratified_configs = quantile_reliability_configs + quantile_fairness_configs
 
 
-# --- Stratified Quantile Error Analysis ---
-quantile_stratified_results = []
-
-for config in quantile_stratified_configs:
-    col = config["col"]
-    label = config["label"]
-    category_map = config["category_map"]
-    col_bins = df_quantile_raw_val[col]
-
-    for group in sorted(col_bins.dropna().unique()):
-        mask = (col_bins == group)
-        y_group = y_quantile_val_true[mask]
-        w_group = w_quantile_val[mask]
-        q25_group = y_val_pred_q25[mask]
-        q50_group = y_val_pred_q50[mask]
-        q75_group = y_val_pred_q75[mask]
-        q90_group = y_val_pred_q90[mask]
-
-        quantile_stratified_results.append({
-            "Column": label,
-            "Group": category_map.get(int(group), group) if category_map else group,
-            "Sample Size": mask.sum(),
-            "Median Actual Cost": weighted_quantile(y_group, w_group, 0.5),
-            "Predicted Typical Low (q25)": np.average(q25_group, weights=w_group),
-            "Predicted Plan Around (q50)": np.average(q50_group, weights=w_group),
-            "Predicted Typical High (q75)": np.average(q75_group, weights=w_group),
-            "Predicted Safety Cushion (q90)": np.average(q90_group, weights=w_group),
-            "Plan Around MdAE (q50)": weighted_median_absolute_error(y_group, q50_group, sample_weight=w_group),
-            "Typical Range Coverage (q25–q75)": np.average((y_group >= q25_group) & (y_group <= q75_group), weights=w_group),
-            "Typical Range Width (q25–q75)": np.average(q75_group - q25_group, weights=w_group),
-            "Safety Cushion Coverage (q90)": np.average(y_group <= q90_group, weights=w_group),
-            "Safety Cushion Width (q50–q90)": np.average(q90_group - q50_group, weights=w_group),
-        })
-
-quantile_subgroup_df = pd.DataFrame(quantile_stratified_results)
+def add_quantile_stratification_columns(df_raw, y_true, y_pred_q50, y_pred_q90):
+    """
+    Add reliability and fairness audit columns to a raw split dataframe (like val or test).
+    """
+    df_raw = df_raw.copy()
+    df_raw["CHRONIC_COUNT"] = df_raw[chronic_cols].sum(axis=1).astype(int)
+    df_raw["CHRONIC_COUNT_GRP"] = df_raw["CHRONIC_COUNT"].apply(
+        lambda x: f"{x} Condition" if x == 1 else (f"{x} Conditions" if x < 4 else "4+ Conditions")
+    )
+    df_raw["AGE_GRP"] = pd.cut(df_raw["AGE23X"], bins=age_bins, labels=age_labels, right=False)
+    df_raw["ACTUAL_COSTS"] = create_stratification_bins(y_true).map(actual_cost_bin_map)
+    df_raw["PREDICTED_MEDIAN_COSTS"] = create_stratification_bins(y_pred_q50).map(predicted_cost_bin_map)
+    df_raw["PREDICTED_CUSHION_COSTS"] = create_stratification_bins(y_pred_q90).map(predicted_cost_bin_map)
+    return df_raw
 
 
-# --- Subgroup Reliability Flags ---
-overall_q50_mdae = weighted_median_absolute_error(y_quantile_val_true, y_val_pred_q50, sample_weight=w_quantile_val)
-overall_median_actual_cost = weighted_quantile(y_quantile_val_true, w_quantile_val, 0.5)
-overall_range_width = np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_quantile_val)
-overall_cushion_width = np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_quantile_val)
+def create_quantile_subgroup_df(df_raw, y_true, weights, y_pred_quantiles, configs):
+    """
+    Build subgroup metrics and diagnostic flags for a quantile model audit.
+    """
+    y_pred_q25, y_pred_q50, y_pred_q75, y_pred_q90 = y_pred_quantiles
+    stratified_results = []
+
+    for config in configs:
+        col = config["col"]
+        label = config["label"]
+        category_map = config["category_map"]
+        col_bins = df_raw[col]
+
+        for group in sorted(col_bins.dropna().unique()):
+            mask = (col_bins == group)
+            y_group = y_true[mask]
+            w_group = weights[mask]
+            q25_group = y_pred_q25[mask]
+            q50_group = y_pred_q50[mask]
+            q75_group = y_pred_q75[mask]
+            q90_group = y_pred_q90[mask]
+
+            stratified_results.append({
+                "Column": label,
+                "Group": category_map.get(int(group), group) if category_map else group,
+                "Sample Size": mask.sum(),
+                "Median Actual Cost": weighted_quantile(y_group, w_group, 0.5),
+                "Predicted Typical Low (q25)": np.average(q25_group, weights=w_group),
+                "Predicted Plan Around (q50)": np.average(q50_group, weights=w_group),
+                "Predicted Typical High (q75)": np.average(q75_group, weights=w_group),
+                "Predicted Safety Cushion (q90)": np.average(q90_group, weights=w_group),
+                "Plan Around MdAE (q50)": weighted_median_absolute_error(y_group, q50_group, sample_weight=w_group),
+                "Typical Range Coverage (q25–q75)": np.average((y_group >= q25_group) & (y_group <= q75_group), weights=w_group),
+                "Typical Range Width (q25–q75)": np.average(q75_group - q25_group, weights=w_group),
+                "Safety Cushion Coverage (q90)": np.average(y_group <= q90_group, weights=w_group),
+                "Safety Cushion Width (q50–q90)": np.average(q90_group - q50_group, weights=w_group),
+            })
+
+    subgroup_df = pd.DataFrame(stratified_results)
+    overall_q50_mdae = weighted_median_absolute_error(y_true, y_pred_q50, sample_weight=weights)
+    overall_median_actual_cost = weighted_quantile(y_true, weights, 0.5)
+    overall_range_width = np.average(y_pred_q75 - y_pred_q25, weights=weights)
+    overall_cushion_width = np.average(y_pred_q90 - y_pred_q50, weights=weights)
+
+    def get_quantile_reliability_flags(subgroup):
+        flags = []
+
+        if subgroup["Sample Size"] < 30:
+            flags.append("Small Sample")
+
+        if subgroup["Typical Range Coverage (q25–q75)"] < 0.40:
+            flags.append("Typical Range Undercoverage")
+        elif subgroup["Typical Range Coverage (q25–q75)"] > 0.60:
+            flags.append("Typical Range Overcoverage")
+
+        if subgroup["Safety Cushion Coverage (q90)"] < 0.75:
+            flags.append("Severe Cushion Undercoverage")
+        elif subgroup["Safety Cushion Coverage (q90)"] < 0.80:
+            flags.append("Cushion Undercoverage")
+        elif subgroup["Safety Cushion Coverage (q90)"] > 0.97:
+            flags.append("Cushion Overcoverage")
+
+        if subgroup["Plan Around MdAE (q50)"] > 3 * overall_q50_mdae:
+            flags.append("High Plan-Around Error")
+
+        is_low_cost_group = subgroup["Median Actual Cost"] <= overall_median_actual_cost
+        if is_low_cost_group and subgroup["Typical Range Width (q25–q75)"] > overall_range_width:
+            flags.append("Wide Low-Cost Typical Range")
+        if is_low_cost_group and subgroup["Safety Cushion Width (q50–q90)"] > overall_cushion_width:
+            flags.append("Wide Low-Cost Cushion")
+
+        return ", ".join(flags) if flags else "None"
+
+    subgroup_df["Reliability Flags"] = subgroup_df.apply(get_quantile_reliability_flags, axis=1)
+    return subgroup_df
 
 
-def get_quantile_reliability_flags(subgroup):
-    flags = []
+# --- Prepare Validation Audit ---
+print("Recovering raw validation features...")
+df_raw_val, y_val_audit, w_val_audit = prepare_human_readable_split_data(VAL_DATA_PATH, "validation")
 
-    if subgroup["Sample Size"] < 30:
-        flags.append("Small Sample")
-    
-    if subgroup["Typical Range Coverage (q25–q75)"] < 0.40:
-        flags.append("Typical Range Undercoverage")
-    elif subgroup["Typical Range Coverage (q25–q75)"] > 0.60:
-        flags.append("Typical Range Overcoverage")
-    
-    if subgroup["Safety Cushion Coverage (q90)"] < 0.75:
-        flags.append("Severe Cushion Undercoverage")
-    elif subgroup["Safety Cushion Coverage (q90)"] < 0.80:
-        flags.append("Cushion Undercoverage")
-    elif subgroup["Safety Cushion Coverage (q90)"] > 0.97:
-        flags.append("Cushion Overcoverage")
-    
-    if subgroup["Plan Around MdAE (q50)"] > 3 * overall_q50_mdae:
-        flags.append("High Plan-Around Error")
-    
-    is_low_cost_group = subgroup["Median Actual Cost"] <= overall_median_actual_cost
-    if is_low_cost_group and subgroup["Typical Range Width (q25–q75)"] > overall_range_width:
-        flags.append("Wide Low-Cost Typical Range")
-    if is_low_cost_group and subgroup["Safety Cushion Width (q50–q90)"] > overall_cushion_width:
-        flags.append("Wide Low-Cost Cushion")
-    
-    return ", ".join(flags) if flags else "None"
+print("Loading XGBoost quantile predictions...")
+y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
+y_val_pred_q25_audit, y_val_pred_q50_audit, y_val_pred_q75_audit, y_val_pred_q90_audit = [
+    pd.Series(values, index=y_val_audit.index)
+    for values in y_val_quantile_pred.T
+]
+print(f"  Loaded predictions for {y_val_quantile_pred.shape[1]} quantiles on {len(y_val_quantile_pred)} validation set samples")
 
-
-quantile_subgroup_df["Reliability Flags"] = quantile_subgroup_df.apply(get_quantile_reliability_flags, axis=1)
+df_raw_val = add_quantile_stratification_columns(
+    df_raw_val,
+    y_val_audit,
+    y_val_pred_q50_audit,
+    y_val_pred_q90_audit,
+)
+quantile_subgroup_df = create_quantile_subgroup_df(
+    df_raw_val,
+    y_val_audit,
+    w_val_audit,
+    (y_val_pred_q25_audit, y_val_pred_q50_audit, y_val_pred_q75_audit, y_val_pred_q90_audit),
+    quantile_stratified_configs,
+)
 
 display_columns = [
     "Column",
@@ -4368,102 +4386,27 @@ display(
 # %%
 # --- Prepare Features ---
 print("Recovering raw test features...")
-df_quantile_raw_test, y_quantile_test_true, w_quantile_test = prepare_human_readable_split_data(TEST_DATA_PATH, "test")
-
-# Create chronic conditions count
-df_quantile_raw_test["CHRONIC_COUNT"] = df_quantile_raw_test[chronic_cols].sum(axis=1).astype(int)
-df_quantile_raw_test["CHRONIC_COUNT_GRP"] = df_quantile_raw_test["CHRONIC_COUNT"].apply(lambda x: f"{x} Condition" if x == 1 else (f"{x} Conditions" if x < 4 else "4+ Conditions"))
-
-# Create age groups for a more stable and interpretable fairness audit
-df_quantile_raw_test["AGE_GRP"] = pd.cut(df_quantile_raw_test["AGE23X"], bins=age_bins, labels=age_labels, right=False)
+df_raw_test, y_test_audit, w_test_audit = prepare_human_readable_split_data(TEST_DATA_PATH, "test")
 
 # Align test-set quantile predictions to the raw test rows
-y_test_pred_q25_series, y_test_pred_q50_series, y_test_pred_q75_series, y_test_pred_q90_series = [
-    pd.Series(values, index=y_quantile_test_true.index)
+y_test_pred_q25_audit, y_test_pred_q50_audit, y_test_pred_q75_audit, y_test_pred_q90_audit = [
+    pd.Series(values, index=y_test_audit.index)
     for values in y_test_quantile_pred.T
 ]
 
-# Create medical cost ranges for reporting
-df_quantile_raw_test["ACTUAL_COSTS"] = create_stratification_bins(y_quantile_test_true).map(actual_cost_bin_map)
-df_quantile_raw_test["PREDICTED_MEDIAN_COSTS"] = create_stratification_bins(y_test_pred_q50_series).map(predicted_cost_bin_map)
-df_quantile_raw_test["PREDICTED_CUSHION_COSTS"] = create_stratification_bins(y_test_pred_q90_series).map(predicted_cost_bin_map)
-
-
-# --- Stratified Quantile Error Analysis ---
-test_quantile_stratified_results = []
-
-for config in quantile_stratified_configs:
-    col = config["col"]
-    label = config["label"]
-    category_map = config["category_map"]
-    col_bins = df_quantile_raw_test[col]
-
-    for group in sorted(col_bins.dropna().unique()):
-        mask = (col_bins == group)
-        y_group = y_quantile_test_true[mask]
-        w_group = w_quantile_test[mask]
-        q25_group = y_test_pred_q25_series[mask]
-        q50_group = y_test_pred_q50_series[mask]
-        q75_group = y_test_pred_q75_series[mask]
-        q90_group = y_test_pred_q90_series[mask]
-
-        test_quantile_stratified_results.append({
-            "Column": label,
-            "Group": category_map.get(int(group), group) if category_map else group,
-            "Sample Size": mask.sum(),
-            "Median Actual Cost": weighted_quantile(y_group, w_group, 0.5),
-            "Predicted Typical Low (q25)": np.average(q25_group, weights=w_group),
-            "Predicted Plan Around (q50)": np.average(q50_group, weights=w_group),
-            "Predicted Typical High (q75)": np.average(q75_group, weights=w_group),
-            "Predicted Safety Cushion (q90)": np.average(q90_group, weights=w_group),
-            "Plan Around MdAE (q50)": weighted_median_absolute_error(y_group, q50_group, sample_weight=w_group),
-            "Typical Range Coverage (q25–q75)": np.average((y_group >= q25_group) & (y_group <= q75_group), weights=w_group),
-            "Typical Range Width (q25–q75)": np.average(q75_group - q25_group, weights=w_group),
-            "Safety Cushion Coverage (q90)": np.average(y_group <= q90_group, weights=w_group),
-            "Safety Cushion Width (q50–q90)": np.average(q90_group - q50_group, weights=w_group),
-        })
-
-test_quantile_subgroup_df = pd.DataFrame(test_quantile_stratified_results)
-
-
-# --- Subgroup Reliability Flags ---
-test_overall_q50_mdae = weighted_median_absolute_error(y_quantile_test_true, y_test_pred_q50_series, sample_weight=w_quantile_test)
-test_overall_median_actual_cost = weighted_quantile(y_quantile_test_true, w_quantile_test, 0.5)
-test_overall_range_width = np.average(y_test_pred_q75_series - y_test_pred_q25_series, weights=w_quantile_test)
-test_overall_cushion_width = np.average(y_test_pred_q90_series - y_test_pred_q50_series, weights=w_quantile_test)
-
-
-def get_test_quantile_reliability_flags(subgroup):
-    flags = []
-
-    if subgroup["Sample Size"] < 30:
-        flags.append("Small Sample")
-
-    if subgroup["Typical Range Coverage (q25–q75)"] < 0.40:
-        flags.append("Typical Range Undercoverage")
-    elif subgroup["Typical Range Coverage (q25–q75)"] > 0.60:
-        flags.append("Typical Range Overcoverage")
-
-    if subgroup["Safety Cushion Coverage (q90)"] < 0.75:
-        flags.append("Severe Cushion Undercoverage")
-    elif subgroup["Safety Cushion Coverage (q90)"] < 0.80:
-        flags.append("Cushion Undercoverage")
-    elif subgroup["Safety Cushion Coverage (q90)"] > 0.97:
-        flags.append("Cushion Overcoverage")
-
-    if subgroup["Plan Around MdAE (q50)"] > 3 * test_overall_q50_mdae:
-        flags.append("High Plan-Around Error")
-
-    is_low_cost_group = subgroup["Median Actual Cost"] <= test_overall_median_actual_cost
-    if is_low_cost_group and subgroup["Typical Range Width (q25–q75)"] > test_overall_range_width:
-        flags.append("Wide Low-Cost Typical Range")
-    if is_low_cost_group and subgroup["Safety Cushion Width (q50–q90)"] > test_overall_cushion_width:
-        flags.append("Wide Low-Cost Cushion")
-
-    return ", ".join(flags) if flags else "None"
-
-
-test_quantile_subgroup_df["Reliability Flags"] = test_quantile_subgroup_df.apply(get_test_quantile_reliability_flags, axis=1)
+df_raw_test = add_quantile_stratification_columns(
+    df_raw_test,
+    y_test_audit,
+    y_test_pred_q50_audit,
+    y_test_pred_q90_audit,
+)
+test_quantile_subgroup_df = create_quantile_subgroup_df(
+    df_raw_test,
+    y_test_audit,
+    w_test_audit,
+    (y_test_pred_q25_audit, y_test_pred_q50_audit, y_test_pred_q75_audit, y_test_pred_q90_audit),
+    quantile_stratified_configs,
+)
 
 display(
     test_quantile_subgroup_df[display_columns]
@@ -4494,15 +4437,13 @@ plot_quantile_subgroup_performance(
 plot_quantile_subgroup_predictions(
     test_quantile_subgroup_df,
     quantile_reliability_labels,
-    "Final Model: Test-Set Predicted Cost by Reliability Subgroup",
-    save_to_file="../figures/evaluation/final_test_predicted_cost_reliability.png"
+    "Final Model: Test-Set Predicted Cost by Reliability Subgroup"
 )
 
 plot_quantile_subgroup_predictions(
     test_quantile_subgroup_df,
     quantile_fairness_labels,
-    "Final Model: Test-Set Predicted Cost by Fairness Subgroup",
-    save_to_file="../figures/evaluation/final_test_predicted_cost_fairness.png"
+    "Final Model: Test-Set Predicted Cost by Fairness Subgroup"
 )
 
 # %% [markdown]
