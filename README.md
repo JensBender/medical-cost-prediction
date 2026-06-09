@@ -265,6 +265,20 @@ To ensure responsible deployment, evaluated model reliability and fairness acros
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 ### 🏆 Final Model
+Selected **XGBoost Quantile Regression** as the final model because it returns the full planning output required by the product: a plan-around estimate (`q50`), a typical range (`q25`-`q75`), and a budget-safe estimate (`q90`).
+
+**Test Set Performance**
+| Metric | Estimate | Release Gate |
+| :--- | :---: | :--- |
+| Plan-around MdAE (`q50`) | **$239.54** | Passes hard MVP gate (<$500) and product target (<$350). |
+| Typical range coverage (`q25`-`q75`) | **47.3%** | Within 45%-55% product tolerance. |
+| Safety cushion coverage (`q90`) | **91.0%** | Within 85%-95% product tolerance. |
+| Interval skill score | **+11.2%** | Beats a naive population interval baseline. |
+
+**Launch Decision:** Suitable for MVP launch as a **budgeting aid** with clear uncertainty language. The model should present ranges rather than a single point estimate and should not be framed as a bill forecast or medical/financial advice.
+
+**Caveats:** The model is reliable for overall calibration and predicted-risk tiers, but rare high-cost years remain hard to predict. Actual High and Very High spenders are undercovered in the final subgroup audit, while zero/low spenders are often overprotected by the `q90` cushion. This supports stronger high-uncertainty copy for top predicted-risk users and monitoring by predicted `q90` tier, insurance status, poverty category, mental health, and chronic-condition count.
+
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 
