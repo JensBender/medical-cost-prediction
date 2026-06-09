@@ -3296,7 +3296,7 @@ plot_residuals_vs_predicted(
 #         <li><b>Fairness audit groups:</b> Sex, age group, race/ethnicity, mental health, income, education, region, and walking limitation.</li>
 #         <li><b>Metrics by group:</b> Plan-around MdAE (q50), typical range coverage/width (q25-q75), and safety cushion coverage/width (q90 and q50-q90).</li>
 #         <li><b>Context columns:</b> Include sample size and weighted median actual cost to distinguish unfair or unreliable model behavior from genuinely higher-cost, higher-variance population segments.</li>
-#         <li><b>Coverage guardrails:</b> Overall coverage targets are release gates; subgroup thresholds are diagnostic and trigger a review when not met. For subgroups with sufficient sample size (n ≥ 30), q25–q75 coverage should generally stay within 40–60%, and q90 coverage should generally stay within 80–97%. q90 coverage below 75% indicates severe undercoverage. Subgroups with n &lt; 30 are flagged as review-only because their coverage estimates are less stable.</li>
+#         <li><b>Coverage guardrails:</b> Overall coverage targets are release gates; subgroup thresholds are diagnostic and trigger a review when not met. For subgroups with sufficient sample size (n ≥ 30), q25–q75 coverage should generally stay within 40–60%, and q90 coverage should generally stay within 80–97%. Subgroups with n &lt; 30 are flagged as review-only because their coverage estimates are less stable.</li>
 #         <li><b>Width guideline:</b> Wider intervals are acceptable for genuinely higher-risk groups, but concerning for low-risk groups if they do not improve coverage or reflect clearly higher actual costs.</li>
 #         <li><b>Subgroup reliability flags:</b> Add diagnostic quality-control flags to identify groups that may need manual review before deployment. These flags are not automatic failure criteria; they highlight groups where the plan-around estimate, typical range, or safety cushion may be unreliable or insufficiently useful.</li>
 #         <li><b>Interpretation principle:</b> Coverage alone is not enough. A useful interval must be calibrated and narrow enough to support budgeting decisions; a wide interval is acceptable only when it reflects real uncertainty for a higher-risk user group.</li>
@@ -3327,7 +3327,7 @@ plot_residuals_vs_predicted(
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Safety Cushion Undercoverage</code></td>
-#                 <td style="padding:8px; border:1px solid #d0e7fa;">q90 coverage &lt; 80% (&lt; 75% severe)</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">q90 coverage &lt; 80%</td>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;">The safety cushion for that subgroup underestimates actual costs, thus under-warning users.</td>
 #             </tr>
 #             <tr>
@@ -3459,25 +3459,23 @@ def create_quantile_subgroup_df(df_raw, y_true, weights, y_pred_quantiles, confi
             flags.append("Small Sample")
 
         if subgroup["Typical Range Coverage (q25–q75)"] < 0.40:
-            flags.append("Typical Range Undercoverage")
+            flags.append("Typical-Range Undercoverage")
         elif subgroup["Typical Range Coverage (q25–q75)"] > 0.60:
-            flags.append("Typical Range Overcoverage")
+            flags.append("Typical-Range Overcoverage")
 
-        if subgroup["Safety Cushion Coverage (q90)"] < 0.75:
-            flags.append("Severe Cushion Undercoverage")
-        elif subgroup["Safety Cushion Coverage (q90)"] < 0.80:
-            flags.append("Cushion Undercoverage")
+        if subgroup["Safety Cushion Coverage (q90)"] < 0.80:
+            flags.append("Safety-Cushion Undercoverage")
         elif subgroup["Safety Cushion Coverage (q90)"] > 0.97:
-            flags.append("Cushion Overcoverage")
+            flags.append("Safety-Cushion Overcoverage")
 
         if subgroup["Plan Around MdAE (q50)"] > 3 * overall_q50_mdae:
             flags.append("High Plan-Around Error")
 
         is_low_cost_group = subgroup["Median Actual Cost"] <= overall_median_actual_cost
         if is_low_cost_group and subgroup["Typical Range Width (q25–q75)"] > overall_range_width:
-            flags.append("Wide Low-Cost Typical Range")
+            flags.append("Wide Low-Cost Typical-Range")
         if is_low_cost_group and subgroup["Safety Cushion Width (q50–q90)"] > overall_cushion_width:
-            flags.append("Wide Low-Cost Cushion")
+            flags.append("Wide Low-Cost Safety-Cushion")
 
         return ", ".join(flags) if flags else "None"
 
@@ -3725,7 +3723,7 @@ plot_quantile_subgroup_performance(
 #         <li><strong>Sex, Age, Race:</strong> Coverages are well within target ranges (Typical: 44.7%–56.9%; Safety Cushion: 85.0%–95.2%). No demographic group falls outside acceptable bands, confirming the model does not suffer from systematic calibration bias against protected subgroups.</li>
 #         <li><strong>Width:</strong> Prediction interval widths scale proportionally with group risk: older cohorts (65+: \$1,408 typical range width), individuals with walking limitations (\$1,614), and groups with poorer health status receive wider intervals, aligning with their higher median costs and cost variance.</li>
 #         <li><strong>Education:</strong> Doctorate degree holders fall below the 80% safety cushion threshold (78.1%, n=53). This group may contain higher cost variance not fully captured by available features.</li>
-#         <li><strong>Mental Health:</strong> Individuals with 'Poor' perceived mental health (n=29) show typical range undercoverage (37.8%) and severe cushion undercoverage (71.7%). However, with n < 30, this group triggers the Small Sample flag and its metrics should be treated as review-only diagnostics rather than definitive evidence of miscalibration.</li>
+#         <li><strong>Mental Health:</strong> Individuals with 'Poor' perceived mental health (n=29) show typical range undercoverage (37.8%) and cushion undercoverage (71.7%). However, with n < 30, this group triggers the Small Sample flag and its metrics should be treated as review-only diagnostics rather than definitive evidence of miscalibration.</li>
 #     </ul>
 # </div>
 
@@ -4394,7 +4392,7 @@ display(
 #         <li><b>Reliability groups:</b> actual cost tier, predicted plan-around cost tier (q50), predicted safety-cushion cost tier (q90), physical health, insurance status, and chronic condition count.</li>
 #         <li><b>Fairness audit groups:</b> sex, age group, race/ethnicity, mental health, income, education, region, and walking limitation.</li>
 #         <li><b>Metrics by group:</b> plan-around MdAE (q50), typical range coverage/width (q25-q75), and safety cushion coverage/width (q90 and q50-q90).</li>
-#         <li><b>Coverage review triggers:</b> Overall test-set coverage remains the release gate (45-55% for q25-q75, 85-95% for q90). Subgroup thresholds are more lenient diagnostic triggers, not separate pass/fail gates. For subgroups with sufficient sample size (n ≥ 30), q25-q75 coverage should generally stay within 40-60%, and q90 coverage should generally stay within 80-97%. q90 coverage below 75% is treated as severe undercoverage. Subgroups with n &lt; 30 are labeled review-only because their estimates are less stable.</li>
+#         <li><b>Coverage review triggers:</b> Overall test-set coverage remains the release gate (45-55% for q25-q75, 85-95% for q90). Subgroup thresholds are more lenient diagnostic triggers, not separate pass/fail gates. For subgroups with sufficient sample size (n ≥ 30), q25-q75 coverage should generally stay within 40-60%, and q90 coverage should generally stay within 80-97%. Subgroups with n &lt; 30 are labeled review-only because their estimates are less stable.</li>
 #         <li><b>Additional diagnostic flags:</b> Flag high plan-around error for subgroups with q50 MdAE above 3× the overall q50 MdAE. For low-cost subgroups (median actual cost ≤ overall median), flag q25-q75 or q50-q90 widths above the overall average as potentially too broad for practical budgeting. These flags point to calibration, usefulness, or sampling issues that need review; they do not by themselves imply model unfairness or a release failure.</li>
 #         <li><b>Interpretation:</b> Use final test-set subgroup flags to qualify reporting, document caveats, and prioritize post-launch monitoring. Because this is the locked test set, flagged subgroups should not drive another tuning loop; follow-up changes should be evaluated in a new validation cycle.</li>
 #     </ul>
@@ -4429,7 +4427,7 @@ display(
     test_quantile_subgroup_df[display_columns]
     .style
     .hide()
-    .pipe(add_table_caption, "Final Model: Stratified Error Analysis (Test)")
+    .pipe(add_table_caption, "XGBoost Quantile Regression: Stratified Error Analysis (Test)")
     .format("{:,}", subset=["Sample Size"])
     .format("${:,.2f}", subset=["Median Actual Cost", "Plan Around MdAE (q50)", "Typical Range Width (q25–q75)", "Safety Cushion Width (q50–q90)"])
     .format("{:.1%}", subset=["Typical Range Coverage (q25–q75)", "Safety Cushion Coverage (q90)"])
