@@ -4463,7 +4463,11 @@ plot_quantile_subgroup_predictions(
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insights:</b> 
+#     💡 <b>Insights:</b> No broad subgroup reliability or demographic fairness failure. Most protected, health, insurance, and chronic-condition groups stay within the diagnostic coverage bands, and interval widths generally increase where higher cost variance is clinically plausible. 
 #     <ul>
+#         <li><strong>Actual Cost Tiers:</strong> The main weakness is tail-cost predictability. Actual High spenders show 12.4% typical-range coverage and 59.0% safety-cushion coverage; actual Very High spenders show 0.0% typical-range coverage and 6.7% safety-cushion coverage. Zero- and low-cost actual groups are overprotected by q90, while high actual spenders are underprotected. This is the expected trade-off in a zero-inflated, heavy-tailed medical costs: the current model is useful, but it cannot guarantee protection against rare tail events.</li>
+#         <li><strong>Predicted Cost Tiers:</strong> The deployable risk tiers are much better calibrated. Predicted q90 tiers stay within the diagnostic q90 band, from 93.4% coverage for predicted Low to 85.6% for predicted Very High. This supports using the model's own predicted risk bands to trigger stronger uncertainty language and wider safety-cushion guidance.</li>
+#         <li><strong>Insurance:</strong> Private and public insurance groups remain calibrated. Uninsured users have low typical-range coverage (34.7%) but conservative q90 coverage (96.3%), so the q25-q75 range may be too narrow while the budget-safe estimate still avoids under-warning. Recommendation: Not a launch blocker, but monitor in production.</li>
+#         <li><strong>Fairness:</strong> Sex, age, race/ethnicity, region, chronic-condition count, and walking-limitation groups do not show systematic undercoverage. Watchlist subgroups are localized: poor mental health has 30.1% typical coverage, low income has 39.2%, doctorate/professional degree has 34.7%, and near-poor individuals have q90 overcoverage of 97.7%.</li>
 #     </ul>
 # </div>
