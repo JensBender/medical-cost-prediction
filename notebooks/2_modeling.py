@@ -4471,3 +4471,15 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Fairness:</strong> Sex, age, race/ethnicity, region, chronic-condition count, and walking-limitation groups do not show systematic undercoverage. Watchlist subgroups are localized: poor mental health has 30.1% typical coverage, low income has 39.2%, doctorate/professional degree has 34.7%, and near-poor individuals have q90 overcoverage of 97.7%.</li>
 #     </ul>
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <b>Final Model: Summary and Launch Decision</b>
+#     <ul style="margin-top:8px">
+#         <li><b>Launch recommendation:</b> Ship XGBoost quantile regression as the MVP prediction model for a budgeting aid, not as a precise billing or medical-advice tool.</li>
+#         <li><b>Release-gate evidence:</b> The model passes the product-facing release gates on the unseen test set: q50 MdAE = &#36;239.5, typical-range coverage = 47.3%, and q90 safety-cushion coverage = 91.0%. The typical range also improves on a naive population interval with an 11.2% interval skill score.</li>
+#         <li><b>User-facing output:</b> Always present the q25-q75 typical range and q90 budget-safe estimate together. Avoid a single-number result because the MAE-vs-MdAE gap and near-zero raw-dollar R² show that individual annual costs remain noisy.</li>
+#         <li><b>Launch caveats:</b> Explain that the estimate is based on 2023 MEPS individual out-of-pocket spending, excludes premiums and over-the-counter costs, does not predict family totals or procedure prices, and may miss rare high-cost events. Use stronger high-uncertainty language for users in the top predicted q90 tier or with very wide intervals.</li>
+#         <li><b>Monitoring priorities:</b> Track calibration after deployment by predicted q90 tier, insurance status, poverty category, mental health, chronic-condition count, and zero/low predicted-cost profiles. These slices are more actionable than actual-cost tiers because they are known at prediction time.</li>
+#     </ul>
+# </div>
