@@ -4375,9 +4375,10 @@ display(
 #     <ul>
 #         <li><b>Plan Around:</b> The q50 estimate achieves MdAE = &#36;239.5, comfortably below both the release gate and product target.</li>
 #         <li><b>Typical Range and Safety Cushion:</b> Coverage remains within release gates. Interval widths meet the product targets. This suggests the model is calibrated without making the ranges overly broad.</li>
-#         <li><b>Interval Skill Score:</b> The positive 11.2% interval skill score shows that the model's q25-q75 typical range improves on a naive population interval.</li>
+#         <li><b>Usefulness vs Simple Baseline:</b> The trained model improves on naive population baselines for all user-facing outputs. Plan-around q50 skill = 9.75%, typical-range interval skill = 11.2%, and safety-cushion q90 skill = 15.63%. This shows that feature-based model predictions add value compared with giving every user the same population median, generic q25-q75 range, or population q90 estimate.</li>
 #         <li><b>Remaining Risk:</b> The model struggles with the rare high-cost cases, reflected by the large MAE-vs-MdAE gap and near-zero R².</li>
 #     </ul>
+#     <p style="margin-top:8px"><em>Note:</em> Skill scores for plan-around (q50) and safety-cushion (q90) are quantile skill scores based on pinball loss. Typical-range (q25-q75) skill score is an interval skill score based on Winkler score. Both compare the trained model against a naive population baseline, but based on different evaluation metrics.</p>
 # </div>
 
 # %% [markdown]
@@ -4477,10 +4478,11 @@ plot_quantile_subgroup_predictions(
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ <b>Final Model: Summary and Launch Decision</b>
 #     <ul style="margin-top:8px">
-#         <li><b>Launch recommendation:</b> Ship XGBoost quantile regression as the MVP prediction model for a budgeting aid, not as a precise billing or medical-advice tool.</li>
-#         <li><b>Release-gate evidence:</b> The model passes the product-facing release gates on the unseen test set: q50 MdAE = &#36;239.5, typical-range coverage = 47.3%, and q90 safety-cushion coverage = 91.0%. The typical range also improves on a naive population interval with an 11.2% interval skill score.</li>
-#         <li><b>User-facing output:</b> Always present the q25-q75 typical range and q90 budget-safe estimate together. Avoid a single-number result because the MAE-vs-MdAE gap and near-zero raw-dollar R² show that individual annual costs remain noisy.</li>
-#         <li><b>Launch caveats:</b> Explain that the estimate is based on 2023 MEPS individual out-of-pocket spending, excludes premiums and over-the-counter costs, does not predict family totals or procedure prices, and may miss rare high-cost events. Use stronger high-uncertainty language for users in the top predicted q90 tier or with very wide intervals.</li>
-#         <li><b>Monitoring priorities:</b> Track calibration after deployment by predicted q90 tier, insurance status, poverty category, mental health, chronic-condition count, and zero/low predicted-cost profiles. These slices are more actionable than actual-cost tiers because they are known at prediction time.</li>
+#         <li><b>Launch Recommendation:</b> Ship XGBoost quantile regression as the MVP prediction model for out-of-pocket medical costs. Frame it as a budgeting aid, not a precise billing or medical-advice tool.</li>
+#         <li><b>Release Gates:</b> The model passes the product-facing release gates on the unseen test set. Plan-around (q50) MdAE = &#36;239.5, typical-range (q25-q75) coverage = 47.3%, and safety-cushion (q90) coverage = 91.0%.</li>
+#         <li><b>Usefulness vs Simple Baseline:</b> The trained model improves on naive population baselines (no ML) for all user-facing outputs. Plan-around skill = 9.75%, typical-range interval skill = 11.2%, and safety-cushion skill = 15.63%. This demonstrates added value of using feature-based model predictions compared with giving every user the same population median, generic q25-q75 range, or population q90 estimate.</li>
+#         <li><b>User-Facing Prediction Text:</b> Always present the q25-q75 typical range and q90 budget-safe estimate together. Avoid a single-number result because the MAE-vs-MdAE gap and near-zero raw-dollar R² show that individual annual costs remain noisy.</li>
+#         <li><b>Launch Caveats:</b> Explain that the estimate is based on 2023 MEPS individual out-of-pocket spending, excludes premiums and over-the-counter costs, does not predict family totals or procedure prices, and may miss rare high-cost events. Use stronger high-uncertainty language for users in the top predicted q90 tier or with very wide intervals.</li>
+#         <li><b>Monitoring Priorities:</b> Track calibration after deployment by predicted q90 tier, insurance status, poverty category, mental health, chronic-condition count, and zero/low predicted-cost profiles. These slices are more actionable than actual-cost tiers because they are known at prediction time.</li>
 #     </ul>
 # </div>
