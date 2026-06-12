@@ -327,12 +327,12 @@ The MVP product release should use a single-deployment, modular application rath
 
 **Recommended shape**
 *   **Hosting:** One Hugging Face Space for the app, with the trained model artifact loaded from Hugging Face Hub.
-*   **Server:** FastAPI as the main ASGI application.
+*   **Web application:** FastAPI as the main ASGI application, served by an ASGI server such as Uvicorn.
 *   **UI:** Gradio mounted inside the FastAPI app for the user-facing planner experience.
-*   **Prediction boundary:** A shared internal prediction service module validates inputs, formats features, calls the model artifact, applies post-processing, updates aggregate monitoring counters, and returns prediction outputs.
+*   **Prediction service:** A shared internal prediction service module validates inputs, formats features, calls the model artifact, applies post-processing, updates aggregate monitoring counters, and returns prediction outputs.
 *   **API surface:** Expose `/health` for operational checks and `/api/predict` if programmatic access is needed. The Gradio UI may call the shared prediction function directly inside the same process rather than making a local HTTP request.
 
-This design gives the MVP product release clear service boundaries while keeping deployment simple. It should not be described as a microservices architecture unless the API, UI, monitoring, and model-serving components are split into independently deployed services.
+This design gives the MVP product release clear module and API boundaries while keeping deployment simple. It should not be described as a microservices architecture unless the API, UI, monitoring, and model-serving components are split into independently deployed services.
 
 ### API Contract
 The prediction service will expose the trained model artifact via a Python API (internal to the web app process) or a REST endpoint if decoupled.
