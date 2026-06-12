@@ -263,7 +263,7 @@ A 4-phase approach where each model is evaluated with its own optimal feature se
 | **1. Baseline Models** | Compare baseline models on full features | Train all models on all features (27 raw, 40 preprocessed) with mostly default hyperparameters. Evaluate MdAE on validation set. Select top 3–4 models. |
 | **2. Feature Selection** | Find optimal features per model | Each model uses its own selection method (see below). Target ~10–12 raw features for 90 sec UX. |
 | **3. Hyperparameter Tuning** | Optimize hyperparameters | Tune each model via randomized search on its own reduced feature set. Select best tuned model + features combination. |
-| **4. Final Model** | Evaluate & deploy | Evaluate final model + features on hold-out test set. |
+| **4. Final Model Artifact** | Evaluate selected model | Evaluate the final model artifact + features on the hold-out test set. Deployment happens through the prediction service and user-facing app. |
 
 **Candidate Models**
 | Model | Loss Function | Target Transform | Notes |
@@ -322,7 +322,7 @@ Healthcare cost data has unique characteristics that influence evaluation metric
 ## Deployment Specifications
 
 ### API Contract
-The model will be exposed via a Python API (internal to the web app process) or a REST endpoint if decoupled.
+The prediction service will expose the trained model artifact via a Python API (internal to the web app process) or a REST endpoint if decoupled.
 *   **Input Schema (Pydantic Style):**
     ```python
     class InferenceInput(BaseModel):
@@ -365,14 +365,14 @@ The model will be exposed via a Python API (internal to the web app process) or 
 8.  **Post-Processing:** Apply inflation adjustment + inverse log-transform (if applicable).
 
 ### Privacy-Preserving Monitoring
-The MVP must preserve the product promise of anonymous, stateless predictions. Production monitoring therefore cannot depend on linked user records or follow-up actual-spend outcomes.
+The MVP product release must preserve the product promise of anonymous, stateless predictions. Production monitoring therefore cannot depend on linked user records or follow-up actual-spend outcomes.
 
-**Why true production calibration is out of scope for MVP**
+**Why true production calibration is out of scope for the MVP product release**
 *   **No reliable default label:** Calibration metrics such as q25-q75 coverage and q90 coverage require observed annual out-of-pocket spending. Most users will not return one year later with a reliable total.
 *   **MEPS labels are not simple recall:** `TOTSLF23` is derived from detailed MEPS expenditure and payment questions across medical events. A single app follow-up question would be much noisier than the training target.
 *   **Privacy conflict:** Linking a prediction to a later outcome would require persistent identifiers or contact information, weakening the no-account, no-retention, anonymous product requirement.
 
-**Allowed MVP monitoring**
+**Allowed monitoring for the MVP product release**
 | Area | Examples | Privacy Guardrail |
 | :--- | :--- | :--- |
 | App health | Request count, error rate, validation failures, latency percentiles | Do not log raw request or response payloads |
@@ -434,7 +434,7 @@ Bucket edges should be fixed before launch, documented with the model version, a
 *   Claiming post-launch calibration, MdAE, or coverage metrics from unlabeled app telemetry.
 
 **Hugging Face Spaces and Gradio controls**
-The planned deployment hosts the model artifact on Hugging Face Hub and the app/API on Hugging Face Spaces. Hugging Face may process provider-level infrastructure logs under its own policies, including technical access/session information. The app must not intentionally collect, persist, expose, or join those provider-level logs with model monitoring telemetry.
+The planned deployment hosts the model artifact on Hugging Face Hub and the prediction service/app on Hugging Face Spaces. Hugging Face may process provider-level infrastructure logs under its own policies, including technical access/session information. The app must not intentionally collect, persist, expose, or join those provider-level logs with model monitoring telemetry.
 
 Required app-level controls:
 *   Disable Gradio analytics with `analytics_enabled=False` and `GRADIO_ANALYTICS_ENABLED=False`.

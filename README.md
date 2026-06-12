@@ -265,12 +265,12 @@ To ensure responsible deployment, evaluated model reliability and fairness acros
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 ### 🏆 Final Model
-**Decision:** Launch **XGBoost Quantile Regression** as the MVP model for a budgeting aid. It returns the product's required planning outputs: a plan-around estimate (`q50`), a typical range (`q25`-`q75`), and a budget-safe estimate (`q90`).
+**Decision:** Use **XGBoost Quantile Regression** as the final model artifact selected for the MVP product release. It returns the product's required planning outputs: a plan-around estimate (`q50`), a typical range (`q25`-`q75`), and a budget-safe estimate (`q90`).
 
 **Locked Test Set Evidence**
 | Metric | Estimate | Launch Read |
 | :--- | :---: | :--- |
-| Plan-around MdAE (`q50`) | **$239.54** | Passes hard MVP gate (<$500) and product target (<$350). |
+| Plan-around MdAE (`q50`) | **$239.54** | Passes hard release gate for the MVP product (<$500) and product target (<$350). |
 | Typical range coverage (`q25`-`q75`) | **47.3%** | Within 45%-55% product tolerance. |
 | Safety cushion coverage (`q90`) | **91.0%** | Within 85%-95% product tolerance. |
 | Interval skill score | **+11.2%** | Beats a naive population interval baseline. |

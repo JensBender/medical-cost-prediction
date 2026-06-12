@@ -82,7 +82,7 @@ The following are explicitly **not** part of this project:
 
 | Category | What's Excluded | Rationale |
 | :--- | :--- | :--- |
-| **Population** | Children (< 18 years) | MEPS pediatric data has different cost drivers; adult-focused MVP. See [Future Consideration](#future-considerations). |
+| **Population** | Children (< 18 years) | MEPS pediatric data has different cost drivers; adult-focused MVP product release. See [Future Consideration](#future-considerations). |
 | **Population** | Family/household aggregation | Predicts individual costs only; users can run multiple times |
 | **Features** | Specific procedure predictions | We predict annual totals, not "How much will my MRI cost?" |
 | **Features** | Insurance plan comparison | We don't recommend plans; users input their current plan |
@@ -159,7 +159,9 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | :--- | :--- | :--- |
 | **NFR-01** | Ephemeral Sessions | No user data written to disk or database. All inputs remain in browser/RAM session state only. |
 | **NFR-02** | No PII Collection | No names, emails, addresses, or social security numbers shall be requested. |
-| **NFR-03** | Aggregate Monitoring Only | MVP monitoring may use aggregate, non-identifying counters for app health, completion rate, input drift, and prediction drift. By default, do not persist user-level input rows, predictions, SHAP explanations, app-level IP logs, user-agent logs, or session identifiers. |
+| **NFR-03** | Aggregate Monitoring Only | Monitoring for the MVP product release may use aggregate, non-identifying counters for app health, completion rate, input drift, and prediction drift. By default, do not persist user-level input rows, predictions, SHAP explanations, app-level IP logs, user-agent logs, or session identifiers. |
+
+**Hosting Boundary:** The planned Hugging Face Hub and Hugging Face Spaces deployment may involve provider-level infrastructure logging under Hugging Face's own policies. The product privacy promise is that the Medical Cost Planner app does not intentionally collect, persist, expose, or join IP addresses, user agents, session identifiers, raw inputs, per-user predictions, or SHAP explanations for model monitoring.
 
 ### Performance & Usability
 | ID | Requirement | Details |
@@ -182,13 +184,13 @@ For technical implementation details such as data preprocessing, machine learnin
 
 
 ## Success Metrics
-*   **Predictive Performance:** Median Absolute Error (MdAE) for the median/q50 estimate on the unseen test set is < $500. This is the hard MVP gate; the product launch performance target is < $350 on test.
+*   **Predictive Performance:** Median Absolute Error (MdAE) for the median/q50 estimate on the unseen test set is < $500. This is the hard release gate for the MVP; the MVP product launch performance target is < $350 on test.
 *   **Interval Calibration:** Predicted ranges must demonstrate high reliability:
     *   **Typical Range (25th–75th%):** 50% ± 5% of actual costs fall within the predicted range.
     *   **Safety Cushion (90th%):** 90% ± 5% of actual costs fall below the predicted budget-safe estimate.
 *   **Interval Width:** Prediction intervals should be narrow enough to support decisions. The model should not meet coverage targets by returning overly wide ranges for most users.
 *   **Stratified Reliability:** Report MdAE and interval coverage by cost tier (e.g., low, middle, high) and key user groups before launch to confirm that strong overall metrics are not hiding weak subgroup performance.
-*   **Privacy-Preserving Monitoring:** After launch, monitor aggregate app health, completion rate, input drift, and prediction drift without retaining user-level records, app-level IP addresses, user agents, or session identifiers. Aggregate counters should be created during prediction handling and stored only as bucketed counts, not by saving individual rows for later aggregation. True post-launch calibration requires observed annual out-of-pocket spending and is out of scope for the privacy-first MVP.
+*   **Privacy-Preserving Monitoring:** After launch, monitor aggregate app health, completion rate, input drift, and prediction drift without retaining user-level records, app-level IP addresses, user agents, or session identifiers. Aggregate counters should be created during prediction handling and stored only as bucketed counts, not by saving individual rows for later aggregation. True post-launch calibration requires observed annual out-of-pocket spending and is out of scope for the privacy-first MVP product release.
 *   **Completion Rate:** > 70% of users who enter at least one value (e.g., select an age) successfully generate a cost prediction.
 *   **User Satisfaction:** Positive sentiment on "Was this helpful?" feedback (optional).
 
@@ -200,11 +202,11 @@ For technical implementation details such as data preprocessing, machine learnin
 | **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a Fairness Audit. Include income as a feature so the user sees that income impacts the prediction. |
 | **Data Aging** | 2023 data becomes outdated. | Display permanent footer (UI-06) and limitations notice (UI-04). Apply Medical Inflation Factor (FR-02) to adjust for cost increases. |
 | **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Covered by permanent footer (UI-06). For Medicare/Medicaid users, add contextual note: *"Recent policy changes (2024-2026) may lower actual costs compared to this estimate."* |
-| **Unobserved Outcomes** | App users usually will not return one year later with reliable actual out-of-pocket spending, and collecting linked follow-up outcomes would weaken the anonymous, zero-retention privacy promise. | Do not claim production calibration from default app telemetry. Use aggregate drift monitoring for MVP. Evaluate true calibration by testing the deployed model on future MEPS survey years when available, or through a separately approved opt-in study. |
+| **Unobserved Outcomes** | App users usually will not return one year later with reliable actual out-of-pocket spending, and collecting linked follow-up outcomes would weaken the anonymous, zero-retention privacy promise. | Do not claim production calibration from default app telemetry. Use aggregate drift monitoring for the MVP product release. Evaluate true calibration by testing the deployed model on future MEPS survey years when available, or through a separately approved opt-in study. |
 
 
 ## Future Considerations  
-The following features and improvements are planned for future releases beyond the MVP:
+The following features and improvements are planned for future releases beyond the MVP product release:
 
 **Two-Part (Hurdle) Modeling**  
 *   **Goal**: Improve accuracy for users with zero or very low expected medical spending.
@@ -215,7 +217,7 @@ The following features and improvements are planned for future releases beyond t
 
 **Optional Outcome Study for True Calibration Monitoring**  
 *   **Goal**: Measure real-world calibration against actual annual out-of-pocket spending if the product strategy ever changes to support labeled outcome collection.
-*   **Privacy Constraint**: This is not part of the MVP. It would require explicit opt-in, clear consent language, data minimization, retention limits, and a review of whether the product still satisfies the anonymous/no-account positioning.
+*   **Privacy Constraint**: This is not part of the MVP product release. It would require explicit opt-in, clear consent language, data minimization, retention limits, and a review of whether the product still satisfies the anonymous/no-account positioning.
 *   **Feasibility Caveat**: User-reported annual spend is likely noisy because MEPS derives `TOTSLF23` through detailed event and payment questions. A lightweight recall question may be useful for directional research but should not be treated as MEPS-equivalent ground truth.
 *   **Default Alternative**: Use future MEPS releases to test the deployed model on newer survey years. Treat retraining or recalibration as a separate model-refresh decision.
 
@@ -261,8 +263,12 @@ Since the collection of the 2023 MEPS data, key policy changes have been enacted
 | **HSA** | Health Savings Account. Tax-advantaged account for healthcare expenses. Funds roll over year to year. |
 | **MdAE** | Median Absolute Error. Primary evaluation metric measuring the median difference between predicted and actual costs. |
 | **MEPS** | Medical Expenditure Panel Survey. Federal survey by the Agency for Healthcare Research and Quality tracking U.S. healthcare utilization and expenditures. |
+| **Model Artifact** | The serialized trained model/pipeline used for inference. It is not the product by itself. |
+| **MVP Product Release** | The first end-to-end releasable version of the Medical Cost Planner, including the selected model artifact, prediction service, user-facing app, privacy behavior, disclaimers, and deployment configuration. |
 | **Noninstitutionalized Civilian Population** | The specific U.S. population segment represented by MEPS. Includes people in households and dorms; **excludes** active-duty military and people in institutions (nursing homes, prisons). |
 | **Out-of-Pocket (OOP)** | Healthcare costs paid directly by the patient (deductibles, copays, coinsurance). Excludes premiums. |
+| **Prediction Service** | The inference/API layer that validates user inputs, calls the model artifact, applies post-processing, and returns prediction outputs to the app. |
+| **Product** | The user-facing Medical Cost Planner experience and promise, not just the machine-learning model. |
 | **SHAP** | SHapley Additive exPlanations. Method for explaining ML predictions by showing each feature's contribution. |
 | **TOTSLF23** | MEPS variable representing total out-of-pocket healthcare expenditure for 2023. |
 
