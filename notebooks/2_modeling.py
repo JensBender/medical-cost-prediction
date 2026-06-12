@@ -4464,7 +4464,7 @@ plot_quantile_subgroup_predictions(
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insights:</b> The final subgroup audit supports launch with some caveats. There is no broad demographic fairness failure and predicted-risk tiers remain usable for deployment. The main reliability weakness is rare actual tail spending that is only visible after the year is observed.
+#     💡 <b>Insights:</b> The final subgroup audit supports launch. There is no broad demographic fairness failure and predicted-risk tiers remain usable for deployment. There are some caveats, the main one being unreliable predictions for rare actual tail spending, which is only visible after the year is observed.
 #     <ul>
 #         <li><strong>Actual Cost Tiers:</strong> The biggest caveat is predictability of high actual costs. Actual High spenders have 12.4% typical-range coverage and 59.0% safety-cushion coverage; actual Very High spenders have 0.0% and 6.7%, respectively. Zero- and low-cost actual groups are heavily overprotected by the safety cushion (100.0% and 99.9%). This is an expected limitation of zero-inflated, heavy-tailed medical costs.</li>
 #         <li><strong>Predicted Cost Tiers:</strong> The deployable risk tiers are much better behaved because they are known at prediction time. Predicted plan-around cost tiers keep typical-range coverage inside the subgroup review band (42.6%-54.6%), and predicted safety-cushion tiers keep q90 coverage inside the subgroup review band (85.6%-93.4%). Widths also increase monotonically with predicted risk, from a \$1,125 safety-cushion width in the predicted q90 Low tier to \$5,582 in the predicted q90 Very High tier, which supports using predicted-risk bands to communicate prediction uncertainty to the user.</li>
@@ -4475,17 +4475,33 @@ plot_quantile_subgroup_predictions(
 # </div>
 
 # %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Launch Decision</h2>
+# </div>
+#
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ <b>Final Model: Summary and Launch Decision</b>
 #     <ul style="margin-top:8px">
-#         <li><b>Launch Recommendation:</b> Ship XGBoost quantile regression as the MVP prediction model for out-of-pocket medical costs. Frame it as a budgeting aid, not a precise billing or medical-advice tool.</li>
-#         <li><b>Release Gates:</b> The model passes the product-facing release gates on the unseen test set. Plan-around (q50) MdAE = &#36;239.5, typical-range (q25-q75) coverage = 47.3%, and safety-cushion (q90) coverage = 91.0%.</li>
+#         <li><b>Launch Recommendation:</b> Ship XGBoost quantile regression as the MVP prediction model for out-of-pocket medical costs. Frame it as a budgeting aid, not a precise billing or medical advice tool.</li>
+#         <li><b>Release Gates:</b> The model passes the product-facing release gates on the unseen test set. Plan-around (q50) MdAE = &#36;239.5, typical-range (q25-q75) coverage = 47.3%, and safety-cushion (q90) coverage = 91.0% (see table below).</li>
 #         <li><b>Usefulness vs Simple Baseline:</b> The trained model improves on naive population baselines (no ML) for all user-facing outputs. Plan-around skill = 9.75%, typical-range interval skill = 11.2%, and safety-cushion skill = 15.63%. This demonstrates added value of using feature-based model predictions compared with giving every user the same population median, generic q25-q75 range, or population q90 estimate.</li>
+#         <li><b>Calibration Decision:</b> Do not add conformalized quantile regression. Test-set calibration passes the predefined gates, so any calibration changes should be evaluated only in a new validation cycle or a post-launch monitoring review.</li>
 #         <li><b>Product Implications:</b></li>
 #             <ul>
 #                 <li><b>Prediction Text:</b> Present q50 plan-around, q25-q75 typical range, and q90 safety cushion rather than a point estimate.</li>
 #                 <li><b>Disclaimer Text:</b> Explain the model scope and caveats, including 2023 MEPS individual out-of-pocket spending, excluded premiums and over-the-counter costs, no family-total or procedure-price prediction, and possible misses for rare high-cost events.</li>
 #             </ul>
-#         <li><b>Model Monitoring:</b> Track calibration after deployment by predicted q90 tier, insurance status, poverty category, mental health, chronic-condition count, and zero/low predicted-cost profiles. These slices are more actionable than actual-cost tiers because they are known at prediction time.</li>
+#         <li><b>Launch Conditions:</b> Ship only with the range-based output, scope disclaimer, high-cost uncertainty warning, 2023-to-current-dollar adjustment, and monitoring instrumentation enabled.</li>
+#         <li><b>Model Monitoring:</b> Track calibration after deployment by predicted q90 tier, insurance status, poverty category, mental health, chronic-condition count, and zero/low predicted-cost profiles. Investigate if a sufficient-size slice falls below 40% typical-range coverage or 80% safety-cushion coverage over a monitoring window. These slices are more actionable than actual-cost tiers because they are known at prediction time.</li>
 #     </ul>
 # </div>
+#
+# **Release Gate Metrics (Test)**
+#
+# | Metric | Estimate [95% CI] | Release Gate | Product Target | Status |
+# | --- | ---: | ---: | ---: | --- |
+# | Plan-around MdAE (q50) | `$240` [`$215`, `$279`] | < `$500` | < `$350` | Pass |
+# | Typical-range coverage (q25-q75) | 47.3% [44.0%, 50.6%] | 45%-55% | 50% | Pass |
+# | Safety-cushion coverage (q90) | 91.0% [89.2%, 92.6%] | 85%-95% | 90% | Pass |
+# | Typical-range width (q25-q75) | `$912` [`$875`, `$955`] | < `$1,500` | < `$1,000` | Pass |
+# | Safety-cushion width (q50-q90) | `$2,032` [`$1,964`, `$2,108`] | < `$3,500` | < `$2,500` | Pass |
