@@ -200,7 +200,7 @@ For technical implementation details such as data preprocessing, machine learnin
 | **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a Fairness Audit. Include income as a feature so the user sees that income impacts the prediction. |
 | **Data Aging** | 2023 data becomes outdated. | Display permanent footer (UI-06) and limitations notice (UI-04). Apply Medical Inflation Factor (FR-02) to adjust for cost increases. |
 | **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Covered by permanent footer (UI-06). For Medicare/Medicaid users, add contextual note: *"Recent policy changes (2024-2026) may lower actual costs compared to this estimate."* |
-| **Unobserved Outcomes** | App users usually will not return one year later with reliable actual out-of-pocket spending, and collecting linked follow-up outcomes would weaken the anonymous, zero-retention privacy promise. | Do not claim production calibration from default app telemetry. Use aggregate drift monitoring for MVP and evaluate true calibration with future MEPS releases or a separately approved opt-in study. |
+| **Unobserved Outcomes** | App users usually will not return one year later with reliable actual out-of-pocket spending, and collecting linked follow-up outcomes would weaken the anonymous, zero-retention privacy promise. | Do not claim production calibration from default app telemetry. Use aggregate drift monitoring for MVP. Evaluate true calibration by testing the deployed model on future MEPS survey years when available, or through a separately approved opt-in study. |
 
 
 ## Future Considerations  
@@ -217,7 +217,7 @@ The following features and improvements are planned for future releases beyond t
 *   **Goal**: Measure real-world calibration against actual annual out-of-pocket spending if the product strategy ever changes to support labeled outcome collection.
 *   **Privacy Constraint**: This is not part of the MVP. It would require explicit opt-in, clear consent language, data minimization, retention limits, and a review of whether the product still satisfies the anonymous/no-account positioning.
 *   **Feasibility Caveat**: User-reported annual spend is likely noisy because MEPS derives `TOTSLF23` through detailed event and payment questions. A lightweight recall question may be useful for directional research but should not be treated as MEPS-equivalent ground truth.
-*   **Default Alternative**: Use future MEPS releases for offline recalibration checks and model refresh decisions.
+*   **Default Alternative**: Use future MEPS releases to test the deployed model on newer survey years. Treat retraining or recalibration as a separate model-refresh decision.
 
 **Support for Under 18 Population**  
 *   **Rationale for 18+ in current model**:

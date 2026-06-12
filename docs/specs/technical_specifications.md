@@ -378,14 +378,14 @@ The MVP must preserve the product promise of anonymous, stateless predictions. P
 | App health | Request count, error rate, validation failures, latency percentiles | Do not log raw request or response payloads |
 | Completion funnel | Form starts, successful predictions, optional helpfulness feedback | Store only aggregate counts |
 | Input drift | Aggregate distribution of required/optional fields, missingness rates, broad feature buckets | Use aggregate counters; suppress small cells where needed |
-| Prediction drift | Aggregate distribution of q50/q90 tiers, high-uncertainty flags, interval widths | Store tier counts, not user-level predictions |
+| Prediction drift | Aggregate distributions of predicted q50, q25-q75 range width, q90 safety cushion, and high-uncertainty flags | Store summary distributions or tier counts, not user-level predictions |
 
 **Not allowed by default**
 *   Persisting individual input rows, prediction outputs, SHAP explanations, IP-linked records, or browser/session identifiers for model monitoring.
 *   Claiming post-launch calibration, MdAE, or coverage metrics from unlabeled app telemetry.
 
 **Offline and future monitoring paths**
-*   Re-evaluate the deployed model on future MEPS releases when available, using the same sample-weighted metrics and subgroup audits defined in the modeling notebook.
+*   Re-evaluate the deployed 2023-trained model on future MEPS survey years when available, using the same sample-weighted metrics and subgroup audits defined in the modeling notebook. Treat retraining or recalibration as a separate model-refresh decision.
 *   If a future outcome study is approved, collect actual spend only through explicit opt-in consent, data minimization, retention limits, and a separate privacy review. Treat user-reported actual spend as directional unless the collection process can approximate MEPS-quality expenditure measurement.
 
 
