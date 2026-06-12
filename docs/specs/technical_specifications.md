@@ -21,6 +21,7 @@
 3. [Deployment Specifications](#deployment-specifications)
    - [API Contract](#api-contract)
    - [Inference Pipeline](#inference-pipeline)
+   - [Privacy-Preserving Monitoring](#privacy-preserving-monitoring)
 4. [Testing Strategy](#testing-strategy)
 5. [Technical Stack Recommendation](#technical-stack-recommendation)
 6. [References](#references)
@@ -363,6 +364,30 @@ The model will be exposed via a Python API (internal to the web app process) or 
 7.  **Explainability:** Run TreeExplainer/KernelExplainer.
 8.  **Post-Processing:** Apply inflation adjustment + inverse log-transform (if applicable).
 
+### Privacy-Preserving Monitoring
+The MVP must preserve the product promise of anonymous, stateless predictions. Production monitoring therefore cannot depend on linked user records or follow-up actual-spend outcomes.
+
+**Why true production calibration is out of scope for MVP**
+*   **No reliable default label:** Calibration metrics such as q25-q75 coverage and q90 coverage require observed annual out-of-pocket spending. Most users will not return one year later with a reliable total.
+*   **MEPS labels are not simple recall:** `TOTSLF23` is derived from detailed MEPS expenditure and payment questions across medical events. A single app follow-up question would be much noisier than the training target.
+*   **Privacy conflict:** Linking a prediction to a later outcome would require persistent identifiers or contact information, weakening the no-account, no-retention, anonymous product requirement.
+
+**Allowed MVP monitoring**
+| Area | Examples | Privacy Guardrail |
+| :--- | :--- | :--- |
+| App health | Request count, error rate, validation failures, latency percentiles | Do not log raw request or response payloads |
+| Completion funnel | Form starts, successful predictions, optional helpfulness feedback | Store only aggregate counts |
+| Input drift | Aggregate distribution of required/optional fields, missingness rates, broad feature buckets | Use aggregate counters; suppress small cells where needed |
+| Prediction drift | Aggregate distribution of q50/q90 tiers, high-uncertainty flags, interval widths | Store tier counts, not user-level predictions |
+
+**Not allowed by default**
+*   Persisting individual input rows, prediction outputs, SHAP explanations, IP-linked records, or browser/session identifiers for model monitoring.
+*   Claiming post-launch calibration, MdAE, or coverage metrics from unlabeled app telemetry.
+
+**Offline and future monitoring paths**
+*   Re-evaluate the deployed model on future MEPS releases when available, using the same sample-weighted metrics and subgroup audits defined in the modeling notebook.
+*   If a future outcome study is approved, collect actual spend only through explicit opt-in consent, data minimization, retention limits, and a separate privacy review. Treat user-reported actual spend as directional unless the collection process can approximate MEPS-quality expenditure measurement.
+
 
 ## Testing Strategy
 **Unit Tests**  
@@ -372,6 +397,7 @@ The model will be exposed via a Python API (internal to the web app process) or 
 **Integration Tests**  
 *   **Serving:** Verify serialized pipeline loading and output structure.
 *   **Endpoints:** Validate JSON responses and HTTP status codes (200/422).
+*   **Monitoring Guardrails:** Verify app telemetry does not persist raw user inputs, prediction payloads, or linked identifiers.
 
 **End-to-End Tests**  
 *   **User Journey:** Simulate full flow: user input → processing → cost prediction.

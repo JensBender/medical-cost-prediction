@@ -86,7 +86,7 @@ The following are explicitly **not** part of this project:
 | **Population** | Family/household aggregation | Predicts individual costs only; users can run multiple times |
 | **Features** | Specific procedure predictions | We predict annual totals, not "How much will my MRI cost?" |
 | **Features** | Insurance plan comparison | We don't recommend plans; users input their current plan |
-| **Features** | Historical trends / user tracking | No user accounts; stateless predictions |
+| **Features** | Historical trends / user tracking | No user accounts, no longitudinal user records, and no default collection of follow-up actual spend |
 | **Integrations** | Insurance portal integration | No API connections to external systems |
 | **Integrations** | Medical record imports | Users self-report; no clinical data ingestion |
 | **Data** | Real-time pricing data | Model uses MEPS survey data, not live cost databases |
@@ -159,13 +159,14 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | :--- | :--- | :--- |
 | **NFR-01** | Ephemeral Sessions | No user data written to disk or database. All inputs remain in browser/RAM session state only. |
 | **NFR-02** | No PII Collection | No names, emails, addresses, or social security numbers shall be requested. |
+| **NFR-03** | Aggregate Monitoring Only | MVP monitoring may use aggregate, non-identifying counters for app health, completion rate, input drift, and prediction drift. Do not persist user-level input rows, prediction records, or actual-spend outcomes by default. |
 
 ### Performance & Usability
 | ID | Requirement | Details |
 | :--- | :--- | :--- |
-| **NFR-03** | Latency | Inference prediction (including SHAP generation) must return in < 1 second (server-side) to ensure a responsive UX (~3s end-to-end). |
-| **NFR-04** | Responsive Design | Expect ~65% desktop, ~35% mobile (typical for Hugging Face Spaces). Gradio handles responsive layouts natively. Ensure form inputs remain usable on smaller screens. |
-| **NFR-05** | Fallback Mode | If user skips an input, display informative message or impute value. |
+| **NFR-04** | Latency | Inference prediction (including SHAP generation) must return in < 1 second (server-side) to ensure a responsive UX (~3s end-to-end). |
+| **NFR-05** | Responsive Design | Expect ~65% desktop, ~35% mobile (typical for Hugging Face Spaces). Gradio handles responsive layouts natively. Ensure form inputs remain usable on smaller screens. |
+| **NFR-06** | Fallback Mode | If user skips an input, display informative message or impute value. |
 
 
 ## UI/UX Guidelines
@@ -187,6 +188,7 @@ For technical implementation details such as data preprocessing, machine learnin
     *   **Safety Cushion (90th%):** 90% ± 5% of actual costs fall below the predicted budget-safe estimate.
 *   **Interval Width:** Prediction intervals should be narrow enough to support decisions. The model should not meet coverage targets by returning overly wide ranges for most users.
 *   **Stratified Reliability:** Report MdAE and interval coverage by cost tier (e.g., low, middle, high) and key user groups before launch to confirm that strong overall metrics are not hiding weak subgroup performance.
+*   **Privacy-Preserving Monitoring:** After launch, monitor aggregate app health, completion rate, input drift, and prediction drift without retaining user-level records. True post-launch calibration requires observed annual out-of-pocket spending and is out of scope for the privacy-first MVP.
 *   **Completion Rate:** > 70% of users who enter at least one value (e.g., select an age) successfully generate a cost prediction.
 *   **User Satisfaction:** Positive sentiment on "Was this helpful?" feedback (optional).
 
@@ -198,6 +200,7 @@ For technical implementation details such as data preprocessing, machine learnin
 | **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a Fairness Audit. Include income as a feature so the user sees that income impacts the prediction. |
 | **Data Aging** | 2023 data becomes outdated. | Display permanent footer (UI-06) and limitations notice (UI-04). Apply Medical Inflation Factor (FR-02) to adjust for cost increases. |
 | **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Covered by permanent footer (UI-06). For Medicare/Medicaid users, add contextual note: *"Recent policy changes (2024-2026) may lower actual costs compared to this estimate."* |
+| **Unobserved Outcomes** | App users usually will not return one year later with reliable actual out-of-pocket spending, and collecting linked follow-up outcomes would weaken the anonymous, zero-retention privacy promise. | Do not claim production calibration from default app telemetry. Use aggregate drift monitoring for MVP and evaluate true calibration with future MEPS releases or a separately approved opt-in study. |
 
 
 ## Future Considerations  
@@ -209,6 +212,12 @@ The following features and improvements are planned for future releases beyond t
     *   **Part 1 (Classifier)**: Predict the probability that a user will have *any* out-of-pocket costs (Cost > $0 vs. Cost = $0).
     *   **Part 2 (Regressor)**: For those predicted to have costs, predict the specific dollar amount.
 *   **Value**: This approach prevents the model from "averaging" zero-cost and high-cost users together, which can lead to biased estimates for healthy individuals.
+
+**Optional Outcome Study for True Calibration Monitoring**  
+*   **Goal**: Measure real-world calibration against actual annual out-of-pocket spending if the product strategy ever changes to support labeled outcome collection.
+*   **Privacy Constraint**: This is not part of the MVP. It would require explicit opt-in, clear consent language, data minimization, retention limits, and a review of whether the product still satisfies the anonymous/no-account positioning.
+*   **Feasibility Caveat**: User-reported annual spend is likely noisy because MEPS derives `TOTSLF23` through detailed event and payment questions. A lightweight recall question may be useful for directional research but should not be treated as MEPS-equivalent ground truth.
+*   **Default Alternative**: Use future MEPS releases for offline recalibration checks and model refresh decisions.
 
 **Support for Under 18 Population**  
 *   **Rationale for 18+ in current model**:
