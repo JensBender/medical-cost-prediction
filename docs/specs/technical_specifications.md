@@ -380,8 +380,55 @@ The MVP must preserve the product promise of anonymous, stateless predictions. P
 | Input drift | Aggregate distribution of required/optional fields, missingness rates, broad feature buckets | Use aggregate counters; suppress small cells where needed |
 | Prediction drift | Aggregate distributions of predicted q50, q25-q75 range width, q90 safety cushion, and high-uncertainty flags | Store summary distributions or tier counts, not user-level predictions |
 
+**Aggregation design**
+Telemetry must be aggregated during prediction handling rather than written as per-user events for later aggregation.
+
+1.  Validate the request and run inference in memory.
+2.  Convert selected inputs and outputs into predefined coarse buckets.
+3.  Increment counters for the active monitoring window.
+4.  Discard raw inputs, exact predictions, SHAP values, and request-local state.
+5.  At the end of the monitoring window, persist only aggregate counters that meet the minimum cell-size rule.
+
+**Telemetry record schema**
+Persisted telemetry records should use this aggregate shape:
+
+```json
+{
+  "window_start": "YYYY-MM-DD",
+  "window_end": "YYYY-MM-DD",
+  "model_version": "string",
+  "app_version": "string",
+  "metric_name": "string",
+  "bucket": "string",
+  "count": 0
+}
+```
+
+This schema intentionally has no raw input payload, exact prediction value, SHAP value, IP address, user agent, session ID, request ID, or per-user timestamp.
+
+**Recommended buckets**
+| Metric | Example Buckets |
+| :--- | :--- |
+| Age | 18-34, 35-44, 45-54, 55-64, 65-74, 75-85 |
+| Chronic condition count | 0, 1, 2-3, 4+ |
+| Limitation count | 0, 1, 2+ |
+| Physical or mental health | Excellent/Very Good, Good, Fair/Poor |
+| Insurance | Private, Public Only, Uninsured |
+| Income / poverty category | Poor/Near Poor, Low Income, Middle Income, High Income, Missing |
+| Predicted q50 | $0, $1-$249, $250-$499, $500-$999, $1,000-$1,999, $2,000-$4,999, $5,000+ |
+| q25-q75 width | $0-$249, $250-$499, $500-$999, $1,000-$2,499, $2,500+ |
+| Predicted q90 | $0-$499, $500-$999, $1,000-$1,999, $2,000-$4,999, $5,000-$9,999, $10,000+ |
+| Missingness | Per optional field: present, missing |
+
+**Small-cell and cross-tab rules**
+*   Persist one-dimensional histograms by default.
+*   Avoid high-dimensional cross-tabs such as age x insurance x chronic conditions x prediction bin.
+*   If any persisted bucket has fewer than 30 observations in a monitoring window, merge it into a broader bucket or roll it into a longer time window before persistence.
+*   Do not persist sparse buckets that cannot be merged safely.
+*   Store platform or infrastructure access logs separately from model telemetry, if the hosting platform creates them. Do not join access logs to prediction monitoring counters.
+
 **Not allowed by default**
-*   Persisting individual input rows, prediction outputs, SHAP explanations, IP-linked records, or browser/session identifiers for model monitoring.
+*   Persisting individual input rows, prediction outputs, SHAP explanations, app-level IP logs, user-agent logs, IP-linked records, request IDs, or browser/session identifiers for model monitoring.
 *   Claiming post-launch calibration, MdAE, or coverage metrics from unlabeled app telemetry.
 
 **Offline and future monitoring paths**
@@ -397,7 +444,7 @@ The MVP must preserve the product promise of anonymous, stateless predictions. P
 **Integration Tests**  
 *   **Serving:** Verify serialized pipeline loading and output structure.
 *   **Endpoints:** Validate JSON responses and HTTP status codes (200/422).
-*   **Monitoring Guardrails:** Verify app telemetry does not persist raw user inputs, prediction payloads, or linked identifiers.
+*   **Monitoring Guardrails:** Verify app telemetry does not persist raw user inputs, prediction payloads, SHAP values, app-level IP addresses, user agents, request IDs, session IDs, or other linked identifiers. Verify persisted monitoring records match the aggregate telemetry schema and enforce small-cell suppression.
 
 **End-to-End Tests**  
 *   **User Journey:** Simulate full flow: user input → processing → cost prediction.
