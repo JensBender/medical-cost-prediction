@@ -65,7 +65,9 @@
 
 
 ## 🎯 Summary
-Currently developing an end-to-end machine learning application to predict annual out-of-pocket healthcare costs. Initial phase: authoring [Product Requirements](./docs/specs/product_requirements.md) and [Technical Specifications](./docs/specs/technical_specifications.md) for a user-centric system design (task completion time <90s). Engineering the ML pipeline to translate complex survey data (MEPS) into personalized budgeting insights.
+End-to-end machine learning project to predict annual out-of-pocket healthcare costs from MEPS 2023 survey data. The modeling workflow now selects **XGBoost Quantile Regression** as the final MVP model, returning a plan-around estimate (`q50`), a typical range (`q25`-`q75`), and a safety cushion (`q90`) instead of a single point forecast.
+
+On the locked holdout test set, the final model passes the product-facing release gates: plan-around MdAE is **$240** (95% CI: $215-$279), typical-range coverage is **47.3%**, and safety-cushion coverage is **91.0%**. The planned app should present these outputs as budgeting guidance with scope disclaimers, high-cost uncertainty warnings, current-dollar adjustment, and privacy-preserving aggregate monitoring.
 
 🛠️ **Built With**
 - [![Python][Python-badge]][Python-url]
@@ -265,19 +267,24 @@ To ensure responsible deployment, evaluated model reliability and fairness acros
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 ### 🏆 Final Model
-**Decision:** Use **XGBoost Quantile Regression** as the final model artifact selected for the MVP product release. It returns the product's required planning outputs: a plan-around estimate (`q50`), a typical range (`q25`-`q75`), and a budget-safe estimate (`q90`).
+**Decision:** Use **XGBoost Quantile Regression** as the final model artifact behind the MVP product release.
 
-**Locked Test Set Evidence**
-| Metric | Estimate | Launch Read |
-| :--- | :---: | :--- |
-| Plan-around MdAE (`q50`) | **$239.54** | Passes hard release gate for the MVP product (<$500) and product target (<$350). |
-| Typical range coverage (`q25`-`q75`) | **47.3%** | Within 45%-55% product tolerance. |
-| Safety cushion coverage (`q90`) | **91.0%** | Within 85%-95% product tolerance. |
-| Interval skill score | **+11.2%** | Beats a naive population interval baseline. |
+**Release Gate Metrics (Test)**
+| Metric | Estimate (95% CI) | Release Gate | Product Target | Status |
+| :--- | ---: | ---: | ---: | :---: |
+| Plan-around MdAE (`q50`) | `$240` [`$215`, `$279`] | < `$500` | < `$350` | Pass |
+| Typical-range coverage (`q25`-`q75`) | 47.3% [44.0%, 50.6%] | 45%-55% | 50% | Pass |
+| Safety-cushion coverage (`q90`) | 91.0% [89.2%, 92.6%] | 85%-95% | 90% | Pass |
+| Typical-range width (`q25`-`q75`) | `$912` [`$875`, `$955`] | < `$1,500` | < `$1,000` | Pass |
+| Safety-cushion width (`q50`-`q90`) | `$2,032` [`$1,964`, `$2,108`] | < `$3,500` | < `$2,500` | Pass |
 
-**Readiness Summary:** The model is strongest when framed as a planning range, not a bill forecast. It passes the user-facing accuracy and interval-calibration gates, and predicted-risk tiers remain calibrated enough to support user-facing warnings.
+**Usefulness vs. Simple Baseline:** Feature-based predictions beat naive population baselines for all user-facing outputs: plan-around skill is **9.75%**, typical-range interval skill is **11.2%**, and safety-cushion skill is **15.63%**. Skill scores are diagnostic; product release decisions are based on the MdAE, coverage, and width gates above.
 
-**Caveats:** Always show ranges rather than a single-number-only output. Do not frame the app as medical, financial, insurance, or procedure-price advice. Rare high-cost years remain hard to predict: actual High and Very High spenders are undercovered in the final subgroup audit, while zero/low spenders are often overprotected by the `q90` cushion.
+**Launch Read:** The model is strongest when framed as a planning range, not a bill forecast. It passes the user-facing accuracy and interval-calibration gates, and predicted-risk tiers remain usable for deployment.
+
+**Calibration Decision:** Do not add conformalized quantile regression based on this test read. Test-set calibration passes the predefined gates, so any future calibration changes should be evaluated in a new validation cycle or against a future MEPS survey year.
+
+**Caveats and Launch Conditions:** Always show `q50`, `q25`-`q75`, and `q90` together. Do not frame the app as medical, financial, insurance, or procedure-price advice. Ship only with range-based output, scope disclaimers, a rare high-cost uncertainty warning, 2023-to-current-dollar adjustment, and privacy-preserving aggregate monitoring for app health, input drift, prediction drift, missingness, and high-uncertainty flags.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
@@ -589,27 +596,23 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 
 
 ### XGBoost Quantile Regression: Reliability & Fairness
-Extended the stratified error analysis to evaluate the prediction intervals of the final XGBoost Quantile Regression model. Assessed both the **typical range** ($`25^{\text{th}}`$–$`75^{\text{th}}`$ percentiles) and the **safety cushion** ($`90^{\text{th}}`$ percentile) across subgroups. Overall coverage uses tighter performance targets (45–55% for the typical range; 85–95% for the safety cushion), while subgroup coverage uses wider performance guardrails (40–60% and 80–97%) for groups with sufficient sample size (`n ≥ 30`). Evaluated both **interval coverage** (statistical calibration) and **width** (usefulness for budgeting in USD) to ensure predictions remain reliable and actionable for all user groups.
+Extended the stratified error analysis to evaluate the final XGBoost Quantile Regression model on the untouched test set. The audit checks the **typical range** (`q25`-`q75`) and **safety cushion** (`q90`) across reliability and fairness subgroups. Overall coverage uses release gates (45%-55% for the typical range; 85%-95% for the safety cushion), while subgroup review bands are diagnostic ranges (40%-60% and 80%-97%) for groups with sufficient sample size (`n >= 30`). Because this is the locked test set, findings qualify reporting and monitoring rather than triggering another model-tuning loop.
 
 **Reliability**
-![XGBoost Quantile Regression: Subgroup Reliability (Validation)](figures/evaluation/xgb_quantile_validation_subgroup_reliability.png)
+![XGBoost Quantile Regression: Subgroup Reliability (Test)](figures/evaluation/xgb_quantile_test_subgroup_reliability.png)
 **Key Insights:**
-- **Predicted vs. Actual Costs:** Intervals are well calibrated when stratified by predicted cost tiers (coverage stays near 50%/90% targets), but collapse when stratified by actual costs — dropping to 0%/0% for Very High actual spenders, confirming the model cannot capture tail events it has never "seen" in its features.
-- **Zero Actual Costs:** Show only 24.9% typical-range coverage but 100% safety-cushion coverage, meaning the model's typical-range prediction overshoots (interval sits above $0) while the safety cushion contains the true $0 value.
-- **Physical Health:** Coverage remains stable (45–53% typical, 81–92% safety cushion) across all self-ratings; the key differentiator is interval width, which nearly doubles from "Excellent" ($1,541 safety cushion) to "Poor" ($2,856), reflecting growing cost volatility with declining health.
-- **Insurance:** Uninsured users have the narrowest intervals ($250 typical range, $1,037 safety cushion) with slight under-coverage (34.9% typical range) but adequate safety-cushion coverage (85.7%). Private insurance produces the widest intervals ($1,039 / $2,230), reflecting greater spending variance.
-- **Chronic Conditions:** Coverage stays near target regardless of condition count; safety-cushion width grows from $1,402 (0 conditions) to $3,366 (4+), reflecting the compounding cost uncertainty of comorbidity.
+- **Actual Cost Tiers:** Rare high-cost years remain the biggest predictability caveat. Actual High spenders have 12.4% typical-range coverage and 59.0% safety-cushion coverage; actual Very High spenders have 0.0% and 6.7%, respectively. Zero- and low-cost actual groups are heavily overprotected by the safety cushion (100.0% and 99.9%).
+- **Predicted Cost Tiers:** Deployable risk tiers behave much better because they are known at prediction time. Predicted plan-around cost tiers keep typical-range coverage inside the subgroup review band (42.6%-54.6%), and predicted safety-cushion tiers keep `q90` coverage inside the review band (85.6%-93.4%).
+- **Risk Communication:** Safety-cushion widths increase monotonically with predicted risk, from $1,125 in the predicted `q90` Low tier to $5,582 in the predicted `q90` Very High tier. This supports communicating wider uncertainty bands for higher-risk users.
+- **Subgroup Reliability:** Physical health, chronic conditions, private insurance, and public insurance groups remain within subgroup review bands. Uninsured users are the main watchlist group: typical-range coverage is low at 34.7%, while safety-cushion coverage is conservative at 96.3%.
 
 **Fairness**
-![XGBoost Quantile Regression: Subgroup Fairness (Validation)](figures/evaluation/xgb_quantile_validation_subgroup_fairness.png)
+![XGBoost Quantile Regression: Subgroup Fairness (Test)](figures/evaluation/xgb_quantile_test_subgroup_fairness.png)
 **Key Insights:**
-- **Coverage:** Calibration stays near target for nearly all protected and vulnerable subgroups (typical range 40–57%; safety cushion 84–95%), confirming consistent statistical reliability.
-- **Sex:** Females get wider intervals than Males ($1,028 vs. $742 typical range) due to higher spending variance, but both groups calibrate well (52% vs. 45%).
-- **Age & Walking Limitations:** Width roughly triples from youngest to oldest ($476 vs. $1,408 typical range) and doubles from no walking limitation to walking limitation ($794 vs. $1,614), reflecting medical cost volatility rather than algorithmic bias.
-- **Race/Ethnicity:** Coverage is equitable across all groups (47–57%); minority groups (Hispanic $546, Black $768) get narrower, more precise intervals than White ($1,024).
-- **Mental Health:** Poor mental health is the main outlier as safety-cushion coverage drops to 72% (below the 80% guardrail) despite the widest intervals ($2,763), suggesting extreme cost volatility that the model underestimates.
-- **Socioeconomic Status (Income/Education):** Largest width disparities across all dimensions. Safety cushion spans $968 (No Degree) to $2,887 (Master's), and $1,077 (Poor) to $2,540 (High Income), driven by greater spending variance among higher socioeconomic groups.
-- **Audit Verdict:** No systematic under-protection of protected classes. Disparities manifest in interval width (precision), not coverage (reliability), and reflect spending volatility rather than algorithmic bias.
+- **Protected Groups:** Sex, age, race/ethnicity, region, and walking limitation groups do not show systematic undercoverage on the final test audit.
+- **Watchlist Groups:** Poor mental health has low typical-range coverage (30.1%), as do low income (39.2%) and doctorate degree holders (34.7%). Near-poor income users show safety-cushion overcoverage (97.7%). These are reporting and monitoring caveats, not evidence of broad demographic fairness failure.
+- **Prediction Usefulness:** Several low-cost groups have wide prediction intervals despite in-band coverage, including good physical health, good mental health, Asian respondents, and the West region. This is a practical-budgeting caveat rather than a safety failure.
+- **Audit Verdict:** The subgroup audit supports launch. Predicted-risk tiers remain usable for deployment, and there is no broad demographic fairness failure; the main limitation is rare actual tail spending that is only visible after the year is observed.
 
 <p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
 
