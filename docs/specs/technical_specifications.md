@@ -407,6 +407,8 @@ Persisted telemetry records should use this aggregate shape:
 This schema intentionally has no raw input payload, exact prediction value, SHAP value, IP address, user agent, session ID, request ID, or per-user timestamp.
 
 **Recommended buckets**
+Bucket edges should be fixed before launch, documented with the model version, and chosen from the validation prediction distribution so monitoring has enough resolution where the deployed model actually places users. For this model, predicted q50 values are usually low-to-mid hundreds, while q90 values span a wider safety-cushion range.
+
 | Metric | Example Buckets |
 | :--- | :--- |
 | Age | 18-34, 35-44, 45-54, 55-64, 65-74, 75-85 |
@@ -415,9 +417,9 @@ This schema intentionally has no raw input payload, exact prediction value, SHAP
 | Physical or mental health | Excellent/Very Good, Good, Fair/Poor |
 | Insurance | Private, Public Only, Uninsured |
 | Income / poverty category | Poor/Near Poor, Low Income, Middle Income, High Income, Missing |
-| Predicted q50 | $0, $1-$249, $250-$499, $500-$999, $1,000-$1,999, $2,000-$4,999, $5,000+ |
-| q25-q75 width | $0-$249, $250-$499, $500-$999, $1,000-$2,499, $2,500+ |
-| Predicted q90 | $0-$499, $500-$999, $1,000-$1,999, $2,000-$4,999, $5,000-$9,999, $10,000+ |
+| Predicted q50 | $0-$49, $50-$149, $150-$299, $300-$599, $600-$999, $1,000-$1,499, $1,500+ |
+| q25-q75 width | $0-$249, $250-$499, $500-$999, $1,000-$1,499, $1,500-$2,499, $2,500+ |
+| Predicted q90 | $0-$499, $500-$999, $1,000-$1,999, $2,000-$3,499, $3,500-$4,999, $5,000+ |
 | Missingness | Per optional field: present, missing |
 
 **Small-cell and cross-tab rules**
@@ -430,6 +432,41 @@ This schema intentionally has no raw input payload, exact prediction value, SHAP
 **Not allowed by default**
 *   Persisting individual input rows, prediction outputs, SHAP explanations, app-level IP logs, user-agent logs, IP-linked records, request IDs, or browser/session identifiers for model monitoring.
 *   Claiming post-launch calibration, MdAE, or coverage metrics from unlabeled app telemetry.
+
+**Hugging Face Spaces and Gradio controls**
+The planned deployment hosts the model artifact on Hugging Face Hub and the app/API on Hugging Face Spaces. Hugging Face may process provider-level infrastructure logs under its own policies, including technical access/session information. The app must not intentionally collect, persist, expose, or join those provider-level logs with model monitoring telemetry.
+
+Required app-level controls:
+*   Disable Gradio analytics with `analytics_enabled=False` and `GRADIO_ANALYTICS_ENABLED=False`.
+*   Disable Gradio flagging with `flagging_mode="never"` and `GRADIO_FLAGGING_MODE=never`, because flagging can write inputs and outputs to local files.
+*   Disable deep links for sensitive prediction state where supported, because shared URLs should not encode or preserve user-entered health/profile values.
+*   Do not print raw inputs, exact predictions, SHAP values, request headers, IP addresses, user agents, request IDs, or session IDs to stdout/stderr. Hugging Face Spaces app logs may expose stdout/stderr as operational logs.
+*   Do not include raw request or response payloads in exception messages, FastAPI middleware logs, telemetry callbacks, or error reports.
+*   Keep Hugging Face provider/infrastructure logs separate from model telemetry. Do not join access logs to aggregate monitoring counters.
+
+Recommended Gradio configuration:
+
+```python
+demo = gr.Interface(
+    ...,
+    analytics_enabled=False,
+    flagging_mode="never",
+)
+```
+
+For `gr.Blocks`:
+
+```python
+with gr.Blocks(analytics_enabled=False) as demo:
+    ...
+```
+
+Recommended Hugging Face Spaces environment variables:
+
+```text
+GRADIO_ANALYTICS_ENABLED=False
+GRADIO_FLAGGING_MODE=never
+```
 
 **Offline and future monitoring paths**
 *   Re-evaluate the deployed 2023-trained model on future MEPS survey years when available, using the same sample-weighted metrics and subgroup audits defined in the modeling notebook. Treat retraining or recalibration as a separate model-refresh decision.
@@ -444,7 +481,7 @@ This schema intentionally has no raw input payload, exact prediction value, SHAP
 **Integration Tests**  
 *   **Serving:** Verify serialized pipeline loading and output structure.
 *   **Endpoints:** Validate JSON responses and HTTP status codes (200/422).
-*   **Monitoring Guardrails:** Verify app telemetry does not persist raw user inputs, prediction payloads, SHAP values, app-level IP addresses, user agents, request IDs, session IDs, or other linked identifiers. Verify persisted monitoring records match the aggregate telemetry schema and enforce small-cell suppression.
+*   **Monitoring Guardrails:** Verify app telemetry does not persist raw user inputs, prediction payloads, SHAP values, app-level IP addresses, user agents, request IDs, session IDs, or other linked identifiers. Verify persisted monitoring records match the aggregate telemetry schema and enforce small-cell suppression. Verify Gradio analytics and flagging are disabled in Hugging Face Spaces configuration.
 
 **End-to-End Tests**  
 *   **User Journey:** Simulate full flow: user input → processing → cost prediction.
