@@ -19,6 +19,7 @@
    - [Model Training](#model-training)
    - [Model Evaluation](#model-evaluation)
 3. [Deployment Specifications](#deployment-specifications)
+   - [MVP Deployment Architecture](#mvp-deployment-architecture)
    - [API Contract](#api-contract)
    - [Inference Pipeline](#inference-pipeline)
    - [Privacy-Preserving Monitoring](#privacy-preserving-monitoring)
@@ -321,6 +322,18 @@ Healthcare cost data has unique characteristics that influence evaluation metric
 
 ## Deployment Specifications
 
+### MVP Deployment Architecture
+The MVP product release should use a single-deployment, modular application rather than separate microservices.
+
+**Recommended shape**
+*   **Hosting:** One Hugging Face Space for the app, with the trained model artifact loaded from Hugging Face Hub.
+*   **Server:** FastAPI as the main ASGI application.
+*   **UI:** Gradio mounted inside the FastAPI app for the user-facing planner experience.
+*   **Prediction boundary:** A shared internal prediction service module validates inputs, formats features, calls the model artifact, applies post-processing, updates aggregate monitoring counters, and returns prediction outputs.
+*   **API surface:** Expose `/health` for operational checks and `/api/predict` if programmatic access is needed. The Gradio UI may call the shared prediction function directly inside the same process rather than making a local HTTP request.
+
+This design gives the MVP product release clear service boundaries while keeping deployment simple. It should not be described as a microservices architecture unless the API, UI, monitoring, and model-serving components are split into independently deployed services.
+
 ### API Contract
 The prediction service will expose the trained model artifact via a Python API (internal to the web app process) or a REST endpoint if decoupled.
 *   **Input Schema (Pydantic Style):**
@@ -492,9 +505,9 @@ GRADIO_FLAGGING_MODE=never
 *   **Preprocessing:** NumPy, Pandas, Scikit-Learn Pipeline (imputation, scaling, encoding).
 *   **EDA:** Pandas, Seaborn, Matplotlib, JupyterLab.
 *   **Modeling:** Scikit-Learn, XGBoost, SHAP (for explainability), Joblib (for serialization).
-*   **Web App:** 
-    *   **Frontend**: Gradio or Streamlit (for demo).
-    *   **Backend**: FastAPI (for production) and Pydantic (for API data validation).
+*   **Web App:**
+    *   **Frontend:** Gradio mounted in the FastAPI app.
+    *   **Backend:** FastAPI main app with Pydantic validation and a shared prediction service module.
 *   **Testing:** Pytest.
 *   **Hosting:** 
     *   **Source Code**: GitHub.
