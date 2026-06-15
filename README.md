@@ -279,8 +279,8 @@ To ensure responsible deployment, evaluated model reliability and fairness acros
 
 - **Launch Recommendation:** The model is strongest when framed as a planning range, not a bill forecast. It passes the user-facing accuracy and calibration gates, and predicted-risk tiers remain usable for deployment.
 - **Usefulness vs. Simple Baseline:** Feature-based predictions beat naive population baselines for all user-facing outputs: plan-around skill is **9.8%**, typical-range interval skill is **11.2%**, and safety-cushion skill is **15.6%**. Skill scores are diagnostic; product release decisions are based on the MdAE, coverage, and width gates above.
-- **Reliability & Fairness Audit:** The stratified error analysis on the unseen test set supports launch. Predicted-risk tiers remain usable, no broad demographic fairness failure appears, and subgroup findings should guide messaging and monitoring rather than post-test tuning. Main watchlist areas are uninsured users, poor mental health, low income, doctorate degree holders, and rare actual high-cost years. 🔗 [**See Final Model Reliability & Fairness Audit**](#xgboost-quantile-regression-reliability--fairness)
-- **Calibration Decision:** Do not add conformalized quantile regression based on this test read. Test-set calibration passes the predefined gates, so any future calibration changes should be evaluated in a new validation cycle or against a future MEPS survey year.
+- **Reliability & Fairness Audit:** The stratified error analysis on the unseen test set supports launch. Predicted-risk tiers remain usable, and no broad demographic fairness failure appears. The main limitation is coverage by actual cost tier, especially rare high-cost years that are only identifiable after the year ends. Other subgroupds with coverage issues are uninsured users, users with poor mental health, low income, doctorate degree, and near-poor income. 🔗 [**See Final Model Reliability & Fairness Audit**](#xgboost-quantile-regression-reliability--fairness)
+- **Calibration Decision:** Do not add conformalized quantile regression based on these test-set results. Test-set calibration passes the predefined gates, so any future calibration changes should be evaluated in a new validation cycle or against a future MEPS survey year.
 - **Caveats and Launch Conditions:** Always show `q50`, `q25`-`q75`, and `q90` together. Do not frame the app as medical, financial, insurance, or procedure-price advice. Ship only with range-based output, scope disclaimers, a rare high-cost uncertainty warning, 2023-to-current-dollar adjustment, and privacy-preserving aggregate monitoring for app health, input drift, prediction drift, missingness, and high-uncertainty flags.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
@@ -593,7 +593,7 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 
 
 ### XGBoost Quantile Regression: Reliability & Fairness
-Extended the stratified error analysis to evaluate the final XGBoost Quantile Regression model on the untouched test set. The audit checks the **typical range** (`q25`-`q75`) and **safety cushion** (`q90`) across reliability and fairness subgroups. Overall coverage uses release gates (45%-55% for the typical range; 85%-95% for the safety cushion), while subgroup review bands are diagnostic ranges (40%-60% and 80%-97%) for groups with sufficient sample size (`n >= 30`). Because this is the locked test set, findings qualify reporting and monitoring rather than triggering another model-tuning loop.
+Extended the stratified error analysis to evaluate the final XGBoost Quantile Regression model on the untouched test set. The audit checks the **typical range** (`q25`-`q75`) and **safety cushion** (`q90`) across reliability and fairness subgroups. Overall coverage uses release gates (45%-55% for the typical range; 85%-95% for the safety cushion), while subgroup review bands are diagnostic ranges (40%-60% and 80%-97%) for groups with sufficient sample size (`n >= 30`). 
 
 **Reliability**
 ![XGBoost Quantile Regression: Subgroup Reliability (Test)](figures/evaluation/xgb_quantile_test_subgroup_reliability.png)
@@ -607,7 +607,7 @@ Extended the stratified error analysis to evaluate the final XGBoost Quantile Re
 ![XGBoost Quantile Regression: Subgroup Fairness (Test)](figures/evaluation/xgb_quantile_test_subgroup_fairness.png)
 **Key Insights:**
 - **Protected Groups:** Sex, age, race/ethnicity, region, and walking limitation groups do not show systematic undercoverage on the final test audit.
-- **Watchlist Groups:** Poor mental health has low typical-range coverage (30.1%), as do low income (39.2%) and doctorate degree holders (34.7%). Near-poor income users show safety-cushion overcoverage (97.7%). These are reporting and monitoring caveats, not evidence of broad demographic fairness failure.
+- **Coverage Limitations:** Poor mental health has low typical-range coverage (30.1%), as do low income (39.2%) and doctorate degree holders (34.7%). Near-poor income users show safety-cushion overcoverage (97.7%). These are reporting caveats and candidates for future validation on newer MEPS datasets, not evidence of broad demographic fairness failure.
 - **Prediction Usefulness:** Several low-cost groups have wide prediction intervals despite in-band coverage, including good physical health, good mental health, Asian respondents, and the West region. This is a practical-budgeting caveat rather than a safety failure.
 - **Audit Verdict:** The subgroup audit supports launch. Predicted-risk tiers remain usable for deployment, and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed.
 
