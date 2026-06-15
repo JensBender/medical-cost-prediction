@@ -218,7 +218,7 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 | Support Vector Machine | $291.24 | +190.7% | $1026.52 | -0.03 |
 | *LLM (Benchmark)* | *$518.00* | *N/A* | *$1168.23* | **0.04** |
 
-<sub>*Note:* Metrics on validation set; Overfitting represents the percentage MdAE difference (Train vs. Val).</sub>
+<sub>*Note:* Metrics on validation set; Overfitting represents the percentage MdAE difference (Val - Train).</sub>
 
 **Key Insights:**  
 - **Baseline Champion:** Elastic Net achieved the best median accuracy ($163 MdAE) with minimal overfitting (+6.6%), showing that regularized linear models are highly effective at denoising medical features.
@@ -248,7 +248,7 @@ Conducted extensive hyperparameter optimization using randomized search for the 
 | XGBoost (Baseline) | $280.81 | +98.0% | $961.00 | -0.00 |
 | XGBoost (Tuned) | $242.48 | +6.2% | **$953.98** | -0.02 |
 
-<sub>*Note:* Metrics on validation set; Overfitting represents the percentage MdAE difference (Train vs. Val).</sub>
+<sub>*Note:* Metrics on validation set; Overfitting represents the percentage MdAE difference (Val - Train).</sub>
 
 **Key Insights:**
 - **Tuned Champion:** Elastic Net remains the overall leader in median accuracy ($159 MdAE), confirming that regularized linear models are extremely competitive for typical cost profiles.
@@ -257,7 +257,7 @@ Conducted extensive hyperparameter optimization using randomized search for the 
 - **Heteroscedasticity:** All models exhibit "fan-shaped" error spread, underestimating high out-of-pocket costs. While Elastic Net is the median accuracy leader, its limited prediction range ($217 max) prevents differentiating high spenders. Tree models (XGB/RF) maintain near-zero bias across a wider range, providing better calibration for high-risk identification. 🔗 [**See Heteroscedasticity Analysis**](#heteroscedasticity)
 
 <a id="main-fairness-audit"></a>**Model Reliability & Fairness**  
-To ensure responsible deployment, evaluated model reliability and fairness across subgroups using stratified error analysis for all tuned models. The fairness analysis included both legally protected groups (e.g., Sex, Age, Race) and vulnerable groups (e.g., mental health, income, education levels).
+To ensure responsible deployment, evaluated model reliability and fairness across subgroups using stratified error analysis for all tuned models. The fairness analysis included both legally protected groups (e.g., sex, age, race) and vulnerable groups (e.g., mental health, income, education levels).
 - **Reliability:** While Elastic Net performs best overall and excels in low-complexity segments, tree-based models (XGB/RF) perform better in high-complexity segments (uninsured, poor physical health, 4+ chronic conditions), reducing prediction error by ~50% compared to Elastic Net for these populations.
 - **Fairness:** All models converge on similar error patterns for protected groups, confirming that observed disparities reflect variance in clinical utilization (e.g., reproductive care, age-related complexity) rather than algorithmic bias. Because the models actually perform better for several marginalized groups (e.g., Hispanic, Black, low income, low education), they effectively avoid the classic disparate impact trap. Conversely, where error is higher for vulnerable groups (e.g., females, older adults), it is justified by clinical complexity, satisfying the Legitimate Business Necessity defense.
 - **Regulatory Verdict:** No evidence of discriminatory disparate impact was found. The system is therefore suitable for deployment as a low-risk advisory tool under NIST/FTC transparency guidelines.
@@ -272,19 +272,16 @@ To ensure responsible deployment, evaluated model reliability and fairness acros
 **Release Gate Metrics (Test)**
 | Metric | Estimate (95% CI) | Release Gate | Product Target | Status |
 | :--- | ---: | ---: | ---: | :---: |
-| Plan-around MdAE (`q50`) | `$240` [`$215`, `$279`] | < `$500` | < `$350` | Pass |
+| Plan-around MdAE (`q50`) | $240 [$215, $279] | < $500 | < $350 | Pass |
 | Typical-range coverage (`q25`-`q75`) | 47.3% [44.0%, 50.6%] | 45%-55% | 50% | Pass |
 | Safety-cushion coverage (`q90`) | 91.0% [89.2%, 92.6%] | 85%-95% | 90% | Pass |
-| Typical-range width (`q25`-`q75`) | `$912` [`$875`, `$955`] | < `$1,500` | < `$1,000` | Pass |
-| Safety-cushion width (`q50`-`q90`) | `$2,032` [`$1,964`, `$2,108`] | < `$3,500` | < `$2,500` | Pass |
+| Typical-range width (`q25`-`q75`) | $912 [$875, $955] | < $1,500 | < $1,000 | Pass |
+| Safety-cushion width (`q50`-`q90`) | $2,032 [$1,964, $2,108] | < $3,500 | < $2,500 | Pass |
 
-**Usefulness vs. Simple Baseline:** Feature-based predictions beat naive population baselines for all user-facing outputs: plan-around skill is **9.75%**, typical-range interval skill is **11.2%**, and safety-cushion skill is **15.63%**. Skill scores are diagnostic; product release decisions are based on the MdAE, coverage, and width gates above.
-
-**Launch Read:** The model is strongest when framed as a planning range, not a bill forecast. It passes the user-facing accuracy and interval-calibration gates, and predicted-risk tiers remain usable for deployment.
-
-**Calibration Decision:** Do not add conformalized quantile regression based on this test read. Test-set calibration passes the predefined gates, so any future calibration changes should be evaluated in a new validation cycle or against a future MEPS survey year.
-
-**Caveats and Launch Conditions:** Always show `q50`, `q25`-`q75`, and `q90` together. Do not frame the app as medical, financial, insurance, or procedure-price advice. Ship only with range-based output, scope disclaimers, a rare high-cost uncertainty warning, 2023-to-current-dollar adjustment, and privacy-preserving aggregate monitoring for app health, input drift, prediction drift, missingness, and high-uncertainty flags.
+- **Usefulness vs. Simple Baseline:** Feature-based predictions beat naive population baselines for all user-facing outputs: plan-around skill is **9.75%**, typical-range interval skill is **11.2%**, and safety-cushion skill is **15.63%**. Skill scores are diagnostic; product release decisions are based on the MdAE, coverage, and width gates above.
+- **Launch Read:** The model is strongest when framed as a planning range, not a bill forecast. It passes the user-facing accuracy and interval-calibration gates, and predicted-risk tiers remain usable for deployment.
+- **Calibration Decision:** Do not add conformalized quantile regression based on this test read. Test-set calibration passes the predefined gates, so any future calibration changes should be evaluated in a new validation cycle or against a future MEPS survey year.
+- **Caveats and Launch Conditions:** Always show `q50`, `q25`-`q75`, and `q90` together. Do not frame the app as medical, financial, insurance, or procedure-price advice. Ship only with range-based output, scope disclaimers, a rare high-cost uncertainty warning, 2023-to-current-dollar adjustment, and privacy-preserving aggregate monitoring for app health, input drift, prediction drift, missingness, and high-uncertainty flags.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
@@ -587,7 +584,7 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 - **Sex:** Consistent Female/Male disparity (~1.5×) across architectures reflects utilization variance (e.g., reproductive care), not algorithmic bias.
 - **Age:** Error increases 4–6× for older compared to young adults, reflecting clinical complexity.
 - **Race/Ethnicity:** Error is highest for White populations and lower for minority groups, naturally avoiding disparate impact against minorities.
-- **Socioeconomic Status (Income/Education):** Models perform better for high compared with low education and income. This is likely due to larger spending variance and better insurance quality. 
+- **Socioeconomic Status (Income/Education):** Models perform better for low compared with high education and income. This is likely because higher socioeconomic groups have larger spending variance and more complex insurance cost-sharing structures. 
 - **Walking/Mental Health:** Higher errors for populations with walking limitations and poor mental health. Elastic Net performs better without limitations and for excellent mental health, tree models perform better in case of high clinical complexity.
 - **Region:** Smallest disparity dimension, with slightly lower errors in South and West.
 - **Audit Verdict:** No evidence of discriminatory disparate impact. The models achieve lower prediction error for several marginalized groups, avoiding the classic disparate impact trap. Where error is higher for vulnerable groups, it is justified by clinical complexity and utilization variance, satisfying the Legitimate Business Necessity defense under NIST/FTC guidelines.
