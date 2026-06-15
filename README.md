@@ -235,7 +235,17 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 
 
 ### 🎛️ Hyperparameter Tuning  
-Conducted extensive hyperparameter optimization using randomized search for the three selected finalists. 
+Conducted hyperparameter optimization for the three selected finalists using a custom randomized search framework with 50 iterations per model, tracked via MLflow.
+
+**Tuning Methodology**  
+- **Search Strategy:** Manual loop with `ParameterSampler` (instead of `RandomizedSearchCV`) to ensure correct `sample_weight` routing through nested `TransformedTargetRegressor` and `Pipeline` wrappers, and to evaluate weighted MdAE explicitly on the validation set.
+- **Target Transform:** All models train on `log1p`-transformed costs via `TransformedTargetRegressor`, stabilizing the heavy-tailed distribution while predicting in raw dollars.
+- **Sample Weights:** Normalized weights (mean=1.0) during training for numerical stability. Used raw weights for evaluation to maintain population representativeness.
+- **Scoring:** Weighted Median Absolute Error (MdAE) on raw-dollar validation predictions as the primary selection criterion.
+- **Model-Specific Configurations:**
+  - **Elastic Net:** `Pipeline` with second-degree `PolynomialFeatures` + `ElasticNet`; tuned `alpha` (regularization strength, log-uniform 0.01–1.0), `l1_ratio` (L1/L2 penalty mix, uniform 0.0–1.0), and `interaction_only` (squared terms on/off).
+  - **Random Forest:** `RandomForestRegressor` with `criterion="absolute_error"`; tuned `n_estimators` (200–400), `max_depth` (8–25), `min_samples_split` (20–150), `min_samples_leaf` (10–80), `max_features` (sqrt/log2/30%–70%), and `max_samples` (60%–100%).
+  - **XGBoost:** `XGBRegressor` with `objective="reg:absoluteerror"`; tuned `n_estimators` (400–800), `max_depth` (3–10), `learning_rate` (log-uniform 0.01–0.2), `min_child_weight` (1–20), `subsample` (60%–100%), `colsample_bytree` (50%–100%), and L1/L2 penalties `reg_alpha`/`reg_lambda` (uniform 0–5).
 
 | Model | MdAE | Overfitting | MAE | R² |
 | :--- | :---: | :---: | :---: | :---: |
@@ -257,7 +267,7 @@ Conducted extensive hyperparameter optimization using randomized search for the 
 - **Heteroscedasticity:** All models exhibit "fan-shaped" error spread, underestimating high out-of-pocket costs. While Elastic Net is the median accuracy leader, its limited prediction range ($217 max) prevents differentiating high spenders. Tree models (XGB/RF) maintain near-zero bias across a wider range, providing better calibration for high-risk identification. 🔗 [**See Heteroscedasticity Analysis**](#heteroscedasticity)
 
 <a id="main-fairness-audit"></a>**Model Reliability & Fairness**  
-To ensure responsible deployment, evaluated model reliability and fairness across subgroups using stratified error analysis for all tuned models. The fairness analysis included both protected demographic groups (e.g., sex, age, race) and vulnerable groups (e.g., mental health, income, education levels).
+To ensure responsible deployment, evaluated model reliability and fairness across subgroups using stratified error analysis (weighted MdAE) for all tuned models across 13 dimensions. The analysis included both protected demographic groups (e.g., sex, age, race/ethnicity) and vulnerable groups (e.g., mental health, income, education levels).
 - **Reliability:** While Elastic Net performs best overall and excels in low-complexity segments, tree-based models (XGB/RF) perform better in high-complexity segments (uninsured, poor physical health, 4+ chronic conditions), reducing prediction error by ~50% compared to Elastic Net for these populations.
 - **Fairness:** All tuned models show similar subgroup error patterns across protected and vulnerable groups. This suggests the main disparities are driven by healthcare cost variance, utilization patterns (e.g., reproductive care, age-related complexity), and feature limits rather than one model architecture introducing a distinct algorithmic bias. Furthermore, the models actually perform better for several marginalized groups (e.g., Hispanic, Black, low income, low education). 
 
@@ -267,6 +277,17 @@ To ensure responsible deployment, evaluated model reliability and fairness acros
 
 ### 🏆 Final Model
 **Decision:** Use **XGBoost Quantile Regression** as the final model artifact behind the MVP product release.
+
+**Why Quantile Regression?**  
+While the tuned Elastic Net achieves the best single-point MdAE, heteroscedasticity analysis as well as subgroup reliability and fairness analysis revealed that Elastic Net's compressed prediction range ($217 max) cannot differentiate high-risk users, and all point-estimate models systematically underpredict extreme costs. Rather than selecting a single "best" point-estimate model, the final architecture shifts to multi-quantile prediction to communicate cost uncertainty directly to users.
+
+**Model Architecture**  
+The final model reuses the hyperparameters from the best tuned XGBoost point-estimate (which demonstrated the widest prediction range and best high-risk calibration among tuned models), switching only the objective from `reg:absoluteerror` to `reg:quantileerror` with four quantile levels (`q25`, `q50`, `q75`, `q90`). Predictions are postprocessed to enforce non-negativity and monotonicity (`q25 ≤ q50 ≤ q75 ≤ q90`).
+
+**User-Facing Outputs:**
+- **Plan-around estimate** (`q50`): The median prediction (what users should budget for).
+- **Typical range** (`q25`–`q75`): The interquartile range (the range most users will fall within).
+- **Safety cushion** (`q90`): The 90th percentile (a conservative upper bound to help budget for a bad year).
 
 **Release Gate Metrics (Test)**
 | Metric | Estimate (95% CI) | Release Gate | Product Target | Status |
@@ -279,7 +300,7 @@ To ensure responsible deployment, evaluated model reliability and fairness acros
 
 - **Launch Recommendation:** The model is strongest when framed as a planning range, not a bill forecast. It passes the user-facing accuracy and calibration gates, and predicted-risk tiers remain usable for deployment.
 - **Usefulness vs. Simple Baseline:** Feature-based predictions beat naive population baselines for all user-facing outputs: plan-around skill is **9.8%**, typical-range interval skill is **11.2%**, and safety-cushion skill is **15.6%**. Skill scores are diagnostic; product release decisions are based on the MdAE, coverage, and width gates above.
-- **Reliability & Fairness Audit:** The stratified error analysis on the unseen test set supports launch. Predicted-risk tiers remain usable, and no broad demographic fairness failure appears. The main limitation is coverage by actual cost tier, especially rare high-cost years that are only identifiable after the year ends. Other subgroupds with coverage issues are uninsured users, users with poor mental health, low income, doctorate degree, and near-poor income. 🔗 [**See Final Model Reliability & Fairness Audit**](#xgboost-quantile-regression-reliability--fairness)
+- **Reliability & Fairness Audit:** The stratified error analysis on the unseen test set supports launch. Predicted-risk tiers remain usable, and no broad demographic fairness failure appears. The main limitation is coverage by actual cost tier, especially rare high-cost years that are only identifiable after the year ends. Other subgroups with coverage issues are uninsured users, users with poor mental health, low income, doctorate degree, and near-poor income. 🔗 [**See Final Model Reliability & Fairness Audit**](#xgboost-quantile-regression-reliability--fairness)
 - **Calibration Decision:** Do not add conformalized quantile regression based on these test-set results. Test-set calibration passes the predefined gates, so any future calibration changes should be evaluated in a new validation cycle or against a future MEPS survey year.
 - **Caveats and Launch Conditions:** Always show `q50`, `q25`-`q75`, and `q90` together. Do not frame the app as medical, financial, insurance, or procedure-price advice. Ship only with range-based output, scope disclaimers, a rare high-cost uncertainty warning, 2023-to-current-dollar adjustment, and privacy-preserving aggregate monitoring for app health, input drift, prediction drift, missingness, and high-uncertainty flags.
 
@@ -567,9 +588,11 @@ To reproduce the LLM benchmark:
 
 
 ### Tuned Models: Reliability & Fairness
-Performed stratified error analysis with Median Absolute Error (MdAE) to evaluate model reliability across subgroups for all tuned models and detect algorithmic bias across 13 relevant dimensions.
+Performed stratified error analysis to evaluate model reliability across subgroups for all three tuned models (Elastic Net, Random Forest, XGBoost) and detect algorithmic bias. The audit uses weighted Median Absolute Error (MdAE) as the primary metric across 13 dimensions.
 
-**Reliability**
+**Reliability**  
+Reliability analysis examines whether models maintain consistent accuracy across subgroups like different cost tiers, health profiles, and insurance types. It identifies populations where one architecture outperforms others.
+
 ![Tuned Models: Subgroup Reliability (Validation)](figures/evaluation/tuned_models_validation_subgroup_reliability.png)
 **Key Insights:**
 - **Actual Costs:** Models converge at the Top 5% (~$9,500 MdAE), highlighting the data's noise limit. Elastic Net struggles with Zero Costs ($90 vs. ~$30 for tree models) due to linear assumptions.
@@ -577,7 +600,9 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 - **Health & Chronic Conditions:** Error rises with clinical complexity. Tree models plateau around $500 MdAE for 4+ conditions, capturing the "cost saturation effect," while Elastic Net jumps to $799.
 - **Insurance:** Elastic Net produces 3–4× the error of tree models for the Uninsured ($95 vs. ~$30), failing to capture near-zero spending constraints.
 
-**Fairness**
+**Fairness**  
+Fairness analysis evaluates whether models produce systematically different prediction errors for protected demographic groups (sex, age, race/ethnicity) and vulnerable populations (low income, education, mental health, walking limitation). The goal is to verify that no model architecture introduces algorithmic bias and that error patterns are driven by data characteristics rather than model algorithm.
+
 ![Tuned Models: Subgroup Fairness - Protected Groups (Validation)](figures/evaluation/tuned_models_validation_subgroup_fairness_protected.png)
 ![Tuned Models: Subgroup Fairness - Vulnerable & Proxy Groups (Validation)](figures/evaluation/tuned_models_validation_subgroup_fairness_vulnerable_proxy.png)
 **Key Insights:**
@@ -593,9 +618,11 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 
 
 ### XGBoost Quantile Regression: Reliability & Fairness
-Extended the stratified error analysis to evaluate the final XGBoost Quantile Regression model on the untouched test set. The audit checks the **typical range** (`q25`-`q75`) and **safety cushion** (`q90`) across reliability and fairness subgroups. Overall coverage uses release gates (45%-55% for the typical range; 85%-95% for the safety cushion), while subgroup review bands are diagnostic ranges (40%-60% and 80%-97%) for groups with sufficient sample size (`n >= 30`). 
+Extended the stratified error analysis to evaluate the final XGBoost Quantile Regression model on the untouched test set. Unlike the tuned model analysis (which uses point-estimate MdAE), this audit evaluates the quality of **prediction intervals** using coverage and width metrics. The audit checks the **typical range** (`q25`-`q75`) and **safety cushion** (`q90`) across the same reliability and fairness subgroups. Overall coverage uses release gates (45%-55% for the typical range; 85%-95% for the safety cushion), while subgroup review bands are wider diagnostic ranges (40%-60% and 80%-97%) for groups with sufficient sample size (`n >= 30`). Groups outside these bands are flagged for review.
 
-**Reliability**
+**Reliability**  
+Reliability analysis examines test set coverage and interval width across cost tiers, health profiles, and insurance types. It identifies where the model's prediction intervals are too narrow (undercoverage) or too wide (impractical for budgeting).
+
 ![XGBoost Quantile Regression: Subgroup Reliability (Test)](figures/evaluation/xgb_quantile_test_subgroup_reliability.png)
 **Key Insights:**
 - **Actual Cost Tiers:** Rare high-cost years remain the biggest predictability caveat. Actual High spenders have 12.4% typical-range coverage and 59.0% safety-cushion coverage; actual Very High spenders have 0.0% and 6.7%, respectively. Zero- and low-cost actual groups are heavily overprotected by the safety cushion (100.0% and 99.9%).
@@ -603,7 +630,9 @@ Extended the stratified error analysis to evaluate the final XGBoost Quantile Re
 - **Risk Communication:** Safety-cushion widths increase monotonically with predicted risk, from $1,125 in the predicted `q90` Low tier to $5,582 in the predicted `q90` Very High tier. This supports communicating wider uncertainty bands for higher-risk users.
 - **Subgroup Reliability:** Physical health, chronic conditions, private insurance, and public insurance groups remain within subgroup review bands. Uninsured users are the main watchlist group: typical-range coverage is low at 34.7%, while safety-cushion coverage is conservative at 96.3%.
 
-**Fairness**
+**Fairness**  
+Fairness analysis evaluates whether the model's prediction intervals provide equal coverage and practical widths across protected and vulnerable demographic groups on the unseen test set.
+
 ![XGBoost Quantile Regression: Subgroup Fairness (Test)](figures/evaluation/xgb_quantile_test_subgroup_fairness.png)
 **Key Insights:**
 - **Protected Groups:** Sex, age, race/ethnicity, region, and walking limitation groups do not show systematic undercoverage on the final test audit.
