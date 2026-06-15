@@ -44,10 +44,10 @@ The **Medical Cost Planner** is a consumer-facing web application that uses mach
 **Edge Cases:**
 | Scenario | System Response |
 | :--- | :--- |
-| User skips optional inputs | Imputation applied (median/mode); prediction proceeds |
-| Predicted cost > 90th percentile | High-uncertainty disclaimer displayed (UI-05) |
+| User skips optional inputs | Imputation applied (median/mode); prediction proceeds; missing-input note displayed |
+| High predicted uncertainty | Dynamic high-uncertainty guidance displayed when predicted tail risk or interval width crosses model-version thresholds |
 | Predicted cost = $0 | Valid result; display "minimal expected costs" messaging |
-| Uninsured user | Note that OOP ≈ total cost; prediction may be higher than insured peers |
+| Uninsured user | Note that OOP ≈ total cost and that the safety cushion is more useful than the typical range when costs are volatile |
 | Server error / timeout | Display friendly error message; suggest retry |
 
 
@@ -139,7 +139,7 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **FR-03** | **Cost Range** | Generate 25th–75th percentile range (typical range) and 90th percentile (budget-safe estimate) to communicate prediction uncertainty. Never output a single point estimate. |
 | **FR-04** | **Cost Drivers** | Compute SHAP values for each prediction to explain feature contributions as dollar impacts. |
 | **FR-05** | **Comparison Benchmarks** | Compare user's prediction to (1) national average and (2) average for their age group. Pre-compute benchmarks from MEPS data. |
-| **FR-06** | **Confidence Indicator** | Flag predictions in the top 10% of the cost distribution (>90th percentile) as "High Uncertainty" to signal reduced model accuracy for extreme costs. |
+| **FR-06** | **Prediction Warning Policy** | Generate neutral, actionable warning flags for high predicted uncertainty, wide prediction intervals, uninsured-user volatility, missing optional inputs, and public-coverage policy changes. Threshold-based prediction flags must be defined from the validation prediction distribution for the active model version, not from the locked test set. |
 
 ### Result Display
 | ID | Component | Description | UI Element | Example |
@@ -147,9 +147,22 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **UI-01** | **Cost Range** | Large, prominent display of out-of-pocket cost prediction as a typical range, plus a budget-safe estimate for higher-cost-year planning. | `gr.Markdown` | "Estimated Out-of-Pocket Healthcare Cost for Next Year: **$1,450 – $2,100** (typical range)<br>For a higher-cost year, consider budgeting up to: **$3,200**" |
 | **UI-02** | **Cost Drivers** | Explanation of key cost drivers and their dollar impact (SHAP). | `gr.Markdown` | "Your Diabetes Diagnosis (+$1,200), your Age (+$400), but your "Excellent" self-reported health lowered the estimate by (-$300)" |
 | **UI-03** | **Comparison Benchmarks** | Bar chart comparing user vs. national and age group benchmarks. | `gr.Plot` | "Typical American (median): $4,800 vs. Typical for Age 45–54 (median): $3,200" |
-| **UI-04** | **Limitations Notice** | Contextual guidance to help users interpret their prediction. | `gr.Markdown` | "**ℹ️ About This Estimate**<br>• Based on 2023 national survey data; recent policy changes may affect actual costs.<br>• Does not include insurance premiums or over-the-counter medications.<br>• This is a statistical estimate. Actual costs depend on your specific plan, providers, and health events." |
-| **UI-05** | **High-Cost Disclaimer** | Dynamic warning displayed when predicted cost exceeds the 90th percentile threshold. | `gr.Markdown` | "**⚠️ Note on This Estimate**<br>Your predicted cost is in the top 10% of healthcare spending. Estimates in this range have higher uncertainty because high costs are often driven by unpredictable events. Consider this a rough guideline rather than a precise forecast." |
+| **UI-04** | **Limitations Notice** | Always-on guidance to help users interpret their prediction and understand the rare-tail limitation. | `gr.Markdown` | "**About This Estimate**<br>• Based on 2023 national survey data; recent policy changes may affect actual costs.<br>• Does not include insurance premiums or over-the-counter medications.<br>• Some high-cost years are driven by new diagnoses, accidents, hospitalizations, or plan-specific billing details this form cannot know in advance." |
+| **UI-05** | **Contextual Warning Notes** | Dynamic warning notes displayed only when they are actionable and known at prediction time. | `gr.Markdown` | "**Planning Note**<br>This estimate has a wider uncertainty range because people with similar profiles had more variable costs. For planning, pay more attention to the safety cushion than the plan-around estimate." |
 | **UI-06** | **Permanent Footer** | Always-visible disclaimer at the bottom of the page. Covers legal liability and data aging limitations. | `gr.Markdown` | *"Not intended as medical, financial, or legal advice. Based on 2023 U.S. national survey data."* |
+
+### Prediction Warning Policy
+Warning copy must be concise, neutral, and tied to a concrete user action. The app should not display stigmatizing per-user subgroup banners simply because the user belongs to a subgroup that was flagged during the offline audit. In particular, the low income, poor mental health, doctorate degree, and near-poor subgroup findings should be handled through documentation, monitoring, and future validation rather than direct user-facing warnings.
+
+| Warning Flag | Trigger | User-Facing Guidance |
+| :--- | :--- | :--- |
+| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) falls in a high predicted-risk tier for the active model version | Explain that similar profiles had more variable costs and emphasize the safety cushion |
+| `WIDE_PREDICTION_INTERVAL` | Safety-cushion width (`q90 - q50`) or typical-range width (`q75 - q25`) exceeds validation-derived width thresholds | Explain that the range is intentionally wide and should be treated as a planning band |
+| `UNINSURED_UNCERTAINTY` | User selects uninsured status | Explain that out-of-pocket costs can be more volatile and that the safety cushion is the more useful planning number |
+| `MISSING_OPTIONAL_INPUTS` | One or more optional inputs are skipped and imputed | Explain that typical training values were used and that more complete inputs may change the range |
+| `PUBLIC_COVERAGE_POLICY_CHANGE` | User selects public-only coverage | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs compared with estimates based on 2023 survey data |
+
+The always-on limitations notice remains the primary way to communicate that rare future high-cost events cannot always be identified from pre-year user inputs. The dynamic high-uncertainty flags should be based on prediction behavior, not on the unknowable actual future cost tier.
 
 
 ## Non-Functional Requirements
@@ -198,8 +211,8 @@ For technical implementation details such as data preprocessing, machine learnin
 ## Risk Assessment & Mitigation
 | Risk | Example | Mitigation Strategy |
 | :--- | :--- | :--- |
-| **Outlier Prediction** | Model predicts extreme costs ($100k+) for a standard user. | Consider implementing "Guardrails" in the code to cap displayed predictions at the 95th percentile with a "High Cost Risk" label instead of a raw number. |
-| **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a Fairness Audit. Include income as a feature so the user sees that income impacts the prediction. |
+| **Outlier Prediction** | Model predicts extreme costs ($100k+) for a standard user. | Consider implementing display guardrails such as a model-version cap plus `HIGH_PREDICTED_UNCERTAINTY`, so the user sees a planning warning rather than a falsely precise extreme number. |
+| **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a fairness audit, document subgroup caveats, and use neutral user-facing warnings only when they are actionable and known at prediction time. Do not display subgroup-only warnings for non-actionable audit findings. |
 | **Data Aging** | 2023 data becomes outdated. | Display permanent footer (UI-06) and limitations notice (UI-04). Apply Medical Inflation Factor (FR-02) to adjust for cost increases. |
 | **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Covered by permanent footer (UI-06). For Medicare/Medicaid users, add contextual note: *"Recent policy changes (2024-2026) may lower actual costs compared to this estimate."* |
 | **Unobserved Outcomes** | App users usually will not return one year later with reliable actual out-of-pocket spending, and collecting linked follow-up outcomes would weaken the anonymous, zero-retention privacy promise. | Do not claim production calibration from default app telemetry. Use aggregate drift monitoring for the MVP product release. Evaluate true calibration by testing the deployed model on future MEPS survey years when available, or through a separately approved opt-in study. |
