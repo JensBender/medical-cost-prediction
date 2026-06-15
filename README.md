@@ -209,14 +209,14 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 
 | Model | MdAE | Overfitting | MAE | R² |
 | :--- | :--- | :--- | :--- | :--- |
-| **Elastic Net** | **$163.17** | +6.6% | $1043.55 | -0.12 |
-| Linear Regression | $219.21 | +4.8% | $997.77 | -0.06 |
-| Random Forest | $231.59 | +9.6% | **$958.46** | -0.04 |
-| *Median (Benchmark)* | *$248.00* | *0.0%* | *$1040.80* | *-0.10* |
-| Decision Tree | $271.00 | **+1.5%** | $971.44 | -0.03 |
-| XGBoost | $280.81 | +98.0% | $961.00 | 0.00 |
-| Support Vector Machine | $291.24 | +190.7% | $1026.52 | -0.03 |
-| *LLM (Benchmark)* | *$518.00* | *N/A* | *$1168.23* | **0.04** |
+| **Elastic Net** | **$163** | +6.6% | $1,044 | -0.12 |
+| Linear Regression | $219 | +4.8% | $998 | -0.06 |
+| Random Forest | $232 | +9.6% | **$958** | -0.04 |
+| *Median (Benchmark)* | *$248* | *0.0%* | *$1,041* | *-0.10* |
+| Decision Tree | $271 | **+1.5%** | $971 | -0.03 |
+| XGBoost | $281 | +98.0% | $961 | 0.00 |
+| Support Vector Machine | $291 | +190.7% | $1,027 | -0.03 |
+| *LLM (Benchmark)* | *$518* | *N/A* | *$1,168* | **0.04** |
 
 <sub>*Note:* Metrics on validation set; Overfitting represents the percentage MdAE difference (Val - Train).</sub>
 
@@ -239,14 +239,14 @@ Conducted extensive hyperparameter optimization using randomized search for the 
 
 | Model | MdAE | Overfitting | MAE | R² |
 | :--- | :---: | :---: | :---: | :---: |
-| *Median (Benchmark)* | *$248.00* | *0.0%* | *$1,040.80* | *-0.10* |
-| *LLM (Benchmark)* | *$518.00* | *N/A* | *$1,168.23* | **0.04** |
-| Elastic Net (Baseline) | $163.17 | +6.6% | $1,043.55 | -0.12 |
-| **Elastic Net (Tuned)** | **$158.98** | +7.9% | $1,050.79 | -0.13 |
-| Random Forest (Baseline) | $231.59 | +9.6% | $958.46 | -0.04 |
-| Random Forest (Tuned) | $228.34 | **+3.8%** | $963.98 | -0.05 |
-| XGBoost (Baseline) | $280.81 | +98.0% | $961.00 | -0.00 |
-| XGBoost (Tuned) | $242.48 | +6.2% | **$953.98** | -0.02 |
+| *Median (Benchmark)* | *$248* | *0.0%* | *$1,041* | *-0.10* |
+| *LLM (Benchmark)* | *$518* | *N/A* | *$1,168* | **0.04** |
+| Elastic Net (Baseline) | $163 | +6.6% | $1,044 | -0.12 |
+| **Elastic Net (Tuned)** | **$159** | +7.9% | $1,051 | -0.13 |
+| Random Forest (Baseline) | $232 | +9.6% | $958 | -0.04 |
+| Random Forest (Tuned) | $228 | **+3.8%** | $964 | -0.05 |
+| XGBoost (Baseline) | $281 | +98.0% | $961 | 0.00 |
+| XGBoost (Tuned) | $242 | +6.2% | **$954** | -0.02 |
 
 <sub>*Note:* Metrics on validation set; Overfitting represents the percentage MdAE difference (Val - Train).</sub>
 
@@ -278,7 +278,7 @@ To ensure responsible deployment, evaluated model reliability and fairness acros
 | Typical-range width (`q25`-`q75`) | $912 [$875, $955] | < $1,500 | < $1,000 | Pass |
 | Safety-cushion width (`q50`-`q90`) | $2,032 [$1,964, $2,108] | < $3,500 | < $2,500 | Pass |
 
-- **Usefulness vs. Simple Baseline:** Feature-based predictions beat naive population baselines for all user-facing outputs: plan-around skill is **9.75%**, typical-range interval skill is **11.2%**, and safety-cushion skill is **15.63%**. Skill scores are diagnostic; product release decisions are based on the MdAE, coverage, and width gates above.
+- **Usefulness vs. Simple Baseline:** Feature-based predictions beat naive population baselines for all user-facing outputs: plan-around skill is **9.8%**, typical-range interval skill is **11.2%**, and safety-cushion skill is **15.6%**. Skill scores are diagnostic; product release decisions are based on the MdAE, coverage, and width gates above.
 - **Launch Read:** The model is strongest when framed as a planning range, not a bill forecast. It passes the user-facing accuracy and interval-calibration gates, and predicted-risk tiers remain usable for deployment.
 - **Calibration Decision:** Do not add conformalized quantile regression based on this test read. Test-set calibration passes the predefined gates, so any future calibration changes should be evaluated in a new validation cycle or against a future MEPS survey year.
 - **Caveats and Launch Conditions:** Always show `q50`, `q25`-`q75`, and `q90` together. Do not frame the app as medical, financial, insurance, or procedure-price advice. Ship only with range-based output, scope disclaimers, a rare high-cost uncertainty warning, 2023-to-current-dollar adjustment, and privacy-preserving aggregate monitoring for app health, input drift, prediction drift, missingness, and high-uncertainty flags.
@@ -572,7 +572,7 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 **Reliability**
 ![Tuned Models: Subgroup Reliability (Validation)](figures/evaluation/tuned_models_validation_subgroup_reliability.png)
 **Key Insights:**
-- **Actual Costs:** Models converge at the Top 5% (~$9.5k MdAE), highlighting the data's noise limit. Elastic Net struggles with Zero Costs ($90 vs. ~$30 for tree models) due to linear assumptions.
+- **Actual Costs:** Models converge at the Top 5% (~$9,500 MdAE), highlighting the data's noise limit. Elastic Net struggles with Zero Costs ($90 vs. ~$30 for tree models) due to linear assumptions.
 - **Predicted Costs:** Random Forest is the most precise for "Very High Spend" predictions ($751 MdAE vs. $1,095 for Elastic Net), proving better calibration for high-risk identification.
 - **Health & Chronic Conditions:** Error rises with clinical complexity. Tree models plateau around $500 MdAE for 4+ conditions, capturing the "cost saturation effect," while Elastic Net jumps to $799.
 - **Insurance:** Elastic Net produces 3–4× the error of tree models for the Uninsured ($95 vs. ~$30), failing to capture near-zero spending constraints.
