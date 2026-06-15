@@ -257,10 +257,9 @@ Conducted extensive hyperparameter optimization using randomized search for the 
 - **Heteroscedasticity:** All models exhibit "fan-shaped" error spread, underestimating high out-of-pocket costs. While Elastic Net is the median accuracy leader, its limited prediction range ($217 max) prevents differentiating high spenders. Tree models (XGB/RF) maintain near-zero bias across a wider range, providing better calibration for high-risk identification. 🔗 [**See Heteroscedasticity Analysis**](#heteroscedasticity)
 
 <a id="main-fairness-audit"></a>**Model Reliability & Fairness**  
-To ensure responsible deployment, evaluated model reliability and fairness across subgroups using stratified error analysis for all tuned models. The fairness analysis included both legally protected groups (e.g., sex, age, race) and vulnerable groups (e.g., mental health, income, education levels).
+To ensure responsible deployment, evaluated model reliability and fairness across subgroups using stratified error analysis for all tuned models. The fairness analysis included both protected demographic groups (e.g., sex, age, race) and vulnerable groups (e.g., mental health, income, education levels).
 - **Reliability:** While Elastic Net performs best overall and excels in low-complexity segments, tree-based models (XGB/RF) perform better in high-complexity segments (uninsured, poor physical health, 4+ chronic conditions), reducing prediction error by ~50% compared to Elastic Net for these populations.
-- **Fairness:** All models converge on similar error patterns for protected groups, confirming that observed disparities reflect variance in clinical utilization (e.g., reproductive care, age-related complexity) rather than algorithmic bias. Because the models actually perform better for several marginalized groups (e.g., Hispanic, Black, low income, low education), they effectively avoid the classic disparate impact trap. Conversely, where error is higher for vulnerable groups (e.g., females, older adults), it is justified by clinical complexity, satisfying the Legitimate Business Necessity defense.
-- **Regulatory Verdict:** No evidence of discriminatory disparate impact was found. The system is therefore suitable for deployment as a low-risk advisory tool under NIST/FTC transparency guidelines.
+- **Fairness:** All tuned models show similar subgroup error patterns across protected and vulnerable groups. This suggests the main disparities are driven by healthcare cost variance, utilization patterns (e.g., reproductive care, age-related complexity), and feature limits rather than one model architecture introducing a distinct algorithmic bias. Furthermore, the models actually perform better for several marginalized groups (e.g., Hispanic, Black, low income, low education). 
 
 🔗 **[See Detailed Reliability & Fairness Analysis](#tuned-models-reliability--fairness)**
 
@@ -583,11 +582,11 @@ Performed stratified error analysis with Median Absolute Error (MdAE) to evaluat
 **Key Insights:**
 - **Sex:** Consistent Female/Male disparity (~1.5×) across architectures reflects utilization variance (e.g., reproductive care), not algorithmic bias.
 - **Age:** Error increases 4–6× for older compared to young adults, reflecting clinical complexity.
-- **Race/Ethnicity:** Error is highest for White populations and lower for minority groups, naturally avoiding disparate impact against minorities.
+- **Race/Ethnicity:** Error is highest for White populations and lower for several minority groups, avoiding disparate impact against minorities.
 - **Socioeconomic Status (Income/Education):** Models perform better for low compared with high education and income. This is likely because higher socioeconomic groups have larger spending variance and more complex insurance cost-sharing structures. 
 - **Walking/Mental Health:** Higher errors for populations with walking limitations and poor mental health. Elastic Net performs better without limitations and for excellent mental health, tree models perform better in case of high clinical complexity.
 - **Region:** Smallest disparity dimension, with slightly lower errors in South and West.
-- **Audit Verdict:** No evidence of discriminatory disparate impact. The models achieve lower prediction error for several marginalized groups, avoiding the classic disparate impact trap. Where error is higher for vulnerable groups, it is justified by clinical complexity and utilization variance, satisfying the Legitimate Business Necessity defense under NIST/FTC guidelines.
+- **Cross-Model Pattern:** Similar subgroup error patterns appear across model architectures, which makes a model-specific fairness failure less likely. The models achieve lower prediction error for several marginalized groups. 
 
 <p align="right">(<a href="#main-fairness-audit">Back to Hyperparameter Tuning</a> | <a href="#readme-top">Back to Top</a>)</p>
 
@@ -609,7 +608,7 @@ Extended the stratified error analysis to evaluate the final XGBoost Quantile Re
 - **Protected Groups:** Sex, age, race/ethnicity, region, and walking limitation groups do not show systematic undercoverage on the final test audit.
 - **Watchlist Groups:** Poor mental health has low typical-range coverage (30.1%), as do low income (39.2%) and doctorate degree holders (34.7%). Near-poor income users show safety-cushion overcoverage (97.7%). These are reporting and monitoring caveats, not evidence of broad demographic fairness failure.
 - **Prediction Usefulness:** Several low-cost groups have wide prediction intervals despite in-band coverage, including good physical health, good mental health, Asian respondents, and the West region. This is a practical-budgeting caveat rather than a safety failure.
-- **Audit Verdict:** The subgroup audit supports launch. Predicted-risk tiers remain usable for deployment, and there is no broad demographic fairness failure; the main limitation is rare actual tail spending that is only visible after the year is observed.
+- **Audit Verdict:** The subgroup audit supports launch. Predicted-risk tiers remain usable for deployment, and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed.
 
 <p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
 
