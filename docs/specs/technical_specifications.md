@@ -371,12 +371,12 @@ The prediction service will expose the trained model artifact via a Python API (
 `warning_flags` are user-facing messages. Generate them before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. Do not add user subgroup warnings unless the message changes how the user should interpret the result.
 
 
-| Flag | Trigger Logic | Intended UI Use |
-| :--- | :--- | :--- |
-| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) is in the top 20% (cutoff from validation set) | Explain higher-cost-year exposure and present q90 as a conservative planning reference |
-| `UNINSURED_UNCERTAINTY` | Uninsured (`INSCOV23 = 3`) | Explain that the typical range may be less stable for uninsured users and present q90 as the conservative planning reference |
-| `MISSING_OPTIONAL_INPUTS` | One or more optional fields are omitted and imputed | Explain that typical values were used and that more complete inputs may make the estimate more tailored |
-| `PUBLIC_COVERAGE_POLICY_CHANGE` | Input insurance status is public-only (`INSCOV23 = 2`) | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs for some public-coverage users |
+| Flag | Trigger | Mitigating Action | User Warning Message |
+| :--- | :--- | :--- | :--- |
+| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) is in the top 20% (cutoff from validation set) | Explain higher-cost-year exposure and present q90 as a conservative planning reference | "Your safety cushion is higher than most predictions from the model. People with similar profiles had higher potential out-of-pocket costs, so treat the plan-around estimate as a midpoint and use the safety cushion for a higher-cost year." |
+| `UNINSURED_UNCERTAINTY` | Uninsured (`INSCOV23 = 3`) | Explain that the typical range may be less stable for uninsured users and present q90 as the conservative planning reference | "For uninsured users, out-of-pocket costs can vary more because there is no insurer sharing costs. The typical range may be less stable, so use the safety cushion as the more conservative planning number." |
+| `MISSING_OPTIONAL_INPUTS` | User skipped one or more optional inputs | Explain that typical values were used (imputed) and that more complete inputs may make the estimate more tailored | "Some optional answers were skipped, so the estimate used typical values. Adding those details may make the estimate more tailored to your situation." |
+| `PUBLIC_INSURANCE_POLICY_CHANGE` | Public-only insurance (`INSCOV23 = 2`) | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs for some public insurance users | "This estimate is based on 2023 survey data. Recent public insurance policy changes, especially Medicare prescription drug cost caps, may lower actual costs for some users compared with this estimate." |
 
 Recommended metadata with placeholder values replaced by thresholds derived from validation data:
 
@@ -466,7 +466,7 @@ Bucket edges should be fixed before launch, documented with the model version, a
 | Predicted q50 | $0-$49, $50-$149, $150-$299, $300-$599, $600-$999, $1,000-$1,499, $1,500+ |
 | q25-q75 width | $0-$249, $250-$499, $500-$999, $1,000-$1,499, $1,500-$2,499, $2,500+ |
 | Predicted q90 | $0-$499, $500-$999, $1,000-$1,999, $2,000-$3,499, $3,500-$4,999, $5,000+ |
-| Warning flags | One bucket per user-facing flag: `HIGH_PREDICTED_UNCERTAINTY`, `UNINSURED_UNCERTAINTY`, `MISSING_OPTIONAL_INPUTS`, `PUBLIC_COVERAGE_POLICY_CHANGE` |
+| Warning flags | One bucket per user-facing flag: `HIGH_PREDICTED_UNCERTAINTY`, `UNINSURED_UNCERTAINTY`, `MISSING_OPTIONAL_INPUTS`, `PUBLIC_INSURANCE_POLICY_CHANGE` |
 | Missingness | Per optional field: present, missing |
 
 **Small-cell and cross-tab rules**

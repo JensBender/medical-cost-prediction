@@ -159,7 +159,7 @@ Warning copy must be concise, neutral, and tied to a concrete user action. The a
 | `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) falls in the top 20% (threshold derived from validation data) | Explain that similar profiles had higher potential out-of-pocket costs and present the safety cushion as a conservative planning reference |
 | `UNINSURED_UNCERTAINTY` | Uninsured | Explain that the typical range may be less stable for uninsured users and present the safety cushion as the more conservative planning reference |
 | `MISSING_OPTIONAL_INPUTS` | One or more optional inputs are skipped and imputed | Explain that typical training values were used and that more complete inputs may make the estimate more tailored |
-| `PUBLIC_COVERAGE_POLICY_CHANGE` | User selects public-only coverage | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs compared with estimates based on 2023 survey data |
+| `PUBLIC_INSURANCE_POLICY_CHANGE` | User selects public-only coverage | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs compared with estimates based on 2023 survey data |
 
 The always-on limitations notice remains the primary way to communicate that rare future high-cost events cannot always be identified from pre-year user inputs. The dynamic high-uncertainty flag should be based on predicted cost tiers because actual cost tiers are unknown at prediction time. Use predicted `q90` costs, not predicted `q50`, because the safety cushion is the user-facing signal for potential higher cost years.
 
