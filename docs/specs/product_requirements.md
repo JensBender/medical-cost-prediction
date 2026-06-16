@@ -229,7 +229,7 @@ The following features and improvements are planned for future releases beyond t
 *   **Value**: This approach prevents the model from "averaging" zero-cost and high-cost users together, which can lead to biased estimates for healthy individuals.
 
 **Optional Outcome Study for True Calibration Monitoring**  
-*   **Goal**: Measure real-world calibration against actual annual out-of-pocket spending if the product strategy ever changes to support labeled outcome collection.
+*   **Goal**: Measure real-world calibration against actual annual out-of-pocket spending if the product strategy ever changes to support collecting data on actual out-of-pocket costs one year later.
 *   **Privacy Constraint**: This is not part of the MVP product release. It would require explicit opt-in, clear consent language, data minimization, retention limits, and a review of whether the product still satisfies the anonymous/no-account positioning.
 *   **Feasibility Caveat**: User-reported annual spend is likely noisy because MEPS derives `TOTSLF23` through detailed event and payment questions. A lightweight recall question may be useful for directional research but should not be treated as MEPS-equivalent ground truth.
 *   **Default Alternative**: Use future MEPS releases to test the deployed model on newer survey years. Treat retraining or recalibration as a separate model-refresh decision.

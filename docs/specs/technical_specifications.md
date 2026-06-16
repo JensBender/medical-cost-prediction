@@ -294,9 +294,9 @@ Evaluate predictive performance of model and perform error analysis.
 | ID | Evaluation Task | Details |
 | :--- | :--- | :--- |
 | **EV-01** | **Overall Performance** | Report overall MdAE on the full test set as the primary success metric. **Target: < $500.** |
-| **EV-02** | **Stratified Error Analysis** | Report MdAE separately for low (0–50th percentile), medium (50th–90th percentile), and high (90th+ percentile) cost tiers. This diagnoses where the model underperforms and quantifies heteroskedasticity. |
-| **EV-03** | **Interval Calibration (Typical)** | Report what % of actual costs fall within the predicted 25th–75th percentile range on the test set. **Target: 50% ± 5% coverage.** This diagnoses how accurate the "typical" prediction interval is. |
-| **EV-04** | **Interval Calibration (Cushion)** | Report what % of actual costs fall below the predicted 90th percentile estimate on the test set. **Target: 90% ± 5% coverage.** This diagnoses how reliable the "budget-safe" estimate is for risk mitigation. |
+| **EV-02** | **Stratified Error Analysis** | Report MdAE separately by cost tiers and subgroups. |
+| **EV-03** | **Interval Calibration (Typical Range)** | Report what % of actual costs fall within the predicted 25th–75th percentile range on the test set. **Target: 50% ± 5% coverage.** This diagnoses how accurate the "typical" prediction interval is. |
+| **EV-04** | **Interval Calibration (Safety Cushion)** | Report what % of actual costs fall below the predicted 90th percentile estimate on the test set. **Target: 90% ± 5% coverage.** This diagnoses how reliable the "budget-safe" estimate is for risk mitigation. |
 | **EV-05** | **LLM Benchmark** | Compare MdAE of specialized model vs. zero-shot predictions from LLMs (e.g., ChatGPT, Gemini, Claude) using the same raw feature inputs. This establishes the added value of training a specialized model over using a general-purpose model ("Why not just ask ChatGPT?"). Consider using a random subset (n=100) of rows to save API inference costs. |
 
 **Metric Selection Rationale**  
@@ -368,17 +368,16 @@ The prediction service will expose the trained model artifact via a Python API (
     ```
 
 #### Prediction Warning Flags
-`warning_flags` must be generated before inflation adjustment. Threshold-based flags should use fixed thresholds from the validation prediction distribution for the active model version, not the locked test set.
+`warning_flags` must be generated before inflation adjustment. Threshold-based flags should use fixed thresholds derived from the validation data. Add user subgroup warning messages only when they are actionable.
+
 
 | Flag | Trigger Logic | Intended UI Use |
 | :--- | :--- | :--- |
-| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) is in the top 20% of validation predicted `q90` values | Tell users to treat the estimate as a rough planning range and emphasize the safety cushion |
+| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) is in the top 20% (cutoff from validation set) | Tell users to treat the estimate as a rough planning range and emphasize the safety cushion |
 | `WIDE_PREDICTION_INTERVAL` | Typical-range width (`q75 - q25`) or safety-cushion width (`q90 - q50`) is at or above the validation 90th percentile for the corresponding width | Explain that similar profiles had more variable costs and that the range is intentionally wide |
-| `UNINSURED_UNCERTAINTY` | Input insurance status is uninsured (`INSCOV23 = 3`) | Explain that uninsured out-of-pocket costs can be volatile and the safety cushion is more useful than the typical range |
-| `MISSING_OPTIONAL_INPUTS` | One or more optional fields are omitted and imputed | Explain that typical training values were used and that more complete inputs may make the estimate more tailored |
+| `UNINSURED_UNCERTAINTY` | Uninsured (`INSCOV23 = 3`) | Explain that uninsured out-of-pocket costs can be volatile and the safety cushion is more useful than the typical range |
+| `MISSING_OPTIONAL_INPUTS` | One or more optional fields are omitted and imputed | Explain that typical values were used and that more complete inputs may make the estimate more tailored |
 | `PUBLIC_COVERAGE_POLICY_CHANGE` | Input insurance status is public-only (`INSCOV23 = 2`) | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs for some public-coverage users |
-
-Subgroup caveats are not user-facing warning flags unless they are actionable.
 
 Recommended metadata with placeholder values replaced by thresholds derived from validation data:
 
