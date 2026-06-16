@@ -148,7 +148,7 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **UI-02** | **Cost Drivers** | Explanation of key cost drivers and their dollar impact (SHAP). | `gr.Markdown` | "Your Diabetes Diagnosis (+$1,200), your Age (+$400), but your "Excellent" self-reported health lowered the estimate by (-$300)" |
 | **UI-03** | **Comparison Benchmarks** | Bar chart comparing user vs. national and age group benchmarks. | `gr.Plot` | "Typical American (median): $4,800 vs. Typical for Age 45–54 (median): $3,200" |
 | **UI-04** | **Limitations Notice** | Always-on guidance to help users interpret their prediction and understand the rare-tail limitation. | `gr.Markdown` | "**About This Estimate**<br>• Based on 2023 national survey data; recent policy changes may affect actual costs.<br>• Does not include insurance premiums or over-the-counter medications.<br>• Some high-cost years are driven by new diagnoses, accidents, hospitalizations, or plan-specific billing details this form cannot know in advance." |
-| **UI-05** | **Contextual Warning Notes** | Dynamic warning notes displayed only when they are actionable and based on the current prediction or user-selected inputs. | `gr.Markdown` | "**Planning Note**<br>This estimate has a wider uncertainty range because people with similar profiles had more variable costs. For planning, pay more attention to the safety cushion than the plan-around estimate." |
+| **UI-05** | **Contextual Warning Notes** | Dynamic warning notes displayed only when they are actionable and based on the current prediction or user-selected inputs. | `gr.Markdown` | "**Planning Note**<br>People with similar profiles had higher potential out-of-pocket costs. Treat the plan-around estimate as a midpoint, and use the safety cushion as a conservative planning reference for a higher-cost year." |
 | **UI-06** | **Permanent Footer** | Always-visible disclaimer at the bottom of the page. Covers legal liability and data aging limitations. | `gr.Markdown` | *"Not intended as medical, financial, or legal advice. Based on 2023 U.S. national survey data."* |
 
 ### Prediction Warning Policy
@@ -156,12 +156,12 @@ Warning copy must be concise, neutral, and tied to a concrete user action. The a
 
 | Warning Flag | Trigger | User-Facing Guidance |
 | :--- | :--- | :--- |
-| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) falls in the top 20% (threshold derviced from validation data) | Explain that similar profiles had more variable out-of-pocket costs and emphasize the safety cushion |
-| `UNINSURED_UNCERTAINTY` | Uninsured | Explain that similar profiles had more variable out-of-pocket costs and emphasize the safety cushion |
+| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) falls in the top 20% (threshold derived from validation data) | Explain that similar profiles had higher potential out-of-pocket costs and present the safety cushion as a conservative planning reference |
+| `UNINSURED_UNCERTAINTY` | Uninsured | Explain that the typical range may be less stable for uninsured users and present the safety cushion as the more conservative planning reference |
 | `MISSING_OPTIONAL_INPUTS` | One or more optional inputs are skipped and imputed | Explain that typical training values were used and that more complete inputs may make the estimate more tailored |
 | `PUBLIC_COVERAGE_POLICY_CHANGE` | User selects public-only coverage | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs compared with estimates based on 2023 survey data |
 
-The always-on limitations notice remains the primary way to communicate that rare future high-cost events cannot always be identified from pre-year user inputs. The dynamic high-uncertainty flag should be based on predicted cost tier, not on the unknowable actual future cost tier. 
+The always-on limitations notice remains the primary way to communicate that rare future high-cost events cannot always be identified from pre-year user inputs. The dynamic high-uncertainty flag should be based on predicted cost tiers because actual cost tiers are unknown at prediction time. Use predicted `q90` costs, not predicted `q50`, because the safety cushion is the user-facing signal for potential higher cost years.
 
 
 ## Non-Functional Requirements

@@ -4486,12 +4486,12 @@ plot_quantile_subgroup_predictions(
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Actual cost tiers</td>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">High and very-high actual spenders show typical-range and safety-cushion undercoverage. Zero- and low-cost actual spenders show safety-cushion overcoverage.</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Show an always-on limitation notice for rare high costs. Also show <code>HIGH_PREDICTED_UNCERTAINTY</code> when predicted q90 is in the top 20% (threshold from validation data).</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Show an always-on limitation notice for rare high costs. Also show <code>HIGH_PREDICTED_UNCERTAINTY</code> when predicted q90 is in the top 20% (threshold from validation data), because q90 is the safety-cushion signal for higher-cost-year exposure.</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Insurance</td>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Uninsured users show typical-range undercoverage (34.7%) and safety-cushion overcoverage (96.3%).</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Show <code>UNINSURED_UNCERTAINTY</code> and tell users to rely more on the safety cushion than the typical range.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Show <code>UNINSURED_UNCERTAINTY</code>: tell users the typical range may be less stable for uninsured profiles and present q90 as the conservative planning reference.</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Mental health</td>

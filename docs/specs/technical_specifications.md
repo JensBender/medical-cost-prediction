@@ -373,12 +373,10 @@ The prediction service will expose the trained model artifact via a Python API (
 
 | Flag | Trigger Logic | Intended UI Use |
 | :--- | :--- | :--- |
-| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) is in the top 20% (cutoff from validation set) | Tell users to treat the estimate as a rough planning range and emphasize the safety cushion |
-| `UNINSURED_UNCERTAINTY` | Uninsured (`INSCOV23 = 3`) | Explain that uninsured out-of-pocket costs can be volatile and the safety cushion is more useful than the typical range |
+| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) is in the top 20% (cutoff from validation set) | Explain higher-cost-year exposure and present q90 as a conservative planning reference |
+| `UNINSURED_UNCERTAINTY` | Uninsured (`INSCOV23 = 3`) | Explain that the typical range may be less stable for uninsured users and present q90 as the conservative planning reference |
 | `MISSING_OPTIONAL_INPUTS` | One or more optional fields are omitted and imputed | Explain that typical values were used and that more complete inputs may make the estimate more tailored |
 | `PUBLIC_COVERAGE_POLICY_CHANGE` | Input insurance status is public-only (`INSCOV23 = 2`) | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs for some public-coverage users |
-
-`WIDE_PREDICTION_INTERVAL` is not a user-facing warning flag. It is an internal usefulness diagnostic based on interval width. The app should still show the range; adding a separate warning may confuse users into thinking the estimate should be ignored. If the interval is wide, the UI should let the displayed range and safety cushion carry the uncertainty.
 
 Recommended metadata with placeholder values replaced by thresholds derived from validation data:
 
