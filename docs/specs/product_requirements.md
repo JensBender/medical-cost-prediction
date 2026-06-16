@@ -139,7 +139,7 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **FR-03** | **Cost Range** | Generate 25th–75th percentile range (typical range) and 90th percentile (budget-safe estimate) to communicate prediction uncertainty. Never output a single point estimate. |
 | **FR-04** | **Cost Drivers** | Compute SHAP values for each prediction to explain feature contributions as dollar impacts. |
 | **FR-05** | **Comparison Benchmarks** | Compare user's prediction to (1) national average and (2) average for their age group. Pre-compute benchmarks from MEPS data. |
-| **FR-06** | **Prediction Warning Policy** | Generate neutral, actionable warning flags for high predicted uncertainty, wide prediction intervals, uninsured-user volatility, missing optional inputs, and public-coverage policy changes. Threshold-based prediction flags must be defined from the validation prediction distribution for the active model version, not from the locked test set. |
+| **FR-06** | **Prediction Warning Policy** | Generate actionable warnings for high predicted uncertainty (derive thresholds from validation set), missing optional inputs, uninsured users, and public insurance policy changes. |
 
 ### Result Display
 | ID | Component | Description | UI Element | Example |
@@ -152,17 +152,16 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **UI-06** | **Permanent Footer** | Always-visible disclaimer at the bottom of the page. Covers legal liability and data aging limitations. | `gr.Markdown` | *"Not intended as medical, financial, or legal advice. Based on 2023 U.S. national survey data."* |
 
 ### Prediction Warning Policy
-Warning copy must be concise, neutral, and tied to a concrete user action. The app should not display stigmatizing per-user subgroup banners simply because the user belongs to a subgroup that was flagged during the offline audit. In particular, the low income, poor mental health, doctorate degree, and near-poor subgroup findings should be handled through documentation, monitoring, and future validation rather than direct user-facing warnings.
+Warning copy must be concise, neutral, and tied to a concrete user action. The app should not display stigmatizing subgroup warning messages. In particular, the low income, poor mental health, doctorate degree, and near-poor subgroup limitations should be handled through documentation and validation on future MEPS data sets rather than direct user-facing warnings.
 
 | Warning Flag | Trigger | User-Facing Guidance |
 | :--- | :--- | :--- |
-| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) falls in the top 20% of validation predicted `q90` values for the active model version | Explain that similar profiles had more variable costs and emphasize the safety cushion |
-| `WIDE_PREDICTION_INTERVAL` | Safety-cushion width (`q90 - q50`) or typical-range width (`q75 - q25`) exceeds validation-derived width thresholds | Explain that the range is intentionally wide and should be treated as a planning band |
-| `UNINSURED_UNCERTAINTY` | User selects uninsured status | Explain that out-of-pocket costs can be more volatile and that the safety cushion is the more useful planning number |
+| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) falls in the top 20% (threshold derviced from validation data) | Explain that similar profiles had more variable out-of-pocket costs and emphasize the safety cushion |
+| `UNINSURED_UNCERTAINTY` | Uninsured | Explain that similar profiles had more variable out-of-pocket costs and emphasize the safety cushion |
 | `MISSING_OPTIONAL_INPUTS` | One or more optional inputs are skipped and imputed | Explain that typical training values were used and that more complete inputs may make the estimate more tailored |
 | `PUBLIC_COVERAGE_POLICY_CHANGE` | User selects public-only coverage | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs compared with estimates based on 2023 survey data |
 
-The always-on limitations notice remains the primary way to communicate that rare future high-cost events cannot always be identified from pre-year user inputs. The dynamic high-uncertainty flags should be based on prediction behavior, not on the unknowable actual future cost tier.
+The always-on limitations notice remains the primary way to communicate that rare future high-cost events cannot always be identified from pre-year user inputs. The dynamic high-uncertainty flag should be based on predicted cost tier, not on the unknowable actual future cost tier. 
 
 
 ## Non-Functional Requirements
@@ -203,7 +202,7 @@ For technical implementation details such as data preprocessing, machine learnin
     *   **Safety Cushion (90th%):** 90% ± 5% of actual costs fall below the predicted budget-safe estimate.
 *   **Interval Width:** Prediction intervals should be narrow enough to support decisions. The model should not meet coverage targets by returning overly wide ranges for most users.
 *   **Stratified Reliability:** Report MdAE and interval coverage by cost tier (e.g., low, middle, high) and key user groups before launch to confirm that strong overall metrics are not hiding weak subgroup performance.
-*   **Privacy-Preserving Monitoring:** After launch, monitor aggregate app health, completion rate, input drift, and prediction drift without retaining user-level records, app-level IP addresses, user agents, or session identifiers. Aggregate counters should be created during prediction handling and stored only as bucketed counts, not by saving individual rows for later aggregation. True post-launch calibration requires observed annual out-of-pocket spending and is out of scope for the privacy-first MVP product release.
+*   **Privacy-Preserving Monitoring:** After launch, monitor aggregate app health, completion rate, input drift, prediction drift, and warning-message rates without retaining user-level records, app-level IP addresses, user agents, or session identifiers.  Aggregate counters should be created during prediction handling and stored only as bucketed counts, not by saving individual rows for later aggregation. True post-launch calibration requires observed annual out-of-pocket spending and is out of scope for the privacy-first MVP product release.
 *   **Completion Rate:** > 70% of users who enter at least one value (e.g., select an age) successfully generate a cost prediction.
 *   **User Satisfaction:** Positive sentiment on "Was this helpful?" feedback (optional).
 
@@ -215,7 +214,7 @@ For technical implementation details such as data preprocessing, machine learnin
 | **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a fairness audit, document subgroup caveats, and use neutral user-facing warnings only when they are actionable and based on the current prediction or user-selected inputs. Do not display subgroup-only warnings if they are not actionable. |
 | **Data Aging** | 2023 data becomes outdated. | Display permanent footer (UI-06) and limitations notice (UI-04). Apply Medical Inflation Factor (FR-02) to adjust for cost increases. |
 | **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Covered by permanent footer (UI-06). For Medicare/Medicaid users, add contextual note: *"Recent policy changes (2024-2026) may lower actual costs compared to this estimate."* |
-| **Unobserved Outcomes** | App users usually will not return one year later with reliable actual out-of-pocket spending, and collecting linked follow-up outcomes would weaken the anonymous, zero-retention privacy promise. | Do not claim production calibration from default app telemetry. Use aggregate drift monitoring for the MVP product release. Evaluate true calibration by testing the deployed model on future MEPS survey years when available, or through a separately approved opt-in study. |
+| **Unobserved Outcomes** | App users usually will not return one year later with reliable actual out-of-pocket spending, and collecting linked follow-up outcomes would weaken the anonymous, zero-retention privacy promise. | Do not claim production calibration from default app telemetry. Use aggregate drift monitoring only to detect shifts in usage and predictions. Evaluate true calibration by testing the deployed model on future MEPS survey years when available, or through a separately approved opt-in study. |
 
 
 ## Future Considerations  
@@ -232,7 +231,7 @@ The following features and improvements are planned for future releases beyond t
 *   **Goal**: Measure real-world calibration against actual annual out-of-pocket spending if the product strategy ever changes to support collecting data on actual out-of-pocket costs one year later.
 *   **Privacy Constraint**: This is not part of the MVP product release. It would require explicit opt-in, clear consent language, data minimization, retention limits, and a review of whether the product still satisfies the anonymous/no-account positioning.
 *   **Feasibility Caveat**: User-reported annual spend is likely noisy because MEPS derives `TOTSLF23` through detailed event and payment questions. A lightweight recall question may be useful for directional research but should not be treated as MEPS-equivalent ground truth.
-*   **Default Alternative**: Use future MEPS releases to test the deployed model on newer survey years. Treat retraining or recalibration as a separate model-refresh decision.
+*   **Default Alternative**: When a future MEPS full-year file becomes available, run the deployed model on the newer survey year and repeat the same weighted metrics and subgroup audit. Treat retraining or recalibration as a separate model-refresh decision if caveats persist or worsen.
 
 **Support for Under 18 Population**  
 *   **Rationale for 18+ in current model**:

@@ -368,22 +368,23 @@ The prediction service will expose the trained model artifact via a Python API (
     ```
 
 #### Prediction Warning Flags
-`warning_flags` must be generated before inflation adjustment. Threshold-based flags should use fixed thresholds derived from the validation data. Add user subgroup warning messages only when they are actionable.
+`warning_flags` are user-facing messages. Generate them before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. Do not add user subgroup warnings unless the message changes how the user should interpret the result.
 
 
 | Flag | Trigger Logic | Intended UI Use |
 | :--- | :--- | :--- |
 | `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) is in the top 20% (cutoff from validation set) | Tell users to treat the estimate as a rough planning range and emphasize the safety cushion |
-| `WIDE_PREDICTION_INTERVAL` | Typical-range width (`q75 - q25`) or safety-cushion width (`q90 - q50`) is at or above the validation 90th percentile for the corresponding width | Explain that similar profiles had more variable costs and that the range is intentionally wide |
 | `UNINSURED_UNCERTAINTY` | Uninsured (`INSCOV23 = 3`) | Explain that uninsured out-of-pocket costs can be volatile and the safety cushion is more useful than the typical range |
 | `MISSING_OPTIONAL_INPUTS` | One or more optional fields are omitted and imputed | Explain that typical values were used and that more complete inputs may make the estimate more tailored |
 | `PUBLIC_COVERAGE_POLICY_CHANGE` | Input insurance status is public-only (`INSCOV23 = 2`) | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs for some public-coverage users |
+
+`WIDE_PREDICTION_INTERVAL` is not a user-facing warning flag. It is an internal usefulness diagnostic based on interval width. The app should still show the range; adding a separate warning may confuse users into thinking the estimate should be ignored. If the interval is wide, the UI should let the displayed range and safety cushion carry the uncertainty.
 
 Recommended metadata with placeholder values replaced by thresholds derived from validation data:
 
 ```json
 {
-  "warning_thresholds": {
+  "interval_diagnostic_thresholds": {
     "typical_range_width_p90": 0.0,
     "safety_cushion_width_p90": 0.0
   },
@@ -423,7 +424,9 @@ The MVP product release must preserve the product promise of anonymous, stateles
 | App health | Request count, error rate, validation failures, latency percentiles | Do not log raw request or response payloads |
 | Completion funnel | Form starts, successful predictions, optional helpfulness feedback | Store only aggregate counts |
 | Input drift | Aggregate distribution of required/optional fields, missingness rates, broad feature buckets | Use aggregate counters; suppress small cells where needed |
-| Prediction drift | Aggregate distributions of predicted q50, q25-q75 range width, q90 safety cushion, and warning flags | Store summary distributions or tier counts, not user-level predictions |
+| Prediction drift | Aggregate distributions of predicted q50, q25-q75 range width, q50-q90 width, q90 safety cushion, and warning flags | Store summary distributions or tier counts, not user-level predictions |
+
+Aggregate monitoring can detect whether the app population or prediction distribution is shifting. It cannot measure production MdAE, interval coverage, subgroup reliability and fairness, because those require observed annual out-of-pocket costs.
 
 **Aggregation design**
 Telemetry must be aggregated during prediction handling rather than written as per-user events for later aggregation.
@@ -465,7 +468,7 @@ Bucket edges should be fixed before launch, documented with the model version, a
 | Predicted q50 | $0-$49, $50-$149, $150-$299, $300-$599, $600-$999, $1,000-$1,499, $1,500+ |
 | q25-q75 width | $0-$249, $250-$499, $500-$999, $1,000-$1,499, $1,500-$2,499, $2,500+ |
 | Predicted q90 | $0-$499, $500-$999, $1,000-$1,999, $2,000-$3,499, $3,500-$4,999, $5,000+ |
-| Warning flags | One bucket per flag: `HIGH_PREDICTED_UNCERTAINTY`, `WIDE_PREDICTION_INTERVAL`, `UNINSURED_UNCERTAINTY`, `MISSING_OPTIONAL_INPUTS`, `PUBLIC_COVERAGE_POLICY_CHANGE` |
+| Warning flags | One bucket per user-facing flag: `HIGH_PREDICTED_UNCERTAINTY`, `UNINSURED_UNCERTAINTY`, `MISSING_OPTIONAL_INPUTS`, `PUBLIC_COVERAGE_POLICY_CHANGE` |
 | Missingness | Per optional field: present, missing |
 
 **Small-cell and cross-tab rules**
@@ -515,8 +518,8 @@ GRADIO_FLAGGING_MODE=never
 ```
 
 **Offline and future monitoring paths**
-*   Re-evaluate the deployed 2023-trained model on future MEPS survey years when available, using the same sample-weighted metrics and subgroup audits defined in the modeling notebook. Treat retraining or recalibration as a separate model-refresh decision.
-*   If a future outcome study is approved, collect actual spend only through explicit opt-in consent, data minimization, retention limits, and a separate privacy review. Treat user-reported actual spend as directional unless the collection process can approximate MEPS-quality expenditure measurement.
+*   Re-evaluate the deployed 2023-trained model when a future MEPS full-year file becomes available. Run the model on the newer survey year, using the same weighted metrics and subgroup audits defined in the modeling notebook. Treat retraining or recalibration as a separate model-refresh decision if caveats persist or worsen.
+*   If a future outcome study is approved, collect actual spend only through explicit opt-in consent, data minimization, retention limits, and a separate privacy review. Treat user-reported actual spend as directional unless the collection process can approximate MEPS-quality out-of-pocket cost measurement.
 
 
 ## Testing Strategy
