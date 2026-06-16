@@ -139,7 +139,7 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **FR-03** | **Cost Range** | Generate 25th–75th percentile range (typical range) and 90th percentile (budget-safe estimate) to communicate prediction uncertainty. Never output a single point estimate. |
 | **FR-04** | **Cost Drivers** | Compute SHAP values for each prediction to explain feature contributions as dollar impacts. |
 | **FR-05** | **Comparison Benchmarks** | Compare user's prediction to (1) national average and (2) average for their age group. Pre-compute benchmarks from MEPS data. |
-| **FR-06** | **Prediction Warning Policy** | Generate actionable warnings for high predicted uncertainty (derive thresholds from validation set), missing optional inputs, uninsured users, and public insurance policy changes. |
+| **FR-06** | **Prediction Notice Policy** | Generate actionable planning notices for high predicted uncertainty (derive thresholds from validation set), missing optional inputs, uninsured users, and public insurance policy changes. |
 
 ### Result Display
 | ID | Component | Description | UI Element | Example |
@@ -148,11 +148,11 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **UI-02** | **Cost Drivers** | Explanation of key cost drivers and their dollar impact (SHAP). | `gr.Markdown` | "Your Diabetes Diagnosis (+$1,200), your Age (+$400), but your "Excellent" self-reported health lowered the estimate by (-$300)" |
 | **UI-03** | **Comparison Benchmarks** | Bar chart comparing user vs. national and age group benchmarks. | `gr.Plot` | "Typical American (median): $4,800 vs. Typical for Age 45–54 (median): $3,200" |
 | **UI-04** | **Limitations Notice** | Always-on guidance to help users interpret their prediction and understand the rare-tail limitation. | `gr.Markdown` | "**About This Estimate**<br>• Based on 2023 national survey data; recent policy changes may affect actual costs.<br>• Does not include insurance premiums or over-the-counter medications.<br>• Some high-cost years are driven by new diagnoses, accidents, hospitalizations, or plan-specific billing details this form cannot know in advance." |
-| **UI-05** | **Contextual Warning Notes** | Dynamic warning notes displayed only when they are actionable and based on the current prediction or user-selected inputs. | `gr.Markdown` | "**Planning Note**<br>People with similar profiles had higher potential out-of-pocket costs. Treat the plan-around estimate as a midpoint, and use the safety cushion as a conservative planning reference for a higher-cost year." |
+| **UI-05** | **Planning Notice** | Dynamic planning notice displayed only when it is actionable and based on the current prediction or user-selected inputs. | `gr.Markdown` | "**Planning note**<br>People with similar profiles had higher potential out-of-pocket costs. Treat the plan-around estimate as a midpoint, and use the safety cushion as a conservative planning reference for a higher-cost year." |
 | **UI-06** | **Permanent Footer** | Always-visible disclaimer at the bottom of the page. Covers legal liability and data aging limitations. | `gr.Markdown` | *"Not intended as medical, financial, or legal advice. Based on 2023 U.S. national survey data."* |
 
-### Prediction Warning Policy
-Warning copy must be concise, neutral, and tied to a concrete user action. The app should not display stigmatizing subgroup warning messages. In particular, the low income, poor mental health, doctorate degree, and near-poor subgroup limitations should be handled through documentation and validation on future MEPS data sets rather than direct user-facing warnings.
+### Prediction Notice Policy
+Planning notices must be concise, neutral, and tied to a concrete user action. The app should not display stigmatizing subgroup notices. In particular, the low income, poor mental health, doctorate degree, and near-poor subgroup limitations should be handled through documentation and validation on future MEPS data sets rather than direct user-facing notices.
 
 | Warning Flag | Trigger | User-Facing Guidance |
 | :--- | :--- | :--- |
@@ -162,6 +162,8 @@ Warning copy must be concise, neutral, and tied to a concrete user action. The a
 | `PUBLIC_INSURANCE_POLICY_CHANGE` | User selects public-only coverage | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs compared with estimates based on 2023 survey data |
 
 The always-on limitations notice remains the primary way to communicate that rare future high-cost events cannot always be identified from pre-year user inputs. The dynamic high-uncertainty flag should be based on predicted cost tiers because actual cost tiers are unknown at prediction time. Use predicted `q90` costs, not predicted `q50`, because the safety cushion is the user-facing signal for potential higher cost years.
+
+Planning notices should render as one compact panel below the prediction block, not as multiple stacked paragraphs. If several flags trigger, combine them in priority order and avoid repeating the same safety-cushion guidance. Keep the always-on scope disclaimer separate and quieter.
 
 
 ## Non-Functional Requirements
@@ -202,7 +204,7 @@ For technical implementation details such as data preprocessing, machine learnin
     *   **Safety Cushion (90th%):** 90% ± 5% of actual costs fall below the predicted budget-safe estimate.
 *   **Interval Width:** Prediction intervals should be narrow enough to support decisions. The model should not meet coverage targets by returning overly wide ranges for most users.
 *   **Stratified Reliability:** Report MdAE and interval coverage by cost tier (e.g., low, middle, high) and key user groups before launch to confirm that strong overall metrics are not hiding weak subgroup performance.
-*   **Privacy-Preserving Monitoring:** After launch, monitor aggregate app health, completion rate, input drift, prediction drift, and warning-message rates without retaining user-level records, app-level IP addresses, user agents, or session identifiers.  Aggregate counters should be created during prediction handling and stored only as bucketed counts, not by saving individual rows for later aggregation. True post-launch calibration requires observed annual out-of-pocket spending and is out of scope for the privacy-first MVP product release.
+*   **Privacy-Preserving Monitoring:** After launch, monitor aggregate app health, completion rate, input drift, prediction drift, and warning-flag rates without retaining user-level records, app-level IP addresses, user agents, or session identifiers.  Aggregate counters should be created during prediction handling and stored only as bucketed counts, not by saving individual rows for later aggregation. True post-launch calibration requires observed annual out-of-pocket spending and is out of scope for the privacy-first MVP product release.
 *   **Completion Rate:** > 70% of users who enter at least one value (e.g., select an age) successfully generate a cost prediction.
 *   **User Satisfaction:** Positive sentiment on "Was this helpful?" feedback (optional).
 
@@ -210,10 +212,10 @@ For technical implementation details such as data preprocessing, machine learnin
 ## Risk Assessment & Mitigation
 | Risk | Example | Mitigation Strategy |
 | :--- | :--- | :--- |
-| **Outlier Prediction** | Model predicts extreme costs ($100k+) for a standard user. | Consider implementing display guardrails such as a model-version cap plus `HIGH_PREDICTED_UNCERTAINTY`, so the user sees a planning warning rather than a falsely precise extreme number. |
-| **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a fairness audit, document subgroup caveats, and use neutral user-facing warnings only when they are actionable and based on the current prediction or user-selected inputs. Do not display subgroup-only warnings if they are not actionable. |
+| **Outlier Prediction** | Model predicts extreme costs ($100k+) for a standard user. | Consider implementing display guardrails such as a model-version cap plus `HIGH_PREDICTED_UNCERTAINTY`, so the user sees a planning notice rather than a falsely precise extreme number. |
+| **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a fairness audit, document subgroup caveats, and provide user-facing planning notices based on the current prediction or user-selected inputs. |
 | **Data Aging** | 2023 data becomes outdated. | Display permanent footer (UI-06) and limitations notice (UI-04). Apply Medical Inflation Factor (FR-02) to adjust for cost increases. |
-| **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Covered by permanent footer (UI-06). For Medicare/Medicaid users, add contextual note: *"Recent policy changes (2024-2026) may lower actual costs compared to this estimate."* |
+| **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Covered by permanent footer (UI-06). For Medicare/Medicaid users, show the `PUBLIC_INSURANCE_POLICY_CHANGE` planning notice. |
 | **Unobserved Outcomes** | App users usually will not return one year later with reliable actual out-of-pocket spending, and collecting linked follow-up outcomes would weaken the anonymous, zero-retention privacy promise. | Do not claim production calibration from default app telemetry. Use aggregate drift monitoring only to detect shifts in usage and predictions. Evaluate true calibration by testing the deployed model on future MEPS survey years when available, or through a separately approved opt-in study. |
 
 
@@ -256,7 +258,7 @@ Since the collection of the 2023 MEPS data, key policy changes have been enacted
 **1. Inflation Reduction Act (IRA) - Medicare Part D**
 *   **2025 Change**: Annual out-of-pocket cap of **$2,000** for prescription drugs for Medicare Part D beneficiaries.
 *   **Impact**: Model may over-predict costs for Medicare users with high prescription spending, as 2023 training data includes seniors who spent >$2,000 on drugs.
-*   **Mitigation**: Display contextual disclaimer for "Public (Medicare/Medicaid)" users: *"Note: The 2025 Inflation Reduction Act caps prescription drug costs at $2,000/year for Medicare beneficiaries. Your actual costs may be lower than this estimate."*
+*   **Mitigation**: Display the `PUBLIC_INSURANCE_POLICY_CHANGE` planning notice for "Public (Medicare/Medicaid)" users: *"Recent public insurance policy changes, especially Medicare prescription drug cost caps, may lower actual costs for some users compared with this estimate."*
 
 **2. ACA Marketplace Adjustments**
 *   **Cost Sharing Limits**: For 2025, the maximum out-of-pocket limit is **$9,200** (individual) for ACA marketplace plans.

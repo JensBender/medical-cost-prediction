@@ -4395,7 +4395,7 @@ display(
 #         <li><b>Metrics by group:</b> plan-around MdAE (q50), typical range coverage/width (q25-q75), and safety cushion coverage/width (q90 and q50-q90).</li>
 #         <li><b>Subgroup review bands:</b> Release gates apply to overall test coverage (45-55% for typical range, 85-95% for safety cushion). Subgroup review bands are diagnostic ranges, not additional pass/fail gates. For subgroups with sufficient sample size (n ≥ 30), typical range coverage should generally stay within 40-60%, and safety cushion coverage should generally stay within 80-97%. Small subgroups (n &lt; 30) are labeled review-only because their estimates are less stable.</li>
 #         <li><b>Diagnostic flags:</b> Flag high plan-around error for subgroups with q50 MdAE above 3× the overall q50 MdAE. For low-cost subgroups (median actual cost ≤ overall median), flag typical range or safety cushion widths above the overall average as potentially too broad for practical budgeting. These flags point to calibration, usefulness, or sampling issues that need review; they do not by themselves imply model unfairness or a release failure.</li>
-#         <li><b>Interpretation:</b> Use diagnostic flags to qualify reporting, document caveats, and inform product disclaimer text. Because this is the locked test set, flagged subgroups should not drive another tuning loop; follow-up changes should be evaluated in a new validation cycle.</li>
+#         <li><b>Interpretation:</b> Use diagnostic flags to qualify reporting, document caveats, and inform product planning notices or scope disclaimers. Because this is the locked test set, flagged subgroups should not drive another tuning loop; follow-up changes should be evaluated in a new validation cycle.</li>
 #     </ul>
 # </div>
 
@@ -4473,7 +4473,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Prediction Usefulness:</strong> Several low-cost groups have wide prediction intervals despite in-band coverage, including good physical health, good mental health, Asian respondents, and the West region. This is a practical-budgeting caveat rather than a safety failure, because the model often protects users in these subgroups from underestimation, but some low-cost users may receive ranges that are less specific than desired.</li>
 #     </ul>
 #     <p style="margin-top:12px"><strong>Caveats and Recommended Actions</strong> <br> 
-#         User-facing actions are limited to always-on or conditional warning messages. Aggregate app monitoring can detect shifts in inputs and predictions, but it cannot monitor subgroup performance without the unknown actual costs. Wide prediction interval flags are useful for diagnostic purposes, but not as a separate user warning, since the wide range itself communicates the uncertainty.</p>
+#         User-facing actions are limited to always-on scope disclaimers or conditional planning notices. Aggregate app monitoring can detect shifts in inputs and predictions, but it cannot monitor subgroup performance without the unknown actual costs. Wide prediction interval flags are useful for diagnostic purposes, but not as a separate planning notice, since the wide range itself communicates the uncertainty.</p>
 #     <table style="width:100%; border-collapse:collapse; margin-top:8px; font-size:0.92em;">
 #         <thead>
 #             <tr style="background-color:#e0f0e0;">
@@ -4496,17 +4496,17 @@ plot_quantile_subgroup_predictions(
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Mental health</td>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Poor mental health shows typical-range undercoverage. Good mental health shows wide low-cost intervals.</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Do not show a mental-health-specific user warning. Check on a future MEPS year; revisit only if safety-cushion undercoverage appears or worsens.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Do not show a mental-health-specific planning notice. Check on a future MEPS year; revisit only if safety-cushion undercoverage appears or worsens.</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Poverty category</td>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Low income shows typical-range undercoverage. Near poor shows safety-cushion overcoverage.</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Do not show low-income-specific user warning. Check on a future MEPS year.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Do not show a low-income-specific planning notice. Check on a future MEPS year.</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Education</td>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Doctorate degree shows typical-range undercoverage.</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Do not add a doctorate-specific user warning. Check on a future MEPS year.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Do not add a doctorate-specific planning notice. Check on a future MEPS year.</td>
 #             </tr>
 #         </tbody>
 #     </table>
@@ -4527,9 +4527,9 @@ plot_quantile_subgroup_predictions(
 #         <li><b>Product Implications:</b></li>
 #             <ul>
 #                 <li><b>Prediction Text:</b> Present q50 plan-around, q25-q75 typical range, and q90 safety cushion rather than a point estimate.</li>
-#                 <li><b>Disclaimer Text:</b> Explain the model scope and caveats, including 2023 MEPS individual out-of-pocket spending, excluded premiums and over-the-counter costs, no family-total or procedure-price prediction, and possible misses for rare high-cost events.</li>
+#                 <li><b>Scope Disclaimer:</b> Explain the model scope and caveats, including 2023 MEPS individual out-of-pocket spending, excluded premiums and over-the-counter costs, no family-total or procedure-price prediction, and possible misses for rare high-cost events.</li>
 #             </ul>
-#         <li><b>Launch Conditions:</b> Ship only with the range-based output, scope disclaimer, high-cost uncertainty warning, 2023-to-current-dollar adjustment, and privacy-preserving aggregate monitoring instrumentation enabled.</li>
+#         <li><b>Launch Conditions:</b> Ship only with the range-based output, scope disclaimer, high-cost uncertainty planning notice, 2023-to-current-dollar adjustment, and privacy-preserving aggregate monitoring instrumentation enabled.</li>
 #         <li><b>Monitoring:</b></li>
 #             <ul>
 #                 <li><b>Privacy-First:</b>: For the MVP product release, do not implement post-launch calibration based on app user data. True calibration requires actual annual out-of-pocket costs, but collecting linked follow-up outcomes would weaken the anonymous, zero-retention product requirement.</li>

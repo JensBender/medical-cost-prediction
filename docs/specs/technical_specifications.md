@@ -368,15 +368,24 @@ The prediction service will expose the trained model artifact via a Python API (
     ```
 
 #### Prediction Warning Flags
-`warning_flags` are user-facing messages. Generate them before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. Do not add user subgroup warnings unless the message changes how the user should interpret the result.
+`warning_flags` are API values. Planning notices are user-facing copy rendered from one or more warning flags. Generate `warning_flags` before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. Do not add user subgroup planning notices unless the notice changes how the user should interpret the result.
 
-
-| Flag | Trigger | Mitigating Action | User Warning Message |
+| Flag | Trigger | Mitigating Action | Planning Notice Text |
 | :--- | :--- | :--- | :--- |
 | `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) is in the top 20% (cutoff from validation set) | Explain higher-cost-year exposure and present q90 as a conservative planning reference | "Your safety cushion is higher than most predictions from the model. People with similar profiles had higher potential out-of-pocket costs, so treat the plan-around estimate as a midpoint and use the safety cushion for a higher-cost year." |
 | `UNINSURED_UNCERTAINTY` | Uninsured (`INSCOV23 = 3`) | Explain that the typical range may be less stable for uninsured users and present q90 as the conservative planning reference | "For uninsured users, out-of-pocket costs can vary more because there is no insurer sharing costs. The typical range may be less stable, so use the safety cushion as the more conservative planning number." |
 | `MISSING_OPTIONAL_INPUTS` | User skipped one or more optional inputs | Explain that typical values were used (imputed) and that more complete inputs may make the estimate more tailored | "Some optional answers were skipped, so the estimate used typical values. Adding those details may make the estimate more tailored to your situation." |
 | `PUBLIC_INSURANCE_POLICY_CHANGE` | Public-only insurance (`INSCOV23 = 2`) | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs for some public insurance users | "This estimate is based on 2023 survey data. Recent public insurance policy changes, especially Medicare prescription drug cost caps, may lower actual costs for some users compared with this estimate." |
+
+#### Planning Notice Rendering Rules
+The UI should avoid stacking several full planning notice paragraphs below the prediction. Render planning notices as follows:
+
+1.  Show the prediction block first: plan-around estimate (`q50`), typical range (`q25-q75`), and safety cushion (`q90`).
+2.  If no `warning_flags` are present, show no planning notice panel.
+3.  If one or more flags are present, show one compact **Planning note** panel below the prediction block.
+4.  In the panel, combine triggered messages in this priority order: `HIGH_PREDICTED_UNCERTAINTY`, `UNINSURED_UNCERTAINTY`, `PUBLIC_INSURANCE_POLICY_CHANGE`, `MISSING_OPTIONAL_INPUTS`.
+5.  Avoid repeating the same idea. If both `HIGH_PREDICTED_UNCERTAINTY` and `UNINSURED_UNCERTAINTY` trigger, mention the safety cushion once.
+6.  Keep the always-on scope disclaimer outside this panel, in a quieter "About this estimate" or footer area.
 
 Recommended metadata with placeholder values replaced by thresholds derived from validation data:
 
