@@ -4564,7 +4564,10 @@ plot_quantile_subgroup_predictions(
 #                 📊 <b>Typical range:</b> \$120 – \$980<br>
 #                 🛡️ <b>Safety cushion:</b> budget up to \$1,850<br><br>
 #                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span><br><br>
-#                 <span style="font-size:0.85em; color:#888;">[Placeholder for cost drivers (SHAP) and comparison benchmarks]</span><br><br>
+#                 <b>What's driving your estimate</b><br>
+#                 <span style="font-size:0.85em; color:#555;">🔽 Your age (28): −\$210 &nbsp; 🔽 No chronic conditions: −\$190 &nbsp; 🔽 "Very Good" physical health: −\$130 &nbsp; 🔼 Having a usual doctor or clinic: +\$60</span><br><br>
+#                 <b>How you compare to others</b> <small style="color:#888;">(bar chart in app)</small><br>
+#                 <span style="font-size:0.85em; color:#555;">Your plan-around estimate: \$420 · Typical American (median): \$480 · Typical for ages 18–34 (median): \$270</span><br><br>
 #                 <b>About this estimate</b><br>
 #                 <span style="font-size:0.85em; color:#555;">This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. Some high-cost years are driven by new diagnoses, accidents, hospitalizations, or plan-specific billing details this form cannot know in advance.</span>
 #             </td>
@@ -4574,7 +4577,10 @@ plot_quantile_subgroup_predictions(
 #                 📊 <b>Typical range:</b> \$520 – \$2,400<br>
 #                 🛡️ <b>Safety cushion:</b> budget up to \$5,200<br><br>
 #                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span><br><br>
-#                 <span style="font-size:0.85em; color:#888;">[Placeholder for cost drivers (SHAP) and comparison benchmarks]</span><br><br>
+#                 <b>What's driving your estimate</b><br>
+#                 <span style="font-size:0.85em; color:#555;">🔼 Your age (68): +\$480 &nbsp; 🔼 Diabetes: +\$370 &nbsp; 🔼 Uninsured: +\$310 &nbsp; 🔼 High blood pressure: +\$180 &nbsp; 🔽 "Good" physical health: −\$90</span><br><br>
+#                 <b>How you compare to others</b> <small style="color:#888;">(bar chart in app)</small><br>
+#                 <span style="font-size:0.85em; color:#555;">Your plan-around estimate: \$1,350 · Typical American (median): \$480 · Typical for ages 65+ (median): \$890</span><br><br>
 #                 <b>Planning note</b><br>
 #                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary more from year to year. Because you're uninsured, expenses are not shared with an insurer, which adds to that variability. The plan-around and typical range are useful starting points, but for budgeting decisions, lean toward the safety cushion.</span><br><br>
 #                 <b>About this estimate</b><br>
