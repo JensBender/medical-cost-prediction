@@ -321,7 +321,7 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > Costs for profiles like yours can vary a lot from year to year. Because you're uninsured, out-of-pocket costs can be harder to predict. The plan-around and typical range are useful starting points, but for budgeting decisions, lean toward the safety cushion.
 >
 > <details>
-> <summary style="cursor:pointer;"><strong>What's driving your estimate</strong> <small>(click to expand)</small></summary>
+> <summary><strong>What's driving your estimate</strong> <small>(click to expand)</small></summary>
 > These factors had the largest effect on your plan-around estimate:<br>
 > - 🔼 Your age (68): +$480<br>
 > - 🔼 Diabetes: +$370<br>
@@ -331,7 +331,7 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > </details>
 >
 > <details>
-> <summary style="cursor:pointer;"><strong>How you compare to others</strong> <small>(click to expand)</small></summary>
+> <summary><strong>How you compare to others</strong> <small>(click to expand)</small></summary>
 > - Your plan-around estimate: $1,350<br>
 > - Typical American (median): $480<br>
 > - Typical for ages 65+ (median): $890<br>
