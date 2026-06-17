@@ -4563,20 +4563,20 @@ plot_quantile_subgroup_predictions(
 #                 💰 <b>Plan around:</b> \$420<br>
 #                 📊 <b>Typical range:</b> \$120 – \$980<br>
 #                 🛡️ <b>Safety cushion:</b> plan up to \$1,850<br><br>
-#                 <span style="font-size:0.85em; color:#555;">People with answers like yours often spend about \$420. Many spend between \$120 and \$980. If you want a cushion for a higher-cost year, planning up to \$1,850 would cover most similar cases.</span><br><br>
+#                 <span style="font-size:0.85em; color:#555;">Plan around \$420 as a reasonable midpoint for budgeting. The typical range between \$120 and \$980 shows where many people with similar answers fall. If you want extra room for a higher-cost year, plan up to \$1,850 as the safety cushion.</span><br><br>
 #                 <b>About this estimate</b><br>
-#                 <span style="font-size:0.85em; color:#555;">This is a planning estimate based on 2023 national survey data. It does not include premiums, over-the-counter costs, family totals, or procedure prices. Some high-cost years are driven by new diagnoses, accidents, hospitalizations, or plan-specific billing details this form cannot know in advance.</span>
+#                 <span style="font-size:0.85em; color:#555;">This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. Some high-cost years are driven by new diagnoses, accidents, hospitalizations, or plan-specific billing details this form cannot know in advance.</span>
 #             </td>
 #             <td style="background-color:#fcfcfc; border:1px solid #ddd; padding:15px; vertical-align:top; border-radius:4px;">
 #                 <b>Your Estimated Out-of-Pocket Costs for Next Year</b><br><br>
 #                 💰 <b>Plan around:</b> \$1,350<br>
 #                 📊 <b>Typical range:</b> \$520 – \$2,400<br>
 #                 🛡️ <b>Safety cushion:</b> plan up to \$5,200<br><br>
-#                 <span style="font-size:0.85em; color:#555;">People with answers like yours often spend about \$1,350, but costs can change a lot from year to year. Many similar people spend between \$520 and \$2,400. If you want a cushion for a higher-cost year, planning up to \$5,200 would cover most similar cases.</span><br><br>
+#                 <span style="font-size:0.85em; color:#555;">Plan around \$1,350 as a reasonable midpoint for budgeting, but costs can change a lot from year to year. The typical range between \$520 and \$2,400 shows where many people with similar answers fall. If you want extra room for a higher-cost year, plan up to \$5,200 as the safety cushion.</span><br><br>
 #                 <b>Planning note</b><br>
-#                 <span style="font-size:0.85em; color:#555;">For uninsured users, out-of-pocket costs can vary more because there is no insurer sharing costs. The typical range may be less stable, so use the safety cushion as the conservative planning number for a higher-cost year.</span><br><br>
+#                 <span style="font-size:0.85em; color:#555;">For uninsured users, costs may be less predictable because expenses are not shared with an insurer. The typical range may be less stable, so use the safety cushion as the conservative planning number for a higher-cost year.</span><br><br>
 #                 <b>About this estimate</b><br>
-#                 <span style="font-size:0.85em; color:#555;">This is a planning estimate based on 2023 national survey data. It does not include premiums, over-the-counter costs, family totals, or procedure prices. Some high-cost years are driven by new diagnoses, accidents, hospitalizations, or plan-specific billing details this form cannot know in advance.</span>
+#                 <span style="font-size:0.85em; color:#555;">This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. Some high-cost years are driven by new diagnoses, accidents, hospitalizations, or plan-specific billing details this form cannot know in advance.</span>
 #             </td>
 #         </tr>
 #     </table>
