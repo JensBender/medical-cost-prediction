@@ -4519,20 +4519,7 @@ plot_quantile_subgroup_predictions(
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ <b>Final Model: Summary and Launch Decision</b>
-#     <ul style="margin-top:8px">
-#         <li><b>Decision:</b> Launch XGBoost quantile regression as the MVP model, with guardrails. The product should be framed as a budgeting aid for individual out-of-pocket cost planning, not as a bill estimate, procedure-price tool, or medical advice.</li>
-#         <li><b>Evidence:</b> The model passes all product-facing release gates on the unseen test set: q50 MdAE = \$240, q25-q75 coverage = 47.3%, q90 coverage = 91.0%, q25-q75 width = \$912, and q50-q90 width = \$2,032. It also improves on naive population baselines for every user-facing output: q50 skill = 9.8%, typical-range interval skill = 11.2%, and q90 skill = 15.6%.</li>
-#         <li><b>Calibration:</b> Do not add conformalized quantile regression for the MVP. Test calibration passes the predefined gates. Any calibration change should be evaluated in a new validation cycle, preferably against a later MEPS year when available.</li>
-#         <li><b>Prediction Output:</b> Show q50 as the plan-around estimate, q25-q75 as the typical range, and q90 as the safety cushion. Do not present a single point estimate.</li>
-#         <li><b>Caveats:</b> Explain that the model uses 2023 MEPS individual out-of-pocket spending. It excludes premiums, over-the-counter costs, family totals, and procedure prices. It can miss rare high-cost years, especially for users whose realized costs land in the extreme tail.</li>
-#         <li><b>Launch Conditions:</b> Ship only with range-based output, the scope disclaimer, 2023-to-current-dollar adjustment, prediction uncertainty planning notice for high-cost and uninsured users, and privacy-preserving aggregate monitoring.</li>
-#         <li><b>Monitoring:</b> Track aggregate app health, completion rate, input drift, prediction drift, missingness, q50 distribution, q25-q75 width, q90 safety cushion, and high-uncertainty flags. Broad slices such as insurance status, poverty category, mental health, and chronic-condition count can explain shifts, but they cannot measure calibration without observed annual costs.</li>
-#         <li><b>Post-Launch Learning:</b> Do not calibrate on app user data. True calibration requires observed annual out-of-pocket costs, and collecting linked follow-up outcomes would conflict with the anonymous, zero-retention product requirement. If outcome collection becomes a product goal, treat it as a separate opt-in study with consent, retention limits, data minimization, and a privacy review.</li>
-#     </ul>
-# </div>
-#
-# **Release Gate Metrics (Test)**
+#     <b>Release Gate Metrics (Test)</b>
 #
 # | Metric | Estimate [95% CI] | Release Gate | Product Target | Status |
 # | --- | ---: | ---: | ---: | --- |
@@ -4541,3 +4528,18 @@ plot_quantile_subgroup_predictions(
 # | Safety-cushion coverage (q90) | 91.0% [89.2%, 92.6%] | 85%-95% | 90% | Pass |
 # | Typical-range width (q25-q75) | `$912` [`$875`, `$955`] | < `$1,500` | < `$1,000` | Pass |
 # | Safety-cushion width (q50-q90) | `$2,032` [`$1,964`, `$2,108`] | < `$3,500` | < `$2,500` | Pass |
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <b>Final Model: Summary and Launch Decision</b> 
+#     <ul style="margin-top:8px">
+#         <li><b>Decision:</b> Launch XGBoost quantile regression as the MVP model, with guardrails. The product should be framed as a budgeting aid for individual out-of-pocket cost planning, not as a bill estimate, procedure-price tool, or medical advice.</li>
+#         <li><b>Evidence:</b> The model passes all product-facing release gates on the unseen test set: q50 MdAE = \$240, q25-q75 coverage = 47.3%, q90 coverage = 91.0%, q25-q75 width = \$912, and q50-q90 width = \$2,032. It also improves on naive population baselines for every user-facing output: q50 skill = 9.8%, typical-range interval skill = 11.2%, and q90 skill = 15.6%.</li>
+#         <li><b>Calibration:</b> Do not add conformalized quantile regression for the MVP. Test calibration passes the predefined gates. Any calibration change should be evaluated in a new validation cycle, preferably against a later MEPS year when available.</li>
+#         <li><b>Prediction Output:</b> Show q50 as the plan-around estimate, q25-q75 as the typical range, and q90 as the safety cushion. Do not present a single point estimate.</li>
+#         <li><b>Caveats:</b> Explain that the model uses 2023 MEPS individual out-of-pocket spending. It excludes premiums, over-the-counter costs, family totals, and procedure prices. It can miss rare high-cost years, especially for users whose realized costs land in the extreme tail.</li>
+#         <li><b>Launch Conditions:</b> Ship only with range-based output, the scope disclaimer, 2023-to-current-dollar adjustment, conditional planning notices to comunnicate prediction uncertainty for high-cost and uninsured users, and privacy-preserving aggregate monitoring.</li>
+#         <li><b>Monitoring:</b> Track aggregate app health, completion rate, input drift, prediction drift, missingness, q50 distribution, q25-q75 width, q90 safety cushion, and high-uncertainty flags. Broad slices such as insurance status, poverty category, mental health, and chronic-condition count can explain shifts, but they cannot measure calibration without observed annual costs.</li>
+#         <li><b>Post-Launch Learning:</b> Do not calibrate on app user data. True calibration requires observed annual out-of-pocket costs, and collecting linked follow-up outcomes would conflict with the anonymous, zero-retention product requirement. If outcome collection becomes a product goal, treat it as a separate opt-in study with consent, retention limits, data minimization, and a privacy review.</li>
+#     </ul>
+# </div>
