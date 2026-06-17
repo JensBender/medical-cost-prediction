@@ -4597,7 +4597,7 @@ plot_quantile_subgroup_predictions(
 #                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span>
 #                 <br><br>
 #                 <b>Planning note</b><br>
-#                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary a lot from year to year. Because you're uninsured, costs are less predictable since expenses are not shared with an insurer. The plan-around and typical range are useful starting points, but for budgeting decisions, lean toward the safety cushion.</span>
+#                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary a lot from year to year. Because you're uninsured, out-of-pocket costs can be harder to predict. The plan-around and typical range are useful starting points, but for budgeting decisions, lean toward the safety cushion.</span>
 #                 <br><br>
 #                 <details style="margin-bottom:8px;">
 #                 <summary style="cursor:pointer;"><strong>What's driving your estimate</strong> <small>(click to expand)</small></summary>
