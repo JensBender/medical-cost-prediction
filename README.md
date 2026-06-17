@@ -306,6 +306,41 @@ The final model reuses the hyperparameters from the best tuned XGBoost point-est
 - **Launch Conditions:** Ship only with range-based output, the scope disclaimer, 2023-to-current-dollar adjustment, conditional planning notices for high predicted uncertainty and uninsured users, and privacy-preserving aggregate monitoring.
 - **Monitoring:**  Track aggregate app health, completion rate, input drift, prediction drift, missingness, q50 distribution, q25-q75 width, q90 safety cushion, and high-uncertainty flags. Broad slices such as insurance status, poverty category, mental health, and chronic-condition count can explain shifts, but they cannot measure calibration without observed annual costs. Do not calibrate on app user data, because outcome collection would sacrifice user privacy.
 
+**Example Prediction Output**  
+High cost profile: 68-year-old, uninsured, multiple chronic conditions
+>
+> **Your Estimated Out-of-Pocket Costs for Next Year**
+>
+> - 💰 **Plan around:** $1,350
+> - 📊 **Typical range:** $520-$2,400
+> - 🛡️ **Safety cushion:** budget up to $5,200
+>
+> Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.
+>
+> **Planning note**  
+> Costs for profiles like yours can vary a lot from year to year. Because you're uninsured, out-of-pocket costs can be harder to predict. The plan-around and typical range are useful starting points, but for budgeting decisions, lean toward the safety cushion.
+>
+> <details>
+> <summary style="cursor:pointer;"><strong>What's driving your estimate</strong> <small>(click to expand)</small></summary>
+> These factors had the largest effect on your plan-around estimate:<br>
+> - 🔼 Your age (68): +$480<br>
+> - 🔼 Diabetes: +$370<br>
+> - 🔼 Uninsured: +$310<br>
+> - 🔼 High blood pressure: +$180<br>
+> - 🔽 "Good" physical health: -$90<br><br>
+> </details>
+>
+> <details>
+> <summary style="cursor:pointer;"><strong>How you compare to others</strong> <small>(click to expand)</small></summary>
+> - Your plan-around estimate: $1,350<br>
+> - Typical American (median): $480<br>
+> - Typical for ages 65+ (median): $890<br>
+> </details>
+> <br>
+>
+> **About this estimate**  
+> This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. New diagnoses, accidents, hospitalizations, and plan-specific billing details can make actual costs higher.
+
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 
