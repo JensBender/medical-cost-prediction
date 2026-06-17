@@ -4563,10 +4563,12 @@ plot_quantile_subgroup_predictions(
 #                 💰 <b>Plan around:</b> \$420<br>
 #                 📊 <b>Typical range:</b> \$120 – \$980<br>
 #                 🛡️ <b>Safety cushion:</b> budget up to \$1,850<br><br>
-#                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span><br><br>
+#                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span>
+#                 <br><br>
 #                 <details style="margin-bottom:8px;">
-#                 <summary style="cursor:pointer;""><strong>What's driving your estimate</strong> <small>(click to expand)</small></summary>
+#                 <summary style="cursor:pointer;"><strong>What's driving your estimate</strong> <small>(click to expand)</small></summary>
 #                 <span style="font-size:0.85em; color:#555;">
+#                 These factors had the largest effect on your plan-around estimate:<br>
 #                 🔽 Your age (28): −\$210<br>
 #                 🔽 No chronic conditions: −\$190<br>
 #                 🔽 "Very Good" physical health: −\$130<br>
@@ -4582,18 +4584,25 @@ plot_quantile_subgroup_predictions(
 #                 Typical for ages 18–34 (median): \$270
 #                 </span>
 #                 </details>
+#                 <br>
 #                 <b>About this estimate</b><br>
-#                 <span style="font-size:0.85em; color:#555;">This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. Some high-cost years are driven by new diagnoses, accidents, hospitalizations, or plan-specific billing details this form cannot know in advance.</span>
+#                 <span style="font-size:0.85em; color:#555;">This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. New diagnoses, accidents, hospitalizations, and plan-specific billing details can make actual costs higher.</span>
 #             </td>
 #             <td style="background-color:#fcfcfc; border:1px solid #ddd; padding:15px; vertical-align:top; border-radius:4px;">
-#                 <b>Your Estimated Out-of-Pocket Costs for Next Year</b><br><br>
+#                 <b>Your Estimated Out-of-Pocket Costs for Next Year</b>
+#                 <br><br>
 #                 💰 <b>Plan around:</b> \$1,350<br>
 #                 📊 <b>Typical range:</b> \$520 – \$2,400<br>
 #                 🛡️ <b>Safety cushion:</b> budget up to \$5,200<br><br>
-#                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span><br><br>
+#                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span>
+#                 <br><br>
+#                 <b>Planning note</b><br>
+#                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary a lot from year to year. Because you're uninsured, costs are less predictable since expenses are not shared with an insurer. The plan-around and typical range are useful starting points, but for budgeting decisions, lean toward the safety cushion.</span>
+#                 <br><br>
 #                 <details style="margin-bottom:8px;">
-#                 <summary style="cursor:pointer;""><strong>What's driving your estimate</strong> <small>(click to expand)</small></summary>
+#                 <summary style="cursor:pointer;"><strong>What's driving your estimate</strong> <small>(click to expand)</small></summary>
 #                 <span style="font-size:0.85em; color:#555;">
+#                 These factors had the largest effect on your plan-around estimate:<br>
 #                 🔼 Your age (68): +\$480<br>
 #                 🔼 Diabetes: +\$370<br>
 #                 🔼 Uninsured: +\$310<br>
@@ -4610,10 +4619,9 @@ plot_quantile_subgroup_predictions(
 #                 Typical for ages 65+ (median): \$890
 #                 </span>
 #                 </details>
-#                 <b>Planning note</b><br>
-#                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary more from year to year. Because you're uninsured, expenses are not shared with an insurer, which adds to that variability. The plan-around and typical range are useful starting points, but for budgeting decisions, lean toward the safety cushion.</span><br><br>
+#                 <br>
 #                 <b>About this estimate</b><br>
-#                 <span style="font-size:0.85em; color:#555;">This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. Some high-cost years are driven by new diagnoses, accidents, hospitalizations, or plan-specific billing details this form cannot know in advance.</span>
+#                 <span style="font-size:0.85em; color:#555;">This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. New diagnoses, accidents, hospitalizations, and plan-specific billing details can make actual costs higher.</span>
 #             </td>
 #         </tr>
 #     </table>
