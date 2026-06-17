@@ -15,11 +15,9 @@ model evaluation, and a planned FastAPI/Gradio app.
 
 ## Architecture Rules
 
-- Keep the sklearn pipeline lean: core validation and ML logic only.
+- Keep the sklearn pipeline lean: core preprocessing and ML logic only.
 - Handle UI/API formatting and user-input cleanup at the interface layer.
 - Use sample weights for MEPS metrics when applicable.
-- Treat the final test set as locked: do not tune model choices, thresholds, or
-  explanations based on final test results.
   
 ## Important Files
 
@@ -31,14 +29,12 @@ model evaluation, and a planned FastAPI/Gradio app.
 - `docs/specs/technical_specifications.md`: technical design.
 - `docs/workflow/git_conventions.md`: commit message rules.
 
-## DVC And Artifacts
+## Writing Style
 
-- Do not commit large model artifacts from `models/`.
-- If DVC-tracked files or pipeline inputs change, mention whether `dvc repro`
-  is likely needed.
+Write in clear, precise, plain language. Be accurate and specific. Avoid vague terms, marketing language, and decorative phrasing. Prefer short sentences. If something is uncertain, say so plainly.
 
 ## Commits
 
 - Do not commit directly unless explicitly asked.
-- For code or docs changes, suggest an atomic commit message following
+- For code or docs changes, always suggest an atomic commit message following
   `docs/workflow/git_conventions.md`.
