@@ -104,7 +104,7 @@ Utilized the **2023 Full-Year Consolidated Data File (HC-251)**:
 The target variable is **total out-of-pocket health care costs in 2023** (`TOTSLF23`), including copays, deductibles, and uncovered services. The goal is to facilitate financial planning and healthcare budgeting. By estimating next year's out-of-pocket costs, users can make data-driven decisions about FSA/HSA contributions and better prepare for their financial exposure. For uninsured users, out-of-pocket costs approximate total costs.  
 
 <details>
-<summary>ℹ️ <strong>U.S. Healthcare Costs Explained</strong> (click to expand)</summary>
+<summary>ℹ️ <strong>U.S. Healthcare Costs Explained</strong> <small>(click to expand)</small></summary>
 
 ![U.S. Healthcare Costs Infographic](./assets/infographic_healthcare_costs.png)
 </details>
@@ -157,7 +157,7 @@ Analyzed distributions and relationships to inform data preprocessing, feature e
 <a id="main-outliers"></a>**Data Quality & Outliers**  
 Conducted deep-dive diagnostics in [notebooks/1_eda_and_preprocessing.ipynb](notebooks/1_eda_and_preprocessing.ipynb) to ensure data integrity:
 - **Duplicates**: Verified the absence of duplicate records based on the ID column, complete rows, and all columns except ID.
-- **Outliers**: Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs. [🔗 **See Outlier Analysis**](#outlier-analysis)
+- **Outliers**: Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.<br>[🔗 **See Outlier Analysis**](#outlier-analysis)
 
 **Modeling Strategy**  
 Based on EDA-driven insights, decided to implement sample weights for population representativeness and align models with the Median Absolute Error (MdAE) success metric through tailored loss functions, target log transformation, and polynomial features to effectively handle the zero-inflated, heavy-tailed cost distribution.
@@ -240,12 +240,11 @@ Conducted hyperparameter optimization for the three selected finalists using a c
 **Tuning Methodology**  
 - **Search Strategy:** Manual loop with `ParameterSampler` (instead of `RandomizedSearchCV`) to ensure correct `sample_weight` routing through nested `TransformedTargetRegressor` and `Pipeline` wrappers, and to evaluate weighted MdAE explicitly on the validation set.
 - **Target Transform:** All models train on `log1p`-transformed costs via `TransformedTargetRegressor`, stabilizing the heavy-tailed distribution while predicting in raw dollars.
-- **Sample Weights:** Normalized weights (mean=1.0) during training for numerical stability. Used raw weights for evaluation to maintain population representativeness.
 - **Scoring:** Weighted Median Absolute Error (MdAE) on raw-dollar validation predictions as the primary selection criterion.
 - **Model-Specific Configurations:**
-  - **Elastic Net:** `Pipeline` with second-degree `PolynomialFeatures` + `ElasticNet`; tuned `alpha` (regularization strength, log-uniform 0.01–1.0), `l1_ratio` (L1/L2 penalty mix, uniform 0.0–1.0), and `interaction_only` (squared terms on/off).
-  - **Random Forest:** `RandomForestRegressor` with `criterion="absolute_error"`; tuned `n_estimators` (200–400), `max_depth` (8–25), `min_samples_split` (20–150), `min_samples_leaf` (10–80), `max_features` (sqrt/log2/30%–70%), and `max_samples` (60%–100%).
-  - **XGBoost:** `XGBRegressor` with `objective="reg:absoluteerror"`; tuned `n_estimators` (400–800), `max_depth` (3–10), `learning_rate` (log-uniform 0.01–0.2), `min_child_weight` (1–20), `subsample` (60%–100%), `colsample_bytree` (50%–100%), and L1/L2 penalties `reg_alpha`/`reg_lambda` (uniform 0–5).
+  - **Elastic Net:** `Pipeline` with second-degree `PolynomialFeatures` + `ElasticNet`. Tuned `alpha` (regularization strength, log-uniform 0.01–1.0), `l1_ratio` (L1/L2 penalty mix, uniform 0.0–1.0), and `interaction_only` (squared terms on/off).
+  - **Random Forest:** `RandomForestRegressor` with `criterion="absolute_error"`. Tuned `n_estimators` (200–400), `max_depth` (8–25), `min_samples_split` (20–150), `min_samples_leaf` (10–80), `max_features` (sqrt/log2/30%–70%), and `max_samples` (60%–100%).
+  - **XGBoost:** `XGBRegressor` with `objective="reg:absoluteerror"`. Tuned `n_estimators` (400–800), `max_depth` (3–10), `learning_rate` (log-uniform 0.01–0.2), `min_child_weight` (1–20), `subsample` (60%–100%), `colsample_bytree` (50%–100%), and L1/L2 penalties `reg_alpha`/`reg_lambda` (uniform 0–5).
 
 | Model | MdAE | Overfitting | MAE | R² |
 | :--- | :---: | :---: | :---: | :---: |
@@ -302,8 +301,8 @@ The final model reuses the hyperparameters from the best tuned XGBoost point-est
 - **Decision:** Launch XGBoost quantile regression as the MVP model, with guardrails. Frame the product as a budgeting aid for individual out-of-pocket cost planning, not as a bill estimate, procedure-price tool, or medical advice.
 - **Evidence:** The model passes every product-facing release gate on the unseen test set: `q50` MdAE is **$240**, `q25`-`q75` coverage is **47.3%**, `q90` coverage is **91.0%**, `q25`-`q75` width is **$912**, and `q50`-`q90` width is **$2,032**. It also improves on naive population baselines for every user-facing output: plan-around skill is **9.8%**, typical-range interval skill is **11.2%**, and safety-cushion skill is **15.6%**.
 - **Prediction Output:** Show `q50` as the plan-around estimate, `q25`-`q75` as the typical range, and `q90` as the safety cushion. Do not present a single point estimate.
-- **Reliability & Fairness Audit:** The final subgroup audit supports launch. Predicted-risk tiers remain usable because they are known at prediction time, and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed. Other subgroups with coverage issues are uninsured users, users with poor mental health, low income, doctorate degree, and near-poor income. 🔗 [**See Final Model Reliability & Fairness Audit**](#xgboost-quantile-regression-reliability--fairness)
-- **Launch Conditions:** Ship only with range-based output, the scope disclaimer, 2023-to-current-dollar adjustment, conditional planning notices for high predicted uncertainty and uninsured users, and privacy-preserving aggregate monitoring.
+- **Reliability & Fairness Audit:** The final subgroup audit supports launch. Predicted-risk tiers remain usable and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed. Subgroups with coverage issues are uninsured users, users with a doctorate degree, poor mental health, and near-poor or low income.<br>🔗 [**See Final Model Reliability & Fairness Audit**](#xgboost-quantile-regression-reliability--fairness)
+- **Launch Conditions:** Ship only with range-based predictions, a scope disclaimer, 2023-to-current-dollar adjustment, prediction uncertainty planning notices for high predicted costs and uninsured users, and privacy-preserving aggregate monitoring.
 - **Monitoring:**  Track aggregate app health, completion rate, input drift, prediction drift, missingness, q50 distribution, q25-q75 width, q90 safety cushion, and high-uncertainty flags. Broad slices such as insurance status, poverty category, mental health, and chronic-condition count can explain shifts, but they cannot measure calibration without observed annual costs. Do not calibrate on app user data, because outcome collection would sacrifice user privacy.
 
 **Example Prediction Output**  
@@ -488,7 +487,7 @@ This project was made possible with the help of the following resources:
 - **Images**: 
   - Header: The [header image](./assets/header.png) was generated using [GPT Image 1.5](https://openai.com/index/new-chatgpt-images-is-here/) via the [ChatGPT app](https://chatgpt.com/) by OpenAI. 
   - Infographics: The [MEPS data infographic](./assets/infographic_meps_data.jpg) and the [U.S. healthcare costs infographic](./assets/infographic_healthcare_costs.png) were generated using [Gemini 3 Pro Image](https://deepmind.google/models/gemini-image/pro/) via the [Gemini app](https://gemini.google.com/app) by Google.
-- **AI Coding Assistant**: [Antigravity](https://antigravity.google/) by Google.
+- **AI Coding Assistant**: [Antigravity](https://antigravity.google/) by Google and [Codex](https://openai.com/codex/) by OpenAI.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
