@@ -67,7 +67,7 @@ from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 
 # Model selection
-from sklearn.model_selection import ParameterSampler
+from sklearn.model_selection import ParameterSampler, train_test_split
 
 # Model evaluation
 from sklearn.metrics import (
@@ -4580,8 +4580,9 @@ plot_quantile_subgroup_predictions(
 #                 <span style="font-size:0.85em; color:#555;">
 #                 <small style="font-weight:normal; color:#888;">(bar chart in app)</small><br>
 #                 Your plan-around estimate: \$420<br>
-#                 Typical American (median): \$480<br>
-#                 Typical for ages 18–34 (median): \$270
+#                 Typical American: \$248<br>
+#                 Typical for ages 18–34: \$70<br>
+#                 <small>Typical means the median cost: half of people spent less, and half spent more.</small>
 #                 </span>
 #                 </details>
 #                 <br>
@@ -4615,8 +4616,9 @@ plot_quantile_subgroup_predictions(
 #                 <span style="font-size:0.85em; color:#555;">
 #                 <small style="font-weight:normal; color:#888;">(bar chart in app)</small><br>
 #                 Your plan-around estimate: \$1,350<br>
-#                 Typical American (median): \$480<br>
-#                 Typical for ages 65+ (median): \$890
+#                 Typical American: \$248<br>
+#                 Typical for ages 65–74: \$576<br>
+#                 <small>Typical means the median cost: half of people spent less, and half spent more.</small>
 #                 </span>
 #                 </details>
 #                 <br>
@@ -4626,3 +4628,85 @@ plot_quantile_subgroup_predictions(
 #         </tr>
 #     </table>
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Prediction Benchmarks</h2>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Calculate comparison benchmarks (national and age group median) for the prediction output from the training set.
+# </div>
+
+# %%
+# Recreate the same deterministic train split from raw MEPS rows so age-group benchmarks use raw age,
+# not the scaled model feature in the preprocessed parquet files.
+df_benchmark_raw = pd.read_sas("../data/h251.sas7bdat", format="sas7bdat", encoding="latin1")
+df_benchmark_raw = df_benchmark_raw[[ID_COLUMN, "AGE23X", TARGET_COLUMN, WEIGHT_COLUMN]]
+df_benchmark_raw = df_benchmark_raw[
+    (df_benchmark_raw[WEIGHT_COLUMN] > 0) & (df_benchmark_raw["AGE23X"] >= 18)
+].copy()
+df_benchmark_raw[ID_COLUMN] = df_benchmark_raw[ID_COLUMN].astype(str)
+df_benchmark_raw.set_index(ID_COLUMN, inplace=True)
+
+X_benchmark = df_benchmark_raw.drop(TARGET_COLUMN, axis=1)
+y_benchmark = df_benchmark_raw[TARGET_COLUMN]
+benchmark_strata = create_stratification_bins(y_benchmark)
+
+X_benchmark_train, _, y_benchmark_train, _ = train_test_split(
+    X_benchmark,
+    y_benchmark,
+    test_size=0.20,
+    random_state=RANDOM_STATE,
+    stratify=benchmark_strata,
+)
+
+df_benchmark_train = X_benchmark_train.assign(**{TARGET_COLUMN: y_benchmark_train})
+
+# %%
+AGE_BENCHMARK_BINS = [18, 35, 45, 55, 65, 75, 86]
+AGE_BENCHMARK_LABELS = ["18-34", "35-44", "45-54", "55-64", "65-74", "75-85"]
+BENCHMARK_NOTE = "Typical means the middle spending amount: half of people spent less, and half spent more."
+
+df_benchmark_train = df_benchmark_train.assign(
+    AGE_BENCHMARK_GROUP=pd.cut(
+        df_benchmark_train["AGE23X"],
+        bins=AGE_BENCHMARK_BINS,
+        labels=AGE_BENCHMARK_LABELS,
+        right=False,
+    )
+)
+
+benchmark_rows = [
+    {
+        "Comparison": "Typical American",
+        "Benchmark Out-of-Pocket Cost": weighted_quantile(
+            df_benchmark_train[TARGET_COLUMN],
+            df_benchmark_train[WEIGHT_COLUMN],
+            0.5,
+        ),
+        "Sample Size": len(df_benchmark_train),
+    }
+]
+
+for age_group, df_group in df_benchmark_train.groupby("AGE_BENCHMARK_GROUP", observed=True):
+    benchmark_rows.append({
+        "Comparison": f"Typical for ages {age_group}",
+        "Benchmark Out-of-Pocket Cost": weighted_quantile(
+            df_group[TARGET_COLUMN],
+            df_group[WEIGHT_COLUMN],
+            0.5,
+        ),
+        "Sample Size": len(df_group),
+    })
+
+prediction_output_benchmarks = pd.DataFrame(benchmark_rows)
+prediction_output_benchmarks
+
+# %%
+(
+    prediction_output_benchmarks.style
+    .format({"Benchmark Out-of-Pocket Cost": "${:,.0f}", "Sample Size": "{:,}"})
+    .hide(axis="index")
+    .pipe(add_table_caption, "Prediction Output Benchmarks")
+)
