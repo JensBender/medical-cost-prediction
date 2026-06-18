@@ -302,7 +302,7 @@ The final model reuses the hyperparameters from the best tuned XGBoost point-est
 - **Evidence:** The model passes every product-facing release gate on the unseen test set: `q50` MdAE is **$240**, `q25`-`q75` coverage is **47.3%**, `q90` coverage is **91.0%**, `q25`-`q75` width is **$912**, and `q50`-`q90` width is **$2,032**. It also improves on naive population baselines for every user-facing output: plan-around skill is **9.8%**, typical-range interval skill is **11.2%**, and safety-cushion skill is **15.6%**.
 - **Prediction Output:** Show `q50` as the plan-around estimate, `q25`-`q75` as the typical range, and `q90` as the safety cushion. Do not present a single point estimate.
 - **Reliability & Fairness Audit:** The final subgroup audit supports launch. Predicted-risk tiers remain usable and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed. Subgroups with coverage issues are uninsured users, users with a doctorate degree, poor mental health, and near-poor or low income.<br>🔗 [**See Final Model Reliability & Fairness Audit**](#xgboost-quantile-regression-reliability--fairness)
-- **Launch Conditions:** Ship only with range-based predictions, a scope disclaimer, 2023-to-current-dollar adjustment, prediction uncertainty planning notices for high predicted costs and uninsured users, and privacy-preserving aggregate monitoring.
+- **Launch Conditions:** Ship only with range-based predictions, a scope disclaimer, 2023-to-current-dollar adjustment, prediction uncertainty planning notices for high-cost and uninsured users, and privacy-preserving aggregate monitoring.
 - **Monitoring:**  Track aggregate app health, completion rate, input drift, prediction drift, missingness, q50 distribution, q25-q75 width, q90 safety cushion, and high-uncertainty flags. Broad slices such as insurance status, poverty category, mental health, and chronic-condition count can explain shifts, but they cannot measure calibration without observed annual costs. Do not calibrate on app user data, because outcome collection would sacrifice user privacy.
 
 **Example Prediction Output**  
@@ -317,7 +317,7 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.
 >
 > **Planning note**  
-> Costs for profiles like yours can vary a lot from year to year. Because you're uninsured, out-of-pocket costs can be harder to predict. The plan-around and typical range are useful starting points, but for budgeting decisions, lean toward the safety cushion.
+> Costs for profiles like yours can vary a lot from year to year. Because you fall in a higher-cost range and are uninsured, out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion.
 >
 > <details>
 > <summary><strong>What's driving your estimate</strong> <small>(click to expand)</small></summary>

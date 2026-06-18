@@ -4486,27 +4486,27 @@ plot_quantile_subgroup_predictions(
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Actual cost tiers</td>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">High and very-high actual spenders show typical-range and safety-cushion undercoverage. Zero- and low-cost actual spenders show safety-cushion overcoverage.</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Show an always-on limitation notice for rare high costs. Also show <code>HIGH_PREDICTED_UNCERTAINTY</code> when predicted q90 is in the top 20% (threshold from validation data), because q90 is the safety-cushion signal for higher-cost-year exposure.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Show a limitation notice for rare high costs in the always-on disclaimer. Also show a planning note for <code>HIGH_PREDICTED_UNCERTAINTY</code> when predicted q90 is in the top 20% (threshold from validation data): "This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict."</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Insurance</td>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Uninsured users show typical-range undercoverage (34.7%) and safety-cushion overcoverage (96.3%).</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Show <code>UNINSURED_UNCERTAINTY</code>: tell users the typical range may be less stable for uninsured profiles and present q90 as the conservative planning reference.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Show a planning note for <code>UNINSURED_UNCERTAINTY</code>: "Because you're uninsured, out-of-pocket costs can be harder to predict."</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Mental health</td>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Poor mental health shows typical-range undercoverage. Good mental health shows wide low-cost intervals.</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Do not show a mental-health-specific planning notice. Check on a future MEPS year; revisit only if safety-cushion undercoverage appears or worsens.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Show a generic planning notice to communicate prediction uncertainty: "Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." Do not show a mental-health-specific planning notice to avoid stigmatization. Check on a future MEPS year and revisit if safety-cushion undercoverage worsens.</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Poverty category</td>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Low income shows typical-range undercoverage. Near poor shows safety-cushion overcoverage.</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Do not show a low-income-specific planning notice. Check on a future MEPS year.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">For low income, show the generic planning notice to communicate prediction uncertainty. Do not show a poverty-specific planning notice to avoid stigmatization. For near poor, do not trigger safety-cushion guidance because this subgroup shows safety-cushion overcoverage. Check on a future MEPS year.</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Education</td>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Doctorate degree shows typical-range undercoverage.</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Do not add a doctorate-specific planning notice. Check on a future MEPS year.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">For doctorate degree, show the generic planning notice to communicate prediction uncertainty. Do not add a doctorate-specific planning notice to avoid stigmatization. Check on a future MEPS year.</td>
 #             </tr>
 #         </tbody>
 #     </table>
@@ -4537,8 +4537,8 @@ plot_quantile_subgroup_predictions(
 #         <li><b>Evidence:</b> The model passes all product-facing release gates on the unseen test set: q50 MdAE = \$240, q25-q75 coverage = 47.3%, q90 coverage = 91.0%, q25-q75 width = \$912, and q50-q90 width = \$2,032. It also improves on naive population baselines for every user-facing output: q50 skill = 9.8%, typical-range interval skill = 11.2%, and q90 skill = 15.6%.</li>
 #         <li><b>Calibration:</b> Do not add conformalized quantile regression for the MVP. Test calibration passes the predefined gates. Any calibration change should be evaluated in a new validation cycle, preferably against a later MEPS year when available.</li>
 #         <li><b>Prediction Output:</b> Show q50 as the plan-around estimate, q25-q75 as the typical range, and q90 as the safety cushion. Do not present a single point estimate.</li>
-#         <li><b>Caveats:</b> Explain that the model uses 2023 MEPS individual out-of-pocket spending. It excludes premiums, over-the-counter costs, family totals, and procedure prices. It can miss rare high-cost years, especially for users whose realized costs land in the extreme tail.</li>
-#         <li><b>Launch Conditions:</b> Ship only with range-based output, the scope disclaimer, 2023-to-current-dollar adjustment, conditional planning notices to communicate prediction uncertainty for high-cost and uninsured users, and privacy-preserving aggregate monitoring.</li>
+#         <li><b>Launch Conditions:</b> Ship only with range-based predictions, the scope disclaimer, 2023-to-current-dollar adjustment, conditional planning notices to communicate prediction uncertainty for high predicted costs and uninsured users, and privacy-preserving aggregate monitoring.</li>
+#         <li><b>Scope Disclaimer:</b> Explain that the model uses 2023 MEPS individual out-of-pocket spending. It excludes premiums, over-the-counter costs, family totals, and procedure prices. It can miss rare high-cost years, especially for users whose realized costs land in the extreme tail.</li>
 #         <li><b>Monitoring:</b> Track aggregate app health, completion rate, input drift, prediction drift, missingness, q50 distribution, q25-q75 width, q90 safety cushion, and high-uncertainty flags. Broad slices such as insurance status, poverty category, mental health, and chronic-condition count can explain shifts, but they cannot measure calibration without observed annual costs.</li>
 #         <li><b>Post-Launch Learning:</b> Do not calibrate on app user data. True calibration requires observed annual out-of-pocket costs, and collecting linked follow-up outcomes would conflict with the anonymous, zero-retention product requirement. If outcome collection becomes a product goal, treat it as a separate opt-in study with consent, retention limits, data minimization, and a privacy review.</li>
 #     </ul>
@@ -4597,7 +4597,7 @@ plot_quantile_subgroup_predictions(
 #                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span>
 #                 <br><br>
 #                 <b>Planning note</b><br>
-#                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary a lot from year to year. Because you're uninsured, out-of-pocket costs can be harder to predict. The plan-around and typical range are useful starting points, but for budgeting decisions, lean toward the safety cushion.</span>
+#                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary a lot from year to year. Because you fall in a higher-cost range and are uninsured, out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion.</span>
 #                 <br><br>
 #                 <details style="margin-bottom:8px;">
 #                 <summary style="cursor:pointer;"><strong>What's driving your estimate</strong> <small>(click to expand)</small></summary>
