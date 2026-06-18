@@ -139,7 +139,7 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **FR-03** | **Cost Range** | Generate 25th–75th percentile range (typical range) and 90th percentile (budget-safe estimate) to communicate prediction uncertainty. Never output a single point estimate. |
 | **FR-04** | **Cost Drivers** | Compute SHAP values for each prediction to explain feature contributions as dollar impacts. |
 | **FR-05** | **Comparison Benchmarks** | Compare user's prediction to (1) national average and (2) average for their age group. Pre-compute benchmarks from MEPS data. |
-| **FR-06** | **Prediction Notice Policy** | Generate actionable planning notices for high predicted uncertainty (derive thresholds from validation set), missing optional inputs, uninsured users, and public insurance policy changes. |
+| **FR-06** | **Prediction Notice Policy** | Generate actionable planning notices for high predicted uncertainty (derive thresholds from validation set), uninsured users, typical-range undercoverage watchlist profiles, missing optional inputs, and public insurance policy changes. |
 
 ### Result Display
 | ID | Component | Description | UI Element | Example |
@@ -148,20 +148,21 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **UI-02** | **Cost Drivers** | Explanation of key cost drivers and their dollar impact (SHAP). | `gr.Markdown` | "Your Diabetes Diagnosis (+$1,200), your Age (+$400), but your "Excellent" self-reported health lowered the estimate by (-$300)" |
 | **UI-03** | **Comparison Benchmarks** | Bar chart comparing user vs. national and age group benchmarks. | `gr.Plot` | "Typical American (median): $4,800 vs. Typical for Age 45–54 (median): $3,200" |
 | **UI-04** | **Limitations Notice** | Always-on guidance to help users interpret their prediction and understand the rare-tail limitation. | `gr.Markdown` | "**About This Estimate**<br>• Based on 2023 national survey data; recent policy changes may affect actual costs.<br>• Does not include insurance premiums or over-the-counter medications.<br>• Some high-cost years are driven by new diagnoses, accidents, hospitalizations, or plan-specific billing details this form cannot know in advance." |
-| **UI-05** | **Planning Notice** | Dynamic planning notice displayed only when it is actionable and based on the current prediction or user-selected inputs. | `gr.Markdown` | "**Planning note**<br>People with similar profiles had higher potential out-of-pocket costs. Treat the plan-around estimate as a midpoint, and use the safety cushion as a conservative planning reference for a higher-cost year." |
+| **UI-05** | **Planning Notice** | Dynamic planning notice displayed only when it is actionable and based on the current prediction or user-selected inputs. | `gr.Markdown` | "**Planning note**<br>Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." |
 | **UI-06** | **Permanent Footer** | Always-visible disclaimer at the bottom of the page. Covers legal liability and data aging limitations. | `gr.Markdown` | *"Not intended as medical, financial, or legal advice. Based on 2023 U.S. national survey data."* |
 
 ### Prediction Notice Policy
-Planning notices must be concise, neutral, and tied to a concrete user action. The app should not display stigmatizing subgroup notices. In particular, the low income, poor mental health, doctorate degree, and near-poor subgroup limitations should be handled through documentation and validation on future MEPS data sets rather than direct user-facing notices.
+Planning notices must be concise, neutral, and tied to a concrete user action. The app can use subgroup diagnostics to decide when to show a note, but the user-facing reason should be named only when it is informative and unlikely to stigmatize. Name high predicted costs and uninsured status in the planning note. For low income, poor mental health, and doctorate degree (subgroups with typical-range undercoverage), show only the generic planning note and do not name the subgroup to avoid stigmatization. Do not trigger safety-cushion guidance for subgroups with  safety-cushion overcoverage (i.e., near-poor income).
 
 | Warning Flag | Trigger | User-Facing Guidance |
 | :--- | :--- | :--- |
-| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) falls in the top 20% (threshold derived from validation data) | Explain that similar profiles had higher potential out-of-pocket costs and present the safety cushion as a conservative planning reference |
-| `UNINSURED_UNCERTAINTY` | Uninsured | Explain that the typical range may be less stable for uninsured users and present the safety cushion as the more conservative planning reference |
+| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) falls in the top 20% (threshold derived from validation data); use predicted `q90` costs, not predicted `q50`, because the safety cushion is the user-facing signal for potential higher cost years | Explain that the estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict |
+| `UNINSURED_UNCERTAINTY` | Uninsured | Explain that out-of-pocket costs can be harder to predict for uninsured users |
+| `TYPICAL_RANGE_UNDERCOVERAGE` | Subgroup with typical-range undercoverage (low income, poor mental health, doctorate degree) and risk of stigmatizing when planning notice calls out the subgroup | Show the generic planning note without naming the subgroup |
 | `MISSING_OPTIONAL_INPUTS` | One or more optional inputs are skipped and imputed | Explain that typical training values were used and that more complete inputs may make the estimate more tailored |
 | `PUBLIC_INSURANCE_POLICY_CHANGE` | User selects public-only coverage | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs compared with estimates based on 2023 survey data |
 
-The always-on limitations notice remains the primary way to communicate that rare future high-cost events cannot always be identified from pre-year user inputs. The dynamic high-uncertainty flag should be based on predicted cost tiers because actual cost tiers are unknown at prediction time. Use predicted `q90` costs, not predicted `q50`, because the safety cushion is the user-facing signal for potential higher cost years.
+The always-on limitations notice remains the primary way to communicate that rare high-cost events cannot always be identified from pre-year user inputs. The dynamic high-uncertainty flag should be based on predicted cost tiers because actual cost tiers are unknown at prediction time.  
 
 Planning notices should render as one compact panel below the prediction block, not as multiple stacked paragraphs. If several flags trigger, combine them in priority order and avoid repeating the same safety-cushion guidance. Keep the always-on scope disclaimer separate and quieter.
 
