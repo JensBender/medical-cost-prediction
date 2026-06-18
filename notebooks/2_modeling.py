@@ -4473,44 +4473,44 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Prediction Usefulness:</strong> Several low-cost groups have wide prediction intervals despite in-band coverage, including good physical health, good mental health, Asian respondents, and the West region. This is a practical-budgeting caveat rather than a safety failure, because the model often protects users in these subgroups from underestimation, but some low-cost users may receive ranges that are less specific than desired.</li>
 #     </ul>
 #     <p style="margin-top:12px"><strong>Caveats and Recommended Actions</strong> <br> 
-#         User-facing actions are limited to always-on scope disclaimers or conditional planning notices. Aggregate app monitoring can detect shifts in inputs and predictions, but it cannot monitor subgroup performance without the unknown actual costs.</p>
+#         The main user-facing response to typical-range undercoverage is a planning note that tells users to treat the plan-around amount and typical range as starting points and plan closer to the safety cushion. Use this same generic note for all affected profiles:</p>
+#     <p style="margin-top:8px; padding:10px; background-color:#f4fbf4; border-left:4px solid #6aa56a;">
+#         "Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion."
+#     </p>
+#     <p style="margin-top:8px">
+#         Add additional detail for high predicted costs and uninsured profiles because those reasons are directly useful for budgeting. Do not name low income, poor mental health, or doctorate degree to avoid stigmatization.</p>
 #     <table style="width:100%; border-collapse:collapse; margin-top:8px; font-size:0.92em;">
 #         <thead>
 #             <tr style="background-color:#e0f0e0;">
-#                 <th style="padding:8px; border:1px solid #d6e8d6; text-align:left;">Column</th>
-#                 <th style="padding:8px; border:1px solid #d6e8d6; text-align:left;">Caveat</th>
-#                 <th style="padding:8px; border:1px solid #d6e8d6; text-align:left;">Recommended Action</th>
+#                 <th style="padding:8px; border:1px solid #d6e8d6; text-align:left;">Finding</th>
+#                 <th style="padding:8px; border:1px solid #d6e8d6; text-align:left;">Affected Profiles</th>
+#                 <th style="padding:8px; border:1px solid #d6e8d6; text-align:left;">Planning Notice Policy</th>
 #             </tr>
 #         </thead>
 #         <tbody>
 #             <tr>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Actual cost tiers</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">High and very-high actual spenders show typical-range and safety-cushion undercoverage. Zero- and low-cost actual spenders show safety-cushion overcoverage.</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Show a limitation notice for rare high costs in the always-on disclaimer. Also show a planning note for <code>HIGH_PREDICTED_UNCERTAINTY</code> when predicted q90 is in the top 20% (threshold from validation data): "This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict."</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Rare actual high-cost years remain hard to predict.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Actual high and very-high spenders, which are not knowable at prediction time.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Keep the rare-high-cost limitation in the always-on disclaimer. Also show planning note for <code>HIGH_PREDICTED_UNCERTAINTY</code> when predicted q90 is in the top 20%: "This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict."</td>
 #             </tr>
 #             <tr>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Insurance</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Uninsured users show typical-range undercoverage (34.7%) and safety-cushion overcoverage (96.3%).</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Show a planning note for <code>UNINSURED_UNCERTAINTY</code>: "Because you're uninsured, out-of-pocket costs can be harder to predict."</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Typical range undercoverage means users may see actual costs above the displayed range more often than intended.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Uninsured users (34.7% typical-range coverage), poor mental health (30.1%), low income (39.2%), and doctorate degree (34.7%).</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Show the generic planning note for all affected subgroups. For uninsured users, also note that "Because you are uninsured, out-of-pocket costs can be harder to predict." For low income, poor mental health, and doctorate degree, do not name the subgroup.</td>
 #             </tr>
 #             <tr>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Mental health</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Poor mental health shows typical-range undercoverage. Good mental health shows wide low-cost intervals.</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Show a generic planning notice to communicate prediction uncertainty: "Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." Do not show a mental-health-specific planning notice to avoid stigmatization. Check on a future MEPS year and revisit if safety-cushion undercoverage worsens.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Safety-cushion overcoverage means q90 may be more conservative than needed.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Zero- and low-cost actual spenders, and near-poor income users (97.7% safety-cushion coverage).</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Do not trigger safety-cushion guidance. Document and monitor the pattern, but avoid telling these users to plan closer to the safety cushion unless another undercoverage trigger also applies.</td>
 #             </tr>
 #             <tr>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Poverty category</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Low income shows typical-range undercoverage. Near poor shows safety-cushion overcoverage.</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">For low income, show the generic planning notice to communicate prediction uncertainty. Do not show a poverty-specific planning notice to avoid stigmatization. For near poor, do not trigger safety-cushion guidance because this subgroup shows safety-cushion overcoverage. Check on a future MEPS year.</td>
-#             </tr>
-#             <tr>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Education</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Doctorate degree shows typical-range undercoverage.</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">For doctorate degree, show the generic planning notice to communicate prediction uncertainty. Do not add a doctorate-specific planning notice to avoid stigmatization. Check on a future MEPS year.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Some low-cost groups receive wide intervals despite acceptable coverage.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Good physical health, good mental health, Asian respondents, and the West region.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Do not add a separate planning notice for wide intervals. The wide range already communicates uncertainty. Treat this as a usefulness caveat and revisit in future MEPS years.</td>
 #             </tr>
 #         </tbody>
 #     </table>
-#     <i>Note: Wide prediction interval flags are useful for diagnostic purposes, but not as a separate planning notice, since the wide range itself communicates the uncertainty.</i>
+#     <i>Implementation rule: render one compact planning note panel and combine triggered messages without repeating the safety-cushion guidance.</i>
 # </div>
 
 # %% [markdown]
@@ -4597,7 +4597,7 @@ plot_quantile_subgroup_predictions(
 #                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span>
 #                 <br><br>
 #                 <b>Planning note</b><br>
-#                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary a lot from year to year. Because you fall in a higher-cost range and are uninsured, out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion.</span>
+#                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary a lot from year to year. This estimate falls in a higher-cost range, and because you are uninsured, out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion.</span>
 #                 <br><br>
 #                 <details style="margin-bottom:8px;">
 #                 <summary style="cursor:pointer;"><strong>What's driving your estimate</strong> <small>(click to expand)</small></summary>
