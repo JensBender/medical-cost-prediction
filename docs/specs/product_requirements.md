@@ -158,7 +158,7 @@ Planning notices must be concise, neutral, and tied to a concrete user action. T
 | :--- | :--- | :--- |
 | `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) falls in the top 20% (threshold derived from validation data); use predicted `q90` costs, not predicted `q50`, because the safety cushion is the user-facing signal for potential higher cost years | Explain that the estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict |
 | `UNINSURED_UNCERTAINTY` | Uninsured | Explain that out-of-pocket costs can be harder to predict for uninsured users |
-| `TYPICAL_RANGE_UNDERCOVERAGE` | Subgroup with typical-range undercoverage (low income, poor mental health, doctorate degree) and risk of stigmatizing when planning notice calls out the subgroup | Show the generic planning note without naming the subgroup |
+| `TYPICAL_RANGE_UNDERCOVERAGE` | Subgroups with typical-range undercoverage (low income, poor mental health, doctorate degree) and risk of stigmatizing when planning notice calls out the subgroup | Show the generic planning note without naming the subgroup |
 | `MISSING_OPTIONAL_INPUTS` | One or more optional inputs are skipped and imputed | Explain that typical training values were used and that more complete inputs may make the estimate more tailored |
 | `PUBLIC_INSURANCE_POLICY_CHANGE` | User selects public-only coverage | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs compared with estimates based on 2023 survey data |
 
