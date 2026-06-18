@@ -362,10 +362,23 @@ The prediction service will expose the trained model artifact via a Python API (
       "prediction_25th": float,
       "prediction_75th": float,
       "prediction_90th": float,
+      "benchmark_comparison": {
+        "national": {
+          "label": "Typical American",
+          "median_cost": float
+        },
+        "age_group": {
+          "label": "Typical for ages 45-54",
+          "median_cost": float
+        },
+        "note": "Typical means the median cost: half of people spent less, and half spent more."
+      },
       "shap_values": Dict[str, float],
       "warning_flags": List[str]
     }
     ```
+
+*   **Benchmark Comparisons:** Pre-compute comparison benchmarks from the MEPS training set. Calculate the weighted median out-of-pocket costs (`TOTSLF23`) overall and by age group. The user-facing UI should say "Typical American" and "Typical for ages 45-54". Age benchmark groups are `18-34`, `35-44`, `45-54`, `55-64`, `65-74`, and `75-85`.
 
 #### Prediction Warning Flags
 `warning_flags` are API values. Planning notices are user-facing copy rendered from one or more warning flags. Generate `warning_flags` before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. The app can use subgroup diagnostics to decide when to show a note, but the rendered note should name the reason only when it is informative and unlikely to stigmatize.
