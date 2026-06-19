@@ -48,6 +48,10 @@
 # </div>
 
 # %%
+# Standard library
+import json
+from pathlib import Path
+
 # Data manipulation
 import pandas as pd
 import numpy as np
@@ -2406,6 +2410,7 @@ split_verification_df.style \
 # %%
 AGE_BENCHMARK_BINS = [18, 35, 50, 65, 86]
 AGE_BENCHMARK_LABELS = ["18-34", "35-49", "50-64", "65+"]
+COST_BENCHMARKS_PATH = Path("../app/data/cost_benchmarks.json")
 
 df_cost_benchmarks = X_train[[WEIGHT_COLUMN, "AGE23X"]].assign(**{TARGET_COLUMN: y_train})
 benchmark_required_cols = [WEIGHT_COLUMN, "AGE23X", TARGET_COLUMN]
@@ -2420,34 +2425,58 @@ df_cost_benchmarks = df_cost_benchmarks.assign(
     )
 )
 
-cost_benchmarks = [
+national_median_cost = weighted_quantile(
+    df_cost_benchmarks[TARGET_COLUMN],
+    df_cost_benchmarks[WEIGHT_COLUMN],
+    0.5,
+)
+
+cost_benchmarks_app = {
+    "schema_version": 1,
+    "data_source": "MEPS 2023 (HC-251), training split",
+    "currency_year": 2023,
+    "national": {
+        "label": "Typical American",
+        "median_cost": int(round(national_median_cost)),
+    },
+    "age_groups": [],
+}
+
+cost_benchmarks_display = [
     {
-        "Benchmark": "Typical American",
-        "Median Cost": weighted_quantile(
-            df_cost_benchmarks[TARGET_COLUMN],
-            df_cost_benchmarks[WEIGHT_COLUMN],
-            0.5,
-        ),
+        "Benchmark": cost_benchmarks_app["national"]["label"],
+        "Median Cost": national_median_cost,
         "Population Size": df_cost_benchmarks[WEIGHT_COLUMN].sum(),
         "Sample Size": len(df_cost_benchmarks),
     }
 ]
 
 for age_group, df_group in df_cost_benchmarks.groupby("AGE_BENCHMARK_GROUP", observed=True):
-    cost_benchmarks.append({
+    median_cost = weighted_quantile(
+        df_group[TARGET_COLUMN],
+        df_group[WEIGHT_COLUMN],
+        0.5,
+    )
+
+    cost_benchmarks_app["age_groups"].append({
+        "label": str(age_group),
+        "median_cost": int(round(median_cost)),
+    })
+    cost_benchmarks_display.append({
         "Benchmark": f"Typical for ages {age_group}",
-        "Median Cost": weighted_quantile(
-            df_group[TARGET_COLUMN],
-            df_group[WEIGHT_COLUMN],
-            0.5,
-        ),
+        "Median Cost": median_cost,
         "Sample Size": len(df_group),
         "Population Size": df_group[WEIGHT_COLUMN].sum(),
     })
 
+COST_BENCHMARKS_PATH.parent.mkdir(parents=True, exist_ok=True)
+with COST_BENCHMARKS_PATH.open("w", encoding="utf-8") as f:
+    json.dump(cost_benchmarks_app, f, indent=2)
+    f.write("\n")
+
 # %%
 display(
-    pd.DataFrame(cost_benchmarks)
+    pd.DataFrame(cost_benchmarks_display)
     .style
     .format({"Median Cost": "${:,.0f}", "Sample Size": "{:,}", "Population Size": "{:,.0f}"})
     .hide(axis="index")

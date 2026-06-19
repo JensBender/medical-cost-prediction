@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "data_source": "MEPS 2023 (HC-251), training split",
+  "currency_year": 2023,
+  "national": {
+    "label": "Typical American",
+    "median_cost": 248
+  },
+  "age_groups": [
+    {
+      "label": "18-34",
+      "median_cost": 70
+    },
+    {
+      "label": "35-49",
+      "median_cost": 170
+    },
+    {
+      "label": "50-64",
+      "median_cost": 355
+    },
+    {
+      "label": "65+",
+      "median_cost": 608
+    }
+  ]
+}
