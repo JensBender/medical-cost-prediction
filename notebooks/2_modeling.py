@@ -2277,11 +2277,11 @@ plot_subgroup_performance(
 #     <tr>
 #         <td style="width: 50%; padding: 0 10px; vertical-align: bottom;">
 #             <strong>Low Cost Profile</strong><br>
-#             <small>28-year-old with no chronic conditions</small>
+#             <i>28-year-old with no chronic conditions</i>
 #         </td>
 #         <td style="width: 50%; padding: 0 10px; vertical-align: bottom;">
 #             <strong>High Cost Profile</strong><br>
-#             <small>68-year-old with multiple chronic conditions</small>
+#             <i>68-year-old with multiple chronic conditions</i>
 #         </td>
 #     </tr>
 #     <tr>
@@ -4550,11 +4550,11 @@ plot_quantile_subgroup_predictions(
 #         <tr>
 #             <td style="width:50%; padding:0 10px; vertical-align:bottom;">
 #                 <strong>Low Cost Profile</strong><br>
-#                 <small>28-year-old with no chronic conditions</small>
+#                 <i>28-year-old with no chronic conditions</i>
 #             </td>
 #             <td style="width:50%; padding:0 10px; vertical-align:bottom;">
 #                 <strong>High Cost Profile</strong><br>
-#                 <small>68-year-old, uninsured, and with multiple chronic conditions</small>
+#                 <i>68-year-old, uninsured, and with multiple chronic conditions</i>
 #             </td>
 #         </tr>
 #         <tr>
@@ -4566,7 +4566,7 @@ plot_quantile_subgroup_predictions(
 #                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span>
 #                 <br><br>
 #                 <details style="margin-bottom:8px;">
-#                 <summary style="cursor:pointer;"><strong>What's driving your estimate</strong> <small>(click to expand)</small></summary>
+#                 <summary style="cursor:pointer;"><strong>What's driving your estimate</strong> <i>(click to expand)</i></summary>
 #                 <span style="font-size:0.85em; color:#555;">
 #                 These factors had the largest effect on your plan-around estimate:<br>
 #                 🔽 Your age (28): −\$210<br>
@@ -4576,13 +4576,13 @@ plot_quantile_subgroup_predictions(
 #                 </span>
 #                 </details>
 #                 <details style="margin-bottom:8px;">
-#                 <summary style="cursor:pointer;""><strong>How you compare to others</strong> <small>(click to expand)</small></summary>
+#                 <summary style="cursor:pointer;""><strong>How you compare to others</strong> <i>(click to expand)</i></summary>
 #                 <span style="font-size:0.85em; color:#555;">
-#                 <small style="font-weight:normal; color:#888;">(bar chart in app)</small><br>
+#                 <i>(bar chart in app)</i><br>
 #                 Your plan-around estimate: \$420<br>
 #                 Typical American: \$248<br>
 #                 Typical for ages 18-34: \$70<br>
-#                 <small>Typical means the median cost: half of people spent less, and half spent more.</small>
+#                 <i>Typical means the median cost: half of people spent less, and half spent more.</i>
 #                 </span>
 #                 </details>
 #                 <br>
@@ -4601,7 +4601,7 @@ plot_quantile_subgroup_predictions(
 #                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary a lot from year to year. This estimate falls in a higher-cost range, and because you are uninsured, out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion.</span>
 #                 <br><br>
 #                 <details style="margin-bottom:8px;">
-#                 <summary style="cursor:pointer;"><strong>What's driving your estimate</strong> <small>(click to expand)</small></summary>
+#                 <summary style="cursor:pointer;"><strong>What's driving your estimate</strong> <i>(click to expand)</i></summary>
 #                 <span style="font-size:0.85em; color:#555;">
 #                 These factors had the largest effect on your plan-around estimate:<br>
 #                 🔼 Your age (68): +\$480<br>
@@ -4612,13 +4612,13 @@ plot_quantile_subgroup_predictions(
 #                 </span>
 #                 </details>
 #                 <details style="margin-bottom:8px;">
-#                 <summary style="cursor:pointer;""><strong>How you compare to others</strong> <small>(click to expand)</small></summary>
+#                 <summary style="cursor:pointer;""><strong>How you compare to others</strong> <i>(click to expand)</i></summary>
 #                 <span style="font-size:0.85em; color:#555;">
-#                 <small style="font-weight:normal; color:#888;">(bar chart in app)</small><br>
+#                 <i>(bar chart in app)</i><br>
 #                 Your plan-around estimate: \$1,350<br>
 #                 Typical American: \$248<br>
 #                 Typical for ages 65+: \$608<br>
-#                 <small>Typical means the median cost: half of people spent less, and half spent more.</small>
+#                 <i>Typical means the median cost: half of people spent less, and half spent more.</i>
 #                 </span>
 #                 </details>
 #                 <br>

@@ -104,7 +104,7 @@ Utilized the **2023 Full-Year Consolidated Data File (HC-251)**:
 The target variable is **total out-of-pocket health care costs in 2023** (`TOTSLF23`), including copays, deductibles, and uncovered services. The goal is to facilitate financial planning and healthcare budgeting. By estimating next year's out-of-pocket costs, users can make data-driven decisions about FSA/HSA contributions and better prepare for their financial exposure. For uninsured users, out-of-pocket costs approximate total costs.  
 
 <details>
-<summary>ℹ️ <strong>U.S. Healthcare Costs Explained</strong> <small>(click to expand)</small></summary>
+<summary>ℹ️ <strong>U.S. Healthcare Costs Explained</strong> <i>(click to expand)</i></summary>
 
 ![U.S. Healthcare Costs Infographic](./assets/infographic_healthcare_costs.png)
 </details>
@@ -320,7 +320,7 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > Costs for profiles like yours can vary a lot from year to year. This estimate falls in a higher-cost range, and because you are uninsured, out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion.
 >
 > <details>
-> <summary><strong>What's driving your estimate</strong> <small>(click to expand)</small></summary>
+> <summary><strong>What's driving your estimate</strong> <i>(click to expand)</i></summary>
 > These factors had the largest effect on your plan-around estimate:<br>
 > - 🔼 Your age (68): +$480<br>
 > - 🔼 Diabetes: +$370<br>
@@ -330,11 +330,11 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > </details>
 >
 > <details>
-> <summary><strong>How you compare to others</strong> <small>(click to expand)</small></summary>
+> <summary><strong>How you compare to others</strong> <i>(click to expand)</i></summary>
 > - Your plan-around estimate: $1,350<br>
 > - Typical American: $248<br>
 > - Typical for ages 65+: $608<br>
-> - <small>Typical means the median cost: half of people spent less, and half spent more.</small><br>
+> - <i>Typical means the median cost: half of people spent less, and half spent more.</i><br>
 > </details>
 > <br>
 >
