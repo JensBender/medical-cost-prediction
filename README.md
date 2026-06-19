@@ -346,75 +346,79 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 
 ## 📂 Project Structure
 ```text
-├── notebooks/                         # Jupyter Notebooks 
+├── notebooks/                         # Jupyter notebooks 
 │   ├── 1_eda_and_preprocessing.ipynb  # EDA, preprocessing, and pipeline development
 │   ├── 1_eda_and_preprocessing.py     # Script version (generated via Jupytext)
-│   ├── 2_modeling.ipynb               # Model training, evaluation and hyperparameter tuning 
+│   ├── 2_modeling.ipynb               # Model training, evaluation, and tuning
 │   └── 2_modeling.py                  # Script version (generated via Jupytext)
 │
-├── scripts/                   # Reproducible pipeline scripts 
-│   ├── preprocess.py          # Production-ready data preprocessing
-│   ├── train_baseline.py      # Baseline model training 
-│   ├── tune_elastic_net.py    # Hyperparameter tuning for Elastic Net
-│   ├── tune_random_forest.py  # Hyperparameter tuning for Random Forest
-│   ├── tune_xgboost.py        # Hyperparameter tuning for XGBoost
-│   └── benchmark_llm.py       # LLM prediction benchmark
+├── scripts/                           # Reproducible pipeline scripts
+│   ├── benchmark_llm.py               # LLM prediction benchmark
+│   ├── preprocess.py                  # Production-ready data preprocessing
+│   ├── train_baseline.py              # Baseline model training
+│   ├── train_xgboost_quantile.py      # Quantile model training
+│   ├── tune_elastic_net.py            # Hyperparameter tuning for Elastic Net
+│   ├── tune_random_forest.py          # Hyperparameter tuning for Random Forest
+│   └── tune_xgboost.py                # Hyperparameter tuning for XGBoost
 │
-├── src/                     # Core package source code 
-│   ├── data.py              # Custom cost stratification logic 
-│   ├── constants.py         # Feature lists and display labels
-│   ├── display.py           # Human-readable display labels and visualization styles (Notebook/UI)
-│   ├── modeling.py          # Core model training and evaluation functions
-│   ├── params.py            # Hyperparameter search spaces and configurations
-│   ├── transformers.py      # Custom Scikit-learn transformers
-│   └── pipeline.py          # Preprocessing and prediction pipelines
+├── src/                               # Core package source code
+│   ├── __init__.py
+│   ├── constants.py                   # Feature lists
+│   ├── display.py                     # Notebook and UI display labels/styles
+│   ├── modeling.py                    # Core model training and evaluation functions
+│   ├── params.py                      # Hyperparameter search configuration
+│   ├── pipeline.py                    # Preprocessing and prediction pipelines
+│   ├── stats.py                       # Weighted statistics and stratification helpers
+│   └── transformers.py                # Custom scikit-learn transformers
 │
-├── app/                     # (Planned) Web application source code
+├── app/                               # Web application source code
+│   └── data/
+│       └── cost_benchmarks.json       # Cost comparison benchmarks
 │
-├── models/                  # (Planned) Trained model artifacts (ignored by Git)
+├── models/                            # Trained model artifacts (ignored by Git)
 │
-├── data/                    # Raw and processed datasets (ignored by Git)
-│   ├── h251.sas7bdat        # MEPS-HC 2023 dataset (SAS V9 format)
-│   └── *_preprocessed.*     # Training, validation, and test sets (CSV/Parquet)
+├── data/                              # Raw and processed datasets (ignored by Git)
+│   ├── h251.sas7bdat.dvc              # DVC pointer for MEPS 2023 dataset (SAS V9 format)
+│   └── *_preprocessed.*               # Training, validation, and test sets
 │
-├── figures/                 # Generated figures
-│   ├── eda/                 # Distribution and relationship plots 
-│   ├── outliers/            # Outlier analysis plots 
-│   └── evaluation/          # Model performance plots
+├── figures/                           # Generated figures
+│   ├── eda/                           # Distribution and relationship plots
+│   ├── evaluation/                    # Model evaluation plots
+│   └── outliers/                      # Outlier analysis plots
 │
-├── assets/                  # Images and other assets for README
-│   ├── header.png           # Header image
-│   ├── infographic_meps_data.jpg  # MEPS data overview infographic
+├── assets/                            # Images and other README assets
+│   ├── header.png                     # Header image
 │   ├── infographic_healthcare_costs.png  # U.S. healthcare cost explainer
-│   └── pipeline.svg         # Inference pipeline architecture diagram
+│   ├── infographic_meps_data.jpg      # MEPS data overview infographic
+│   └── pipeline.svg                   # Inference pipeline architecture diagram
 │
-├── tests/                   # (Planned) Software testing for web application
-│   ├── unit/                # (Planned) Unit tests
-│   ├── integration/         # (Planned) Integration tests
-│   └── e2e/                 # (Planned) End-to-end tests
+├── tests/                             # (Planned) test suite
+│   ├── unit/                          # (Planned) Unit tests
+│   ├── integration/                   # (Planned) Integration tests
+│   └── e2e/                           # (Planned) End-to-end tests
 │
-├── docs/                    # Project documentation and resources
-│   ├── specs/               # PRD and tech specs
+├── docs/                              # Project documentation and resources
+│   ├── references/                    # MEPS documentation, codebook, and data dictionary
+│   ├── research/                      # Background research
+│   ├── specs/                         # PRD and tech specs
 │   │   ├── product_requirements.md
 │   │   └── technical_specifications.md
-│   ├── references/          # MEPS documentation, codebook, and data dictionary 
-│   ├── research/            # Background research 
-│   └── workflow/            # Git conventions
+│   └── workflow/                      # Git conventions
 │
-├── pyproject.toml           # Project configuration and dependencies
-├── requirements.txt         # Proxy for production dependencies 
-├── requirements-train.txt   # Training dependencies 
-├── requirements-test.txt    # Test dependencies 
-├── .env.example             # Template for environment variables
+├── pyproject.toml                     # Project configuration and dependencies
+├── requirements.txt                   # Proxy for production dependencies
+├── requirements-train.txt             # Training dependencies
+├── requirements-test.txt              # Test dependencies
+├── .env.example                       # Template for environment variables
 │
-├── dvc.yaml                 # Preprocessing and modeling pipeline definitions
-├── dvc.lock                 # Hash-based data lineage lockfile
-├── .dvc/                    # DVC configuration 
+├── dvc.yaml                           # Preprocessing and modeling pipeline definitions
+├── dvc.lock                           # Hash-based data lineage lockfile
+├── .dvc/                              # DVC configuration
 │
-├── README.md                # Project overview 
-├── AGENTS.md                # Context and instructions for AI agents
-├── LICENSE                  # MIT License
-└── .gitignore               # Files and directories excluded from version control
+├── README.md                          # Project overview
+├── AGENTS.md                          # Instructions for AI agents
+├── LICENSE                            # MIT License
+└── .gitignore                         # Files and directories excluded from version control
 ```
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
