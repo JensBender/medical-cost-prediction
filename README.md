@@ -334,7 +334,6 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > - Your plan-around estimate: $1,350<br>
 > - Typical American: $248<br>
 > - Typical for ages 65+: $608<br>
-> - <i>Typical means the median cost: half of people spent less, and half spent more.</i><br>
 > </details>
 > <br>
 >

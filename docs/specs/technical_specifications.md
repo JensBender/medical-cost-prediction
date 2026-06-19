@@ -370,8 +370,7 @@ The prediction service will expose the trained model artifact via a Python API (
         "age_group": {
           "label": "Typical for ages 35-49",
           "median_cost": float
-        },
-        "note": "Typical means the median cost: half of people spent less, and half spent more."
+        }
       },
       "shap_values": Dict[str, float],
       "warning_flags": List[str]

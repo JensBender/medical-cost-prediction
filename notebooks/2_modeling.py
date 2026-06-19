@@ -4582,7 +4582,6 @@ plot_quantile_subgroup_predictions(
 #                 Your plan-around estimate: \$420<br>
 #                 Typical American: \$248<br>
 #                 Typical for ages 18-34: \$70<br>
-#                 <i>Typical means the median cost: half of people spent less, and half spent more.</i>
 #                 </span>
 #                 </details>
 #                 <br>
@@ -4618,7 +4617,6 @@ plot_quantile_subgroup_predictions(
 #                 Your plan-around estimate: \$1,350<br>
 #                 Typical American: \$248<br>
 #                 Typical for ages 65+: \$608<br>
-#                 <i>Typical means the median cost: half of people spent less, and half spent more.</i>
 #                 </span>
 #                 </details>
 #                 <br>
