@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Model Development |
 | **Created** | 2025-12-12 |
-| **Last Updated** | 2026-04-08 |
+| **Last Updated** | 2026-06-19 |
 
 **Note:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
 
@@ -20,6 +20,7 @@
    - [Model Evaluation](#model-evaluation)
 3. [Deployment Specifications](#deployment-specifications)
    - [MVP Deployment Architecture](#mvp-deployment-architecture)
+   - [Application Data Artifacts](#application-data-artifacts)
    - [API Contract](#api-contract)
    - [Inference Pipeline](#inference-pipeline)
    - [Privacy-Preserving Monitoring](#privacy-preserving-monitoring)
@@ -334,6 +335,42 @@ The MVP product release should use a single-deployment, modular application rath
 
 This design gives the MVP product release clear module and API boundaries while keeping deployment simple. It should not be described as a microservices architecture unless the API, UI, monitoring, and model-serving components are split into independently deployed services.
 
+### Application Data Artifacts
+
+#### Cost Comparison Benchmarks
+
+Pre-compute the weighted median out-of-pocket costs overall and by age group on the training data as comparison benchmarks and persist them to `app/data/cost_benchmarks.json`. The artifact schema is:
+
+```json
+{
+  "schema_version": int,
+  "data_source": "MEPS 2023 (HC-251), training split",
+  "currency_year": 2023,
+  "national": {
+    "label": "Typical American",
+    "median_cost": int
+  },
+  "age_groups": [
+    {
+      "label": "18-34",
+      "median_cost": int
+    },
+    {
+      "label": "35-49",
+      "median_cost": int
+    },
+    {
+      "label": "50-64",
+      "median_cost": int
+    },
+    {
+      "label": "65+",
+      "median_cost": int
+    }
+  ]
+}
+```
+
 ### API Contract
 The prediction service will expose the trained model artifact via a Python API (internal to the web app process) or a REST endpoint if decoupled.
 *   **Input Schema (Pydantic Style):**
@@ -376,38 +413,7 @@ The prediction service will expose the trained model artifact via a Python API (
       "warning_flags": List[str]
     }
     ```
-    `benchmark_comparison` is a derived response object, not the persisted benchmark artifact. It should include only the national benchmark and the user's matching age-group benchmark. All prediction values and benchmark comparison values should be inflation-adjusted to the same output year before they are returned or rendered.
-
-*   **Cost Benchmarks:** Pre-compute the weighted median out-of-pocket costs overall and by age group on the training data as comparison benchmarks and persist them to `app/data/cost_benchmarks.json`. At prediction time, load this artifact, select `national` plus the age group matching the user's age, apply the same inflation adjustment used for model predictions, and return those two adjusted values under `benchmark_comparison`. The artifact schema is:
-    ```json
-    {
-      "schema_version": int,
-      "data_source": "MEPS 2023 (HC-251), training split",
-      "currency_year": 2023,
-      "national": {
-        "label": "Typical American",
-        "median_cost": int
-      },
-      "age_groups": [
-        {
-          "label": "18-34",
-          "median_cost": int
-        },
-        {
-          "label": "35-49",
-          "median_cost": int
-        },
-        {
-          "label": "50-64",
-          "median_cost": int
-        },
-        {
-          "label": "65+",
-          "median_cost": int
-        }
-      ]
-    }
-    ```
+    `benchmark_comparison` is derived from the `cost_benchmarks.json` artifact. It should include the national benchmark and the user's matching age-group benchmark. At prediction time, load the artifact, select those two values, apply the same inflation adjustment used for model predictions, and return all prediction and benchmark values.
 
 #### Prediction Warning Flags
 `warning_flags` are API values. Planning notices are user-facing copy rendered from one or more warning flags. Generate `warning_flags` before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. The app can use subgroup diagnostics to decide when to show a note, but the rendered note should name the reason only when it is informative and unlikely to stigmatize.
