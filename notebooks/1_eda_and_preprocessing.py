@@ -2400,43 +2400,42 @@ split_verification_df.style \
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Calculate the overall median and age-group medians on the training set. They will later be shown together with the predicted costs as comparison benchmarks.
+#     📌 Calculate the weighted median overall and by age group on the training set as comparison benchmarks. Show them later in the app, so users can compare their own predicted out-of-pocket costs with a typical American and their age group.
 # </div>
 
 # %%
 AGE_BENCHMARK_BINS = [18, 35, 50, 65, 86]
 AGE_BENCHMARK_LABELS = ["18-34", "35-49", "50-64", "65+"]
-BENCHMARK_NOTE = "Typical means the median cost: half of people spent less, and half spent more."
 
-df_cost_comparison_train = X_train[[WEIGHT_COLUMN, "AGE23X"]].assign(**{TARGET_COLUMN: y_train})
+df_cost_benchmarks = X_train[[WEIGHT_COLUMN, "AGE23X"]].assign(**{TARGET_COLUMN: y_train})
 benchmark_required_cols = [WEIGHT_COLUMN, "AGE23X", TARGET_COLUMN]
-assert not df_cost_comparison_train[benchmark_required_cols].isna().any().any()  # ensure no missing values
+assert not df_cost_benchmarks[benchmark_required_cols].isna().any().any()  # ensure no missing values
 
-df_cost_comparison_train = df_cost_comparison_train.assign(
+df_cost_benchmarks = df_cost_benchmarks.assign(
     AGE_BENCHMARK_GROUP=pd.cut(
-        df_cost_comparison_train["AGE23X"],
+        df_cost_benchmarks["AGE23X"],
         bins=AGE_BENCHMARK_BINS,
         labels=AGE_BENCHMARK_LABELS,
         right=False,
     )
 )
 
-benchmark_rows = [
+cost_benchmarks = [
     {
-        "Comparison": "Typical American",
-        "Benchmark Out-of-Pocket Cost": weighted_quantile(
-            df_cost_comparison_train[TARGET_COLUMN],
-            df_cost_comparison_train[WEIGHT_COLUMN],
+        "Benchmark": "Typical American",
+        "Median Cost": weighted_quantile(
+            df_cost_benchmarks[TARGET_COLUMN],
+            df_cost_benchmarks[WEIGHT_COLUMN],
             0.5,
         ),
-        "Sample Size": len(df_cost_comparison_train),
+        "Sample Size": len(df_cost_benchmarks),
     }
 ]
 
-for age_group, df_group in df_cost_comparison_train.groupby("AGE_BENCHMARK_GROUP", observed=True):
-    benchmark_rows.append({
-        "Comparison": f"Typical for ages {age_group}",
-        "Benchmark Out-of-Pocket Cost": weighted_quantile(
+for age_group, df_group in df_cost_benchmarks.groupby("AGE_BENCHMARK_GROUP", observed=True):
+    cost_benchmarks.append({
+        "Benchmark": f"Typical for ages {age_group}",
+        "Median Cost": weighted_quantile(
             df_group[TARGET_COLUMN],
             df_group[WEIGHT_COLUMN],
             0.5,
@@ -2444,13 +2443,11 @@ for age_group, df_group in df_cost_comparison_train.groupby("AGE_BENCHMARK_GROUP
         "Sample Size": len(df_group),
     })
 
-df_cost_comparison_benchmarks = pd.DataFrame(benchmark_rows)
-df_cost_comparison_benchmarks
-
 # %%
-(
-    df_cost_comparison_benchmarks.style
-    .format({"Benchmark Out-of-Pocket Cost": "${:,.0f}", "Sample Size": "{:,}"})
+display(
+    pd.DataFrame(cost_benchmarks)
+    .style
+    .format({"Median Cost": "${:,.0f}", "Sample Size": "{:,}"})
     .hide(axis="index")
     .pipe(add_table_caption, "Cost Comparison Benchmarks")
 )
