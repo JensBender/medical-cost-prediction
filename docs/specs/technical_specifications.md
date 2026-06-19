@@ -376,8 +376,9 @@ The prediction service will expose the trained model artifact via a Python API (
       "warning_flags": List[str]
     }
     ```
+    `benchmark_comparison` is a derived response object, not the persisted benchmark artifact. It should include only the national benchmark and the user's matching age-group benchmark. All prediction values and benchmark comparison values should be inflation-adjusted to the same output year before they are returned or rendered.
 
-*   **Cost Comparison Benchmarks:** Pre-compute comparison benchmarks from the MEPS training set and persist them to `app/data/cost_benchmarks.json`. Calculate the weighted median out-of-pocket costs overall and by age group. The prediction response should include the national benchmark and the matching age-group benchmark for the current user. The JSON schema is:
+*   **Cost Benchmarks:** Pre-compute the weighted median out-of-pocket costs overall and by age group on the training data as comparison benchmarks and persist them to `app/data/cost_benchmarks.json`. At prediction time, load this artifact, select `national` plus the age group matching the user's age, apply the same inflation adjustment used for model predictions, and return those two adjusted values under `benchmark_comparison`. The artifact schema is:
     ```json
     {
       "schema_version": int,
