@@ -361,8 +361,7 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 │   ├── tune_random_forest.py          # Hyperparameter tuning for Random Forest
 │   └── tune_xgboost.py                # Hyperparameter tuning for XGBoost
 │
-├── src/                               # Core package source code
-│   ├── __init__.py
+├── src/                               # Core packages source code
 │   ├── constants.py                   # Feature lists
 │   ├── display.py                     # Notebook and UI display labels/styles
 │   ├── modeling.py                    # Core model training and evaluation functions
@@ -371,15 +370,14 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 │   ├── stats.py                       # Weighted statistics and stratification helpers
 │   └── transformers.py                # Custom scikit-learn transformers
 │
-├── app/                               # Web application source code
+├── app/                               # (Planned) Web application source code
 │   └── data/
-│       └── cost_benchmarks.json       # Cost comparison benchmarks
+│       └── cost_benchmarks.json       # Cost comparison for app users
 │
 ├── models/                            # Trained model artifacts (ignored by Git)
 │
 ├── data/                              # Raw and processed datasets (ignored by Git)
-│   ├── h251.sas7bdat.dvc              # DVC pointer for MEPS 2023 dataset (SAS V9 format)
-│   └── *_preprocessed.*               # Training, validation, and test sets
+│   └── h251.sas7bdat.dvc              # DVC pointer for MEPS 2023 dataset (SAS V9 format)
 │
 ├── figures/                           # Generated figures
 │   ├── eda/                           # Distribution and relationship plots
