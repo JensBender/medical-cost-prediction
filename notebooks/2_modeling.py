@@ -4031,7 +4031,7 @@ plot_quantile_subgroup_predictions(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> 
 #     <ul>
-#         <li><strong>Plan-Around Estimate:</strong> The model successfully separates risk across all subgroups. Plan-around estimates (q50) increase for higher-risk groups: age 18–34 (\$131 q50) → 65+ (\$560), 0 chronic conditions (\$128) → 4+ (\$724), Excellent physical health (\$253) → Poor (\$587). This confirms that the quantile model learns meaningful risk patterns.</li>
+#         <li><strong>Plan-Around Estimate:</strong> The model successfully separates risk across all subgroups. Plan-around estimates (q50) increase for higher-risk groups: age 18-34 (\$131 q50) → 65+ (\$560), 0 chronic conditions (\$128) → 4+ (\$724), Excellent physical health (\$253) → Poor (\$587). This confirms that the quantile model learns meaningful risk patterns.</li>
 #         <li><strong>Typical Range:</strong> Typical prediction range widths increase substantially for high-risk vs. low-risk groups. Walking limitation: No (width \$802) vs. Yes (\$1,608). Physical health: Excellent (\$676) vs. Poor (\$1,357). This shows the model widens its prediction intervals for groups with high cost variance.</li>
 #         <li><strong>Safety Cushion:</strong> For most demographic groups (sex, age, race), the safety cushion (q90) provides a buffer of roughly \$1,400–\$3,000 above the plan-around estimate. This represents a meaningful safety boundary for budgeting without encouraging excessive over-allocation.</li>
 #         <li><strong>Chronic Conditions:</strong> Each additional condition raises both the plan-around and the safety cushion. From 0 conditions (q50=\$128, q90=\$1,530) through 4+ conditions (q50=\$724, q90=\$4,090), the plan-around scales ~5.7× while the safety cushion scales ~2.7×, reflecting higher expected costs and greater cost uncertainty.</li>
@@ -4581,7 +4581,7 @@ plot_quantile_subgroup_predictions(
 #                 <small style="font-weight:normal; color:#888;">(bar chart in app)</small><br>
 #                 Your plan-around estimate: \$420<br>
 #                 Typical American: \$248<br>
-#                 Typical for ages 18–34: \$70<br>
+#                 Typical for ages 18-34: \$70<br>
 #                 <small>Typical means the median cost: half of people spent less, and half spent more.</small>
 #                 </span>
 #                 </details>
