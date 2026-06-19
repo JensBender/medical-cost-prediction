@@ -2428,6 +2428,7 @@ cost_benchmarks = [
             df_cost_benchmarks[WEIGHT_COLUMN],
             0.5,
         ),
+        "Population Size": df_cost_benchmarks[WEIGHT_COLUMN].sum(),
         "Sample Size": len(df_cost_benchmarks),
     }
 ]
@@ -2441,13 +2442,14 @@ for age_group, df_group in df_cost_benchmarks.groupby("AGE_BENCHMARK_GROUP", obs
             0.5,
         ),
         "Sample Size": len(df_group),
+        "Population Size": df_group[WEIGHT_COLUMN].sum(),
     })
 
 # %%
 display(
     pd.DataFrame(cost_benchmarks)
     .style
-    .format({"Median Cost": "${:,.0f}", "Sample Size": "{:,}"})
+    .format({"Median Cost": "${:,.0f}", "Sample Size": "{:,}", "Population Size": "{:,.0f}"})
     .hide(axis="index")
     .pipe(add_table_caption, "Cost Comparison Benchmarks")
 )
