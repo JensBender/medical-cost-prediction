@@ -1,4 +1,4 @@
-"""Build cost benchmarks and prediction metatata artifacts for app deployment.
+"""Build cost benchmarks and prediction metadata artifacts for app deployment.
 
 Run after XGBoost quantile regression model training:
     .venv-train/Scripts/python scripts/build_app_artifacts.py
@@ -29,6 +29,7 @@ QUANTILE_PREDICTIONS_PATH = Path("models/xgb_quantile_predictions.joblib")
 
 AGE_BENCHMARK_BINS = [18, 35, 50, 65, 86]
 AGE_BENCHMARK_LABELS = ["18-34", "35-49", "50-64", "65+"]
+HIGH_PREDICTED_UNCERTAINTY_QUANTILE_LEVEL = 0.80
 
 
 def write_json(path, payload):
@@ -98,7 +99,7 @@ def build_prediction_metadata(validation_weights, quantile_predictions):
         weighted_quantile(
             q90_predictions,
             validation_weights,
-            0.8,
+            HIGH_PREDICTED_UNCERTAINTY_QUANTILE_LEVEL,
         )
     )
     return {
@@ -108,7 +109,7 @@ def build_prediction_metadata(validation_weights, quantile_predictions):
         "currency_year": 2023,
         "high_predicted_uncertainty": {
             "prediction_quantile": "q90",
-            "weighted_quantile_level": 0.80,
+            "weighted_quantile_level": HIGH_PREDICTED_UNCERTAINTY_QUANTILE_LEVEL,
             "cutoff_2023_dollars": cutoff,
         },
     }
@@ -152,9 +153,19 @@ def main():
     write_json(COST_BENCHMARKS_PATH, cost_benchmarks)
     write_json(PREDICTION_METADATA_PATH, prediction_metadata)
 
+    national_benchmark = cost_benchmarks["national"]
     cutoff = prediction_metadata["high_predicted_uncertainty"]["cutoff_2023_dollars"]
-    print(f"Created cost benchmark artifact under '{COST_BENCHMARKS_PATH}' and prediction metadata artifact under '{PREDICTION_METADATA_PATH}'.")
-    print(f"Weighted q90 predictions cutoff for top 20% of predicted safety cushion: ${cutoff:,.2f}")
+    print(
+        f"Created '{COST_BENCHMARKS_PATH}' and "
+        f"'{PREDICTION_METADATA_PATH}'."
+    )
+    print(
+        f"{national_benchmark['label']} benchmark: "
+        f"${national_benchmark['median_cost']:,.0f}"
+    )
+    for age_group in cost_benchmarks["age_groups"]:
+        print(f"Ages {age_group['label']} benchmark: ${age_group['median_cost']:,.0f}")
+    print(f"Weighted q90 cutoff for top 20%: ${cutoff:,.2f}")
 
 
 if __name__ == "__main__":
