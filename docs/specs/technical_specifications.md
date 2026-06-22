@@ -337,9 +337,20 @@ This design gives the MVP product release clear module and API boundaries while 
 
 ### Application Data Artifacts
 
+Run `scripts/build_app_artifacts.py` after `scripts/train_xgboost_quantile.py`.
+The builder needs the saved validation-set quantile predictions from quantile
+model training to create deployment metadata. It writes two app artifacts:
+
+- `app/data/cost_benchmarks.json`: weighted national and age-group median
+  benchmarks from the reconstructed training data split.
+- `app/data/prediction_metadata.json`: the high-predicted-uncertainty cutoff
+  from weighted `q90` predictions on the validation data split.
+
 #### Cost Comparison Benchmarks
 
-Pre-compute the weighted median out-of-pocket costs overall and by age group on the training data as comparison benchmarks and persist them to `app/data/cost_benchmarks.json`. The artifact schema is:
+Pre-compute the weighted median out-of-pocket costs overall and by age group on
+the training data and persist them to `app/data/cost_benchmarks.json`. The
+artifact schema is:
 
 ```json
 {
@@ -436,16 +447,27 @@ The UI should avoid stacking several full planning notice paragraphs below the p
 5.  Avoid repeating the same idea. If both `HIGH_PREDICTED_UNCERTAINTY` and `UNINSURED_UNCERTAINTY` trigger, mention the safety cushion once.
 6.  Keep the always-on scope disclaimer outside this panel, in a quieter "About this estimate" or footer area.
 
-Required deployment metadata, with the placeholder replaced during model packaging:
+Required deployment metadata is stored in
+[`app/data/prediction_metadata.json`](../../app/data/prediction_metadata.json).
+The schema is:
 
 ```json
 {
-  "high_predicted_uncertainty_q90_cutoff": 0.0
+  "schema_version": 1,
+  "model_artifact": "models/xgb_quantile_model.joblib",
+  "data_source": "MEPS 2023 (HC-251), validation split",
+  "currency_year": 2023,
+  "high_predicted_uncertainty": {
+    "prediction_quantile": "q90",
+    "weighted_quantile_level": 0.8,
+    "cutoff_2023_dollars": 0.0
+  }
 }
 ```
 
-Calculate `high_predicted_uncertainty_q90_cutoff` as the weighted 80th percentile of predicted `q90` values from the validation set. 
-Trigger `HIGH_PREDICTED_UNCERTAINTY` planning notice when the predicted `q90` is greater than or equal to this fixed cutoff. 
+The `0.0` cutoff is a placeholder, the actual value for model deployment is in 
+`app/data/prediction_metadata.json`. Trigger `HIGH_PREDICTED_UNCERTAINTY` when 
+the pre-inflation predicted `q90` is greater than or equal to this fixed cutoff. 
 
 ### Inference Pipeline
 1.  **Validation:** Ensure inputs are within valid ranges (e.g., Age 18-85).
