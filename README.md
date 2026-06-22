@@ -352,13 +352,14 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 │   └── 2_modeling.py                  # Script version (generated via Jupytext)
 │
 ├── scripts/                           # Reproducible pipeline scripts
-│   ├── benchmark_llm.py               # LLM prediction benchmark
 │   ├── preprocess.py                  # Production-ready data preprocessing
+│   ├── benchmark_llm.py               # LLM prediction benchmark
 │   ├── train_baseline.py              # Baseline model training
-│   ├── train_xgboost_quantile.py      # Quantile model training
 │   ├── tune_elastic_net.py            # Hyperparameter tuning for Elastic Net
 │   ├── tune_random_forest.py          # Hyperparameter tuning for Random Forest
-│   └── tune_xgboost.py                # Hyperparameter tuning for XGBoost
+│   ├── tune_xgboost.py                # Hyperparameter tuning for XGBoost
+│   ├── train_xgboost_quantile.py      # Quantile model training
+│   └── build_app_artifacts.py         # Generate cost benchmarks and prediction metadata
 │
 ├── src/                               # Core packages source code
 │   ├── constants.py                   # Feature lists
@@ -371,7 +372,8 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 │
 ├── app/                               # (Planned) Web application source code
 │   └── data/
-│       └── cost_benchmarks.json       # Cost comparison for app users
+│       ├── cost_benchmarks.json       # Cost comparison for app users
+│       └── prediction_metadata.json   # Prediction warning cutoff
 │
 ├── models/                            # Trained model artifacts (ignored by Git)
 │
