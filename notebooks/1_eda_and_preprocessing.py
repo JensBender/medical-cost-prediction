@@ -48,10 +48,6 @@
 # </div>
 
 # %%
-# Standard library
-import json
-from pathlib import Path
-
 # Data manipulation
 import pandas as pd
 import numpy as np
@@ -2397,91 +2393,6 @@ split_verification_df.style \
 #         <li><b>Representative Benchmarking:</b> The stability of central tendencies (Median Cost) confirms that the typical patient profile is identical in each set, allowing for reliable and generalizable model evaluation.</li>
 #     </ul>
 # </div>
-
-# %% [markdown]
-# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
-#     <h1 style="margin:0px">Cost Comparison Benchmarks</h1>
-# </div>
-#
-# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Calculate the weighted median overall and by age group on the training set as comparison benchmarks. Show them later in the app, so users can compare their own predicted out-of-pocket costs with a typical American and their age group.
-# </div>
-
-# %%
-AGE_BENCHMARK_BINS = [18, 35, 50, 65, 86]
-AGE_BENCHMARK_LABELS = ["18-34", "35-49", "50-64", "65+"]
-COST_BENCHMARKS_PATH = Path("../app/data/cost_benchmarks.json")
-
-df_cost_benchmarks = X_train[[WEIGHT_COLUMN, "AGE23X"]].assign(**{TARGET_COLUMN: y_train})
-benchmark_required_cols = [WEIGHT_COLUMN, "AGE23X", TARGET_COLUMN]
-assert not df_cost_benchmarks[benchmark_required_cols].isna().any().any()  # ensure no missing values
-
-df_cost_benchmarks = df_cost_benchmarks.assign(
-    AGE_BENCHMARK_GROUP=pd.cut(
-        df_cost_benchmarks["AGE23X"],
-        bins=AGE_BENCHMARK_BINS,
-        labels=AGE_BENCHMARK_LABELS,
-        right=False,
-    )
-)
-
-national_median_cost = weighted_quantile(
-    df_cost_benchmarks[TARGET_COLUMN],
-    df_cost_benchmarks[WEIGHT_COLUMN],
-    0.5,
-)
-
-cost_benchmarks_app = {
-    "schema_version": 1,
-    "data_source": "MEPS 2023 (HC-251), training split",
-    "currency_year": 2023,
-    "national": {
-        "label": "Typical American",
-        "median_cost": int(round(national_median_cost)),
-    },
-    "age_groups": [],
-}
-
-cost_benchmarks_display = [
-    {
-        "Benchmark": cost_benchmarks_app["national"]["label"],
-        "Median Cost": national_median_cost,
-        "Population Size": df_cost_benchmarks[WEIGHT_COLUMN].sum(),
-        "Sample Size": len(df_cost_benchmarks),
-    }
-]
-
-for age_group, df_group in df_cost_benchmarks.groupby("AGE_BENCHMARK_GROUP", observed=True):
-    median_cost = weighted_quantile(
-        df_group[TARGET_COLUMN],
-        df_group[WEIGHT_COLUMN],
-        0.5,
-    )
-
-    cost_benchmarks_app["age_groups"].append({
-        "label": str(age_group),
-        "median_cost": int(round(median_cost)),
-    })
-    cost_benchmarks_display.append({
-        "Benchmark": f"Typical for ages {age_group}",
-        "Median Cost": median_cost,
-        "Sample Size": len(df_group),
-        "Population Size": df_group[WEIGHT_COLUMN].sum(),
-    })
-
-COST_BENCHMARKS_PATH.parent.mkdir(parents=True, exist_ok=True)
-with COST_BENCHMARKS_PATH.open("w", encoding="utf-8") as f:
-    json.dump(cost_benchmarks_app, f, indent=2)
-    f.write("\n")
-
-# %%
-display(
-    pd.DataFrame(cost_benchmarks_display)
-    .style
-    .format({"Median Cost": "${:,.0f}", "Sample Size": "{:,}", "Population Size": "{:,.0f}"})
-    .hide(axis="index")
-    .pipe(add_table_caption, "Cost Comparison Benchmarks")
-)
 
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
