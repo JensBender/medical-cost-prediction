@@ -31,7 +31,8 @@ model evaluation, and a planned FastAPI/Gradio app.
 
 ## Writing Style
 
-Write in clear, precise, plain language. Be accurate and specific. Avoid vague terms, marketing language, and decorative phrasing. Prefer short sentences. If something is uncertain, say so plainly.
+- Write in clear, precise, plain language. Be accurate and specific. Avoid vague terms, marketing language, and decorative phrasing. Prefer short sentences. If something is uncertain, say so plainly.
+- For code or docs changes, always include a unified diff of all changed files at the bottom of your response.
 
 ## Commits
 
