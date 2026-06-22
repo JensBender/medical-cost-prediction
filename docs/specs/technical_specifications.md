@@ -436,23 +436,16 @@ The UI should avoid stacking several full planning notice paragraphs below the p
 5.  Avoid repeating the same idea. If both `HIGH_PREDICTED_UNCERTAINTY` and `UNINSURED_UNCERTAINTY` trigger, mention the safety cushion once.
 6.  Keep the always-on scope disclaimer outside this panel, in a quieter "About this estimate" or footer area.
 
-Recommended metadata with placeholder values replaced by thresholds derived from validation data:
+Required deployment metadata, with the placeholder replaced during model packaging:
 
 ```json
 {
-  "interval_diagnostic_thresholds": {
-    "typical_range_width_p90": 0.0,
-    "safety_cushion_width_p90": 0.0
-  },
-  "predicted_q90_tier_edges": {
-    "low_upper": 0.0,
-    "moderate_upper": 0.0,
-    "high_upper": 0.0
-  }
+  "high_predicted_uncertainty_q90_cutoff": 0.0
 }
 ```
 
-`predicted_q90_tier_edges` should be calculated from validation-set predicted `q90` values. `moderate_upper` is the 80th percentile, so `HIGH_PREDICTED_UNCERTAINTY` triggers for the top 20% of predicted safety-cushion values.
+Calculate `high_predicted_uncertainty_q90_cutoff` as the weighted 80th percentile of predicted `q90` values from the validation set. 
+Trigger `HIGH_PREDICTED_UNCERTAINTY` planning notice when the predicted `q90` is greater than or equal to this fixed cutoff. 
 
 ### Inference Pipeline
 1.  **Validation:** Ensure inputs are within valid ranges (e.g., Age 18-85).
@@ -460,7 +453,7 @@ Recommended metadata with placeholder values replaced by thresholds derived from
 3.  **Imputation:** Fill missing values (Mode for categorical, Median for numerical).
 4.  **Medical Feature Derivation:** Calculate aggregate counts (`CHRONIC_COUNT`, `LIMITATION_COUNT`).
 5.  **Transformation:** Apply `ColumnTransformer` (Scaling/Encoding).
-6.  **Prediction:** Run model inference (including any model-specific polynomial interactions).
+6.  **Prediction:** Run model inference.
 7.  **Explainability:** Run TreeExplainer/KernelExplainer.
 8.  **Model Output Post-Processing:** Apply any required inverse target transform and enforce valid quantiles (non-negative, monotonic `q25 <= q50 <= q75 <= q90`).
 9.  **Warning Flags:** Create `warning_flags` before applying inflation adjustment.
@@ -573,9 +566,9 @@ GRADIO_ANALYTICS_ENABLED=False
 GRADIO_FLAGGING_MODE=never
 ```
 
-**Offline and future monitoring paths**
-*   Re-evaluate the deployed 2023-trained model when a future MEPS full-year file becomes available. Run the model on the newer survey year, using the same weighted metrics and subgroup audits defined in the modeling notebook. Treat retraining or recalibration as a separate model-refresh decision if caveats persist or worsen.
-*   If a future outcome study is approved, collect actual spend only through explicit opt-in consent, data minimization, retention limits, and a separate privacy review. Treat user-reported actual spend as directional unless the collection process can approximate MEPS-quality out-of-pocket cost measurement.
+**Future model validation**
+*   Re-evaluate the 2023-trained model when a future MEPS full-year file becomes available. Run the model on the newer survey year, using the same weighted metrics and subgroup audits defined in the modeling notebook. Treat retraining or recalibration as a separate model-refresh decision if caveats persist or worsen.
+*   If future outcome collection is approved, collect actual spend only through explicit opt-in consent, data minimization, retention limits, and a separate privacy review. Treat user-reported actual spend as directional unless the collection process can approximate MEPS-quality out-of-pocket cost measurement.
 
 
 ## Testing Strategy
