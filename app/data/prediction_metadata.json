@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "model_artifact": "models/xgb_quantile_model.joblib",
+  "data_source": "MEPS 2023 (HC-251), validation split",
+  "currency_year": 2023,
+  "high_predicted_uncertainty": {
+    "prediction_quantile": "q90",
+    "weighted_quantile_level": 0.8,
+    "cutoff_2023_dollars": 3524.9934243617136
+  }
+}
