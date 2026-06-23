@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "source": "U.S. Bureau of Labor Statistics (BLS)",
+  "series_id": "CUUR0000SAM",
+  "series_name": "Medical care in U.S. city average, all urban consumers, not seasonally adjusted",
+  "base_period": "2023 annual average",
+  "base_index": 549.084,
+  "target_period": "2026-05",
+  "target_index": 593.239,
+  "medical_cost_inflation_factor": 1.080415,
+  "generated_at": "2026-06-23"
+}
