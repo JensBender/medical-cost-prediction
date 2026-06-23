@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Model Development |
 | **Created** | 2025-12-12 |
-| **Last Updated** | 2026-06-19 |
+| **Last Updated** | 2026-06-23 |
 
 **Note:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
 
@@ -337,9 +337,9 @@ This design gives the MVP product release clear module and API boundaries while 
 
 ### Application Data Artifacts
 
-Run `scripts/build_app_artifacts.py` after `scripts/train_xgboost_quantile.py`.
-The builder needs the saved validation-set quantile predictions from quantile
-model training to create deployment metadata. It writes two app artifacts:
+Run `scripts/build_app_artifacts.py` after `scripts/train_xgboost_quantile.py`,
+because the builder needs the saved validation-set predictions from the quantile 
+model. It writes two app artifacts:
 
 - `app/data/cost_benchmarks.json`: weighted national and age-group median
   benchmarks from the reconstructed training data split.
@@ -381,6 +381,25 @@ artifact schema is:
   ]
 }
 ```
+
+#### Medical-Cost Inflation Artifact
+
+Use the [BLS CPI-U U.S. city average, Medical Care, not seasonally adjusted series (`CUUR0000SAM`)](https://data.bls.gov/timeseries/CUUR0000SAM) for the medical-cost adjustment. Store one factor in `app/data/medical_inflation.json` for each application release so inference does not call an external service.
+
+```json
+{
+  "schema_version": 1,
+  "series_id": "CUUR0000SAM",
+  "base_year": 2023,
+  "target_period": "YYYY-MM",
+  "medical_cost_factor": 1.0,
+  "updated_at": "YYYY-MM-DD"
+}
+```
+
+Calculate `medical_cost_factor` as the latest published index divided by the arithmetic mean of the 12 monthly 2023 index values. Refresh the artifact with the latest published value when the application is released. Do not use general consumer price index (CPI) or a fixed annual rate.
+
+During API/UI output formatting, apply the same factor to q25, q50, q75, q90, national and age-group benchmarks, and SHAP dollar impacts. Keep model predictions, metrics, and warning thresholds in 2023 dollars.
 
 ### API Contract
 The prediction service will expose the trained model artifact via a Python API (internal to the web app process) or a REST endpoint if decoupled.
@@ -424,7 +443,7 @@ The prediction service will expose the trained model artifact via a Python API (
       "warning_flags": List[str]
     }
     ```
-    `benchmark_comparison` is derived from the `cost_benchmarks.json` artifact. It should include the national benchmark and the user's matching age-group benchmark. At prediction time, load the artifact, select those two values, apply the same inflation adjustment used for model predictions, and return all prediction and benchmark values.
+    `benchmark_comparison` is derived from the `cost_benchmarks.json` artifact. At prediction time, apply the same medical-cost factor to prediction, benchmark, and SHAP dollar values. All monetary values returned to the UI are adjusted to current dollars.
 
 #### Prediction Warning Flags
 `warning_flags` are API values. Planning notices are user-facing copy rendered from one or more warning flags. Generate `warning_flags` before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. The app can use subgroup diagnostics to decide when to show a note, but the rendered note should name the reason only when it is informative and unlikely to stigmatize.
@@ -477,9 +496,8 @@ the pre-inflation predicted `q90` is greater than or equal to this fixed cutoff.
 5.  **Transformation:** Apply `ColumnTransformer` (Scaling/Encoding).
 6.  **Prediction:** Run model inference.
 7.  **Explainability:** Run TreeExplainer/KernelExplainer.
-8.  **Model Output Post-Processing:** Apply any required inverse target transform and enforce valid quantiles (non-negative, monotonic `q25 <= q50 <= q75 <= q90`).
+8.  **Model Output Post-Processing:** Apply inverse target transform, enforce valid quantiles (non-negative, monotonic `q25 <= q50 <= q75 <= q90`), and apply medical-inflation adjustment.
 9.  **Warning Flags:** Create `warning_flags` before applying inflation adjustment.
-10. **Display Post-Processing:** Apply inflation adjustment for user-facing dollar values.
 
 ### Privacy-Preserving Monitoring
 The MVP product release must preserve the product promise of anonymous, stateless predictions. Production monitoring therefore cannot depend on linked user records or follow-up actual-spend outcomes.
@@ -601,7 +619,8 @@ GRADIO_FLAGGING_MODE=never
 **Integration Tests**  
 *   **Serving:** Verify serialized pipeline loading and output structure.
 *   **Endpoints:** Validate JSON responses and HTTP status codes (200/422).
-*   **Warning Flags:** Verify each warning flag is triggered only by its documented condition, uses validation-derived thresholds, and is returned as a structured API value without changing prediction values.
+*   **Medical-Cost Inflation:** Verify that one medical-cost inflation factor is applied exactly once to q25/q50/q75/q90, national and age-group benchmarks, and positive and negative SHAP dollar values; that rounding occurs only after scaling; and that warning flags still use 2023-dollar thresholds.
+*   **Warning Flags:** Verify each warning flag is triggered only by its documented condition, uses validation-derived thresholds in 2023 dollars, and is returned as a structured API value without changing prediction values.
 *   **Monitoring Guardrails:** Verify app telemetry does not persist raw user inputs, prediction payloads, SHAP values, app-level IP addresses, user agents, request IDs, session IDs, or other linked identifiers. Verify persisted monitoring records match the aggregate telemetry schema and enforce small-cell suppression. Verify Gradio analytics and flagging are disabled in Hugging Face Spaces configuration.
 
 **End-to-End Tests**  
