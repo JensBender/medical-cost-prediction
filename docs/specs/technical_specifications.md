@@ -58,21 +58,21 @@
 *   **Home Health Care (`HHSLF23` + `HNSLF23`):** Payments for agency or independent home health providers.
 *   **Other Medical (`OMSLF23`):** Equipment (crutches, hearing aids), ambulance services, and other miscellaneous supplies.
 
-Notes:  
+Notes:
 *   **Excludes Premiums:** Monthly insurance premiums (e.g., deducted from a paycheck) are not included. `TOTSLF23` only tracks payments for services received.
 *   **Excludes Over-the-Counter (OTC) Drugs:** Expenses for non-prescription medications (e.g., Tylenol, vitamins) are not included.
 *   **For uninsured users**: `TOTSLF23` will typically equal the **Total Expenditure** (`TOTTCH23`), as they bear the full cost unless they received charity care (which is not counted as an expenditure in MEPS).
 
 </details>
 
-### Feature Selection 
-The primary goal is a fast, frictionless user experience. We prioritize usability over predictive performance if it requires complex inputs. 
+### Feature Selection
+The primary goal is a fast, frictionless user experience. We prioritize usability over predictive performance if it requires complex inputs.
 
 **Feature Selection Rationale**:
 1.  **UX-First Constraint**: Target form completion in **under 90 seconds**. This is a soft guideline. Cognitive load and completion time matter more than a strict input count. As a ballpark, aim for ~10–12 discrete UI interactions, noting that a multi-select checklist (e.g., chronic conditions) counts as one interaction even with many options.
 2.  **Consumer Accessibility**: Inputs must be information users know offhand (e.g., age, self-rated health). The user doesn't need to leave their chair to find an insurance card, past bill, or medical record. No asking for specifics like "deductible amount" or "ICD-10 codes" that require mental effort or looking up technical terms.
 3.  **Temporal Validity**: Variables must reflect **beginning-of-year status** to enable prospective prediction without data leakage (see box below).
-4.  **Optimize Within Constraints**: Among the pool of "accessible" inputs, select the variables with the highest feature importance to maximize predictive power within the UX constraints. 
+4.  **Optimize Within Constraints**: Among the pool of "accessible" inputs, select the variables with the highest feature importance to maximize predictive power within the UX constraints.
 
 <details>
 <summary>ℹ️ <strong>Temporal Alignment: Why Variable Suffixes Matter</strong> (click to expand)</summary>
@@ -145,7 +145,7 @@ The following MEPS variables have been identified as candidate features for the 
 | **Insurance** | `INSCOV23` | Nominal (Int) | Coverage status (Private, Public Only, Uninsured). | ✅ **Critical.** Determines OOP vs. total cost split. |
 | **Usual Source of Care** | `HAVEUS42` | Binary (Int) | Has regular doctor or clinic | ✅ Strong predictor of access and preventive care. |
 
-**Perceived Health & Lifestyle** 
+**Perceived Health & Lifestyle**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
 | **Physical Health** | `RTHLTH31` | Numerical (Int) | Self-rated physical health (1=Excellent to 5=Poor). | ✅ Strongest subjective predictor of utilization. |
@@ -219,7 +219,7 @@ To ensure high-quality data while maintaining a clean UI, the "Education" dropdo
 ### Data Preprocessing
 All preprocessing steps are implemented as scikit-learn pipelines to ensure consistency between training and inference, prevent data leakage, and simplify deployment.
 
-**Data Cleaning**  
+**Data Cleaning**
 Perform once before pipeline:
 
 | Action | Rationale | Details |
@@ -227,7 +227,7 @@ Perform once before pipeline:
 | Drop rows where `PERWT23F = 0` | Respondents with a person weight of zero are "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad during the year). | Removes ~456 rows (N=18,919 total, 18,463 with positive weight). |
 | Handle MEPS Negative Codes | Standardize missing/inapplicable values for modeling. | Convert `-1` (Inapplicable), `-7` (Refused), `-8` (Don't know), `-15` (Cannot be computed) to `NaN`.<br>Treating survey non-response and missing inputs from web app users identically (as `NaN` → Imputed Mode/Median) to align data handling between training and inference. |
 
-**Feature Preprocessing**  
+**Feature Preprocessing**
 Implemented via `ColumnTransformer`. Exact columns depend on final feature selection.
 
 | Feature Type | Example Columns | Transformer | Notes |
@@ -237,16 +237,16 @@ Implemented via `ColumnTransformer`. Exact columns depend on final feature selec
 | Nominal | `SEX`, `REGION23`, `INSCOV23`, `MARRY31X`, `EMPST31`, `HIDEG` | `OneHotEncoder` | Drop designated baseline category to avoid multicollinearity |
 | Binary | `DIABDX_M18`, `HIBPDX`, `CHDDX`, etc. | passthrough | Already 0/1 encoded |
 
-**The Heteroscedasticity Problem (The "Blindness" Effect)**  
-Medical cost data is inherently **heteroscedastic**, meaning the variance in errors grows with the target value. 
-*   **The Problem:** In raw dollars, an error of 10% on a **$100,000** surgery is **$10,000**. An error of 100% on a **$100** visit is only **$100**. 
+**The Heteroscedasticity Problem (The "Blindness" Effect)**
+Medical cost data is inherently **heteroscedastic**, meaning the variance in errors grows with the target value.
+*   **The Problem:** In raw dollars, an error of 10% on a **$100,000** surgery is **$10,000**. An error of 100% on a **$100** visit is only **$100**.
 *   **Impact:** On the raw scale, the "Floodlight" of high-cost outliers ($10k+ errors) completely blinds the model to the "Candles" of typical users ($100 errors). The model spends all its capacity on the tail, ignoring consistent patterns for the median user. This creates a "blind" loss surface where $R^2 \approx 0$ because the signal from the majority is flattened by the noise of the minority.
 
-**The Solution: Log-Proportional Learning**  
+**The Solution: Log-Proportional Learning**
 Applying `log(y + 1)` transforms absolute dollar errors into **proportional (percentage) errors**. This levels the playing field, allowing the model to prioritize a 10% error on a $100 visit just as much as a 10% error on a $100,000 surgery. Resulting models achieve a $R^2 \approx 0.30$ in log-space, capturing signal that was previously invisible.
 
-**Target Preprocessing**  
-We apply transformations selectively based on how each model handles this variance. 
+**Target Preprocessing**
+We apply transformations selectively based on how each model handles this variance.
 
 | Models | Target Transform | Rationale |
 | :--- | :--- | :--- |
@@ -257,7 +257,7 @@ We apply transformations selectively based on how each model handles this varian
 
 ### Model Training
 
-**Training Procedure**  
+**Training Procedure**
 A 4-phase approach where each model is evaluated with its own optimal feature set.
 
 | Phase | Goal | Details |
@@ -300,10 +300,10 @@ Evaluate predictive performance of model and perform error analysis.
 | **EV-04** | **Interval Calibration (Safety Cushion)** | Report what % of actual costs fall below the predicted 90th percentile estimate on the test set. **Target: 90% ± 5% coverage.** This diagnoses how reliable the "budget-safe" estimate is for risk mitigation. |
 | **EV-05** | **LLM Benchmark** | Compare MdAE of specialized model vs. zero-shot predictions from LLMs (e.g., ChatGPT, Gemini, Claude) using the same raw feature inputs. This establishes the added value of training a specialized model over using a general-purpose model ("Why not just ask ChatGPT?"). Consider using a random subset (n=100) of rows to save API inference costs. |
 
-**Metric Selection Rationale**  
-Healthcare cost data has unique characteristics that influence evaluation metric selection: 
-* **Zero-inflated**: Many users have $0 out-of-pocket costs. 
-* **Right-skewed**: Few users have extremely high costs. 
+**Metric Selection Rationale**
+Healthcare cost data has unique characteristics that influence evaluation metric selection:
+* **Zero-inflated**: Many users have $0 out-of-pocket costs.
+* **Right-skewed**: Few users have extremely high costs.
 * **Heteroskedastic**: Prediction performance is typically lower for high costs due to less training data in this range and costs being driven by unpredictable events (e.g., accidents, sudden diagnoses).
 
 | Metric | Pros | Cons | Verdict |
@@ -338,7 +338,7 @@ This design gives the MVP product release clear module and API boundaries while 
 ### Application Data Artifacts
 
 Run `scripts/build_app_artifacts.py` after `scripts/train_xgboost_quantile.py`,
-because the builder needs the saved validation-set predictions from the quantile 
+because the builder needs the saved validation-set predictions from the quantile
 model. It writes two app artifacts:
 
 - `app/data/cost_benchmarks.json`: weighted national and age-group median
@@ -384,7 +384,9 @@ artifact schema is:
 
 #### Medical-Cost Inflation Adjustment
 
-Use the [BLS CPI-U U.S. city average, Medical Care, not seasonally adjusted series (`CUUR0000SAM`)](https://data.bls.gov/timeseries/CUUR0000SAM) for the medical-cost adjustment. Store one factor in `app/data/medical_inflation.json` for each application release so inference does not call an external service.
+Calculate a medical cost inflation factor to adjust 2023 predictions to current dollars. Use medical-cost-specific inflation, not general inflation or a fixed annual rate. Calculate the factor from the U.S. Bureau of Labor Statistics (BLS) Consumer Price Index for All Urban Consumers (CPI-U) Medical Care, U.S. city average, all urban consumers, not seasonally adjusted series (`CUUR0000SAM`). See [BLS CPI-U Series `CUUR0000SAM`](https://data.bls.gov/timeseries/CUUR0000SAM).
+
+Store the inflation factor in `app/data/medical_inflation.json` for each application release so inference does not call an external service. Before an app release, run `.venv-app\Scripts\python scripts\update_medical_inflation.py`, review the artifact change, and commit it with the release. The script overwrites the current artifact. Git history preserves the medical inflation factors of prior app releases.
 
 ```json
 {
@@ -401,9 +403,9 @@ Use the [BLS CPI-U U.S. city average, Medical Care, not seasonally adjusted seri
 }
 ```
 
-Set `base_index` to the arithmetic mean of the 12 monthly 2023 values and `target_index` to the latest published value. Calculate `medical_cost_inflation_factor` as `target_index / base_index`. Refresh the artifact with the latest published value when the application is released. Do not use general consumer price index (CPI) or a fixed annual rate.
+The `base_index` is the 2023 mean across all 12 months and `target_index` is the latest published month. Calculate `medical_cost_inflation_factor` as `target_index / base_index`. For example, a 2023 index of `549` and a May 2026 index of `593` produce a medical inflation factor of `593 / 549 = 1.08`. The Medical Care CPI level in May 2026 is therefore 8% higher than the average level in 2023, so a $1,000 model cost prediction in 2023 dollars becomes about $1,080.
 
-During API/UI output formatting, apply the same factor to q25, q50, q75, q90, national and age-group benchmarks, and SHAP dollar impacts. Keep model predictions, metrics, and warning thresholds in 2023 dollars.
+During API/UI output formatting, apply the inflation factor to q25, q50, q75, q90, national and age-group benchmarks, and SHAP dollar impacts. Keep model predictions, metrics, and warning thresholds in 2023 dollars.
 
 ### API Contract
 The prediction service will expose the trained model artifact via a Python API (internal to the web app process) or a REST endpoint if decoupled.
@@ -488,9 +490,9 @@ The schema is:
 }
 ```
 
-The `0.0` cutoff is a placeholder, the actual value for model deployment is in 
-`app/data/prediction_metadata.json`. Trigger `HIGH_PREDICTED_UNCERTAINTY` when 
-the pre-inflation predicted `q90` is greater than or equal to this fixed cutoff. 
+The `0.0` cutoff is a placeholder, the actual value for model deployment is in
+`app/data/prediction_metadata.json`. Trigger `HIGH_PREDICTED_UNCERTAINTY` when
+the pre-inflation predicted `q90` is greater than or equal to this fixed cutoff.
 
 ### Inference Pipeline
 1.  **Validation:** Ensure inputs are within valid ranges (e.g., Age 18-85).
@@ -616,18 +618,18 @@ GRADIO_FLAGGING_MODE=never
 
 
 ## Testing Strategy
-**Unit Tests**  
+**Unit Tests**
 *   **Preprocessing Pipelines:** Validate encoding, scaling, imputation, and handling of edge cases (e.g., unseen categories).
 *   **Data Validation:** Ensure Pydantic models correctly reject invalid inputs.
 
-**Integration Tests**  
+**Integration Tests**
 *   **Serving:** Verify serialized pipeline loading and output structure.
 *   **Endpoints:** Validate JSON responses and HTTP status codes (200/422).
 *   **Medical-Cost Inflation:** Verify that one medical-cost inflation factor is applied exactly once to q25/q50/q75/q90, national and age-group benchmarks, and positive and negative SHAP dollar values; that rounding occurs only after scaling; and that warning flags still use 2023-dollar thresholds.
 *   **Warning Flags:** Verify each warning flag is triggered only by its documented condition, uses validation-derived thresholds in 2023 dollars, and is returned as a structured API value without changing prediction values.
 *   **Monitoring Guardrails:** Verify app telemetry does not persist raw user inputs, prediction payloads, SHAP values, app-level IP addresses, user agents, request IDs, session IDs, or other linked identifiers. Verify persisted monitoring records match the aggregate telemetry schema and enforce small-cell suppression. Verify Gradio analytics and flagging are disabled in Hugging Face Spaces configuration.
 
-**End-to-End Tests**  
+**End-to-End Tests**
 *   **User Journey:** Simulate full flow: user input → processing → cost prediction.
 
 
@@ -640,7 +642,7 @@ GRADIO_FLAGGING_MODE=never
     *   **Frontend:** Gradio mounted in the FastAPI app.
     *   **Backend:** FastAPI main app with Pydantic validation and a shared prediction service module.
 *   **Testing:** Pytest.
-*   **Hosting:** 
+*   **Hosting:**
     *   **Source Code**: GitHub.
     *   **Model/Pipeline**: Hugging Face Hub.
     *   **Web App**: Hugging Face Spaces.
