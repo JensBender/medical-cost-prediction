@@ -51,8 +51,8 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def fetch_bls_observations(timeout: float) -> list[dict]:
-    """Fetch raw 2023-to-current observations from the fixed BLS series.
+def fetch_bls_data(timeout: float) -> list[dict]:
+    """Fetch raw 2023-to-current data from the fixed BLS series.
 
     A failed request, failed BLS status, or unexpected series ID stops the
     update. The caller must never write an artifact from an incomplete or
@@ -81,21 +81,21 @@ def fetch_bls_observations(timeout: float) -> list[dict]:
     if len(series) != 1 or series[0].get("seriesID") != SERIES_ID:
         raise RuntimeError(f"BLS response did not contain series {SERIES_ID}.")
 
-    observations = series[0].get("data", [])
-    if not isinstance(observations, list):
+    bls_data = series[0].get("data", [])
+    if not isinstance(bls_data, list):
         raise RuntimeError(f"BLS series {SERIES_ID} contains invalid observation data.")
-    return observations
+    return bls_data
 
 
-def valid_monthly_observations(observations: list[dict]) -> list[tuple[int, int, float]]:
-    """Return valid M01-M12 BLS values as ``(year, month, index)`` tuples.
+def parse_valid_monthly_bls_data(bls_data: list[dict]) -> list[tuple[int, int, float]]:
+    """Parse valid M01-M12 BLS data into ``(year, month, index)`` tuples.
 
     BLS may report an unavailable value as ``"-"``. Ignore unavailable
-    months here; ``build_artifact`` separately requires all 12 base-year
-    observations before it can calculate a factor.
+    months here; ``create_medical_inflation_artifact`` separately requires all 12 base-year
+    data values before it can calculate a factor.
     """
-    valid_observations = []
-    for observation in observations:
+    valid_monthly_data = []
+    for observation in bls_data:
         period = observation.get("period")
         if period not in MONTHLY_PERIODS:
             continue
@@ -110,30 +110,30 @@ def valid_monthly_observations(observations: list[dict]) -> list[tuple[int, int,
             raise ValueError(f"Invalid BLS observation: {observation}") from error
         if not math.isfinite(index) or index <= 0:
             raise ValueError(f"Invalid BLS index value: {observation}")
-        valid_observations.append((year, month, index))
-    return valid_observations
+        valid_monthly_data.append((year, month, index))
+    return valid_monthly_data
 
 
-def build_artifact(observations: list[dict], generated_at: str) -> dict:
-    """Build the auditable release artifact from validated BLS observations.
+def create_medical_inflation_artifact(bls_data: list[dict], generated_at: str) -> dict:
+    """Create the auditable release artifact from validated BLS data.
 
     The base index is the arithmetic mean of all 12 2023 monthly values.
     The target index is the latest valid published monthly value. The stored
     multiplier is ``target_index / base_index``. Missing any 2023 month is
     an error because it would silently change the baseline.
     """
-    monthly_observations = valid_monthly_observations(observations)
+    monthly_bls_data = parse_valid_monthly_bls_data(bls_data)
     base_months = {
         month: index
-        for year, month, index in monthly_observations
+        for year, month, index in monthly_bls_data
         if year == BASE_YEAR
     }
     if set(base_months) != set(range(1, 13)):
         missing_months = sorted(set(range(1, 13)) - set(base_months))
-        raise ValueError(f"Missing {BASE_YEAR} monthly BLS observations: {missing_months}")
+        raise ValueError(f"Missing {BASE_YEAR} monthly BLS data: {missing_months}")
 
     base_index = sum(base_months.values()) / len(base_months)
-    target_year, target_month, target_index = max(monthly_observations)
+    target_year, target_month, target_index = max(monthly_bls_data)
     factor = target_index / base_index
 
     return {
@@ -176,9 +176,9 @@ def main() -> None:
     preserves the factor used by each deployed release.
     """
     args = parse_args()
-    observations = fetch_bls_observations(args.timeout)
-    artifact = build_artifact(
-        observations,
+    bls_data = fetch_bls_data(args.timeout)
+    artifact = create_medical_inflation_artifact(
+        bls_data,
         generated_at=datetime.now(UTC).date().isoformat(),
     )
     write_json_atomically(args.output, artifact)
