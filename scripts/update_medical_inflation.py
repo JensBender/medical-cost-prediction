@@ -185,9 +185,9 @@ def main() -> None:
 
     print(f"Created '{args.output}'.")
     print(
-        f"{artifact['base_period']}: {artifact['base_index']:.3f}; "
-        f"{artifact['target_period']}: {artifact['target_index']:.3f}; "
-        f"factor: {artifact['medical_cost_inflation_factor']:.6f}"
+        f"Medical Care CPI {artifact['base_period']}: {artifact['base_index']:.2f}\n"
+        f"Medical Care CPI {artifact['target_period']}: {artifact['target_index']:.2f}\n"
+        f"Medical Inflation Factor: {artifact['medical_cost_inflation_factor']:.3f}"
     )
 
 
