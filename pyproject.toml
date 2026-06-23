@@ -48,7 +48,7 @@ app = [
 
 # Dependencies for testing the Web App/API 
 test = [
-    "pytest"
+    "pytest==9.1.1"
 ]
 
 [tool.setuptools.packages.find]

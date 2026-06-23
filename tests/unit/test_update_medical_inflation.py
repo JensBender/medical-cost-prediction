@@ -1,4 +1,8 @@
-"""Tests for the script to update the medical cost inflation factor."""
+"""Unit tests for the medical-cost inflation artifact updater.
+
+Run from the project root:
+    .venv-test/Scripts/python -m pytest tests/unit/test_update_medical_inflation.py
+"""
 
 import pytest
 
