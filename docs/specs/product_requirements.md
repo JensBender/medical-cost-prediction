@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Model Development |
 | **Created** | 2025-12-05 |
-| **Last Updated** | 2026-03-20 |
+| **Last Updated** | 2026-06-23 |
 | **Data Source** | Medical Expenditure Panel Survey (MEPS) |
 
 
@@ -135,7 +135,7 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | ID | Requirement | Details |
 | :--- | :--- | :--- |
 | **FR-01** | **Imputation** | If optional fields are skipped, default to the mode for categorical features and the median for numerical features. |
-| **FR-02** | **Inflation Adjustment** | Model predicts in 2023 dollars. Apply medical inflation multiplier: `Final_Prediction = Model_Output × (1 + Medical_Inflation_Rate)^(CurrentYear - 2023)` |
+| **FR-02** | **Medical-Cost Inflation Adjustment** | Adjust all displayed medical-cost amounts from 2023 to current dollars using medical-cost inflation. This includes the plan around amount, prediction range, safety cushion, comparison benchmarks, and SHAP impacts. |
 | **FR-03** | **Cost Range** | Generate 25th–75th percentile range (typical range) and 90th percentile (budget-safe estimate) to communicate prediction uncertainty. Never output a single point estimate. |
 | **FR-04** | **Cost Drivers** | Compute SHAP values for each prediction to explain feature contributions as dollar impacts. |
 | **FR-05** | **Comparison Benchmarks** | Compare user's prediction to (1) the typical American and (2) the typical person in their age group. Pre-compute weighted median benchmarks from the MEPS training set. |
@@ -144,10 +144,10 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 ### Result Display
 | ID | Component | Description | UI Element | Example |
 | :--- | :--- | :--- | :--- | :--- |
-| **UI-01** | **Cost Range** | Large, prominent display of out-of-pocket cost prediction as a typical range, plus a budget-safe estimate for higher-cost-year planning. | `gr.Markdown` | "Estimated Out-of-Pocket Healthcare Cost for Next Year: **$1,450 – $2,100** (typical range)<br>For a higher-cost year, consider budgeting up to: **$3,200**" |
-| **UI-02** | **Cost Drivers** | Explanation of key cost drivers and their dollar impact (SHAP). | `gr.Markdown` | "Your Diabetes Diagnosis (+$1,200), your Age (+$400), but your "Excellent" self-reported health lowered the estimate by (-$300)" |
-| **UI-03** | **Comparison Benchmarks** | Bar chart comparing user vs. national and age group benchmarks. | `gr.Plot` | "Typical American: $248 vs. Typical for ages 35-49: $170"<br> |
-| **UI-04** | **Limitations Notice** | Always-on guidance to help users interpret their prediction and understand the rare-tail limitation. | `gr.Markdown` | "**About This Estimate**<br>• Based on 2023 national survey data; recent policy changes may affect actual costs.<br>• Does not include insurance premiums or over-the-counter medications.<br>• Some high-cost years are driven by new diagnoses, accidents, hospitalizations, or plan-specific billing details this form cannot know in advance." |
+| **UI-01** | **Cost Summary** | Large, prominent display of the plan-around estimate, typical range, and safety cushion. | `gr.Markdown` | "**Your Estimated Out-of-Pocket Costs for Next Year:** **Plan around:** $1,350, **Typical range:** $520–$2,400, **Safety cushion:** budget up to $5,200" |
+| **UI-02** | **Cost Drivers** | Explanation of the factor with biggest impact on the plan-around estimate (SHAP values). | `gr.Markdown` | **These factors had the largest effect on your plan-around estimate:** "Your age (68): +$480, Diabetes: +$370, "Good" physical health: -$90" |
+| **UI-03** | **Comparison Benchmarks** | Bar chart comparing the user with national and age-group benchmarks. | `gr.Plot` | "Typical American: $248 vs. Typical for ages 35-49: $170"<br> |
+| **UI-04** | **Limitations Notice** | Always-on guidance to help users interpret their prediction and understand the rare-tail limitation. | `gr.Markdown` | "**About this estimate**<br>This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. New diagnoses, accidents, hospitalizations, and plan-specific billing details can make actual costs higher." |
 | **UI-05** | **Planning Notice** | Dynamic planning notice displayed only when it is actionable and based on the current prediction or user-selected inputs. | `gr.Markdown` | "**Planning note**<br>Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." |
 | **UI-06** | **Permanent Footer** | Always-visible disclaimer at the bottom of the page. Covers legal liability and data aging limitations. | `gr.Markdown` | *"Not intended as medical, financial, or legal advice. Based on 2023 U.S. national survey data."* |
 
@@ -165,7 +165,6 @@ Planning notices must be concise, neutral, and tied to a concrete user action. T
 The always-on limitations notice remains the primary way to communicate that rare high-cost events cannot always be identified from pre-year user inputs. The dynamic high-uncertainty flag should be based on predicted cost tiers because actual cost tiers are unknown at prediction time.  
 
 Planning notices should render as one compact panel below the prediction block, not as multiple stacked paragraphs. If several flags trigger, combine them in priority order and avoid repeating the same safety-cushion guidance. Keep the always-on scope disclaimer separate and quieter.
-
 
 ## Non-Functional Requirements
 
@@ -215,7 +214,7 @@ For technical implementation details such as data preprocessing, machine learnin
 | :--- | :--- | :--- |
 | **Outlier Prediction** | Model predicts extreme costs ($100k+) for a standard user. | Consider implementing display guardrails such as a model-version cap plus `HIGH_PREDICTED_UNCERTAINTY`, so the user sees a planning notice rather than a falsely precise extreme number. |
 | **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a fairness audit, document subgroup caveats, and provide user-facing planning notices based on the current prediction or user-selected inputs. |
-| **Data Aging** | 2023 data becomes outdated. | Display permanent footer (UI-06) and limitations notice (UI-04). Apply Medical Inflation Factor (FR-02) to adjust for cost increases. |
+| **Data Aging** | 2023 data becomes outdated. | Display permanent footer (UI-06) and limitations notice (UI-04). Use the medical-cost inflation adjustment in FR-02 to keep displayed estimates in current dollars. |
 | **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Covered by permanent footer (UI-06). For Medicare/Medicaid users, show the `PUBLIC_INSURANCE_POLICY_CHANGE` planning notice. |
 | **Unobserved Outcomes** | App users usually will not return one year later with reliable actual out-of-pocket spending, and collecting linked follow-up outcomes would weaken the anonymous, zero-retention privacy promise. | Do not claim production calibration from default app telemetry. Use aggregate drift monitoring only to detect shifts in usage and predictions. Evaluate true calibration by testing the deployed model on future MEPS survey years when available, or through a separately approved opt-in study. |
 
@@ -254,7 +253,7 @@ The following features and improvements are planned for future releases beyond t
 ### Policy Changes (2024-2026)
 Since the collection of the 2023 MEPS data, key policy changes have been enacted that affect out-of-pocket costs. This section documents these changes for awareness and transparency.
 
-**Note**: The app predicts **total out-of-pocket costs** (`TOTSLF23`), not costs itemized by category. This limits our ability to apply policy-specific hard caps (e.g., prescription drug cap). The existing Medical Inflation Factor (FR-02) already accounts for general cost changes.
+**Note**: The app predicts **total out-of-pocket costs** (`TOTSLF23`), not costs itemized by category. This limits our ability to apply policy-specific hard caps (e.g., prescription drug cap). The medical-cost inflation factor in FR-02 accounts for broad changes in medical costs, it does not model insurance plan or policy changes.
 
 **1. Inflation Reduction Act (IRA) - Medicare Part D**
 *   **2025 Change**: Annual out-of-pocket cap of **$2,000** for prescription drugs for Medicare Part D beneficiaries.
@@ -269,7 +268,7 @@ Since the collection of the 2023 MEPS data, key policy changes have been enacted
 **3. Medicare Part B Increases**
 *   **Deductibles**: Increased to $257 in 2025 (up from $226 in 2023).
 *   **Premiums**: Standard premium rose to $185.00/month in 2025 (up from $164.90 in 2023).
-*   **Mitigation**: The Medical Inflation Factor (FR-02) already accounts for these cost increases. No additional adjustment needed.
+*   **Mitigation**: Do not make a separate Part B adjustment. The target excludes premiums, and the medical-cost inflation factor is not a policy-specific model of deductibles or benefits. Retain the general policy-change limitation notice where relevant.
 
 ### Glossary
 | Term | Definition |
