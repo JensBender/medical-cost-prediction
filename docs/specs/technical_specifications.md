@@ -382,22 +382,26 @@ artifact schema is:
 }
 ```
 
-#### Medical-Cost Inflation Artifact
+#### Medical-Cost Inflation Adjustment
 
 Use the [BLS CPI-U U.S. city average, Medical Care, not seasonally adjusted series (`CUUR0000SAM`)](https://data.bls.gov/timeseries/CUUR0000SAM) for the medical-cost adjustment. Store one factor in `app/data/medical_inflation.json` for each application release so inference does not call an external service.
 
 ```json
 {
   "schema_version": 1,
+  "source": "U.S. Bureau of Labor Statistics (BLS)",
   "series_id": "CUUR0000SAM",
-  "base_year": 2023,
+  "series_name": "Medical care in U.S. city average, all urban consumers, not seasonally adjusted",
+  "base_period": "2023 annual average",
+  "base_index": 0.0,
   "target_period": "YYYY-MM",
-  "medical_cost_factor": 1.0,
-  "updated_at": "YYYY-MM-DD"
+  "target_index": 0.0,
+  "medical_cost_inflation_factor": 1.0,
+  "generated_at": "YYYY-MM-DD"
 }
 ```
 
-Calculate `medical_cost_factor` as the latest published index divided by the arithmetic mean of the 12 monthly 2023 index values. Refresh the artifact with the latest published value when the application is released. Do not use general consumer price index (CPI) or a fixed annual rate.
+Set `base_index` to the arithmetic mean of the 12 monthly 2023 values and `target_index` to the latest published value. Calculate `medical_cost_inflation_factor` as `target_index / base_index`. Refresh the artifact with the latest published value when the application is released. Do not use general consumer price index (CPI) or a fixed annual rate.
 
 During API/UI output formatting, apply the same factor to q25, q50, q75, q90, national and age-group benchmarks, and SHAP dollar impacts. Keep model predictions, metrics, and warning thresholds in 2023 dollars.
 
