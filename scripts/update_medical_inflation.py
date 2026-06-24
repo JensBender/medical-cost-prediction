@@ -151,11 +151,13 @@ def create_medical_inflation_artifact(bls_data: list[dict], generated_at: str) -
 
 
 def write_json_atomically(path: Path, payload: dict) -> None:
-    """Atomically replace the release artifact with formatted JSON.
+    """Write JSON to a temporary file first, then rename it to the target path.
 
-    The temporary file is written in the target directory and renamed only
-    after serialization completes, so the app cannot observe a partial JSON
-    file. Any temporary file is removed if writing or replacement fails.
+    This "atomic write" pattern prevents other processes (like the web app)
+    from reading a half-written or empty file if the script is interrupted
+    or if a read happens mid-write. By renaming/replacing the file only after
+    writing is 100% complete, readers see either the old file or the new
+    file, but never a corrupted state.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary_path = path.with_name(f".{path.name}.tmp")
