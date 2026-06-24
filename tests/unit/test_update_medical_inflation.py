@@ -11,6 +11,8 @@ import pytest
 
 from scripts import update_medical_inflation as updater
 
+pytestmark = pytest.mark.unit
+
 
 class JsonResponse(StringIO):
     """Minimal context-managed response containing JSON data."""
