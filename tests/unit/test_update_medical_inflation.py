@@ -209,6 +209,11 @@ def test_fetch_bls_data_rejects_non_positive_timeout():
 
 
 def test_fetch_bls_data_wraps_retrieval_errors(monkeypatch):
+    """Verify that fetch_bls_data wraps low-level retrieval exceptions in a RuntimeError.
+
+    An OSError is used here as a representative exception for network issues,
+    such as being offline or encountering connection failures.
+    """
     def raise_network_error(*args, **kwargs):
         raise OSError("offline")
 
