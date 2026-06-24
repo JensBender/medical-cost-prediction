@@ -55,6 +55,7 @@ def test_create_medical_inflation_artifact_uses_2023_average_and_latest_month():
 
 
 def test_create_medical_inflation_artifact_requires_all_2023_months():
+    """Reject a partial 2023 baseline so the artifact uses a true annual average."""
     bls_data = [
         {"year": "2023", "period": "M01", "value": "500.0"},
         {"year": "2023", "period": "M02", "value": "500.0"},
@@ -93,6 +94,7 @@ def test_write_json_atomically_replaces_existing_artifact(tmp_path):
 def test_write_json_atomically_removes_temporary_file_after_write_failure(
     tmp_path, monkeypatch
 ):
+    """Clean up a partial temporary artifact when writing the final JSON fails."""
     output_path = tmp_path / "nested" / "medical_inflation.json"
 
     def raise_write_error(*args, **kwargs):
@@ -108,6 +110,7 @@ def test_write_json_atomically_removes_temporary_file_after_write_failure(
 
 
 def test_create_medical_inflation_artifact_uses_latest_available_month():
+    """Skip BLS observations without a numeric value and use the latest valid month."""
     bls_data = [
         {"year": "2023", "period": "M01", "value": "500.0"},
         {"year": "2023", "period": "M02", "value": "500.0"},
@@ -134,6 +137,7 @@ def test_create_medical_inflation_artifact_uses_latest_available_month():
 
 
 def test_create_medical_inflation_artifact_uses_latest_chronological_month():
+    """Use the newest dated observation even when the API response is unordered."""
     bls_data = [
         {"year": "2023", "period": "M01", "value": "500.0"},
         {"year": "2023", "period": "M02", "value": "500.0"},
@@ -277,6 +281,7 @@ def test_fetch_bls_data_rejects_mismatched_series_id(monkeypatch):
     ],
 )
 def test_fetch_bls_data_rejects_invalid_response(monkeypatch, payload, message):
+    """Reject unsuccessful or malformed BLS responses instead of producing an artifact."""
     monkeypatch.setattr(
         updater,
         "urlopen",
@@ -288,6 +293,7 @@ def test_fetch_bls_data_rejects_invalid_response(monkeypatch, payload, message):
 
 
 def test_parse_valid_monthly_bls_data_ignores_non_monthly_and_unavailable_data():
+    """Ignore annual-summary and unavailable observations; only numeric monthly data is usable."""
     parsed_data = updater.parse_valid_monthly_bls_data(
         [
             {"year": "2026", "period": "M05", "value": "593.239"},
