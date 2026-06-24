@@ -1,4 +1,4 @@
-"""Unit tests for the script to update the medical inflation artifact.
+"""Unit tests for the script to update the medical cost inflation artifact.
 
 Run from the project root:
     .venv-test/Scripts/python -m pytest tests/unit/test_update_medical_inflation.py
@@ -23,20 +23,6 @@ class JsonResponse(StringIO):
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
-
-def create_bls_response(data):
-    """Create a successful BLS API response for the fixed series."""
-    return {
-        "status": "REQUEST_SUCCEEDED",
-        "Results": {
-            "series": [
-                {
-                    "seriesID": updater.SERIES_ID,
-                    "data": data,
-                }
-            ]
-        },
-    }
 
 
 def test_create_medical_inflation_artifact_uses_2023_average_and_latest_month():
@@ -175,7 +161,7 @@ def test_create_medical_inflation_artifact_uses_latest_chronological_month():
 
 
 
-def test_fetch_bls_data_returns_verified_series(monkeypatch):
+def test_fetch_bls_data_builds_request_and_returns_data(monkeypatch):
     expected_data = [
         {"year": "2023", "period": "M01", "value": "500.0"},
         {"year": "2023", "period": "M02", "value": "500.0"},
@@ -196,7 +182,18 @@ def test_fetch_bls_data_returns_verified_series(monkeypatch):
     def fake_urlopen(url, timeout):
         request["url"] = url
         request["timeout"] = timeout
-        return JsonResponse(json.dumps(create_bls_response(expected_data)))
+        payload = {
+            "status": "REQUEST_SUCCEEDED",
+            "Results": {
+                "series": [
+                    {
+                        "seriesID": updater.SERIES_ID,
+                        "data": expected_data,
+                    }
+                ]
+            },
+        }
+        return JsonResponse(json.dumps(payload))
 
     monkeypatch.setattr(updater, "urlopen", fake_urlopen)
 
@@ -220,6 +217,32 @@ def test_fetch_bls_data_wraps_retrieval_errors(monkeypatch):
     with pytest.raises(RuntimeError, match="Could not retrieve BLS series"):
         updater.fetch_bls_data(timeout=30)
 
+
+
+def test_fetch_bls_data_rejects_mismatched_series_id(monkeypatch):
+    payload = {
+        "status": "REQUEST_SUCCEEDED",
+        "Results": {
+            "series": [
+                {
+                    "seriesID": "CUUR0000SA0",
+                    "data": [
+                        {"year": "2026", "period": "M05", "value": "593.239"}
+                    ],
+                }
+            ]
+        },
+    }
+    monkeypatch.setattr(
+        updater,
+        "urlopen",
+        lambda *args, **kwargs: JsonResponse(json.dumps(payload)),
+    )
+
+    with pytest.raises(
+        RuntimeError, match=f"did not contain series {updater.SERIES_ID}"
+    ):
+        updater.fetch_bls_data(timeout=30)
 
 @pytest.mark.parametrize(
     ("payload", "message"),
