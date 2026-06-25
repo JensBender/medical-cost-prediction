@@ -341,7 +341,7 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. New diagnoses, accidents, hospitalizations, and plan-specific billing details can make actual costs higher.
 
 **Medical Inflation Adjustment**  
-The app adjusts all user-facing dollar amounts from 2023 to current dollars using a medical care inflation factor. This adjustment applies to the plan-around estimate, typical range, safety cushion, national and age-group benchmarks, and SHAP dollar impacts. The factor is calculated from [Bureau of Labor Statistics medical care data](https://data.bls.gov/timeseries/CUUR0000SAM).
+The app adjusts all user-facing dollar amounts from 2023 to current dollars using a medical care inflation factor. This adjustment applies to the plan-around estimate, typical range, safety cushion, national and age-group benchmarks, and SHAP dollar impacts. The factor is calculated from the [U.S. Bureau of Labor Statistics Medical Care Consumer Price Index](https://data.bls.gov/timeseries/CUUR0000SAM), which tracks changes in medical care prices over time.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
@@ -491,7 +491,7 @@ This project is licensed under the [MIT License](LICENSE).
 ## 👏 Credits
 This project was made possible with the help of the following resources:
 - **Dataset**: [2023 Full Year Consolidated Data File (HC-251)](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251) from the [Medical Expenditure Panel Survey (MEPS)](https://meps.ahrq.gov/mepsweb/), provided by the [Agency for Healthcare Research and Quality (AHRQ)](https://www.ahrq.gov/).
-- **Medical Inflation Data**: [Consumer Price Index for All Urban Consumers (CPI-U) Medical Care series](https://data.bls.gov/timeseries/CUUR0000SAM) from the [U.S. Bureau of Labor Statistics (BLS)](https://www.bls.gov/cpi/).
+- **Medical Inflation Data**: [Medical Care Consumer Price Index](https://data.bls.gov/timeseries/CUUR0000SAM) from the [U.S. Bureau of Labor Statistics (BLS)](https://www.bls.gov/cpi/). Specifically, the project uses the CPI-U Medical Care series for all urban consumers, not seasonally adjusted.
 - **Images**: 
   - Header: The [header image](./assets/header.png) was generated using [GPT Image 1.5](https://openai.com/index/new-chatgpt-images-is-here/) via the [ChatGPT app](https://chatgpt.com/) by OpenAI. 
   - Infographics: The [MEPS data infographic](./assets/infographic_meps_data.jpg) and the [U.S. healthcare costs infographic](./assets/infographic_healthcare_costs.png) were generated using [Gemini 3 Pro Image](https://deepmind.google/models/gemini-image/pro/) via the [Gemini app](https://gemini.google.com/app) by Google.
