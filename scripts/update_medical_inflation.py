@@ -1,12 +1,12 @@
 """Create the medical cost inflation factor artifact used by the deployed app.
 
-Fetches the BLS CPI-U Medical Care series (CUUR0000SAM) and writes the 
-``app/data/medical_inflation.json`` artifact. The factor is the latest valid 
-monthly index divided by the 2023 annual-average index.
+Fetches the Bureau of Labour Statistics (BLS) CPI-U Medical Care series 
+(CUUR0000SAM) and writes the ``app/data/medical_inflation.json`` artifact. 
+The factor is the latest valid monthly index divided by the 2023 annual-average index.
 
 Run this script before an app release, review and commit the resulting JSON, then
 deploy that exact commit. It does not retrain or change the model, and the
-deployed app must read the artifact rather than call BLS at prediction time.
+deployed app must read the artifact rather than call the BLS API at prediction time.
 
 Run:
     .venv-app/Scripts/python scripts/update_medical_inflation.py
@@ -32,7 +32,7 @@ MONTHLY_PERIODS = {f"M{month:02d}" for month in range(1, 13)}
 
 
 def parse_args() -> argparse.Namespace:
-    """Parse the release output path and BLS request timeout."""
+    """Parse the output path and BLS API request timeout."""
     parser = argparse.ArgumentParser(
         description="Update the app medical-cost inflation artifact from BLS data."
     )
@@ -52,11 +52,13 @@ def parse_args() -> argparse.Namespace:
 
 
 def fetch_bls_data(timeout: float) -> list[dict]:
-    """Fetch raw 2023-to-current data from the fixed BLS series.
+    """Request data from the BLS API for the medical care series and 
+    return the verified data.
 
-    A failed request, failed BLS status, or unexpected series ID stops the
-    update. The caller must never write an artifact from an incomplete or
-    unverified BLS response.
+    This function owns URL construction, timeout handling, network errors, and
+    JSON loading. It delegates response-envelope validation to
+    ``extract_bls_series_data`` so callers never receive an unverified BLS
+    response.
     """
     if timeout <= 0:
         raise ValueError("Timeout must be greater than zero.")
@@ -76,7 +78,12 @@ def fetch_bls_data(timeout: float) -> list[dict]:
 
 
 def extract_bls_series_data(payload: dict) -> list[dict]:
-    """Validate a BLS API response and return observations for the requested series."""
+    """Validate the BLS response envelope and return the requested series data.
+
+    The response must report success, contain exactly the expected CPI series,
+    and expose that series' observations as a list. Anything else stops the
+    release update rather than producing an artifact from the wrong data.
+    """
     if payload.get("status") != "REQUEST_SUCCEEDED":
         raise RuntimeError(
             f"BLS series {SERIES_ID} request failed: {payload.get('message', [])}"
@@ -93,11 +100,12 @@ def extract_bls_series_data(payload: dict) -> list[dict]:
 
 
 def parse_monthly_bls_observations(bls_data: list[dict]) -> list[tuple[int, int, float]]:
-    """Parse usable M01-M12 BLS observations into ``(year, month, index)`` tuples.
+    """Validate and parse usable monthly observations from extracted BLS data.
 
-    BLS may report an unavailable value as ``"-"``. Ignore unavailable
-    months here; ``create_medical_inflation_artifact`` separately requires all 12 base-year
-    data values before it can calculate a factor.
+    Keep only M01-M12 observations with numeric positive index values and return
+    them as ``(year, month, index)`` tuples. BLS may report unavailable values
+    as ``"-"``; ignore those here. ``create_medical_inflation_artifact`` later
+    requires all 12 base-year months before it can calculate a factor.
     """
     valid_monthly_observations = []
     for observation in bls_data:
@@ -120,12 +128,12 @@ def parse_monthly_bls_observations(bls_data: list[dict]) -> list[tuple[int, int,
 
 
 def create_medical_inflation_artifact(bls_data: list[dict], generated_at: str) -> dict:
-    """Create the auditable release artifact from validated BLS data.
+    """Apply the medical inflation business rule and return the artifact dict.
 
-    The base index is the arithmetic mean of all 12 2023 monthly values.
-    The target index is the latest valid published monthly value. The stored
-    multiplier is ``target_index / base_index``. Missing any 2023 month is
-    an error because it would silently change the baseline.
+    The base index is the arithmetic mean of all 12 2023 monthly values. The
+    target index is the latest valid published monthly value. The stored
+    multiplier is ``target_index / base_index``. Missing any 2023 month is an
+    error because it would silently change the baseline.
     """
     monthly_bls_data = parse_monthly_bls_observations(bls_data)
     base_months = {
@@ -156,13 +164,11 @@ def create_medical_inflation_artifact(bls_data: list[dict], generated_at: str) -
 
 
 def write_json_atomically(path: Path, payload: dict) -> None:
-    """Write JSON to a temporary file first, then rename it to the target path.
+    """Serialize the artifact dict to JSON without exposing a partial file.
 
-    This "atomic write" pattern prevents other processes (like the web app)
-    from reading a half-written or empty file if the script is interrupted
-    or if a read happens mid-write. By renaming/replacing the file only after
-    writing is 100% complete, readers see either the old file or the new
-    file, but never a corrupted state.
+    Write to a temporary file first, then rename it to the target path. This
+    prevents other processes, such as the web app, from reading a half-written
+    or empty artifact if the script is interrupted or a read happens mid-write.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary_path = path.with_name(f".{path.name}.tmp")
