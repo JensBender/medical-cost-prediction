@@ -23,7 +23,7 @@ from urllib.error import URLError
 from urllib.request import urlopen
 
 APP_DATA_PATH = Path("app/data/medical_inflation.json")
-BLS_API_URL = "https://api.bls.gov/publicAPI/v2/timeseries/data/{series_id}"
+BLS_API_URL_TEMPLATE = "https://api.bls.gov/publicAPI/v2/timeseries/data/{series_id}"
 BASE_YEAR = 2023
 SERIES_ID = "CUUR0000SAM"
 SOURCE_NAME = "U.S. Bureau of Labor Statistics (BLS)"
@@ -63,7 +63,7 @@ def fetch_bls_data(timeout: float) -> list[dict]:
 
     current_year = datetime.now(UTC).year
     url = (
-        BLS_API_URL.format(series_id=SERIES_ID)
+        BLS_API_URL_TEMPLATE.format(series_id=SERIES_ID)
         + f"?startyear={BASE_YEAR}&endyear={current_year}"
     )
     try:

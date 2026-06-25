@@ -134,6 +134,7 @@ def test_create_medical_inflation_artifact_uses_latest_available_month():
     )
 
     assert inflation_artifact["target_period"] == "2026-05"
+    assert inflation_artifact["target_index"] == 593.239
 
 
 def test_create_medical_inflation_artifact_uses_latest_chronological_month():
@@ -166,6 +167,7 @@ def test_create_medical_inflation_artifact_uses_latest_chronological_month():
 
 
 def test_fetch_bls_data_builds_request_and_returns_data(monkeypatch):
+    """Return BLS observations while preserving the expected series, start year, and timeout."""
     expected_data = [
         {"year": "2023", "period": "M01", "value": "500.0"},
         {"year": "2023", "period": "M02", "value": "500.0"},
