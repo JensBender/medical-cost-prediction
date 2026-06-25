@@ -1,5 +1,9 @@
 """Unit tests for the script to update the medical cost inflation artifact.
 
+These tests focus on preventing silent wrong artifacts: wrong BLS series,
+malformed or failed API responses, incomplete 2023 baseline data, unavailable
+latest months, unordered observations, invalid CPI values, and unsafe writes.
+
 Run from the project root:
     .venv-test/Scripts/python -m pytest tests/unit/test_update_medical_inflation.py
 """
