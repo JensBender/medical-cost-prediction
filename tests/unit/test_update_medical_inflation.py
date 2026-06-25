@@ -24,7 +24,6 @@ class JsonResponse(StringIO):
         self.close()
 
 
-
 def test_create_medical_inflation_artifact_uses_2023_average_and_latest_month():
     bls_data = [
         {"year": "2023", "period": "M01", "value": "500"},
@@ -165,7 +164,6 @@ def test_create_medical_inflation_artifact_uses_latest_chronological_month():
     assert inflation_artifact["target_index"] == 593.239
 
 
-
 def test_fetch_bls_data_builds_request_and_returns_data(monkeypatch):
     """Return BLS observations while preserving the expected series, start year, and timeout."""
     expected_data = [
@@ -229,14 +227,13 @@ def test_fetch_bls_data_wraps_retrieval_errors(monkeypatch):
         updater.fetch_bls_data(timeout=30)
 
 
-
-def test_fetch_bls_data_rejects_mismatched_series_id(monkeypatch):
+def test_extract_bls_series_data_rejects_mismatched_series_id():
     payload = {
         "status": "REQUEST_SUCCEEDED",
         "Results": {
             "series": [
                 {
-                    "seriesID": "CUUR0000SA0",
+                    "seriesID": "CUUR0000SA0",  # incorrect series ID
                     "data": [
                         {"year": "2026", "period": "M05", "value": "593.239"}
                     ],
@@ -244,16 +241,12 @@ def test_fetch_bls_data_rejects_mismatched_series_id(monkeypatch):
             ]
         },
     }
-    monkeypatch.setattr(
-        updater,
-        "urlopen",
-        lambda *args, **kwargs: JsonResponse(json.dumps(payload)),
-    )
 
     with pytest.raises(
         RuntimeError, match=f"did not contain series {updater.SERIES_ID}"
     ):
-        updater.fetch_bls_data(timeout=30)
+        updater.extract_bls_series_data(payload)
+
 
 @pytest.mark.parametrize(
     ("payload", "message"),
@@ -282,21 +275,15 @@ def test_fetch_bls_data_rejects_mismatched_series_id(monkeypatch):
         ),
     ],
 )
-def test_fetch_bls_data_rejects_invalid_response(monkeypatch, payload, message):
+def test_extract_bls_series_data_rejects_invalid_response(payload, message):
     """Reject unsuccessful or malformed BLS responses instead of producing an artifact."""
-    monkeypatch.setattr(
-        updater,
-        "urlopen",
-        lambda *args, **kwargs: JsonResponse(json.dumps(payload)),
-    )
-
     with pytest.raises(RuntimeError, match=message):
-        updater.fetch_bls_data(timeout=30)
+        updater.extract_bls_series_data(payload)
 
 
-def test_parse_valid_monthly_bls_data_ignores_non_monthly_and_unavailable_data():
+def test_parse_monthly_bls_observations_ignores_non_monthly_and_unavailable_data():
     """Ignore annual-summary and unavailable observations; only numeric monthly data is usable."""
-    parsed_data = updater.parse_valid_monthly_bls_data(
+    parsed_data = updater.parse_monthly_bls_observations(
         [
             {"year": "2026", "period": "M05", "value": "593.239"},
             {"year": "2026", "period": "M13", "value": "600"},
@@ -317,6 +304,6 @@ def test_parse_valid_monthly_bls_data_ignores_non_monthly_and_unavailable_data()
         {"year": "2026", "period": "M01", "value": "nan"},
     ],
 )
-def test_parse_valid_monthly_bls_data_rejects_invalid_observations(observation):
+def test_parse_monthly_bls_observations_rejects_invalid_observations(observation):
     with pytest.raises(ValueError, match="Invalid BLS"):
-        updater.parse_valid_monthly_bls_data([observation])
+        updater.parse_monthly_bls_observations([observation])

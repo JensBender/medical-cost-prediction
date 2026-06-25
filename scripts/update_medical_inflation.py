@@ -72,6 +72,11 @@ def fetch_bls_data(timeout: float) -> list[dict]:
     except (OSError, URLError, json.JSONDecodeError) as error:
         raise RuntimeError(f"Could not retrieve BLS series {SERIES_ID}: {error}") from error
 
+    return extract_bls_series_data(payload)
+
+
+def extract_bls_series_data(payload: dict) -> list[dict]:
+    """Validate a BLS API response and return observations for the requested series."""
     if payload.get("status") != "REQUEST_SUCCEEDED":
         raise RuntimeError(
             f"BLS series {SERIES_ID} request failed: {payload.get('message', [])}"
@@ -87,14 +92,14 @@ def fetch_bls_data(timeout: float) -> list[dict]:
     return bls_data
 
 
-def parse_valid_monthly_bls_data(bls_data: list[dict]) -> list[tuple[int, int, float]]:
-    """Parse valid M01-M12 BLS data into ``(year, month, index)`` tuples.
+def parse_monthly_bls_observations(bls_data: list[dict]) -> list[tuple[int, int, float]]:
+    """Parse usable M01-M12 BLS observations into ``(year, month, index)`` tuples.
 
     BLS may report an unavailable value as ``"-"``. Ignore unavailable
     months here; ``create_medical_inflation_artifact`` separately requires all 12 base-year
     data values before it can calculate a factor.
     """
-    valid_monthly_data = []
+    valid_monthly_observations = []
     for observation in bls_data:
         period = observation.get("period")
         if period not in MONTHLY_PERIODS:
@@ -110,8 +115,8 @@ def parse_valid_monthly_bls_data(bls_data: list[dict]) -> list[tuple[int, int, f
             raise ValueError(f"Invalid BLS observation: {observation}") from error
         if not math.isfinite(index) or index <= 0:
             raise ValueError(f"Invalid BLS index value: {observation}")
-        valid_monthly_data.append((year, month, index))
-    return valid_monthly_data
+        valid_monthly_observations.append((year, month, index))
+    return valid_monthly_observations
 
 
 def create_medical_inflation_artifact(bls_data: list[dict], generated_at: str) -> dict:
@@ -122,7 +127,7 @@ def create_medical_inflation_artifact(bls_data: list[dict], generated_at: str) -
     multiplier is ``target_index / base_index``. Missing any 2023 month is
     an error because it would silently change the baseline.
     """
-    monthly_bls_data = parse_valid_monthly_bls_data(bls_data)
+    monthly_bls_data = parse_monthly_bls_observations(bls_data)
     base_months = {
         month: index
         for year, month, index in monthly_bls_data
