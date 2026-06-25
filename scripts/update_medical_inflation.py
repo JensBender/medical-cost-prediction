@@ -108,6 +108,7 @@ def parse_monthly_bls_observations(bls_data: list[dict]) -> list[tuple[int, int,
     requires all 12 base-year months before it can calculate a factor.
     """
     valid_monthly_observations = []
+    observed_months = set()
     for observation in bls_data:
         period = observation.get("period")
         if period not in MONTHLY_PERIODS:
@@ -123,6 +124,10 @@ def parse_monthly_bls_observations(bls_data: list[dict]) -> list[tuple[int, int,
             raise ValueError(f"Invalid BLS observation: {observation}") from error
         if not math.isfinite(index) or index <= 0:
             raise ValueError(f"Invalid BLS index value: {observation}")
+        current_year_month = (year, month)
+        if current_year_month in observed_months:
+            raise ValueError(f"Duplicate BLS monthly observation: {observation}")
+        observed_months.add(current_year_month)
         valid_monthly_observations.append((year, month, index))
     return valid_monthly_observations
 

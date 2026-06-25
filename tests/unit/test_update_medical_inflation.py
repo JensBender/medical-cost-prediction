@@ -2,7 +2,8 @@
 
 These tests focus on preventing silent wrong artifacts: wrong BLS series,
 malformed or failed API responses, incomplete 2023 baseline data, unavailable
-latest months, unordered observations, invalid CPI values, and unsafe writes.
+latest months, unordered observations, duplicate months, invalid CPI values, and
+unsafe writes.
 
 Run from the project root:
     .venv-test/Scripts/python -m pytest tests/unit/test_update_medical_inflation.py
@@ -75,6 +76,32 @@ def test_create_medical_inflation_artifact_requires_all_2023_months():
     ]
 
     with pytest.raises(ValueError, match="Missing 2023 monthly BLS data"):
+        updater.create_medical_inflation_artifact(
+            bls_data,
+            generated_at="2026-06-23",
+        )
+
+
+def test_create_medical_inflation_artifact_rejects_duplicate_months():
+    """Reject duplicate month data instead of silently choosing one value."""
+    bls_data = [
+        {"year": "2023", "period": "M01", "value": "500.0"},
+        {"year": "2023", "period": "M01", "value": "501.0"},
+        {"year": "2023", "period": "M02", "value": "500.0"},
+        {"year": "2023", "period": "M03", "value": "500.0"},
+        {"year": "2023", "period": "M04", "value": "500.0"},
+        {"year": "2023", "period": "M05", "value": "500.0"},
+        {"year": "2023", "period": "M06", "value": "500.0"},
+        {"year": "2023", "period": "M07", "value": "500.0"},
+        {"year": "2023", "period": "M08", "value": "500.0"},
+        {"year": "2023", "period": "M09", "value": "500.0"},
+        {"year": "2023", "period": "M10", "value": "500.0"},
+        {"year": "2023", "period": "M11", "value": "500.0"},
+        {"year": "2023", "period": "M12", "value": "500.0"},
+        {"year": "2026", "period": "M05", "value": "593.239"},
+    ]
+
+    with pytest.raises(ValueError, match="Duplicate BLS monthly observation"):
         updater.create_medical_inflation_artifact(
             bls_data,
             generated_at="2026-06-23",
