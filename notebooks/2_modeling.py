@@ -77,6 +77,9 @@ from sklearn.metrics import (
 )
 import time  # to measure training time
 
+# Model explainability
+import shap 
+
 # Local imports
 from src.modeling import (
     get_baseline_models,
@@ -4626,3 +4629,29 @@ plot_quantile_subgroup_predictions(
 #         </tr>
 #     </table>
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">SHAP</h2>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ SHapley Additive exPlanations (SHAP)
+# </div>
+#
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Generate SHAP values for the XGBoost regressor point-estimate model on the test set.
+# </div>
+
+# %%
+# Load XGBoost Regressor (point-estimate model) and test predictions
+xgb = load_model("../models/xgb_tuned_model.joblib")
+y_test_xgb = ("../models/xgb_tuned_predictions.joblib")
+
+# Generate SHAP values
+explainer = shap.TreeExplainer(xgb)
+shap_values = explainer.shap_values(y_test_xgb)
+
+# Show SHAP values for an example prediction
+shap_values
