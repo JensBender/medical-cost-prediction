@@ -30,6 +30,7 @@ train = [
     "matplotlib==3.10.7",
     "seaborn==0.13.2",
     "xgboost==3.1.2",
+    "shap==0.52.0",
     "pyarrow==19.0.1",
     "mlflow==3.10.1",
     "dvc==3.67.0",
