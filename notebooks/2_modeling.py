@@ -4644,7 +4644,11 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Feature Importance Analysis for Model Audit:</strong> Aggregate SHAP values across many samples to estimate how much each feature moves model predictions overall. This complements XGBoost's native feature importance scores. Native XGBoost importance describes how features are used inside the fitted trees, such as split frequency, gain, or cover. SHAP importance instead summarizes each feature's average impact on model predictions using mean absolute SHAP values. These methods answer related but different questions, so we will compare both to audit whether the model relies on plausible cost drivers.</li>
 #         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use SHAP values for an individual prediction to show which inputs moved that user's plan-around estimate higher or lower than the baseline prediction. For the medical cost planner app, this is a product feature, not only a technical diagnostic. It makes the prediction more useful for financial planning by explaining the main drivers behind the estimate. The explanation should use cautious wording such as "moved the estimate" and avoid causal language.</li>
 #     </ol>
-#     For the quantile model, user-facing SHAP explanations will focus on the q50 plan-around estimate. The q25, q75, and q90 outputs describe uncertainty and planning range, but they should not be mixed into the q50 explanation.
+#     <strong>Use Plan-Around Estimate</strong><br>
+#     For the quantile model, user-facing SHAP explanations will focus on the q50 plan-around estimate. The q25, q75, and q90 outputs describe uncertainty and planning range, but they should not be mixed into the q50 explanation. 
+#     <br><br>
+#     <strong>Background Data</strong><br>
+#     As the SHAP background data, use all training dataset rows as the reference population. The baseline prediction is the population-weighted average q50 prediction across all training rows. This gives users a clear comparison against the U.S. adult population. If this national baseline proves too broad and not helpful enough for users, revisit this choice and consider an age-group-specific or otherwise cohort-specific prediction baseline instead.
 # </div>
 #
 #
