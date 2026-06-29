@@ -4648,22 +4648,46 @@ plot_quantile_subgroup_predictions(
 #     For the quantile model, user-facing SHAP explanations will focus on the q50 plan-around estimate. The q25, q75, and q90 outputs describe uncertainty and planning range, but they should not be mixed into the q50 explanation. 
 #     <br><br>
 #     <strong>Background Data</strong><br>
-#     As the SHAP background data, use all training dataset rows as the reference population. The baseline prediction is the population-weighted average q50 prediction across all training rows. This gives users a clear comparison against the U.S. adult population. If this national baseline proves too broad and not helpful enough for users, revisit this choice and consider an age-group-specific or otherwise cohort-specific prediction baseline instead.
+#     Use a weighted subsample of training data (preprocessed) as the SHAP background data. This keeps app inference fast while preserving MEPS population weighting. The baseline displayed in the app remains the weighted average q50 prediction across all training rows, stored as SHAP metadata. If this national baseline proves too broad and not helpful enough for users, revisit this choice and consider an age-group-specific or otherwise cohort-specific prediction baseline instead.
+#     <br><br>
+#     <strong>App/API Implementation Plan</strong>
+#     <ol>
+#         <li><strong>During Training:</strong>  Persist background data artifact under <code>app/data/shap_background.parquet</code>, a weighted sample of approximately 200-500 preprocessed training rows sampled with probability proportional to <code>PERWT23F</code>. Also persist population baseline artifact</strong> under <code>app/data/shap_metadata.json</code> with <code>prediction_output="q50"</code>, <code>prediction_scale="2023 dollars"</code>, <code>baseline_q50</code>, <code>background_n</code>, <code>background_source</code>, <code>random_state</code>, and the feature/group mapping version.</li>
+#         <li><strong>During Application Startup:</strong> Load <code>models/xgb_quantile_model.joblib</code>, load <code>shap_background.parquet</code>, define a <code>predict_q50_dollars</code> wrapper around the quantile model, and create <code>shap.Explainer(predict_q50_dollars, shap_background)</code> once.</li>
+#         <li><strong>At Inference Time:</strong> Preprocess the user row, predict q25/q50/q75/q90, compute SHAP values for q50 only, aggregate encoded columns back to user-facing feature groups, apply the medical-cost inflation factor to predictions, benchmark, and SHAP dollar impacts, then return the top positive and negative cost drivers.</li>
+#     </ol>
 # </div>
 #
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Generate SHAP values for the XGBoost regressor point-estimate model on the test set.
+#     📌 Implementation scaffold for app-facing SHAP artifacts and q50 dollar explanations.
 # </div>
 
 # %%
-# Load XGBoost Regressor (point-estimate model) and test predictions
-xgb = load_model("../models/xgb_tuned_model.joblib")
-y_test_xgb = ("../models/xgb_tuned_predictions.joblib")
-
-# Generate SHAP values
-explainer = shap.TreeExplainer(xgb)
-shap_values = explainer.shap_values(y_test_xgb)
-
-# Show SHAP values for an example prediction
-shap_values
+# Planned artifact-building scaffold. Keep this non-executing until the app
+# explainability module is implemented and latency-tested.
+#
+# SHAP_BACKGROUND_N = 300
+#
+# xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
+#
+# shap_background = X_train_preprocessed.sample(
+#     n=SHAP_BACKGROUND_N,
+#     weights=w_train,
+#     random_state=RANDOM_STATE,
+# )
+#
+# def predict_q50_dollars(X):
+#     y_pred = postprocess_quantile_predictions(xgb_quantile_model.predict(X))
+#     return y_pred[:, 1]
+#
+# baseline_q50 = np.average(
+#     predict_q50_dollars(X_train_preprocessed),
+#     weights=w_train,
+# )
+#
+# # App startup:
+# # explainer = shap.Explainer(predict_q50_dollars, shap_background)
+# #
+# # Per request:
+# # shap_values = explainer(user_row_preprocessed)
