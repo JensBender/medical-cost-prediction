@@ -4689,12 +4689,22 @@ plot_quantile_subgroup_predictions(
 #     y_pred = postprocess_quantile_predictions(xgb_quantile_model.predict(X))
 #     return y_pred[:, 1]
 #
+# # QA check: compare the app-facing SHAP baseline based on the background data against the full training data.
+# # The app should display the SHAP/explainer baseline for additivity, but this
+# # comparison helps verify that the sampled background data still represents the training data well.
 # background_baseline_q50 = predict_q50_dollars(shap_background).mean()
 # full_training_baseline_q50 = np.average(
 #     predict_q50_dollars(X_train_preprocessed),
 #     weights=w_train,
 # )
 # baseline_difference = background_baseline_q50 - full_training_baseline_q50
+# baseline_pct_difference = baseline_difference / full_training_baseline_q50
+#
+# print(f"SHAP background q50 baseline: ${background_baseline_q50:,.2f}")
+# print(f"Full-training q50 baseline:   ${full_training_baseline_q50:,.2f}")
+# print(f"Difference:                   ${baseline_difference:,.2f} ({baseline_pct_difference:.1%})")
+#
+# # If this difference is materially large, increase SHAP_BACKGROUND_N or resample.
 #
 # # App startup:
 # # explainer = shap.Explainer(predict_q50_dollars, shap_background)
