@@ -4645,7 +4645,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use SHAP values for an individual prediction to show which inputs moved that user's plan-around estimate higher or lower than the baseline prediction. For the medical cost planner app, this is a product feature, not only a technical diagnostic. It makes the prediction more useful for financial planning by explaining the main drivers behind the estimate. The explanation should use cautious wording such as "moved the estimate" and avoid causal language.</li>
 #     </ol>
 #     <strong>Feature Importance</strong><br>
-#     Use both SHAP importance and XGBoost native importance for model audit. Aggregated SHAP importance (<code>mean(abs(SHAP value))</code>) answers which features most move the final post-processed q50 dollar estimate across users. XGBoost native importance answers which features the inner trees relied on most while fitting. Use <code>total_gain</code> for XGBoost native importance because it measures total training-loss reduction from all splits using a feature, whereas split count (<code>weight</code>) would only measure how often a feature was used.
+#     Use both SHAP importance and XGBoost native importance for model audit. Aggregated SHAP importance (<code>mean(abs(SHAP value))</code>) answers which features most move the final post-processed q50 dollar estimate across users. XGBoost native importance answers which features the inner trees relied on most while fitting. Use <code>total_gain</code> for XGBoost native importance because it measures total training-loss reduction from all splits using a feature, whereas split count (<code>weight</code>) would only measure how often a feature was used in splits.
 #     <br><br>
 #     <strong>Use Plan-Around Estimate</strong><br>
 #     For the quantile model, user-facing SHAP explanations will focus on the q50 plan-around estimate (predicted median costs). The q25, q75, and q90 outputs describe uncertainty and planning range, but they should not be mixed into the q50 explanation. SHAP can explain any callable prediction function, not only a raw model object. Here the saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> that wraps the inner XGBoost estimator. The SHAP explainer does not use that inner estimator directly, it uses <code>predict_median_cost</code>, so explanations reflect predictions after the inverse target transform, post-processing to enforce non-negative and monotonic quantiles (<code>q25 <= q50 <= q75 <= q90</code>), and q50 selection.
@@ -4711,5 +4711,34 @@ explainer = shap.Explainer(predict_median_cost, shap_background)
 # Compute SHAP values for the plan-around estimate on the test data
 shap_values = explainer(X_test_preprocessed)
 
-# Display the SHAP explainer base value as the baseline
-baseline = shap_values.base_values[0]
+# Display SHAP values with baseline comparison for an example person
+example_idx = 0
+baseline = shap_values.base_values[example_idx]
+example_prediction = predict_median_cost(X_test_preprocessed.iloc[[example_idx]])[0]
+example_actual = y_test.iloc[example_idx]
+example_shap_sum = shap_values.values[example_idx].sum()
+
+example_shap_result = pd.DataFrame({
+    "Metric": [
+        "Baseline q50 estimate",
+        "Feature contribution sum",
+        "Predicted q50 estimate",
+        "Actual observed cost",
+        "Baseline + SHAP sum",
+        "Reconstruction difference",
+    ],
+    "Value": [
+        baseline,
+        example_shap_sum,
+        example_prediction,
+        example_actual,
+        baseline + example_shap_sum,
+        example_prediction - (baseline + example_shap_sum),
+    ],
+})
+
+display(
+    example_shap_result.style
+    .pipe(add_table_caption, f"Example SHAP Result for Test Row {example_idx}")
+    .format({"Value": "${:,.2f}"})
+)
