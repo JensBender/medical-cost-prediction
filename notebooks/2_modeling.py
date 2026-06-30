@@ -4645,7 +4645,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use SHAP values for an individual prediction to show which inputs moved that user's plan-around estimate higher or lower than the baseline prediction. For the medical cost planner app, this is a product feature, not only a technical diagnostic. It makes the prediction more useful for financial planning by explaining the main drivers behind the estimate. The explanation should use cautious wording such as "moved the estimate" and avoid causal language.</li>
 #     </ol>
 #     <strong>Use Plan-Around Estimate</strong><br>
-#     For the quantile model, user-facing SHAP explanations will focus on the q50 plan-around estimate. The q25, q75, and q90 outputs describe uncertainty and planning range, but they should not be mixed into the q50 explanation.
+#     For the quantile model, user-facing SHAP explanations will focus on the q50 plan-around estimate. The q25, q75, and q90 outputs describe uncertainty and planning range, but they should not be mixed into the q50 explanation. SHAP can explain any callable prediction function, not only a raw model object. Here the explainer uses <code>predict_median_cost</code>, which wraps the quantile model, applies post-processing, and returns only q50. Therefore local explanations and aggregated SHAP feature importance describe feature impact on the post-processed q50 estimate, not raw XGBoost internals.
 #     <br><br>
 #     <strong>Background Data</strong><br>
 #     The background data is a weighted sample of 200-500 rows from the preprocessed training data. It represents the MEPS reference population while keeping app inference fast. If the national baseline proves too broad for users, revisit this choice and consider an age-group-specific or otherwise cohort-specific baseline.
@@ -4668,7 +4668,7 @@ plot_quantile_subgroup_predictions(
 #
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Example SHAP code implementation.
+#     📌 Prototype SHAP code implementation using the test data.
 # </div>
 
 # %%
@@ -4685,7 +4685,7 @@ shap_background = X_train_preprocessed.sample(
 xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
 
 
-# Predict with quantile model, postprocess predictions, and return only the q50 plan-around estimate
+# SHAP explains this callable, so values reflect the post-processed q50 plan-around estimate
 def predict_median_cost(X):
     y_pred = postprocess_quantile_predictions(xgb_quantile_model.predict(X))
     return y_pred[:, 1]
@@ -4702,8 +4702,7 @@ print(f"SHAP background baseline: ${background_baseline:,.2f}")
 print(f"Full training baseline:   ${full_training_baseline:,.2f}")
 print(f"Difference:               ${baseline_difference:,.2f} ({baseline_pct_difference:.1%})")
 
-# During app startup:
-# Build the SHAP explainer once
+# Build the SHAP explainer
 explainer = shap.Explainer(predict_median_cost, shap_background)
 
 # Compute SHAP values for the plan-around estimate on the test data
