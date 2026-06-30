@@ -4645,7 +4645,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use SHAP values for an individual prediction to show which inputs moved that user's plan-around estimate higher or lower than the baseline prediction. For the medical cost planner app, this is a product feature, not only a technical diagnostic. It makes the prediction more useful for financial planning by explaining the main drivers behind the estimate. The explanation should use cautious wording such as "moved the estimate" and avoid causal language.</li>
 #     </ol>
 #     <strong>Use Plan-Around Estimate</strong><br>
-#     For the quantile model, user-facing SHAP explanations will focus on the q50 plan-around estimate. The q25, q75, and q90 outputs describe uncertainty and planning range, but they should not be mixed into the q50 explanation. SHAP can explain any callable prediction function, not only a raw model object. Here the explainer uses <code>predict_median_cost</code>, which wraps the quantile model, applies post-processing, and returns only q50. Therefore local explanations and aggregated SHAP feature importance describe feature impact on the post-processed q50 estimate, not raw XGBoost internals.
+#     For the quantile model, user-facing SHAP explanations will focus on the q50 plan-around estimate (predicted median costs). The q25, q75, and q90 outputs describe uncertainty and planning range, but they should not be mixed into the q50 explanation. SHAP can explain any callable prediction function, not only a raw model object. Here the saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> that wraps the inner XGBoost estimator. The SHAP explainer does not use that inner estimator directly, it uses <code>predict_median_cost</code>, so explanations reflect predictions after the inverse target transform, post-processing to enforce non-negative and monotonic quantiles (<code>q25 <= q50 <= q75 <= q90</code>), and q50 selection.
 #     <br><br>
 #     <strong>Background Data</strong><br>
 #     The background data is a weighted sample of 200-500 rows from the preprocessed training data. It represents the MEPS reference population while keeping app inference fast. If the national baseline proves too broad for users, revisit this choice and consider an age-group-specific or otherwise cohort-specific baseline.
@@ -4685,7 +4685,7 @@ shap_background = X_train_preprocessed.sample(
 xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
 
 
-# SHAP explains this callable, so values reflect the post-processed q50 plan-around estimate
+# SHAP explains predictions after inverse target transform, quantile cleanup, and q50 selection.
 def predict_median_cost(X):
     y_pred = postprocess_quantile_predictions(xgb_quantile_model.predict(X))
     return y_pred[:, 1]
