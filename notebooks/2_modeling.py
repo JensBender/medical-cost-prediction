@@ -4668,47 +4668,46 @@ plot_quantile_subgroup_predictions(
 #
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Implementation scaffold for app-facing SHAP artifacts and q50 dollar explanations.
+#     📌 Example SHAP code implementation.
 # </div>
 
 # %%
-# Planned artifact-building scaffold. Keep this non-executing until the app
-# explainability module is implemented and latency-tested.
-#
-# SHAP_BACKGROUND_N = 300
-#
-# xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
-#
-# shap_background = X_train_preprocessed.sample(
-#     n=SHAP_BACKGROUND_N,
-#     weights=w_train,
-#     random_state=RANDOM_STATE,
-# )
-#
-# def predict_q50_dollars(X):
-#     y_pred = postprocess_quantile_predictions(xgb_quantile_model.predict(X))
-#     return y_pred[:, 1]
-#
-# # QA check: compare the app-facing SHAP baseline based on the background data against the full training data.
-# # The app should display the SHAP/explainer baseline for additivity, but this
-# # comparison helps verify that the sampled background data still represents the training data well.
-# background_baseline_q50 = predict_q50_dollars(shap_background).mean()
-# full_training_baseline_q50 = np.average(
-#     predict_q50_dollars(X_train_preprocessed),
-#     weights=w_train,
-# )
-# baseline_difference = background_baseline_q50 - full_training_baseline_q50
-# baseline_pct_difference = baseline_difference / full_training_baseline_q50
-#
-# print(f"SHAP background q50 baseline: ${background_baseline_q50:,.2f}")
-# print(f"Full-training q50 baseline:   ${full_training_baseline_q50:,.2f}")
-# print(f"Difference:                   ${baseline_difference:,.2f} ({baseline_pct_difference:.1%})")
-#
-# # If this difference is materially large, increase SHAP_BACKGROUND_N or resample.
-#
-# # App startup:
-# # explainer = shap.Explainer(predict_q50_dollars, shap_background)
-# #
-# # Per request, display the explainer base value used by SHAP:
-# # shap_values = explainer(user_row_preprocessed)
-# # displayed_baseline_q50 = shap_values.base_values[0]
+# Create SHAP background data (random subset of preprocessed training data)
+SHAP_BACKGROUND_N = 300
+
+shap_background = X_train_preprocessed.sample(
+    n=SHAP_BACKGROUND_N,
+    weights=w_train,
+    random_state=RANDOM_STATE,
+)
+
+# Load quantile model
+xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
+
+
+# Predict with quantile model, postprocess predictions, and return only the q50 plan-around estimate
+def predict_median_cost(X):
+    y_pred = postprocess_quantile_predictions(xgb_quantile_model.predict(X))
+    return y_pred[:, 1]
+
+
+# QA check: compare the SHAP baseline from the background data against the full training data
+# to verify that the sampled background data still represents the training data well.
+background_baseline = predict_median_cost(shap_background).mean()
+full_training_baseline = np.average(predict_median_cost(X_train_preprocessed), weights=w_train)
+baseline_difference = background_baseline - full_training_baseline
+baseline_pct_difference = baseline_difference / full_training_baseline
+
+print(f"SHAP background baseline: ${background_baseline:,.2f}")
+print(f"Full training baseline:   ${full_training_baseline:,.2f}")
+print(f"Difference:               ${baseline_difference:,.2f} ({baseline_pct_difference:.1%})")
+
+# During app startup:
+# Build the SHAP explainer once
+explainer = shap.Explainer(predict_median_cost, shap_background)
+
+# Compute SHAP values for the plan-around estimate on the test data
+shap_values = explainer(X_test_preprocessed)
+
+# Display the SHAP explainer base value as the baseline
+baseline = shap_values.base_values[0]
