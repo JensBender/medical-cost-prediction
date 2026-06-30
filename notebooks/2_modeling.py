@@ -4705,24 +4705,26 @@ print(f"SHAP background baseline: ${background_baseline:,.2f}")
 print(f"Full training baseline:   ${full_training_baseline:,.2f}")
 print(f"Difference:               ${baseline_difference:,.2f} ({baseline_pct_difference:.1%})")
 
-# Build the SHAP explainer
-explainer = shap.Explainer(predict_median_cost, shap_background)
+# Build the SHAP explainer. Set max_samples explicitly to 300 in the masker.
+shap_masker = shap.maskers.Independent(shap_background, max_samples=SHAP_BACKGROUND_N)
+explainer = shap.Explainer(predict_median_cost, shap_masker)
 
-# Compute SHAP values for the plan-around estimate on the test data
-shap_values = explainer(X_test_preprocessed)
-
-# Display SHAP values with baseline comparison for an example person
+# Compute SHAP values for one example row
 example_idx = 0
-baseline = shap_values.base_values[example_idx]
-example_prediction = predict_median_cost(X_test_preprocessed.iloc[[example_idx]])[0]
+X_test_example = X_test_preprocessed.iloc[[example_idx]]
+shap_values = explainer(X_test_example)
+
+# Display SHAP values with baseline comparison for the example row
+baseline = shap_values.base_values[0]
+example_prediction = predict_median_cost(X_test_example)[0]
 example_actual = y_test.iloc[example_idx]
-example_shap_sum = shap_values.values[example_idx].sum()
+example_shap_sum = shap_values.values[0].sum()
 
 example_shap_result = pd.DataFrame({
     "Metric": [
-        "Baseline q50 estimate",
+        "Baseline (avg predicted median cost)",
         "Feature contribution sum",
-        "Predicted q50 estimate",
+        "Predicted median cost",
         "Actual observed cost",
         "Baseline + SHAP sum",
         "Reconstruction difference",
@@ -4739,6 +4741,7 @@ example_shap_result = pd.DataFrame({
 
 display(
     example_shap_result.style
-    .pipe(add_table_caption, f"Example SHAP Result for Test Row {example_idx}")
+    .pipe(add_table_caption, f"Example SHAP Result (Test Row {example_idx})")
     .format({"Value": "${:,.2f}"})
+    .hide()
 )
