@@ -4656,6 +4656,13 @@ plot_quantile_subgroup_predictions(
 #     <strong>Prediction Service Latency</strong><br>
 #     The normal prediction scores one user row, but the SHAP explanation scores many masked versions of that row. With the current 40 preprocessed features, 300 background rows, and SHAP's default permutation budget (<code>max_evals=500</code>), one user explanation uses about 486 masks and roughly 145k synthetic row predictions. SHAP batches these predictions, so this is not 145k separate predict calls, but it is still the main expected source of prediction-service latency. Benchmark this before deployment and consider a smaller background sample or explicit <code>max_evals</code> if the app misses the latency target.
 #     <br><br>
+#     <strong>SHAP Limitations</strong>
+#     <ul>
+#         <li><strong>Not Causal:</strong> SHAP values describe how inputs moved this model's q50 estimate relative to the baseline. They do not show what would happen if a person's health, coverage, or utilization changed.</li>
+#         <li><strong>Background-Dependent:</strong> The baseline and feature contributions depend on the background sample. A different reference population can change the explanation.</li>
+#         <li><strong>Correlated Features:</strong> Related inputs can split credit in unintuitive ways. Interpret correlated health, utilization, and insurance features as groups when needed.</li>
+#         <li><strong>Predicted, Not Actual Costs:</strong> SHAP explains the model's prediction using available MEPS features. It does not correct model error, omitted features, survey noise, or uncertainty in future medical events.</li>
+#     </ul>
 #     <strong>SHAP Metadata</strong><br>
 #     Store a small metadata file alongside the background data for app validation and auditability.
 #     The metadata is for developers and the prediction service. 
