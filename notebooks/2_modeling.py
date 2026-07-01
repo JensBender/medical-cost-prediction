@@ -4661,7 +4661,6 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Not Causal:</strong> SHAP values describe how inputs moved this model's q50 estimate relative to the baseline. They do not show what would happen if a person's health, coverage, or utilization changed.</li>
 #         <li><strong>Background-Dependent:</strong> The baseline and feature contributions depend on the background sample. A different reference population can change the explanation.</li>
 #         <li><strong>Correlated Features:</strong> Related inputs can split credit in unintuitive ways. Interpret correlated health, utilization, and insurance features as groups when needed.</li>
-#         <li><strong>Predicted, Not Actual Costs:</strong> SHAP explains the model's prediction using available MEPS features. It does not correct model error, omitted features, survey noise, or uncertainty in future medical events.</li>
 #     <li><strong>Predicted, Not Actual Costs:</strong> SHAP explains the model's prediction, not the true drivers of real-world medical costs. If the model overstates, understates, or misses a relationship, the SHAP importance for that feature can also be too high, too low, or misleading. SHAP does not fix model limitations. So if the model underpredicts high-cost cases, misses nonlinear effects, reflects noisy survey data, or lacks important predictors, SHAP explains those imperfect predictions.</li>
 #     </ul>
 #     <strong>SHAP Metadata</strong><br>
