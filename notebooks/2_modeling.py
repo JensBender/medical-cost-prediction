@@ -4651,7 +4651,7 @@ plot_quantile_subgroup_predictions(
 #     Use both SHAP importance and XGBoost native importance for model audit. Aggregated SHAP importance (<code>mean(abs(SHAP value))</code>) answers which features most move the final post-processed q50 dollar estimate across users. XGBoost native importance answers which features the inner trees relied on most while fitting. Use <code>total_gain</code> for XGBoost native importance because it measures total training-loss reduction from all splits using a feature, whereas split count (<code>weight</code>) would only measure how often a feature was used in splits.
 #     <br><br>
 #     <strong>Background Data</strong><br>
-#     The background data is a weighted sample of 200-500 rows from the preprocessed training data. It represents the MEPS reference population (U.S. adults) while keeping app inference fast. If the national baseline proves too broad for users, revisit this choice and consider an age-group-specific or otherwise cohort-specific baseline.
+#     The background data is a 200-500 row sample from the preprocessed training data. Draw it with MEPS person weights (<code>PERWT23F</code>) and <code>replace=True</code>. SHAP treats background rows as equal-weight rows and does not consume survey weights directly, so sampling with replacement is how the background data approximates the weighted U.S. adult reference population. High-weight respondents can appear more than once. That is expected, because duplicate rows represent their larger population share. If the national baseline proves too broad for users, revisit this choice and consider an age-group-specific or otherwise cohort-specific baseline.
 #     <br><br>
 #     <strong>Prediction Service Latency</strong><br>
 #     The normal prediction scores one user row, but the SHAP explanation scores many masked versions of that row. With the current 40 preprocessed features, 300 background rows, and SHAP's default permutation budget (<code>max_evals=500</code>), one user explanation uses about 486 masks and roughly 145k synthetic row predictions. SHAP batches these predictions, so this is not 145k separate predict calls, but it is still the main expected source of prediction-service latency. Benchmark this before deployment and consider a smaller background sample or explicit <code>max_evals</code> if the app misses the latency target.
@@ -4673,7 +4673,7 @@ plot_quantile_subgroup_predictions(
 #   "reference_population": "U.S. civilian noninstitutionalized adults represented by MEPS training rows",
 #   "background_sample": {
 #     "rows": 300,
-#     "sampling_method": "weighted sample using PERWT23F",
+#     "sampling_method": "weighted sample with replacement using PERWT23F",
 #     "random_state": 42
 #   },
 #   "explainer_contract": {
@@ -4705,12 +4705,13 @@ plot_quantile_subgroup_predictions(
 # </div>
 
 # %%
-# Create SHAP background data (random subset of preprocessed training data)
+# Create SHAP background data from a weighted sample of preprocessed training rows
 SHAP_BACKGROUND_N = 300
 
 shap_background = X_train_preprocessed.sample(
     n=SHAP_BACKGROUND_N,
     weights=w_train,
+    replace=True,
     random_state=RANDOM_STATE,
 )
 
