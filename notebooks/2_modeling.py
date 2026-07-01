@@ -4641,7 +4641,7 @@ plot_quantile_subgroup_predictions(
 #     <strong>SHAP Approach</strong><br>
 #     SHAP will be used in two ways:
 #     <ol>
-#         <li><strong>Feature Importance Analysis for Model Audit:</strong> Aggregate SHAP values across many samples to estimate how much each feature moves model predictions overall. This complements XGBoost's native feature importance scores. Native XGBoost importance describes how features are used inside the fitted trees, such as split frequency, gain, or cover. SHAP importance instead summarizes each feature's average impact on model predictions using mean absolute SHAP values. These methods answer related but different questions, so we will compare both to audit whether the model relies on plausible cost drivers.</li>
+#         <li><strong>Feature Importance Analysis for Model Audit:</strong> Aggregate SHAP values across many samples to estimate how much each feature moves model predictions overall. This complements XGBoost's native feature importance scores. Native XGBoost importance describes how features are used inside the fitted trees, such as split frequency, gain, or cover. SHAP importance instead summarizes each feature's average impact on model predictions using mean absolute SHAP values. These methods answer related but different questions. Compare both to audit whether the model relies on plausible cost drivers.</li>
 #         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use SHAP values for an individual prediction to show which inputs moved that user's plan-around estimate higher or lower than the baseline prediction. For the medical cost planner app, this is a product feature, not only a technical diagnostic. It makes the prediction more useful for financial planning by explaining the main drivers behind the estimate. The explanation should use cautious wording such as "moved the estimate" and avoid causal language.</li>
 #     </ol>
 #     <strong>Feature Importance</strong><br>
@@ -4651,15 +4651,42 @@ plot_quantile_subgroup_predictions(
 #     For the quantile model, user-facing SHAP explanations will focus on the q50 plan-around estimate (predicted median costs). The q25, q75, and q90 outputs describe uncertainty and planning range, but they should not be mixed into the q50 explanation. SHAP can explain any callable prediction function, not only a raw model object. Here the saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> that wraps the inner XGBoost estimator. The SHAP explainer does not use that inner estimator directly, it uses <code>predict_median_cost</code>, so explanations reflect predictions after the inverse target transform, post-processing to enforce non-negative and monotonic quantiles (<code>q25 <= q50 <= q75 <= q90</code>), and q50 selection.
 #     <br><br>
 #     <strong>Background Data</strong><br>
-#     The background data is a weighted sample of 200-500 rows from the preprocessed training data. It represents the MEPS reference population while keeping app inference fast. If the national baseline proves too broad for users, revisit this choice and consider an age-group-specific or otherwise cohort-specific baseline.
+#     The background data is a weighted sample of 200-500 rows from the preprocessed training data. It represents the MEPS reference population (U.S. adults) while keeping app inference fast. If the national baseline proves too broad for users, revisit this choice and consider an age-group-specific or otherwise cohort-specific baseline.
 #     <br><br>
 #     <strong>SHAP Metadata</strong><br>
-#     Store a small metadata file alongside the background data for documentation.
+#     Store a small metadata file alongside the background data for app validation and auditability.
+#     The metadata is for developers and the prediction service. 
 #     <pre>{
-#   "prediction_output": "q50",
-#   "prediction_scale": "2023 dollars",
-#   "background_n": 300,
-#   "reference_population": "MEPS 2023 training rows sampled with person weights"
+#   "schema_version": 1,
+#   "model_artifact": "models/xgb_quantile_model.joblib",
+#   "background_artifact": "app/data/shap_background.parquet",
+#   "data_source": "MEPS 2023 (HC-251), preprocessed training split",
+#   "prediction_target": {
+#     "output": "q50",
+#     "meaning": "plan-around estimate, predicted median out-of-pocket cost",
+#     "unit": "USD",
+#     "currency_year": 2023
+#   },
+#   "reference_population": "U.S. civilian noninstitutionalized adults represented by MEPS training rows",
+#   "background_sample": {
+#     "rows": 300,
+#     "sampling_method": "weighted sample using PERWT23F",
+#     "random_state": 42
+#   },
+#   "explainer_contract": {
+#     "prediction_function": "predict_median_cost",
+#     "postprocessing": [
+#       "inverse target transform",
+#       "non-negative quantiles",
+#       "monotonic quantiles",
+#       "q50 selection"
+#     ]
+#   },
+#   "background_validation": {
+#     "background_baseline_2023_dollars": 0.0,
+#     "weighted_training_baseline_2023_dollars": 0.0,
+#     "relative_difference": 0.0
+#   }
 # }</pre><br>
 #     <strong>App/API Implementation Plan</strong>
 #     <ol>
@@ -4688,14 +4715,14 @@ shap_background = X_train_preprocessed.sample(
 xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
 
 
-# SHAP explains predictions after inverse target transform, quantile cleanup, and q50 selection.
+# SHAP explains predictions after inverse target transform, quantile cleanup, and q50 selection
 def predict_median_cost(X):
     y_pred = postprocess_quantile_predictions(xgb_quantile_model.predict(X))
     return y_pred[:, 1]
 
 
 # QA check: compare the SHAP baseline from the background data against the full training data
-# to verify that the sampled background data still represents the training data well.
+# to verify that the sampled background data still represents the training data well
 background_baseline = predict_median_cost(shap_background).mean()
 full_training_baseline = np.average(predict_median_cost(X_train_preprocessed), weights=w_train)
 baseline_difference = background_baseline - full_training_baseline
@@ -4705,7 +4732,7 @@ print(f"SHAP background baseline: ${background_baseline:,.2f}")
 print(f"Full training baseline:   ${full_training_baseline:,.2f}")
 print(f"Difference:               ${baseline_difference:,.2f} ({baseline_pct_difference:.1%})")
 
-# Build the SHAP explainer. Set max_samples explicitly to 300 in the masker.
+# Build the SHAP explainer. Set max_samples explicitly to 300 in the masker
 shap_masker = shap.maskers.Independent(shap_background, max_samples=SHAP_BACKGROUND_N)
 explainer = shap.Explainer(predict_median_cost, shap_masker)
 
