@@ -4644,14 +4644,17 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Feature Importance Analysis for Model Audit:</strong> Aggregate SHAP values across many samples to estimate how much each feature moves model predictions overall. This complements XGBoost's native feature importance scores. Native XGBoost importance describes how features are used inside the fitted trees, such as split frequency, gain, or cover. SHAP importance instead summarizes each feature's average impact on model predictions using mean absolute SHAP values. These methods answer related but different questions. Compare both to audit whether the model relies on plausible cost drivers.</li>
 #         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use SHAP values for an individual prediction to show which inputs moved that user's plan-around estimate higher or lower than the baseline prediction. For the medical cost planner app, this is a product feature, not only a technical diagnostic. It makes the prediction more useful for financial planning by explaining the main drivers behind the estimate. The explanation should use cautious wording such as "moved the estimate" and avoid causal language.</li>
 #     </ol>
+#     <strong>Select Plan-Around Estimate</strong><br>
+#     For the quantile model, user-facing SHAP explanations will focus on the q50 plan-around estimate (predicted median costs). The q25, q75, and q90 outputs describe uncertainty and planning range, but they should not be mixed into the q50 explanation. SHAP can explain any callable prediction function, not only a raw model object. Here the saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> that wraps the inner XGBoost estimator. The SHAP explainer does not use that inner estimator directly, it uses <code>predict_median_cost</code>, so explanations reflect predictions after the inverse target transform, post-processing to enforce non-negative and monotonic quantiles (<code>q25 <= q50 <= q75 <= q90</code>), and q50 selection.
+#     <br><br>
 #     <strong>Feature Importance</strong><br>
 #     Use both SHAP importance and XGBoost native importance for model audit. Aggregated SHAP importance (<code>mean(abs(SHAP value))</code>) answers which features most move the final post-processed q50 dollar estimate across users. XGBoost native importance answers which features the inner trees relied on most while fitting. Use <code>total_gain</code> for XGBoost native importance because it measures total training-loss reduction from all splits using a feature, whereas split count (<code>weight</code>) would only measure how often a feature was used in splits.
 #     <br><br>
-#     <strong>Use Plan-Around Estimate</strong><br>
-#     For the quantile model, user-facing SHAP explanations will focus on the q50 plan-around estimate (predicted median costs). The q25, q75, and q90 outputs describe uncertainty and planning range, but they should not be mixed into the q50 explanation. SHAP can explain any callable prediction function, not only a raw model object. Here the saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> that wraps the inner XGBoost estimator. The SHAP explainer does not use that inner estimator directly, it uses <code>predict_median_cost</code>, so explanations reflect predictions after the inverse target transform, post-processing to enforce non-negative and monotonic quantiles (<code>q25 <= q50 <= q75 <= q90</code>), and q50 selection.
-#     <br><br>
 #     <strong>Background Data</strong><br>
 #     The background data is a weighted sample of 200-500 rows from the preprocessed training data. It represents the MEPS reference population (U.S. adults) while keeping app inference fast. If the national baseline proves too broad for users, revisit this choice and consider an age-group-specific or otherwise cohort-specific baseline.
+#     <br><br>
+#     <strong>Prediction Service Latency</strong><br>
+#     The normal prediction scores one user row, but the SHAP explanation scores many masked versions of that row. With the current 40 preprocessed features, 300 background rows, and SHAP's default permutation budget (<code>max_evals=500</code>), one user explanation uses about 486 masks and roughly 145k synthetic row predictions. SHAP batches these predictions, so this is not 145k separate predict calls, but it is still the main expected source of prediction-service latency. Benchmark this before deployment and consider a smaller background sample or explicit <code>max_evals</code> if the app misses the latency target.
 #     <br><br>
 #     <strong>SHAP Metadata</strong><br>
 #     Store a small metadata file alongside the background data for app validation and auditability.
@@ -4721,7 +4724,7 @@ def predict_median_cost(X):
     return y_pred[:, 1]
 
 
-# QA check: compare the SHAP baseline from the background data against the full training data
+# Background validation: compare the SHAP baseline from the background data against the full training data
 # to verify that the sampled background data still represents the training data well
 background_baseline = predict_median_cost(shap_background).mean()
 full_training_baseline = np.average(predict_median_cost(X_train_preprocessed), weights=w_train)
