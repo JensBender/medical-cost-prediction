@@ -4653,10 +4653,12 @@ plot_quantile_subgroup_predictions(
 #     <strong>Background Data</strong><br>
 #     The background data is a 200–500 row sample from the preprocessed training data, drawn with MEPS person weights (<code>PERWT23F</code>) and <code>replace=True</code>. SHAP treats all background rows as equal-weight, so weighted sampling with replacement is how the background approximates the U.S. adult population distribution. High-weight respondents may appear more than once. That is expected, since duplicates represent their larger population share. The SHAP baseline (expected value) is the mean predicted q50 across all background rows. If this national-level baseline proves too broad for users, consider an age-group or other cohort-specific baseline.
 #     <br><br>
+#     Background validation: Compare the background sample's SHAP baseline against the full weighted training baseline. Accept the sample if <code>abs(relative_difference) <= 10%</code>. If the sample exceeds 10%, increase the background size before creating app artifacts. A smaller difference is better, but 10% is a defensible cutoff for this skewed-cost setting because it allows normal sampling variation for a 200–500 row weighted background while catching clearly unrepresentative baselines.
+#     <br><br>
 #     <strong>Prediction Service Latency</strong><br>
 #     A normal prediction scores one user row. A SHAP explanation scores many masked versions of that row against the background. With 40 preprocessed features, 300 background rows, and the default permutation budget (<code>max_evals=500</code>), one explanation produces about 486 masks × 300 background rows ≈ 145k synthetic predictions. SHAP batches these into a single <code>predict</code> call, so the cost is one large batch prediction, not 145k individual calls. Nevertheless, this is the main expected source of prediction-service latency.
 #     <br><br>
-#     Select the production SHAP budget empirically. Benchmark <code>max_evals</code> and background size together: <code>max_evals</code> controls SHAP value precision, background size controls SHAP baseline stability, and latency scales roughly as <code>max_evals × background_rows</code>. Compare candidate configurations against a high-budget reference, then choose the smallest one that keeps the top cost drivers, their signs, and displayed dollar impacts stable while meeting the latency target (&lt;1s server-side per NFR-04). For user-facing output, stable top cost drivers and signs matter more than exact dollar impacts for low-ranked features.
+#     Benchmarking: Select the production SHAP budget empirically. Benchmark <code>max_evals</code> and background size together: <code>max_evals</code> controls SHAP value precision, background size controls SHAP baseline stability, and latency scales roughly as <code>max_evals × background_rows</code>. Compare candidate configurations against a high-budget reference, then choose the smallest one that keeps the top cost drivers, their signs, and displayed dollar impacts stable while meeting the latency target (&lt;1s server-side per NFR-04). For user-facing output, stable top cost drivers and signs matter more than exact dollar impacts for low-ranked features.
 #     <br><br>
 #     <strong>SHAP Limitations</strong>
 #     <ul>
@@ -4696,7 +4698,9 @@ plot_quantile_subgroup_predictions(
 #   "background_validation": {
 #     "shap_baseline_2023_dollars": 0.0,
 #     "weighted_training_baseline_2023_dollars": 0.0,
-#     "relative_difference": 0.0
+#     "relative_difference": 0.0,
+#     "max_allowed_relative_difference": 0.10,
+#     "acceptance_rule": "abs(relative_difference) <= max_allowed_relative_difference"
 #   }
 # }</pre><br>
 #     <strong>App/API Implementation Plan</strong>
@@ -4715,6 +4719,7 @@ plot_quantile_subgroup_predictions(
 # %%
 # Create SHAP background data from a weighted sample of preprocessed training rows
 SHAP_BACKGROUND_N = 300
+SHAP_BASELINE_REL_DIFF_MAX = 0.10
 
 shap_background = X_train_preprocessed.sample(
     n=SHAP_BACKGROUND_N,
@@ -4739,10 +4744,20 @@ background_baseline = predict_median_cost(shap_background).mean()
 full_training_baseline = np.average(predict_median_cost(X_train_preprocessed), weights=w_train)
 baseline_difference = background_baseline - full_training_baseline
 baseline_pct_difference = baseline_difference / full_training_baseline
+baseline_abs_pct_difference = abs(baseline_pct_difference)
 
 print(f"SHAP background baseline: ${background_baseline:,.2f}")
 print(f"Full training baseline:   ${full_training_baseline:,.2f}")
 print(f"Difference:               ${baseline_difference:,.2f} ({baseline_pct_difference:.1%})")
+print(f"Acceptance threshold:     <= {SHAP_BASELINE_REL_DIFF_MAX:.0%} absolute relative difference")
+
+if baseline_abs_pct_difference > SHAP_BASELINE_REL_DIFF_MAX:
+    raise ValueError(
+        "SHAP background baseline differs from the weighted training baseline by "
+        f"{baseline_abs_pct_difference:.1%}, which exceeds the "
+        f"{SHAP_BASELINE_REL_DIFF_MAX:.0%} acceptance threshold. "
+        "Resample the background data or increase SHAP_BACKGROUND_N."
+    )
 
 # Build the SHAP explainer. Set max_samples explicitly to 300 in the masker
 shap_masker = shap.maskers.Independent(shap_background, max_samples=SHAP_BACKGROUND_N)
