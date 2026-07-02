@@ -22,6 +22,7 @@
    - [MVP Deployment Architecture](#mvp-deployment-architecture)
    - [Application Data Artifacts](#application-data-artifacts)
    - [API Contract](#api-contract)
+   - [SHAP Explainability](#shap-explainability)
    - [Inference Pipeline](#inference-pipeline)
    - [Privacy-Preserving Monitoring](#privacy-preserving-monitoring)
 4. [Testing Strategy](#testing-strategy)
@@ -451,6 +452,17 @@ The prediction service will expose the trained model artifact via a Python API (
     ```
     `benchmark_comparison` is derived from the `cost_benchmarks.json` artifact. At prediction time, apply the same medical-cost factor to prediction, benchmark, and SHAP dollar values. All monetary values returned to the UI are adjusted to current dollars.
 
+#### SHAP Explainability
+Use SHAP values for user-facing cost-driver explanations. The app should build `shap.Explainer` with `shap.maskers.Independent` over a weighted background sample from the preprocessed training rows. The explainer callable must return the postprocessed q50 plan-around estimate in 2023 dollars, after inverse target transformation and quantile cleanup, but before medical-cost inflation. Apply medical-cost inflation only during API/UI output formatting.
+
+Store the SHAP background sample as `app/data/shap_background.parquet` and SHAP metadata as `app/data/shap_metadata.json`. The background sample should use MEPS person weights (`PERWT23F`) with replacement so the unweighted SHAP background approximates the weighted U.S. adult reference population. The initial target range is 200-500 background rows, the final production size is selected by benchmarking.
+
+The prediction service should load the model and SHAP background at startup and build the explainer once. At inference time, preprocess the user row, predict q25/q50/q75/q90, postprocess quantiles, compute SHAP for q50 only, group encoded columns back to user-facing factors, apply the medical-cost inflation factor to displayed SHAP dollar impacts, and return the top cost drivers. Do not mix q25, q75, or q90 SHAP explanations into the q50 explanation.
+
+Select production `background_n` and `max_evals` empirically. Benchmark candidate combinations against a high-budget reference and choose the smallest configuration that meets the latency target while keeping user-facing explanations stable. Track at least p50/p90/p95 latency, top-k driver overlap, sign stability, SHAP dollar drift for top drivers, and baseline drift. Top-driver and sign stability matter more than exact low-ranked feature dollar values.
+
+Interpretation constraints belong in UI copy and tests: SHAP values explain the fitted model prediction, not causal effects or actual future costs. Correlated features can split or shift attribution, so related health and limitation factors may need grouped display labels.
+
 #### Prediction Warning Flags
 `warning_flags` are API values. Planning notices are user-facing copy rendered from one or more warning flags. Generate `warning_flags` before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. The app can use subgroup diagnostics to decide when to show a note, but the rendered note should name the reason only when it is informative and unlikely to stigmatize.
 
@@ -501,9 +513,10 @@ the pre-inflation predicted `q90` is greater than or equal to this fixed cutoff.
 4.  **Medical Feature Derivation:** Calculate aggregate counts (`CHRONIC_COUNT`, `LIMITATION_COUNT`).
 5.  **Transformation:** Apply `ColumnTransformer` (Scaling/Encoding).
 6.  **Prediction:** Run model inference.
-7.  **Explainability:** Run TreeExplainer/KernelExplainer.
-8.  **Model Output Post-Processing:** Apply inverse target transform, enforce valid quantiles (non-negative, monotonic `q25 <= q50 <= q75 <= q90`), and apply medical-inflation adjustment.
-9.  **Warning Flags:** Create `warning_flags` before applying inflation adjustment.
+7.  **Model Output Post-Processing:** Apply inverse target transform and enforce valid 2023-dollar quantiles (non-negative, monotonic `q25 <= q50 <= q75 <= q90`).
+8.  **Warning Flags:** Create `warning_flags` from pre-inflation postprocessed predictions.
+9.  **Explainability:** Run permutation SHAP for the postprocessed q50 plan-around estimate only.
+10. **Output Formatting:** Apply medical-cost inflation to predictions, comparison benchmarks, and SHAP dollar impacts returned to the UI/API.
 
 ### Privacy-Preserving Monitoring
 The MVP product release must preserve the product promise of anonymous, stateless predictions. Production monitoring therefore cannot depend on linked user records or follow-up actual-spend outcomes.
