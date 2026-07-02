@@ -4651,7 +4651,9 @@ plot_quantile_subgroup_predictions(
 #     The background data is a 200-500 row sample from the preprocessed training data. Draw it with MEPS person weights (<code>PERWT23F</code>) and <code>replace=True</code>. SHAP treats background rows as equal-weight rows and does not consume survey weights directly, so sampling with replacement is how the background data approximates the weighted U.S. adult reference population. High-weight respondents can appear more than once. That is expected, because duplicate rows represent their larger population share. The SHAP background baseline is the average predicted median cost across all background rows, which represent the U.S. adult population. If this national baseline proves too broad for users, revisit this choice and consider an age-group-specific or otherwise cohort-specific baseline.
 #     <br><br>
 #     <strong>Prediction Service Latency</strong><br>
-#     The normal prediction scores one user row, but the SHAP explanation scores many masked versions of that row. With the current 40 preprocessed features, 300 background rows, and SHAP's default permutation budget (<code>max_evals=500</code>), one user explanation uses about 486 masks and roughly 145k synthetic row predictions. SHAP batches these predictions, so this is not 145k separate predict calls, but it is still the main expected source of prediction-service latency. Benchmark this before deployment and consider a smaller background sample or explicit <code>max_evals</code> if the app misses the latency target.
+#     The normal prediction scores one user row, but the SHAP explanation scores many masked versions of that row. With the current 40 preprocessed features, 300 background rows, and SHAP's default permutation budget (<code>max_evals=500</code>), one user explanation uses about 486 masks and roughly 145k synthetic row predictions. SHAP batches these predictions, so this is not 145k separate predict calls, but it is still the main expected source of prediction-service latency.
+#     <br><br>
+#     Select the production SHAP budget empirically. Benchmark permutation budget (<code>max_evals</code>) and background size together because <code>max_evals</code> impacts SHAP value precision, background size impacts SHAP value stability, and latency scales roughly with <code>max_evals * background rows</code>. Compare candidate budgets against a high-budget reference, then choose the smallest configuration that keeps top drivers, signs, and displayed dollar impacts stable while meeting the app latency target. For user-facing output, stable top drivers and signs matter more than exact dollar values for low-ranked features.
 #     <br><br>
 #     <strong>SHAP Limitations</strong>
 #     <ul>
@@ -4661,8 +4663,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Predicted, Not Actual Costs:</strong> SHAP explains the model's prediction, not the true drivers of real-world medical costs. If the model overstates, understates, or misses a relationship, the SHAP importance for that feature can also be too high, too low, or misleading. SHAP does not fix model limitations. So if the model underpredicts high-cost cases, misses nonlinear effects, reflects noisy survey data, or lacks important predictors, SHAP explains those imperfect predictions.</li>
 #     </ul>
 #     <strong>SHAP Metadata</strong><br>
-#     Store a small metadata file alongside the background data for app validation and auditability.
-#     The metadata is for developers and the prediction service. 
+#     Store a small metadata file alongside the background data for developers and prediction service auditability.
 #     <pre>{
 #   "schema_version": 1,
 #   "model_artifact": "models/xgb_quantile_model.joblib",
@@ -4699,7 +4700,7 @@ plot_quantile_subgroup_predictions(
 #     <ol>
 #         <li><strong>Create Artifacts:</strong> Save the SHAP background data as <code>app/data/shap_background.parquet</code> and the SHAP metadata as <code>app/data/shap_metadata.json</code>.</li>
 #         <li><strong>During Application Startup:</strong> Load the quantile model and SHAP background sample. Build the SHAP explainer once.</li>
-#         <li><strong>At Inference Time:</strong> Preprocess the user row, predict q25/q50/q75/q90, compute SHAP values for q50 only, display the SHAP explainer base value as the baseline, group encoded columns back to user-facing factors, apply the medical-cost inflation factor to all displayed dollar amounts, and return the top cost drivers.</li>
+#         <li><strong>At Inference Time:</strong> Preprocess the user row, predict q25/q50/q75/q90, postprocess quantiles, select q50, compute SHAP values, display the SHAP base value as the baseline, group encoded columns back to user-facing factors, apply the medical-cost inflation factor to all displayed dollar amounts, and return the top cost drivers.</li>
 #     </ol>
 # </div>
 #
@@ -4780,3 +4781,158 @@ display(
     .format({"Value": "${:,.2f}"})
     .hide()
 )
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Prototype SHAP benchmarking of permutation budget and background size to identify the best SHAP stability under latency target. 
+# </div>
+
+# %%
+# Benchmark SHAP latency and explanation stability across background sizes and max_evals budgets.
+# The benchmark compares candidate configurations against a high-budget reference
+RUN_SHAP_BUDGET_BENCHMARK = False
+
+SHAP_BENCHMARK_ROWS = 20
+SHAP_TOP_K = 3
+SHAP_BACKGROUND_GRID = [100, 200, 300, 500]
+SHAP_MAX_EVALS_GRID = [500, 1_000, 2_000, 5_000]
+SHAP_REFERENCE_BACKGROUND_N = 500
+SHAP_REFERENCE_MAX_EVALS = 10_000
+
+
+def estimate_permutation_budget(max_evals, n_features):
+    """Estimate permutation SHAP rounds and masks for a feature count."""
+    masks_per_round = 2 * n_features + 1
+    rounds = max_evals // masks_per_round
+    masks = rounds * masks_per_round
+    return rounds, masks
+
+
+def build_shap_budget_explainer(background_n, random_state=RANDOM_STATE):
+    """Build a SHAP explainer with a weighted MEPS background sample."""
+    background = X_train_preprocessed.sample(
+        n=background_n,
+        weights=w_train,
+        replace=True,
+        random_state=random_state,
+    )
+    masker = shap.maskers.Independent(background, max_samples=background_n)
+    return shap.Explainer(predict_median_cost, masker)
+
+
+def explain_rows_for_budget(explainer, X_eval, max_evals):
+    """Return SHAP values, base values, and per-row latency for one budget."""
+    values = []
+    base_values = []
+    latencies = []
+
+    for _, row in X_eval.iterrows():
+        start_time = perf_counter()
+        explanation = explainer(row.to_frame().T, max_evals=max_evals, silent=True)
+        latencies.append(perf_counter() - start_time)
+        values.append(explanation.values[0])
+        base_values.append(np.asarray(explanation.base_values).reshape(-1)[0])
+
+    return np.vstack(values), np.asarray(base_values), np.asarray(latencies)
+
+
+def summarize_shap_budget(
+    *,
+    background_n,
+    max_evals,
+    values,
+    base_values,
+    latencies,
+    reference_values,
+    reference_base_values,
+    top_k=SHAP_TOP_K,
+):
+    """Summarize latency and stability against the reference SHAP budget."""
+    top_k_overlaps = []
+    top_k_sign_matches = []
+    top_k_abs_deltas = []
+
+    for row_idx in range(reference_values.shape[0]):
+        reference_top = np.argsort(np.abs(reference_values[row_idx]))[::-1][:top_k]
+        candidate_top = np.argsort(np.abs(values[row_idx]))[::-1][:top_k]
+        top_k_overlaps.append(len(set(reference_top) & set(candidate_top)) / top_k)
+        top_k_sign_matches.append(
+            np.mean(np.sign(values[row_idx, reference_top]) == np.sign(reference_values[row_idx, reference_top]))
+        )
+        top_k_abs_deltas.append(np.mean(np.abs(values[row_idx, reference_top] - reference_values[row_idx, reference_top])))
+
+    rounds, masks = estimate_permutation_budget(max_evals, values.shape[1])
+
+    return {
+        "background_n": background_n,
+        "max_evals": max_evals,
+        "estimated_rounds": rounds,
+        "estimated_masks": masks,
+        "estimated_synthetic_rows": masks * background_n,
+        "median_latency_s": np.median(latencies),
+        "p90_latency_s": np.percentile(latencies, 90),
+        "p95_latency_s": np.percentile(latencies, 95),
+        "mean_top_k_overlap": np.mean(top_k_overlaps),
+        "mean_top_k_sign_match": np.mean(top_k_sign_matches),
+        "median_top_k_abs_delta": np.median(top_k_abs_deltas),
+        "median_baseline_abs_delta": np.median(np.abs(base_values - reference_base_values)),
+        "mean_all_feature_abs_delta": np.mean(np.abs(values - reference_values)),
+    }
+
+
+if RUN_SHAP_BUDGET_BENCHMARK:
+    from time import perf_counter
+
+    n_eval_rows = min(SHAP_BENCHMARK_ROWS, len(X_test_preprocessed))
+    X_shap_benchmark = X_test_preprocessed.sample(n=n_eval_rows, random_state=RANDOM_STATE)
+
+    reference_explainer = build_shap_budget_explainer(SHAP_REFERENCE_BACKGROUND_N)
+    reference_values, reference_base_values, reference_latencies = explain_rows_for_budget(
+        reference_explainer,
+        X_shap_benchmark,
+        max_evals=SHAP_REFERENCE_MAX_EVALS,
+    )
+
+    benchmark_results = []
+    for background_n in SHAP_BACKGROUND_GRID:
+        budget_explainer = build_shap_budget_explainer(background_n)
+        for max_evals in SHAP_MAX_EVALS_GRID:
+            budget_values, budget_base_values, budget_latencies = explain_rows_for_budget(
+                budget_explainer,
+                X_shap_benchmark,
+                max_evals=max_evals,
+            )
+            benchmark_results.append(
+                summarize_shap_budget(
+                    background_n=background_n,
+                    max_evals=max_evals,
+                    values=budget_values,
+                    base_values=budget_base_values,
+                    latencies=budget_latencies,
+                    reference_values=reference_values,
+                    reference_base_values=reference_base_values,
+                )
+            )
+
+    shap_budget_benchmark = pd.DataFrame(benchmark_results).sort_values(
+        ["p95_latency_s", "mean_top_k_overlap"],
+        ascending=[True, False],
+    )
+
+    display(
+        shap_budget_benchmark.style
+        .pipe(add_table_caption, "SHAP Budget Sensitivity Benchmark")
+        .format({
+            "median_latency_s": "{:.2f}",
+            "p90_latency_s": "{:.2f}",
+            "p95_latency_s": "{:.2f}",
+            "mean_top_k_overlap": "{:.1%}",
+            "mean_top_k_sign_match": "{:.1%}",
+            "median_top_k_abs_delta": "${:,.0f}",
+            "median_baseline_abs_delta": "${:,.0f}",
+            "mean_all_feature_abs_delta": "${:,.0f}",
+        })
+        .hide()
+    )
+else:
+    print("Set RUN_SHAP_BUDGET_BENCHMARK = True to run the SHAP budget sensitivity benchmark.")
