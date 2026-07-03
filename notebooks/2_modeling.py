@@ -4093,7 +4093,7 @@ print(f"Generated quantile predictions for {len(y_test_quantile_pred):,} test sa
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Check how much non-negative clipping changes the predictions.
+#     📌 Assess impact of non-negative clipping.
 # </div>
 
 # %%
@@ -4169,77 +4169,81 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Check how much monotonic quantile enforcement changes the q50 plan-around estimate.
+#     📌 Assess impact of monotonic quantile enforcement.
 # </div>
 
 # %%
-# Monotonic quantile enforcement can affect q50 when raw q25 exceeds raw q50
-# Verify that is rare and small enough for SHAP to explain the postprocessed q50
-def summarize_q50_monotonic_adjustment(y_pred_raw, sample_weight=None, label="Test"):
+# Monotonic quantile enforcement can affect later quantiles when a lower quantile has a higher predicted value.
+# Verify that q50 changes are rare and small enough for SHAP to explain the postprocessed q50.
+def summarize_monotonic_quantile_adjustment(y_pred_raw, sample_weight=None, label="Test"):
     """
-    Measure how often monotonic quantile enforcement changes q50.
+    Measure how often monotonic quantile enforcement changes each quantile.
 
-    q50 is affected when raw q25 exceeds raw q50 after non-negative clipping.
+    For example, q50 is affected when raw q25 exceeds raw q50 after non-negative clipping.
     In that case, postprocessed q50 becomes raw q25 rather than raw q50.
     """
     y_pred_nonnegative = np.maximum(np.asarray(y_pred_raw, dtype=float), 0)
     y_pred_postprocessed = postprocess_quantile_predictions(y_pred_raw)
-
-    raw_q50 = y_pred_nonnegative[:, 1]
-    post_q50 = y_pred_postprocessed[:, 1]
-
-    q50_adjustment = post_q50 - raw_q50
-    q50_adjusted = q50_adjustment > 1e-9
+    monotonic_adjustment = y_pred_postprocessed - y_pred_nonnegative
 
     if sample_weight is None:
-        sample_weight = np.ones(len(q50_adjusted))
+        sample_weight = np.ones(len(y_pred_nonnegative))
     sample_weight = np.asarray(sample_weight)
 
-    affected_rate = np.average(q50_adjusted, weights=sample_weight)
-    affected_deltas = q50_adjustment[q50_adjusted]
-    affected_weights = sample_weight[q50_adjusted]
+    rows = []
+    for idx, q in enumerate(quantiles):
+        quantile_label = f"q{int(q * 100)}"
+        quantile_adjustment = monotonic_adjustment[:, idx]
+        quantile_adjusted = quantile_adjustment > 1e-9
 
-    if len(affected_deltas) == 0:
-        mean_delta = 0.0
-        median_delta = 0.0
-        max_delta = 0.0
-    else:
-        mean_delta = np.average(affected_deltas, weights=affected_weights)
-        median_delta = weighted_quantile(affected_deltas, affected_weights, 0.50)
-        max_delta = affected_deltas.max()
+        affected_rate = np.average(quantile_adjusted, weights=sample_weight)
+        affected_deltas = quantile_adjustment[quantile_adjusted]
+        affected_weights = sample_weight[quantile_adjusted]
 
-    return pd.DataFrame([{
-        "Split": label,
-        "Rows": len(q50_adjusted),
-        "Rows with q50 Adjusted": q50_adjusted.sum(),
-        "Weighted Share Adjusted": affected_rate,
-        "Mean q50 Adjustment": mean_delta,
-        "Median q50 Adjustment": median_delta,
-        "Max q50 Adjustment": max_delta,
-    }])
+        if len(affected_deltas) == 0:
+            mean_delta = 0.0
+            median_delta = 0.0
+            max_delta = 0.0
+        else:
+            mean_delta = np.average(affected_deltas, weights=affected_weights)
+            median_delta = weighted_quantile(affected_deltas, affected_weights, 0.50)
+            max_delta = affected_deltas.max()
+
+        rows.append({
+            "Split": label,
+            "Quantile": quantile_label,
+            "Rows": len(quantile_adjusted),
+            "Rows Adjusted": quantile_adjusted.sum(),
+            "Weighted Share Adjusted": affected_rate,
+            "Mean Adjustment": mean_delta,
+            "Median Adjustment": median_delta,
+            "Max Adjustment": max_delta,
+        })
+
+    return pd.DataFrame(rows)
 
 
-q50_monotonic_adjustment = summarize_q50_monotonic_adjustment(
+monotonic_quantile_adjustment = summarize_monotonic_quantile_adjustment(
     y_test_quantile_pred_raw,
     sample_weight=w_test,
     label="Test",
 )
 
 display(
-    q50_monotonic_adjustment.style
-    .pipe(add_table_caption, "Impact of Monotonic Quantile Enforcement on q50")
+    monotonic_quantile_adjustment.style
+    .pipe(add_table_caption, "Impact of Monotonic Quantile Enforcement")
     .format({
         "Weighted Share Adjusted": "{:.2%}",
-        "Mean q50 Adjustment": "${:,.2f}",
-        "Median q50 Adjustment": "${:,.2f}",
-        "Max q50 Adjustment": "${:,.2f}",
+        "Mean Adjustment": "${:,.2f}",
+        "Median Adjustment": "${:,.2f}",
+        "Max Adjustment": "${:,.2f}",
     })
     .hide()
 )
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insight:</b> Monotonic enforcement changes q50 for only 3 of 1,477 test rows, representing 0.24% of the weighted test population. The adjustment is negligible (max $0.01). This confirms that q50 quantile crossing is rare and small. Thus, SHAP can explain the postprocessed q50 estimate.
+#     💡 <b>Insight:</b> Monotonic quantile enforcement has negligible impact on test predictions. The q50 plan-around estimate (used for SHAP) changed for only 0.24% of the weighted test population (3 of 1,477 test rows), with max adjustment $0.01. No monotonic adjustment was needed for q25, q75, or q90. This confirms postprocessed q50 is appropriate for SHAP.
 # </div>
 
 # %% [markdown]
@@ -4804,7 +4808,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use individual SHAP values to show which inputs moved that user's plan-around estimate above or below the SHAP baseline. This is a product feature, not just a diagnostic. It makes the prediction more useful for financial planning by explaining the main cost drivers. Use cautious wording ("moved the estimate") and avoid causal language.</li>
 #     </ol>
 #     <strong>Select Plan-Around Estimate</strong><br>
-#     SHAP explanations focus on the q50 plan-around estimate (predicted median cost). The q25, q75, and q90 outputs define the planning range, but should not be mixed into the q50 explanation. SHAP can explain any callable prediction function, not just a raw model object. The saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> wrapping the inner XGBoost estimator, but the explainer calls <code>predict_median_cost</code> instead. This means SHAP explains the final dollar output after inverse target transform, non-negative and monotonic quantile enforcement (<code>q25 ≤ q50 ≤ q75 ≤ q90</code>), and q50 selection. Final test diagnostics show q50 postprocessing effects are negligible: clipping affects 1.11% of weighted rows with max $0.37, and monotonic enforcement affects 0.24% with max $0.01. SHAP can therefore explain postprocessed q50.
+#     SHAP explanations focus on the q50 plan-around estimate (predicted median cost). The q25, q75, and q90 outputs define the planning range, but should not be mixed into the q50 explanation. SHAP can explain any callable prediction function, not just a raw model object. The saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> wrapping the inner XGBoost estimator, but the explainer calls <code>predict_median_cost</code> instead. This means SHAP explains the final dollar output after inverse target transform, non-negative and monotonic quantile enforcement (<code>q25 ≤ q50 ≤ q75 ≤ q90</code>), and q50 selection. Final test diagnostics show postprocessing impact on q50 is negligible: clipping affects 1.11% of the weighted test population with max \$0.37, and monotonic quantile enforcement affects 0.24% with max \$0.01. Postprocessed q50 is therefore appropriate for SHAP.
 #     <br><br>
 #     <strong>Why Not TreeExplainer?</strong><br>
 #     TreeExplainer is faster for raw tree models, but the user-facing explanation is based on the final q50 plan-around estimate, not the inner XGBoost tree output. The displayed estimate depends on the <code>TransformedTargetRegressor</code> inverse target transform, non-negative and monotonic quantile postprocessing, and q50 selection. Permutation SHAP can explain the full <code>predict_median_cost</code> callable, so the SHAP values match the prediction users see. 
