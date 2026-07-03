@@ -4814,9 +4814,9 @@ plot_quantile_subgroup_predictions(
 #     TreeExplainer is faster for raw tree models, but the user-facing explanation is based on the final q50 plan-around estimate, not the inner XGBoost tree output. The displayed estimate depends on the <code>TransformedTargetRegressor</code> inverse target transform, non-negative and monotonic quantile postprocessing, and q50 selection. Permutation SHAP can explain the full <code>predict_median_cost</code> callable, so the SHAP values match the prediction users see. 
 #     <br><br>
 #     <strong>Background Data</strong><br>
-#     The background data is a 200–500 row sample from the preprocessed training data, drawn with MEPS person weights (<code>PERWT23F</code>) and <code>replace=True</code>. SHAP treats all background rows as equal-weight, so weighted sampling with replacement is how the background approximates the U.S. adult population distribution. High-weight respondents may appear more than once. That is expected, since duplicates represent their larger population share. The SHAP baseline (expected value) is the mean predicted q50 across all background rows. If this national-level baseline proves too broad for users, consider an age-group or other cohort-specific baseline.
+#     The background data is a 200–500 row sample from the preprocessed training data, drawn with MEPS person weights (<code>PERWT23F</code>) and <code>replace=True</code>. SHAP treats all background rows as equal-weight, so weighted sampling with replacement is how the background approximates the U.S. adult population distribution. High-weight respondents may appear more than once. That is expected, since duplicates represent their larger population share. The SHAP baseline is the mean q50 estimate across all background rows. If this national-level baseline proves too broad for users, consider an age-group or other cohort-specific baseline.
 #     <br><br>
-#     Background validation: Compare the background sample's SHAP baseline against the full weighted training baseline. Accept the sample if <code>abs(relative_difference) <= 10%</code>. If the sample exceeds 10%, increase the background size before creating app artifacts. A smaller difference is better, but 10% is a defensible cutoff for this skewed-cost setting because it allows normal sampling variation for a 200–500 row weighted background while catching clearly unrepresentative baselines.
+#     Background data validation: Compare the background sample's SHAP baseline against the full weighted training baseline. Accept the sample if <code>abs(relative_difference) <= 10%</code>. If the sample exceeds 10%, increase the background size before creating app artifacts. A smaller difference is better, but 10% is a defensible cutoff for this skewed-cost setting because it allows normal sampling variation for a 200–500 row weighted background while catching clearly unrepresentative baselines.
 #     <br><br>
 #     <strong>Prediction Service Latency</strong><br>
 #     A normal prediction scores one user row. A SHAP explanation scores many masked versions of that row against the background. With 40 preprocessed features, 300 background rows, and the default permutation budget (<code>max_evals=500</code>), one explanation produces about 486 masks × 300 background rows ≈ 145k synthetic predictions. SHAP batches these into a single <code>predict</code> call, so the cost is one large batch prediction, not 145k individual calls. Nevertheless, this is the main expected source of prediction-service latency.
@@ -4926,7 +4926,7 @@ if baseline_abs_pct_difference > SHAP_BASELINE_REL_DIFF_MAX:
 shap_masker = shap.maskers.Independent(shap_background, max_samples=SHAP_BACKGROUND_N)
 explainer = shap.Explainer(predict_median_cost, shap_masker)
 
-# Compute SHAP values for one example row
+# Compute SHAP values for one example test set row
 example_idx = 0
 X_test_example = X_test_preprocessed.iloc[[example_idx]]
 shap_values = explainer(X_test_example)
@@ -4965,20 +4965,32 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Prototype SHAP benchmarking of permutation budget and background size to identify the best SHAP stability under latency target. 
+#     📌 Prototype SHAP benchmarking of permutation budget and background size to identify the smallest defensible configuration under the latency target.
+# </div>
+#
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     <strong>Benchmarking Plan</strong>
+#     <ul>
+#         <li><strong>Background data validation:</strong> First compare the baseline (mean q50 estimate) of each candidate background data against the full weighted training baseline. Accept background data only if baseline <code>abs(relative_difference) <= 10%</code>.</li>
+#         <li><strong>Candidate grid:</strong> Benchmark background sizes <code>[50, 100, 200, 300]</code> and permutation budgets <code>[243, 486, 972]</code>, equal to about 3, 6, and 12 permutation rounds with 40 features.</li>
+#         <li><strong>Permutation rounds:</strong> With 40 features, one round uses <code>2 * 40 + 1 = 81</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask.</li>
+#         <li><strong>Reference:</strong> Compare candidates against a higher-budget offline reference with 500 background rows and <code>max_evals=1,944</code> (about 24 permutation rounds).</li>
+#         <li><strong>Metrics:</strong> Track latency, top-driver overlap, sign agreement, dollar-impact deltas, baseline delta, and additivity error: <code>abs(predicted_q50 - (base_value + sum(SHAP values)))</code>.</li>
+#         <li><strong>Selection rule:</strong> Choose the smallest background size and permutation budget that meets the &lt;1s server-side latency target while keeping additivity error near zero and top cost drivers stable versus the reference.</li>
+#     </ul>
 # </div>
 
 # %%
 # Benchmark SHAP latency and explanation stability across background sizes and max_evals budgets.
-# The benchmark compares candidate configurations against a high-budget reference
+# The benchmark compares candidate configurations against a high-budget reference.
 RUN_SHAP_BUDGET_BENCHMARK = False
 
 SHAP_BENCHMARK_ROWS = 20
 SHAP_TOP_K = 3
-SHAP_BACKGROUND_GRID = [100, 200, 300, 500]
-SHAP_MAX_EVALS_GRID = [500, 1_000, 2_000, 5_000]
+SHAP_BACKGROUND_GRID = [50, 100, 200, 300]
+SHAP_MAX_EVALS_GRID = [243, 486, 972]
 SHAP_REFERENCE_BACKGROUND_N = 500
-SHAP_REFERENCE_MAX_EVALS = 10_000
+SHAP_REFERENCE_MAX_EVALS = 1_944
 
 
 def estimate_permutation_budget(max_evals, n_features):
@@ -5002,19 +5014,22 @@ def build_shap_budget_explainer(background_n, random_state=RANDOM_STATE):
 
 
 def explain_rows_for_budget(explainer, X_eval, max_evals):
-    """Return SHAP values, base values, and per-row latency for one budget."""
+    """Return SHAP values, base values, predictions, and per-row latency for one budget."""
     values = []
     base_values = []
+    predictions = []
     latencies = []
 
     for _, row in X_eval.iterrows():
+        row_frame = row.to_frame().T
         start_time = perf_counter()
-        explanation = explainer(row.to_frame().T, max_evals=max_evals, silent=True)
+        explanation = explainer(row_frame, max_evals=max_evals, silent=True)
         latencies.append(perf_counter() - start_time)
         values.append(explanation.values[0])
         base_values.append(np.asarray(explanation.base_values).reshape(-1)[0])
+        predictions.append(predict_median_cost(row_frame)[0])
 
-    return np.vstack(values), np.asarray(base_values), np.asarray(latencies)
+    return np.vstack(values), np.asarray(base_values), np.asarray(predictions), np.asarray(latencies)
 
 
 def summarize_shap_budget(
@@ -5023,6 +5038,7 @@ def summarize_shap_budget(
     max_evals,
     values,
     base_values,
+    predictions,
     latencies,
     reference_values,
     reference_base_values,
@@ -5043,6 +5059,7 @@ def summarize_shap_budget(
         top_k_abs_deltas.append(np.mean(np.abs(values[row_idx, reference_top] - reference_values[row_idx, reference_top])))
 
     rounds, masks = estimate_permutation_budget(max_evals, values.shape[1])
+    additivity_abs_error = np.abs(predictions - (base_values + values.sum(axis=1)))
 
     return {
         "background_n": background_n,
@@ -5058,6 +5075,8 @@ def summarize_shap_budget(
         "median_top_k_abs_delta": np.median(top_k_abs_deltas),
         "median_baseline_abs_delta": np.median(np.abs(base_values - reference_base_values)),
         "mean_all_feature_abs_delta": np.mean(np.abs(values - reference_values)),
+        "median_additivity_abs_error": np.median(additivity_abs_error),
+        "p95_additivity_abs_error": np.percentile(additivity_abs_error, 95),
     }
 
 
@@ -5068,7 +5087,7 @@ if RUN_SHAP_BUDGET_BENCHMARK:
     X_shap_benchmark = X_test_preprocessed.sample(n=n_eval_rows, random_state=RANDOM_STATE)
 
     reference_explainer = build_shap_budget_explainer(SHAP_REFERENCE_BACKGROUND_N)
-    reference_values, reference_base_values, reference_latencies = explain_rows_for_budget(
+    reference_values, reference_base_values, reference_predictions, reference_latencies = explain_rows_for_budget(
         reference_explainer,
         X_shap_benchmark,
         max_evals=SHAP_REFERENCE_MAX_EVALS,
@@ -5078,7 +5097,7 @@ if RUN_SHAP_BUDGET_BENCHMARK:
     for background_n in SHAP_BACKGROUND_GRID:
         budget_explainer = build_shap_budget_explainer(background_n)
         for max_evals in SHAP_MAX_EVALS_GRID:
-            budget_values, budget_base_values, budget_latencies = explain_rows_for_budget(
+            budget_values, budget_base_values, budget_predictions, budget_latencies = explain_rows_for_budget(
                 budget_explainer,
                 X_shap_benchmark,
                 max_evals=max_evals,
@@ -5089,6 +5108,7 @@ if RUN_SHAP_BUDGET_BENCHMARK:
                     max_evals=max_evals,
                     values=budget_values,
                     base_values=budget_base_values,
+                    predictions=budget_predictions,
                     latencies=budget_latencies,
                     reference_values=reference_values,
                     reference_base_values=reference_base_values,
@@ -5112,6 +5132,8 @@ if RUN_SHAP_BUDGET_BENCHMARK:
             "median_top_k_abs_delta": "${:,.0f}",
             "median_baseline_abs_delta": "${:,.0f}",
             "mean_all_feature_abs_delta": "${:,.0f}",
+            "median_additivity_abs_error": "${:,.2f}",
+            "p95_additivity_abs_error": "${:,.2f}",
         })
         .hide()
     )
