@@ -4084,8 +4084,92 @@ y_test_pred_q25, y_test_pred_q50, y_test_pred_q75, y_test_pred_q90 = y_test_quan
 print(f"Generated quantile predictions for {len(y_test_quantile_pred):,} test samples.")
 
 # %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Postprocessing Impact</h2>
+# </div> 
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Check how much postprocessing of the quantile predictions (non-negative clipping and monotonic quantile enforcement) change the final test predictions.
+# </div>
+#
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Check whether monotonic quantile enforcement changes the q50 plan-around estimate.
+#     📌 Check how much non-negative clipping changes the predictions.
+# </div>
+
+# %%
+def summarize_negative_prediction_clipping(y_pred_raw, sample_weight=None, label="Test"):
+    """Measure how often non-negative clipping changes raw quantile predictions."""
+    y_pred_raw = np.asarray(y_pred_raw, dtype=float)
+    clipped_amount = np.maximum(-y_pred_raw, 0)
+    clipped = clipped_amount > 1e-9
+
+    if sample_weight is None:
+        sample_weight = np.ones(y_pred_raw.shape[0])
+    sample_weight = np.asarray(sample_weight)
+
+    rows = []
+    row_clipped = clipped.any(axis=1)
+    row_max_clip = clipped_amount.max(axis=1)
+    row_affected_clip = row_max_clip[row_clipped]
+    row_affected_weights = sample_weight[row_clipped]
+
+    rows.append({
+        "Split": label,
+        "Output": "Any quantile",
+        "Rows": y_pred_raw.shape[0],
+        "Rows Clipped": row_clipped.sum(),
+        "Weighted Share Clipped": np.average(row_clipped, weights=sample_weight),
+        "Mean Clip Amount": np.average(row_affected_clip, weights=row_affected_weights) if row_clipped.any() else 0.0,
+        "Median Clip Amount": weighted_quantile(row_affected_clip, row_affected_weights, 0.50) if row_clipped.any() else 0.0,
+        "Max Clip Amount": row_max_clip.max(),
+    })
+
+    for idx, output in enumerate(["q25", "q50", "q75", "q90"]):
+        output_clipped = clipped[:, idx]
+        output_clip_amount = clipped_amount[:, idx]
+        affected_clip_amount = output_clip_amount[output_clipped]
+        affected_weights = sample_weight[output_clipped]
+
+        rows.append({
+            "Split": label,
+            "Output": output,
+            "Rows": y_pred_raw.shape[0],
+            "Rows Clipped": output_clipped.sum(),
+            "Weighted Share Clipped": np.average(output_clipped, weights=sample_weight),
+            "Mean Clip Amount": np.average(affected_clip_amount, weights=affected_weights) if output_clipped.any() else 0.0,
+            "Median Clip Amount": weighted_quantile(affected_clip_amount, affected_weights, 0.50) if output_clipped.any() else 0.0,
+            "Max Clip Amount": output_clip_amount.max(),
+        })
+
+    return pd.DataFrame(rows)
+
+
+negative_clipping_impact = summarize_negative_prediction_clipping(
+    y_test_quantile_pred_raw,
+    sample_weight=w_test,
+    label="Test",
+)
+
+display(
+    negative_clipping_impact.style
+    .pipe(add_table_caption, "Impact of Non-Negative Clipping")
+    .format({
+        "Weighted Share Clipped": "{:.2%}",
+        "Mean Clip Amount": "${:,.2f}",
+        "Median Clip Amount": "${:,.2f}",
+        "Max Clip Amount": "${:,.2f}",
+    })
+    .hide()
+)
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insight:</b> Non-negative clipping affects 5.7% of the weighted test population (89 of 1,477 test rows). The clipped amounts are tiny (max \$0.41). For q50, clipping affects 1.1% of the population (18 rows), with max adjustment \$0.37. This confirms clipping is negligible for user-facing dollar predictions.
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Check how much monotonic quantile enforcement changes the q50 plan-around estimate.
 # </div>
 
 # %%
@@ -4720,7 +4804,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use individual SHAP values to show which inputs moved that user's plan-around estimate above or below the SHAP baseline. This is a product feature, not just a diagnostic. It makes the prediction more useful for financial planning by explaining the main cost drivers. Use cautious wording ("moved the estimate") and avoid causal language.</li>
 #     </ol>
 #     <strong>Select Plan-Around Estimate</strong><br>
-#     SHAP explanations focus on the q50 plan-around estimate (predicted median cost). The q25, q75, and q90 outputs define the planning range, but should not be mixed into the q50 explanation. SHAP can explain any callable prediction function, not just a raw model object. The saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> wrapping the inner XGBoost estimator, but the explainer calls <code>predict_median_cost</code> instead. This means SHAP explains the final dollar output after inverse target transform, non-negative and monotonic quantile enforcement (<code>q25 ≤ q50 ≤ q75 ≤ q90</code>), and q50 selection. Final test diagnostics show q50 adjustment is rare and negligible: 0.24% weighted population share (3 of 1,477 sample rows) and max $0.01. SHAP can therefore be used to explain postprocessed q50.
+#     SHAP explanations focus on the q50 plan-around estimate (predicted median cost). The q25, q75, and q90 outputs define the planning range, but should not be mixed into the q50 explanation. SHAP can explain any callable prediction function, not just a raw model object. The saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> wrapping the inner XGBoost estimator, but the explainer calls <code>predict_median_cost</code> instead. This means SHAP explains the final dollar output after inverse target transform, non-negative and monotonic quantile enforcement (<code>q25 ≤ q50 ≤ q75 ≤ q90</code>), and q50 selection. Final test diagnostics show q50 postprocessing effects are negligible: clipping affects 1.11% of weighted rows with max $0.37, and monotonic enforcement affects 0.24% with max $0.01. SHAP can therefore explain postprocessed q50.
 #     <br><br>
 #     <strong>Why Not TreeExplainer?</strong><br>
 #     TreeExplainer is faster for raw tree models, but the user-facing explanation is based on the final q50 plan-around estimate, not the inner XGBoost tree output. The displayed estimate depends on the <code>TransformedTargetRegressor</code> inverse target transform, non-negative and monotonic quantile postprocessing, and q50 selection. Permutation SHAP can explain the full <code>predict_median_cost</code> callable, so the SHAP values match the prediction users see. 
