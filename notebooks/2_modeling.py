@@ -4993,6 +4993,15 @@ display(
 )
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     <strong>Communicating SHAP Values</strong>
+#     <ul>
+#         <li><strong>End users (SHAP values in general):</strong> "These factors moved your estimate up or down compared with the model's average prediction for U.S. adults. They explain the model's estimate, not proven causes of healthcare spending."</li>
+#         <li><strong>End users (single feature SHAP value):</strong> "For this person, and considering their other inputs, public-only insurance contributed about <code>$100</code> lower to the estimate compared with the model's average prediction for the U.S. adult reference group."</li>
+#         <li><strong>Non-technical stakeholders:</strong> "We start from the model's average prediction for a MEPS-weighted U.S. adult reference group. SHAP then shows how each person's inputs move their estimate up or down from that reference point. Each factor is interpreted in the context of the person's other inputs, so the same factor can have a different impact for different people."</li>
+#     </ul>
+# </div>
+# %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Prototype SHAP benchmarking experiment. Identify the smallest defensible configuration of SHAP evaluation budget (<code>max_evals</code>) and background size under the latency target.
 # </div>
