@@ -4811,7 +4811,7 @@ plot_quantile_subgroup_predictions(
 #     SHAP explanations focus on the q50 plan-around estimate (predicted median cost). The q25, q75, and q90 outputs define the planning range, but should not be mixed into the q50 explanation. SHAP can explain any callable prediction function, not just a raw model object. The saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> wrapping the inner XGBoost estimator, but the explainer calls <code>predict_median_cost</code> instead. This means SHAP explains the postprocessed 2023-dollar q50 estimate: inverse target transform, non-negative and monotonic quantile enforcement (<code>q25 ≤ q50 ≤ q75 ≤ q90</code>), and q50 selection. Impact of postprocessing on q50 is negligible on the test set: clipping affects 1.1% of the weighted test population with max \$0.37, and monotonic quantile enforcement affects 0.2% with max \$0.01. Postprocessed q50 is therefore appropriate for SHAP.
 #     <br><br>
 #     <strong>Why Not TreeExplainer?</strong><br>
-#     TreeExplainer is faster for raw tree models, but it would explain the inner XGBoost output, not the postprocessed q50 plan-around estimate. Our SHAP target the <code>predict_median_cost</code> callable, which includes inverse target transformation, non-negative and monotonic quantile postprocessing, and q50 selection, but excludes medical-cost inflation. We use <code>shap.Explainer(..., algorithm="permutation")</code> so SHAP explains the same 2023-dollar q50 value that later gets inflation-adjusted for display.
+#     TreeExplainer is faster for raw tree models, but it would explain the inner XGBoost output, not the postprocessed q50 plan-around estimate. Our SHAP target is the <code>predict_median_cost</code> callable, which includes inverse target transformation, non-negative and monotonic quantile postprocessing, and q50 selection, but excludes medical-cost inflation. We use <code>shap.Explainer(..., algorithm="permutation")</code> so SHAP explains the same 2023-dollar q50 value that later gets inflation-adjusted for display.
 #     <br><br>
 #     <strong>Background Data</strong><br>
 #     The background data is a 200–500 row sample from the preprocessed training data, drawn using weighted sampling with replacement. SHAP treats all background rows as equal-weight, so using MEPS person weights (<code>PERWT23F</code>) and <code>replace=True</code> is how the background approximates the U.S. adult population distribution. High-weight respondents may appear more than once. That is expected, since duplicates represent their larger population share. The SHAP baseline is the mean q50 estimate across all background rows. If this national-level baseline proves too broad for users, consider an age-group or other cohort-specific baseline.
@@ -4901,7 +4901,6 @@ def predict_median_cost(X):
 
 
 # Background validation: compare the SHAP baseline from the background data against the full training data
-# to verify that the sampled background data still represents the training data well
 background_baseline = predict_median_cost(shap_background).mean()
 full_training_baseline = np.average(predict_median_cost(X_train_preprocessed), weights=w_train)
 baseline_difference = background_baseline - full_training_baseline
@@ -4921,7 +4920,7 @@ if baseline_abs_pct_difference > SHAP_BASELINE_REL_DIFF_MAX:
         "Resample the background data or increase SHAP_BACKGROUND_N."
     )
 
-# Build the permutation SHAP explainer. Set max_samples explicitly to 300 in the masker.
+# Build the permutation SHAP explainer. Set max_samples explicitly to background size (e.g., 300) in the masker.
 shap_masker = shap.maskers.Independent(shap_background, max_samples=SHAP_BACKGROUND_N)
 explainer = shap.Explainer(
     predict_median_cost,
@@ -4942,10 +4941,10 @@ example_shap_sum = shap_values.values[0].sum()
 
 example_shap_result = pd.DataFrame({
     "Metric": [
-        "Baseline (avg predicted median cost)",
+        "Baseline",
         "Feature contribution sum",
         "Predicted median cost",
-        "Actual observed cost",
+        "Actual cost",
         "Baseline + SHAP sum",
         "Reconstruction difference",
     ],
@@ -4963,6 +4962,33 @@ display(
     example_shap_result.style
     .pipe(add_table_caption, f"Example SHAP Result (Test Row {example_idx})")
     .format({"Value": "${:,.2f}"})
+    .hide()
+)
+
+def format_signed_dollars(value, decimals=1):
+    """Format signed dollar amounts with the sign before the dollar symbol."""
+    sign = "-" if value < 0 else ""
+    return f"{sign}${abs(value):,.{decimals}f}"
+
+
+example_shap_feature_values = (
+    pd.DataFrame({
+        "Feature": X_test_example.columns,
+        "Input Value": shap_values.data[0],
+        "SHAP Value": shap_values.values[0],
+    })
+    .assign(_absolute_shap_value=lambda df: df["SHAP Value"].abs())
+    .sort_values("_absolute_shap_value", ascending=False)
+    .drop(columns="_absolute_shap_value")
+)
+
+display(
+    example_shap_feature_values.style
+    .pipe(add_table_caption, f"Example SHAP Feature Contributions (Test Row {example_idx})")
+    .format({
+        "Input Value": "{:,.3f}",
+        "SHAP Value": format_signed_dollars,
+    })
     .hide()
 )
 
