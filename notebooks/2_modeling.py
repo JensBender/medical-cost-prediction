@@ -106,7 +106,9 @@ from src.constants import (
     ID_COLUMN,
     WEIGHT_COLUMN,
     TARGET_COLUMN,
-    RANDOM_STATE
+    RANDOM_STATE,
+    PIPELINE_NOMINAL_FEATURES,
+    NOMINAL_DROP_CATEGORIES
 )
 from src.display import (
     DISPLAY_LABELS, 
@@ -4979,6 +4981,103 @@ def format_signed_dollars(value, decimals=1):
     return f"{sign}${abs(value):,.{decimals}f}"
 
 
+def format_feature_input(value):
+    """Format mixed string and numeric feature inputs for display."""
+    if isinstance(value, (int, float, np.integer, np.floating)):
+        return f"{value:,.3f}"
+    return value
+
+
+def get_one_hot_feature_groups(feature_names, nominal_features):
+    """Map original nominal inputs to their one-hot encoded dummy columns."""
+    groups = {}
+    for feature in nominal_features:
+        prefix = f"{feature}_"
+        group_columns = [name for name in feature_names if name.startswith(prefix)]
+        if group_columns:
+            groups[feature] = group_columns
+    return groups
+
+
+def get_selected_one_hot_category(row, original_feature, group_columns, drop_category):
+    """Return the selected category for a dropped-baseline one-hot group."""
+    prefix = f"{original_feature}_"
+    active_categories = [
+        column.removeprefix(prefix)
+        for column in group_columns
+        if np.isclose(row[column], 1.0)
+    ]
+    if len(active_categories) == 1:
+        return active_categories[0]
+    if len(active_categories) == 0:
+        return drop_category
+    return "Multiple categories"
+
+
+def build_grouped_shap_feature_values(
+    X_row,
+    shap_row_values,
+    nominal_features=PIPELINE_NOMINAL_FEATURES,
+    nominal_drop_categories=NOMINAL_DROP_CATEGORIES,
+    display_labels=DISPLAY_LABELS,
+):
+    """Aggregate SHAP values of one-hot encoded feature columns back to original user-facing inputs."""
+    row = X_row.iloc[0]
+    shap_by_column = pd.Series(shap_row_values, index=X_row.columns)
+    one_hot_groups = get_one_hot_feature_groups(X_row.columns, nominal_features)
+    drop_category_by_feature = dict(zip(nominal_features, nominal_drop_categories))
+    grouped_columns = set()
+    grouped_rows = []
+
+    for original_feature, group_columns in one_hot_groups.items():
+        grouped_columns.update(group_columns)
+        selected_category = get_selected_one_hot_category(
+            row,
+            original_feature,
+            group_columns,
+            drop_category_by_feature[original_feature],
+        )
+        grouped_rows.append({
+            "Feature": display_labels.get(original_feature, original_feature),
+            "Input Value": selected_category,
+            "SHAP Value": shap_by_column[group_columns].sum(),
+            "Encoded Columns": len(group_columns),
+        })
+
+    for column in X_row.columns:
+        if column in grouped_columns:
+            continue
+        grouped_rows.append({
+            "Feature": display_labels.get(column, column),
+            "Input Value": row[column],
+            "SHAP Value": shap_by_column[column],
+            "Encoded Columns": 1,
+        })
+
+    return (
+        pd.DataFrame(grouped_rows)
+        .assign(_absolute_shap_value=lambda df: df["SHAP Value"].abs())
+        .sort_values("_absolute_shap_value", ascending=False)
+        .drop(columns="_absolute_shap_value")
+    )
+
+
+example_shap_grouped_feature_values = build_grouped_shap_feature_values(
+    X_test_example,
+    shap_values.values[0],
+)
+
+# Use this grouped table for interpretation and user-facing cost drivers.
+display(
+    example_shap_grouped_feature_values.style
+    .pipe(add_table_caption, f"Example SHAP Grouped Feature Contributions (Test Row {example_idx})")
+    .format({
+        "Input Value": format_feature_input,
+        "SHAP Value": format_signed_dollars,
+    })
+    .hide()
+)
+
 example_shap_feature_values = (
     pd.DataFrame({
         "Feature": X_test_example.columns,
@@ -4992,7 +5091,7 @@ example_shap_feature_values = (
 
 display(
     example_shap_feature_values.style
-    .pipe(add_table_caption, f"Example SHAP Feature Contributions (Test Row {example_idx})")
+    .pipe(add_table_caption, f"Example SHAP Encoded Feature Contributions (Technical, Test Row {example_idx})")
     .format({
         "Input Value": "{:,.3f}",
         "SHAP Value": format_signed_dollars,
