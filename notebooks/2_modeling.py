@@ -4823,6 +4823,12 @@ plot_quantile_subgroup_predictions(
 #     <br><br>
 #     Benchmarking: Select the production SHAP evaluation budget empirically. Benchmark <code>max_evals</code> and background size together: <code>max_evals</code> caps the number of mask evaluations, background size controls SHAP baseline stability, and latency scales roughly as <code>mask_evaluations × background_rows</code>. Compare candidate configurations against a reference configuration with larger background size and higher SHAP evaluation budget, then choose the smallest one that keeps the top cost drivers, their signs, and displayed dollar impacts stable while meeting the latency target (&lt;1s server-side per NFR-04). For user-facing output, stable top cost drivers and signs matter more than exact dollar impacts for low-ranked features.
 #     <br><br>
+#     <strong>Communicating SHAP Values</strong>
+#     <ul>
+#         <li><strong>End users (cost drivers overview):</strong> "These factors show which of your inputs had the biggest effect on your estimate, compared with U.S. adults overall."</li>
+#         <li><strong>End users (single cost driver):</strong> "Given your other inputs, having public-only insurance lowered your estimate by about <code>$100</code> compared with U.S. adults overall."</li>
+#         <li><strong>Non-technical stakeholders:</strong> "The estimate starts from an average predicted cost for a representative sample of U.S. adults. Each person's inputs then move the estimate up or down from that starting point. Because each input is evaluated in the context of that person's other inputs, the same input can have a different dollar impact for different people. For example, being uninsured might raise the estimate more for someone with chronic conditions than for someone who is otherwise healthy."</li>
+#     </ul>
 #     <strong>SHAP Limitations</strong>
 #     <ul>
 #         <li><strong>Not Causal:</strong> SHAP values describe how inputs moved this model's q50 estimate relative to the SHAP baseline. They do not show what would happen if a person's health, coverage, or utilization changed.</li>
@@ -4946,7 +4952,7 @@ example_shap_result = pd.DataFrame({
         "Predicted median cost",
         "Actual cost",
         "Baseline + SHAP sum",
-        "Reconstruction difference",
+        "Additivity error",
     ],
     "Value": [
         baseline,
@@ -4954,7 +4960,7 @@ example_shap_result = pd.DataFrame({
         example_prediction,
         example_actual,
         baseline + example_shap_sum,
-        example_prediction - (baseline + example_shap_sum),
+        abs(example_prediction - (baseline + example_shap_sum)),
     ],
 })
 
@@ -4992,15 +4998,6 @@ display(
     .hide()
 )
 
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     <strong>Communicating SHAP Values</strong>
-#     <ul>
-#         <li><strong>End users (cost drivers overview):</strong> "These factors show which of your inputs had the biggest effect on your estimate, compared with U.S. adults overall."</li>
-#         <li><strong>End users (single cost driver):</strong> "Given your other inputs, having public-only insurance lowered your estimate by about <code>$100</code> compared with U.S. adults overall."</li>
-#         <li><strong>Non-technical stakeholders:</strong> "The estimate starts from an average predicted cost for a representative sample of U.S. adults. Each person's inputs then move the estimate up or down from that starting point. Because each input is evaluated in the context of that person's other inputs, the same input can have a different dollar impact for different people. For example, being uninsured might raise the estimate more for someone with chronic conditions than for someone who is otherwise healthy."</li>
-#     </ul>
-# </div>
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Prototype SHAP benchmarking experiment. Identify the smallest defensible configuration of SHAP evaluation budget (<code>max_evals</code>) and background size under the latency target.
