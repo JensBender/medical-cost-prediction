@@ -61,6 +61,9 @@ from sklearn.compose import TransformedTargetRegressor  # to log-transform targe
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import Pipeline
 
+# Custom transformers
+from src.transformers import MedicalFeatureDeriver
+
 # Models
 from sklearn.linear_model import ElasticNet
 from sklearn.ensemble import RandomForestRegressor
@@ -4831,7 +4834,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>End users (single cost driver):</strong> "Your insurance answer, <code>Public Only</code>, lowered this estimate by about \$100."</li>
 #         <li><strong>Non-technical stakeholders:</strong> "The estimate starts from an average predicted cost for a representative sample of U.S. adults. Each person's inputs then move the estimate up or down from that starting point. Because each input is evaluated in the context of that person's other inputs, the same input can have a different dollar impact for different people. For example, being uninsured might raise the estimate more for someone with chronic conditions than for someone who is otherwise healthy."</li>
 #     </ul>
-#     For one-hot encoded categorical features: show original inputs, not dummy columns. Since one categorical input is split into several dummy variables, sum the SHAP values across all dummy columns from that same input. The grouped SHAP value tells you how that original input moved the estimate up or down. Example: "Your education answer, <code>No Degree</code>, lowered this estimate by about $138."
+#     For categorical inputs: show the original input once. If preprocessing split one input into several columns, add those SHAP values before displaying it. The displayed value tells you how that answer moved the estimate up or down. Example: "Your education answer, <code>No Degree</code>, lowered this estimate by about $138."
 #     <br><br>
 #     <strong>SHAP Limitations</strong>
 #     <ul>
@@ -4983,13 +4986,46 @@ def format_signed_dollars(value, decimals=1):
 
 def format_feature_input(value):
     """Format mixed string and numeric feature inputs for display."""
+    if isinstance(value, str):
+        return value
+    if pd.isna(value):
+        return "Missing"
     if isinstance(value, (int, float, np.integer, np.floating)):
-        return f"{value:,.3f}"
+        if np.isclose(value, round(value)):
+            return f"{value:,.0f}"
+        return f"{value:,.1f}"
     return value
 
 
+def get_display_input_value(feature, model_value, display_row=None):
+    """Return raw/display-scale input values when available."""
+    if display_row is None:
+        return model_value
+
+    if feature == "CHRONIC_COUNT":
+        source_features = MedicalFeatureDeriver.CHRONIC_CONDITION_FEATURES
+        if set(source_features).issubset(display_row.index) and display_row[source_features].notna().all():
+            return display_row[source_features].sum()
+        return model_value
+
+    if feature == "LIMITATION_COUNT":
+        source_features = MedicalFeatureDeriver.FUNCTIONAL_LIMITATION_FEATURES
+        if set(source_features).issubset(display_row.index) and display_row[source_features].notna().all():
+            return display_row[source_features].sum()
+        return model_value
+
+    if feature not in display_row.index or pd.isna(display_row[feature]):
+        return model_value
+
+    raw_value = display_row[feature]
+    category_map = CATEGORY_LABELS_EDA.get(feature)
+    if category_map is not None and pd.notna(raw_value):
+        return category_map.get(int(raw_value), raw_value)
+    return raw_value
+
+
 def get_one_hot_feature_groups(feature_names, nominal_features):
-    """Map original nominal inputs to their one-hot encoded dummy columns."""
+    """Map original nominal inputs to their processed columns."""
     groups = {}
     for feature in nominal_features:
         prefix = f"{feature}_"
@@ -5017,12 +5053,15 @@ def get_selected_one_hot_category(row, original_feature, group_columns, drop_cat
 def build_grouped_shap_feature_values(
     X_row,
     shap_row_values,
+    display_row=None,
     nominal_features=PIPELINE_NOMINAL_FEATURES,
     nominal_drop_categories=NOMINAL_DROP_CATEGORIES,
     display_labels=DISPLAY_LABELS,
 ):
-    """Aggregate SHAP values of one-hot encoded feature columns back to original user-facing inputs."""
+    """Aggregate processed-column SHAP values back to original user-facing inputs."""
     row = X_row.iloc[0]
+    if display_row is not None and isinstance(display_row, pd.DataFrame):
+        display_row = display_row.iloc[0]
     shap_by_column = pd.Series(shap_row_values, index=X_row.columns)
     one_hot_groups = get_one_hot_feature_groups(X_row.columns, nominal_features)
     drop_category_by_feature = dict(zip(nominal_features, nominal_drop_categories))
@@ -5041,7 +5080,7 @@ def build_grouped_shap_feature_values(
             "Feature": display_labels.get(original_feature, original_feature),
             "Input Value": selected_category,
             "SHAP Value": shap_by_column[group_columns].sum(),
-            "Encoded Columns": len(group_columns),
+
         })
 
     for column in X_row.columns:
@@ -5049,9 +5088,9 @@ def build_grouped_shap_feature_values(
             continue
         grouped_rows.append({
             "Feature": display_labels.get(column, column),
-            "Input Value": row[column],
+            "Input Value": get_display_input_value(column, row[column], display_row),
             "SHAP Value": shap_by_column[column],
-            "Encoded Columns": 1,
+
         })
 
     return (
@@ -5062,15 +5101,17 @@ def build_grouped_shap_feature_values(
     )
 
 
+example_display_row = df_raw_test.loc[X_test_example.index].iloc[0] if "df_raw_test" in globals() else None
 example_shap_grouped_feature_values = build_grouped_shap_feature_values(
     X_test_example,
     shap_values.values[0],
+    display_row=example_display_row,
 )
 
-# Use this grouped table for interpretation and user-facing cost drivers.
+# Use this original-scale table for interpretation and user-facing cost drivers.
 display(
     example_shap_grouped_feature_values.style
-    .pipe(add_table_caption, f"Example SHAP Grouped Feature Contributions (Test Row {example_idx})")
+    .pipe(add_table_caption, f"Example SHAP Contributions with Original-Scale Inputs (Test Row {example_idx})")
     .format({
         "Input Value": format_feature_input,
         "SHAP Value": format_signed_dollars,
@@ -5091,7 +5132,7 @@ example_shap_feature_values = (
 
 display(
     example_shap_feature_values.style
-    .pipe(add_table_caption, f"Example SHAP Encoded Feature Contributions (Technical, Test Row {example_idx})")
+    .pipe(add_table_caption, f"Example SHAP Contributions with Processed Inputs (Test Row {example_idx})")
     .format({
         "Input Value": "{:,.3f}",
         "SHAP Value": format_signed_dollars,
