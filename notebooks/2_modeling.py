@@ -4825,10 +4825,12 @@ plot_quantile_subgroup_predictions(
 #     <br><br>
 #     <strong>Communicating SHAP Values</strong>
 #     <ul>
-#         <li><strong>End users (cost drivers overview):</strong> "These factors show which of your inputs had the biggest effect on your estimate, compared with U.S. adults overall."</li>
-#         <li><strong>End users (single cost driver):</strong> "Given your other inputs, having public-only insurance lowered your estimate by about <code>$100</code> compared with U.S. adults overall."</li>
+#         <li><strong>End users (cost drivers overview):</strong> "These factors show which of your answers moved your estimate up or down the most."</li>
+#         <li><strong>End users (single cost driver):</strong> "Your insurance answer, <code>Public Only</code>, lowered this estimate by about \$100."</li>
 #         <li><strong>Non-technical stakeholders:</strong> "The estimate starts from an average predicted cost for a representative sample of U.S. adults. Each person's inputs then move the estimate up or down from that starting point. Because each input is evaluated in the context of that person's other inputs, the same input can have a different dollar impact for different people. For example, being uninsured might raise the estimate more for someone with chronic conditions than for someone who is otherwise healthy."</li>
 #     </ul>
+#     For one-hot encoded categorical features: show original inputs, not dummy columns. Since one categorical input is split into several dummy variables, sum the SHAP values across all dummy columns from that same input. The grouped SHAP value tells you how that original input moved the estimate up or down. Example: "Your education answer, <code>No Degree</code>, lowered this estimate by about $138."
+#     <br><br>
 #     <strong>SHAP Limitations</strong>
 #     <ul>
 #         <li><strong>Not Causal:</strong> SHAP values describe how inputs moved this model's q50 estimate relative to the SHAP baseline. They do not show what would happen if a person's health, coverage, or utilization changed.</li>
