@@ -4996,9 +4996,9 @@ display(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     <strong>Communicating SHAP Values</strong>
 #     <ul>
-#         <li><strong>End users (cost drivers overview):</strong> "These factors moved your estimate up or down from the model's starting point — the average predicted cost for a typical U.S. adult. They show how the model arrived at your estimate, not what caused your healthcare spending."</li>
-#         <li><strong>End users (single cost driver):</strong> "Given your other inputs, having public-only insurance lowered your estimate by about <code>$100</code> compared with the starting point."</li>
-#         <li><strong>Non-technical stakeholders:</strong> "The model starts from an average predicted cost for a representative sample of U.S. adults. Each person's inputs then move the estimate up or down from that starting point. Because each factor is evaluated in the context of that person's other inputs, the same factor can have a different dollar impact for different people."</li>
+#         <li><strong>End users (cost drivers overview):</strong> "These factors show which of your inputs had the biggest effect on your estimate, compared with U.S. adults overall."</li>
+#         <li><strong>End users (single cost driver):</strong> "Given your other inputs, having public-only insurance lowered your estimate by about <code>$100</code> compared with U.S. adults overall."</li>
+#         <li><strong>Non-technical stakeholders:</strong> "The estimate starts from an average predicted cost for a representative sample of U.S. adults. Each person's inputs then move the estimate up or down from that starting point. Because each input is evaluated in the context of that person's other inputs, the same input can have a different dollar impact for different people. For example, being uninsured might raise the estimate more for someone with chronic conditions than for someone who is otherwise healthy."</li>
 #     </ul>
 # </div>
 # %% [markdown]
