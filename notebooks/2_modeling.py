@@ -4831,10 +4831,10 @@ plot_quantile_subgroup_predictions(
 #     <strong>Communicating SHAP Values</strong>
 #     <ul>
 #         <li><strong>End users (cost drivers overview):</strong> "These factors show which of your answers moved your estimate up or down the most."</li>
-#         <li><strong>End users (single cost driver):</strong> "Your insurance answer, <code>Public Only</code>, lowered this estimate by about \$100."</li>
+#         <li><strong>End users (single cost driver):</strong> "Your education answer, <code>No Degree</code>, lowered this estimate by about \$134."</li>
 #         <li><strong>Non-technical stakeholders:</strong> "The estimate starts from an average predicted cost for a representative sample of U.S. adults. Each person's inputs then move the estimate up or down from that starting point. Because each input is evaluated in the context of that person's other inputs, the same input can have a different dollar impact for different people. For example, being uninsured might raise the estimate more for someone with chronic conditions than for someone who is otherwise healthy."</li>
 #     </ul>
-#     Note: Show original-scale inputs, not processed inputs. For numerical inputs, convert processed values back to original units (for example, age 0.96 z-score back to 70 years). For categorical inputs that one-hot encoding split into several dummy columns, add the SHAP values for all dummy columns that belong to the same original input (for example, <code>-\$103.5 INSCOV23_Public Only + \$4.6 INSCOV23_Uninsured = -\$98.9 INSCOV23</code>). The displayed value tells you how the original answer moved the estimate up or down. Example: "Your insurance answer, <code>Public Only</code>, lowered this estimate by about \$99."
+#     Note: Show original-scale inputs, not processed inputs. For numerical inputs, convert processed values back to original units (for example, age 0.96 z-score back to 70 years). For categorical inputs that one-hot encoding split into several dummy columns, add the SHAP values for all dummy columns that belong to the same original input (for example, <code>-\$103.5 INSCOV23_Public Only + \$4.6 INSCOV23_Uninsured = -\$98.9 INSCOV23</code>). Example communication: "Your insurance answer, <code>Public Only</code>, lowered this estimate by about \$99."
 #     <br><br>
 #     <strong>SHAP Limitations</strong>
 #     <ul>
