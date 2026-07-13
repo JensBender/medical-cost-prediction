@@ -23,7 +23,7 @@ RAW_COLUMNS_TO_KEEP = (
     RAW_NOMINAL_FEATURES + RAW_ORDINAL_FEATURES
 )
 
-# Pipeline Input Features (after initial data preparation and feature engineering)
+# Preprocessing Pipeline Input Features (after initial data preparation and feature engineering)
 PIPELINE_NUMERICAL_FEATURES = RAW_NUMERICAL_FEATURES + RAW_ORDINAL_FEATURES
 PIPELINE_BINARY_FEATURES = RAW_BINARY_FEATURES + ["RECENT_LIFE_TRANSITION", "EMPST31_GRP"]
 PIPELINE_NOMINAL_FEATURES = ["REGION23", "MARRY31X_GRP", "INSCOV23", "HIDEG"]

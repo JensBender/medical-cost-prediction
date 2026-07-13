@@ -90,12 +90,12 @@ The following are explicitly **not** part of this project:
 | **Integrations** | Insurance portal integration | No API connections to external systems |
 | **Integrations** | Medical record imports | Users self-report; no clinical data ingestion |
 | **Data** | Real-time pricing data | Model uses MEPS survey data, not live cost databases |
-| **Compliance** | HIPAA-regulated data handling | Not applicable — no PHI collected; inputs are self-reported, anonymous, and not stored |
+| **Compliance** | HIPAA-regulated data handling | Not applicable — no PHI collected; user-provided inputs are self-reported, anonymous, and not stored |
 
 
 ## Functional Requirements
 
-### User Input 
+### User Inputs
 > **Status:** *Preliminary (Candidate Features). Final feature selection pending. Reduce number of features based on empirical feature importance ranking to meet the UX budget below.*
 
 **UX Budget:**
@@ -103,7 +103,7 @@ The following are explicitly **not** part of this project:
 * UI Interactions Target: ~12–14 
 * UI Interactions Current: 15 
 
-The UI must be a simple form on a single page. A multi-select checklist (e.g., chronic conditions) counts as one UI interaction. Inputs are mapped to MEPS variables with correct temporal alignment (beginning-of-year status for prospective prediction).
+The UI must be a simple form on a single page. A multi-select checklist (e.g., chronic conditions) counts as one UI interaction. User inputs are mapped to MEPS variables with correct temporal alignment (beginning-of-year status for prospective prediction).
 
 **Full Details:** See [Technical Specifications: Candidate Features](./technical_specifications.md#candidate-features) and [Candidate Features Research](../research/candidate_features.md).
 
@@ -137,7 +137,7 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **FR-01** | **Imputation** | If optional fields are skipped, default to the mode for categorical features and the median for numerical features. |
 | **FR-02** | **Medical-Cost Inflation Adjustment** | Adjust all displayed medical-cost amounts from 2023 to current dollars using medical-cost inflation. This includes the plan around amount, prediction range, safety cushion, comparison benchmarks, and SHAP impacts. |
 | **FR-03** | **Cost Range** | Generate 25th–75th percentile range (typical range) and 90th percentile (budget-safe estimate) to communicate prediction uncertainty. Never output a single point estimate. |
-| **FR-04** | **Cost Drivers** | Compute SHAP values for the plan-around estimate to explain which inputs moved the model estimate higher or lower. Display user-facing cost drivers as dollar impacts and avoid causal wording. |
+| **FR-04** | **Cost Drivers** | Compute SHAP values for the plan-around estimate to explain which input features moved the model estimate higher or lower. Display user-facing cost drivers as dollar impacts and avoid causal wording. |
 | **FR-05** | **Comparison Benchmarks** | Compare user's prediction to (1) the typical American and (2) the typical person in their age group. Pre-compute weighted median benchmarks from the MEPS training set. |
 | **FR-06** | **Prediction Notice Policy** | Generate actionable planning notices for high predicted uncertainty (derive thresholds from validation set), uninsured users, typical-range undercoverage watchlist profiles, missing optional inputs, and public insurance policy changes. |
 
@@ -148,7 +148,7 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **UI-02** | **Cost Drivers** | Explanation of the factors with the biggest impact on the plan-around estimate (SHAP values). | `gr.Markdown` | **These factors moved your plan-around estimate the most:** "Your age (68): +$480, Diabetes: +$370, Good physical health: -$90" |
 | **UI-03** | **Comparison Benchmarks** | Bar chart comparing the user with national and age-group benchmarks. | `gr.Plot` | "Typical American: $248 vs. Typical for ages 35-49: $170"<br> |
 | **UI-04** | **Limitations Notice** | Always-on guidance to help users interpret their prediction and understand the rare-tail limitation. | `gr.Markdown` | "**About this estimate**<br>This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. New diagnoses, accidents, hospitalizations, and plan-specific billing details can make actual costs higher." |
-| **UI-05** | **Planning Notice** | Dynamic planning notice displayed only when it is actionable and based on the current prediction or user-selected inputs. | `gr.Markdown` | "**Planning note**<br>Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." |
+| **UI-05** | **Planning Notice** | Dynamic planning notice displayed only when it is actionable and based on the current prediction or selected user inputs. | `gr.Markdown` | "**Planning note**<br>Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." |
 | **UI-06** | **Permanent Footer** | Always-visible disclaimer at the bottom of the page. Covers legal liability and data aging limitations. | `gr.Markdown` | *"Not intended as medical, financial, or legal advice. Based on 2023 U.S. national survey data."* |
 
 ### Prediction Notice Policy
@@ -162,7 +162,7 @@ Planning notices must be concise, neutral, and tied to a concrete user action. T
 | `MISSING_OPTIONAL_INPUTS` | One or more optional inputs are skipped and imputed | Explain that typical training values were used and that more complete inputs may make the estimate more tailored |
 | `PUBLIC_INSURANCE_POLICY_CHANGE` | User selects public-only coverage | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs compared with estimates based on 2023 survey data |
 
-The always-on limitations notice remains the primary way to communicate that rare high-cost events cannot always be identified from pre-year user inputs. The dynamic high-uncertainty flag should be based on predicted cost tiers because actual cost tiers are unknown at prediction time.  
+The always-on limitations notice remains the primary way to communicate that rare high-cost events cannot always be identified from pre-year user inputs. The dynamic high-uncertainty flag should be based on predicted cost tiers because actual cost tiers are unknown at prediction time.
 
 Planning notices should render as one compact panel below the prediction block, not as multiple stacked paragraphs. If several flags trigger, combine them in priority order and avoid repeating the same safety-cushion guidance. Keep the always-on scope disclaimer separate and quieter.
 
@@ -175,7 +175,7 @@ Planning notices should render as one compact panel below the prediction block, 
 | **NFR-02** | No PII Collection | No names, emails, addresses, or social security numbers shall be requested. |
 | **NFR-03** | Aggregate Monitoring Only | Monitoring for the MVP product release may use aggregate, non-identifying counters for app health, completion rate, input drift, and prediction drift. By default, do not persist user-level input rows, predictions, SHAP explanations, app-level IP logs, user-agent logs, or session identifiers. |
 
-**Hosting Boundary:** The planned Hugging Face Hub and Hugging Face Spaces deployment may involve provider-level infrastructure logging under Hugging Face's own policies. The product privacy promise is that the Medical Cost Planner app does not intentionally collect, persist, expose, or join IP addresses, user agents, session identifiers, raw inputs, per-user predictions, or SHAP explanations for model monitoring.
+**Hosting Boundary:** The planned Hugging Face Hub and Hugging Face Spaces deployment may involve provider-level infrastructure logging under Hugging Face's own policies. The product privacy promise is that the Medical Cost Planner app does not intentionally collect, persist, expose, or join IP addresses, user agents, session identifiers, user-provided inputs, per-user predictions, or SHAP explanations for model monitoring.
 
 ### Performance & Usability
 | ID | Requirement | Details |
@@ -213,7 +213,7 @@ For technical implementation details such as data preprocessing, machine learnin
 | Risk | Example | Mitigation Strategy |
 | :--- | :--- | :--- |
 | **Outlier Prediction** | Model predicts extreme costs ($100k+) for a standard user. | Consider implementing display guardrails such as a model-version cap plus `HIGH_PREDICTED_UNCERTAINTY`, so the user sees a planning notice rather than a falsely precise extreme number. |
-| **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a fairness audit, document subgroup caveats, and provide user-facing planning notices based on the current prediction or user-selected inputs. |
+| **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a fairness audit, document subgroup caveats, and provide user-facing planning notices based on the current prediction or selected user inputs. |
 | **Data Aging** | 2023 data becomes outdated. | Display permanent footer (UI-06) and limitations notice (UI-04). Use the medical-cost inflation adjustment in FR-02 to keep displayed estimates in current dollars. |
 | **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Covered by permanent footer (UI-06). For Medicare/Medicaid users, show the `PUBLIC_INSURANCE_POLICY_CHANGE` planning notice. |
 | **Unobserved Outcomes** | App users usually will not return one year later with reliable actual out-of-pocket spending, and collecting linked follow-up outcomes would weaken the anonymous, zero-retention privacy promise. | Do not claim production calibration from default app telemetry. Use aggregate drift monitoring only to detect shifts in usage and predictions. Evaluate true calibration by testing the deployed model on future MEPS survey years when available, or through a separately approved opt-in study. |
