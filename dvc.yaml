@@ -19,6 +19,7 @@ stages:
       - data/training_data_preprocessed.parquet
       - data/validation_data_preprocessed.parquet
       - data/test_data_preprocessed.parquet
+      - models/preprocessor.joblib
 
   # --- Modeling ---
   # Stage 2: Baseline Models
