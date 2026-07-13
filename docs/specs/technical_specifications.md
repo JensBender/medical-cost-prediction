@@ -453,11 +453,11 @@ The prediction service will expose the trained model artifact via a Python API (
     `benchmark_comparison` is derived from the `cost_benchmarks.json` artifact. At prediction time, apply the same medical-cost factor to prediction, benchmark, and SHAP dollar values. All monetary values returned to the UI are adjusted to current dollars.
 
 #### SHAP Explainability
-Use SHAP values for user-facing cost-driver explanations. The app should build `shap.Explainer` with `shap.maskers.Independent` over a weighted background sample from the preprocessed training rows. Use permutation SHAP rather than TreeExplainer because the explanation target is the full postprocessed q50 inference callable, not the raw inner XGBoost tree output. The explainer callable must return the postprocessed q50 plan-around estimate in 2023 dollars, after inverse target transformation and quantile cleanup, but before medical-cost inflation. Before deployment, verify on the test set that monotonic quantile enforcement rarely changes q50 and that any q50 adjustment is negligible; if the adjustment is frequent or material, revisit whether SHAP should explain raw q50 before monotonic enforcement. Apply medical-cost inflation only during API/UI output formatting.
+Use SHAP values for user-facing cost-driver explanations. SHAP must operate on the 27 preprocessor input features. These are interpretable, semantically meaningful features before imputation, medical feature derivation, scaling, and one-hot encoding. Build `shap.Explainer` with `shap.maskers.Independent` over a survey-weighted background sample. Use permutation SHAP rather than TreeExplainer because the explanation target is the full postprocessed q50 inference callable, not the raw inner XGBoost tree output. The permutation-SHAP callable must run the complete q50 prediction path: fitted preprocessor, transformed-target quantile model, inverse target transformation, quantile cleanup, and q50 selection. It returns the postprocessed q50 plan-around estimate in 2023 dollars before medical-cost inflation. This makes each SHAP feature an interpretable input. Before deployment, verify on the test set that monotonic quantile enforcement rarely changes q50 and that any q50 adjustment is negligible. Apply medical-cost inflation only during API/UI output formatting.
 
-Store the SHAP background sample as `app/data/shap_background.parquet` and SHAP metadata as `app/data/shap_metadata.json`. The background sample should use MEPS person weights (`PERWT23F`) with replacement so the unweighted SHAP background approximates the weighted U.S. adult reference population. The initial target range is 200-500 background rows, the final production size is selected by benchmarking. Validate the sample by comparing the SHAP background baseline with the full weighted training baseline. The artifact passes if `abs(relative_difference) <= 0.10`; if it exceeds 10%, increase the background size before deployment.
+Persist the fitted preprocessing pipeline as `models/preprocessor.joblib`. Store the SHAP background sample as `app/data/shap_background.parquet` and SHAP metadata as `app/data/shap_metadata.json`. The background sample should use MEPS person weights (`PERWT23F`) with replacement so the unweighted SHAP background approximates the weighted U.S. adult reference population. The initial target range is 200-500 background rows, and the final production size is selected by benchmarking. Validate the sample by comparing the SHAP background baseline with the full weighted training baseline. The artifact passes if `abs(relative_difference) <= 0.10`; if it exceeds 10%, increase the background size before deployment.
 
-The prediction service should load the model and SHAP background at startup and build the explainer once. At inference time, preprocess the user row, predict q25/q50/q75/q90, postprocess quantiles, compute SHAP for q50 only, group encoded columns back to user-facing factors, apply the medical-cost inflation factor to displayed SHAP dollar impacts, and return the top cost drivers. Do not mix q25, q75, or q90 SHAP explanations into the q50 explanation.
+The prediction service should load the fitted preprocessor, quantile model, and SHAP background at startup and build the explainer once. At inference time, map the user inputs into the preprocessor input schema; run preprocessing, q25/q50/q75/q90 prediction, and quantile postprocessing; compute SHAP for q50 through the same full callable; apply the medical-cost inflation factor to displayed SHAP dollar impacts; and return the top cost drivers. Do not mix q25, q75, or q90 SHAP explanations into the q50 explanation.
 
 Select production background data size (`background_n`) and SHAP evaluation budget (`max_evals`) empirically. Benchmark candidate combinations against a reference configuration with larger background size and higher SHAP evaluation budget, then choose the smallest configuration that meets the latency target while keeping user-facing explanations stable. Track at least p50/p90/p95 latency, top-k driver overlap, sign stability, SHAP dollar drift for top drivers, baseline drift, and additivity error. Top-driver and sign stability matter more than exact low-ranked feature dollar values.
 
@@ -542,7 +542,7 @@ Telemetry must be aggregated during prediction handling rather than written as p
 1.  Validate the request and run inference in memory.
 2.  Convert selected inputs and outputs into predefined coarse buckets.
 3.  Increment counters for the active monitoring window.
-4.  Discard raw inputs, exact predictions, SHAP values, and request-local state.
+4.  Discard user-provided inputs, exact predictions, SHAP values, and request-local state.
 5.  At the end of the monitoring window, persist only aggregate counters that meet the minimum cell-size rule.
 
 **Telemetry record schema**
@@ -560,7 +560,7 @@ Persisted telemetry records should use this aggregate shape:
 }
 ```
 
-This schema intentionally has no raw input payload, exact prediction value, SHAP value, IP address, user agent, session ID, request ID, or per-user timestamp.
+This schema intentionally has no user-provided input payload, exact prediction value, SHAP value, IP address, user agent, session ID, request ID, or per-user timestamp.
 
 **Recommended buckets**
 Bucket edges should be fixed before launch, documented with the model version, and chosen from the validation prediction distribution so monitoring has enough resolution where the deployed model actually places users. For this model, predicted q50 values are usually low-to-mid hundreds, while q90 values span a wider safety-cushion range.
@@ -597,7 +597,7 @@ Required app-level controls:
 *   Disable Gradio analytics with `analytics_enabled=False` and `GRADIO_ANALYTICS_ENABLED=False`.
 *   Disable Gradio flagging with `flagging_mode="never"` and `GRADIO_FLAGGING_MODE=never`, because flagging can write inputs and outputs to local files.
 *   Disable deep links for sensitive prediction state where supported, because shared URLs should not encode or preserve user-entered health/profile values.
-*   Do not print raw inputs, exact predictions, SHAP values, request headers, IP addresses, user agents, request IDs, or session IDs to stdout/stderr. Hugging Face Spaces app logs may expose stdout/stderr as operational logs.
+*   Do not print user-provided inputs, exact predictions, SHAP values, request headers, IP addresses, user agents, request IDs, or session IDs to stdout/stderr. Hugging Face Spaces app logs may expose stdout/stderr as operational logs.
 *   Do not include raw request or response payloads in exception messages, FastAPI middleware logs, telemetry callbacks, or error reports.
 *   Keep Hugging Face provider/infrastructure logs separate from model telemetry. Do not join access logs to aggregate monitoring counters.
 
@@ -640,10 +640,10 @@ GRADIO_FLAGGING_MODE=never
 *   **Endpoints:** Validate JSON responses and HTTP status codes (200/422).
 *   **Medical-Cost Inflation:** Verify that one medical-cost inflation factor is applied exactly once to q25/q50/q75/q90, national and age-group benchmarks, and positive and negative SHAP dollar values; that rounding occurs only after scaling; and that warning flags still use 2023-dollar thresholds.
 *   **Warning Flags:** Verify each warning flag is triggered only by its documented condition, uses validation-derived thresholds in 2023 dollars, and is returned as a structured API value without changing prediction values.
-*   **Monitoring Guardrails:** Verify app telemetry does not persist raw user inputs, prediction payloads, SHAP values, app-level IP addresses, user agents, request IDs, session IDs, or other linked identifiers. Verify persisted monitoring records match the aggregate telemetry schema and enforce small-cell suppression. Verify Gradio analytics and flagging are disabled in Hugging Face Spaces configuration.
+*   **Monitoring Guardrails:** Verify app telemetry does not persist user-provided inputs, prediction payloads, SHAP values, app-level IP addresses, user agents, request IDs, session IDs, or other linked identifiers. Verify persisted monitoring records match the aggregate telemetry schema and enforce small-cell suppression. Verify Gradio analytics and flagging are disabled in Hugging Face Spaces configuration.
 
 **End-to-End Tests**
-*   **User Journey:** Simulate full flow: user input → processing → cost prediction.
+*   **User Journey:** Simulate the full flow: user inputs → validation and deterministic input mapping → preprocessor input features → fitted preprocessor → model-ready features → estimator and prediction postprocessing → cost prediction.
 
 
 ## Technical Stack Recommendation
