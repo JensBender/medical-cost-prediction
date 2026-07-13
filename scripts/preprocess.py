@@ -16,7 +16,7 @@ Steps:
   9.  Preprocessing Pipeline (Stateful): Feature standardization, validation imputation, medical 
       feature engineering, scaling, and encoding.
   10. Data Verification: Automated checks for row integrity, missing values, data types and scaling.
-  11. Data Persistence: Export to parquet files for model training.
+  11. Artifact Persistence: Export model-ready datasets and the fitted preprocessor.
 
 For preprocessing experiments, exploratory data analysis, and detailed rationale, see:
 notebooks/1_eda_and_preprocessing.ipynb
@@ -25,7 +25,11 @@ Usage:
     .venv-train/Scripts/python scripts/preprocess.py
 """
 
+# Standard library imports
+from pathlib import Path
+
 # Third-party imports
+import joblib
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -56,6 +60,7 @@ from src.stats import create_stratification_bins
 # Paths (relative to project root)
 RAW_DATA_PATH = "data/h251.sas7bdat"
 OUTPUT_DIR = "data"
+PREPROCESSOR_OUTPUT_PATH = Path("models/preprocessor.joblib")
 
 
 # Main Preprocessing 
@@ -143,21 +148,26 @@ def main():
         PIPELINE_BINARY_FEATURES,
         strict=False,
     )
-    X_train_preprocessed = preprocessor.fit_transform(X_train)
-    X_val_preprocessed = preprocessor.transform(X_val)
-    X_test_preprocessed = preprocessor.transform(X_test)
+    preprocessor_input_features = PIPELINE_NUMERICAL_FEATURES + PIPELINE_NOMINAL_FEATURES + PIPELINE_BINARY_FEATURES
+    X_train_preprocessor_input = X_train.loc[:, preprocessor_input_features]
+    X_val_preprocessor_input = X_val.loc[:, preprocessor_input_features]
+    X_test_preprocessor_input = X_test.loc[:, preprocessor_input_features]
+
+    X_train_preprocessed = preprocessor.fit_transform(X_train_preprocessor_input)
+    X_val_preprocessed = preprocessor.transform(X_val_preprocessor_input)
+    X_test_preprocessed = preprocessor.transform(X_test_preprocessor_input)
     print(f"  Created preprocessed training, validation, and test DataFrames with {len(X_train_preprocessed.columns)} output features")
 
     # --- 10. Data Verification ---
     print("Step 10/11: Verifying preprocessed data...")
     for name, raw, processed in [
-        ("Train", X_train, X_train_preprocessed),
-        ("Val", X_val, X_val_preprocessed),
-        ("Test", X_test, X_test_preprocessed),
+        ("Train", X_train_preprocessor_input, X_train_preprocessed),
+        ("Val", X_val_preprocessor_input, X_val_preprocessed),
+        ("Test", X_test_preprocessor_input, X_test_preprocessed),
     ]:
         # Verify equal row counts between raw and processed data
         rows_match = "✅" if len(raw) == len(processed) else "❌"
-        # Verify all preprocessed features are numeric (floats/ints)
+        # Verify all model-ready features are numeric (floats/ints)
         all_numeric = "✅" if processed.apply(pd.api.types.is_numeric_dtype).all() else "❌"
         # Verify absence of missing values
         no_nulls = "✅" if processed.isnull().sum().sum() == 0 else "❌"
@@ -176,8 +186,8 @@ def main():
         scaled = "✅" if (is_mean_0 and is_std_1) else "❌"
         print(f"{name:5}: Rows Match: {rows_match} | All Numeric: {all_numeric} | No Missings: {no_nulls} | No Infinites: {no_infinites} | No Constants: {no_constants} | Unique IDs: {unique_ids} | Scaled (M=0, Std=1): {scaled}")
     
-    # --- 11. Data Persistence (save parquet files) ---
-    print("Step 11/11: Saving preprocessed data...")
+    # --- 11. Artifact Persistence ---
+    print("Step 11/11: Saving model-ready datasets and fitted preprocessor...")
     # Merge preprocessed X features, y target variable, and sample weights
     df_train_preprocessed = pd.concat([X_train_preprocessed, y_train, X_train[WEIGHT_COLUMN]], axis=1)
     df_val_preprocessed = pd.concat([X_val_preprocessed, y_val, X_val[WEIGHT_COLUMN]], axis=1)
@@ -186,7 +196,12 @@ def main():
     df_train_preprocessed.to_parquet(f"{OUTPUT_DIR}/training_data_preprocessed.parquet")
     df_val_preprocessed.to_parquet(f"{OUTPUT_DIR}/validation_data_preprocessed.parquet")
     df_test_preprocessed.to_parquet(f"{OUTPUT_DIR}/test_data_preprocessed.parquet")
-    print(f"  Saved preprocessed features, target variable, and sample weights as .parquet files in {OUTPUT_DIR} directory")
+    print(f"  Saved model-ready features, target variable, and sample weights as .parquet files in {OUTPUT_DIR} directory")
+
+    # Save preprocessing pipeline as .joblib file
+    PREPROCESSOR_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(preprocessor, PREPROCESSOR_OUTPUT_PATH)
+    print(f"  Saved fitted preprocessing pipeline to '{PREPROCESSOR_OUTPUT_PATH}'")
 
     print("\n✅ Preprocessing complete.")
 
