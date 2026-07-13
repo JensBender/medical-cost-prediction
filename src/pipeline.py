@@ -1,7 +1,6 @@
 # Third-party library imports
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from sklearn import set_config
 
 # Local imports
 from src.constants import (
@@ -17,9 +16,6 @@ from src.transformers import (
     RobustStandardScaler,
     RobustOneHotEncoder
 )
-
-# Ensure that the output of all scikit-learn transformers is a Pandas DataFrame
-set_config(transform_output="pandas")
 
 
 # --- Helper functions to create pipelines ---
@@ -63,7 +59,7 @@ def create_preprocessing_pipeline(
     """
     categorical_features = nominal_features + binary_features
 
-    return Pipeline(steps=[
+    pipeline = Pipeline(steps=[
         ("categorical_label_standardizer", CategoricalLabelStandardizer(binary_features, nominal_features, categorical_label_map=CATEGORY_LABELS_PIPELINE)),
         ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
         ("missing_value_imputer", ColumnTransformer(
@@ -85,6 +81,7 @@ def create_preprocessing_pipeline(
             verbose_feature_names_out=False
         ))
     ])
+    return pipeline.set_output(transform="pandas")
 
 
 # Missing value handling pipeline (component/sub-pipeline of the data preprocessing pipeline)
@@ -119,7 +116,7 @@ def create_missing_value_handling_pipeline(
     """
     # Combine categorical features for imputation
     categorical_features = nominal_features + binary_features
-    return Pipeline(steps=[
+    pipeline = Pipeline(steps=[
         ("categorical_label_standardizer", CategoricalLabelStandardizer(binary_features, nominal_features, categorical_label_map=CATEGORY_LABELS_PIPELINE)),
         ("missing_value_checker", MissingValueChecker(required_features, optional_features, strict=strict)),
         ("missing_value_imputer", ColumnTransformer(
@@ -131,3 +128,4 @@ def create_missing_value_handling_pipeline(
             verbose_feature_names_out=False  # Preserves input column names instead of adding prefix 
         ))
     ])
+    return pipeline.set_output(transform="pandas")
