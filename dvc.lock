@@ -9,16 +9,16 @@ stages:
       size: 207093760
     - path: scripts/preprocess.py
       hash: md5
-      md5: b8080c15bfb87a950959223a8da1ced6
-      size: 9625
+      md5: a8c27e5da3c379aa836114688fd8d3c3
+      size: 10498
     - path: src/constants.py
       hash: md5
-      md5: fb58d875a4e834067f7d11799ceb635e
-      size: 5111
+      md5: 8245960fad193b8e69f7ff6dba809878
+      size: 5125
     - path: src/pipeline.py
       hash: md5
-      md5: 5b5d8dc9431ce299e68a21f08c1bae31
-      size: 6850
+      md5: 80ccfa9f09741c79de4fb7f9af6f1f39
+      size: 6807
     - path: src/stats.py
       hash: md5
       md5: 72a169f9f274feffb68eb9c2e5b6c8d7
@@ -40,6 +40,10 @@ stages:
       hash: md5
       md5: 88c1393d697a77b153796db97a5f6a64
       size: 69302
+    - path: models/preprocessor.joblib
+      hash: md5
+      md5: 73a7b61c60459ab02f36262860e26d85
+      size: 11162
   baseline:
     cmd: .venv-train\Scripts\python scripts/train_baseline.py
     deps:

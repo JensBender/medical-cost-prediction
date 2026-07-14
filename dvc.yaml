@@ -1,8 +1,8 @@
 # DVC run commands:
 # - Run all stages: dvc repro
-# - Run preprocessing stage only: dvc repro preprocess
-# - Run baseline model training only: dvc repro baseline
-# - Run quantile regression training only: dvc repro quantile
+# - Run preprocessing stage only: ./.venv-train/Scripts/dvc.exe repro preprocess
+# - Run baseline model training only: ./.venv-train/Scripts/dvc.exe repro baseline
+# - Run quantile regression training only: ./.venv-train/Scripts/dvc.exe repro quantile
 
 stages:
   # Stage 1: Data Preprocessing
