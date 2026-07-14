@@ -29,9 +29,24 @@ model evaluation, and a planned FastAPI/Gradio app.
 - `docs/specs/technical_specifications.md`: technical design.
 - `docs/workflow/git_conventions.md`: commit message rules.
 
-## Writing Style
+## Writing style
 
-Write in clear, precise, plain language. Be accurate and specific. Avoid vague terms, marketing language, and decorative phrasing. Prefer short sentences. If something is uncertain, say so plainly.
+Use plain, natural English.
+
+- Write for a smart reader who is new to the project.
+- Use short sentences and common words.
+- Prefer concrete examples over abstract explanations.
+- Use active voice.
+- Put the main point first.
+- Explain necessary technical terms the first time you use them.
+- Avoid academic language, corporate jargon, marketing language, and buzzwords.
+- Do not use a complicated word when a simple word means the same thing.
+- Remove filler, repetition, and unnecessary background.
+- Keep headings and lists short.
+- Do not make the writing sound formal just because it is documentation.
+
+Before making changes to any document, rewrite sentences that a new team member might
+need to read twice.
 
 ## Commits
 
