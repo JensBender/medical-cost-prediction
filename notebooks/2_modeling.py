@@ -4822,6 +4822,9 @@ plot_quantile_subgroup_predictions(
 #     <br><br>
 #     The impact of postprocessing on q50 is negligible on the test set: non-negative clipping affects 1.1% of the weighted test population with a maximum adjustment of \$0.37, and monotonic quantile enforcement affects 0.2% with a maximum adjustment of \$0.01. Postprocessed q50 is therefore the appropriate SHAP target because it matches the plan-around estimate before inflation.
 #     <br><br>
+#     <strong>Why Not TreeExplainer?</strong><br>
+#     TreeExplainer is faster for raw tree models, but it would explain only the inner XGBoost estimator operating on the 40 model-ready features. It would not include the fitted preprocessor, inverse target transformation, non-negative and monotonic quantile postprocessing, or q50 selection. Use <code>shap.Explainer(..., algorithm="permutation")</code> with <code>predict_median_cost</code> callable so SHAP explains the q50 estimate based on the 27 interpretable preprocessor input features.
+#     <br><br>
 #     <strong>Feature Importance</strong><br>
 #     SHAP feature importance is based on the 27 preprocessor input features produced by several MEPS data preparation steps, but before the preprocessor performs imputation, medical feature engineering, scaling, and one-hot encoding. These preprocessor inputs are interpretable, semantically meaningful features. The callable follows the complete prediction path: <code>27 preprocessor input features → preprocessor → 40 model-ready features → quantile model prediction → inverse target transformation → quantile postprocessing → q50</code>.
 #     <br><br>
@@ -4829,8 +4832,130 @@ plot_quantile_subgroup_predictions(
 #     <br><br>
 #     Treat SHAP and native importance as complementary rather than interchangeable. SHAP explains the postprocessed q50 prediction over 27 interpretable preprocessor input features and reports dollar impacts. Native <code>total_gain</code> summarizes how the joint four-quantile estimator used 40 model-ready features during training.
 #     <br><br>
+#     <strong>Background Data</strong><br>
+#     The background data is a 200–500 row sample from the training preprocessor input features, drawn using weighted sampling with replacement. SHAP treats background rows as equal-weight, so sampling with MEPS person weights (<code>PERWT23F</code>) makes the background approximate the U.S. adult population distribution. High-weight respondents may appear more than once. That is expected because duplicates represent their larger population share. The SHAP baseline is the mean postprocessed q50 prediction across those background rows.
+#     <br><br>
+#     Background data validation: Compare the background sample's SHAP baseline against the full weighted training baseline. Accept the sample if <code>abs(relative_difference) &lt;= 10%</code>. If it exceeds 10%, increase the background size before creating app artifacts. This is an initial validation, consider stronger validation criteria.
+#     <br><br>
+#     <strong>Prediction Service Latency</strong><br>
+#     A normal prediction scores one user row. A SHAP explanation scores many masked versions of that row against the background. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks. The default <code>max_evals=500</code> permits 9 complete rounds, or 495 masks. With a 300-row background this is at most about 148,500 synthetic predictions. SHAP evaluates these rows in batches, but this remains the main expected source of prediction-service latency.
+#     <br><br>
+#     Select the production SHAP configuration empirically. Benchmark <code>max_evals</code> and background size together: <code>max_evals</code> controls the number of mask evaluations, background size controls baseline stability, and latency scales roughly as <code>mask evaluations × background rows</code>. Compare candidate configurations with a larger reference configuration, then choose the smallest one that keeps the top cost drivers, their signs, and dollar impacts stable while meeting the server-side latency target (&lt;1 second under NFR-04). Stable top drivers and signs matter more than exact dollar impacts for low-ranked features.
+#     <br><br>
+#     <strong>Communicating SHAP Values</strong>
+#     <ul>
+#         <li><strong>End users (cost-driver overview):</strong> "These factors show which of your answers moved your estimate up or down the most."</li>
+#         <li><strong>End users (single cost driver):</strong> "Your insurance answer, <code>Public Only</code>, lowered this estimate by about \$99."</li>
+#         <li><strong>Non-technical stakeholders:</strong> "The estimate starts from an average predicted cost for a representative sample of U.S. adults. Each person's inputs then move the estimate up or down from that starting point. Because each feature is evaluated in the context of that person's other features, the same answer can have a different dollar impact for different people. For example, an insurance answer can affect the estimate differently for someone with several chronic conditions than for someone who is otherwise healthy."</li>
+#     </ul>
+#     <strong>SHAP Limitations</strong>
+#     <ul>
+#         <li><strong>Not Causal:</strong> SHAP values describe how inputs moved this fitted model's q50 estimate relative to the SHAP baseline. They do not show what would happen if a person's health, coverage, or utilization changed.</li>
+#         <li><strong>Background-Dependent:</strong> The SHAP baseline and dollar impacts depend on the selected background sample. A different background can change the explanation.</li>
+#         <li><strong>Correlated Features:</strong> EDA shows notable correlations between ADL/IADL help (Spearman's ρ=0.60) and between arthritis/joint pain (ρ=0.56). When features are correlated, SHAP can distribute credit unevenly between them. For example, arthritis and joint pain both signal similar health burden, but one prediction may assign more dollar impact to arthritis and another to joint pain. Interpret correlated features as a group and do not treat small ranking differences between them as meaningful.</li>
+#         <li><strong>Predicted, Not Actual Costs:</strong> SHAP explains the model's prediction, not the true drivers of real-world medical costs. If the model overstates, understates, or misses a relationship, the SHAP values reflect that error. SHAP does not fix model limitations: if the model underpredicts high-cost cases, reflects noisy survey data, or lacks important predictors, SHAP explains those imperfect predictions.</li>
+#     </ul>
+#     <strong>SHAP Metadata</strong><br>
+#     Store a small metadata file alongside the SHAP background artifact for developers and prediction-service auditability (schema template below).
+#     <pre>{
+#   "schema_version": 1,
+#   "artifacts": {
+#     "model": "models/xgb_quantile_model.joblib",
+#     "preprocessor": "models/preprocessor.joblib",
+#     "background": "app/data/shap_background.parquet"
+#   },
+#   "data_source": "MEPS 2023 (HC-251), training split",
+#   "reference_population": "U.S. civilian noninstitutionalized adults represented by MEPS training rows",
+#   "prediction_target": {
+#     "output": "q50",
+#     "meaning": "plan-around estimate, predicted median out-of-pocket cost",
+#     "unit": "USD",
+#     "currency_year": 2023,
+#     "postprocessed": true,
+#     "inflation_adjusted": false
+#   },
+#   "background_sample": {
+#     "feature_set": "preprocessor_input",
+#     "feature_count": 27,
+#     "rows": 300,
+#     "sampling_method": "weighted sample with replacement using PERWT23F",
+#     "random_state": 42
+#   },
+#   "explainer_contract": {
+#     "algorithm": "permutation",
+#     "prediction_function": "predict_median_cost",
+#     "input_feature_set": "preprocessor_input",
+#     "input_feature_count": 27,
+#     "prediction_pipeline": [
+#       {
+#         "operation": "preprocess",
+#         "artifact_ref": "preprocessor",
+#         "output_feature_set": "model_ready",
+#         "output_feature_count": 40
+#       },
+#       {
+#         "operation": "predict_quantiles",
+#         "artifact_ref": "model",
+#         "outputs": ["q25", "q50", "q75", "q90"],
+#         "includes_inverse_target_transformation": true
+#       },
+#       {
+#         "operation": "postprocess_quantiles",
+#         "rules": ["non_negative", "monotonic"]
+#       },
+#       {
+#         "operation": "select_quantile",
+#         "quantile": "q50"
+#       }
+#     ]
+#   },
+#   "background_validation": {
+#     "method": "baseline_relative_difference",
+#     "comparison": "compare mean postprocessed q50 of background vs. full training data",
+#     "background_baseline_2023_usd": null,
+#     "weighted_training_baseline_2023_usd": null,
+#     "relative_difference": null,
+#     "absolute_relative_difference": null,
+#     "max_allowed_absolute_relative_difference": 0.10,
+#     "passed": null
+#   }
+# }</pre><br>
+#     <strong>App/API Implementation Plan</strong>
+#     <ol>
+#         <li><strong>Create Artifacts:</strong> Persist the fitted preprocessor as <code>models/preprocessor.joblib</code>, the fitted model as <code>models/xgb_quantile_model.joblib</code>, the SHAP background data as <code>app/data/shap_background.parquet</code>, and the SHAP metadata as <code>app/data/shap_metadata.json</code>.</li>
+#         <li><strong>During Application Startup:</strong> Load the preprocessor, quantile model, and SHAP background. Build the explainer once.</li>
+#         <li><strong>At Inference Time:</strong> Map the user inputs to the preprocessor inputs. Predict all quantiles using the fitted preprocessor and model, postprocess them, and compute permutation SHAP for q50. Apply medical-cost inflation to displayed predictions, SHAP baseline, and dollar impacts.</li>
+#     </ol>
+# </div><div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">SHAP</h2>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ SHapley Additive exPlanations (SHAP) will be used for both model audit and user-facing prediction explanations.
+#     <br><br>
+#     <strong>SHAP Approach</strong><br>
+#     SHAP will be used in two ways:
+#     <ol>
+#         <li><strong>Feature Importance Analysis for Model Audit:</strong> Rank the features by mean absolute SHAP value (<code>mean(|SHAP|)</code>) across many predictions (sample-weighted) to identify which features have the largest dollar impact on predicted median costs (postprocessed q50). Compare this SHAP feature importance with native XGBoost importance to audit whether the model relies on plausible cost drivers.</li>
+#         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use individual SHAP values to show which inputs moved that user's plan-around estimate above or below the SHAP baseline. This is a product feature, not just a diagnostic. It makes the prediction more useful for financial planning by explaining the main cost drivers. Use cautious wording ("moved the estimate") and avoid causal language.</li>
+#     </ol>
+#     <strong>SHAP Prediction Target</strong><br>
+#     SHAP explanations focus on the q50 plan-around estimate (predicted median cost). The q25, q75, and q90 outputs define the planning range, but should not be mixed into the q50 explanation. 
+#     <br><br>
+#     <strong>SHAP Explainer Callable</strong><br>
+#     SHAP can explain a callable prediction function, not only a raw model object. The saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> wrapping the inner XGBoost estimator, but the explainer calls <code>predict_median_cost</code> instead. This callable converts 27 preprocessor input features into 40 model-ready features, predicts all four quantiles, applies the inverse target transformation, enforces non-negative and monotonic quantiles (<code>q25 ≤ q50 ≤ q75 ≤ q90</code>), and selects q50. Medical-cost inflation remains outside the callable and is applied only during API/UI output formatting.
+#     <br><br>
+#     The impact of postprocessing on q50 is negligible on the test set: non-negative clipping affects 1.1% of the weighted test population with a maximum adjustment of \$0.37, and monotonic quantile enforcement affects 0.2% with a maximum adjustment of \$0.01. Postprocessed q50 is therefore the appropriate SHAP target because it matches the plan-around estimate before inflation.
+#     <br><br>
 #     <strong>Why Not TreeExplainer?</strong><br>
 #     TreeExplainer is faster for raw tree models, but it would explain only the inner XGBoost estimator operating on the 40 model-ready features. It would not include the fitted preprocessor, inverse target transformation, non-negative and monotonic quantile postprocessing, or q50 selection. Use <code>shap.Explainer(..., algorithm="permutation")</code> with <code>predict_median_cost</code> callable so SHAP explains the q50 estimate based on the 27 interpretable preprocessor input features.
+#     <br><br>
+#     <strong>Feature Importance</strong><br>
+#     SHAP feature importance is based on the 27 preprocessor input features produced by several MEPS data preparation steps, but before the preprocessor performs imputation, medical feature engineering, scaling, and one-hot encoding. These preprocessor inputs are interpretable, semantically meaningful features. The callable follows the complete prediction path: <code>27 preprocessor input features → preprocessor → 40 model-ready features → quantile model prediction → inverse target transformation → quantile postprocessing → q50</code>.
+#     <br><br>
+#     XGBoost native feature importance is based on all quantiles (q25, q50, q75, q90) and the 40 model-ready features. These are the scaled numerical features, one-hot encoded nominal features, passed-through binary features, and derived medical features (e.g., chronic condition count) that the trees use for splits. Use <code>total_gain</code>, which measures the total reduction in the training objective from all splits using that feature. For this fitted multi-quantile model, it is aggregated across the q25, q50, q75, and q90 trees, it is not q50-specific and is not measured in dollars. Report <code>weight</code> and <code>gain</code> as supporting diagnostics. <code>weight</code> is the number of splits using the feature, while <code>gain</code> is the average objective improvement per split. Together, they show whether a high total gain comes from frequent modest improvements or fewer high-value splits.
+#     <br><br>
+#     Treat SHAP and native importance as complementary rather than interchangeable. SHAP explains the postprocessed q50 prediction over 27 interpretable preprocessor input features and reports dollar impacts. Native <code>total_gain</code> summarizes how the joint four-quantile estimator used 40 model-ready features during training.
 #     <br><br>
 #     <strong>Background Data</strong><br>
 #     The background data is a 200–500 row sample from the training preprocessor input features, drawn using weighted sampling with replacement. SHAP treats background rows as equal-weight, so sampling with MEPS person weights (<code>PERWT23F</code>) makes the background approximate the U.S. adult population distribution. High-weight respondents may appear more than once. That is expected because duplicates represent their larger population share. The SHAP baseline is the mean postprocessed q50 prediction across those background rows.
@@ -4933,6 +5058,11 @@ plot_quantile_subgroup_predictions(
 #     📌 Prototype SHAP code implementation.
 # </div>
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Prototype SHAP code implementation.
+# </div>
+
 # %%
 # 1. Prepare SHAP inputs and load the fitted artifacts
 SHAP_INPUT_FEATURES = (
@@ -4949,8 +5079,189 @@ X_train_preprocessor_input = df_raw_train.loc[:, SHAP_INPUT_FEATURES].copy()
 X_test_preprocessor_input = df_raw_test.loc[:, SHAP_INPUT_FEATURES].copy()
 
 preprocessor = load_model("../models/preprocessor.joblib", verbose=False)
+xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)# 1. Prepare SHAP inputs and load the fitted artifacts
+SHAP_INPUT_FEATURES = (
+    PIPELINE_NUMERICAL_FEATURES
+    + PIPELINE_NOMINAL_FEATURES
+    + PIPELINE_BINARY_FEATURES
+)
+
+df_raw_train, _, _ = prepare_human_readable_split_data(
+    TRAIN_DATA_PATH,
+    "training",
+)
+X_train_preprocessor_input = df_raw_train.loc[:, SHAP_INPUT_FEATURES].copy()
+X_test_preprocessor_input = df_raw_test.loc[:, SHAP_INPUT_FEATURES].copy()
+
+preprocessor = load_model("../models/preprocessor.joblib", verbose=False)
 xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
 
+# %%
+# 2. Define the q50 prediction callable that SHAP will explain
+def predict_median_cost(X):
+    """Predict postprocessed q50 cost from preprocessor input features."""
+    if isinstance(X, pd.DataFrame):
+        X_preprocessor_input = X.loc[:, SHAP_INPUT_FEATURES]
+    else:
+        # SHAP arrays follow the column order defined by the background data.
+        X = np.asarray(X)
+        if X.ndim != 2 or X.shape[1] != len(SHAP_INPUT_FEATURES):
+            raise ValueError(
+                "SHAP input must have shape "
+                f"(n_rows, {len(SHAP_INPUT_FEATURES)})."
+            )
+        X_preprocessor_input = pd.DataFrame(X, columns=SHAP_INPUT_FEATURES)
+
+    X_model_ready = preprocessor.transform(X_preprocessor_input)
+    quantile_predictions = xgb_quantile_model.predict(X_model_ready)
+    return postprocess_quantile_predictions(quantile_predictions)[:, 1]
+
+# %%
+# Sanity check: confirm that the preprocessor reproduces the training features
+X_train_reprocessed = preprocessor.transform(X_train_preprocessor_input)
+if not X_train_reprocessed.columns.equals(X_train_preprocessed.columns):
+    raise ValueError(
+        "Persisted preprocessor output columns do not match the quantile model inputs."
+    )
+np.testing.assert_allclose(
+    X_train_reprocessed.to_numpy(dtype=float),
+    X_train_preprocessed.to_numpy(dtype=float),
+    rtol=0,
+    atol=1e-12,
+    err_msg="Persisted preprocessor does not reproduce the saved training features.",
+)
+del X_train_reprocessed
+
+# %%
+# 3. Create and validate the survey-weighted background sample
+SHAP_BACKGROUND_N = 300
+SHAP_BASELINE_REL_DIFF_MAX = 0.10
+
+shap_background = X_train_preprocessor_input.sample(
+    n=SHAP_BACKGROUND_N,
+    weights=w_train,
+    replace=True,
+    random_state=RANDOM_STATE,
+)
+
+background_baseline = predict_median_cost(shap_background).mean()
+training_baseline = np.average(
+    predict_median_cost(X_train_preprocessor_input),
+    weights=w_train,
+)
+baseline_relative_difference = abs(background_baseline / training_baseline - 1)
+
+print(f"SHAP background baseline: ${background_baseline:,.2f}")
+print(f"Full training baseline:   ${training_baseline:,.2f}")
+print(f"Relative difference:      {baseline_relative_difference:.1%}")
+
+if baseline_relative_difference > SHAP_BASELINE_REL_DIFF_MAX:
+    raise ValueError(
+        "SHAP background baseline differs from the weighted training baseline by "
+        f"{baseline_relative_difference:.1%}, which exceeds the "
+        f"{SHAP_BASELINE_REL_DIFF_MAX:.0%} acceptance threshold. "
+        "Resample the background data or increase SHAP_BACKGROUND_N."
+    )
+
+# %%
+# 4. Build the explainer and explain one test row
+shap_masker = shap.maskers.Independent(
+    shap_background,
+    max_samples=SHAP_BACKGROUND_N,
+)
+explainer = shap.Explainer(
+    predict_median_cost,
+    shap_masker,
+    algorithm="permutation",
+    seed=RANDOM_STATE,
+)
+
+example_idx = 0
+X_test_example = X_test_preprocessor_input.iloc[[example_idx]]
+shap_values = explainer(X_test_example)
+
+# %%
+# 5. Check local accuracy and display the feature contributions
+baseline = shap_values.base_values[0]
+example_prediction = predict_median_cost(X_test_example)[0]
+example_actual = y_test.loc[X_test_example.index[0]]
+example_shap_sum = shap_values.values[0].sum()
+
+example_shap_result = pd.DataFrame({
+    "Metric": [
+        "Baseline",
+        "Feature contribution sum",
+        "Predicted median cost",
+        "Actual cost",
+        "Baseline + SHAP sum",
+        "Additivity error",
+    ],
+    "Value": [
+        baseline,
+        example_shap_sum,
+        example_prediction,
+        example_actual,
+        baseline + example_shap_sum,
+        abs(example_prediction - (baseline + example_shap_sum)),
+    ],
+})
+
+display(
+    example_shap_result.style
+    .pipe(add_table_caption, f"Example SHAP Result (Test Row {example_idx})")
+    .format({"Value": "${:,.2f}"})
+    .hide()
+)
+
+
+def format_shap_input(feature, value):
+    """Return one preprocessor input value in a readable format."""
+    if pd.isna(value):
+        return "Missing"
+
+    category_labels = CATEGORY_LABELS_EDA.get(feature)
+    if category_labels is not None:
+        try:
+            category_key = int(value)
+        except (TypeError, ValueError):
+            category_key = value
+        value = category_labels.get(category_key, value)
+
+    if isinstance(value, (int, float, np.integer, np.floating)):
+        if np.isclose(value, round(value)):
+            return f"{value:,.0f}"
+        return f"{value:,.1f}"
+    return value
+
+
+example_row = X_test_example.iloc[0]
+example_shap_feature_values = pd.DataFrame({
+    "Feature": [
+        DISPLAY_LABELS.get(feature, feature)
+        for feature in SHAP_INPUT_FEATURES
+    ],
+    "Input Value": [
+        format_shap_input(feature, example_row[feature])
+        for feature in SHAP_INPUT_FEATURES
+    ],
+    "SHAP Value": shap_values.values[0],
+}).sort_values(
+    "SHAP Value",
+    key=lambda values: values.abs(),
+    ascending=False,
+)
+
+display(
+    example_shap_feature_values.style
+    .pipe(
+        add_table_caption,
+        f"Example SHAP Contributions (Test Row {example_idx})",
+    )
+    .format({
+        "SHAP Value": lambda value: f"{'-' if value < 0 else ''}${abs(value):,.1f}",
+    })
+    .hide()
+)
 # %%
 # 2. Define the q50 prediction callable that SHAP will explain
 def predict_median_cost(X):
@@ -5135,6 +5446,173 @@ display(
 
 # %%
 # Benchmark SHAP latency and explanation stability across background sizes and max_evals settings.
+# The benchmark compares candidate configurations against a larger reference configuration.
+RUN_SHAP_EVAL_BENCHMARK = False
+
+SHAP_BENCHMARK_ROWS = 20
+SHAP_TOP_K = 3
+SHAP_BACKGROUND_GRID = [50, 100, 200, 300]
+SHAP_PERMUTATION_ROUND_GRID = [3, 6, 12]
+SHAP_MASKS_PER_ROUND = 2 * len(SHAP_INPUT_FEATURES) + 1
+SHAP_MAX_EVALS_GRID = [
+    rounds * SHAP_MASKS_PER_ROUND
+    for rounds in SHAP_PERMUTATION_ROUND_GRID
+]
+SHAP_REFERENCE_BACKGROUND_N = 500
+SHAP_REFERENCE_MAX_EVALS = 24 * SHAP_MASKS_PER_ROUND
+
+
+def estimate_mask_evaluations(max_evals, n_features):
+    """Estimate permutation rounds and mask evaluations for a feature count."""
+    masks_per_round = 2 * n_features + 1
+    rounds = max_evals // masks_per_round
+    masks = rounds * masks_per_round
+    return rounds, masks
+
+
+def build_shap_candidate_explainer(background_n, random_state=RANDOM_STATE):
+    """Build a SHAP explainer with a weighted MEPS background sample."""
+    background = X_train_preprocessor_input.sample(
+        n=background_n,
+        weights=w_train,
+        replace=True,
+        random_state=random_state,
+    )
+    masker = shap.maskers.Independent(background, max_samples=background_n)
+    return shap.Explainer(
+        predict_median_cost,
+        masker,
+        algorithm="permutation",
+        seed=random_state,
+    )
+
+
+def explain_rows_for_evaluation_budget(explainer, X_eval, max_evals):
+    """Return SHAP values, base values, predictions, and per-row latency for one evaluation budget."""
+    values = []
+    base_values = []
+    predictions = []
+    latencies = []
+
+    for _, row in X_eval.iterrows():
+        row_frame = row.to_frame().T
+        start_time = perf_counter()
+        explanation = explainer(row_frame, max_evals=max_evals, silent=True)
+        latencies.append(perf_counter() - start_time)
+        values.append(explanation.values[0])
+        base_values.append(np.asarray(explanation.base_values).reshape(-1)[0])
+        predictions.append(predict_median_cost(row_frame)[0])
+
+    return np.vstack(values), np.asarray(base_values), np.asarray(predictions), np.asarray(latencies)
+
+
+def summarize_shap_evaluation_budget(
+    *,
+    background_n,
+    max_evals,
+    values,
+    base_values,
+    predictions,
+    latencies,
+    reference_values,
+    reference_base_values,
+    top_k=SHAP_TOP_K,
+):
+    """Summarize latency and stability against the reference SHAP evaluation budget."""
+    top_k_overlaps = []
+    top_k_sign_matches = []
+    top_k_abs_deltas = []
+
+    for row_idx in range(reference_values.shape[0]):
+        reference_top = np.argsort(np.abs(reference_values[row_idx]))[::-1][:top_k]
+        candidate_top = np.argsort(np.abs(values[row_idx]))[::-1][:top_k]
+        top_k_overlaps.append(len(set(reference_top) & set(candidate_top)) / top_k)
+        top_k_sign_matches.append(
+            np.mean(np.sign(values[row_idx, reference_top]) == np.sign(reference_values[row_idx, reference_top]))
+        )
+        top_k_abs_deltas.append(np.mean(np.abs(values[row_idx, reference_top] - reference_values[row_idx, reference_top])))
+
+    rounds, masks = estimate_mask_evaluations(max_evals, values.shape[1])
+    additivity_abs_error = np.abs(predictions - (base_values + values.sum(axis=1)))
+
+    return {
+        "background_n": background_n,
+        "max_evals": max_evals,
+        "estimated_rounds": rounds,
+        "estimated_masks": masks,
+        "estimated_synthetic_rows": masks * background_n,
+        "median_latency_s": np.median(latencies),
+        "p90_latency_s": np.percentile(latencies, 90),
+        "p95_latency_s": np.percentile(latencies, 95),
+        "mean_top_k_overlap": np.mean(top_k_overlaps),
+        "mean_top_k_sign_match": np.mean(top_k_sign_matches),
+        "median_top_k_abs_delta": np.median(top_k_abs_deltas),
+        "median_baseline_abs_delta": np.median(np.abs(base_values - reference_base_values)),
+        "mean_all_feature_abs_delta": np.mean(np.abs(values - reference_values)),
+        "median_additivity_abs_error": np.median(additivity_abs_error),
+        "p95_additivity_abs_error": np.percentile(additivity_abs_error, 95),
+    }
+
+
+if RUN_SHAP_EVAL_BENCHMARK:
+    from time import perf_counter
+
+    n_eval_rows = min(SHAP_BENCHMARK_ROWS, len(X_test_preprocessor_input))
+    X_shap_benchmark = X_test_preprocessor_input.sample(n=n_eval_rows, random_state=RANDOM_STATE)
+
+    reference_explainer = build_shap_candidate_explainer(SHAP_REFERENCE_BACKGROUND_N)
+    reference_values, reference_base_values, reference_predictions, reference_latencies = explain_rows_for_evaluation_budget(
+        reference_explainer,
+        X_shap_benchmark,
+        max_evals=SHAP_REFERENCE_MAX_EVALS,
+    )
+
+    benchmark_results = []
+    for background_n in SHAP_BACKGROUND_GRID:
+        candidate_explainer = build_shap_candidate_explainer(background_n)
+        for max_evals in SHAP_MAX_EVALS_GRID:
+            candidate_values, candidate_base_values, candidate_predictions, candidate_latencies = explain_rows_for_evaluation_budget(
+                candidate_explainer,
+                X_shap_benchmark,
+                max_evals=max_evals,
+            )
+            benchmark_results.append(
+                summarize_shap_evaluation_budget(
+                    background_n=background_n,
+                    max_evals=max_evals,
+                    values=candidate_values,
+                    base_values=candidate_base_values,
+                    predictions=candidate_predictions,
+                    latencies=candidate_latencies,
+                    reference_values=reference_values,
+                    reference_base_values=reference_base_values,
+                )
+            )
+
+    shap_evaluation_benchmark = pd.DataFrame(benchmark_results).sort_values(
+        ["p95_latency_s", "mean_top_k_overlap"],
+        ascending=[True, False],
+    )
+
+    display(
+        shap_evaluation_benchmark.style
+        .pipe(add_table_caption, "SHAP Evaluation Budget Benchmark")
+        .format({
+            "median_latency_s": "{:.2f}",
+            "p90_latency_s": "{:.2f}",
+            "p95_latency_s": "{:.2f}",
+            "mean_top_k_overlap": "{:.1%}",
+            "mean_top_k_sign_match": "{:.1%}",
+            "median_top_k_abs_delta": "${:,.0f}",
+            "median_baseline_abs_delta": "${:,.0f}",
+            "mean_all_feature_abs_delta": "${:,.0f}",
+            "median_additivity_abs_error": "${:,.2f}",
+            "p95_additivity_abs_error": "${:,.2f}",
+        })
+        .hide()
+    )
+else:
+    print("Set RUN_SHAP_EVAL_BENCHMARK = True to run the SHAP evaluation budget benchmark.")# Benchmark SHAP latency and explanation stability across background sizes and max_evals settings.
 # The benchmark compares candidate configurations against a larger reference configuration.
 RUN_SHAP_EVAL_BENCHMARK = False
 
