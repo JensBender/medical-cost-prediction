@@ -5039,7 +5039,7 @@ X_test_example = X_test_preprocessor_input.iloc[[example_idx]]
 shap_values = explainer(X_test_example)
 
 # %%
-# 5. Display SHAP results for a single person
+# 5. Display the SHAP explanation summary for a single person
 baseline = shap_values.base_values[0]
 example_prediction = predict_median_cost(X_test_example)[0]
 example_actual = y_test.loc[X_test_example.index[0]]
@@ -5066,7 +5066,7 @@ example_shap_result = pd.DataFrame({
 
 display(
     example_shap_result.style
-    .pipe(add_table_caption, f"Example SHAP Result (Test Row {example_idx})")
+    .pipe(add_table_caption, f"SHAP Explanation Summary (Test Row {example_idx})")
     .format({"Value": "${:,.2f}"})
     .hide()
 )
@@ -5080,7 +5080,7 @@ display(
 # </div>
 
 # %%
-# Display SHAP feature contributions for a single person 
+# Display the SHAP contribution breakdown by feature for a single person
 def format_shap_input(feature, value):
     """Return one preprocessor input value in a readable format."""
     if pd.isna(value):
@@ -5122,7 +5122,7 @@ display(
     example_shap_feature_values.style
     .pipe(
         add_table_caption,
-        f"Example SHAP Contributions (Test Row {example_idx})",
+        f"SHAP Contribution Breakdown by Feature (Test Row {example_idx})",
     )
     .format({
         "SHAP Value": lambda value: f"{'-' if value < 0 else ''}${abs(value):,.1f}",
