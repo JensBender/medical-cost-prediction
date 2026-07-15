@@ -4811,36 +4811,36 @@ plot_quantile_subgroup_predictions(
 #     <strong>SHAP Approach</strong><br>
 #     SHAP will be used in two ways:
 #     <ol>
-#         <li><strong>Feature Importance Analysis for Model Audit:</strong> Rank the features by mean absolute SHAP value (<code>mean(|SHAP|)</code>) across many predictions (sample-weighted) to identify which features have the largest dollar impact on predicted median costs (postprocessed q50). Compare this SHAP feature importance with native XGBoost importance to audit whether the model relies on plausible cost drivers.</li>
+#         <li><strong>Feature Importance Analysis for Model Audit:</strong> Rank the features by mean absolute SHAP value (<code>mean(|SHAP|)</code>) across many predictions (survey-weighted) to identify which features have the largest dollar impact on predicted median costs (postprocessed q50). Compare this SHAP feature importance with native XGBoost importance to audit whether the model relies on plausible cost drivers.</li>
 #         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use individual SHAP values to show which inputs moved that user's plan-around estimate above or below the SHAP baseline. This is a product feature, not just a diagnostic. It makes the prediction more useful for financial planning by explaining the main cost drivers. Use cautious wording ("moved the estimate") and avoid causal language.</li>
 #     </ol>
-#     <strong>SHAP Prediction Target</strong><br>
+#     <strong>SHAP Explanation Target</strong><br>
 #     SHAP explanations focus on the q50 plan-around estimate (predicted median cost). The q25, q75, and q90 outputs define the planning range, but should not be mixed into the q50 explanation. 
 #     <br><br>
 #     <strong>SHAP Explainer Callable</strong><br>
 #     SHAP can explain a callable prediction function, not only a raw model object. The saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> wrapping the inner XGBoost estimator, but the explainer calls <code>predict_median_cost</code> instead. This callable converts 27 preprocessor input features into 40 model-ready features, predicts all four quantiles, applies the inverse target transformation, enforces non-negative and monotonic quantiles (<code>q25 ≤ q50 ≤ q75 ≤ q90</code>), and selects q50. Medical-cost inflation remains outside the callable and is applied only during API/UI output formatting.
 #     <br><br>
-#     The impact of postprocessing on q50 is negligible on the test set: non-negative clipping affects 1.1% of the weighted test population with a maximum adjustment of \$0.37, and monotonic quantile enforcement affects 0.2% with a maximum adjustment of \$0.01. Postprocessed q50 is therefore the appropriate SHAP target because it matches the plan-around estimate before inflation.
+#     The impact of postprocessing on q50 is negligible on the test set: non-negative clipping affects 1.1% of the weighted test population with a maximum adjustment of \$0.37, and monotonic quantile enforcement affects 0.2% with a maximum adjustment of \$0.01. Postprocessed q50 is therefore the appropriate SHAP target because it matches the plan-around estimate (before inflation).
 #     <br><br>
 #     <strong>Why Not TreeExplainer?</strong><br>
-#     TreeExplainer is faster for raw tree models, but it would explain only the inner XGBoost estimator operating on the 40 model-ready features. It would not include the fitted preprocessor, inverse target transformation, non-negative and monotonic quantile postprocessing, or q50 selection. Use <code>shap.Explainer(..., algorithm="permutation")</code> with <code>predict_median_cost</code> callable so SHAP explains the q50 estimate based on the 27 interpretable preprocessor input features.
+#     TreeExplainer is faster for raw tree models, but it would explain only the inner XGBoost estimator operating on the 40 model-ready features. It would not include the fitted preprocessor, inverse target transformation, non-negative and monotonic quantile postprocessing, or q50 selection. Use <code>shap.Explainer(..., algorithm="permutation")</code> with <code>predict_median_cost</code> callable so SHAP explains the q50 estimate based on the 27 preprocessor input features. These preprocessing pipeline inputs are interpretable, semantically meaningful features.
 #     <br><br>
 #     <strong>Feature Importance</strong><br>
-#     SHAP feature importance is based on the 27 preprocessor input features produced by several MEPS data preparation steps, but before the preprocessor performs imputation, medical feature engineering, scaling, and one-hot encoding. These preprocessor inputs are interpretable, semantically meaningful features. The callable follows the complete prediction path: <code>27 preprocessor input features → preprocessor → 40 model-ready features → quantile model prediction → inverse target transformation → quantile postprocessing → q50</code>.
+#     SHAP feature importance is based on the preprocessor input features produced by several MEPS data preparation steps, but before the preprocessor performs imputation, medical feature engineering, scaling, and one-hot encoding. The callable follows the complete prediction path: <code>27 preprocessor input features → preprocessor → 40 model-ready features → quantile model prediction → inverse target transformation → quantile postprocessing → q50</code>.
 #     <br><br>
-#     XGBoost native feature importance is based on all quantiles (q25, q50, q75, q90) and the 40 model-ready features. These are the scaled numerical features, one-hot encoded nominal features, passed-through binary features, and derived medical features (e.g., chronic condition count) that the trees use for splits. Use <code>total_gain</code>, which measures the total reduction in the training objective from all splits using that feature. For this fitted multi-quantile model, it is aggregated across the q25, q50, q75, and q90 trees, it is not q50-specific and is not measured in dollars. Report <code>weight</code> and <code>gain</code> as supporting diagnostics. <code>weight</code> is the number of splits using the feature, while <code>gain</code> is the average objective improvement per split. Together, they show whether a high total gain comes from frequent modest improvements or fewer high-value splits.
+#     XGBoost native feature importance is based on all quantiles (q25, q50, q75, q90) and the 40 model-ready features. These are the scaled numerical features, one-hot encoded nominal features, passed-through binary features, and derived medical features (e.g., chronic condition count) that the trees use for splits. Use <code>total_gain</code>, which measures the total reduction in the training objective from all splits using that feature. For this fitted multi-quantile model, it is aggregated across the q25, q50, q75, and q90 trees, it is not q50-specific and is not in dollar-scale. Report <code>weight</code> and <code>gain</code> as supporting diagnostics. <code>weight</code> is the number of splits using the feature, while <code>gain</code> is the average objective improvement per split. Together, they show whether a high total gain comes from frequent modest improvements or fewer high-value splits.
 #     <br><br>
-#     Treat SHAP and native importance as complementary rather than interchangeable. SHAP explains the postprocessed q50 prediction over 27 interpretable preprocessor input features and reports dollar impacts. Native <code>total_gain</code> summarizes how the joint four-quantile estimator used 40 model-ready features during training.
+#     Treat SHAP and XGBoost native importance as complementary rather than interchangeable. SHAP explains the postprocessed q50 prediction over 27 interpretable preprocessor input features and reports dollar impacts. Native <code>total_gain</code> summarizes how the joint four-quantile estimator used 40 model-ready features during training.
 #     <br><br>
 #     <strong>Background Data</strong><br>
-#     The background data is a 200–500 row sample from the training preprocessor input features, drawn using weighted sampling with replacement. SHAP treats background rows as equal-weight, so sampling with MEPS person weights (<code>PERWT23F</code>) makes the background approximate the U.S. adult population distribution. High-weight respondents may appear more than once. That is expected because duplicates represent their larger population share. The SHAP baseline is the mean postprocessed q50 prediction across those background rows.
+#     The background data is a 200–500 row sample from the training data (with preprocessor input features), drawn using weighted sampling with replacement. SHAP treats background rows as equal-weight, so sampling with MEPS person weights (<code>PERWT23F</code>) makes the background approximate the U.S. adult population distribution. High-weight respondents may appear more than once. That is expected because duplicates represent their larger population share. The SHAP baseline is the mean postprocessed q50 prediction across those background rows.
 #     <br><br>
 #     Background data validation: Compare the background sample's SHAP baseline against the full weighted training baseline. Accept the sample if <code>abs(relative_difference) &lt;= 10%</code>. If it exceeds 10%, increase the background size before creating app artifacts. This is an initial validation, consider stronger validation criteria.
 #     <br><br>
 #     <strong>Prediction Service Latency</strong><br>
-#     A normal prediction scores one user row. A SHAP explanation scores many masked versions of that row against the background. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks. The default <code>max_evals=500</code> permits 9 complete rounds, or 495 masks. With a 300-row background this is at most about 148,500 synthetic predictions. SHAP evaluates these rows in batches, but this remains the main expected source of prediction-service latency.
+#     A normal prediction scores one user row. A SHAP explanation scores many masked versions of that row against the background. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks. The default <code>max_evals=500</code> permits 9 complete rounds, or 495 masks. With a 300-row background this is at most about 148,500 synthetic predictions. SHAP predicts in batches, but this remains the main expected source of prediction-service latency.
 #     <br><br>
-#     Select the production SHAP configuration empirically. Benchmark <code>max_evals</code> and background size together: <code>max_evals</code> controls the number of mask evaluations, background size controls baseline stability, and latency scales roughly as <code>mask evaluations × background rows</code>. Compare candidate configurations with a larger reference configuration, then choose the smallest one that keeps the top cost drivers, their signs, and dollar impacts stable while meeting the server-side latency target (&lt;1 second under NFR-04). Stable top drivers and signs matter more than exact dollar impacts for low-ranked features.
+#     Select the best SHAP configuration for production empirically. Benchmark <code>max_evals</code> and background size together: <code>max_evals</code> controls the number of mask evaluations, background size controls baseline stability, and latency scales roughly as <code>mask evaluations × background rows</code>. Compare candidate configurations with a larger reference configuration, then choose the smallest one that keeps the top cost drivers, their signs, and dollar impacts stable while meeting the server-side latency target (&lt;1 second under NFR-04). Stable top drivers and signs matter more than exact dollar impacts for low-ranked features.
 #     <br><br>
 #     <strong>Communicating SHAP Values</strong>
 #     <ul>
@@ -4926,136 +4926,6 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>During Application Startup:</strong> Load the preprocessor, quantile model, and SHAP background. Build the explainer once.</li>
 #         <li><strong>At Inference Time:</strong> Map the user inputs to the preprocessor inputs. Predict all quantiles using the fitted preprocessor and model, postprocess them, and compute permutation SHAP for q50. Apply medical-cost inflation to displayed predictions, SHAP baseline, and dollar impacts.</li>
 #     </ol>
-# </div><div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">SHAP</h2>
-# </div>
-#
-# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ SHapley Additive exPlanations (SHAP) will be used for both model audit and user-facing prediction explanations.
-#     <br><br>
-#     <strong>SHAP Approach</strong><br>
-#     SHAP will be used in two ways:
-#     <ol>
-#         <li><strong>Feature Importance Analysis for Model Audit:</strong> Rank the features by mean absolute SHAP value (<code>mean(|SHAP|)</code>) across many predictions (sample-weighted) to identify which features have the largest dollar impact on predicted median costs (postprocessed q50). Compare this SHAP feature importance with native XGBoost importance to audit whether the model relies on plausible cost drivers.</li>
-#         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use individual SHAP values to show which inputs moved that user's plan-around estimate above or below the SHAP baseline. This is a product feature, not just a diagnostic. It makes the prediction more useful for financial planning by explaining the main cost drivers. Use cautious wording ("moved the estimate") and avoid causal language.</li>
-#     </ol>
-#     <strong>SHAP Prediction Target</strong><br>
-#     SHAP explanations focus on the q50 plan-around estimate (predicted median cost). The q25, q75, and q90 outputs define the planning range, but should not be mixed into the q50 explanation. 
-#     <br><br>
-#     <strong>SHAP Explainer Callable</strong><br>
-#     SHAP can explain a callable prediction function, not only a raw model object. The saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> wrapping the inner XGBoost estimator, but the explainer calls <code>predict_median_cost</code> instead. This callable converts 27 preprocessor input features into 40 model-ready features, predicts all four quantiles, applies the inverse target transformation, enforces non-negative and monotonic quantiles (<code>q25 ≤ q50 ≤ q75 ≤ q90</code>), and selects q50. Medical-cost inflation remains outside the callable and is applied only during API/UI output formatting.
-#     <br><br>
-#     The impact of postprocessing on q50 is negligible on the test set: non-negative clipping affects 1.1% of the weighted test population with a maximum adjustment of \$0.37, and monotonic quantile enforcement affects 0.2% with a maximum adjustment of \$0.01. Postprocessed q50 is therefore the appropriate SHAP target because it matches the plan-around estimate before inflation.
-#     <br><br>
-#     <strong>Why Not TreeExplainer?</strong><br>
-#     TreeExplainer is faster for raw tree models, but it would explain only the inner XGBoost estimator operating on the 40 model-ready features. It would not include the fitted preprocessor, inverse target transformation, non-negative and monotonic quantile postprocessing, or q50 selection. Use <code>shap.Explainer(..., algorithm="permutation")</code> with <code>predict_median_cost</code> callable so SHAP explains the q50 estimate based on the 27 interpretable preprocessor input features.
-#     <br><br>
-#     <strong>Feature Importance</strong><br>
-#     SHAP feature importance is based on the 27 preprocessor input features produced by several MEPS data preparation steps, but before the preprocessor performs imputation, medical feature engineering, scaling, and one-hot encoding. These preprocessor inputs are interpretable, semantically meaningful features. The callable follows the complete prediction path: <code>27 preprocessor input features → preprocessor → 40 model-ready features → quantile model prediction → inverse target transformation → quantile postprocessing → q50</code>.
-#     <br><br>
-#     XGBoost native feature importance is based on all quantiles (q25, q50, q75, q90) and the 40 model-ready features. These are the scaled numerical features, one-hot encoded nominal features, passed-through binary features, and derived medical features (e.g., chronic condition count) that the trees use for splits. Use <code>total_gain</code>, which measures the total reduction in the training objective from all splits using that feature. For this fitted multi-quantile model, it is aggregated across the q25, q50, q75, and q90 trees, it is not q50-specific and is not measured in dollars. Report <code>weight</code> and <code>gain</code> as supporting diagnostics. <code>weight</code> is the number of splits using the feature, while <code>gain</code> is the average objective improvement per split. Together, they show whether a high total gain comes from frequent modest improvements or fewer high-value splits.
-#     <br><br>
-#     Treat SHAP and native importance as complementary rather than interchangeable. SHAP explains the postprocessed q50 prediction over 27 interpretable preprocessor input features and reports dollar impacts. Native <code>total_gain</code> summarizes how the joint four-quantile estimator used 40 model-ready features during training.
-#     <br><br>
-#     <strong>Background Data</strong><br>
-#     The background data is a 200–500 row sample from the training preprocessor input features, drawn using weighted sampling with replacement. SHAP treats background rows as equal-weight, so sampling with MEPS person weights (<code>PERWT23F</code>) makes the background approximate the U.S. adult population distribution. High-weight respondents may appear more than once. That is expected because duplicates represent their larger population share. The SHAP baseline is the mean postprocessed q50 prediction across those background rows.
-#     <br><br>
-#     Background data validation: Compare the background sample's SHAP baseline against the full weighted training baseline. Accept the sample if <code>abs(relative_difference) &lt;= 10%</code>. If it exceeds 10%, increase the background size before creating app artifacts. This is an initial validation, consider stronger validation criteria.
-#     <br><br>
-#     <strong>Prediction Service Latency</strong><br>
-#     A normal prediction scores one user row. A SHAP explanation scores many masked versions of that row against the background. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks. The default <code>max_evals=500</code> permits 9 complete rounds, or 495 masks. With a 300-row background this is at most about 148,500 synthetic predictions. SHAP evaluates these rows in batches, but this remains the main expected source of prediction-service latency.
-#     <br><br>
-#     Select the production SHAP configuration empirically. Benchmark <code>max_evals</code> and background size together: <code>max_evals</code> controls the number of mask evaluations, background size controls baseline stability, and latency scales roughly as <code>mask evaluations × background rows</code>. Compare candidate configurations with a larger reference configuration, then choose the smallest one that keeps the top cost drivers, their signs, and dollar impacts stable while meeting the server-side latency target (&lt;1 second under NFR-04). Stable top drivers and signs matter more than exact dollar impacts for low-ranked features.
-#     <br><br>
-#     <strong>Communicating SHAP Values</strong>
-#     <ul>
-#         <li><strong>End users (cost-driver overview):</strong> "These factors show which of your answers moved your estimate up or down the most."</li>
-#         <li><strong>End users (single cost driver):</strong> "Your insurance answer, <code>Public Only</code>, lowered this estimate by about \$99."</li>
-#         <li><strong>Non-technical stakeholders:</strong> "The estimate starts from an average predicted cost for a representative sample of U.S. adults. Each person's inputs then move the estimate up or down from that starting point. Because each feature is evaluated in the context of that person's other features, the same answer can have a different dollar impact for different people. For example, an insurance answer can affect the estimate differently for someone with several chronic conditions than for someone who is otherwise healthy."</li>
-#     </ul>
-#     <strong>SHAP Limitations</strong>
-#     <ul>
-#         <li><strong>Not Causal:</strong> SHAP values describe how inputs moved this fitted model's q50 estimate relative to the SHAP baseline. They do not show what would happen if a person's health, coverage, or utilization changed.</li>
-#         <li><strong>Background-Dependent:</strong> The SHAP baseline and dollar impacts depend on the selected background sample. A different background can change the explanation.</li>
-#         <li><strong>Correlated Features:</strong> EDA shows notable correlations between ADL/IADL help (Spearman's ρ=0.60) and between arthritis/joint pain (ρ=0.56). When features are correlated, SHAP can distribute credit unevenly between them. For example, arthritis and joint pain both signal similar health burden, but one prediction may assign more dollar impact to arthritis and another to joint pain. Interpret correlated features as a group and do not treat small ranking differences between them as meaningful.</li>
-#         <li><strong>Predicted, Not Actual Costs:</strong> SHAP explains the model's prediction, not the true drivers of real-world medical costs. If the model overstates, understates, or misses a relationship, the SHAP values reflect that error. SHAP does not fix model limitations: if the model underpredicts high-cost cases, reflects noisy survey data, or lacks important predictors, SHAP explains those imperfect predictions.</li>
-#     </ul>
-#     <strong>SHAP Metadata</strong><br>
-#     Store a small metadata file alongside the SHAP background artifact for developers and prediction-service auditability (schema template below).
-#     <pre>{
-#   "schema_version": 1,
-#   "artifacts": {
-#     "model": "models/xgb_quantile_model.joblib",
-#     "preprocessor": "models/preprocessor.joblib",
-#     "background": "app/data/shap_background.parquet"
-#   },
-#   "data_source": "MEPS 2023 (HC-251), training split",
-#   "reference_population": "U.S. civilian noninstitutionalized adults represented by MEPS training rows",
-#   "prediction_target": {
-#     "output": "q50",
-#     "meaning": "plan-around estimate, predicted median out-of-pocket cost",
-#     "unit": "USD",
-#     "currency_year": 2023,
-#     "postprocessed": true,
-#     "inflation_adjusted": false
-#   },
-#   "background_sample": {
-#     "feature_set": "preprocessor_input",
-#     "feature_count": 27,
-#     "rows": 300,
-#     "sampling_method": "weighted sample with replacement using PERWT23F",
-#     "random_state": 42
-#   },
-#   "explainer_contract": {
-#     "algorithm": "permutation",
-#     "prediction_function": "predict_median_cost",
-#     "input_feature_set": "preprocessor_input",
-#     "input_feature_count": 27,
-#     "prediction_pipeline": [
-#       {
-#         "operation": "preprocess",
-#         "artifact_ref": "preprocessor",
-#         "output_feature_set": "model_ready",
-#         "output_feature_count": 40
-#       },
-#       {
-#         "operation": "predict_quantiles",
-#         "artifact_ref": "model",
-#         "outputs": ["q25", "q50", "q75", "q90"],
-#         "includes_inverse_target_transformation": true
-#       },
-#       {
-#         "operation": "postprocess_quantiles",
-#         "rules": ["non_negative", "monotonic"]
-#       },
-#       {
-#         "operation": "select_quantile",
-#         "quantile": "q50"
-#       }
-#     ]
-#   },
-#   "background_validation": {
-#     "method": "baseline_relative_difference",
-#     "comparison": "compare mean postprocessed q50 of background vs. full training data",
-#     "background_baseline_2023_usd": null,
-#     "weighted_training_baseline_2023_usd": null,
-#     "relative_difference": null,
-#     "absolute_relative_difference": null,
-#     "max_allowed_absolute_relative_difference": 0.10,
-#     "passed": null
-#   }
-# }</pre><br>
-#     <strong>App/API Implementation Plan</strong>
-#     <ol>
-#         <li><strong>Create Artifacts:</strong> Persist the fitted preprocessor as <code>models/preprocessor.joblib</code>, the fitted model as <code>models/xgb_quantile_model.joblib</code>, the SHAP background data as <code>app/data/shap_background.parquet</code>, and the SHAP metadata as <code>app/data/shap_metadata.json</code>.</li>
-#         <li><strong>During Application Startup:</strong> Load the preprocessor, quantile model, and SHAP background. Build the explainer once.</li>
-#         <li><strong>At Inference Time:</strong> Map the user inputs to the preprocessor inputs. Predict all quantiles using the fitted preprocessor and model, postprocess them, and compute permutation SHAP for q50. Apply medical-cost inflation to displayed predictions, SHAP baseline, and dollar impacts.</li>
-#     </ol>
-# </div>
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Prototype SHAP code implementation.
 # </div>
 
 # %% [markdown]
