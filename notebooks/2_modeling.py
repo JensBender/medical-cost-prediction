@@ -5039,7 +5039,7 @@ X_test_example = X_test_preprocessor_input.iloc[[example_idx]]
 shap_values = explainer(X_test_example)
 
 # %%
-# 5. Display the feature contributions
+# 5. Display SHAP results for a single person
 baseline = shap_values.base_values[0]
 example_prediction = predict_median_cost(X_test_example)[0]
 example_actual = y_test.loc[X_test_example.index[0]]
@@ -5070,8 +5070,17 @@ display(
     .format({"Value": "${:,.2f}"})
     .hide()
 )
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Interpretation:</b> 
+#     <ul>
+#         <li><strong>For non-technical stakeholders:</strong> The explanation uses \$333 as its comparison point. This is the average of the model’s predicted median costs across a representative group of U.S. adults. This person’s inputs moved the model estimate down by \$251, resulting in a predicted median cost of \$82.</li>
+#         <li><strong>For end users:</strong> Your estimate is \$82, which is \$251 below the Medical Cost Planner&rsquo;s average estimate of \$333 for U.S. adults. <br><small>Tooltip: This comparison amount is based on estimates for a representative group of U.S. adults.</small></li>
+#     </ul>
+# </div>
 
-
+# %%
+# Display SHAP feature contributions for a single person 
 def format_shap_input(feature, value):
     """Return one preprocessor input value in a readable format."""
     if pd.isna(value):
@@ -5120,6 +5129,7 @@ display(
     })
     .hide()
 )
+
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Prototype SHAP benchmarking experiment. Identify the smallest defensible configuration of SHAP evaluation budget (<code>max_evals</code>) and background size under the latency target.
