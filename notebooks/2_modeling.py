@@ -4937,7 +4937,7 @@ plot_quantile_subgroup_predictions(
 # </div>
 
 # %%
-# 1. Prepare SHAP inputs and load the fitted artifacts
+# 1. Prepare SHAP inputs and load the data (with preprocessor input features), preprocessing pipeline and model artifacts
 SHAP_INPUT_FEATURES = (
     PIPELINE_NUMERICAL_FEATURES
     + PIPELINE_NOMINAL_FEATURES
@@ -4958,7 +4958,7 @@ xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=F
 
 
 # %%
-# 2. Define the q50 prediction callable that SHAP will explain
+# 2. Define the prediction callable that SHAP will explain
 def predict_median_cost(X):
     """Predict postprocessed q50 cost from preprocessor input features."""
     if isinstance(X, pd.DataFrame):
@@ -4978,23 +4978,20 @@ def predict_median_cost(X):
     return postprocess_quantile_predictions(quantile_predictions)[:, 1]
 
 # %%
-# Sanity check: confirm that the preprocessor reproduces the training features
+# Artifact consistency check: confirm that the saved preprocessor inputs and
+# preprocessor reproduce the model-ready training features
 X_train_reprocessed = preprocessor.transform(X_train_preprocessor_input)
-if not X_train_reprocessed.columns.equals(X_train_preprocessed.columns):
-    raise ValueError(
-        "Persisted preprocessor output columns do not match the quantile model inputs."
-    )
-np.testing.assert_allclose(
-    X_train_reprocessed.to_numpy(dtype=float),
-    X_train_preprocessed.to_numpy(dtype=float),
+pd.testing.assert_frame_equal(
+    X_train_reprocessed,
+    X_train_preprocessed,
+    check_exact=False,
     rtol=0,
     atol=1e-12,
-    err_msg="Persisted preprocessor does not reproduce the saved training features.",
 )
 del X_train_reprocessed
 
 # %%
-# 3. Create and validate the survey-weighted background sample
+# 3. Create and validate the background sample
 SHAP_BACKGROUND_N = 300
 SHAP_BASELINE_REL_DIFF_MAX = 0.10
 
@@ -5043,172 +5040,6 @@ shap_values = explainer(X_test_example)
 
 # %%
 # 5. Display the feature contributions
-baseline = shap_values.base_values[0]
-example_prediction = predict_median_cost(X_test_example)[0]
-example_actual = y_test.loc[X_test_example.index[0]]
-example_shap_sum = shap_values.values[0].sum()
-
-example_shap_result = pd.DataFrame({
-    "Metric": [
-        "Baseline",
-        "Feature contribution sum",
-        "Predicted median cost",
-        "Actual cost",
-        "Baseline + SHAP sum",
-        "Additivity error",
-    ],
-    "Value": [
-        baseline,
-        example_shap_sum,
-        example_prediction,
-        example_actual,
-        baseline + example_shap_sum,
-        abs(example_prediction - (baseline + example_shap_sum)),
-    ],
-})
-
-display(
-    example_shap_result.style
-    .pipe(add_table_caption, f"Example SHAP Result (Test Row {example_idx})")
-    .format({"Value": "${:,.2f}"})
-    .hide()
-)
-
-
-def format_shap_input(feature, value):
-    """Return one preprocessor input value in a readable format."""
-    if pd.isna(value):
-        return "Missing"
-
-    category_labels = CATEGORY_LABELS_EDA.get(feature)
-    if category_labels is not None:
-        try:
-            category_key = int(value)
-        except (TypeError, ValueError):
-            category_key = value
-        value = category_labels.get(category_key, value)
-
-    if isinstance(value, (int, float, np.integer, np.floating)):
-        if np.isclose(value, round(value)):
-            return f"{value:,.0f}"
-        return f"{value:,.1f}"
-    return value
-
-
-example_row = X_test_example.iloc[0]
-example_shap_feature_values = pd.DataFrame({
-    "Feature": [
-        DISPLAY_LABELS.get(feature, feature)
-        for feature in SHAP_INPUT_FEATURES
-    ],
-    "Input Value": [
-        format_shap_input(feature, example_row[feature])
-        for feature in SHAP_INPUT_FEATURES
-    ],
-    "SHAP Value": shap_values.values[0],
-}).sort_values(
-    "SHAP Value",
-    key=lambda values: values.abs(),
-    ascending=False,
-)
-
-display(
-    example_shap_feature_values.style
-    .pipe(
-        add_table_caption,
-        f"Example SHAP Contributions (Test Row {example_idx})",
-    )
-    .format({
-        "SHAP Value": lambda value: f"{'-' if value < 0 else ''}${abs(value):,.1f}",
-    })
-    .hide()
-)
-# %%
-# 2. Define the q50 prediction callable that SHAP will explain
-def predict_median_cost(X):
-    """Predict postprocessed q50 cost from preprocessor input features."""
-    if isinstance(X, pd.DataFrame):
-        X_preprocessor_input = X.loc[:, SHAP_INPUT_FEATURES]
-    else:
-        # SHAP arrays follow the column order defined by the background data.
-        X = np.asarray(X)
-        if X.ndim != 2 or X.shape[1] != len(SHAP_INPUT_FEATURES):
-            raise ValueError(
-                "SHAP input must have shape "
-                f"(n_rows, {len(SHAP_INPUT_FEATURES)})."
-            )
-        X_preprocessor_input = pd.DataFrame(X, columns=SHAP_INPUT_FEATURES)
-
-    X_model_ready = preprocessor.transform(X_preprocessor_input)
-    quantile_predictions = xgb_quantile_model.predict(X_model_ready)
-    return postprocess_quantile_predictions(quantile_predictions)[:, 1]
-
-# %%
-# Sanity check: confirm that the preprocessor reproduces the training features
-X_train_reprocessed = preprocessor.transform(X_train_preprocessor_input)
-if not X_train_reprocessed.columns.equals(X_train_preprocessed.columns):
-    raise ValueError(
-        "Persisted preprocessor output columns do not match the quantile model inputs."
-    )
-np.testing.assert_allclose(
-    X_train_reprocessed.to_numpy(dtype=float),
-    X_train_preprocessed.to_numpy(dtype=float),
-    rtol=0,
-    atol=1e-12,
-    err_msg="Persisted preprocessor does not reproduce the saved training features.",
-)
-del X_train_reprocessed
-
-# %%
-# 3. Create and validate the survey-weighted background sample
-SHAP_BACKGROUND_N = 300
-SHAP_BASELINE_REL_DIFF_MAX = 0.10
-
-shap_background = X_train_preprocessor_input.sample(
-    n=SHAP_BACKGROUND_N,
-    weights=w_train,
-    replace=True,
-    random_state=RANDOM_STATE,
-)
-
-background_baseline = predict_median_cost(shap_background).mean()
-training_baseline = np.average(
-    predict_median_cost(X_train_preprocessor_input),
-    weights=w_train,
-)
-baseline_relative_difference = abs(background_baseline / training_baseline - 1)
-
-print(f"SHAP background baseline: ${background_baseline:,.2f}")
-print(f"Full training baseline:   ${training_baseline:,.2f}")
-print(f"Relative difference:      {baseline_relative_difference:.1%}")
-
-if baseline_relative_difference > SHAP_BASELINE_REL_DIFF_MAX:
-    raise ValueError(
-        "SHAP background baseline differs from the weighted training baseline by "
-        f"{baseline_relative_difference:.1%}, which exceeds the "
-        f"{SHAP_BASELINE_REL_DIFF_MAX:.0%} acceptance threshold. "
-        "Resample the background data or increase SHAP_BACKGROUND_N."
-    )
-
-# %%
-# 4. Build the explainer and explain one test row
-shap_masker = shap.maskers.Independent(
-    shap_background,
-    max_samples=SHAP_BACKGROUND_N,
-)
-explainer = shap.Explainer(
-    predict_median_cost,
-    shap_masker,
-    algorithm="permutation",
-    seed=RANDOM_STATE,
-)
-
-example_idx = 0
-X_test_example = X_test_preprocessor_input.iloc[[example_idx]]
-shap_values = explainer(X_test_example)
-
-# %%
-# 5. Check local accuracy and display the feature contributions
 baseline = shap_values.base_values[0]
 example_prediction = predict_median_cost(X_test_example)[0]
 example_actual = y_test.loc[X_test_example.index[0]]
