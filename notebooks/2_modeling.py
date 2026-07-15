@@ -4922,7 +4922,7 @@ plot_quantile_subgroup_predictions(
 # }</pre><br>
 #     <strong>App/API Implementation Plan</strong>
 #     <ol>
-#         <li><strong>Create Artifacts:</strong> Persist the fitted preprocessor as <code>models/preprocessor.joblib</code>, the fitted model as <code>models/xgb_quantile_model.joblib</code>, the SHAP background data as <code>app/data/shap_background.parquet</code>, and the SHAP metadata as <code>app/data/shap_metadata.json</code>.</li>
+#         <li><strong>Create Artifacts:</strong> Use <code>scripts/preprocess.py</code> to create <code>models/preprocessor.joblib</code> and <code>scripts/train_xgboost_quantile.py</code> to create <code>models/xgb_quantile_model.joblib</code>. Use <code>scripts/build_app_artifacts.py</code> to create <code>app/data/shap_background.parquet</code> and <code>app/data/shap_metadata.json</code>.</li>
 #         <li><strong>During Application Startup:</strong> Load the preprocessor, quantile model, and SHAP background. Build the explainer once.</li>
 #         <li><strong>At Inference Time:</strong> Map the user inputs to the preprocessor inputs. Predict all quantiles using the fitted preprocessor and model, postprocess them, and compute permutation SHAP for q50. Apply medical-cost inflation to displayed predictions, SHAP baseline, and dollar impacts.</li>
 #     </ol>
