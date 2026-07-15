@@ -16,9 +16,12 @@ stages:
       - src/constants.py                          # Feature lists, label mappings, etc.
       - src/stats.py                              # Statistical helper function to stratify target variable 
     outs:
-      - data/training_data_preprocessed.parquet
-      - data/validation_data_preprocessed.parquet
-      - data/test_data_preprocessed.parquet
+      - data/training_data_preprocessor_input.parquet
+      - data/validation_data_preprocessor_input.parquet
+      - data/test_data_preprocessor_input.parquet
+      - data/training_data_model_ready.parquet
+      - data/validation_data_model_ready.parquet
+      - data/test_data_model_ready.parquet
       - models/preprocessor.joblib
 
   # --- Modeling ---
@@ -26,8 +29,8 @@ stages:
   baseline:
     cmd: .venv-train\Scripts\python scripts/train_baseline.py
     deps:
-      - data/training_data_preprocessed.parquet   # Dependency on Stage 1
-      - data/validation_data_preprocessed.parquet # Dependency on Stage 1
+      - data/training_data_model_ready.parquet   # Dependency on Stage 1
+      - data/validation_data_model_ready.parquet # Dependency on Stage 1
       - scripts/train_baseline.py                 # Training script for reproducible baseline models 
       - src/modeling.py                           # Model training and evaluation functions
       - src/constants.py                          # Feature lists, label mappings, etc.
@@ -66,8 +69,8 @@ stages:
   quantile:
     cmd: .venv-train\Scripts\python scripts/train_xgboost_quantile.py
     deps:
-      - data/training_data_preprocessed.parquet   # Dependency on Stage 1
-      - data/validation_data_preprocessed.parquet # Dependency on Stage 1
+      - data/training_data_model_ready.parquet   # Dependency on Stage 1
+      - data/validation_data_model_ready.parquet # Dependency on Stage 1
       - scripts/train_xgboost_quantile.py         # Training script for reproducible quantile regression 
       - models/xgb_tuned_params.json              # Hyperparameters of the best tuned (point-estimate) model
       - src/modeling.py                           # Weighted MdAE function, data paths, model persistence functions

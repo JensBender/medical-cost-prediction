@@ -19,7 +19,7 @@ from src.constants import (
     TARGET_COLUMN,
     WEIGHT_COLUMN,
 )
-from src.modeling import RAW_DATA_PATH, VAL_DATA_PATH
+from src.modeling import RAW_DATA_PATH, VAL_MODEL_READY_DATA_PATH
 from src.stats import create_stratification_bins, weighted_quantile
 
 APP_DATA_DIR = Path("app/data")
@@ -140,7 +140,7 @@ def recreate_training_data():
 def main():
     df_train = recreate_training_data()
     validation_weights = pd.read_parquet(
-        VAL_DATA_PATH,
+        VAL_MODEL_READY_DATA_PATH,
         columns=[WEIGHT_COLUMN],
     )[WEIGHT_COLUMN].to_numpy()
     quantile_predictions = joblib.load(QUANTILE_PREDICTIONS_PATH)

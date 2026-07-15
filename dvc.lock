@@ -9,8 +9,8 @@ stages:
       size: 207093760
     - path: scripts/preprocess.py
       hash: md5
-      md5: a8c27e5da3c379aa836114688fd8d3c3
-      size: 10498
+      md5: 8b5cde2a77317690b129f2427bbe862f
+      size: 11534
     - path: src/constants.py
       hash: md5
       md5: 8245960fad193b8e69f7ff6dba809878
@@ -28,18 +28,30 @@ stages:
       md5: 5920c0ca24641df700182ead056d0362
       size: 35874
     outs:
-    - path: data/test_data_preprocessed.parquet
+    - path: data/test_data_model_ready.parquet
       hash: md5
       md5: b4c515101bd1dbde39c1f06350a98fb2
       size: 69424
-    - path: data/training_data_preprocessed.parquet
+    - path: data/test_data_preprocessor_input.parquet
+      hash: md5
+      md5: 480de72e7750a041061f79393a4bf18a
+      size: 58862
+    - path: data/training_data_model_ready.parquet
       hash: md5
       md5: a045a49de975005c96adff5b20fa8756
       size: 355338
-    - path: data/validation_data_preprocessed.parquet
+    - path: data/training_data_preprocessor_input.parquet
+      hash: md5
+      md5: e811d63aeb9264df99c3d8da8bc2bdd5
+      size: 334017
+    - path: data/validation_data_model_ready.parquet
       hash: md5
       md5: 88c1393d697a77b153796db97a5f6a64
       size: 69302
+    - path: data/validation_data_preprocessor_input.parquet
+      hash: md5
+      md5: 7d810b6d816c6b5dec8155eeb9b8f67c
+      size: 58933
     - path: models/preprocessor.joblib
       hash: md5
       md5: 73a7b61c60459ab02f36262860e26d85

@@ -51,7 +51,7 @@ from sklearn.metrics import mean_absolute_error, r2_score
 
 # Local imports
 from src.constants import TARGET_COLUMN, WEIGHT_COLUMN, RANDOM_STATE
-from src.modeling import train_and_evaluate, TRAIN_DATA_PATH, VAL_DATA_PATH, weighted_median_absolute_error, save_model, save_metrics, get_core_model_params
+from src.modeling import train_and_evaluate, TRAIN_MODEL_READY_DATA_PATH, VAL_MODEL_READY_DATA_PATH, weighted_median_absolute_error, save_model, save_metrics, get_core_model_params
 from src.params import XGB_PARAM_DISTRIBUTIONS, XGB_N_ITER
 
 # Suppress benign MLflow warnings
@@ -67,10 +67,10 @@ def main():
 
     # --- 2. Preprocessed Data Loading ---
     print("Step 2: Loading preprocessed data...")
-    df_train = pd.read_parquet(TRAIN_DATA_PATH)
-    df_val = pd.read_parquet(VAL_DATA_PATH)
-    print(f"  Loaded '{TRAIN_DATA_PATH}' with {len(df_train):,} rows and {len(df_train.columns):,} columns")
-    print(f"  Loaded '{VAL_DATA_PATH}' with {len(df_val):,} rows and {len(df_val.columns):,} columns")
+    df_train = pd.read_parquet(TRAIN_MODEL_READY_DATA_PATH)
+    df_val = pd.read_parquet(VAL_MODEL_READY_DATA_PATH)
+    print(f"  Loaded '{TRAIN_MODEL_READY_DATA_PATH}' with {len(df_train):,} rows and {len(df_train.columns):,} columns")
+    print(f"  Loaded '{VAL_MODEL_READY_DATA_PATH}' with {len(df_val):,} rows and {len(df_val.columns):,} columns")
 
     # --- 3. Feature-Target Separation ---
     print("Step 3: Separating features and target...")

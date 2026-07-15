@@ -131,13 +131,13 @@ from src.display import (
 #     <h1 style="margin:0px">Data Loading</h1>
 # </div>
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Load the preprocessed data from the <code>.parquet</code> files into Pandas DataFrames.
+#     📌 Load the model-ready data from the <code>.parquet</code> files into Pandas DataFrames.
 # </div>
 
 # %%
-df_train_preprocessed = pd.read_parquet("../data/training_data_preprocessed.parquet")
-df_val_preprocessed = pd.read_parquet("../data/validation_data_preprocessed.parquet")
-df_test_preprocessed = pd.read_parquet("../data/test_data_preprocessed.parquet")
+df_train_preprocessed = pd.read_parquet("../data/training_data_model_ready.parquet")
+df_val_preprocessed = pd.read_parquet("../data/validation_data_model_ready.parquet")
+df_test_preprocessed = pd.read_parquet("../data/test_data_model_ready.parquet")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 
@@ -556,9 +556,12 @@ MAX_ATTEMPTS = 5             # Maximum times to try API call before giving up
 
 # Paths (relative to /notebooks directory)
 RAW_DATA_PATH = "../data/h251.sas7bdat"
-TRAIN_DATA_PATH = "../data/training_data_preprocessed.parquet"
-VAL_DATA_PATH = "../data/validation_data_preprocessed.parquet"
-TEST_DATA_PATH = "../data/test_data_preprocessed.parquet"
+TRAIN_PREPROCESSOR_INPUT_DATA_PATH = "../data/training_data_preprocessor_input.parquet"
+VAL_PREPROCESSOR_INPUT_DATA_PATH = "../data/validation_data_preprocessor_input.parquet"
+TEST_PREPROCESSOR_INPUT_DATA_PATH = "../data/test_data_preprocessor_input.parquet"
+TRAIN_MODEL_READY_DATA_PATH = "../data/training_data_model_ready.parquet"
+VAL_MODEL_READY_DATA_PATH = "../data/validation_data_model_ready.parquet"
+TEST_MODEL_READY_DATA_PATH = "../data/test_data_model_ready.parquet"
 
 # Human-Readable Label Maps
 SEX_LABELS = {1: "Male", 0: "Female"}
@@ -611,7 +614,7 @@ class PredictionBatch(BaseModel):
 # </div> 
 
 # %%
-def prepare_human_readable_split_data(split_data_path=VAL_DATA_PATH, split_label="validation"):
+def prepare_human_readable_split_data(split_data_path=VAL_MODEL_READY_DATA_PATH, split_label="validation"):
     """
     Recover human-readable feature values for a preprocessed split (like val or test).
 
@@ -689,7 +692,7 @@ def prepare_human_readable_split_data(split_data_path=VAL_DATA_PATH, split_label
 
 
 # Example usage: Prepare validation data for LLM benchmarking
-# df_raw_val, y_val, w_val = prepare_human_readable_split_data(VAL_DATA_PATH, "validation")
+# df_raw_val, y_val, w_val = prepare_human_readable_split_data(VAL_MODEL_READY_DATA_PATH, "validation")
 
 # Align all arrays by common indices
 # common_ids = df_raw_val.dropna(how="all").index.intersection(y_val.index)
@@ -1912,7 +1915,7 @@ plot_residuals_vs_predicted(
 # Recover raw features of validation data for stratification
 # We need the original categorical codes (before pipeline one-hot encoding) to group the data
 print("Recovering raw validation features...")
-df_raw_val, y_val_true, w_val_weights = prepare_human_readable_split_data(VAL_DATA_PATH, "validation")
+df_raw_val, y_val_true, w_val_weights = prepare_human_readable_split_data(VAL_MODEL_READY_DATA_PATH, "validation")
 
 # Create chronic conditions count  
 chronic_cols = list(CHRONIC_CONDITIONS.keys())
@@ -3495,7 +3498,7 @@ def create_quantile_subgroup_df(df_raw, y_true, weights, y_pred_quantiles, confi
 
 # --- Prepare Validation Audit ---
 print("Recovering raw validation features...")
-df_raw_val, y_val_audit, w_val_audit = prepare_human_readable_split_data(VAL_DATA_PATH, "validation")
+df_raw_val, y_val_audit, w_val_audit = prepare_human_readable_split_data(VAL_MODEL_READY_DATA_PATH, "validation")
 
 print("Loading XGBoost quantile predictions...")
 y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
@@ -4575,7 +4578,7 @@ display(
 # %%
 # --- Prepare Features ---
 print("Recovering raw test features...")
-df_raw_test, y_test_audit, w_test_audit = prepare_human_readable_split_data(TEST_DATA_PATH, "test")
+df_raw_test, y_test_audit, w_test_audit = prepare_human_readable_split_data(TEST_MODEL_READY_DATA_PATH, "test")
 
 # Align test-set quantile predictions to the raw test rows
 y_test_pred_q25_audit, y_test_pred_q50_audit, y_test_pred_q75_audit, y_test_pred_q90_audit = [
@@ -4922,7 +4925,7 @@ plot_quantile_subgroup_predictions(
 # }</pre><br>
 #     <strong>App/API Implementation Plan</strong>
 #     <ol>
-#         <li><strong>Create Artifacts:</strong> Use <code>scripts/preprocess.py</code> to create <code>models/preprocessor.joblib</code> and <code>scripts/train_xgboost_quantile.py</code> to create <code>models/xgb_quantile_model.joblib</code>. Use <code>scripts/build_app_artifacts.py</code> to create <code>app/data/shap_background.parquet</code> and <code>app/data/shap_metadata.json</code>.</li>
+#         <li><strong>Create Artifacts:</strong> Use <code>scripts/preprocess.py</code> to create <code>data/training_data_preprocessor_input.parquet</code> and <code>models/preprocessor.joblib</code>. Use <code>scripts/train_xgboost_quantile.py</code> to create <code>models/xgb_quantile_model.joblib</code>. Use <code>scripts/build_app_artifacts.py</code> to create <code>app/data/shap_background.parquet</code> and <code>app/data/shap_metadata.json</code>.</li>
 #         <li><strong>During Application Startup:</strong> Load the preprocessor, quantile model, and SHAP background. Build the explainer once.</li>
 #         <li><strong>At Inference Time:</strong> Map the user inputs to the preprocessor inputs. Predict all quantiles using the fitted preprocessor and model, postprocess them, and compute permutation SHAP for q50. Apply medical-cost inflation to displayed predictions, SHAP baseline, and dollar impacts.</li>
 #     </ol>
@@ -4941,30 +4944,18 @@ SHAP_INPUT_FEATURES = (
     + PIPELINE_BINARY_FEATURES
 )
 
-df_raw_train, _, _ = prepare_human_readable_split_data(
-    TRAIN_DATA_PATH,
-    "training",
+X_train_preprocessor_input = pd.read_parquet(
+    TRAIN_PREPROCESSOR_INPUT_DATA_PATH,
+    columns=SHAP_INPUT_FEATURES,
 )
-X_train_preprocessor_input = df_raw_train.loc[:, SHAP_INPUT_FEATURES].copy()
-X_test_preprocessor_input = df_raw_test.loc[:, SHAP_INPUT_FEATURES].copy()
-
-preprocessor = load_model("../models/preprocessor.joblib", verbose=False)
-xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)# 1. Prepare SHAP inputs and load the fitted artifacts
-SHAP_INPUT_FEATURES = (
-    PIPELINE_NUMERICAL_FEATURES
-    + PIPELINE_NOMINAL_FEATURES
-    + PIPELINE_BINARY_FEATURES
+X_test_preprocessor_input = pd.read_parquet(
+    TEST_PREPROCESSOR_INPUT_DATA_PATH,
+    columns=SHAP_INPUT_FEATURES,
 )
-
-df_raw_train, _, _ = prepare_human_readable_split_data(
-    TRAIN_DATA_PATH,
-    "training",
-)
-X_train_preprocessor_input = df_raw_train.loc[:, SHAP_INPUT_FEATURES].copy()
-X_test_preprocessor_input = df_raw_test.loc[:, SHAP_INPUT_FEATURES].copy()
 
 preprocessor = load_model("../models/preprocessor.joblib", verbose=False)
 xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
+
 
 # %%
 # 2. Define the q50 prediction callable that SHAP will explain
@@ -5051,7 +5042,7 @@ X_test_example = X_test_preprocessor_input.iloc[[example_idx]]
 shap_values = explainer(X_test_example)
 
 # %%
-# 5. Check local accuracy and display the feature contributions
+# 5. Display the feature contributions
 baseline = shap_values.base_values[0]
 example_prediction = predict_median_cost(X_test_example)[0]
 example_actual = y_test.loc[X_test_example.index[0]]

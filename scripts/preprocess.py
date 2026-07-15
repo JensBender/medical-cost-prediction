@@ -1,5 +1,5 @@
 """
-Deterministic data preprocessing from raw MEPS SAS data to model-ready parquet files.
+Deterministic preprocessing from raw MEPS SAS data to preprocessor-input and model-ready parquet files.
 
 This script implements the production-ready, reproducible version of all data preparation, 
 cleaning, preprocessing, and feature engineering steps.
@@ -16,7 +16,7 @@ Steps:
   9.  Preprocessing Pipeline (Stateful): Feature standardization, validation imputation, medical 
       feature engineering, scaling, and encoding.
   10. Data Verification: Automated checks for row integrity, missing values, data types and scaling.
-  11. Artifact Persistence: Export model-ready datasets and the fitted preprocessor.
+  11. Artifact Persistence: Export preprocessor-input datasets, model-ready datasets, and the fitted preprocessor.
 
 For preprocessing experiments, exploratory data analysis, and detailed rationale, see:
 notebooks/1_eda_and_preprocessing.ipynb
@@ -187,16 +187,27 @@ def main():
         print(f"{name:5}: Rows Match: {rows_match} | All Numeric: {all_numeric} | No Missings: {no_nulls} | No Infinites: {no_infinites} | No Constants: {no_constants} | Unique IDs: {unique_ids} | Scaled (M=0, Std=1): {scaled}")
     
     # --- 11. Artifact Persistence ---
-    print("Step 11/11: Saving model-ready datasets and fitted preprocessor...")
-    # Merge preprocessed X features, y target variable, and sample weights
-    df_train_preprocessed = pd.concat([X_train_preprocessed, y_train, X_train[WEIGHT_COLUMN]], axis=1)
-    df_val_preprocessed = pd.concat([X_val_preprocessed, y_val, X_val[WEIGHT_COLUMN]], axis=1)
-    df_test_preprocessed = pd.concat([X_test_preprocessed, y_test, X_test[WEIGHT_COLUMN]], axis=1)
-    # Save as .parquet files (preserves index, data types, is faster, and requires less storage space than .csv)
-    df_train_preprocessed.to_parquet(f"{OUTPUT_DIR}/training_data_preprocessed.parquet")
-    df_val_preprocessed.to_parquet(f"{OUTPUT_DIR}/validation_data_preprocessed.parquet")
-    df_test_preprocessed.to_parquet(f"{OUTPUT_DIR}/test_data_preprocessed.parquet")
-    print(f"  Saved model-ready features, target variable, and sample weights as .parquet files in {OUTPUT_DIR} directory")
+    print("Step 11/11: Saving preprocessor-input datasets, model-ready datasets, and fitted preprocessor...")
+
+    # Keep each split self-contained by attaching the target and sample weights.
+    df_train_preprocessor_input = pd.concat([X_train_preprocessor_input, y_train, X_train[WEIGHT_COLUMN]], axis=1)
+    df_val_preprocessor_input = pd.concat([X_val_preprocessor_input, y_val, X_val[WEIGHT_COLUMN]], axis=1)
+    df_test_preprocessor_input = pd.concat([X_test_preprocessor_input, y_test, X_test[WEIGHT_COLUMN]], axis=1)
+
+    df_train_model_ready = pd.concat([X_train_preprocessed, y_train, X_train[WEIGHT_COLUMN]], axis=1)
+    df_val_model_ready = pd.concat([X_val_preprocessed, y_val, X_val[WEIGHT_COLUMN]], axis=1)
+    df_test_model_ready = pd.concat([X_test_preprocessed, y_test, X_test[WEIGHT_COLUMN]], axis=1)
+
+    # Save as .parquet files (preserves the index and data types).
+    df_train_preprocessor_input.to_parquet(f"{OUTPUT_DIR}/training_data_preprocessor_input.parquet")
+    df_val_preprocessor_input.to_parquet(f"{OUTPUT_DIR}/validation_data_preprocessor_input.parquet")
+    df_test_preprocessor_input.to_parquet(f"{OUTPUT_DIR}/test_data_preprocessor_input.parquet")
+    print(f"  Saved preprocessor input features, target variable, and sample weights to '{OUTPUT_DIR}/training_data_preprocessor_input.parquet', '{OUTPUT_DIR}/validation_data_preprocessor_input.parquet', and '{OUTPUT_DIR}/test_data_preprocessor_input.parquet'")
+
+    df_train_model_ready.to_parquet(f"{OUTPUT_DIR}/training_data_model_ready.parquet")
+    df_val_model_ready.to_parquet(f"{OUTPUT_DIR}/validation_data_model_ready.parquet")
+    df_test_model_ready.to_parquet(f"{OUTPUT_DIR}/test_data_model_ready.parquet")
+    print(f"  Saved model-ready features, target variable, and sample weights to '{OUTPUT_DIR}/training_data_model_ready.parquet', '{OUTPUT_DIR}/validation_data_model_ready.parquet', and '{OUTPUT_DIR}/test_data_model_ready.parquet'")
 
     # Save preprocessing pipeline as .joblib file
     PREPROCESSOR_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)

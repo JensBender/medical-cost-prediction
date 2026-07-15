@@ -36,7 +36,7 @@ import mlflow
 
 # Local imports
 from src.constants import TARGET_COLUMN, WEIGHT_COLUMN
-from src.modeling import get_baseline_models, train_and_evaluate, TRAIN_DATA_PATH, VAL_DATA_PATH, save_model, save_metrics, get_core_model_params
+from src.modeling import get_baseline_models, train_and_evaluate, TRAIN_MODEL_READY_DATA_PATH, VAL_MODEL_READY_DATA_PATH, save_model, save_metrics, get_core_model_params
 
 # Suppress benign MLflow warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
@@ -52,10 +52,10 @@ def main():
 
     # --- 2. Preprocessed Data Loading ---
     print("Step 2: Loading preprocessed data...")
-    df_train_preprocessed = pd.read_parquet(TRAIN_DATA_PATH)
-    df_val_preprocessed = pd.read_parquet(VAL_DATA_PATH)
-    print(f"  Loaded '{TRAIN_DATA_PATH}' with {len(df_train_preprocessed):,} rows and {len(df_train_preprocessed.columns):,} columns")
-    print(f"  Loaded '{VAL_DATA_PATH}' with {len(df_val_preprocessed):,} rows and {len(df_val_preprocessed.columns):,} columns")
+    df_train_preprocessed = pd.read_parquet(TRAIN_MODEL_READY_DATA_PATH)
+    df_val_preprocessed = pd.read_parquet(VAL_MODEL_READY_DATA_PATH)
+    print(f"  Loaded '{TRAIN_MODEL_READY_DATA_PATH}' with {len(df_train_preprocessed):,} rows and {len(df_train_preprocessed.columns):,} columns")
+    print(f"  Loaded '{VAL_MODEL_READY_DATA_PATH}' with {len(df_val_preprocessed):,} rows and {len(df_val_preprocessed.columns):,} columns")
 
     # --- 3. Feature-Target Separation ---
     print("Step 3: Separating features and target...")

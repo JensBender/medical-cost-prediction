@@ -3271,7 +3271,7 @@ plt.show()
 # </div> 
 #
 # <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
-#     📌 Use the complete data preprocessing pipeline to create preprocessed data sets from raw data.
+#     📌 Use the complete preprocessing pipeline to transform preprocessor input features into model-ready features.
 # </div>
 
 # %%
@@ -3285,24 +3285,30 @@ preprocessor = create_preprocessing_pipeline(
     strict=False
 )
 
-# Preprocess training, validation, and test data 
-# Note: Overwrite the preprocessed DataFrames created during earlier steps
-X_train_preprocessed = preprocessor.fit_transform(X_train)
-X_val_preprocessed = preprocessor.transform(X_val)
-X_test_preprocessed = preprocessor.transform(X_test)
+# Select the interpretable features accepted by the fitted preprocessor
+preprocessor_input_features = PIPELINE_NUMERICAL_FEATURES + PIPELINE_NOMINAL_FEATURES + PIPELINE_BINARY_FEATURES
+X_train_preprocessor_input = X_train.loc[:, preprocessor_input_features]
+X_val_preprocessor_input = X_val.loc[:, preprocessor_input_features]
+X_test_preprocessor_input = X_test.loc[:, preprocessor_input_features]
+
+# Transform the preprocessor inputs into model-ready features
+# Note: Overwrite the model-ready DataFrames created during earlier steps
+X_train_preprocessed = preprocessor.fit_transform(X_train_preprocessor_input)
+X_val_preprocessed = preprocessor.transform(X_val_preprocessor_input)
+X_test_preprocessed = preprocessor.transform(X_test_preprocessor_input)
 
 # %%
-# Verify preprocessed data
-print("--- Verification of Preprocessed Data ---")
+# Verify model-ready data
+print("--- Verification of Model-Ready Data ---")
 for name, raw, processed in [
-    ("Train", X_train, X_train_preprocessed),
-    ("Val", X_val, X_val_preprocessed),
-    ("Test", X_test, X_test_preprocessed),
+    ("Train", X_train_preprocessor_input, X_train_preprocessed),
+    ("Val", X_val_preprocessor_input, X_val_preprocessed),
+    ("Test", X_test_preprocessor_input, X_test_preprocessed),
 ]:
     # Verify equal row counts between raw and processed data
     rows_match = "✅" if len(raw) == len(processed) else "❌"
 
-    # Verify all preprocessed features are numeric (floats/ints)
+    # Verify all model-ready features are numeric (floats/ints)
     all_numeric = "✅" if processed.apply(pd.api.types.is_numeric_dtype).all() else "❌"
 
     # Verify absence of missing values
@@ -3359,40 +3365,48 @@ print(encoded_feature_names)
 # </div> 
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Save the preprocessed data from Pandas DataFrames as <code>.csv</code> and <code>.parquet</code> files.
+#     📌 Save the preprocessor-input and model-ready datasets as <code>.parquet</code> files. Also save model-ready datasets as <code>.csv</code> files for optional inspection.
 # </div> 
 
 # %%
-# Merge preprocessed X features, y target variable, and sample weights
+# Keep each split self-contained by attaching the target and sample weights
+df_train_preprocessor_input = pd.concat([X_train_preprocessor_input, y_train, X_train[WEIGHT_COLUMN]], axis=1)
+df_val_preprocessor_input = pd.concat([X_val_preprocessor_input, y_val, X_val[WEIGHT_COLUMN]], axis=1)
+df_test_preprocessor_input = pd.concat([X_test_preprocessor_input, y_test, X_test[WEIGHT_COLUMN]], axis=1)
+
 df_train_preprocessed = pd.concat([X_train_preprocessed, y_train, X_train[WEIGHT_COLUMN]], axis=1)
 df_val_preprocessed = pd.concat([X_val_preprocessed, y_val, X_val[WEIGHT_COLUMN]], axis=1)
 df_test_preprocessed = pd.concat([X_test_preprocessed, y_test, X_test[WEIGHT_COLUMN]], axis=1)
 
-# Save as .csv files (in "data" directory)
-df_train_preprocessed.to_csv("../data/training_data_preprocessed.csv", index=True)
-df_val_preprocessed.to_csv("../data/validation_data_preprocessed.csv", index=True)
-df_test_preprocessed.to_csv("../data/test_data_preprocessed.csv", index=True)
+# Save model-ready datasets as .csv files for optional inspection
+df_train_preprocessed.to_csv("../data/training_data_model_ready.csv", index=True)
+df_val_preprocessed.to_csv("../data/validation_data_model_ready.csv", index=True)
+df_test_preprocessed.to_csv("../data/test_data_model_ready.csv", index=True)
 
-# Save as .parquet files (preserves index, data types, is faster, and requires less storage space than .csv)
-df_train_preprocessed.to_parquet("../data/training_data_preprocessed.parquet")
-df_val_preprocessed.to_parquet("../data/validation_data_preprocessed.parquet")
-df_test_preprocessed.to_parquet("../data/test_data_preprocessed.parquet")
+# Save both feature representations as .parquet files
+df_train_preprocessor_input.to_parquet("../data/training_data_preprocessor_input.parquet")
+df_val_preprocessor_input.to_parquet("../data/validation_data_preprocessor_input.parquet")
+df_test_preprocessor_input.to_parquet("../data/test_data_preprocessor_input.parquet")
+
+df_train_preprocessed.to_parquet("../data/training_data_model_ready.parquet")
+df_val_preprocessed.to_parquet("../data/validation_data_model_ready.parquet")
+df_test_preprocessed.to_parquet("../data/test_data_model_ready.parquet")
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Reload preprocessed data and verify data integrity (i.e., shape, index, types, and values are identical to original).
+#     📌 Reload the model-ready data and verify that its shape, index, data types, and values are unchanged.
 # </div>
 
 # %%
-# Reload data from .parquet files to Pandas DataFrames
-df_train_preprocessed_loaded = pd.read_parquet("../data/training_data_preprocessed.parquet")
-df_val_preprocessed_loaded = pd.read_parquet("../data/validation_data_preprocessed.parquet")
-df_test_preprocessed_loaded = pd.read_parquet("../data/test_data_preprocessed.parquet")
+# Reload model-ready data from .parquet files
+df_train_preprocessed_loaded = pd.read_parquet("../data/training_data_model_ready.parquet")
+df_val_preprocessed_loaded = pd.read_parquet("../data/validation_data_model_ready.parquet")
+df_test_preprocessed_loaded = pd.read_parquet("../data/test_data_model_ready.parquet")
 
-# Reload data from .csv files to Pandas DataFrames (ensure ID is loaded as the index and as a string)
-# df_train_preprocessed_loaded = pd.read_csv("../data/training_data_preprocessed.csv", index_col=ID_COLUMN, dtype={ID_COLUMN: str})
-# df_val_preprocessed_loaded = pd.read_csv("../data/validation_data_preprocessed.csv", index_col=ID_COLUMN, dtype={ID_COLUMN: str})
-# df_test_preprocessed_loaded = pd.read_csv("../data/test_data_preprocessed.csv", index_col=ID_COLUMN, dtype={ID_COLUMN: str})
+# Optionally reload model-ready data from .csv files (ensure ID is loaded as the index and as a string)
+# df_train_preprocessed_loaded = pd.read_csv("../data/training_data_model_ready.csv", index_col=ID_COLUMN, dtype={ID_COLUMN: str})
+# df_val_preprocessed_loaded = pd.read_csv("../data/validation_data_model_ready.csv", index_col=ID_COLUMN, dtype={ID_COLUMN: str})
+# df_test_preprocessed_loaded = pd.read_csv("../data/test_data_model_ready.csv", index_col=ID_COLUMN, dtype={ID_COLUMN: str})
 
 # Data Integrity Summary Table: Shape, Index, Types and Values of Original vs. Reloaded Data
 def verify_data_integrity(original, loaded, name):

@@ -47,8 +47,8 @@ from sklearn.metrics import mean_absolute_error, r2_score
 # Local imports
 from src.constants import TARGET_COLUMN, WEIGHT_COLUMN
 from src.modeling import (
-    TRAIN_DATA_PATH,
-    VAL_DATA_PATH,
+    TRAIN_MODEL_READY_DATA_PATH,
+    VAL_MODEL_READY_DATA_PATH,
     weighted_median_absolute_error,
     postprocess_quantile_predictions,
     save_model,
@@ -69,10 +69,10 @@ def main():
 
     # --- 2. Preprocessed Data Loading ---
     print("Step 2: Loading preprocessed data...")
-    df_train = pd.read_parquet(TRAIN_DATA_PATH)
-    df_val = pd.read_parquet(VAL_DATA_PATH)
-    print(f"  Loaded '{TRAIN_DATA_PATH}' with {len(df_train):,} rows and {len(df_train.columns):,} columns")
-    print(f"  Loaded '{VAL_DATA_PATH}' with {len(df_val):,} rows and {len(df_val.columns):,} columns")
+    df_train = pd.read_parquet(TRAIN_MODEL_READY_DATA_PATH)
+    df_val = pd.read_parquet(VAL_MODEL_READY_DATA_PATH)
+    print(f"  Loaded '{TRAIN_MODEL_READY_DATA_PATH}' with {len(df_train):,} rows and {len(df_train.columns):,} columns")
+    print(f"  Loaded '{VAL_MODEL_READY_DATA_PATH}' with {len(df_val):,} rows and {len(df_val.columns):,} columns")
 
     # --- 3. Feature-Target Separation ---
     print("Step 3: Separating features and target...")
@@ -131,13 +131,13 @@ def main():
         data_train = mlflow.data.from_pandas(
             X_train.assign(**{TARGET_COLUMN: y_train}), 
             targets=TARGET_COLUMN,
-            source=TRAIN_DATA_PATH, 
+            source=TRAIN_MODEL_READY_DATA_PATH,
             name="training_data"
         )
         data_val = mlflow.data.from_pandas(
             X_val.assign(**{TARGET_COLUMN: y_val}), 
             targets=TARGET_COLUMN,
-            source=VAL_DATA_PATH, 
+            source=VAL_MODEL_READY_DATA_PATH,
             name="validation_data"
         )
         mlflow.log_input(data_train, context="training")

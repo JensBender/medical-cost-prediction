@@ -24,9 +24,12 @@ from src.constants import TARGET_COLUMN, RANDOM_STATE
 
 # Paths (relative to project root)
 RAW_DATA_PATH = "data/h251.sas7bdat"
-TRAIN_DATA_PATH = "data/training_data_preprocessed.parquet"
-VAL_DATA_PATH = "data/validation_data_preprocessed.parquet"
-TEST_DATA_PATH = "data/test_data_preprocessed.parquet"
+TRAIN_PREPROCESSOR_INPUT_DATA_PATH = "data/training_data_preprocessor_input.parquet"
+VAL_PREPROCESSOR_INPUT_DATA_PATH = "data/validation_data_preprocessor_input.parquet"
+TEST_PREPROCESSOR_INPUT_DATA_PATH = "data/test_data_preprocessor_input.parquet"
+TRAIN_MODEL_READY_DATA_PATH = "data/training_data_model_ready.parquet"
+VAL_MODEL_READY_DATA_PATH = "data/validation_data_model_ready.parquet"
+TEST_MODEL_READY_DATA_PATH = "data/test_data_model_ready.parquet"
 
 
 # =========================
@@ -212,13 +215,13 @@ def train_and_evaluate(
             data_train = mlflow.data.from_pandas(
                 X_train.assign(**{TARGET_COLUMN: y_train}), 
                 targets=TARGET_COLUMN,
-                source=TRAIN_DATA_PATH, 
+                source=TRAIN_MODEL_READY_DATA_PATH,
                 name="training_data"
             )
             data_val = mlflow.data.from_pandas(
                 X_val.assign(**{TARGET_COLUMN: y_val}), 
                 targets=TARGET_COLUMN,
-                source=VAL_DATA_PATH, 
+                source=VAL_MODEL_READY_DATA_PATH,
                 name="validation_data"
             )
             mlflow.log_input(data_train, context="training")

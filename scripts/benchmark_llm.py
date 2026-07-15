@@ -58,7 +58,7 @@ from src.constants import (
     MARRY31X_TRANSITION_CODES, EMPST31_TRANSITION_CODES,
     MARRY31X_COLLAPSE_MAP, EMPST31_COLLAPSE_MAP,
 )
-from src.modeling import RAW_DATA_PATH, VAL_DATA_PATH, weighted_median_absolute_error, save_metrics, save_model, load_model
+from src.modeling import RAW_DATA_PATH, VAL_MODEL_READY_DATA_PATH, weighted_median_absolute_error, save_metrics, save_model, load_model
 
 # Suppress benign MLflow warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
@@ -139,7 +139,7 @@ returned in the requested list format."""
 # Data Preparation
 # =========================
 
-def prepare_human_readable_split_data(split_data_path=VAL_DATA_PATH, split_label="validation"):
+def prepare_human_readable_split_data(split_data_path=VAL_MODEL_READY_DATA_PATH, split_label="validation"):
     """
     Recover human-readable feature values for a preprocessed split (like val or test).
 
@@ -442,7 +442,7 @@ def main():
         
         # --- 1. Data Preparation ---
         print("Step 1: Preparing human-readable validation data...")
-        df_raw_val, y_val, w_val = prepare_human_readable_split_data(VAL_DATA_PATH, "validation")
+        df_raw_val, y_val, w_val = prepare_human_readable_split_data(VAL_MODEL_READY_DATA_PATH, "validation")
 
         # Ensure indices are aligned between raw features and preprocessed targets
         print(f"  Aligning row indices with preprocessed validation data...")
