@@ -12,17 +12,28 @@ model evaluation, and a planned FastAPI/Gradio app.
   - Tests: `.\.venv-test\Scripts\python`
 - Prefer editing Jupytext notebook scripts (`notebooks/*.py`) instead of
   `.ipynb` files unless the user asks otherwise.
+- After editing a notebook script, synchronize its tracked `.ipynb` pair with
+  Jupytext. Do not execute the notebook unless the task requires it.
+
+## Working Style
+
+- Make the smallest change needed for the current request.
+- Stay close to the existing code. Do not add cleanup, refactors, abstractions,
+  or related improvements unless asked.
+- For multi-step work, complete one meaningful step and wait for confirmation.
+- Mention additional opportunities instead of implementing them.
 
 ## Architecture Rules
 
 - Keep the sklearn pipeline lean: core preprocessing and ML logic only.
 - Handle UI/API formatting and user-input cleanup at the interface layer.
-- Use sample weights for MEPS metrics when applicable.
+- Use `PERWT23F` as `sample_weight` during model training. Use survey-weighted
+  metrics and benchmarks when estimating population-level performance.
   
 ## Important Files
 
-- `src/constants.py`: pipeline-critical constants; DVC-tracked, changes may
-  trigger reruns.
+- `src/constants.py`: dependency of all DVC stages; changes can invalidate
+  cached stages and trigger reruns.
 - `src/display.py`: display labels and presentation constants; safer to edit
   for notebook/UI wording.
 - `docs/specs/product_requirements.md`: product goals and requirements.
@@ -51,5 +62,5 @@ need to read twice.
 ## Commits
 
 - Do not commit directly unless explicitly asked.
-- For code or docs changes, always suggest an atomic commit message following
-  `docs/workflow/git_conventions.md`.
+- After making code or documentation changes, suggest one atomic commit message
+  that follows `docs/workflow/git_conventions.md`.
