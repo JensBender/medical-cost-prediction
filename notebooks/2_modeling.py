@@ -4742,14 +4742,18 @@ plot_quantile_subgroup_predictions(
 #                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span>
 #                 <br><br>
 #                 <details style="margin-bottom:8px;">
-#                 <summary style="cursor:pointer;"><strong>What's driving your estimate</strong> <i>(click to expand)</i></summary>
-#                 <span style="font-size:0.85em; color:#555;">
-#                 These factors had the largest effect on your plan-around estimate:<br>
-#                 🔽 Your age (28): −\$210<br>
-#                 🔽 No chronic conditions: −\$190<br>
-#                 🔽 "Very Good" physical health: −\$130<br>
-#                 🔼 Having a usual doctor or clinic: +\$60
-#                 </span>
+#                 <summary style="cursor:pointer;"><strong>What shaped your plan-around estimate?</strong></summary>
+#                 <p style="font-size:0.85em; color:#555; margin-bottom:6px;">These five answers contributed most to your plan-around estimate:</p>
+#                 <table style="width:100%; border-collapse:collapse; font-size:0.85em;">
+#                     <thead><tr><th style="text-align:left; padding:4px;">Your answer</th><th style="text-align:right; padding:4px;">Contribution</th></tr></thead>
+#                     <tbody>
+#                         <tr><td style="padding:4px;"><strong>Age:</strong> 28</td><td style="text-align:right; padding:4px;"><strong>↓ −\$210</strong></td></tr>
+#                         <tr><td style="padding:4px;"><strong>Physical health:</strong> Very Good</td><td style="text-align:right; padding:4px;"><strong>↓ −\$130</strong></td></tr>
+#                         <tr><td style="padding:4px;"><strong>High blood pressure:</strong> No</td><td style="text-align:right; padding:4px;"><strong>↓ −\$100</strong></td></tr>
+#                         <tr><td style="padding:4px;"><strong>High cholesterol:</strong> No</td><td style="text-align:right; padding:4px;"><strong>↓ −\$90</strong></td></tr>
+#                         <tr><td style="padding:4px;"><strong>Usual source of care:</strong> Yes</td><td style="text-align:right; padding:4px;"><strong>↑ +\$60</strong></td></tr>
+#                     </tbody>
+#                 </table>
 #                 </details>
 #                 <details style="margin-bottom:8px;">
 #                 <summary style="cursor:pointer;""><strong>How you compare to others</strong> <i>(click to expand)</i></summary>
@@ -4776,15 +4780,18 @@ plot_quantile_subgroup_predictions(
 #                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary a lot from year to year. This estimate falls in a higher-cost range, and because you are uninsured, out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion.</span>
 #                 <br><br>
 #                 <details style="margin-bottom:8px;">
-#                 <summary style="cursor:pointer;"><strong>What's driving your estimate</strong> <i>(click to expand)</i></summary>
-#                 <span style="font-size:0.85em; color:#555;">
-#                 These factors had the largest effect on your plan-around estimate:<br>
-#                 🔼 Your age (68): +\$480<br>
-#                 🔼 Diabetes: +\$370<br>
-#                 🔼 Uninsured: +\$310<br>
-#                 🔼 High blood pressure: +\$180<br>
-#                 🔽 "Good" physical health: −\$90
-#                 </span>
+#                 <summary style="cursor:pointer;"><strong>What shaped your plan-around estimate?</strong></summary>
+#                 <p style="font-size:0.85em; color:#555; margin-bottom:6px;">These five answers contributed most to your plan-around estimate:</p>
+#                 <table style="width:100%; border-collapse:collapse; font-size:0.85em;">
+#                     <thead><tr><th style="text-align:left; padding:4px;">Your answer</th><th style="text-align:right; padding:4px;">Contribution</th></tr></thead>
+#                     <tbody>
+#                         <tr><td style="padding:4px;"><strong>Age:</strong> 68</td><td style="text-align:right; padding:4px;"><strong>↑ +\$480</strong></td></tr>
+#                         <tr><td style="padding:4px;"><strong>Diabetes:</strong> Yes</td><td style="text-align:right; padding:4px;"><strong>↑ +\$370</strong></td></tr>
+#                         <tr><td style="padding:4px;"><strong>Insurance:</strong> Uninsured</td><td style="text-align:right; padding:4px;"><strong>↑ +\$310</strong></td></tr>
+#                         <tr><td style="padding:4px;"><strong>High blood pressure:</strong> Yes</td><td style="text-align:right; padding:4px;"><strong>↑ +\$180</strong></td></tr>
+#                         <tr><td style="padding:4px;"><strong>Physical health:</strong> Good</td><td style="text-align:right; padding:4px;"><strong>↓ −\$90</strong></td></tr>
+#                     </tbody>
+#                 </table>
 #                 </details>
 #                 <details style="margin-bottom:8px;">
 #                 <summary style="cursor:pointer;""><strong>How you compare to others</strong> <i>(click to expand)</i></summary>
@@ -4801,6 +4808,7 @@ plot_quantile_subgroup_predictions(
 #             </td>
 #         </tr>
 #     </table>
+#     App Implementation: Use a Gradio accordion (<code>gr.Accordion(open=False)</code>) containing a Markdown table for the section "What shaped your plan-around estimate?".
 # </div>
 
 # %% [markdown]
