@@ -5031,7 +5031,7 @@ if baseline_relative_difference > SHAP_BASELINE_REL_DIFF_MAX:
     )
 
 # %%
-# 4. Build the explainer and explain one test row
+# 4. Build the explainer and define the SHAP contribution function
 shap_masker = shap.maskers.Independent(
     shap_background,
     max_samples=SHAP_BACKGROUND_N,
@@ -5043,17 +5043,35 @@ explainer = shap.Explainer(
     seed=RANDOM_STATE,
 )
 
+
+def calculate_shap_explanation(X):
+    """Calculate a 2023-dollar SHAP explanation for one or more input rows."""
+    if not isinstance(X, pd.DataFrame):
+        raise TypeError("SHAP inputs must be provided as a pandas DataFrame.")
+
+    missing_features = [
+        feature for feature in SHAP_INPUT_FEATURES if feature not in X.columns
+    ]
+    if missing_features:
+        raise ValueError(
+            "SHAP input is missing preprocessor input features: "
+            f"{missing_features}"
+        )
+
+    return explainer(X.loc[:, SHAP_INPUT_FEATURES])
+
+
 example_idx = 0
 X_test_example = X_test_preprocessor_input.iloc[[example_idx]]
-shap_values = explainer(X_test_example)
+shap_explanation = calculate_shap_explanation(X_test_example)
 
 # %%
 # 5. Display the SHAP results for a single person
 # 5.1 SHAP explanation summary
-baseline = shap_values.base_values[0]
+baseline = shap_explanation.base_values[0]
 example_prediction = predict_median_cost(X_test_example)[0]
 example_actual = y_test.loc[X_test_example.index[0]]
-example_shap_sum = shap_values.values[0].sum()
+example_shap_sum = shap_explanation.values[0].sum()
 
 example_shap_result = pd.DataFrame({
     "Metric": [
@@ -5121,9 +5139,9 @@ example_shap_feature_values = pd.DataFrame({
         format_shap_input(feature, example_row[feature])
         for feature in SHAP_INPUT_FEATURES
     ],
-    "SHAP Value": shap_values.values[0],
+    "SHAP Contribution (2023 USD)": shap_explanation.values[0],
 }).sort_values(
-    "SHAP Value",
+    "SHAP Contribution (2023 USD)",
     key=lambda values: values.abs(),
     ascending=False,
 )
@@ -5135,7 +5153,7 @@ display(
         f"SHAP Contribution Breakdown by Feature (Test Row {example_idx})",
     )
     .format({
-        "SHAP Value": lambda value: f"{'-' if value < 0 else ''}${abs(value):,.1f}",
+        "SHAP Contribution (2023 USD)": lambda value: f"{'-' if value < 0 else ''}${abs(value):,.1f}",
     })
     .hide()
 )
