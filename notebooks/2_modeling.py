@@ -4812,8 +4812,8 @@ plot_quantile_subgroup_predictions(
 # </div>
 
 # %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">SHAP</h2>
+# <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
+#     <h1 style="margin:0px">Model Explainability (SHAP)</h1>
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
@@ -5138,6 +5138,19 @@ display(
     })
     .hide()
 )
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Interpretation:</b>
+#     <ul>
+#         <li><strong>Education:</strong> The person's <code>No Degree</code> answer moved the plan-around estimate down by about \$135.</li>
+#         <li><strong>Insurance:</strong> The person's <code>Public Only</code> answer moved the estimate down by about \$99.</li>
+#         <li><strong>Usual Source of Care:</strong> Reporting no usual source of care moved the estimate down by about \$82.</li>
+#         <li><strong>Age:</strong> The person's age of 70 moved the estimate up by about \$53.</li>
+#         <li><strong>Joint Pain:</strong> Reporting no joint pain moved the estimate down by about \$51.</li>
+#     </ul>
+#     <em>Note: These are local contributions relative to the SHAP background and depend on the person's other answers. They are not comparisons with specific alternative answers. They explain predicted, not actual, costs and should not be interpreted causally. For example, they do not show how changing public to private insurance or stopping to smoke would change a person's costs.</em>
+# </div>
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
