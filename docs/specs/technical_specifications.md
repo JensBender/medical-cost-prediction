@@ -406,7 +406,9 @@ Store the inflation factor in `app/data/medical_inflation.json` for each applica
 
 The `base_index` is the 2023 mean across all 12 months and `target_index` is the latest published month. Calculate `medical_cost_inflation_factor` as `target_index / base_index`. For example, a 2023 index of `549` and a May 2026 index of `593` produce a medical inflation factor of `593 / 549 = 1.08`. The Medical Care CPI level in May 2026 is therefore 8% higher than the average level in 2023, so a $1,000 model cost prediction in 2023 dollars becomes about $1,080.
 
-During API/UI output formatting, apply the inflation factor to q25, q50, q75, q90, national and age-group benchmarks, and SHAP dollar impacts. Keep model predictions, metrics, and warning thresholds in 2023 dollars.
+Model inference and SHAP calculations operate in 2023 dollars. During API/UI output formatting, apply the inflation factor exactly once to q25, q50, q75, q90, national and age-group benchmarks, and SHAP dollar impacts. Round monetary values only after this adjustment. Return only inflation-adjusted amounts; do not return a second set of 2023-dollar values.
+
+Every API response must identify the currency, the model price year, the output price year represented by the inflation artifact's target period, and the inflation factor actually applied. This gives API consumers enough information to interpret the returned amounts and, if needed, approximately recover the original 2023-dollar values.
 
 ### API Contract
 The prediction service will expose the trained model artifact via a Python API (internal to the web app process) or a REST endpoint if decoupled.
@@ -429,28 +431,51 @@ The prediction service will expose the trained model artifact via a Python API (
         chronic_conditions: List[str] = [] # e.g., ["Diabetes", "Cancer"]
         limitations: List[str] = []        # e.g., ["Walking", "ADL"]
     ```
-*   **Output Schema:**
+*   **Example Output:**
     ```json
     {
-      "prediction_median": float,
-      "prediction_25th": float,
-      "prediction_75th": float,
-      "prediction_90th": float,
+      "currency_context": {
+        "currency": "USD",
+        "model_price_year": 2023,
+        "output_price_year": 2026,
+        "inflation_factor": 1.08
+      },
+      "prediction": {
+        "q25": 0.0,
+        "q50": 82.0,
+        "q75": 410.0,
+        "q90": 1250.0
+      },
       "benchmark_comparison": {
         "national": {
           "label": "Typical American",
-          "median_cost": float
+          "median_cost": 420.0
         },
         "age_group": {
           "label": "Typical for ages 35-49",
-          "median_cost": float
+          "median_cost": 390.0
         }
       },
-      "shap_values": Dict[str, float],
-      "warning_flags": List[str]
+      "explanation": {
+        "method": "shap_permutation",
+        "top_contributions": [
+          {
+            "feature": "education",
+            "label": "Education",
+            "input_value": "No Degree",
+            "contribution": -145.0,
+            "rank": 1
+          }
+        ]
+      },
+      "warning_flags": []
     }
     ```
-    `benchmark_comparison` is derived from the `cost_benchmarks.json` artifact. At prediction time, apply the same medical-cost factor to prediction, benchmark, and SHAP dollar values. All monetary values returned to the UI are adjusted to current dollars.
+    `benchmark_comparison` is derived from the `cost_benchmarks.json` artifact. All monetary values in the response use the `output_price_year` in `currency_context`. The response does not include the SHAP baseline or separate 2023-dollar values.
+
+    Rank SHAP contributions by their absolute values and return the five largest contributions. The API returns feature names, user-facing labels, input values, SHAP contributions, and ranks. The Gradio UI uses these values to format the table, arrows, and rounded dollar amounts.
+
+    Explanation generation should be optional for batch prediction requests to the prediction service because permutation SHAP is substantially more expensive than prediction alone. The Gradio app requests an explanation for its single prediction. Batch API requests should default to predictions without explanations and enforce a limit on the number of rows that can be explained in one request.
 
 #### SHAP Explainability
 Use SHAP values for user-facing cost-driver explanations. SHAP must operate on the 27 preprocessor input features. These are interpretable, semantically meaningful features before imputation, medical feature derivation, scaling, and one-hot encoding. Build `shap.Explainer` with `shap.maskers.Independent` over a survey-weighted background sample. Use permutation SHAP rather than TreeExplainer because the explanation target is the full postprocessed q50 inference callable, not the raw inner XGBoost tree output. The permutation-SHAP callable must run the complete q50 prediction path: fitted preprocessor, transformed-target quantile model, inverse target transformation, quantile cleanup, and q50 selection. It returns the postprocessed q50 plan-around estimate in 2023 dollars before medical-cost inflation. This makes each SHAP feature an interpretable input. Before deployment, verify on the test set that monotonic quantile enforcement rarely changes q50 and that any q50 adjustment is negligible. Apply medical-cost inflation only during API/UI output formatting.
@@ -520,6 +545,8 @@ the pre-inflation predicted `q90` is greater than or equal to this fixed cutoff.
 
 ### Privacy-Preserving Monitoring
 The MVP product release must preserve the product promise of anonymous, stateless predictions. Production monitoring therefore cannot depend on linked user records or follow-up actual-spend outcomes.
+
+Request-level predictions and SHAP values, including their intermediate 2023-dollar values and inflation-adjusted values, are temporary in-memory calculation values. Do not persist or log them at any point in request handling.
 
 **Why true production calibration is out of scope for the MVP product release**
 *   **No reliable default label:** Calibration metrics such as q25-q75 coverage and q90 coverage require observed annual out-of-pocket spending. Most users will not return one year later with a reliable total.
