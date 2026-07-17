@@ -4874,8 +4874,13 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Create Artifacts:</strong> Use <code>scripts/preprocess.py</code> to create <code>data/training_data_preprocessor_input.parquet</code> and <code>models/preprocessor.joblib</code>. Use <code>scripts/train_xgboost_quantile.py</code> to create <code>models/xgb_quantile_model.joblib</code>. Use <code>scripts/build_app_artifacts.py</code> to create <code>app/data/shap_background.parquet</code> and <code>app/data/shap_metadata.json</code>.</li>
 #         <li><strong>During Application Startup:</strong> Load the preprocessor, quantile model, and SHAP background. Build the explainer once.</li>
 #         <li><strong>At Inference Time:</strong> Map the user inputs to the preprocessor inputs. Predict all quantiles using the fitted preprocessor and model, postprocess them, and compute permutation SHAP for q50. Rank contributions by absolute value and select the five largest. Apply medical-cost inflation to predictions, comparison benchmarks, and the selected SHAP contributions.</li>
-#         <li><strong>API and Privacy Contract:</strong> Return inflation-adjusted amounts with the currency, model price year, output price year, and applied inflation factor. Do not return the SHAP baseline or separate 2023-dollar values. Make explanations optional for batch prediction requests. Keep request-level inputs, predictions, and SHAP values in memory only, and persist only approved aggregate monitoring data.</li>
+#         <li><strong>API Contract and Privacy Requirements:</strong> Return inflation-adjusted amounts with the currency, model price year, output price year, and applied inflation factor. Do not return the SHAP baseline or separate 2023-dollar values. Make explanations optional for batch prediction requests. Keep request-level inputs, predictions, and SHAP values in memory only, and persist only approved aggregate monitoring data.</li>
 #     </ol>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">SHAP Explainer Setup</h2>
 # </div>
 
 # %% [markdown]
@@ -4925,8 +4930,7 @@ def predict_median_cost(X):
     return postprocess_quantile_predictions(quantile_predictions)[:, 1]
 
 # %%
-# Artifact consistency check: confirm that the saved preprocessor inputs and
-# preprocessor reproduce the model-ready training features
+# Artifact consistency check: confirm that the saved preprocessor inputs and preprocessor reproduce the model-ready training features
 X_train_reprocessed = preprocessor.transform(X_train_preprocessor_input)
 pd.testing.assert_frame_equal(
     X_train_reprocessed,
@@ -4969,7 +4973,7 @@ if baseline_relative_difference > SHAP_BASELINE_REL_DIFF_MAX:
     )
 
 # %%
-# 4. Build the explainer and define the SHAP contribution function
+# 4. Build the explainer and define the explanation function
 shap_masker = shap.maskers.Independent(
     shap_background,
     max_samples=SHAP_BACKGROUND_N,
@@ -4998,14 +5002,23 @@ def calculate_shap_explanation(X):
 
     return explainer(X.loc[:, SHAP_INPUT_FEATURES])
 
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Local Prediction Explanation</h2>
+# </div>
 
+# %%
+# Calculate a SHAP explanation for one example test row
 example_idx = 0
 X_test_example = X_test_preprocessor_input.iloc[[example_idx]]
 shap_explanation = calculate_shap_explanation(X_test_example)
 
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Example Explanation Summary</h3>
+# </div>
+
 # %%
-# 5. Display the SHAP results for a single person
-# 5.1 SHAP explanation summary
 baseline = shap_explanation.base_values[0]
 example_prediction = predict_median_cost(X_test_example)[0]
 example_actual = y_test.loc[X_test_example.index[0]]
@@ -5045,8 +5058,12 @@ display(
 #     </ul>
 # </div>
 
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Contribution Breakdown by Feature</h3>
+# </div>
+
 # %%
-# 5.2 SHAP contribution breakdown by feature (for a single person)
 def format_shap_input(feature, value):
     """Return one preprocessor input value in a readable format."""
     if pd.isna(value):
@@ -5110,6 +5127,16 @@ display(
 # </div>
 
 # %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">SHAP Configuration Benchmark</h2>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Benchmark Design</h3>
+# </div>
+
+# %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Prototype SHAP benchmarking experiment. Identify the smallest defensible configuration of SHAP evaluation budget (<code>max_evals</code>) and background size under the latency target.
 # </div>
@@ -5123,6 +5150,11 @@ display(
 #         <li><strong>Metrics:</strong> Track latency, top-driver overlap, sign agreement, dollar-impact deltas, baseline delta, and additivity error: <code>abs(predicted_q50 - (base_value + sum(SHAP values)))</code>.</li>
 #         <li><strong>Selection rule:</strong> Choose the smallest background size and SHAP evaluation budget that meets the &lt;1s server-side latency target while keeping additivity error near zero and top cost drivers stable versus the reference.</li>
 #     </ul>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
+#     <h3 style="margin:0px">Benchmark Results</h3>
 # </div>
 
 # %%
@@ -5461,3 +5493,12 @@ if RUN_SHAP_EVAL_BENCHMARK:
     )
 else:
     print("Set RUN_SHAP_EVAL_BENCHMARK = True to run the SHAP evaluation budget benchmark.")
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Feature Importance Audit</h2>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Planned analyses: global SHAP feature importance, native XGBoost feature importance, and comparison of the two complementary rankings.
+# </div>
