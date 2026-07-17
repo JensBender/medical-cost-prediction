@@ -482,6 +482,76 @@ Use SHAP values for user-facing cost-driver explanations. SHAP must operate on t
 
 Persist the fitted preprocessing pipeline as `models/preprocessor.joblib`. Store the SHAP background sample as `app/data/shap_background.parquet` and SHAP metadata as `app/data/shap_metadata.json`. The background sample should use MEPS person weights (`PERWT23F`) with replacement so the unweighted SHAP background approximates the weighted U.S. adult reference population. The initial target range is 200-500 background rows, and the final production size is selected by benchmarking. Validate the sample by comparing the SHAP background baseline with the full weighted training baseline. The artifact passes if `abs(relative_difference) <= 0.10`; if it exceeds 10%, increase the background size before deployment.
 
+**SHAP metadata artifact contract**
+
+The following template defines the structure of `app/data/shap_metadata.json`.
+
+```json
+{
+  "schema_version": 1,
+  "artifacts": {
+    "model": "models/xgb_quantile_model.joblib",
+    "preprocessor": "models/preprocessor.joblib",
+    "background": "app/data/shap_background.parquet"
+  },
+  "data_source": "MEPS 2023 (HC-251), training split",
+  "reference_population": "U.S. civilian noninstitutionalized adults represented by MEPS training rows",
+  "explained_output": {
+    "quantile": "q50",
+    "meaning": "plan-around estimate, predicted median out-of-pocket cost",
+    "unit": "USD",
+    "currency_year": 2023,
+    "postprocessed": true,
+    "inflation_adjusted": false
+  },
+  "background_sample": {
+    "feature_set": "preprocessor_input",
+    "feature_count": 27,
+    "rows": 300,
+    "sampling_method": "weighted sample with replacement using PERWT23F",
+    "random_state": 42
+  },
+  "explainer_contract": {
+    "algorithm": "permutation",
+    "prediction_function": "predict_median_cost",
+    "input_feature_set": "preprocessor_input",
+    "input_feature_count": 27,
+    "prediction_pipeline": [
+      {
+        "operation": "preprocess",
+        "artifact_ref": "preprocessor",
+        "output_feature_set": "model_ready",
+        "output_feature_count": 40
+      },
+      {
+        "operation": "predict_quantiles",
+        "artifact_ref": "model",
+        "outputs": ["q25", "q50", "q75", "q90"],
+        "includes_inverse_target_transformation": true
+      },
+      {
+        "operation": "postprocess_quantiles",
+        "rules": ["non_negative", "monotonic"]
+      },
+      {
+        "operation": "select_quantile",
+        "quantile": "q50"
+      }
+    ]
+  },
+  "background_validation": {
+    "method": "baseline_relative_difference",
+    "comparison": "compare mean postprocessed q50 of background vs. full training data",
+    "background_baseline_2023_usd": null,
+    "weighted_training_baseline_2023_usd": null,
+    "relative_difference": null,
+    "absolute_relative_difference": null,
+    "max_allowed_absolute_relative_difference": 0.10,
+    "passed": null
+  }
+}
+```
+
 The prediction service should load the fitted preprocessor, quantile model, and SHAP background at startup and build the explainer once. At inference time, map the user inputs into the preprocessor input schema; run preprocessing, q25/q50/q75/q90 prediction, and quantile postprocessing; compute SHAP for q50 through the same full callable; apply the medical-cost inflation factor to displayed SHAP dollar impacts; and return the top cost drivers. Do not mix q25, q75, or q90 SHAP explanations into the q50 explanation.
 
 Select production background data size (`background_n`) and SHAP evaluation budget (`max_evals`) empirically. Benchmark candidate combinations against a reference configuration with larger background size and higher SHAP evaluation budget, then choose the smallest configuration that meets the latency target while keeping user-facing explanations stable. Track at least p50/p90/p95 latency, top-k driver overlap, sign stability, SHAP dollar drift for top drivers, baseline drift, and additivity error. Top-driver and sign stability matter more than exact low-ranked feature dollar values.

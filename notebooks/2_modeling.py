@@ -4808,7 +4808,7 @@ plot_quantile_subgroup_predictions(
 #             </td>
 #         </tr>
 #     </table>
-#     App Implementation: Use a Gradio accordion (<code>gr.Accordion(open=False)</code>) containing a Markdown table for the section "What shaped your plan-around estimate?".
+#     App Implementation: For "What shaped your plan-around estimate?", use a Gradio accordion (<code>gr.Accordion(open=False)</code>) containing a Markdown table.
 # </div>
 
 # %% [markdown]
@@ -4825,7 +4825,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Feature Importance Analysis for Model Audit:</strong> Rank the features by mean absolute SHAP value (<code>mean(|SHAP|)</code>) across many predictions (survey-weighted) to identify which features have the largest dollar impact on predicted median costs (postprocessed q50). Compare this SHAP feature importance with native XGBoost importance to audit whether the model relies on plausible cost drivers.</li>
 #         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use individual SHAP values to show which inputs moved that user's plan-around estimate above or below the SHAP baseline. This is a product feature, not just a diagnostic. It makes the prediction more useful for financial planning by explaining the main cost drivers. Use cautious wording ("moved the estimate") and avoid causal language.</li>
 #     </ol>
-#     <strong>SHAP Explanation Target</strong><br>
+#     <strong>Explained Output</strong><br>
 #     SHAP explanations focus on the q50 plan-around estimate (predicted median cost). The q25, q75, and q90 outputs define the typical range and safety cushion, but should not be mixed into the q50 explanation. 
 #     <br><br>
 #     <strong>SHAP Explainer Callable</strong><br>
@@ -4867,70 +4867,8 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Predicted, Not Actual Costs:</strong> SHAP explains the model's prediction, not the true drivers of real-world medical costs. If the model overstates, understates, or misses a relationship, the SHAP values reflect that error. SHAP does not fix model limitations: if the model underpredicts high-cost cases, reflects noisy survey data, or lacks important predictors, SHAP explains those imperfect predictions.</li>
 #     </ul>
 #     <strong>SHAP Metadata</strong><br>
-#     Store a small metadata file alongside the SHAP background artifact for developers and prediction-service auditability (schema template below).
-#     <pre>{
-#   "schema_version": 1,
-#   "artifacts": {
-#     "model": "models/xgb_quantile_model.joblib",
-#     "preprocessor": "models/preprocessor.joblib",
-#     "background": "app/data/shap_background.parquet"
-#   },
-#   "data_source": "MEPS 2023 (HC-251), training split",
-#   "reference_population": "U.S. civilian noninstitutionalized adults represented by MEPS training rows",
-#   "prediction_target": {
-#     "output": "q50",
-#     "meaning": "plan-around estimate, predicted median out-of-pocket cost",
-#     "unit": "USD",
-#     "currency_year": 2023,
-#     "postprocessed": true,
-#     "inflation_adjusted": false
-#   },
-#   "background_sample": {
-#     "feature_set": "preprocessor_input",
-#     "feature_count": 27,
-#     "rows": 300,
-#     "sampling_method": "weighted sample with replacement using PERWT23F",
-#     "random_state": 42
-#   },
-#   "explainer_contract": {
-#     "algorithm": "permutation",
-#     "prediction_function": "predict_median_cost",
-#     "input_feature_set": "preprocessor_input",
-#     "input_feature_count": 27,
-#     "prediction_pipeline": [
-#       {
-#         "operation": "preprocess",
-#         "artifact_ref": "preprocessor",
-#         "output_feature_set": "model_ready",
-#         "output_feature_count": 40
-#       },
-#       {
-#         "operation": "predict_quantiles",
-#         "artifact_ref": "model",
-#         "outputs": ["q25", "q50", "q75", "q90"],
-#         "includes_inverse_target_transformation": true
-#       },
-#       {
-#         "operation": "postprocess_quantiles",
-#         "rules": ["non_negative", "monotonic"]
-#       },
-#       {
-#         "operation": "select_quantile",
-#         "quantile": "q50"
-#       }
-#     ]
-#   },
-#   "background_validation": {
-#     "method": "baseline_relative_difference",
-#     "comparison": "compare mean postprocessed q50 of background vs. full training data",
-#     "background_baseline_2023_usd": null,
-#     "weighted_training_baseline_2023_usd": null,
-#     "relative_difference": null,
-#     "absolute_relative_difference": null,
-#     "max_allowed_absolute_relative_difference": 0.10,
-#     "passed": null
-#   }
-# }</pre><br>
+#     Store metadata alongside the SHAP background artifact for developer and prediction-service auditability. It records the model and preprocessor artifacts, explainer configuration, explained output, background sampling method, and background validation results. The technical specifications define the metadata structure, and the artifact-generation script writes the calculated validation values to <code>app/data/shap_metadata.json</code>.
+#     <br><br>
 #     <strong>App/API Implementation Plan</strong>
 #     <ol>
 #         <li><strong>Create Artifacts:</strong> Use <code>scripts/preprocess.py</code> to create <code>data/training_data_preprocessor_input.parquet</code> and <code>models/preprocessor.joblib</code>. Use <code>scripts/train_xgboost_quantile.py</code> to create <code>models/xgb_quantile_model.joblib</code>. Use <code>scripts/build_app_artifacts.py</code> to create <code>app/data/shap_background.parquet</code> and <code>app/data/shap_metadata.json</code>.</li>
