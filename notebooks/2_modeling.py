@@ -4826,27 +4826,27 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use individual SHAP values to show which inputs moved that user's plan-around estimate above or below the SHAP baseline. This is a product feature, not just a diagnostic. It makes the prediction more useful for financial planning by explaining the main cost drivers. Use cautious wording ("moved the estimate") and avoid causal language.</li>
 #     </ol>
 #     <strong>Explained Output</strong><br>
-#     SHAP explanations focus on the q50 plan-around estimate (predicted median cost). The q25, q75, and q90 outputs define the typical range and safety cushion, but should not be mixed into the q50 explanation. 
+#     SHAP explanations focus on the q50 plan-around estimate (predicted median cost). The q25, q75, and q90 outputs define the typical range and safety cushion, but should not be mixed into the q50 explanation.
 #     <br><br>
-#     <strong>SHAP Explainer Callable</strong><br>
+#     <strong>SHAP Prediction Function</strong><br>
 #     SHAP can explain a callable prediction function, not only a raw model object. The saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> wrapping the inner XGBoost estimator, but the explainer calls <code>predict_median_cost</code> instead. This callable converts 27 preprocessor input features into 40 model-ready features, predicts all four quantiles, applies the inverse target transformation, enforces non-negative and monotonic quantiles (<code>q25 ≤ q50 ≤ q75 ≤ q90</code>), and selects q50. Medical-cost inflation remains outside the callable and is applied only during API/UI output formatting.
 #     <br><br>
-#     Postprocessed q50 is appropriate as the SHAP target because it matches the plan-around estimate and the impact of postprocessing on q50 is negligible. On the test set, non-negative clipping affects 1.1% of the weighted test population with a maximum adjustment of \$0.37, and monotonic quantile enforcement affects 0.2% with a maximum adjustment of \$0.01. 
+#     Postprocessed q50 is appropriate as the explained output because it matches the plan-around estimate and the impact of postprocessing on q50 is negligible. On the test set, non-negative clipping affects 1.1% of the weighted test population with a maximum adjustment of \$0.37, and monotonic quantile enforcement affects 0.2% with a maximum adjustment of \$0.01.
 #     <br><br>
 #     <strong>Why Not TreeExplainer?</strong><br>
-#     TreeExplainer is faster for raw tree models, but it would explain only the inner XGBoost estimator operating on the 40 model-ready features. It would not include the fitted preprocessor, inverse target transformation, non-negative and monotonic quantile postprocessing, or q50 selection. Use <code>shap.Explainer(..., algorithm="permutation")</code> with <code>predict_median_cost</code> callable so SHAP explains the q50 estimate based on the 27 preprocessor input features. These preprocessing pipeline inputs are interpretable, semantically meaningful features.
+#     TreeExplainer is faster for raw tree models, but it would explain only the inner XGBoost estimator operating on the 40 model-ready features. It would not include the fitted preprocessor, inverse target transformation, non-negative and monotonic quantile postprocessing, or q50 selection. Use <code>shap.Explainer(..., algorithm="permutation")</code> with the <code>predict_median_cost</code> prediction function so SHAP explains the q50 estimate based on the 27 preprocessor input features. These preprocessor input features are interpretable, semantically meaningful features.
 #     <br><br>
 #     <strong>Feature Importance</strong><br>
 #     SHAP feature importance is based on the preprocessor input features produced by several MEPS data preparation steps, but before the preprocessor performs imputation, medical feature engineering, scaling, and one-hot encoding. The callable follows the complete prediction path: <code>27 preprocessor input features → preprocessor → 40 model-ready features → quantile model prediction → inverse target transformation → quantile postprocessing → q50</code>.
 #     <br><br>
-#     XGBoost native feature importance is based on all quantiles (q25, q50, q75, q90) and the 40 model-ready features. These are the scaled numerical features, one-hot encoded nominal features, passed-through binary features, and derived medical features (e.g., chronic condition count) that the trees use for splits. Use <code>total_gain</code>, which measures the total reduction in the training objective from all splits using that feature. For this fitted multi-quantile model, it is aggregated across the q25, q50, q75, and q90 trees, it is not q50-specific and is not in dollar-scale. Report <code>weight</code> and <code>gain</code> as supporting diagnostics. <code>weight</code> is the number of splits using the feature, while <code>gain</code> is the average objective improvement per split. Together, they show whether a high total gain comes from frequent modest improvements or fewer high-value splits.
+#     XGBoost native feature importance is based on all quantiles (q25, q50, q75, q90) and the 40 model-ready features. These are the scaled numerical features, one-hot encoded nominal features, passed-through binary features, and derived medical features (e.g., chronic condition count) that the trees use for splits. Use <code>total_gain</code>, which measures the total reduction in the training objective from all splits using that feature. For this fitted multi-quantile model, it is aggregated across the q25, q50, q75, and q90 trees; it is not q50-specific and is not measured in dollars. Report <code>weight</code> and <code>gain</code> as supporting diagnostics. <code>weight</code> is the number of splits using the feature, while <code>gain</code> is the average objective improvement per split. Together, they show whether a high total gain comes from frequent modest improvements or fewer high-value splits.
 #     <br><br>
 #     Treat SHAP and XGBoost native importance as complementary rather than interchangeable. SHAP explains the postprocessed q50 prediction over 27 interpretable preprocessor input features and reports dollar impacts. Native <code>total_gain</code> summarizes how the joint four-quantile estimator used 40 model-ready features during training.
 #     <br><br>
 #     <strong>Background Data</strong><br>
 #     The background data is a 200–500 row sample from the training data (with preprocessor input features), drawn using weighted sampling with replacement. SHAP treats background rows as equal-weight, so sampling with MEPS person weights (<code>PERWT23F</code>) makes the background approximate the U.S. adult population distribution. High-weight respondents may appear more than once. That is expected because duplicates represent their larger population share. The SHAP baseline is the mean postprocessed q50 prediction across those background rows.
 #     <br><br>
-#     Background data validation: Compare the background sample's SHAP baseline against the full weighted training baseline. Accept the sample if <code>abs(relative_difference) &lt;= 10%</code>. If it exceeds 10%, increase the background size before creating app artifacts. This is an initial validation, consider stronger validation criteria.
+#     Background data validation: Compare the background sample's SHAP baseline against the full weighted training baseline. Accept the sample if <code>abs(relative_difference) &lt;= 10%</code>. If it exceeds 10%, increase the background size before creating app artifacts. This is an initial validation. Consider stronger validation criteria.
 #     <br><br>
 #     <strong>Prediction Service Latency</strong><br>
 #     A normal prediction scores one user row. A SHAP explanation scores many masked versions of that row against the background. With 27 preprocessor input features, one complete permutation round evaluates up to <code>2 × 27 + 1 = 55</code> masked feature combinations: one initial fully masked state, 27 forward steps that add features, and 27 backward steps that remove them. The default <code>max_evals=500</code> permits 9 complete rounds, or 495 masks. With a 300-row background this is at most about 148,500 synthetic predictions. SHAP predicts in batches, but this remains the main expected source of prediction-service latency.
@@ -4882,10 +4882,9 @@ plot_quantile_subgroup_predictions(
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">SHAP Explainer Setup</h2>
 # </div>
-
-# %% [markdown]
+#
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Prototype SHAP code implementation.
+#     📌 Set up the SHAP explainer with the preprocessor, model, background data (derived from training data), and prediction function.
 # </div>
 
 # %%
@@ -5006,16 +5005,19 @@ def calculate_shap_explanation(X):
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Local Prediction Explanation</h2>
 # </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Calculate a SHAP explanation for one example test row.
+# </div>
 
 # %%
-# Calculate a SHAP explanation for one example test row
 example_idx = 0
 X_test_example = X_test_preprocessor_input.iloc[[example_idx]]
 shap_explanation = calculate_shap_explanation(X_test_example)
 
 # %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Example Explanation Summary</h3>
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Explanation summary (for single row).
 # </div>
 
 # %%
@@ -5059,8 +5061,8 @@ display(
 # </div>
 
 # %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Contribution Breakdown by Feature</h3>
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Contribution breakdown by feature (for single row).
 # </div>
 
 # %%
@@ -5128,21 +5130,12 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">SHAP Configuration Benchmark</h2>
-# </div>
-
-# %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Benchmark Design</h3>
-# </div>
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Prototype SHAP benchmarking experiment. Identify the smallest defensible configuration of SHAP evaluation budget (<code>max_evals</code>) and background size under the latency target.
+#     <h2 style="margin:0px">SHAP Benchmarking</h2>
 # </div>
 #
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     <strong>Benchmarking Plan</strong>
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <strong>Benchmarking Plan</strong><br>
+#     <strong>Goal:</strong> Identify the smallest defensible configuration of SHAP evaluation budget (<code>max_evals</code>) and background size under the latency target.
 #     <ul>
 #         <li><strong>Background data validation:</strong> First compare the baseline (mean postprocessed q50) of each candidate background data against the full weighted training baseline. Accept background data only if baseline <code>abs(relative_difference) <= 10%</code>.</li>
 #         <li><strong>Candidate grid:</strong> Benchmark background sizes <code>[50, 100, 200, 300]</code> and SHAP evaluation budgets (<code>max_evals</code>) <code>[165, 330, 660]</code>, equal to 3, 6, and 12 permutation rounds. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask.</li>
@@ -5150,11 +5143,6 @@ display(
 #         <li><strong>Metrics:</strong> Track latency, top-driver overlap, sign agreement, dollar-impact deltas, baseline delta, and additivity error: <code>abs(predicted_q50 - (base_value + sum(SHAP values)))</code>.</li>
 #         <li><strong>Selection rule:</strong> Choose the smallest background size and SHAP evaluation budget that meets the &lt;1s server-side latency target while keeping additivity error near zero and top cost drivers stable versus the reference.</li>
 #     </ul>
-# </div>
-
-# %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Benchmark Results</h3>
 # </div>
 
 # %%
@@ -5309,7 +5297,7 @@ if RUN_SHAP_EVAL_BENCHMARK:
 
     display(
         shap_evaluation_benchmark.style
-        .pipe(add_table_caption, "SHAP Evaluation Budget Benchmark")
+        .pipe(add_table_caption, "SHAP Benchmark Results")
         .format({
             "median_latency_s": "{:.2f}",
             "p90_latency_s": "{:.2f}",
@@ -5325,174 +5313,7 @@ if RUN_SHAP_EVAL_BENCHMARK:
         .hide()
     )
 else:
-    print("Set RUN_SHAP_EVAL_BENCHMARK = True to run the SHAP evaluation budget benchmark.")# Benchmark SHAP latency and explanation stability across background sizes and max_evals settings.
-# The benchmark compares candidate configurations against a larger reference configuration.
-RUN_SHAP_EVAL_BENCHMARK = False
-
-SHAP_BENCHMARK_ROWS = 20
-SHAP_TOP_K = 3
-SHAP_BACKGROUND_GRID = [50, 100, 200, 300]
-SHAP_PERMUTATION_ROUND_GRID = [3, 6, 12]
-SHAP_MASKS_PER_ROUND = 2 * len(SHAP_INPUT_FEATURES) + 1
-SHAP_MAX_EVALS_GRID = [
-    rounds * SHAP_MASKS_PER_ROUND
-    for rounds in SHAP_PERMUTATION_ROUND_GRID
-]
-SHAP_REFERENCE_BACKGROUND_N = 500
-SHAP_REFERENCE_MAX_EVALS = 24 * SHAP_MASKS_PER_ROUND
-
-
-def estimate_mask_evaluations(max_evals, n_features):
-    """Estimate permutation rounds and mask evaluations for a feature count."""
-    masks_per_round = 2 * n_features + 1
-    rounds = max_evals // masks_per_round
-    masks = rounds * masks_per_round
-    return rounds, masks
-
-
-def build_shap_candidate_explainer(background_n, random_state=RANDOM_STATE):
-    """Build a SHAP explainer with a weighted MEPS background sample."""
-    background = X_train_preprocessor_input.sample(
-        n=background_n,
-        weights=w_train,
-        replace=True,
-        random_state=random_state,
-    )
-    masker = shap.maskers.Independent(background, max_samples=background_n)
-    return shap.Explainer(
-        predict_median_cost,
-        masker,
-        algorithm="permutation",
-        seed=random_state,
-    )
-
-
-def explain_rows_for_evaluation_budget(explainer, X_eval, max_evals):
-    """Return SHAP values, base values, predictions, and per-row latency for one evaluation budget."""
-    values = []
-    base_values = []
-    predictions = []
-    latencies = []
-
-    for _, row in X_eval.iterrows():
-        row_frame = row.to_frame().T
-        start_time = perf_counter()
-        explanation = explainer(row_frame, max_evals=max_evals, silent=True)
-        latencies.append(perf_counter() - start_time)
-        values.append(explanation.values[0])
-        base_values.append(np.asarray(explanation.base_values).reshape(-1)[0])
-        predictions.append(predict_median_cost(row_frame)[0])
-
-    return np.vstack(values), np.asarray(base_values), np.asarray(predictions), np.asarray(latencies)
-
-
-def summarize_shap_evaluation_budget(
-    *,
-    background_n,
-    max_evals,
-    values,
-    base_values,
-    predictions,
-    latencies,
-    reference_values,
-    reference_base_values,
-    top_k=SHAP_TOP_K,
-):
-    """Summarize latency and stability against the reference SHAP evaluation budget."""
-    top_k_overlaps = []
-    top_k_sign_matches = []
-    top_k_abs_deltas = []
-
-    for row_idx in range(reference_values.shape[0]):
-        reference_top = np.argsort(np.abs(reference_values[row_idx]))[::-1][:top_k]
-        candidate_top = np.argsort(np.abs(values[row_idx]))[::-1][:top_k]
-        top_k_overlaps.append(len(set(reference_top) & set(candidate_top)) / top_k)
-        top_k_sign_matches.append(
-            np.mean(np.sign(values[row_idx, reference_top]) == np.sign(reference_values[row_idx, reference_top]))
-        )
-        top_k_abs_deltas.append(np.mean(np.abs(values[row_idx, reference_top] - reference_values[row_idx, reference_top])))
-
-    rounds, masks = estimate_mask_evaluations(max_evals, values.shape[1])
-    additivity_abs_error = np.abs(predictions - (base_values + values.sum(axis=1)))
-
-    return {
-        "background_n": background_n,
-        "max_evals": max_evals,
-        "estimated_rounds": rounds,
-        "estimated_masks": masks,
-        "estimated_synthetic_rows": masks * background_n,
-        "median_latency_s": np.median(latencies),
-        "p90_latency_s": np.percentile(latencies, 90),
-        "p95_latency_s": np.percentile(latencies, 95),
-        "mean_top_k_overlap": np.mean(top_k_overlaps),
-        "mean_top_k_sign_match": np.mean(top_k_sign_matches),
-        "median_top_k_abs_delta": np.median(top_k_abs_deltas),
-        "median_baseline_abs_delta": np.median(np.abs(base_values - reference_base_values)),
-        "mean_all_feature_abs_delta": np.mean(np.abs(values - reference_values)),
-        "median_additivity_abs_error": np.median(additivity_abs_error),
-        "p95_additivity_abs_error": np.percentile(additivity_abs_error, 95),
-    }
-
-
-if RUN_SHAP_EVAL_BENCHMARK:
-    from time import perf_counter
-
-    n_eval_rows = min(SHAP_BENCHMARK_ROWS, len(X_test_preprocessor_input))
-    X_shap_benchmark = X_test_preprocessor_input.sample(n=n_eval_rows, random_state=RANDOM_STATE)
-
-    reference_explainer = build_shap_candidate_explainer(SHAP_REFERENCE_BACKGROUND_N)
-    reference_values, reference_base_values, reference_predictions, reference_latencies = explain_rows_for_evaluation_budget(
-        reference_explainer,
-        X_shap_benchmark,
-        max_evals=SHAP_REFERENCE_MAX_EVALS,
-    )
-
-    benchmark_results = []
-    for background_n in SHAP_BACKGROUND_GRID:
-        candidate_explainer = build_shap_candidate_explainer(background_n)
-        for max_evals in SHAP_MAX_EVALS_GRID:
-            candidate_values, candidate_base_values, candidate_predictions, candidate_latencies = explain_rows_for_evaluation_budget(
-                candidate_explainer,
-                X_shap_benchmark,
-                max_evals=max_evals,
-            )
-            benchmark_results.append(
-                summarize_shap_evaluation_budget(
-                    background_n=background_n,
-                    max_evals=max_evals,
-                    values=candidate_values,
-                    base_values=candidate_base_values,
-                    predictions=candidate_predictions,
-                    latencies=candidate_latencies,
-                    reference_values=reference_values,
-                    reference_base_values=reference_base_values,
-                )
-            )
-
-    shap_evaluation_benchmark = pd.DataFrame(benchmark_results).sort_values(
-        ["p95_latency_s", "mean_top_k_overlap"],
-        ascending=[True, False],
-    )
-
-    display(
-        shap_evaluation_benchmark.style
-        .pipe(add_table_caption, "SHAP Evaluation Budget Benchmark")
-        .format({
-            "median_latency_s": "{:.2f}",
-            "p90_latency_s": "{:.2f}",
-            "p95_latency_s": "{:.2f}",
-            "mean_top_k_overlap": "{:.1%}",
-            "mean_top_k_sign_match": "{:.1%}",
-            "median_top_k_abs_delta": "${:,.0f}",
-            "median_baseline_abs_delta": "${:,.0f}",
-            "mean_all_feature_abs_delta": "${:,.0f}",
-            "median_additivity_abs_error": "${:,.2f}",
-            "p95_additivity_abs_error": "${:,.2f}",
-        })
-        .hide()
-    )
-else:
-    print("Set RUN_SHAP_EVAL_BENCHMARK = True to run the SHAP evaluation budget benchmark.")
+    print("Set RUN_SHAP_EVAL_BENCHMARK = True to run the SHAP benchmark.")
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
