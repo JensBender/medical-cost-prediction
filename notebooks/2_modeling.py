@@ -4867,7 +4867,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Predicted, Not Actual Costs:</strong> SHAP explains the model's prediction, not the true drivers of real-world medical costs. If the model overstates, understates, or misses a relationship, the SHAP values reflect that error. SHAP does not fix model limitations: if the model underpredicts high-cost cases, reflects noisy survey data, or lacks important predictors, SHAP explains those imperfect predictions.</li>
 #     </ul>
 #     <strong>SHAP Metadata</strong><br>
-#     Store metadata alongside the SHAP background artifact for developer and prediction-service auditability. It records the model and preprocessor artifacts, explainer configuration, explained output, background sampling method, and background validation results. The technical specifications define the metadata structure, and the artifact-generation script writes the calculated validation values to <code>app/data/shap_metadata.json</code>.
+#     Store metadata alongside the SHAP background artifact for developer and prediction-service auditability. It records the model and preprocessor artifacts, explainer configuration, explained output, background sampling method, and background validation results (see the <a href="../docs/specs/technical_specifications.md#shap-metadata-contract">SHAP Metadata Artifact Contract</a> in the tech specs).
 #     <br><br>
 #     <strong>App/API Implementation Plan</strong>
 #     <ol>

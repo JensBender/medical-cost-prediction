@@ -22,7 +22,7 @@
    - [MVP Deployment Architecture](#mvp-deployment-architecture)
    - [Application Data Artifacts](#application-data-artifacts)
    - [API Contract](#api-contract)
-   - [SHAP Explainability](#shap-explainability)
+   - [Model Explainability (SHAP)](#model-explainability-shap)
    - [Inference Pipeline](#inference-pipeline)
    - [Privacy-Preserving Monitoring](#privacy-preserving-monitoring)
 4. [Testing Strategy](#testing-strategy)
@@ -477,12 +477,56 @@ The prediction service will expose the trained model artifact via a Python API (
 
     Explanation generation should be optional for batch prediction requests to the prediction service because permutation SHAP is substantially more expensive than prediction alone. The Gradio app requests an explanation for its single prediction. Batch API requests should default to predictions without explanations and enforce a limit on the number of rows that can be explained in one request.
 
-#### SHAP Explainability
+#### Prediction Warning Flags
+`warning_flags` are API values. Planning notices are user-facing copy rendered from one or more warning flags. Generate `warning_flags` before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. The app can use subgroup diagnostics to decide when to show a note, but the rendered note should name the reason only when it is informative and unlikely to stigmatize.
+
+| Flag | Trigger | Mitigating Action | Planning Notice Text |
+| :--- | :--- | :--- | :--- |
+| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) is in the top 20% (cutoff from validation set) | Explain higher-cost-year exposure and present q90 as a conservative planning reference | "This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." |
+| `UNINSURED_UNCERTAINTY` | Uninsured (`INSCOV23 = 3`) | Explain that out-of-pocket costs can be harder to predict for uninsured users and present q90 as the conservative planning reference | "Because you are uninsured, out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." |
+| `TYPICAL_RANGE_UNDERCOVERAGE` | Subgroups with typical-range undercoverage (low income, poor mental health, doctorate degree) and risk of stigmatizing | Communicate prediction uncertainty without naming the subgroup | "Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." |
+| `MISSING_OPTIONAL_INPUTS` | User skipped one or more optional inputs | Explain that typical values were used (imputed) and that more complete inputs may make the estimate more tailored | "Some optional answers were skipped, so the estimate used typical values. Adding those details may make the estimate more tailored to your situation." |
+| `PUBLIC_INSURANCE_POLICY_CHANGE` | Public-only insurance (`INSCOV23 = 2`) | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs for some public insurance users | "This estimate is based on 2023 survey data. Recent public insurance policy changes, especially Medicare prescription drug cost caps, may lower actual costs for some users compared with this estimate." |
+
+#### Planning Notice Rendering Rules
+The UI should avoid stacking several full planning notice paragraphs below the prediction. Render planning notices as follows:
+
+1.  Show the prediction block first: plan-around estimate (`q50`), typical range (`q25-q75`), and safety cushion (`q90`).
+2.  If no `warning_flags` are present, show no planning notice panel.
+3.  If one or more flags are present, show one compact **Planning note** panel below the prediction block.
+4.  In the panel, combine triggered messages in this priority order: `HIGH_PREDICTED_UNCERTAINTY`, `UNINSURED_UNCERTAINTY`, `TYPICAL_RANGE_UNDERCOVERAGE`, `PUBLIC_INSURANCE_POLICY_CHANGE`, `MISSING_OPTIONAL_INPUTS`.
+5.  Avoid repeating the same idea. If both `HIGH_PREDICTED_UNCERTAINTY` and `UNINSURED_UNCERTAINTY` trigger, mention the safety cushion once.
+6.  Keep the always-on scope disclaimer outside this panel, in a quieter "About this estimate" or footer area.
+
+Required deployment metadata is stored in
+[`app/data/prediction_metadata.json`](../../app/data/prediction_metadata.json).
+The schema is:
+
+```json
+{
+  "schema_version": 1,
+  "model_artifact": "models/xgb_quantile_model.joblib",
+  "data_source": "MEPS 2023 (HC-251), validation split",
+  "currency_year": 2023,
+  "high_predicted_uncertainty": {
+    "prediction_quantile": "q90",
+    "weighted_quantile_level": 0.8,
+    "cutoff_2023_dollars": 0.0
+  }
+}
+```
+
+The `0.0` cutoff is a placeholder, the actual value for model deployment is in
+`app/data/prediction_metadata.json`. Trigger `HIGH_PREDICTED_UNCERTAINTY` when
+the pre-inflation predicted `q90` is greater than or equal to this fixed cutoff.
+
+### Model Explainability (SHAP)
 Use SHAP values for user-facing cost-driver explanations. SHAP must operate on the 27 preprocessor input features. These are interpretable, semantically meaningful features before imputation, medical feature derivation, scaling, and one-hot encoding. Build `shap.Explainer` with `shap.maskers.Independent` over a survey-weighted background sample. Use permutation SHAP rather than TreeExplainer because the explanation target is the full postprocessed q50 inference callable, not the raw inner XGBoost tree output. The permutation-SHAP callable must run the complete q50 prediction path: fitted preprocessor, transformed-target quantile model, inverse target transformation, quantile cleanup, and q50 selection. It returns the postprocessed q50 plan-around estimate in 2023 dollars before medical-cost inflation. This makes each SHAP feature an interpretable input. Before deployment, verify on the test set that monotonic quantile enforcement rarely changes q50 and that any q50 adjustment is negligible. Apply medical-cost inflation only during API/UI output formatting.
 
 Persist the fitted preprocessing pipeline as `models/preprocessor.joblib`. Store the SHAP background sample as `app/data/shap_background.parquet` and SHAP metadata as `app/data/shap_metadata.json`. The background sample should use MEPS person weights (`PERWT23F`) with replacement so the unweighted SHAP background approximates the weighted U.S. adult reference population. The initial target range is 200-500 background rows, and the final production size is selected by benchmarking. Validate the sample by comparing the SHAP background baseline with the full weighted training baseline. The artifact passes if `abs(relative_difference) <= 0.10`; if it exceeds 10%, increase the background size before deployment.
 
-**SHAP metadata artifact contract**
+<a id="shap-metadata-contract"></a>
+#### SHAP Metadata Artifact Contract
 
 The following template defines the structure of `app/data/shap_metadata.json`.
 
@@ -557,49 +601,6 @@ The prediction service should load the fitted preprocessor, quantile model, and 
 Select production background data size (`background_n`) and SHAP evaluation budget (`max_evals`) empirically. Benchmark candidate combinations against a reference configuration with larger background size and higher SHAP evaluation budget, then choose the smallest configuration that meets the latency target while keeping user-facing explanations stable. Track at least p50/p90/p95 latency, top-k driver overlap, sign stability, SHAP dollar drift for top drivers, baseline drift, and additivity error. Top-driver and sign stability matter more than exact low-ranked feature dollar values.
 
 Interpretation constraints belong in UI copy and tests: SHAP values explain the fitted model prediction, not causal effects or actual future costs. Correlated features can split or shift attribution, so related health and limitation factors may need grouped display labels.
-
-#### Prediction Warning Flags
-`warning_flags` are API values. Planning notices are user-facing copy rendered from one or more warning flags. Generate `warning_flags` before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. The app can use subgroup diagnostics to decide when to show a note, but the rendered note should name the reason only when it is informative and unlikely to stigmatize.
-
-| Flag | Trigger | Mitigating Action | Planning Notice Text |
-| :--- | :--- | :--- | :--- |
-| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) is in the top 20% (cutoff from validation set) | Explain higher-cost-year exposure and present q90 as a conservative planning reference | "This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." |
-| `UNINSURED_UNCERTAINTY` | Uninsured (`INSCOV23 = 3`) | Explain that out-of-pocket costs can be harder to predict for uninsured users and present q90 as the conservative planning reference | "Because you are uninsured, out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." |
-| `TYPICAL_RANGE_UNDERCOVERAGE` | Subgroups with typical-range undercoverage (low income, poor mental health, doctorate degree) and risk of stigmatizing | Communicate prediction uncertainty without naming the subgroup | "Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." |
-| `MISSING_OPTIONAL_INPUTS` | User skipped one or more optional inputs | Explain that typical values were used (imputed) and that more complete inputs may make the estimate more tailored | "Some optional answers were skipped, so the estimate used typical values. Adding those details may make the estimate more tailored to your situation." |
-| `PUBLIC_INSURANCE_POLICY_CHANGE` | Public-only insurance (`INSCOV23 = 2`) | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs for some public insurance users | "This estimate is based on 2023 survey data. Recent public insurance policy changes, especially Medicare prescription drug cost caps, may lower actual costs for some users compared with this estimate." |
-
-#### Planning Notice Rendering Rules
-The UI should avoid stacking several full planning notice paragraphs below the prediction. Render planning notices as follows:
-
-1.  Show the prediction block first: plan-around estimate (`q50`), typical range (`q25-q75`), and safety cushion (`q90`).
-2.  If no `warning_flags` are present, show no planning notice panel.
-3.  If one or more flags are present, show one compact **Planning note** panel below the prediction block.
-4.  In the panel, combine triggered messages in this priority order: `HIGH_PREDICTED_UNCERTAINTY`, `UNINSURED_UNCERTAINTY`, `TYPICAL_RANGE_UNDERCOVERAGE`, `PUBLIC_INSURANCE_POLICY_CHANGE`, `MISSING_OPTIONAL_INPUTS`.
-5.  Avoid repeating the same idea. If both `HIGH_PREDICTED_UNCERTAINTY` and `UNINSURED_UNCERTAINTY` trigger, mention the safety cushion once.
-6.  Keep the always-on scope disclaimer outside this panel, in a quieter "About this estimate" or footer area.
-
-Required deployment metadata is stored in
-[`app/data/prediction_metadata.json`](../../app/data/prediction_metadata.json).
-The schema is:
-
-```json
-{
-  "schema_version": 1,
-  "model_artifact": "models/xgb_quantile_model.joblib",
-  "data_source": "MEPS 2023 (HC-251), validation split",
-  "currency_year": 2023,
-  "high_predicted_uncertainty": {
-    "prediction_quantile": "q90",
-    "weighted_quantile_level": 0.8,
-    "cutoff_2023_dollars": 0.0
-  }
-}
-```
-
-The `0.0` cutoff is a placeholder, the actual value for model deployment is in
-`app/data/prediction_metadata.json`. Trigger `HIGH_PREDICTED_UNCERTAINTY` when
-the pre-inflation predicted `q90` is greater than or equal to this fixed cutoff.
 
 ### Inference Pipeline
 1.  **Validation:** Ensure inputs are within valid ranges (e.g., Age 18-85).
