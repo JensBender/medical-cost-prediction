@@ -4857,7 +4857,7 @@ plot_quantile_subgroup_predictions(
 #     <ul>
 #         <li><strong>End users (cost-driver overview):</strong> "These factors show which of your answers moved your estimate up or down the most."</li>
 #         <li><strong>End users (single cost driver):</strong> "Your insurance answer, <code>Public Only</code>, lowered this estimate by about \$99."</li>
-#         <li><strong>Non-technical stakeholders:</strong> "The estimate starts from an average predicted cost for a representative sample of U.S. adults. Each person's inputs then move the estimate up or down from that starting point. Because each feature is evaluated in the context of that person's other features, the same answer can have a different dollar impact for different people. For example, an insurance answer can affect the estimate differently for someone with several chronic conditions than for someone who is otherwise healthy."</li>
+#         <li><strong>Non-technical stakeholders:</strong> "The estimate starts from an average predicted cost for a representative sample of U.S. adults. Each person's inputs then move the estimate up or down from that starting point. Because each feature is evaluated in the context of that person's other features, the same answer can have a different dollar impact for different people. For example, a <code>Public Only</code> insurance answer can affect the estimate differently for someone with several chronic conditions than for someone with none."</li>
 #     </ul>
 #     <strong>SHAP Limitations</strong>
 #     <ul>
@@ -4867,15 +4867,15 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Predicted, Not Actual Costs:</strong> SHAP explains the model's prediction, not the true drivers of real-world medical costs. If the model overstates, understates, or misses a relationship, the SHAP values reflect that error. SHAP does not fix model limitations: if the model underpredicts high-cost cases, reflects noisy survey data, or lacks important predictors, SHAP explains those imperfect predictions.</li>
 #     </ul>
 #     <strong>SHAP Metadata</strong><br>
-#     Store metadata alongside the SHAP background artifact for developer and prediction-service auditability. It records the model and preprocessor artifacts, explainer configuration, explained output, background sampling method, and background validation results (see the <a href="../docs/specs/technical_specifications.md#shap-metadata-contract">SHAP Metadata Artifact Contract</a> in the tech specs).
+#     Store metadata alongside the SHAP background artifact for developer and prediction-service auditability. It records the model and preprocessor artifacts, explainer configuration, explained output, background sampling method, and background validation results (see the <a href="../docs/specs/technical_specifications.md#shap-metadata-contract">SHAP Metadata Artifact Contract</a> in the technical specifications).
 #     <br><br>
 #     <strong>App/API Implementation Plan</strong>
 #     <ol>
 #         <li><strong>Create Artifacts:</strong> Use <code>scripts/preprocess.py</code> to create <code>data/training_data_preprocessor_input.parquet</code> and <code>models/preprocessor.joblib</code>. Use <code>scripts/train_xgboost_quantile.py</code> to create <code>models/xgb_quantile_model.joblib</code>. Use <code>scripts/build_app_artifacts.py</code> to create <code>app/data/shap_background.parquet</code> and <code>app/data/shap_metadata.json</code>.</li>
 #         <li><strong>During Application Startup:</strong> Load the preprocessor, quantile model, and SHAP background. Build the explainer once.</li>
 #         <li><strong>At Inference Time:</strong> Map the user inputs to the preprocessor inputs. Predict all quantiles using the fitted preprocessor and model, postprocess them, and compute permutation SHAP for q50. Rank contributions by absolute value and select the five largest. Apply medical-cost inflation to predictions, comparison benchmarks, and the selected SHAP contributions.</li>
-#         <li><strong>API Contract and Privacy Requirements:</strong> Return inflation-adjusted amounts with the currency, model price year, output price year, and applied inflation factor. Do not return the SHAP baseline or separate 2023-dollar values. Make explanations optional for batch prediction requests. Keep request-level inputs, predictions, and SHAP values in memory only, and persist only approved aggregate monitoring data.</li>
 #     </ol>
+#     API response and privacy requirements are defined in the <a href="../docs/specs/technical_specifications.md#api-contract">API Contract</a> and <a href="../docs/specs/technical_specifications.md#privacy-preserving-monitoring">Privacy-Preserving Monitoring</a> sections of the technical specifications.
 # </div>
 
 # %% [markdown]
