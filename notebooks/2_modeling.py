@@ -4899,6 +4899,10 @@ X_train_preprocessor_input = pd.read_parquet(
     TRAIN_PREPROCESSOR_INPUT_DATA_PATH,
     columns=SHAP_INPUT_FEATURES,
 )
+X_val_preprocessor_input = pd.read_parquet(
+    VAL_PREPROCESSOR_INPUT_DATA_PATH,
+    columns=SHAP_INPUT_FEATURES,
+)
 X_test_preprocessor_input = pd.read_parquet(
     TEST_PREPROCESSOR_INPUT_DATA_PATH,
     columns=SHAP_INPUT_FEATURES,
@@ -5138,6 +5142,7 @@ display(
 #     <strong>Goal:</strong> Identify the smallest defensible configuration of SHAP evaluation budget (<code>max_evals</code>) and background size under the latency target.
 #     <ul>
 #         <li><strong>Background data validation:</strong> First compare the baseline (mean postprocessed q50) of each candidate background data against the full weighted training baseline. Accept background data only if baseline <code>abs(relative_difference) <= 10%</code>.</li>
+#         <li><strong>Evaluation data:</strong> Compare candidate explanations on a fixed sample from the validation data. Reserve the test data for final confirmation after selecting the production configuration.</li>
 #         <li><strong>Candidate grid:</strong> Benchmark background sizes <code>[50, 100, 200, 300]</code> and SHAP evaluation budgets (<code>max_evals</code>) <code>[165, 330, 660]</code>, equal to 3, 6, and 12 permutation rounds. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask.</li>
 #         <li><strong>Reference:</strong> Compare candidates against a reference configuration with larger background size (<code>500</code>) and higher evaluation budget (<code>max_evals=1,320</code>, or 24 permutation rounds).</li>
 #         <li><strong>Metrics:</strong> Track latency, top-driver overlap, sign agreement, dollar-impact deltas, baseline delta, and additivity error: <code>abs(predicted_q50 - (base_value + sum(SHAP values)))</code>.</li>
@@ -5151,7 +5156,7 @@ display(
 RUN_SHAP_EVAL_BENCHMARK = False
 
 SHAP_BENCHMARK_ROWS = 20
-SHAP_TOP_K = 3
+SHAP_TOP_K = 5
 SHAP_BACKGROUND_GRID = [50, 100, 200, 300]
 SHAP_PERMUTATION_ROUND_GRID = [3, 6, 12]
 SHAP_MASKS_PER_ROUND = 2 * len(SHAP_INPUT_FEATURES) + 1
@@ -5258,8 +5263,8 @@ def summarize_shap_evaluation_budget(
 if RUN_SHAP_EVAL_BENCHMARK:
     from time import perf_counter
 
-    n_eval_rows = min(SHAP_BENCHMARK_ROWS, len(X_test_preprocessor_input))
-    X_shap_benchmark = X_test_preprocessor_input.sample(n=n_eval_rows, random_state=RANDOM_STATE)
+    n_eval_rows = min(SHAP_BENCHMARK_ROWS, len(X_val_preprocessor_input))
+    X_shap_benchmark = X_val_preprocessor_input.sample(n=n_eval_rows, random_state=RANDOM_STATE)
 
     reference_explainer = build_shap_candidate_explainer(SHAP_REFERENCE_BACKGROUND_N)
     reference_values, reference_base_values, reference_predictions, reference_latencies = explain_rows_for_evaluation_budget(
