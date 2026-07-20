@@ -5119,11 +5119,11 @@ display(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Interpretation:</b>
 #     <ul>
-#         <li><strong>Education:</strong> The person's <code>No Degree</code> answer moved the plan-around estimate down by about \$135.</li>
-#         <li><strong>Insurance:</strong> The person's <code>Public Only</code> answer moved the estimate down by about \$99.</li>
-#         <li><strong>Usual Source of Care:</strong> Reporting no usual source of care moved the estimate down by about \$82.</li>
-#         <li><strong>Age:</strong> The person's age of 70 moved the estimate up by about \$53.</li>
-#         <li><strong>Joint Pain:</strong> Reporting no joint pain moved the estimate down by about \$51.</li>
+#         <li><strong>Education:</strong> The answer &ldquo;No Degree&rdquo; moved the plan-around estimate down by about \$135.</li>
+#         <li><strong>Insurance:</strong> The answer &ldquo;Public Only&rdquo; moved the estimate down by about \$99.</li>
+#         <li><strong>Usual Source of Care:</strong> The answer &ldquo;No&rdquo; moved the estimate down by about \$82.</li>
+#         <li><strong>Age:</strong> The entered age of 70 moved the estimate up by about \$53.</li>
+#         <li><strong>Joint Pain:</strong> The answer &ldquo;No&rdquo; moved the estimate down by about \$51.</li>
 #     </ul>
 #     <em>Note: These are local contributions relative to the SHAP background and depend on the person's other answers. They are not comparisons with specific alternative answers. They explain predicted, not actual, costs and should not be interpreted causally. For example, they do not show how changing public to private insurance or stopping to smoke would change a person's costs.</em>
 # </div>
