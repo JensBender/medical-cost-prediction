@@ -5155,12 +5155,16 @@ display(
 # </div>
 
 # %%
-# Benchmark SHAP background data size and evaluation budget under the latency target.
-# The benchmark compares candidate configurations against a larger reference configuration.
-RUN_SHAP_EVAL_BENCHMARK = False
+# Benchmark SHAP background size and evaluation budget on fixed validation rows.
+from time import perf_counter
 
-SHAP_BENCHMARK_ROWS = 20
-SHAP_TOP_K = 5
+RUN_SHAP_STAGE_1_BENCHMARK = False
+RUN_SHAP_STAGE_2_BENCHMARK = False
+
+SHAP_STAGE_1_ROWS = 20
+SHAP_STAGE_2_ROWS = 100
+SHAP_PRIMARY_TOP_K = 5
+SHAP_SECONDARY_TOP_K = 3
 SHAP_BACKGROUND_GRID = [50, 100, 200, 300]
 SHAP_PERMUTATION_ROUND_GRID = [3, 6, 12]
 SHAP_MASKS_PER_ROUND = 2 * len(SHAP_INPUT_FEATURES) + 1
@@ -5171,6 +5175,35 @@ SHAP_MAX_EVALS_GRID = [
 SHAP_REFERENCE_BACKGROUND_N = 500
 SHAP_REFERENCE_MAX_EVALS = 24 * SHAP_MASKS_PER_ROUND
 
+SHAP_STAGE_1_CANDIDATES = [
+    (background_n, max_evals)
+    for background_n in SHAP_BACKGROUND_GRID
+    for max_evals in SHAP_MAX_EVALS_GRID
+]
+
+# Fill this list after reviewing Stage 1 results.
+SHAP_STAGE_2_CANDIDATES = [
+    # (background_n, max_evals),
+]
+
+if RUN_SHAP_STAGE_1_BENCHMARK and RUN_SHAP_STAGE_2_BENCHMARK:
+    raise ValueError("Run one SHAP benchmark stage at a time.")
+
+required_validation_rows = SHAP_STAGE_2_ROWS + 1
+if len(X_val_preprocessor_input) < required_validation_rows:
+    raise ValueError(
+        "The validation data must contain at least "
+        f"{required_validation_rows} rows for SHAP benchmarking."
+    )
+
+X_shap_validation_sample = X_val_preprocessor_input.sample(
+    n=required_validation_rows,
+    random_state=RANDOM_STATE,
+)
+X_shap_first_inference = X_shap_validation_sample.iloc[[0]]
+X_shap_stage_2 = X_shap_validation_sample.iloc[1:]
+X_shap_stage_1 = X_shap_stage_2.iloc[:SHAP_STAGE_1_ROWS]
+
 
 def estimate_mask_evaluations(max_evals, n_features):
     """Estimate permutation rounds and mask evaluations for a feature count."""
@@ -5180,15 +5213,40 @@ def estimate_mask_evaluations(max_evals, n_features):
     return rounds, masks
 
 
-def build_shap_candidate_explainer(background_n, random_state=RANDOM_STATE):
-    """Build a SHAP explainer with a weighted MEPS background sample."""
+def create_shap_benchmark_background(
+    background_n,
+    random_state=RANDOM_STATE,
+):
+    """Create and validate one weighted training background sample."""
     background = X_train_preprocessor_input.sample(
         n=background_n,
         weights=w_train,
         replace=True,
         random_state=random_state,
     )
-    masker = shap.maskers.Independent(background, max_samples=background_n)
+    background_baseline = predict_median_cost(background).mean()
+    baseline_relative_difference = abs(
+        background_baseline / training_baseline - 1
+    )
+    return {
+        "data": background,
+        "baseline_2023_usd": background_baseline,
+        "baseline_relative_difference": baseline_relative_difference,
+        "validation_passed": (
+            baseline_relative_difference <= SHAP_BASELINE_REL_DIFF_MAX
+        ),
+    }
+
+
+def build_shap_candidate_explainer(
+    background,
+    random_state=RANDOM_STATE,
+):
+    """Build a SHAP explainer from one validated background sample."""
+    masker = shap.maskers.Independent(
+        background,
+        max_samples=len(background),
+    )
     return shap.Explainer(
         predict_median_cost,
         masker,
@@ -5197,8 +5255,27 @@ def build_shap_candidate_explainer(background_n, random_state=RANDOM_STATE):
     )
 
 
-def explain_rows_for_evaluation_budget(explainer, X_eval, max_evals):
-    """Return SHAP values, base values, predictions, and per-row latency for one evaluation budget."""
+def measure_first_inference_latency(
+    explainer,
+    X_first_inference,
+    max_evals,
+):
+    """Time the first explanation after building an explainer."""
+    start_time = perf_counter()
+    explainer(
+        X_first_inference,
+        max_evals=max_evals,
+        silent=True,
+    )
+    return perf_counter() - start_time
+
+
+def explain_rows_for_evaluation_budget(
+    explainer,
+    X_eval,
+    max_evals,
+):
+    """Return explanations and steady-state latency for individual rows."""
     values = []
     base_values = []
     predictions = []
@@ -5207,43 +5284,110 @@ def explain_rows_for_evaluation_budget(explainer, X_eval, max_evals):
     for _, row in X_eval.iterrows():
         row_frame = row.to_frame().T
         start_time = perf_counter()
-        explanation = explainer(row_frame, max_evals=max_evals, silent=True)
+        explanation = explainer(
+            row_frame,
+            max_evals=max_evals,
+            silent=True,
+        )
         latencies.append(perf_counter() - start_time)
         values.append(explanation.values[0])
-        base_values.append(np.asarray(explanation.base_values).reshape(-1)[0])
+        base_values.append(
+            np.asarray(explanation.base_values).reshape(-1)[0]
+        )
         predictions.append(predict_median_cost(row_frame)[0])
 
-    return np.vstack(values), np.asarray(base_values), np.asarray(predictions), np.asarray(latencies)
+    return (
+        np.vstack(values),
+        np.asarray(base_values),
+        np.asarray(predictions),
+        np.asarray(latencies),
+    )
 
 
-def summarize_shap_evaluation_budget(
+def calculate_top_k_stability(
+    values,
+    reference_values,
+    top_k,
+):
+    """Calculate overlap, shared-driver signs, and dollar drift."""
+    overlaps = []
+    shared_sign_matches = []
+    reference_top_abs_deltas = []
+
+    for row_idx in range(reference_values.shape[0]):
+        reference_top = np.argsort(
+            np.abs(reference_values[row_idx])
+        )[::-1][:top_k]
+        candidate_top = np.argsort(
+            np.abs(values[row_idx])
+        )[::-1][:top_k]
+        shared_top = np.intersect1d(
+            reference_top,
+            candidate_top,
+        )
+
+        overlaps.append(len(shared_top) / top_k)
+        if len(shared_top):
+            shared_sign_matches.append(
+                np.mean(
+                    np.sign(values[row_idx, shared_top])
+                    == np.sign(reference_values[row_idx, shared_top])
+                )
+            )
+
+        reference_top_abs_deltas.append(
+            np.mean(
+                np.abs(
+                    values[row_idx, reference_top]
+                    - reference_values[row_idx, reference_top]
+                )
+            )
+        )
+
+    return {
+        "overlap": np.mean(overlaps),
+        "shared_sign_match": (
+            np.mean(shared_sign_matches)
+            if shared_sign_matches
+            else np.nan
+        ),
+        "reference_top_abs_delta": np.median(
+            reference_top_abs_deltas
+        ),
+    }
+
+
+def summarize_shap_configuration(
     *,
     background_n,
     max_evals,
+    background_info,
+    first_inference_latency,
     values,
     base_values,
     predictions,
     latencies,
     reference_values,
     reference_base_values,
-    top_k=SHAP_TOP_K,
 ):
-    """Summarize latency and stability against the reference SHAP evaluation budget."""
-    top_k_overlaps = []
-    top_k_sign_matches = []
-    top_k_abs_deltas = []
-
-    for row_idx in range(reference_values.shape[0]):
-        reference_top = np.argsort(np.abs(reference_values[row_idx]))[::-1][:top_k]
-        candidate_top = np.argsort(np.abs(values[row_idx]))[::-1][:top_k]
-        top_k_overlaps.append(len(set(reference_top) & set(candidate_top)) / top_k)
-        top_k_sign_matches.append(
-            np.mean(np.sign(values[row_idx, reference_top]) == np.sign(reference_values[row_idx, reference_top]))
-        )
-        top_k_abs_deltas.append(np.mean(np.abs(values[row_idx, reference_top] - reference_values[row_idx, reference_top])))
-
-    rounds, masks = estimate_mask_evaluations(max_evals, values.shape[1])
-    additivity_abs_error = np.abs(predictions - (base_values + values.sum(axis=1)))
+    """Summarize latency and stability against the reference."""
+    rounds, masks = estimate_mask_evaluations(
+        max_evals,
+        values.shape[1],
+    )
+    additivity_abs_error = np.abs(
+        predictions - (base_values + values.sum(axis=1))
+    )
+    top_5 = calculate_top_k_stability(
+        values,
+        reference_values,
+        SHAP_PRIMARY_TOP_K,
+    )
+    top_3 = calculate_top_k_stability(
+        values,
+        reference_values,
+        SHAP_SECONDARY_TOP_K,
+    )
 
     return {
         "background_n": background_n,
@@ -5251,78 +5395,264 @@ def summarize_shap_evaluation_budget(
         "estimated_rounds": rounds,
         "estimated_masks": masks,
         "estimated_synthetic_rows": masks * background_n,
-        "median_latency_s": np.median(latencies),
+        "background_baseline_2023_usd": (
+            background_info["baseline_2023_usd"]
+        ),
+        "background_baseline_relative_difference": (
+            background_info["baseline_relative_difference"]
+        ),
+        "background_validation_passed": (
+            background_info["validation_passed"]
+        ),
+        "first_inference_latency_s": first_inference_latency,
+        "p50_latency_s": np.percentile(latencies, 50),
         "p90_latency_s": np.percentile(latencies, 90),
         "p95_latency_s": np.percentile(latencies, 95),
-        "mean_top_k_overlap": np.mean(top_k_overlaps),
-        "mean_top_k_sign_match": np.mean(top_k_sign_matches),
-        "median_top_k_abs_delta": np.median(top_k_abs_deltas),
-        "median_baseline_abs_delta": np.median(np.abs(base_values - reference_base_values)),
-        "mean_all_feature_abs_delta": np.mean(np.abs(values - reference_values)),
-        "median_additivity_abs_error": np.median(additivity_abs_error),
-        "p95_additivity_abs_error": np.percentile(additivity_abs_error, 95),
+        "mean_top_5_overlap": top_5["overlap"],
+        "mean_top_3_overlap": top_3["overlap"],
+        "mean_top_5_shared_sign_match": (
+            top_5["shared_sign_match"]
+        ),
+        "mean_top_3_shared_sign_match": (
+            top_3["shared_sign_match"]
+        ),
+        "median_top_5_abs_delta_2023_usd": (
+            top_5["reference_top_abs_delta"]
+        ),
+        "median_top_3_abs_delta_2023_usd": (
+            top_3["reference_top_abs_delta"]
+        ),
+        "median_baseline_abs_delta_2023_usd": np.median(
+            np.abs(base_values - reference_base_values)
+        ),
+        "mean_all_feature_abs_delta_2023_usd": np.mean(
+            np.abs(values - reference_values)
+        ),
+        "median_additivity_abs_error_2023_usd": np.median(
+            additivity_abs_error
+        ),
+        "p95_additivity_abs_error_2023_usd": np.percentile(
+            additivity_abs_error,
+            95,
+        ),
     }
 
 
-if RUN_SHAP_EVAL_BENCHMARK:
-    from time import perf_counter
+def run_shap_benchmark(
+    X_eval,
+    candidate_configurations,
+):
+    """Run one SHAP benchmark stage against the reference."""
+    background_sizes = {
+        background_n
+        for background_n, _ in candidate_configurations
+    }
+    background_sizes.add(SHAP_REFERENCE_BACKGROUND_N)
+    backgrounds = {
+        background_n: create_shap_benchmark_background(background_n)
+        for background_n in sorted(background_sizes)
+    }
 
-    n_eval_rows = min(SHAP_BENCHMARK_ROWS, len(X_val_preprocessor_input))
-    X_shap_benchmark = X_val_preprocessor_input.sample(n=n_eval_rows, random_state=RANDOM_STATE)
+    reference_background_info = backgrounds[
+        SHAP_REFERENCE_BACKGROUND_N
+    ]
+    if not reference_background_info["validation_passed"]:
+        raise ValueError(
+            "The reference SHAP background failed baseline validation."
+        )
 
-    reference_explainer = build_shap_candidate_explainer(SHAP_REFERENCE_BACKGROUND_N)
-    reference_values, reference_base_values, reference_predictions, reference_latencies = explain_rows_for_evaluation_budget(
+    reference_explainer = build_shap_candidate_explainer(
+        reference_background_info["data"]
+    )
+    reference_first_inference_latency = (
+        measure_first_inference_latency(
+            reference_explainer,
+            X_shap_first_inference,
+            SHAP_REFERENCE_MAX_EVALS,
+        )
+    )
+    (
+        reference_values,
+        reference_base_values,
+        _,
+        reference_latencies,
+    ) = explain_rows_for_evaluation_budget(
         reference_explainer,
-        X_shap_benchmark,
-        max_evals=SHAP_REFERENCE_MAX_EVALS,
+        X_eval,
+        SHAP_REFERENCE_MAX_EVALS,
     )
 
     benchmark_results = []
-    for background_n in SHAP_BACKGROUND_GRID:
-        candidate_explainer = build_shap_candidate_explainer(background_n)
-        for max_evals in SHAP_MAX_EVALS_GRID:
-            candidate_values, candidate_base_values, candidate_predictions, candidate_latencies = explain_rows_for_evaluation_budget(
-                candidate_explainer,
-                X_shap_benchmark,
+    for background_n, max_evals in candidate_configurations:
+        background_info = backgrounds[background_n]
+        if not background_info["validation_passed"]:
+            rounds, masks = estimate_mask_evaluations(
+                max_evals,
+                len(SHAP_INPUT_FEATURES),
+            )
+            benchmark_results.append({
+                "background_n": background_n,
+                "max_evals": max_evals,
+                "estimated_rounds": rounds,
+                "estimated_masks": masks,
+                "estimated_synthetic_rows": masks * background_n,
+                "background_baseline_2023_usd": (
+                    background_info["baseline_2023_usd"]
+                ),
+                "background_baseline_relative_difference": (
+                    background_info["baseline_relative_difference"]
+                ),
+                "background_validation_passed": False,
+            })
+            continue
+
+        candidate_explainer = build_shap_candidate_explainer(
+            background_info["data"]
+        )
+        first_inference_latency = measure_first_inference_latency(
+            candidate_explainer,
+            X_shap_first_inference,
+            max_evals,
+        )
+        (
+            candidate_values,
+            candidate_base_values,
+            candidate_predictions,
+            candidate_latencies,
+        ) = explain_rows_for_evaluation_budget(
+            candidate_explainer,
+            X_eval,
+            max_evals,
+        )
+        benchmark_results.append(
+            summarize_shap_configuration(
+                background_n=background_n,
                 max_evals=max_evals,
+                background_info=background_info,
+                first_inference_latency=first_inference_latency,
+                values=candidate_values,
+                base_values=candidate_base_values,
+                predictions=candidate_predictions,
+                latencies=candidate_latencies,
+                reference_values=reference_values,
+                reference_base_values=reference_base_values,
             )
-            benchmark_results.append(
-                summarize_shap_evaluation_budget(
-                    background_n=background_n,
-                    max_evals=max_evals,
-                    values=candidate_values,
-                    base_values=candidate_base_values,
-                    predictions=candidate_predictions,
-                    latencies=candidate_latencies,
-                    reference_values=reference_values,
-                    reference_base_values=reference_base_values,
-                )
-            )
+        )
 
-    shap_evaluation_benchmark = pd.DataFrame(benchmark_results).sort_values(
-        ["p95_latency_s", "mean_top_k_overlap"],
-        ascending=[True, False],
+    benchmark_results = pd.DataFrame(benchmark_results).sort_values(
+        [
+            "background_validation_passed",
+            "p95_latency_s",
+            "mean_top_5_overlap",
+        ],
+        ascending=[False, True, False],
+        na_position="last",
     )
+    reference_summary = {
+        "background_n": SHAP_REFERENCE_BACKGROUND_N,
+        "max_evals": SHAP_REFERENCE_MAX_EVALS,
+        "background_baseline_2023_usd": (
+            reference_background_info["baseline_2023_usd"]
+        ),
+        "background_baseline_relative_difference": (
+            reference_background_info["baseline_relative_difference"]
+        ),
+        "first_inference_latency_s": (
+            reference_first_inference_latency
+        ),
+        "p50_latency_s": np.percentile(reference_latencies, 50),
+        "p90_latency_s": np.percentile(reference_latencies, 90),
+        "p95_latency_s": np.percentile(reference_latencies, 95),
+    }
+    return benchmark_results, reference_summary
 
+
+def display_shap_benchmark(
+    benchmark_results,
+    reference_summary,
+    caption,
+):
+    """Display benchmark results and the reference timing."""
     display(
-        shap_evaluation_benchmark.style
-        .pipe(add_table_caption, "SHAP Benchmark Results")
+        pd.DataFrame([reference_summary]).style
+        .pipe(add_table_caption, f"{caption}: Reference Configuration")
         .format({
-            "median_latency_s": "{:.2f}",
+            "background_baseline_2023_usd": "${:,.2f}",
+            "background_baseline_relative_difference": "{:.1%}",
+            "first_inference_latency_s": "{:.2f}",
+            "p50_latency_s": "{:.2f}",
             "p90_latency_s": "{:.2f}",
             "p95_latency_s": "{:.2f}",
-            "mean_top_k_overlap": "{:.1%}",
-            "mean_top_k_sign_match": "{:.1%}",
-            "median_top_k_abs_delta": "${:,.0f}",
-            "median_baseline_abs_delta": "${:,.0f}",
-            "mean_all_feature_abs_delta": "${:,.0f}",
-            "median_additivity_abs_error": "${:,.2f}",
-            "p95_additivity_abs_error": "${:,.2f}",
         })
         .hide()
     )
+    display(
+        benchmark_results.style
+        .pipe(add_table_caption, caption)
+        .format({
+            "background_baseline_2023_usd": "${:,.2f}",
+            "background_baseline_relative_difference": "{:.1%}",
+            "first_inference_latency_s": "{:.2f}",
+            "p50_latency_s": "{:.2f}",
+            "p90_latency_s": "{:.2f}",
+            "p95_latency_s": "{:.2f}",
+            "mean_top_5_overlap": "{:.1%}",
+            "mean_top_3_overlap": "{:.1%}",
+            "mean_top_5_shared_sign_match": "{:.1%}",
+            "mean_top_3_shared_sign_match": "{:.1%}",
+            "median_top_5_abs_delta_2023_usd": "${:,.0f}",
+            "median_top_3_abs_delta_2023_usd": "${:,.0f}",
+            "median_baseline_abs_delta_2023_usd": "${:,.0f}",
+            "mean_all_feature_abs_delta_2023_usd": "${:,.0f}",
+            "median_additivity_abs_error_2023_usd": "${:,.2f}",
+            "p95_additivity_abs_error_2023_usd": "${:,.2f}",
+        })
+        .hide()
+    )
+
+
+if RUN_SHAP_STAGE_1_BENCHMARK:
+    (
+        shap_stage_1_benchmark,
+        shap_stage_1_reference,
+    ) = run_shap_benchmark(
+        X_shap_stage_1,
+        SHAP_STAGE_1_CANDIDATES,
+    )
+    display_shap_benchmark(
+        shap_stage_1_benchmark,
+        shap_stage_1_reference,
+        "SHAP Stage 1 Screening Results",
+    )
 else:
-    print("Set RUN_SHAP_EVAL_BENCHMARK = True to run the SHAP benchmark.")
+    print(
+        "Set RUN_SHAP_STAGE_1_BENCHMARK = True "
+        "to run Stage 1 screening."
+    )
+
+if RUN_SHAP_STAGE_2_BENCHMARK:
+    if len(SHAP_STAGE_2_CANDIDATES) != 3:
+        raise ValueError(
+            "Set SHAP_STAGE_2_CANDIDATES to exactly three "
+            "(background_n, max_evals) pairs."
+        )
+    (
+        shap_stage_2_benchmark,
+        shap_stage_2_reference,
+    ) = run_shap_benchmark(
+        X_shap_stage_2,
+        SHAP_STAGE_2_CANDIDATES,
+    )
+    display_shap_benchmark(
+        shap_stage_2_benchmark,
+        shap_stage_2_reference,
+        "SHAP Stage 2 Shortlist Results",
+    )
+else:
+    print(
+        "Set RUN_SHAP_STAGE_2_BENCHMARK = True "
+        "to run Stage 2 shortlist validation."
+    )
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
