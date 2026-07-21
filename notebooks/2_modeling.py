@@ -5149,8 +5149,15 @@ display(
 #         <li><strong>Reference:</strong> Compare candidates against a reference configuration with a larger background size (<code>500</code>) and higher evaluation budget (<code>max_evals=1,320</code>, or 24 permutation rounds).</li>
 #         <li><strong>Stage 1 screening:</strong> Evaluate all 12 candidates on the same 20 validation rows. Remove candidates that fail background validation, are clearly too slow, or produce unstable explanations.</li>
 #         <li><strong>Stage 2 shortlist validation:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep the first-inference row separate from these 100 steady-state measurements.</li>
-#         <li><strong>Metrics:</strong> Track first-inference and steady-state latency, top-five driver overlap as the primary product metric, sign agreement, dollar-impact deltas, baseline delta, and additivity error.</li>
-#         <li><strong>Selection and final confirmation:</strong> Select the least computationally expensive candidate that meets the latency and stability requirements. Confirm the chosen configuration once on test data, then measure the complete server-side prediction path on the intended Hugging Face hardware.</li>
+#         <li><strong>Explanation stability:</strong>
+#             <ul>
+#                 <li><strong>Top-five overlap (primary metric):</strong> For at least 90% of validation rows, require at least four of the five drivers to match the reference.</li>
+#                 <li><strong>Direction agreement:</strong> A matched reference contribution of at least \$25 must not change from increasing to decreasing the estimate, or vice versa.</li>
+#                 <li><strong>Dollar difference:</strong> Use an initial tolerance of \$25 in 2023 dollars for the median absolute difference among matched top-five contributions.</li>
+#             </ul>
+#         </li>
+#         <li><strong>Correctness checks:</strong> Require background validation to pass and additivity error to remain near zero.</li>
+#         <li><strong>Selection and final confirmation:</strong> Among candidates that pass the correctness and explanation-stability criteria, choose the fastest. Confirm the chosen configuration once on test data, then measure the complete server-side prediction path on the intended Hugging Face hardware.</li>
 #     </ul>
 # </div>
 
