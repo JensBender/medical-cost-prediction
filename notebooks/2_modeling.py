@@ -5139,19 +5139,23 @@ display(
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ <strong>Benchmarking Plan</strong><br>
-#     <strong>Goal:</strong> Identify the smallest defensible configuration of SHAP evaluation budget (<code>max_evals</code>) and background size under the latency target.
+#     <strong>Goal:</strong> Identify the least computationally expensive SHAP configuration of evaluation budget (<code>max_evals</code>) and background size that produces stable explanations while meeting the final server-side latency requirement.
 #     <ul>
-#         <li><strong>Background data validation:</strong> First compare the baseline (mean postprocessed q50) of each candidate background data against the full weighted training baseline. Accept background data only if baseline <code>abs(relative_difference) <= 10%</code>.</li>
-#         <li><strong>Evaluation data:</strong> Compare candidate explanations on a fixed sample from the validation data. Reserve the test data for final confirmation after selecting the production configuration.</li>
+#         <li><strong>Final latency requirement:</strong> The complete server-side prediction request, including SHAP generation, must finish in less than one second under NFR-04.</li>
+#         <li><strong>Notebook latency scope:</strong> The first benchmark measures <code>explainer(...)</code> for one validation data row at a time. This includes the explained prediction function: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection. It excludes user-input validation and mapping, the separate four-quantile prediction returned to the user, inflation adjustment, top-driver selection, response construction, network time, and UI rendering.</li>
+#         <li><strong>First-inference and steady-state latency:</strong> For each candidate, build the explainer outside the timer and then time one validation row as <code>first_inference_latency_s</code>. Keep this measurement separate. Next, measure the benchmark rows individually and use only those measurements for steady-state p50, p90, and p95 latency.</li>
+#         <li><strong>Background data validation:</strong> Compare the baseline (mean postprocessed q50) of each candidate background sample against the full weighted training baseline. Accept a candidate only if <code>abs(relative_difference) <= 10%</code>.</li>
 #         <li><strong>Candidate grid:</strong> Benchmark background sizes <code>[50, 100, 200, 300]</code> and SHAP evaluation budgets (<code>max_evals</code>) <code>[165, 330, 660]</code>, equal to 3, 6, and 12 permutation rounds. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask.</li>
-#         <li><strong>Reference:</strong> Compare candidates against a reference configuration with larger background size (<code>500</code>) and higher evaluation budget (<code>max_evals=1,320</code>, or 24 permutation rounds).</li>
-#         <li><strong>Metrics:</strong> Track latency, top-driver overlap, sign agreement, dollar-impact deltas, baseline delta, and additivity error: <code>abs(predicted_q50 - (base_value + sum(SHAP values)))</code>.</li>
-#         <li><strong>Selection rule:</strong> Choose the smallest background size and SHAP evaluation budget that meets the &lt;1s server-side latency target while keeping additivity error near zero and top cost drivers stable versus the reference.</li>
+#         <li><strong>Reference:</strong> Compare candidates against a reference configuration with a larger background size (<code>500</code>) and higher evaluation budget (<code>max_evals=1,320</code>, or 24 permutation rounds).</li>
+#         <li><strong>Stage 1 screening:</strong> Evaluate all 12 candidates on the same 20 validation rows. Remove candidates that fail background validation, are clearly too slow, or produce unstable explanations.</li>
+#         <li><strong>Stage 2 shortlist validation:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep the first-inference row separate from these 100 steady-state measurements.</li>
+#         <li><strong>Metrics:</strong> Track first-inference and steady-state latency, top-five driver overlap as the primary product metric, sign agreement, dollar-impact deltas, baseline delta, and additivity error.</li>
+#         <li><strong>Selection and final confirmation:</strong> Select the least computationally expensive candidate that meets the latency and stability requirements. Confirm the chosen configuration once on test data, then measure the complete server-side prediction path on the intended Hugging Face hardware.</li>
 #     </ul>
 # </div>
 
 # %%
-# Benchmark SHAP latency and explanation stability across background sizes and max_evals settings.
+# Benchmark SHAP background data size and evaluation budget under the latency target.
 # The benchmark compares candidate configurations against a larger reference configuration.
 RUN_SHAP_EVAL_BENCHMARK = False
 
