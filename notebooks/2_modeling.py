@@ -5170,8 +5170,11 @@ RUN_SHAP_STAGE_2_BENCHMARK = False
 
 SHAP_STAGE_1_ROWS = 20
 SHAP_STAGE_2_ROWS = 100
-SHAP_PRIMARY_TOP_K = 5
-SHAP_SECONDARY_TOP_K = 3
+SHAP_TOP_K = 5
+SHAP_MIN_TOP_5_MATCHES = 4
+SHAP_MIN_TOP_5_MATCH_ROW_SHARE = 0.90
+SHAP_MATERIAL_CONTRIBUTION_MIN_2023_USD = 25.0
+SHAP_MEDIAN_TOP_5_ABS_DELTA_MAX_2023_USD = 25.0
 SHAP_BACKGROUND_GRID = [50, 100, 200, 300]
 SHAP_PERMUTATION_ROUND_GRID = [3, 6, 12]
 SHAP_MASKS_PER_ROUND = 2 * len(SHAP_INPUT_FEATURES) + 1
@@ -5311,55 +5314,85 @@ def explain_rows_for_evaluation_budget(
     )
 
 
-def calculate_top_k_stability(
-    values,
-    reference_values,
-    top_k,
-):
-    """Calculate overlap, shared-driver signs, and dollar drift."""
-    overlaps = []
-    shared_sign_matches = []
-    reference_top_abs_deltas = []
+def calculate_top_5_stability(values, reference_values):
+    """Evaluate the user-facing top-five drivers against the reference."""
+    overlap_counts = []
+    matched_abs_deltas = []
+    material_direction_comparisons = 0
+    material_direction_reversals = 0
 
     for row_idx in range(reference_values.shape[0]):
         reference_top = np.argsort(
             np.abs(reference_values[row_idx])
-        )[::-1][:top_k]
+        )[::-1][:SHAP_TOP_K]
         candidate_top = np.argsort(
             np.abs(values[row_idx])
-        )[::-1][:top_k]
+        )[::-1][:SHAP_TOP_K]
         shared_top = np.intersect1d(
             reference_top,
             candidate_top,
         )
 
-        overlaps.append(len(shared_top) / top_k)
-        if len(shared_top):
-            shared_sign_matches.append(
-                np.mean(
-                    np.sign(values[row_idx, shared_top])
-                    == np.sign(reference_values[row_idx, shared_top])
-                )
-            )
-
-        reference_top_abs_deltas.append(
-            np.mean(
-                np.abs(
-                    values[row_idx, reference_top]
-                    - reference_values[row_idx, reference_top]
-                )
+        overlap_counts.append(len(shared_top))
+        matched_abs_deltas.extend(
+            np.abs(
+                values[row_idx, shared_top]
+                - reference_values[row_idx, shared_top]
             )
         )
 
+        material_shared = shared_top[
+            np.abs(reference_values[row_idx, shared_top])
+            >= SHAP_MATERIAL_CONTRIBUTION_MIN_2023_USD
+        ]
+        material_direction_comparisons += len(material_shared)
+        material_direction_reversals += np.count_nonzero(
+            np.sign(values[row_idx, material_shared])
+            != np.sign(reference_values[row_idx, material_shared])
+        )
+
+    overlap_counts = np.asarray(overlap_counts)
+    share_rows_with_at_least_4_of_5_matches = np.mean(
+        overlap_counts >= SHAP_MIN_TOP_5_MATCHES
+    )
+    median_matched_abs_delta = (
+        np.median(matched_abs_deltas)
+        if matched_abs_deltas
+        else np.nan
+    )
+    top_5_overlap_passed = (
+        share_rows_with_at_least_4_of_5_matches
+        >= SHAP_MIN_TOP_5_MATCH_ROW_SHARE
+    )
+    material_direction_passed = (
+        material_direction_reversals == 0
+    )
+    dollar_difference_passed = (
+        not np.isnan(median_matched_abs_delta)
+        and median_matched_abs_delta
+        <= SHAP_MEDIAN_TOP_5_ABS_DELTA_MAX_2023_USD
+    )
+
     return {
-        "overlap": np.mean(overlaps),
-        "shared_sign_match": (
-            np.mean(shared_sign_matches)
-            if shared_sign_matches
-            else np.nan
+        "share_rows_with_at_least_4_of_5_matches": (
+            share_rows_with_at_least_4_of_5_matches
         ),
-        "reference_top_abs_delta": np.median(
-            reference_top_abs_deltas
+        "top_5_overlap_passed": top_5_overlap_passed,
+        "material_direction_comparison_count": (
+            material_direction_comparisons
+        ),
+        "material_direction_reversal_count": (
+            material_direction_reversals
+        ),
+        "material_direction_passed": material_direction_passed,
+        "median_matched_top_5_abs_delta_2023_usd": (
+            median_matched_abs_delta
+        ),
+        "dollar_difference_passed": dollar_difference_passed,
+        "explanation_stability_passed": (
+            top_5_overlap_passed
+            and material_direction_passed
+            and dollar_difference_passed
         ),
     }
 
@@ -5385,15 +5418,9 @@ def summarize_shap_configuration(
     additivity_abs_error = np.abs(
         predictions - (base_values + values.sum(axis=1))
     )
-    top_5 = calculate_top_k_stability(
+    top_5_stability = calculate_top_5_stability(
         values,
         reference_values,
-        SHAP_PRIMARY_TOP_K,
-    )
-    top_3 = calculate_top_k_stability(
-        values,
-        reference_values,
-        SHAP_SECONDARY_TOP_K,
     )
 
     return {
@@ -5415,20 +5442,7 @@ def summarize_shap_configuration(
         "p50_latency_s": np.percentile(latencies, 50),
         "p90_latency_s": np.percentile(latencies, 90),
         "p95_latency_s": np.percentile(latencies, 95),
-        "mean_top_5_overlap": top_5["overlap"],
-        "mean_top_3_overlap": top_3["overlap"],
-        "mean_top_5_shared_sign_match": (
-            top_5["shared_sign_match"]
-        ),
-        "mean_top_3_shared_sign_match": (
-            top_3["shared_sign_match"]
-        ),
-        "median_top_5_abs_delta_2023_usd": (
-            top_5["reference_top_abs_delta"]
-        ),
-        "median_top_3_abs_delta_2023_usd": (
-            top_3["reference_top_abs_delta"]
-        ),
+        **top_5_stability,
         "median_baseline_abs_delta_2023_usd": np.median(
             np.abs(base_values - reference_base_values)
         ),
@@ -5510,6 +5524,22 @@ def run_shap_benchmark(
                     background_info["baseline_relative_difference"]
                 ),
                 "background_validation_passed": False,
+                "first_inference_latency_s": np.nan,
+                "p50_latency_s": np.nan,
+                "p90_latency_s": np.nan,
+                "p95_latency_s": np.nan,
+                "share_rows_with_at_least_4_of_5_matches": np.nan,
+                "top_5_overlap_passed": False,
+                "material_direction_comparison_count": np.nan,
+                "material_direction_reversal_count": np.nan,
+                "material_direction_passed": False,
+                "median_matched_top_5_abs_delta_2023_usd": np.nan,
+                "dollar_difference_passed": False,
+                "explanation_stability_passed": False,
+                "median_baseline_abs_delta_2023_usd": np.nan,
+                "mean_all_feature_abs_delta_2023_usd": np.nan,
+                "median_additivity_abs_error_2023_usd": np.nan,
+                "p95_additivity_abs_error_2023_usd": np.nan,
             })
             continue
 
@@ -5549,10 +5579,11 @@ def run_shap_benchmark(
     benchmark_results = pd.DataFrame(benchmark_results).sort_values(
         [
             "background_validation_passed",
+            "explanation_stability_passed",
             "p95_latency_s",
-            "mean_top_5_overlap",
+            "share_rows_with_at_least_4_of_5_matches",
         ],
-        ascending=[False, True, False],
+        ascending=[False, False, True, False],
         na_position="last",
     )
     reference_summary = {
@@ -5603,12 +5634,10 @@ def display_shap_benchmark(
             "p50_latency_s": "{:.2f}",
             "p90_latency_s": "{:.2f}",
             "p95_latency_s": "{:.2f}",
-            "mean_top_5_overlap": "{:.1%}",
-            "mean_top_3_overlap": "{:.1%}",
-            "mean_top_5_shared_sign_match": "{:.1%}",
-            "mean_top_3_shared_sign_match": "{:.1%}",
-            "median_top_5_abs_delta_2023_usd": "${:,.0f}",
-            "median_top_3_abs_delta_2023_usd": "${:,.0f}",
+            "share_rows_with_at_least_4_of_5_matches": "{:.1%}",
+            "material_direction_comparison_count": "{:,.0f}",
+            "material_direction_reversal_count": "{:,.0f}",
+            "median_matched_top_5_abs_delta_2023_usd": "${:,.0f}",
             "median_baseline_abs_delta_2023_usd": "${:,.0f}",
             "mean_all_feature_abs_delta_2023_usd": "${:,.0f}",
             "median_additivity_abs_error_2023_usd": "${:,.2f}",
