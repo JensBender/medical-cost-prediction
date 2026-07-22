@@ -4846,7 +4846,7 @@ plot_quantile_subgroup_predictions(
 #     <strong>Background Data</strong><br>
 #     The background data is a 200–500 row sample from the training data (with preprocessor input features), drawn using weighted sampling with replacement. SHAP treats background rows as equal-weight, so sampling with MEPS person weights (<code>PERWT23F</code>) makes the background approximate the U.S. adult population distribution. High-weight respondents may appear more than once. That is expected because duplicates represent their larger population share. The SHAP baseline is the mean postprocessed q50 prediction across those background rows.
 #     <br><br>
-#     Background data validation: Compare the background sample's SHAP baseline against the full weighted training baseline. Accept the sample if <code>abs(relative_difference) &lt;= 10%</code>. If it exceeds 10%, increase the background size before creating app artifacts. This is an initial validation. Consider stronger validation criteria.
+#     Background data validation: Compare the background sample's SHAP baseline against the full weighted training baseline. Accept the sample if the absolute relative difference is at most 10%. If it exceeds 10%, increase the background size before creating app artifacts. This is an initial validation. Consider stronger validation criteria.
 #     <br><br>
 #     <strong>Prediction Service Latency</strong><br>
 #     A normal prediction scores one user row. A SHAP explanation scores many masked versions of that row against the background. With 27 preprocessor input features, one complete permutation round evaluates up to <code>2 × 27 + 1 = 55</code> masked feature combinations: one initial fully masked state, 27 forward steps that add features, and 27 backward steps that remove them. The default <code>max_evals=500</code> permits 9 complete rounds, or 495 masks. With a 300-row background this is at most about 148,500 synthetic predictions. SHAP predicts in batches, but this remains the main expected source of prediction-service latency.
@@ -4961,16 +4961,16 @@ training_baseline = np.average(
     predict_median_cost(X_train_preprocessor_input),
     weights=w_train,
 )
-baseline_relative_difference = abs(background_baseline / training_baseline - 1)
+baseline_absolute_relative_difference = abs(background_baseline / training_baseline - 1)
 
 print(f"SHAP background baseline: ${background_baseline:,.2f}")
 print(f"Full training baseline:   ${training_baseline:,.2f}")
-print(f"Relative difference:      {baseline_relative_difference:.1%}")
+print(f"Absolute relative difference: {baseline_absolute_relative_difference:.1%}")
 
-if baseline_relative_difference > SHAP_BASELINE_REL_DIFF_MAX:
+if baseline_absolute_relative_difference > SHAP_BASELINE_REL_DIFF_MAX:
     raise ValueError(
         "SHAP background baseline differs from the weighted training baseline by "
-        f"{baseline_relative_difference:.1%}, which exceeds the "
+        f"{baseline_absolute_relative_difference:.1%}, which exceeds the "
         f"{SHAP_BASELINE_REL_DIFF_MAX:.0%} acceptance threshold. "
         "Resample the background data or increase SHAP_BACKGROUND_N."
     )
@@ -5143,12 +5143,12 @@ display(
 #     <ul>
 #         <li><strong>Final latency requirement:</strong> The complete server-side prediction request, including SHAP generation, must finish in less than one second under NFR-04.</li>
 #         <li><strong>Notebook latency scope:</strong> The first benchmark measures <code>explainer(...)</code> for one validation data row at a time. This includes the explained prediction function: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection. It excludes user-input validation and mapping, the separate four-quantile prediction returned to the user, inflation adjustment, top-driver selection, response construction, network time, and UI rendering.</li>
-#         <li><strong>First-inference and steady-state latency:</strong> For each candidate, build the explainer outside the timer and then time one validation row as <code>first_inference_latency_s</code>. Keep this measurement separate. Next, measure the benchmark rows individually and use only those measurements for steady-state p50, p90, and p95 latency.</li>
-#         <li><strong>Background data validation:</strong> Compare the baseline (mean postprocessed q50) of each candidate background sample against the full weighted training baseline. Accept a candidate only if <code>abs(relative_difference) <= 10%</code>.</li>
+#         <li><strong>First-explanation and steady-state latency:</strong> For each candidate, build the explainer outside the timer and then time one validation row as <code>first_explanation_latency_s</code>. Keep this measurement separate. Next, measure the benchmark rows individually and use only those measurements for steady-state p50, p90, and p95 latency.</li>
+#         <li><strong>Background data validation:</strong> Compare the baseline (mean postprocessed q50) of each candidate background sample against the full weighted training baseline. Accept a candidate only if the absolute relative difference is at most 10%. Keep failed candidates and their exact differences in the overview table, but skip their explanation benchmark.</li>
 #         <li><strong>Candidate grid:</strong> Benchmark background sizes <code>[50, 100, 200, 300]</code> and SHAP evaluation budgets (<code>max_evals</code>) <code>[165, 330, 660]</code>, equal to 3, 6, and 12 permutation rounds. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask.</li>
 #         <li><strong>Reference:</strong> Compare candidates against a reference configuration with a larger background size (<code>500</code>) and higher evaluation budget (<code>max_evals=1,320</code>, or 24 permutation rounds).</li>
-#         <li><strong>Stage 1 screening:</strong> Evaluate all 12 candidates on the same 20 validation rows. Remove candidates that fail background validation, are clearly too slow, or produce unstable explanations.</li>
-#         <li><strong>Stage 2 shortlist validation:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep these rows separate from the Stage 1 and first-inference rows.</li>
+#         <li><strong>Stage 1 screening:</strong> Evaluate all 12 candidates on the same 20 validation rows. Mark candidates that fail background validation, are clearly too slow, or produce unstable explanations as unsuitable for Stage 2.</li>
+#         <li><strong>Stage 2 shortlist validation:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep these rows separate from the Stage 1 and first-explanation rows.</li>
 #         <li><strong>Explanation stability:</strong>
 #             <ul>
 #                 <li><strong>Top-five overlap (primary metric):</strong> For at least 90% of validation rows, require at least four of the five drivers to match the reference.</li>
@@ -5165,9 +5165,11 @@ display(
 # Benchmark SHAP background size and evaluation budget on fixed validation rows.
 from time import perf_counter
 
+# Execution controls
 RUN_SHAP_STAGE_1_BENCHMARK = False
 RUN_SHAP_STAGE_2_BENCHMARK = False
 
+# Benchmark sample sizes and explanation-stability thresholds
 SHAP_STAGE_1_ROWS = 20
 SHAP_STAGE_2_ROWS = 100
 SHAP_TOP_K = 5
@@ -5175,25 +5177,27 @@ SHAP_MIN_TOP_5_MATCHES = 4
 SHAP_MIN_TOP_5_MATCH_ROW_SHARE = 0.90
 SHAP_MATERIAL_CONTRIBUTION_MIN_2023_USD = 25.0
 SHAP_MEDIAN_TOP_5_ABS_DELTA_MAX_2023_USD = 25.0
-SHAP_BACKGROUND_GRID = [50, 100, 200, 300]
+
+# Candidate and reference configurations
+SHAP_BACKGROUND_SIZE_GRID = [50, 100, 200, 300]
 SHAP_PERMUTATION_ROUND_GRID = [3, 6, 12]
 SHAP_MASKS_PER_ROUND = 2 * len(SHAP_INPUT_FEATURES) + 1
 SHAP_MAX_EVALS_GRID = [
-    rounds * SHAP_MASKS_PER_ROUND
-    for rounds in SHAP_PERMUTATION_ROUND_GRID
+    permutation_rounds * SHAP_MASKS_PER_ROUND
+    for permutation_rounds in SHAP_PERMUTATION_ROUND_GRID
 ]
-SHAP_REFERENCE_BACKGROUND_N = 500
+SHAP_REFERENCE_BACKGROUND_SIZE = 500
 SHAP_REFERENCE_MAX_EVALS = 24 * SHAP_MASKS_PER_ROUND
 
 SHAP_STAGE_1_CANDIDATES = [
-    (background_n, max_evals)
-    for background_n in SHAP_BACKGROUND_GRID
+    (background_size, max_evals)
+    for background_size in SHAP_BACKGROUND_SIZE_GRID
     for max_evals in SHAP_MAX_EVALS_GRID
 ]
 
 # Fill this list after reviewing Stage 1 results.
 SHAP_STAGE_2_CANDIDATES = [
-    # (background_n, max_evals),
+    # (background_size, max_evals),
 ]
 
 if RUN_SHAP_STAGE_1_BENCHMARK and RUN_SHAP_STAGE_2_BENCHMARK:
@@ -5206,11 +5210,12 @@ if len(X_val_preprocessor_input) < required_validation_rows:
         f"{required_validation_rows} rows for SHAP benchmarking."
     )
 
+# Use separate fixed rows for first-explanation, Stage 1, and Stage 2 measurements.
 X_shap_validation_sample = X_val_preprocessor_input.sample(
     n=required_validation_rows,
     random_state=RANDOM_STATE,
 )
-X_shap_first_inference = X_shap_validation_sample.iloc[[0]]
+X_shap_first_explanation = X_shap_validation_sample.iloc[[0]]
 stage_2_start = 1 + SHAP_STAGE_1_ROWS
 X_shap_stage_1 = X_shap_validation_sample.iloc[1:stage_2_start]
 X_shap_stage_2 = X_shap_validation_sample.iloc[stage_2_start:]
@@ -5225,36 +5230,33 @@ def calculate_shap_permutation_budget(max_evals):
     return permutation_rounds, planned_mask_evaluations
 
 
-def create_shap_benchmark_background(
-    background_n,
-    random_state=RANDOM_STATE,
-):
-    """Create and validate one weighted training background sample."""
+def create_and_validate_shap_background(background_size):
+    """Create one weighted background and validate its q50 baseline."""
     background = X_train_preprocessor_input.sample(
-        n=background_n,
+        n=background_size,
         weights=w_train,
         replace=True,
-        random_state=random_state,
+        random_state=RANDOM_STATE,
     )
     background_baseline = predict_median_cost(background).mean()
-    baseline_relative_difference = abs(
+    baseline_absolute_relative_difference = abs(
         background_baseline / training_baseline - 1
     )
     return {
-        "data": background,
+        "background": background,
         "baseline_2023_usd": background_baseline,
-        "baseline_relative_difference": baseline_relative_difference,
-        "validation_passed": (
-            baseline_relative_difference <= SHAP_BASELINE_REL_DIFF_MAX
+        "baseline_absolute_relative_difference": (
+            baseline_absolute_relative_difference
+        ),
+        "baseline_validation_passed": (
+            baseline_absolute_relative_difference
+            <= SHAP_BASELINE_REL_DIFF_MAX
         ),
     }
 
 
-def build_shap_candidate_explainer(
-    background,
-    random_state=RANDOM_STATE,
-):
-    """Build a SHAP explainer from one candidate background."""
+def build_shap_explainer(background):
+    """Build a permutation SHAP explainer for one background sample."""
     masker = shap.maskers.Independent(
         background,
         max_samples=len(background),
@@ -5263,115 +5265,125 @@ def build_shap_candidate_explainer(
         predict_median_cost,
         masker,
         algorithm="permutation",
-        seed=random_state,
+        seed=RANDOM_STATE,
     )
 
 
-def measure_first_inference_latency(
+def measure_first_explanation_latency(
     explainer,
-    X_first_inference,
+    X_first_explanation,
     max_evals,
 ):
-    """Time the first explanation after building an explainer."""
+    """Return seconds required for the first single-row SHAP explanation."""
     start_time = perf_counter()
     explainer(
-        X_first_inference,
+        X_first_explanation,
         max_evals=max_evals,
         silent=True,
     )
     return perf_counter() - start_time
 
 
-def explain_rows_for_evaluation_budget(
+def explain_and_time_rows(
     explainer,
-    X_eval,
+    X_rows,
     max_evals,
 ):
-    """Return explanations and steady-state latency for individual rows."""
-    values = []
-    base_values = []
-    predictions = []
-    latencies = []
+    """Return 2023-dollar SHAP outputs and per-row explanation latency."""
+    shap_values = []
+    shap_base_values = []
+    predicted_median_costs = []
+    explanation_latencies_s = []
 
-    for row_position in range(len(X_eval)):
-        row_frame = X_eval.iloc[[row_position]]
+    for row_position in range(len(X_rows)):
+        row_frame = X_rows.iloc[[row_position]]
         start_time = perf_counter()
         explanation = explainer(
             row_frame,
             max_evals=max_evals,
             silent=True,
         )
-        latencies.append(perf_counter() - start_time)
-        values.append(explanation.values[0])
-        base_values.append(
+        explanation_latencies_s.append(perf_counter() - start_time)
+        shap_values.append(explanation.values[0])
+        shap_base_values.append(
             np.asarray(explanation.base_values).reshape(-1)[0]
         )
-        predictions.append(predict_median_cost(row_frame)[0])
+        predicted_median_costs.append(predict_median_cost(row_frame)[0])
 
     return (
-        np.vstack(values),
-        np.asarray(base_values),
-        np.asarray(predictions),
-        np.asarray(latencies),
+        np.vstack(shap_values),
+        np.asarray(shap_base_values),
+        np.asarray(predicted_median_costs),
+        np.asarray(explanation_latencies_s),
     )
 
 
-def calculate_top_5_stability(values, reference_values):
+def calculate_top_5_stability(shap_values, reference_shap_values):
     """Evaluate the user-facing top-five drivers against the reference."""
     overlap_counts = []
-    matched_abs_deltas = []
+    matched_contribution_abs_differences = []
     material_direction_comparisons = 0
     material_direction_reversals = 0
 
-    for row_idx in range(reference_values.shape[0]):
-        reference_top = np.argsort(
-            np.abs(reference_values[row_idx])
+    for row_position in range(reference_shap_values.shape[0]):
+        reference_top_indices = np.argsort(
+            np.abs(reference_shap_values[row_position])
         )[::-1][:SHAP_TOP_K]
-        candidate_top = np.argsort(
-            np.abs(values[row_idx])
+        candidate_top_indices = np.argsort(
+            np.abs(shap_values[row_position])
         )[::-1][:SHAP_TOP_K]
-        shared_top = np.intersect1d(
-            reference_top,
-            candidate_top,
+        matched_top_indices = np.intersect1d(
+            reference_top_indices,
+            candidate_top_indices,
         )
 
-        overlap_counts.append(len(shared_top))
-        matched_abs_deltas.extend(
+        overlap_counts.append(len(matched_top_indices))
+        matched_contribution_abs_differences.extend(
             np.abs(
-                values[row_idx, shared_top]
-                - reference_values[row_idx, shared_top]
+                shap_values[row_position, matched_top_indices]
+                - reference_shap_values[
+                    row_position,
+                    matched_top_indices,
+                ]
             )
         )
 
-        material_shared = shared_top[
-            np.abs(reference_values[row_idx, shared_top])
-            >= SHAP_MATERIAL_CONTRIBUTION_MIN_2023_USD
+        material_matched_indices = matched_top_indices[
+            np.abs(
+                reference_shap_values[
+                    row_position,
+                    matched_top_indices,
+                ]
+            ) >= SHAP_MATERIAL_CONTRIBUTION_MIN_2023_USD
         ]
-        material_direction_comparisons += len(material_shared)
+        material_direction_comparisons += len(material_matched_indices)
         material_direction_reversals += np.count_nonzero(
-            np.sign(values[row_idx, material_shared])
-            != np.sign(reference_values[row_idx, material_shared])
+            np.sign(shap_values[row_position, material_matched_indices])
+            != np.sign(
+                reference_shap_values[
+                    row_position,
+                    material_matched_indices,
+                ]
+            )
         )
 
     overlap_counts = np.asarray(overlap_counts)
     share_rows_with_at_least_4_of_5_matches = np.mean(
         overlap_counts >= SHAP_MIN_TOP_5_MATCHES
     )
-    median_matched_abs_delta = (
-        np.median(matched_abs_deltas)
-        if matched_abs_deltas
+    median_matched_contribution_abs_difference = (
+        np.median(matched_contribution_abs_differences)
+        if matched_contribution_abs_differences
         else np.nan
     )
     top_5_overlap_passed = (
         share_rows_with_at_least_4_of_5_matches
         >= SHAP_MIN_TOP_5_MATCH_ROW_SHARE
     )
-    material_direction_passed = (
-        material_direction_reversals == 0
-    )
+    material_direction_passed = material_direction_reversals == 0
     dollar_difference_passed = (
-        not np.isnan(median_matched_abs_delta)
-        and median_matched_abs_delta
+        not np.isnan(median_matched_contribution_abs_difference)
+        and median_matched_contribution_abs_difference
         <= SHAP_MEDIAN_TOP_5_ABS_DELTA_MAX_2023_USD
     )
 
@@ -5388,7 +5400,7 @@ def calculate_top_5_stability(values, reference_values):
         ),
         "material_direction_passed": material_direction_passed,
         "median_matched_top_5_abs_delta_2023_usd": (
-            median_matched_abs_delta
+            median_matched_contribution_abs_difference
         ),
         "dollar_difference_passed": dollar_difference_passed,
         "explanation_stability_passed": (
@@ -5401,57 +5413,51 @@ def calculate_top_5_stability(values, reference_values):
 
 def summarize_shap_configuration(
     *,
-    background_n,
+    background_size,
     max_evals,
     background_info,
-    first_inference_latency,
-    values,
-    base_values,
-    predictions,
-    latencies,
-    reference_values,
-    reference_base_values,
+    first_explanation_latency_s,
+    shap_values,
+    shap_base_values,
+    predicted_median_costs,
+    explanation_latencies_s,
+    reference_shap_values,
 ):
-    """Summarize latency and stability against the reference."""
+    """Summarize one candidate's latency and stability metrics."""
     permutation_rounds, planned_mask_evaluations = (
         calculate_shap_permutation_budget(max_evals)
     )
     additivity_abs_error = np.abs(
-        predictions - (base_values + values.sum(axis=1))
+        predicted_median_costs
+        - (shap_base_values + shap_values.sum(axis=1))
     )
-    top_5_stability = calculate_top_5_stability(
-        values,
-        reference_values,
+    top_5_stability_results = calculate_top_5_stability(
+        shap_values,
+        reference_shap_values,
     )
 
     return {
-        "background_n": background_n,
+        "background_size": background_size,
         "max_evals": max_evals,
         "permutation_rounds": permutation_rounds,
         "planned_mask_evaluations": planned_mask_evaluations,
         "estimated_synthetic_rows": (
-            planned_mask_evaluations * background_n
+            planned_mask_evaluations * background_size
         ),
         "background_baseline_2023_usd": (
             background_info["baseline_2023_usd"]
         ),
-        "background_baseline_relative_difference": (
-            background_info["baseline_relative_difference"]
+        "background_baseline_absolute_relative_difference": (
+            background_info["baseline_absolute_relative_difference"]
         ),
-        "background_validation_passed": (
-            background_info["validation_passed"]
+        "background_baseline_validation_passed": (
+            background_info["baseline_validation_passed"]
         ),
-        "first_inference_latency_s": first_inference_latency,
-        "p50_latency_s": np.percentile(latencies, 50),
-        "p90_latency_s": np.percentile(latencies, 90),
-        "p95_latency_s": np.percentile(latencies, 95),
-        **top_5_stability,
-        "median_baseline_abs_delta_2023_usd": np.median(
-            np.abs(base_values - reference_base_values)
-        ),
-        "mean_all_feature_abs_delta_2023_usd": np.mean(
-            np.abs(values - reference_values)
-        ),
+        "first_explanation_latency_s": first_explanation_latency_s,
+        "p50_latency_s": np.percentile(explanation_latencies_s, 50),
+        "p90_latency_s": np.percentile(explanation_latencies_s, 90),
+        "p95_latency_s": np.percentile(explanation_latencies_s, 95),
+        **top_5_stability_results,
         "median_additivity_abs_error_2023_usd": np.median(
             additivity_abs_error
         ),
@@ -5463,72 +5469,79 @@ def summarize_shap_configuration(
 
 
 def run_shap_benchmark(
-    X_eval,
+    X_evaluation,
     candidate_configurations,
 ):
-    """Run one SHAP benchmark stage against the reference."""
+    """Benchmark candidate configurations against one reference."""
+    # Create one reusable weighted background for each background size.
     background_sizes = {
-        background_n
-        for background_n, _ in candidate_configurations
+        background_size
+        for background_size, _ in candidate_configurations
     }
-    background_sizes.add(SHAP_REFERENCE_BACKGROUND_N)
-    backgrounds = {
-        background_n: create_shap_benchmark_background(background_n)
-        for background_n in sorted(background_sizes)
+    background_sizes.add(SHAP_REFERENCE_BACKGROUND_SIZE)
+    backgrounds_by_size = {
+        background_size: create_and_validate_shap_background(
+            background_size
+        )
+        for background_size in sorted(background_sizes)
     }
 
-    reference_background_info = backgrounds[
-        SHAP_REFERENCE_BACKGROUND_N
+    # Calculate the reference explanations and latency.
+    reference_background_info = backgrounds_by_size[
+        SHAP_REFERENCE_BACKGROUND_SIZE
     ]
-    if not reference_background_info["validation_passed"]:
+    if not reference_background_info["baseline_validation_passed"]:
         raise ValueError(
             "The reference SHAP background failed baseline validation."
         )
 
-    reference_explainer = build_shap_candidate_explainer(
-        reference_background_info["data"]
+    reference_explainer = build_shap_explainer(
+        reference_background_info["background"]
     )
-    reference_first_inference_latency = (
-        measure_first_inference_latency(
+    reference_first_explanation_latency_s = (
+        measure_first_explanation_latency(
             reference_explainer,
-            X_shap_first_inference,
+            X_shap_first_explanation,
             SHAP_REFERENCE_MAX_EVALS,
         )
     )
     (
-        reference_values,
-        reference_base_values,
+        reference_shap_values,
         _,
-        reference_latencies,
-    ) = explain_rows_for_evaluation_budget(
+        _,
+        reference_explanation_latencies_s,
+    ) = explain_and_time_rows(
         reference_explainer,
-        X_eval,
+        X_evaluation,
         SHAP_REFERENCE_MAX_EVALS,
     )
 
+    # Evaluate each candidate configuration on the same rows.
     benchmark_results = []
-    for background_n, max_evals in candidate_configurations:
-        background_info = backgrounds[background_n]
-        if not background_info["validation_passed"]:
+    for background_size, max_evals in candidate_configurations:
+        background_info = backgrounds_by_size[background_size]
+        if not background_info["baseline_validation_passed"]:
             permutation_rounds, planned_mask_evaluations = (
                 calculate_shap_permutation_budget(max_evals)
             )
             benchmark_results.append({
-                "background_n": background_n,
+                "background_size": background_size,
                 "max_evals": max_evals,
                 "permutation_rounds": permutation_rounds,
                 "planned_mask_evaluations": planned_mask_evaluations,
                 "estimated_synthetic_rows": (
-                    planned_mask_evaluations * background_n
+                    planned_mask_evaluations * background_size
                 ),
                 "background_baseline_2023_usd": (
                     background_info["baseline_2023_usd"]
                 ),
-                "background_baseline_relative_difference": (
-                    background_info["baseline_relative_difference"]
+                "background_baseline_absolute_relative_difference": (
+                    background_info[
+                        "baseline_absolute_relative_difference"
+                    ]
                 ),
-                "background_validation_passed": False,
-                "first_inference_latency_s": np.nan,
+                "background_baseline_validation_passed": False,
+                "first_explanation_latency_s": np.nan,
                 "p50_latency_s": np.nan,
                 "p90_latency_s": np.nan,
                 "p95_latency_s": np.nan,
@@ -5540,49 +5553,47 @@ def run_shap_benchmark(
                 "median_matched_top_5_abs_delta_2023_usd": np.nan,
                 "dollar_difference_passed": False,
                 "explanation_stability_passed": False,
-                "median_baseline_abs_delta_2023_usd": np.nan,
-                "mean_all_feature_abs_delta_2023_usd": np.nan,
                 "median_additivity_abs_error_2023_usd": np.nan,
                 "p95_additivity_abs_error_2023_usd": np.nan,
             })
             continue
 
-        candidate_explainer = build_shap_candidate_explainer(
-            background_info["data"]
+        candidate_explainer = build_shap_explainer(
+            background_info["background"]
         )
-        first_inference_latency = measure_first_inference_latency(
+        first_explanation_latency_s = measure_first_explanation_latency(
             candidate_explainer,
-            X_shap_first_inference,
+            X_shap_first_explanation,
             max_evals,
         )
         (
-            candidate_values,
-            candidate_base_values,
-            candidate_predictions,
-            candidate_latencies,
-        ) = explain_rows_for_evaluation_budget(
+            candidate_shap_values,
+            candidate_shap_base_values,
+            candidate_predicted_median_costs,
+            candidate_explanation_latencies_s,
+        ) = explain_and_time_rows(
             candidate_explainer,
-            X_eval,
+            X_evaluation,
             max_evals,
         )
         benchmark_results.append(
             summarize_shap_configuration(
-                background_n=background_n,
+                background_size=background_size,
                 max_evals=max_evals,
                 background_info=background_info,
-                first_inference_latency=first_inference_latency,
-                values=candidate_values,
-                base_values=candidate_base_values,
-                predictions=candidate_predictions,
-                latencies=candidate_latencies,
-                reference_values=reference_values,
-                reference_base_values=reference_base_values,
+                first_explanation_latency_s=first_explanation_latency_s,
+                shap_values=candidate_shap_values,
+                shap_base_values=candidate_shap_base_values,
+                predicted_median_costs=candidate_predicted_median_costs,
+                explanation_latencies_s=candidate_explanation_latencies_s,
+                reference_shap_values=reference_shap_values,
             )
         )
 
+    # Rank valid and stable candidates by latency.
     benchmark_results = pd.DataFrame(benchmark_results).sort_values(
         [
-            "background_validation_passed",
+            "background_baseline_validation_passed",
             "explanation_stability_passed",
             "p95_latency_s",
             "share_rows_with_at_least_4_of_5_matches",
@@ -5591,20 +5602,31 @@ def run_shap_benchmark(
         na_position="last",
     )
     reference_summary = {
-        "background_n": SHAP_REFERENCE_BACKGROUND_N,
+        "background_size": SHAP_REFERENCE_BACKGROUND_SIZE,
         "max_evals": SHAP_REFERENCE_MAX_EVALS,
         "background_baseline_2023_usd": (
             reference_background_info["baseline_2023_usd"]
         ),
-        "background_baseline_relative_difference": (
-            reference_background_info["baseline_relative_difference"]
+        "background_baseline_absolute_relative_difference": (
+            reference_background_info[
+                "baseline_absolute_relative_difference"
+            ]
         ),
-        "first_inference_latency_s": (
-            reference_first_inference_latency
+        "first_explanation_latency_s": (
+            reference_first_explanation_latency_s
         ),
-        "p50_latency_s": np.percentile(reference_latencies, 50),
-        "p90_latency_s": np.percentile(reference_latencies, 90),
-        "p95_latency_s": np.percentile(reference_latencies, 95),
+        "p50_latency_s": np.percentile(
+            reference_explanation_latencies_s,
+            50,
+        ),
+        "p90_latency_s": np.percentile(
+            reference_explanation_latencies_s,
+            90,
+        ),
+        "p95_latency_s": np.percentile(
+            reference_explanation_latencies_s,
+            95,
+        ),
     }
     return benchmark_results, reference_summary
 
@@ -5620,8 +5642,8 @@ def display_shap_benchmark(
         .pipe(add_table_caption, f"{caption}: Reference Configuration")
         .format({
             "background_baseline_2023_usd": "${:,.2f}",
-            "background_baseline_relative_difference": "{:.1%}",
-            "first_inference_latency_s": "{:.2f}",
+            "background_baseline_absolute_relative_difference": "{:.1%}",
+            "first_explanation_latency_s": "{:.2f}",
             "p50_latency_s": "{:.2f}",
             "p90_latency_s": "{:.2f}",
             "p95_latency_s": "{:.2f}",
@@ -5633,8 +5655,8 @@ def display_shap_benchmark(
         .pipe(add_table_caption, caption)
         .format({
             "background_baseline_2023_usd": "${:,.2f}",
-            "background_baseline_relative_difference": "{:.1%}",
-            "first_inference_latency_s": "{:.2f}",
+            "background_baseline_absolute_relative_difference": "{:.1%}",
+            "first_explanation_latency_s": "{:.2f}",
             "p50_latency_s": "{:.2f}",
             "p90_latency_s": "{:.2f}",
             "p95_latency_s": "{:.2f}",
@@ -5642,8 +5664,6 @@ def display_shap_benchmark(
             "material_direction_comparison_count": "{:,.0f}",
             "material_direction_reversal_count": "{:,.0f}",
             "median_matched_top_5_abs_delta_2023_usd": "${:,.0f}",
-            "median_baseline_abs_delta_2023_usd": "${:,.0f}",
-            "mean_all_feature_abs_delta_2023_usd": "${:,.0f}",
             "median_additivity_abs_error_2023_usd": "${:,.2f}",
             "p95_additivity_abs_error_2023_usd": "${:,.2f}",
         })
@@ -5674,7 +5694,7 @@ if RUN_SHAP_STAGE_2_BENCHMARK:
     if len(SHAP_STAGE_2_CANDIDATES) != 3:
         raise ValueError(
             "Set SHAP_STAGE_2_CANDIDATES to exactly three "
-            "(background_n, max_evals) pairs."
+            "(background_size, max_evals) pairs."
         )
     (
         shap_stage_2_benchmark,
