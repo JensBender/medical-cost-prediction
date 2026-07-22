@@ -5148,7 +5148,7 @@ display(
 #         <li><strong>Candidate grid:</strong> Benchmark background sizes <code>[50, 100, 200, 300]</code> and SHAP evaluation budgets (<code>max_evals</code>) <code>[165, 330, 660]</code>, equal to 3, 6, and 12 permutation rounds. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask.</li>
 #         <li><strong>Reference:</strong> Compare candidates against a reference configuration with a larger background size (<code>500</code>) and higher evaluation budget (<code>max_evals=1,320</code>, or 24 permutation rounds).</li>
 #         <li><strong>Stage 1 screening:</strong> Evaluate all 12 candidates on the same 20 validation rows. Remove candidates that fail background validation, are clearly too slow, or produce unstable explanations.</li>
-#         <li><strong>Stage 2 shortlist validation:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep the first-inference row separate from these 100 steady-state measurements.</li>
+#         <li><strong>Stage 2 shortlist validation:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep these rows separate from the Stage 1 and first-inference rows.</li>
 #         <li><strong>Explanation stability:</strong>
 #             <ul>
 #                 <li><strong>Top-five overlap (primary metric):</strong> For at least 90% of validation rows, require at least four of the five drivers to match the reference.</li>
@@ -5199,7 +5199,9 @@ SHAP_STAGE_2_CANDIDATES = [
 if RUN_SHAP_STAGE_1_BENCHMARK and RUN_SHAP_STAGE_2_BENCHMARK:
     raise ValueError("Run one SHAP benchmark stage at a time.")
 
-required_validation_rows = SHAP_STAGE_2_ROWS + 1
+required_validation_rows = (
+    1 + SHAP_STAGE_1_ROWS + SHAP_STAGE_2_ROWS
+)
 if len(X_val_preprocessor_input) < required_validation_rows:
     raise ValueError(
         "The validation data must contain at least "
@@ -5211,8 +5213,9 @@ X_shap_validation_sample = X_val_preprocessor_input.sample(
     random_state=RANDOM_STATE,
 )
 X_shap_first_inference = X_shap_validation_sample.iloc[[0]]
-X_shap_stage_2 = X_shap_validation_sample.iloc[1:]
-X_shap_stage_1 = X_shap_stage_2.iloc[:SHAP_STAGE_1_ROWS]
+stage_2_start = 1 + SHAP_STAGE_1_ROWS
+X_shap_stage_1 = X_shap_validation_sample.iloc[1:stage_2_start]
+X_shap_stage_2 = X_shap_validation_sample.iloc[stage_2_start:]
 
 
 def estimate_mask_evaluations(max_evals, n_features):
