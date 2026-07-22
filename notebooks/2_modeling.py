@@ -5199,9 +5199,7 @@ SHAP_STAGE_2_CANDIDATES = [
 if RUN_SHAP_STAGE_1_BENCHMARK and RUN_SHAP_STAGE_2_BENCHMARK:
     raise ValueError("Run one SHAP benchmark stage at a time.")
 
-required_validation_rows = (
-    1 + SHAP_STAGE_1_ROWS + SHAP_STAGE_2_ROWS
-)
+required_validation_rows = 1 + SHAP_STAGE_1_ROWS + SHAP_STAGE_2_ROWS
 if len(X_val_preprocessor_input) < required_validation_rows:
     raise ValueError(
         "The validation data must contain at least "
@@ -5218,12 +5216,13 @@ X_shap_stage_1 = X_shap_validation_sample.iloc[1:stage_2_start]
 X_shap_stage_2 = X_shap_validation_sample.iloc[stage_2_start:]
 
 
-def estimate_mask_evaluations(max_evals, n_features):
-    """Estimate permutation rounds and mask evaluations for a feature count."""
-    masks_per_round = 2 * n_features + 1
-    rounds = max_evals // masks_per_round
-    masks = rounds * masks_per_round
-    return rounds, masks
+def calculate_shap_permutation_budget(max_evals):
+    """Calculate complete permutation rounds and planned mask evaluations."""
+    permutation_rounds = max_evals // SHAP_MASKS_PER_ROUND
+    planned_mask_evaluations = (
+        permutation_rounds * SHAP_MASKS_PER_ROUND
+    )
+    return permutation_rounds, planned_mask_evaluations
 
 
 def create_shap_benchmark_background(
@@ -5255,7 +5254,7 @@ def build_shap_candidate_explainer(
     background,
     random_state=RANDOM_STATE,
 ):
-    """Build a SHAP explainer from one validated background sample."""
+    """Build a SHAP explainer from one candidate background."""
     masker = shap.maskers.Independent(
         background,
         max_samples=len(background),
@@ -5294,8 +5293,8 @@ def explain_rows_for_evaluation_budget(
     predictions = []
     latencies = []
 
-    for _, row in X_eval.iterrows():
-        row_frame = row.to_frame().T
+    for row_position in range(len(X_eval)):
+        row_frame = X_eval.iloc[[row_position]]
         start_time = perf_counter()
         explanation = explainer(
             row_frame,
@@ -5414,9 +5413,8 @@ def summarize_shap_configuration(
     reference_base_values,
 ):
     """Summarize latency and stability against the reference."""
-    rounds, masks = estimate_mask_evaluations(
-        max_evals,
-        values.shape[1],
+    permutation_rounds, planned_mask_evaluations = (
+        calculate_shap_permutation_budget(max_evals)
     )
     additivity_abs_error = np.abs(
         predictions - (base_values + values.sum(axis=1))
@@ -5429,9 +5427,11 @@ def summarize_shap_configuration(
     return {
         "background_n": background_n,
         "max_evals": max_evals,
-        "estimated_rounds": rounds,
-        "estimated_masks": masks,
-        "estimated_synthetic_rows": masks * background_n,
+        "permutation_rounds": permutation_rounds,
+        "planned_mask_evaluations": planned_mask_evaluations,
+        "estimated_synthetic_rows": (
+            planned_mask_evaluations * background_n
+        ),
         "background_baseline_2023_usd": (
             background_info["baseline_2023_usd"]
         ),
@@ -5510,16 +5510,17 @@ def run_shap_benchmark(
     for background_n, max_evals in candidate_configurations:
         background_info = backgrounds[background_n]
         if not background_info["validation_passed"]:
-            rounds, masks = estimate_mask_evaluations(
-                max_evals,
-                len(SHAP_INPUT_FEATURES),
+            permutation_rounds, planned_mask_evaluations = (
+                calculate_shap_permutation_budget(max_evals)
             )
             benchmark_results.append({
                 "background_n": background_n,
                 "max_evals": max_evals,
-                "estimated_rounds": rounds,
-                "estimated_masks": masks,
-                "estimated_synthetic_rows": masks * background_n,
+                "permutation_rounds": permutation_rounds,
+                "planned_mask_evaluations": planned_mask_evaluations,
+                "estimated_synthetic_rows": (
+                    planned_mask_evaluations * background_n
+                ),
                 "background_baseline_2023_usd": (
                     background_info["baseline_2023_usd"]
                 ),
