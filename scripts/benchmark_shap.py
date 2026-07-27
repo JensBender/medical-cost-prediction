@@ -392,11 +392,17 @@ def run_shap_benchmark(
     reference_max_evals,
 ):
     """Benchmark candidate configurations against one reference."""
+    show_progress = len(candidate_configurations) > 1
     background_sizes = {
         background_size
         for background_size, _ in candidate_configurations
     }
     background_sizes.add(reference_background_size)
+    if show_progress:
+        print(
+            f"Preparing and validating {len(background_sizes)} "
+            "background samples..."
+        )
     backgrounds_by_size = {
         background_size: create_and_validate_shap_background(
             background_size
@@ -412,6 +418,16 @@ def run_shap_benchmark(
             "The reference SHAP background failed baseline validation."
         )
 
+    reference_rounds, _ = calculate_shap_permutation_budget(
+        reference_max_evals
+    )
+    if show_progress:
+        print(
+            "Running reference configuration: "
+            f"background={reference_background_size}, "
+            f"rounds={reference_rounds}..."
+        )
+    reference_start_time = perf_counter()
     reference_explainer = build_shap_explainer(
         reference_background_info["background"]
     )
@@ -430,8 +446,28 @@ def run_shap_benchmark(
         reference_max_evals,
     )
 
+    if show_progress:
+        print(
+            "Reference complete "
+            f"({perf_counter() - reference_start_time:.1f} s)."
+        )
+
     benchmark_results = []
-    for background_size, max_evals in candidate_configurations:
+    candidate_count = len(candidate_configurations)
+    for candidate_number, (background_size, max_evals) in enumerate(
+        candidate_configurations,
+        start=1,
+    ):
+        permutation_rounds, _ = calculate_shap_permutation_budget(
+            max_evals
+        )
+        if show_progress:
+            print(
+                f"Candidate {candidate_number}/{candidate_count}: "
+                f"background={background_size}, "
+                f"rounds={permutation_rounds}..."
+            )
+        candidate_start_time = perf_counter()
         background_info = backgrounds_by_size[background_size]
         if not background_info["baseline_validation_passed"]:
             benchmark_results.append(
@@ -441,6 +477,12 @@ def run_shap_benchmark(
                     background_info,
                 )
             )
+            if show_progress:
+                print(
+                    "  Skipped: background baseline difference "
+                    f"{background_info['baseline_absolute_relative_difference']:.1%} "
+                    f"exceeds {SHAP_BASELINE_REL_DIFF_MAX:.0%}."
+                )
             continue
 
         candidate_explainer = build_shap_explainer(
@@ -473,6 +515,12 @@ def run_shap_benchmark(
                 reference_shap_values=reference_shap_values,
             )
         )
+
+        if show_progress:
+            print(
+                "  Complete "
+                f"({perf_counter() - candidate_start_time:.1f} s)."
+            )
 
     benchmark_results = pd.DataFrame(benchmark_results).sort_values(
         [
