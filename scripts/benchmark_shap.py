@@ -7,6 +7,7 @@ Usage:
 """
 
 from argparse import ArgumentParser
+import logging
 from pathlib import Path
 from time import perf_counter
 
@@ -308,6 +309,7 @@ def summarize_shap_configuration(
             background_info["baseline_validation_passed"]
         ),
         "first_explanation_latency_s": first_explanation_latency_s,
+        "timed_row_latencies_s": explanation_latencies_s.tolist(),
         "p50_latency_s": np.percentile(explanation_latencies_s, 50),
         "p90_latency_s": np.percentile(explanation_latencies_s, 90),
         "p95_latency_s": np.percentile(explanation_latencies_s, 95),
@@ -343,6 +345,7 @@ def failed_background_result(background_size, max_evals, background_info):
         ),
         "background_baseline_validation_passed": False,
         "first_explanation_latency_s": np.nan,
+        "timed_row_latencies_s": [],
         "p50_latency_s": np.nan,
         "p90_latency_s": np.nan,
         "p95_latency_s": np.nan,
@@ -518,6 +521,62 @@ def parse_args():
     return parser.parse_args()
 
 
+def print_smoke_results(results):
+    """Print a compact smoke-test checklist."""
+    candidate = results.iloc[0]
+    matched_rows = round(
+        candidate["share_rows_with_at_least_4_of_5_matches"]
+        * SHAP_SMOKE_ROWS
+    )
+    timed_row_latencies_ms = [
+        latency_s * 1_000
+        for latency_s in candidate["timed_row_latencies_s"]
+    ]
+
+    print("\nCandidate")
+    print(f"  Background rows:                 {int(candidate['background_size']):>5}")
+    print(f"  Permutation rounds:              {int(candidate['permutation_rounds']):>5}")
+    print(f"  Evaluation rows:                 {SHAP_SMOKE_ROWS:>5}")
+
+    print("\nChecks")
+    print(
+        "  Background baseline difference: "
+        f"{candidate['background_baseline_absolute_relative_difference']:>6.1%}  "
+        f"{'PASS' if candidate['background_baseline_validation_passed'] else 'FAIL'}"
+    )
+    print(
+        "  Top-five overlap:                "
+        f"{matched_rows}/{SHAP_SMOKE_ROWS} rows  "
+        f"{'PASS' if candidate['top_5_overlap_passed'] else 'FAIL'}"
+    )
+    print(
+        "  Material direction reversals:    "
+        f"{int(candidate['material_direction_reversal_count']):>5}  "
+        f"{'PASS' if candidate['material_direction_passed'] else 'FAIL'}"
+    )
+    print(
+        "  Median contribution difference:  "
+        f"${candidate['median_matched_top_5_abs_delta_2023_usd']:,.2f}  "
+        f"{'PASS' if candidate['dollar_difference_passed'] else 'FAIL'}"
+    )
+    print(
+        "  Median additivity error:          "
+        f"${candidate['median_additivity_abs_error_2023_usd']:,.2f}  "
+        f"{'PASS' if candidate['median_additivity_abs_error_2023_usd'] < 0.01 else 'FAIL'}"
+    )
+
+    print("\nLatency after one warm-up call (diagnostic only)")
+    print(
+        "  Timed rows: "
+        + ", ".join(
+            f"{latency_ms:,.0f} ms"
+            for latency_ms in timed_row_latencies_ms
+        )
+    )
+    print(f"  P50:        {candidate['p50_latency_s'] * 1_000:,.0f} ms")
+    print("\nSHAP benchmark smoke test passed.")
+
+
 def main():
     """Load artifacts, select fixed rows, and run one benchmark mode."""
     global preprocessor
@@ -528,6 +587,10 @@ def main():
     global X_shap_first_explanation
 
     args = parse_args()
+
+    # SHAP repeatedly sends expected missing values through the fitted
+    # preprocessor. Suppress those warnings only in this benchmark process.
+    logging.getLogger("src.transformers").setLevel(logging.ERROR)
 
     if len(SHAP_INPUT_FEATURES) != len(set(SHAP_INPUT_FEATURES)):
         raise ValueError("SHAP_INPUT_FEATURES contains duplicate names.")
@@ -572,10 +635,13 @@ def main():
         reference_max_evals,
     ) = select_benchmark_mode(args.mode, X_stage_1, X_stage_2)
 
-    print(
-        f"Running SHAP {args.mode} benchmark on {len(X_evaluation)} rows "
-        f"and {len(candidate_configurations)} candidate(s)..."
-    )
+    if args.mode == "smoke":
+        print("Running SHAP smoke test...")
+    else:
+        print(
+            f"Running SHAP {args.mode} benchmark on {len(X_evaluation)} rows "
+            f"and {len(candidate_configurations)} candidate(s)..."
+        )
     results, reference = run_shap_benchmark(
         X_evaluation,
         candidate_configurations,
@@ -583,6 +649,16 @@ def main():
         reference_max_evals=reference_max_evals,
     )
 
+    if args.mode == "smoke":
+        if results["first_explanation_latency_s"].isna().all():
+            raise RuntimeError(
+                "Smoke test did not run an explanation because the candidate "
+                "background failed validation."
+            )
+        print_smoke_results(results)
+        return
+
+    results = results.drop(columns=["timed_row_latencies_s"])
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     results_path = RESULTS_DIR / f"shap_benchmark_{args.mode}_results.csv"
     reference_path = (
@@ -597,14 +673,6 @@ def main():
     print(results.to_string(index=False))
     print(f"\nSaved results to {results_path}")
     print(f"Saved reference timing to {reference_path}")
-
-    if args.mode == "smoke":
-        if results["first_explanation_latency_s"].isna().all():
-            raise RuntimeError(
-                "Smoke test did not run an explanation because the candidate "
-                "background failed validation."
-            )
-        print("SHAP benchmark smoke test passed.")
 
 
 if __name__ == "__main__":
