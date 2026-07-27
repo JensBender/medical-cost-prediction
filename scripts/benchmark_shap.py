@@ -1,4 +1,26 @@
-"""Benchmark SHAP configurations.
+"""Benchmark permutation SHAP configurations.
+
+Compare candidate background sizes and permutation budgets with a larger
+reference configuration on fixed validation rows. Evaluate background
+representativeness, top-five explanation stability, contribution direction
+and size, additivity, and warmed single-row latency.
+
+Modes:
+    smoke:
+        Check the complete benchmark path on two rows. Print a compact
+        diagnostic summary without saving results.
+
+    stage1:
+        Screen the full candidate grid on 20 validation rows. Save candidate
+        results and reference timings in the models directory.
+
+    stage2:
+        Evaluate three shortlisted configurations on 100 validation rows that
+        are separate from the Stage 1 rows. Save candidate results and
+        reference timings in the models directory.
+
+For the detailed benchmarking rationale and selection criteria, see the
+"SHAP Benchmarking" section in notebooks/2_modeling.py.
 
 Usage:
     .venv-train/Scripts/python scripts/benchmark_shap.py smoke
