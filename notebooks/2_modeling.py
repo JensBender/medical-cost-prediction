@@ -5716,6 +5716,86 @@ else:
     )
 
 # %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Load the Stage 1 results (refined) from the <code>.csv</code> file and display table to drive decision on which candidate configurations are best used in Stage 2. The core SHAP latency is only a first check. The final latency requirement applies to the complete server-side prediction request.
+# </div>
+
+# %%
+shap_stage_1_results = pd.read_csv(
+    "../models/shap_benchmark_stage1_results.csv"
+)
+
+shap_stage_1_decision_table = (
+    shap_stage_1_results
+    .sort_values(
+        ["explanation_stability_passed", "p95_latency_s"],
+        ascending=[False, True],
+    )
+    .assign(
+        explanation_stability=lambda df: np.where(
+            df["explanation_stability_passed"],
+            "Pass",
+            "Review",
+        ),
+        core_shap_latency=lambda df: np.where(
+            df["p95_latency_s"] < 1.0,
+            "Pass",
+            "Review",
+        ),
+    )
+    .rename(columns={
+        "background_size": "Background Rows",
+        "permutation_rounds": "Rounds",
+        "background_baseline_absolute_relative_difference": (
+            "Baseline Difference"
+        ),
+        "p50_latency_s": "P50 Latency",
+        "p95_latency_s": "P95 Latency",
+        "share_rows_with_at_least_4_of_5_matches": "Top-5 Match Rate",
+        "material_direction_reversal_count": "Direction Reversals",
+        "median_matched_top_5_abs_delta_2023_usd": (
+            "Median Contribution Difference"
+        ),
+        "explanation_stability": "Explanation Stability",
+        "core_shap_latency": "Core SHAP P95 < 1 s",
+    })
+    [[
+        "Background Rows",
+        "Rounds",
+        "Baseline Difference",
+        "P50 Latency",
+        "P95 Latency",
+        "Top-5 Match Rate",
+        "Direction Reversals",
+        "Median Contribution Difference",
+        "Explanation Stability",
+        "Core SHAP P95 < 1 s",
+    ]]
+)
+
+display(
+    shap_stage_1_decision_table.style
+    .pipe(add_table_caption, "SHAP Stage 1 Candidate Decision Table")
+    .format({
+        "Baseline Difference": "{:.1%}",
+        "P50 Latency": "{:.2f} s",
+        "P95 Latency": "{:.2f} s",
+        "Top-5 Match Rate": "{:.0%}",
+        "Direction Reversals": "{:.0f}",
+        "Median Contribution Difference": DOLLAR + "{:,.2f}",
+    })
+    .background_gradient(
+        cmap="RdYlGn_r",
+        subset=["P95 Latency"],
+    )
+    .map(
+        style_status_cells,
+        subset=["Explanation Stability", "Core SHAP P95 < 1 s"],
+    )
+    .hide()
+)
+
+# %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Feature Importance Audit</h2>
 # </div>
