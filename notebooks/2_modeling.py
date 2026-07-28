@@ -5193,7 +5193,7 @@ shap_stage_1_decision_table = (
     )
     .rename(columns={
         "background_size": "Background Rows",
-        "permutation_rounds": "Rounds",
+        "permutation_rounds": "Permutation Rounds",
         "background_baseline_absolute_relative_difference": (
             "Baseline Difference"
         ),
@@ -5209,7 +5209,7 @@ shap_stage_1_decision_table = (
     })
     [[
         "Background Rows",
-        "Rounds",
+        "Permutation Rounds",
         "Baseline Difference",
         "P50 Latency",
         "P95 Latency",
@@ -5223,7 +5223,7 @@ shap_stage_1_decision_table = (
 
 display(
     shap_stage_1_decision_table.style
-    .pipe(add_table_caption, "SHAP Stage 1 Candidate Decision Table")
+    .pipe(add_table_caption, "SHAP Benchmarking Stage 1: Candidate Configuration Results")
     .format({
         "Baseline Difference": "{:.1%}",
         "P50 Latency": "{:.2f} s",
