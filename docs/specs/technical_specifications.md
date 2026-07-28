@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Model Development |
 | **Created** | 2025-12-12 |
-| **Last Updated** | 2026-06-23 |
+| **Last Updated** | 2026-07-28 |
 
 **Note:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
 
@@ -24,6 +24,7 @@
    - [API Contract](#api-contract)
    - [Model Explainability (SHAP)](#model-explainability-shap)
    - [Inference Pipeline](#inference-pipeline)
+   - [Latency Definitions and Measurement](#latency-definitions-and-measurement)
    - [Privacy-Preserving Monitoring](#privacy-preserving-monitoring)
 4. [Testing Strategy](#testing-strategy)
 5. [Technical Stack Recommendation](#technical-stack-recommendation)
@@ -598,7 +599,7 @@ The following template defines the structure of `app/data/shap_metadata.json`.
 
 The prediction service should load the fitted preprocessor, quantile model, and SHAP background at startup and build the explainer once. At inference time, map the user inputs into the preprocessor input schema; run preprocessing, q25/q50/q75/q90 prediction, and quantile postprocessing; compute SHAP for q50 through the same full callable; apply the medical-cost inflation factor to displayed SHAP dollar impacts; and return the top cost drivers. Do not mix q25, q75, or q90 SHAP explanations into the q50 explanation.
 
-Select production background data size (`background_n`) and SHAP evaluation budget (`max_evals`) empirically. Benchmark candidate combinations against a reference configuration with larger background size and higher SHAP evaluation budget, then choose the smallest configuration that meets the latency target while keeping user-facing explanations stable. Track at least p50/p90/p95 latency, top-k driver overlap, sign stability, SHAP dollar drift for top drivers, baseline drift, and additivity error. Top-driver and sign stability matter more than exact low-ranked feature dollar values.
+Select production background data size (`background_n`) and SHAP evaluation budget (`max_evals`) empirically. Benchmark candidate combinations against a reference configuration with larger background size and higher SHAP evaluation budget, then choose the smallest configuration that supports the prediction request latency target while keeping user-facing explanations stable. Track at least p50/p90/p95 core SHAP explanation latency, top-k driver overlap, sign stability, SHAP dollar drift for top drivers, baseline drift, and additivity error. Top-driver and sign stability matter more than exact low-ranked feature dollar values.
 
 Interpretation constraints belong in UI copy and tests: SHAP values explain the fitted model prediction, not causal effects or actual future costs. Correlated features can split or shift attribution, so related health and limitation factors may need grouped display labels.
 
@@ -614,6 +615,24 @@ Interpretation constraints belong in UI copy and tests: SHAP values explain the 
 9.  **Explainability:** Run permutation SHAP for the postprocessed q50 plan-around estimate only.
 10. **Output Formatting:** Apply medical-cost inflation to predictions, comparison benchmarks, and SHAP dollar impacts returned to the UI/API.
 
+### Latency Definitions and Measurement
+Use the following terms consistently so each latency measurement has a clear boundary.
+
+| Term | Measurement Boundary | What It Includes | Target |
+| :--- | :--- | :--- | :--- |
+| **Core SHAP explanation latency** | From calling <code>explainer(...)</code> for one row until it returns the SHAP explanation | The repeated masked predictions through the complete q50 callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection | Screening metric only; it is one component of prediction request latency |
+| **Prediction request latency (server-side)** | From the prediction service receiving a request until the response is ready to return | Request parsing, input validation and mapping, prediction, SHAP explanation (optional for API requests), inflation adjustment, top-driver selection, and response construction and serialization | Less than 1 second for requests that include SHAP under NFR-04 |
+| **API round-trip latency (client-observed)** | From an API client sending a request until it receives the complete response | Network transfer in both directions and prediction request latency | No separate MVP target |
+| **End-to-end latency (user-perceived)** | From the user clicking **Predict** until the result is rendered in the interface | Interface processing, API round-trip latency, interface state updates, and result rendering | Approximately 3 seconds under NFR-04 |
+
+The measurements are nested: core SHAP explanation latency is part of prediction request latency; prediction request latency is part of API round-trip latency; and API round-trip latency is part of end-to-end latency.
+
+#### SHAP Call Timing
+*   **First-call SHAP explanation latency:** Time the first explanation after building an explainer. This can include lazy initialization specific to that explainer, but it is not a full application cold start.
+*   **Subsequent-call SHAP latency:** Time later single-row explanations after the separate first call. Calculate p50, p90, and p95 from these subsequent calls.
+
+Service startup latency, including artifact loading and explainer construction, is a separate operational measurement. Hugging Face Space wake-up latency after the Space has been sleeping is also separate. Neither is included in the normal prediction request latency target unless explicitly measured and reported.
+
 ### Privacy-Preserving Monitoring
 The MVP product release must preserve the product promise of anonymous, stateless predictions. Production monitoring therefore cannot depend on linked user records or follow-up actual-spend outcomes.
 
@@ -627,7 +646,7 @@ Request-level predictions and SHAP values, including their intermediate 2023-dol
 **Allowed monitoring for the MVP product release**
 | Area | Examples | Privacy Guardrail |
 | :--- | :--- | :--- |
-| App health | Request count, error rate, validation failures, latency percentiles | Do not log raw request or response payloads |
+| App health | Request count, error rate, validation failures, prediction request latency percentiles | Do not log raw request or response payloads |
 | Completion funnel | Form starts, successful predictions, optional helpfulness feedback | Store only aggregate counts |
 | Input drift | Aggregate distribution of required/optional fields, missingness rates, broad feature buckets | Use aggregate counters; suppress small cells where needed |
 | Prediction drift | Aggregate distributions of predicted q50, q25-q75 range width, q50-q90 width, q90 safety cushion, and warning flags | Store summary distributions or tier counts, not user-level predictions |

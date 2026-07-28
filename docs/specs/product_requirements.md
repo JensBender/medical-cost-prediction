@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Model Development |
 | **Created** | 2025-12-05 |
-| **Last Updated** | 2026-06-23 |
+| **Last Updated** | 2026-07-28 |
 | **Data Source** | Medical Expenditure Panel Survey (MEPS) |
 
 
@@ -180,7 +180,7 @@ Planning notices should render as one compact panel below the prediction block, 
 ### Performance & Usability
 | ID | Requirement | Details |
 | :--- | :--- | :--- |
-| **NFR-04** | Latency | Inference prediction (including SHAP generation) must return in < 1 second (server-side) to ensure a responsive UX (~3s end-to-end). |
+| **NFR-04** | Latency | Prediction request latency (server-side), including SHAP generation, must be < 1 second. Target end-to-end latency (user-perceived) is ~3 seconds. |
 | **NFR-05** | Responsive Design | Expect ~65% desktop, ~35% mobile (typical for Hugging Face Spaces). Gradio handles responsive layouts natively. Ensure form inputs remain usable on smaller screens. |
 | **NFR-06** | Fallback Mode | If user skips an input, display informative message or impute value. |
 
