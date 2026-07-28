@@ -3,7 +3,7 @@
 Compare candidate background sizes and permutation budgets with a larger
 reference configuration on fixed validation rows. Evaluate background
 representativeness, top-five explanation stability, contribution direction
-and size, additivity, and warmed single-row latency.
+and size, additivity, and subsequent-call single-row latency.
 
 Modes:
     smoke:
@@ -635,7 +635,7 @@ def print_smoke_results(results):
         f"{'PASS' if candidate['median_additivity_abs_error_2023_usd'] < 0.01 else 'FAIL'}"
     )
 
-    print("\nLatency after one warm-up call (diagnostic only)")
+    print("\nSubsequent-call latency (after one warm-up call; diagnostic only)")
     print(
         "  Timed rows: "
         + ", ".join(
@@ -747,4 +747,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

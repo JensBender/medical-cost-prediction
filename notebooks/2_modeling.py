@@ -4848,10 +4848,10 @@ plot_quantile_subgroup_predictions(
 #     <br><br>
 #     Background data validation: Compare the background sample's SHAP baseline against the full weighted training baseline. Accept the sample if the absolute relative difference is at most 10%. If it exceeds 10%, increase the background size before creating app artifacts. This is an initial validation. Consider stronger validation criteria.
 #     <br><br>
-#     <strong>Prediction Service Latency</strong><br>
-#     A normal prediction scores one user row. A SHAP explanation scores many masked versions of that row against the background. With 27 preprocessor input features, one complete permutation round evaluates up to <code>2 × 27 + 1 = 55</code> masked feature combinations: one initial fully masked state, 27 forward steps that add features, and 27 backward steps that remove them. The default <code>max_evals=500</code> permits 9 complete rounds, or 495 masks. With a 300-row background this is at most about 148,500 synthetic predictions. SHAP predicts in batches, but this remains the main expected source of prediction-service latency.
+#     <strong>Core SHAP Explanation Latency</strong><br>
+#     A normal prediction scores one user row. A SHAP explanation scores many masked versions of that row against the background. With 27 preprocessor input features, one complete permutation round evaluates up to <code>2 × 27 + 1 = 55</code> masked feature combinations: one initial fully masked state, 27 forward steps that add features, and 27 backward steps that remove them. The default <code>max_evals=500</code> permits 9 complete rounds, or 495 masks. With a 300-row background this is at most about 148,500 synthetic predictions. SHAP predicts in batches, but this computation is the main expected contributor to prediction request latency.
 #     <br><br>
-#     Select the best SHAP configuration for production empirically. Benchmark <code>max_evals</code> and background size together: <code>max_evals</code> controls the number of mask evaluations, background size controls baseline stability, and latency scales roughly as <code>mask evaluations × background rows</code>. Compare candidate configurations with a larger reference configuration, then choose the smallest one that keeps the top cost drivers, their signs, and dollar impacts stable while meeting the server-side latency target (&lt;1 second under NFR-04). Stable top drivers and signs matter more than exact dollar impacts for low-ranked features.
+#     Select the best SHAP configuration for production empirically. Benchmark permutation rounds and background size together: permutation rounds control the number of mask evaluations, background size controls baseline stability, and latency scales roughly as <code>mask evaluations × background rows</code>. Compare candidate configurations with a larger reference configuration, then choose the smallest one that keeps the top cost drivers, their signs, and dollar impacts stable while supporting the prediction request latency target (&lt;1 second server-side under NFR-04). Stable top drivers and signs matter more than exact dollar impacts for low-ranked features.
 #     <br><br>
 #     <strong>Communicating SHAP Values</strong>
 #     <ul>
@@ -5139,17 +5139,18 @@ display(
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ <strong>Benchmarking Plan</strong><br>
-#     <strong>Goal:</strong> Identify the least computationally expensive SHAP configuration of evaluation budget (<code>max_evals</code>) and background size that produces stable explanations while meeting the final server-side latency requirement.
+#     <strong>Goal:</strong> Identify the least computationally expensive combination of permutation rounds and background size that produces stable explanations while supporting the final prediction request latency requirement.
+#     <br><br>
+#     <strong>Implementation:</strong> The notebook documents and prototypes the benchmarking approach. The reproducible executable implementation is <a href="../scripts/benchmark_shap.py"><code>scripts/benchmark_shap.py</code></a>. See the technical specification for the complete <a href="../docs/specs/technical_specifications.md#latency-definitions-and-measurement">latency definitions and measurement boundaries</a>.
 #     <ul>
-#         <li><strong>Final latency requirement:</strong> The complete server-side prediction request, including SHAP generation, must finish in less than one second under NFR-04.</li>
-#         <li><strong>Notebook latency scope:</strong> The first benchmark measures <code>explainer(...)</code> for one validation data row at a time. This includes the explained prediction function: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection. It excludes user-input validation and mapping, the separate four-quantile prediction returned to the user, inflation adjustment, top-driver selection, response construction, network time, and UI rendering.</li>
-#         <li><strong>First-explanation and steady-state latency:</strong> For each candidate, build the explainer outside the timer and then time one validation row as <code>first_explanation_latency_s</code>. Keep this measurement separate. Next, measure the benchmark rows individually and use only those measurements for steady-state p50, p90, and p95 latency.</li>
+#         <li><strong>Final latency requirement:</strong> Prediction request latency (server-side), including SHAP generation, must be less than one second under NFR-04. Target end-to-end latency (user-perceived) is approximately three seconds.</li>
+#         <li><strong>Core SHAP explanation latency:</strong> The benchmark measures one <code>explainer(...)</code> call for one validation row at a time. This includes the repeated masked predictions through the complete q50 callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection. It excludes the other server work, network transfer, and interface rendering.</li>
+#         <li><strong>First-call and subsequent-call SHAP latency:</strong> For each candidate, build the explainer outside the timer and measure its first explanation separately. This is the first call for that explainer, not a full application cold start. Then measure the remaining rows individually and calculate p50, p90, and p95 from those subsequent calls.</li>
 #         <li><strong>Background data validation:</strong> Compare the baseline (mean postprocessed q50) of each candidate background sample against the full weighted training baseline. Accept a candidate only if the absolute relative difference is at most 10%. Keep failed candidates and their exact differences in the overview table, but skip their explanation benchmark.</li>
-#         <li><strong>Initial screening:</strong> The initial Stage 1 run tested background sizes <code>[50, 100, 200, 300]</code> with 3, 6, and 12 permutation rounds. Only the 300-row background passed the initial representativeness gate. Three rounds already produced stable explanations, but exceeded the latency target.</li>
-#         <li><strong>Refined candidate grid:</strong> Benchmark background sizes <code>[225, 250, 275, 300]</code> and SHAP evaluation budgets (<code>max_evals</code>) <code>[55, 110, 165]</code>, equal to 1, 2, and 3 permutation rounds. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask.</li>
+#         <li><strong>Candidate grid:</strong> Benchmark background sizes <code>[225, 250, 275, 300]</code> and SHAP evaluation budgets (<code>max_evals</code>) <code>[55, 110, 165]</code>, equal to 1, 2, and 3 permutation rounds. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask. Note: This grid refines an initial broader screen of background sizes [50, 100, 200, 300] and 3, 6, and 12 rounds, which showed that the smaller backgrounds failed the initial representativeness gate and additional permutation rounds increased latency without meaningful stability gains.</li>
 #         <li><strong>Reference:</strong> Compare candidates against a reference configuration with a larger background size (<code>500</code>) and higher evaluation budget (<code>max_evals=1,320</code>, or 24 permutation rounds).</li>
-#         <li><strong>Stage 1 screening:</strong> Evaluate all 12 candidates on the same 20 validation rows. Mark candidates that fail background validation, are clearly too slow, or produce unstable explanations as unsuitable for Stage 2.</li>
-#         <li><strong>Stage 2 shortlist validation:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep these rows separate from the Stage 1 and first-explanation rows.</li>
+#         <li><strong>Stage 1 screening:</strong> Evaluate all 12 refined candidates on the same 20 validation rows. Mark candidates that fail background validation, are clearly too slow, or produce unstable explanations as unsuitable for Stage 2.</li>
+#         <li><strong>Stage 2 shortlist validation:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep these rows separate from the Stage 1 and first-call rows.</li>
 #         <li><strong>Explanation stability:</strong>
 #             <ul>
 #                 <li><strong>Top-five overlap (primary metric):</strong> For at least 90% of validation rows, require at least four of the five drivers to match the reference.</li>
@@ -5158,7 +5159,7 @@ display(
 #             </ul>
 #         </li>
 #         <li><strong>Correctness checks:</strong> Require background validation to pass and additivity error to remain near zero.</li>
-#         <li><strong>Selection and final confirmation:</strong> Among candidates that pass the correctness and explanation-stability criteria, choose the fastest. Confirm the chosen configuration once on test data, then measure the complete server-side prediction path on the intended Hugging Face hardware.</li>
+#         <li><strong>Selection and final confirmation:</strong> Among candidates that pass the correctness and explanation-stability criteria, choose the fastest. Confirm the chosen configuration once on test data, then measure prediction request latency (server-side) on the intended Hugging Face hardware.</li>
 #     </ul>
 # </div>
 
@@ -5717,7 +5718,7 @@ else:
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Load the Stage 1 results (refined) from the <code>.csv</code> file and display table to drive decision on which candidate configurations are best used in Stage 2. The core SHAP latency is only a first check. The final latency requirement applies to the complete server-side prediction request.
+#     📌 Load the refined Stage 1 results from the <code>.csv</code> file and display the decision table used to shortlist Stage 2 candidates. Core SHAP explanation latency is only a component-level screening check. The final requirement applies to prediction request latency (server-side).
 # </div>
 
 # %%
