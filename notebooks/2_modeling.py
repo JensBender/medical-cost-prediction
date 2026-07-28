@@ -5145,7 +5145,8 @@ display(
 #         <li><strong>Notebook latency scope:</strong> The first benchmark measures <code>explainer(...)</code> for one validation data row at a time. This includes the explained prediction function: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection. It excludes user-input validation and mapping, the separate four-quantile prediction returned to the user, inflation adjustment, top-driver selection, response construction, network time, and UI rendering.</li>
 #         <li><strong>First-explanation and steady-state latency:</strong> For each candidate, build the explainer outside the timer and then time one validation row as <code>first_explanation_latency_s</code>. Keep this measurement separate. Next, measure the benchmark rows individually and use only those measurements for steady-state p50, p90, and p95 latency.</li>
 #         <li><strong>Background data validation:</strong> Compare the baseline (mean postprocessed q50) of each candidate background sample against the full weighted training baseline. Accept a candidate only if the absolute relative difference is at most 10%. Keep failed candidates and their exact differences in the overview table, but skip their explanation benchmark.</li>
-#         <li><strong>Candidate grid:</strong> Benchmark background sizes <code>[50, 100, 200, 300]</code> and SHAP evaluation budgets (<code>max_evals</code>) <code>[165, 330, 660]</code>, equal to 3, 6, and 12 permutation rounds. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask.</li>
+#         <li><strong>Initial screening:</strong> The initial Stage 1 run tested background sizes <code>[50, 100, 200, 300]</code> with 3, 6, and 12 permutation rounds. Only the 300-row background passed the initial representativeness gate. Three rounds already produced stable explanations, but exceeded the latency target.</li>
+#         <li><strong>Refined candidate grid:</strong> Benchmark background sizes <code>[225, 250, 275, 300]</code> and SHAP evaluation budgets (<code>max_evals</code>) <code>[55, 110, 165]</code>, equal to 1, 2, and 3 permutation rounds. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask.</li>
 #         <li><strong>Reference:</strong> Compare candidates against a reference configuration with a larger background size (<code>500</code>) and higher evaluation budget (<code>max_evals=1,320</code>, or 24 permutation rounds).</li>
 #         <li><strong>Stage 1 screening:</strong> Evaluate all 12 candidates on the same 20 validation rows. Mark candidates that fail background validation, are clearly too slow, or produce unstable explanations as unsuitable for Stage 2.</li>
 #         <li><strong>Stage 2 shortlist validation:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep these rows separate from the Stage 1 and first-explanation rows.</li>
@@ -5179,8 +5180,8 @@ SHAP_MATERIAL_CONTRIBUTION_MIN_2023_USD = 25.0
 SHAP_MEDIAN_TOP_5_ABS_DELTA_MAX_2023_USD = 25.0
 
 # Candidate and reference configurations
-SHAP_BACKGROUND_SIZE_GRID = [50, 100, 200, 300]
-SHAP_PERMUTATION_ROUND_GRID = [3, 6, 12]
+SHAP_BACKGROUND_SIZE_GRID = [225, 250, 275, 300]
+SHAP_PERMUTATION_ROUND_GRID = [1, 2, 3]
 SHAP_MASKS_PER_ROUND = 2 * len(SHAP_INPUT_FEATURES) + 1
 SHAP_MAX_EVALS_GRID = [
     permutation_rounds * SHAP_MASKS_PER_ROUND

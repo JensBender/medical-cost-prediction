@@ -74,8 +74,8 @@ SHAP_STAGE_1_ROWS = 20
 SHAP_STAGE_2_ROWS = 100
 SHAP_STAGE_1_CANDIDATES = [
     (background_size, rounds * SHAP_MASKS_PER_ROUND)
-    for background_size in [50, 100, 200, 300]
-    for rounds in [3, 6, 12]
+    for background_size in [225, 250, 275, 300]
+    for rounds in [1, 2, 3]
 ]
 
 # Fill this list with exactly three candidates after reviewing Stage 1.
