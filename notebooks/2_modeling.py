@@ -5139,17 +5139,17 @@ display(
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ <strong>Benchmarking Plan</strong><br>
-#     <strong>Goal:</strong> Identify the least computationally expensive combination of permutation rounds and background size that produces stable explanations while supporting the final prediction request latency requirement.
+#     <strong>Goal:</strong> Identify the least computationally expensive combination of permutation rounds and background size that produces stable explanations while supporting the prediction request latency requirement.
 #     <br><br>
 #     <strong>Implementation:</strong> The notebook documents the benchmarking plan and reviews the benchmarking results. The single source of truth for the benchmarking code implementation is the executable <a href="../scripts/benchmark_shap.py"><code>scripts/benchmark_shap.py</code></a>. See the technical specification for the complete <a href="../docs/specs/technical_specifications.md#latency-definitions-and-measurement">latency definitions and measurement boundaries</a>.
 #     <ul>
-#         <li><strong>Final latency requirement:</strong> Prediction request latency (server-side), including SHAP generation, must be less than one second under NFR-04. Target end-to-end latency (user-perceived) is approximately three seconds.</li>
+#         <li><strong>Latency requirement:</strong> Prediction request latency (server-side), including SHAP generation, must be less than one second under NFR-04. Target end-to-end latency (user-perceived) is approximately three seconds.</li>
 #         <li><strong>Core SHAP explanation latency:</strong> The benchmark measures one <code>explainer(...)</code> call for one validation row at a time. This includes the repeated masked predictions through the complete q50 callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection. It excludes the other server work, network transfer, and interface rendering.</li>
 #         <li><strong>First-call and subsequent-call SHAP latency:</strong> For each candidate, build the explainer outside the timer and measure its first explanation separately. This is the first call for that explainer, not a full application cold start. Then measure the remaining rows individually and calculate p50, p90, and p95 from those subsequent calls.</li>
-#         <li><strong>Background data validation:</strong> Compare the baseline (mean postprocessed q50) of each candidate background sample against the full weighted training baseline. Accept a candidate only if the absolute relative difference is at most 10%. Keep failed candidates and their exact differences in the overview table, but skip their explanation benchmark.</li>
+#         <li><strong>Background data validation:</strong> Compare the baseline (mean postprocessed q50) of each candidate background sample against the full weighted training baseline. Accept a candidate only if the absolute relative difference is at most 10%.</li>
 #         <li><strong>Candidate grid:</strong> Benchmark background sizes <code>[225, 250, 275, 300]</code> and SHAP evaluation budgets (<code>max_evals</code>) <code>[55, 110, 165]</code>, equal to 1, 2, and 3 permutation rounds. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask. Note: This grid refines an initial broader screen of background sizes [50, 100, 200, 300] and 3, 6, and 12 rounds, which showed that the smaller backgrounds failed the initial representativeness gate and additional permutation rounds increased latency without meaningful stability gains.</li>
 #         <li><strong>Reference:</strong> Compare candidates against a reference configuration with a larger background size (<code>500</code>) and higher evaluation budget (<code>max_evals=1,320</code>, or 24 permutation rounds).</li>
-#         <li><strong>Stage 1 screening:</strong> Evaluate all 12 refined candidates on the same 20 validation rows. Mark candidates that fail background validation, are clearly too slow, or produce unstable explanations as unsuitable for Stage 2.</li>
+#         <li><strong>Stage 1 screening:</strong> Evaluate all 12 candidates on the same 20 validation rows. Mark candidates that fail background validation, are clearly too slow, or produce unstable explanations as unsuitable for Stage 2.</li>
 #         <li><strong>Stage 2 shortlist validation:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep these rows separate from the Stage 1 and first-call rows.</li>
 #         <li><strong>Explanation stability:</strong>
 #             <ul>
@@ -5165,7 +5165,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Load the refined Stage 1 results from the <code>.csv</code> file (produced by <code>scripts/benchmark_shap.py</code>) and display a decision table to shortlist Stage 2 candidates. 
+#     📌 After running <code>scripts/benchmark_shap.py</code>, load the Stage 1 results from the generated <code>.csv</code> file and display a decision table to shortlist Stage 2 candidates. 
 # </div>
 
 # %%
