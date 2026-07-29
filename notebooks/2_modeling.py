@@ -5380,6 +5380,20 @@ display(
 )
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <strong>Insights:</strong>
+#     <ul>
+#         <li>All three shortlisted SHAP configurations passed background validation and explanation stability.</li>
+#         <li><strong>Decision:</strong> <code>225 background rows, 1 permutation round</code> (<code>max_evals=55</code>).</li>
+#         <li><strong>Justification:</strong> It is the fastest configuration and still matched at least four of the reference top-five drivers for 99 of 100 validation rows, with no material direction reversals and a median contribution difference of \$6.36.</li>
+#         <li>Increasing the background to 250 rows produced the same 99% top-five match rate and improved the median contribution difference by only \$0.62, while increasing P95 core SHAP latency from 0.38 to 0.42 seconds.</li>
+#         <li>Using two rounds improved the match rate from 99% to 100% and the median contribution difference by \$1.59, but more than doubled P95 core SHAP latency from 0.38 to 0.80 seconds.</li>
+#         <li>The selected configuration is the fastest candidate that passes background validation and explanation stability in line with the predetermined decision rule.</li>
+#         <li>Before deployment, confirm this configuration once on held-out test data and measure complete P95 prediction request latency on the target Hugging Face hardware. Report first-call latency separately.</li>
+#     </ul>
+# </div>
+#
+# %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Feature Importance Audit</h2>
 # </div>
