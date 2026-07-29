@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Model Development |
 | **Created** | 2025-12-12 |
-| **Last Updated** | 2026-07-28 |
+| **Last Updated** | 2026-07-29 |
 
 **Note:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
 
@@ -599,7 +599,7 @@ The following template defines the structure of `app/data/shap_metadata.json`.
 
 The prediction service should load the fitted preprocessor, quantile model, and SHAP background at startup and build the explainer once. At inference time, map the user inputs into the preprocessor input schema; run preprocessing, q25/q50/q75/q90 prediction, and quantile postprocessing; compute SHAP for q50 through the same full callable; apply the medical-cost inflation factor to displayed SHAP dollar impacts; and return the top cost drivers. Do not mix q25, q75, or q90 SHAP explanations into the q50 explanation.
 
-Select production background data size (`background_n`) and SHAP evaluation budget (`max_evals`) empirically. Benchmark candidate combinations against a reference configuration with larger background size and higher SHAP evaluation budget, then choose the smallest configuration that supports the prediction request latency target while keeping user-facing explanations stable. Track at least p50/p90/p95 core SHAP explanation latency, top-k driver overlap, sign stability, SHAP dollar drift for top drivers, baseline drift, and additivity error. Top-driver and sign stability matter more than exact low-ranked feature dollar values.
+Select production background data size (`background_n`) and SHAP evaluation budget (`max_evals`) empirically. Benchmark candidate combinations against a reference configuration with larger background size and higher SHAP evaluation budget, then choose the smallest configuration that supports the P95 prediction request latency target while keeping user-facing explanations stable. Track at least p50/p90/p95 core SHAP explanation latency, top-k driver overlap, sign stability, SHAP dollar drift for top drivers, baseline drift, and additivity error. Top-driver and sign stability matter more than exact low-ranked feature dollar values.
 
 Interpretation constraints belong in UI copy and tests: SHAP values explain the fitted model prediction, not causal effects or actual future costs. Correlated features can split or shift attribution, so related health and limitation factors may need grouped display labels.
 
@@ -621,11 +621,13 @@ Use the following terms consistently so each latency measurement has a clear bou
 | Term | Measurement Boundary | What It Includes | Target |
 | :--- | :--- | :--- | :--- |
 | **Core SHAP explanation latency** | From calling <code>explainer(...)</code> for one row until it returns the SHAP explanation | The repeated masked predictions through the complete q50 callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection | Screening metric only; it is one component of prediction request latency |
-| **Prediction request latency (server-side)** | From the prediction service receiving a request until the response is ready to return | Request parsing, input validation and mapping, prediction, SHAP explanation (optional for API requests), inflation adjustment, top-driver selection, and response construction and serialization | Less than 1 second for requests that include SHAP under NFR-04 |
+| **Prediction request latency (server-side)** | From the prediction service receiving a request until the response is ready to return | Request parsing, input validation and mapping, prediction, SHAP explanation (optional for API requests), inflation adjustment, top-driver selection, and response construction and serialization | P95 < 1 second for requests that include SHAP under subsequent-call conditions on the target hardware. Report first-call latency separately (NFR-04) |
 | **API round-trip latency (client-observed)** | From an API client sending a request until it receives the complete response | Network transfer in both directions and prediction request latency | No separate MVP target |
 | **End-to-end latency (user-perceived)** | From the user clicking **Predict** until the result is rendered in the interface | Interface processing, API round-trip latency, interface state updates, and result rendering | Approximately 3 seconds under NFR-04 |
 
 The measurements are nested: core SHAP explanation latency is part of prediction request latency; prediction request latency is part of API round-trip latency; and API round-trip latency is part of end-to-end latency.
+
+Use P95 prediction request latency as the pass/fail percentile for NFR-04. Report P50 as a supporting measure of the typical request experience; P90 is an optional diagnostic.
 
 #### SHAP Call Timing
 *   **First-call SHAP explanation latency:** Time the first explanation after building an explainer. This can include lazy initialization specific to that explainer, but it is not a full application cold start.
