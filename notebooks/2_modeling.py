@@ -5147,7 +5147,7 @@ display(
 #     <ul>
 #         <li><strong>Latency requirement:</strong> For requests that include a SHAP explanation, P95 prediction request latency (server-side) must be less than one second under subsequent-call conditions on the target hardware. Measure first-call latency separately. Target end-to-end latency (user-perceived) is approximately three seconds.</li>
 #         <li><strong>Core SHAP explanation latency:</strong> The benchmark measures one <code>explainer(...)</code> call for one validation row at a time. This includes the repeated masked predictions through the complete q50 callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection. It excludes the other server work, network transfer, and interface rendering.</li>
-#         <li><strong>First-call and subsequent-call SHAP latency:</strong> For each candidate, build the explainer outside the timer and measure its first explanation separately. This is the first call for that explainer, not a full application cold start. Then measure the remaining rows individually and calculate p50, p90, and p95 from those subsequent calls.</li>
+#         <li><strong>First-call and subsequent-call SHAP latency:</strong> For each candidate, build the explainer outside the timer and measure its first call separately. This is the first call for that explainer, not a full application cold start. Then measure the remaining rows individually and calculate p50, p90, and p95 from those subsequent calls.</li>
 #         <li><strong>Background data validation:</strong> Compare the baseline (mean postprocessed q50) of each candidate background sample against the full weighted training baseline. Accept a candidate only if the absolute relative difference is at most 10%.</li>
 #         <li><strong>Candidate grid:</strong> Benchmark background sizes <code>[225, 250, 275, 300]</code> and SHAP evaluation budgets (<code>max_evals</code>) <code>[55, 110, 165]</code>, equal to 1, 2, and 3 permutation rounds. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask. Note: This grid refines an initial broader screen of background sizes [50, 100, 200, 300] and 3, 6, and 12 rounds, which showed that the smaller backgrounds failed the initial representativeness gate and additional permutation rounds increased latency without meaningful stability gains.</li>
 #         <li><strong>Reference:</strong> Compare candidates against a reference configuration with a larger background size (<code>500</code>) and higher evaluation budget (<code>max_evals=1,320</code>, or 24 permutation rounds).</li>
@@ -5178,7 +5178,7 @@ shap_stage_1_results = pd.read_csv(
 shap_stage_1_decision_table = (
     shap_stage_1_results
     .sort_values(
-        ["explanation_stability_passed", "p95_latency_s"],
+        ["explanation_stability_passed", "p95_subsequent_call_latency_s"],
         ascending=[False, True],
     )
     .assign(
@@ -5187,13 +5187,13 @@ shap_stage_1_decision_table = (
             "Pass",
             "Fail",
         ),
-        explanation_stability=lambda df: np.where(
+        explanation_stability_gate=lambda df: np.where(
             df["explanation_stability_passed"],
             "Pass",
-            "Review",
+            "Fail",
         ),
-        core_shap_latency=lambda df: np.where(
-            df["p95_latency_s"] < 1.0,
+        p95_latency_screen=lambda df: np.where(
+            df["p95_subsequent_call_latency_s"] < 1.0,
             "Pass",
             "Review",
         ),
@@ -5204,29 +5204,31 @@ shap_stage_1_decision_table = (
         "background_baseline_absolute_relative_difference": (
             "Background vs. Training Difference"
         ),
-        "p50_latency_s": "P50 Latency",
-        "p95_latency_s": "P95 Latency",
+        "first_call_latency_s": "First-Call Latency",
+        "p50_subsequent_call_latency_s": "P50 Latency",
+        "p95_subsequent_call_latency_s": "P95 Latency",
         "share_rows_with_at_least_4_of_5_matches": "Top-5 Match Rate",
         "material_direction_reversal_count": "Direction Reversals",
         "median_matched_top_5_abs_delta_2023_usd": (
             "Median Contribution Difference"
         ),
         "background_validation": "Background Validation",
-        "explanation_stability": "Explanation Stability",
-        "core_shap_latency": "Core SHAP P95 < 1 s",
+        "explanation_stability_gate": "Explanation Stability",
+        "p95_latency_screen": "P95 < 1 s",
     })
     [[
         "Background Rows",
         "Permutation Rounds",
         "Background vs. Training Difference",
         "Background Validation",
+        "First-Call Latency",
         "P50 Latency",
         "P95 Latency",
         "Top-5 Match Rate",
         "Direction Reversals",
         "Median Contribution Difference",
         "Explanation Stability",
-        "Core SHAP P95 < 1 s",
+        "P95 < 1 s",
     ]]
 )
 
@@ -5235,6 +5237,7 @@ display(
     .pipe(add_table_caption, "SHAP Benchmarking Stage 1: Candidate Configuration Results")
     .format({
         "Background vs. Training Difference": "{:.1%}",
+        "First-Call Latency": "{:.2f} s",
         "P50 Latency": "{:.2f} s",
         "P95 Latency": "{:.2f} s",
         "Top-5 Match Rate": "{:.0%}",
@@ -5250,11 +5253,14 @@ display(
         subset=[
             "Background Validation",
             "Explanation Stability",
-            "Core SHAP P95 < 1 s",
+            "P95 < 1 s",
         ],
     )
     .hide()
 )
+
+# %% [markdown]
+# <em>Note: P50 and P95 are subsequent-call latencies after the separately measured first call. They exclude other prediction-request work.</em>
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -5273,6 +5279,9 @@ display(
 #     </ul>
 # </div>
 #
+# %% [markdown]
+# <em>Note: P50 and P95 are subsequent-call latencies after the separately measured first call. They exclude other prediction-request work.</em>
+
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Feature Importance Audit</h2>
