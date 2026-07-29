@@ -5257,6 +5257,23 @@ display(
 )
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <strong>Insights:</strong>
+#     <ul>
+#         <li>All 12 candidate SHAP configurations passed background validation and explanation stability.</li>
+#         <li>One permutation round produced a 95% top-five match rate, which means 19 of the 20 validation rows passed. Two and three rounds produced 100%. This sample is too small to know whether the extra round provides a consistent improvement.</li>
+#         <li><strong>Stage 2 Shortlist:</strong>
+#             <ul>
+#                 <li><code>225 background rows, 1 round</code>: the fastest configuration.</li>
+#                 <li><code>250 background rows, 1 round</code>: a slightly larger background with almost the same latency.</li>
+#                 <li><code>225 background rows, 2 rounds</code>: tests whether a second round improves explanation stability enough to justify the added latency.</li>
+#             </ul>
+#         </li>
+#         <li>Stage 2 will compare these configurations on 100 separate validation rows. After Stage 2, confirm the selected configuration once on test data and measure complete P95 prediction request latency on the target Hugging Face hardware.</li>
+#     </ul>
+# </div>
+#
+# %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Feature Importance Audit</h2>
 # </div>
