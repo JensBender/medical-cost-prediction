@@ -630,7 +630,7 @@ The measurements are nested: core SHAP explanation latency is part of prediction
 Use P95 prediction request latency as the pass/fail percentile for NFR-04. Report P50 as a supporting measure of the typical request experience; P90 is an optional diagnostic.
 
 #### SHAP Call Timing
-*   **First-call SHAP explanation latency:** Time the first explanation after building an explainer. This can include lazy initialization specific to that explainer, but it is not a full application cold start.
+*   **First-call SHAP latency:** Time the first call after building an explainer. This can include lazy initialization specific to that explainer, but it is not a full application cold start.
 *   **Subsequent-call SHAP latency:** Time later single-row explanations after the separate first call. Calculate p50, p90, and p95 from these subsequent calls.
 
 Service startup latency, including artifact loading and explainer construction, is a separate operational measurement. Hugging Face Space wake-up latency after the Space has been sleeping is also separate. Neither is included in the normal prediction request latency target unless explicitly measured and reported.

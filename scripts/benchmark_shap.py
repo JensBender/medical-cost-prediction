@@ -78,9 +78,11 @@ SHAP_STAGE_1_CANDIDATES = [
     for rounds in [1, 2, 3]
 ]
 
-# Fill this list with exactly three candidates after reviewing Stage 1.
+# Shortlist selected after reviewing Stage 1.
 SHAP_STAGE_2_CANDIDATES = [
-    # (background_size, max_evals),
+    (225, SHAP_MASKS_PER_ROUND),
+    (250, SHAP_MASKS_PER_ROUND),
+    (225, 2 * SHAP_MASKS_PER_ROUND),
 ]
 
 SHAP_REFERENCE_BACKGROUND_SIZE = 500
@@ -98,7 +100,7 @@ xgb_quantile_model = None
 X_train_preprocessor_input = None
 w_train = None
 training_baseline = None
-X_shap_first_explanation = None
+X_shap_first_call = None
 
 
 def predict_median_cost(X):
@@ -169,11 +171,11 @@ def build_shap_explainer(background):
     )
 
 
-def measure_first_explanation_latency(explainer, max_evals):
-    """Return seconds required for the first single-row SHAP explanation."""
+def measure_first_call_latency(explainer, max_evals):
+    """Return seconds required for the first single-row SHAP call."""
     start_time = perf_counter()
     explainer(
-        X_shap_first_explanation,
+        X_shap_first_call,
         max_evals=max_evals,
         silent=True,
     )
@@ -181,11 +183,11 @@ def measure_first_explanation_latency(explainer, max_evals):
 
 
 def explain_and_time_rows(explainer, X_rows, max_evals):
-    """Return 2023-dollar SHAP outputs and per-row explanation latency."""
+    """Return SHAP outputs and per-row subsequent-call latency."""
     shap_values = []
     shap_base_values = []
     predicted_median_costs = []
-    explanation_latencies_s = []
+    subsequent_call_latencies_s = []
 
     for row_position in range(len(X_rows)):
         row_frame = X_rows.iloc[[row_position]]
@@ -195,7 +197,7 @@ def explain_and_time_rows(explainer, X_rows, max_evals):
             max_evals=max_evals,
             silent=True,
         )
-        explanation_latencies_s.append(perf_counter() - start_time)
+        subsequent_call_latencies_s.append(perf_counter() - start_time)
         shap_values.append(explanation.values[0])
         shap_base_values.append(
             np.asarray(explanation.base_values).reshape(-1)[0]
@@ -206,7 +208,7 @@ def explain_and_time_rows(explainer, X_rows, max_evals):
         np.vstack(shap_values),
         np.asarray(shap_base_values),
         np.asarray(predicted_median_costs),
-        np.asarray(explanation_latencies_s),
+        np.asarray(subsequent_call_latencies_s),
     )
 
 
@@ -297,11 +299,11 @@ def summarize_shap_configuration(
     background_size,
     max_evals,
     background_info,
-    first_explanation_latency_s,
+    first_call_latency_s,
     shap_values,
     shap_base_values,
     predicted_median_costs,
-    explanation_latencies_s,
+    subsequent_call_latencies_s,
     reference_shap_values,
 ):
     """Summarize one candidate's latency and stability metrics."""
@@ -330,11 +332,11 @@ def summarize_shap_configuration(
         "background_baseline_validation_passed": (
             background_info["baseline_validation_passed"]
         ),
-        "first_explanation_latency_s": first_explanation_latency_s,
-        "timed_row_latencies_s": explanation_latencies_s.tolist(),
-        "p50_latency_s": np.percentile(explanation_latencies_s, 50),
-        "p90_latency_s": np.percentile(explanation_latencies_s, 90),
-        "p95_latency_s": np.percentile(explanation_latencies_s, 95),
+        "first_call_latency_s": first_call_latency_s,
+        "subsequent_call_latencies_s": subsequent_call_latencies_s.tolist(),
+        "p50_subsequent_call_latency_s": np.percentile(subsequent_call_latencies_s, 50),
+        "p90_subsequent_call_latency_s": np.percentile(subsequent_call_latencies_s, 90),
+        "p95_subsequent_call_latency_s": np.percentile(subsequent_call_latencies_s, 95),
         **calculate_top_5_stability(shap_values, reference_shap_values),
         "median_additivity_abs_error_2023_usd": np.median(
             additivity_abs_error
@@ -366,11 +368,11 @@ def failed_background_result(background_size, max_evals, background_info):
             background_info["baseline_absolute_relative_difference"]
         ),
         "background_baseline_validation_passed": False,
-        "first_explanation_latency_s": np.nan,
-        "timed_row_latencies_s": [],
-        "p50_latency_s": np.nan,
-        "p90_latency_s": np.nan,
-        "p95_latency_s": np.nan,
+        "first_call_latency_s": np.nan,
+        "subsequent_call_latencies_s": [],
+        "p50_subsequent_call_latency_s": np.nan,
+        "p90_subsequent_call_latency_s": np.nan,
+        "p95_subsequent_call_latency_s": np.nan,
         "share_rows_with_at_least_4_of_5_matches": np.nan,
         "top_5_overlap_passed": False,
         "material_direction_comparison_count": np.nan,
@@ -431,7 +433,7 @@ def run_shap_benchmark(
     reference_explainer = build_shap_explainer(
         reference_background_info["background"]
     )
-    reference_first_latency_s = measure_first_explanation_latency(
+    reference_first_call_latency_s = measure_first_call_latency(
         reference_explainer,
         reference_max_evals,
     )
@@ -439,7 +441,7 @@ def run_shap_benchmark(
         reference_shap_values,
         _,
         _,
-        reference_latencies_s,
+        reference_subsequent_call_latencies_s,
     ) = explain_and_time_rows(
         reference_explainer,
         X_evaluation,
@@ -488,7 +490,7 @@ def run_shap_benchmark(
         candidate_explainer = build_shap_explainer(
             background_info["background"]
         )
-        first_latency_s = measure_first_explanation_latency(
+        first_call_latency_s = measure_first_call_latency(
             candidate_explainer,
             max_evals,
         )
@@ -496,7 +498,7 @@ def run_shap_benchmark(
             candidate_shap_values,
             candidate_shap_base_values,
             candidate_predictions,
-            candidate_latencies_s,
+            candidate_subsequent_call_latencies_s,
         ) = explain_and_time_rows(
             candidate_explainer,
             X_evaluation,
@@ -507,11 +509,11 @@ def run_shap_benchmark(
                 background_size=background_size,
                 max_evals=max_evals,
                 background_info=background_info,
-                first_explanation_latency_s=first_latency_s,
+                first_call_latency_s=first_call_latency_s,
                 shap_values=candidate_shap_values,
                 shap_base_values=candidate_shap_base_values,
                 predicted_median_costs=candidate_predictions,
-                explanation_latencies_s=candidate_latencies_s,
+                subsequent_call_latencies_s=candidate_subsequent_call_latencies_s,
                 reference_shap_values=reference_shap_values,
             )
         )
@@ -526,7 +528,7 @@ def run_shap_benchmark(
         [
             "background_baseline_validation_passed",
             "explanation_stability_passed",
-            "p95_latency_s",
+            "p95_subsequent_call_latency_s",
             "share_rows_with_at_least_4_of_5_matches",
         ],
         ascending=[False, False, True, False],
@@ -543,10 +545,10 @@ def run_shap_benchmark(
                 "baseline_absolute_relative_difference"
             ]
         ),
-        "first_explanation_latency_s": reference_first_latency_s,
-        "p50_latency_s": np.percentile(reference_latencies_s, 50),
-        "p90_latency_s": np.percentile(reference_latencies_s, 90),
-        "p95_latency_s": np.percentile(reference_latencies_s, 95),
+        "first_call_latency_s": reference_first_call_latency_s,
+        "p50_subsequent_call_latency_s": np.percentile(reference_subsequent_call_latencies_s, 50),
+        "p90_subsequent_call_latency_s": np.percentile(reference_subsequent_call_latencies_s, 90),
+        "p95_subsequent_call_latency_s": np.percentile(reference_subsequent_call_latencies_s, 95),
     }
     return benchmark_results, pd.DataFrame([reference_summary])
 
@@ -598,9 +600,9 @@ def print_smoke_results(results):
         candidate["share_rows_with_at_least_4_of_5_matches"]
         * SHAP_SMOKE_ROWS
     )
-    timed_row_latencies_ms = [
+    subsequent_call_latencies_ms = [
         latency_s * 1_000
-        for latency_s in candidate["timed_row_latencies_s"]
+        for latency_s in candidate["subsequent_call_latencies_s"]
     ]
 
     print("\nCandidate")
@@ -640,10 +642,10 @@ def print_smoke_results(results):
         "  Timed rows: "
         + ", ".join(
             f"{latency_ms:,.0f} ms"
-            for latency_ms in timed_row_latencies_ms
+            for latency_ms in subsequent_call_latencies_ms
         )
     )
-    print(f"  P50:        {candidate['p50_latency_s'] * 1_000:,.0f} ms")
+    print(f"  P50:        {candidate['p50_subsequent_call_latency_s'] * 1_000:,.0f} ms")
     print("\nSHAP benchmark smoke test passed.")
 
 
@@ -654,7 +656,7 @@ def main():
     global X_train_preprocessor_input
     global w_train
     global training_baseline
-    global X_shap_first_explanation
+    global X_shap_first_call
 
     args = parse_args()
 
@@ -693,7 +695,7 @@ def main():
         n=required_rows,
         random_state=RANDOM_STATE,
     )
-    X_shap_first_explanation = validation_sample.iloc[[0]]
+    X_shap_first_call = validation_sample.iloc[[0]]
     stage_2_start = 1 + SHAP_STAGE_1_ROWS
     X_stage_1 = validation_sample.iloc[1:stage_2_start]
     X_stage_2 = validation_sample.iloc[stage_2_start:]
@@ -720,7 +722,7 @@ def main():
     )
 
     if args.mode == "smoke":
-        if results["first_explanation_latency_s"].isna().all():
+        if results["first_call_latency_s"].isna().all():
             raise RuntimeError(
                 "Smoke test did not run an explanation because the candidate "
                 "background failed validation."
@@ -728,7 +730,7 @@ def main():
         print_smoke_results(results)
         return
 
-    results = results.drop(columns=["timed_row_latencies_s"])
+    results = results.drop(columns=["subsequent_call_latencies_s"])
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     results_path = RESULTS_DIR / f"shap_benchmark_{args.mode}_results.csv"
     reference_path = (
