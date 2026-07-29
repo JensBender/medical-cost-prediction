@@ -2909,6 +2909,8 @@ def style_status_cells(value):
         return "background-color: #d4edda"
     if value == "Review":
         return "background-color: #fff3cd"
+    if value == "Fail":
+        return "background-color: #f8d7da"
     return ""
 
 
@@ -5180,6 +5182,11 @@ shap_stage_1_decision_table = (
         ascending=[False, True],
     )
     .assign(
+        background_validation=lambda df: np.where(
+            df["background_baseline_validation_passed"],
+            "Pass",
+            "Fail",
+        ),
         explanation_stability=lambda df: np.where(
             df["explanation_stability_passed"],
             "Pass",
@@ -5195,7 +5202,7 @@ shap_stage_1_decision_table = (
         "background_size": "Background Rows",
         "permutation_rounds": "Permutation Rounds",
         "background_baseline_absolute_relative_difference": (
-            "Baseline Difference"
+            "Background vs. Training Difference"
         ),
         "p50_latency_s": "P50 Latency",
         "p95_latency_s": "P95 Latency",
@@ -5204,13 +5211,15 @@ shap_stage_1_decision_table = (
         "median_matched_top_5_abs_delta_2023_usd": (
             "Median Contribution Difference"
         ),
+        "background_validation": "Background Validation",
         "explanation_stability": "Explanation Stability",
         "core_shap_latency": "Core SHAP P95 < 1 s",
     })
     [[
         "Background Rows",
         "Permutation Rounds",
-        "Baseline Difference",
+        "Background vs. Training Difference",
+        "Background Validation",
         "P50 Latency",
         "P95 Latency",
         "Top-5 Match Rate",
@@ -5225,7 +5234,7 @@ display(
     shap_stage_1_decision_table.style
     .pipe(add_table_caption, "SHAP Benchmarking Stage 1: Candidate Configuration Results")
     .format({
-        "Baseline Difference": "{:.1%}",
+        "Background vs. Training Difference": "{:.1%}",
         "P50 Latency": "{:.2f} s",
         "P95 Latency": "{:.2f} s",
         "Top-5 Match Rate": "{:.0%}",
@@ -5238,7 +5247,11 @@ display(
     )
     .map(
         style_status_cells,
-        subset=["Explanation Stability", "Core SHAP P95 < 1 s"],
+        subset=[
+            "Background Validation",
+            "Explanation Stability",
+            "Core SHAP P95 < 1 s",
+        ],
     )
     .hide()
 )
