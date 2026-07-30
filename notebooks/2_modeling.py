@@ -5143,31 +5143,31 @@ display(
 #     ℹ️ <strong>Benchmarking Plan</strong><br>
 #     <strong>Goal:</strong> Identify the least computationally expensive combination of permutation rounds and background size that produces stable explanations while supporting the prediction request latency requirement.
 #     <br><br>
-#     <strong>Implementation:</strong> The notebook documents the benchmarking plan and reviews the benchmarking results. The single source of truth for the benchmarking code implementation is the executable <a href="../scripts/benchmark_shap.py"><code>scripts/benchmark_shap.py</code></a>. See the technical specification for the complete <a href="../docs/specs/technical_specifications.md#latency-definitions-and-measurement">latency definitions and measurement boundaries</a>.
+#     <strong>Implementation:</strong> The notebook documents the evaluation plan and reviews the results. The single source of truth for the benchmarking code implementation is the executable <a href="../scripts/benchmark_shap.py"><code>scripts/benchmark_shap.py</code></a>. See the technical specification for the complete <a href="../docs/specs/technical_specifications.md#latency-definitions-and-measurement">latency definitions and measurement boundaries</a>.
 #     <ul>
 #         <li><strong>Latency requirement:</strong> For requests that include a SHAP explanation, P95 prediction request latency (server-side) must be less than one second under subsequent-call conditions on the target hardware. Measure first-call latency separately. Target end-to-end latency (user-perceived) is approximately three seconds.</li>
-#         <li><strong>Core SHAP explanation latency:</strong> The benchmark measures one <code>explainer(...)</code> call for one validation row at a time. This includes the repeated masked predictions through the complete q50 callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection. It excludes the other server work, network transfer, and interface rendering.</li>
+#         <li><strong>Core SHAP explanation latency:</strong> The benchmark measures one <code>explainer(...)</code> call for one validation or test row at a time. This includes the repeated masked predictions through the complete q50 callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection. It excludes the other server work, network transfer, and interface rendering.</li>
 #         <li><strong>First-call and subsequent-call SHAP latency:</strong> For each candidate, build the explainer outside the timer and measure its first call separately. This is the first call for that explainer, not a full application cold start. Then measure the remaining rows individually and calculate p50, p90, and p95 from those subsequent calls.</li>
 #         <li><strong>Background data validation:</strong> Compare the baseline (mean postprocessed q50) of each candidate background sample against the full weighted training baseline. Accept a candidate only if the absolute relative difference is at most 10%.</li>
 #         <li><strong>Candidate grid:</strong> Benchmark background sizes <code>[225, 250, 275, 300]</code> and SHAP evaluation budgets (<code>max_evals</code>) <code>[55, 110, 165]</code>, equal to 1, 2, and 3 permutation rounds. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask. Note: This grid refines an initial broader screen of background sizes [50, 100, 200, 300] and 3, 6, and 12 rounds, which showed that the smaller backgrounds failed the initial representativeness gate and additional permutation rounds increased latency without meaningful stability gains.</li>
 #         <li><strong>Reference:</strong> Compare candidates against a reference configuration with a larger background size (<code>500</code>) and higher evaluation budget (<code>max_evals=1,320</code>, or 24 permutation rounds).</li>
-#         <li><strong>Stage 1 screening:</strong> Evaluate all 12 candidates on the same 20 validation rows. Mark candidates that fail background validation, are clearly too slow, or produce unstable explanations as unsuitable for Stage 2.</li>
-#         <li><strong>Stage 2 shortlist:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep these rows separate from the Stage 1 and first-call rows.</li>
 #         <li><strong>Explanation stability:</strong>
 #             <ul>
-#                 <li><strong>Top-five overlap (primary metric):</strong> For at least 90% of validation rows, require at least four of the five drivers to match the reference.</li>
+#                 <li><strong>Top-five overlap (primary metric):</strong> For at least 90% of evaluation rows, require at least four of the five drivers to match the reference.</li>
 #                 <li><strong>Direction agreement:</strong> A matched reference contribution of at least \$25 must not change from increasing to decreasing the estimate, or vice versa.</li>
 #                 <li><strong>Dollar difference:</strong> Use an initial tolerance of \$25 in 2023 dollars for the median absolute difference among matched top-five contributions.</li>
 #             </ul>
 #         </li>
 #         <li><strong>Correctness checks:</strong> Require background validation to pass and additivity error to remain near zero.</li>
-#         <li><strong>Selection and final confirmation:</strong> Among candidates that pass the correctness and explanation-stability criteria, choose the fastest and freeze that configuration. Run <code>scripts/benchmark_shap.py test</code> to confirm it once on 100 test rows plus one separate first-call row. After confirmation, measure prediction request latency (server-side) on the intended Hugging Face hardware.</li>
+#         <li><strong>Stage 1 - Candidate Screening:</strong> Evaluate all 12 candidates on the same 20 validation rows. Mark candidates that fail background validation, are clearly too slow, or produce unstable explanations as unsuitable for Stage 2.</li>
+#         <li><strong>Stage 2 - Shortlist Evaluation:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep these rows separate from the Stage 1 and first-call rows.</li>
+#         <li><strong>Final Test-Set Evaluation:</strong> Freeze the winning configuration from Stage 2. Evaluate it once on 100 test rows plus one separate first-call row. Use this final evaluation to confirm that explanation stability and correctness generalize. Afterward, measure prediction request latency (server-side) on the intended Hugging Face hardware.</li>
 #     </ul>
 # </div>
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 After running <code>scripts/benchmark_shap.py stage1</code>, load the Stage 1 results from the generated <code>.csv</code> file and display a decision table to shortlist Stage 2 candidates.
+#     📌 After running the Stage 1 candidate screening with <code>scripts/benchmark_shap.py stage1</code>, load the generated <code>.csv</code> results and display a decision table to shortlist Stage 2 candidates.
 # </div>
 
 # %%
@@ -5234,7 +5234,7 @@ shap_stage_1_decision_table = (
 
 display(
     shap_stage_1_decision_table.style
-    .pipe(add_table_caption, "SHAP Benchmarking Stage 1: Candidate Configuration Results")
+    .pipe(add_table_caption, "SHAP Stage 1: Candidate Screening Results")
     .format({
         "Background vs. Training Difference": "{:.1%}",
         "First-Call Latency": "{:.2f} s",
@@ -5282,7 +5282,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 After running <code>scripts/benchmark_shap.py stage2</code>, load the Stage 2 results and display a decision table to select the winner amongst the shortlisted candidates.
+#     📌 After running the Stage 2 shortlist evaluation with <code>scripts/benchmark_shap.py stage2</code>, load the results and display a decision table to select the production configuration.
 # </div>
 
 # %%
@@ -5352,7 +5352,7 @@ shap_stage_2_decision_table = (
 
 display(
     shap_stage_2_decision_table.style
-    .pipe(add_table_caption, "SHAP Benchmarking Stage 2: Shortlisted Candidate Results")
+    .pipe(add_table_caption, "SHAP Stage 2: Shortlist Evaluation Results")
     .format({
         "Background vs. Training Difference": "{:.1%}",
         "First-Call Latency": "{:.2f} s",
@@ -5396,7 +5396,7 @@ display(
 #
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 After running <code>scripts/benchmark_shap.py test</code>, load the test-set results and confirm the fixed production configuration (225 background rows and 1 permutation round).
+#     📌 After running the final test-set evaluation with <code>scripts/benchmark_shap.py test</code>, load the result for the fixed production configuration (225 background rows and 1 permutation round).
 # </div>
 
 # %%
@@ -5404,7 +5404,7 @@ shap_test_results = pd.read_csv(
     "../models/shap_benchmark_test_results.csv"
 )
 
-shap_test_confirmation_table = (
+shap_test_evaluation_table = (
     shap_test_results
     .assign(
         background_validation=lambda df: np.where(
@@ -5422,7 +5422,7 @@ shap_test_confirmation_table = (
             "Pass",
             "Fail",
         ),
-        test_confirmation=lambda df: np.where(
+        final_evaluation=lambda df: np.where(
             df["background_baseline_validation_passed"]
             & df["explanation_stability_passed"]
             & (df["p95_additivity_abs_error_2023_usd"] <= 0.01),
@@ -5447,7 +5447,7 @@ shap_test_confirmation_table = (
         "background_validation": "Background Validation",
         "explanation_stability": "Explanation Stability",
         "additivity_check": "Additivity Check",
-        "test_confirmation": "Test Confirmation",
+        "final_evaluation": "Final Evaluation",
     })
     [[
         "Background Rows",
@@ -5462,13 +5462,13 @@ shap_test_confirmation_table = (
         "Median Contribution Difference",
         "Explanation Stability",
         "Additivity Check",
-        "Test Confirmation",
+        "Final Evaluation",
     ]]
 )
 
 display(
-    shap_test_confirmation_table.style
-    .pipe(add_table_caption, "SHAP Test-Set Confirmation")
+    shap_test_evaluation_table.style
+    .pipe(add_table_caption, "SHAP Final Test-Set Evaluation")
     .format({
         "Background vs. Training Difference": "{:.1%}",
         "First-Call Latency": "{:.2f} s",
@@ -5484,14 +5484,14 @@ display(
             "Background Validation",
             "Explanation Stability",
             "Additivity Check",
-            "Test Confirmation",
+            "Final Evaluation",
         ],
     )
     .hide()
 )
 
 # %% [markdown]
-# <em>Note: P50 and P95 summarize subsequent SHAP explanation calls after the separately measured first call. This excludes other prediction-request work and does not replace complete request-latency measurement on the target Hugging Face hardware.</em>
+# <em>Note: P50 and P95 summarize subsequent SHAP explanation calls after the separately measured first call. The final test-set evaluation does not compare or retune configurations. These timings exclude other prediction-request work and do not replace complete request-latency measurement on the target Hugging Face hardware.</em>
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
