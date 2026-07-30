@@ -5494,6 +5494,16 @@ display(
 # <em>Note: P50 and P95 summarize subsequent SHAP explanation calls after the separately measured first call. The final test-set evaluation does not compare or retune configurations. These timings exclude other prediction-request work and do not replace complete request-latency measurement on the target Hugging Face hardware.</em>
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <strong>Insights:</strong>
+#     <ul>
+#         <li>The final configuration passed background validation, explanation stability, and the additivity check on 100 test rows.</li>
+#         <li>It matched at least four of the reference top-five drivers for 98 of 100 rows, had no material direction reversals, and had a median contribution difference of \$6.32.</li>
+#         <li>Core SHAP explanation latency was 0.31 seconds at P50 and 0.65 seconds at P95. The higher P95 on test than validation (0.38 seconds) reinforces the need to measure complete prediction-request latency on the target Hugging Face hardware.</li>
+#     </ul>
+# </div>
+#
+# %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Feature Importance Audit</h2>
 # </div>
