@@ -5161,7 +5161,7 @@ display(
 #             </ul>
 #         </li>
 #         <li><strong>Correctness checks:</strong> Require background validation to pass and additivity error to remain near zero.</li>
-#         <li><strong>Selection and final confirmation:</strong> Among candidates that pass the correctness and explanation-stability criteria, choose the fastest. Confirm the chosen configuration once on test data, then measure prediction request latency (server-side) on the intended Hugging Face hardware.</li>
+#         <li><strong>Selection and final confirmation:</strong> Among candidates that pass the correctness and explanation-stability criteria, choose the fastest and freeze that configuration. Run <code>scripts/benchmark_shap.py test</code> to confirm it once on 100 test rows plus one separate first-call row. After confirmation, measure prediction request latency (server-side) on the intended Hugging Face hardware.</li>
 #     </ul>
 # </div>
 
@@ -5260,7 +5260,7 @@ display(
 )
 
 # %% [markdown]
-# <em>Note: P50 and P95 are subsequent-call latencies after the separately measured first call. They exclude other prediction-request work. All candidates passed the additivity check: the SHAP baseline plus all 27 feature contributions reproduced q50 to floating-point precision.</em>
+# <em>Note: P50 and P95 summarize subsequent SHAP explanation calls after the separately measured first call. They exclude other prediction-request work. All candidates passed the additivity check: the SHAP baseline plus all 27 feature contributions reproduced q50 to floating-point precision.</em>
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -5279,8 +5279,6 @@ display(
 #     </ul>
 # </div>
 #
-# %% [markdown]
-# <em>Note: P50 and P95 are subsequent-call latencies after the separately measured first call. They exclude other prediction-request work.</em>
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -5380,7 +5378,7 @@ display(
 )
 
 # %% [markdown]
-# <em>Note: P50 and P95 are subsequent-call latencies after the separately measured first call. They exclude other prediction-request work. All candidates passed the additivity check: the SHAP baseline plus all 27 feature contributions reproduced q50 to floating-point precision.</em>
+# <em>Note: P50 and P95 summarize subsequent SHAP explanation calls after the separately measured first call. They exclude other prediction-request work. All candidates passed the additivity check: the SHAP baseline plus all 27 feature contributions reproduced q50 to floating-point precision.</em>
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -5396,6 +5394,105 @@ display(
 #     </ul>
 # </div>
 #
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 After running <code>scripts/benchmark_shap.py test</code>, load the test-set results and confirm the fixed production configuration (225 background rows and 1 permutation round).
+# </div>
+
+# %%
+shap_test_results = pd.read_csv(
+    "../models/shap_benchmark_test_results.csv"
+)
+
+shap_test_confirmation_table = (
+    shap_test_results
+    .assign(
+        background_validation=lambda df: np.where(
+            df["background_baseline_validation_passed"],
+            "Pass",
+            "Fail",
+        ),
+        explanation_stability=lambda df: np.where(
+            df["explanation_stability_passed"],
+            "Pass",
+            "Fail",
+        ),
+        additivity_check=lambda df: np.where(
+            df["p95_additivity_abs_error_2023_usd"] <= 0.01,
+            "Pass",
+            "Fail",
+        ),
+        test_confirmation=lambda df: np.where(
+            df["background_baseline_validation_passed"]
+            & df["explanation_stability_passed"]
+            & (df["p95_additivity_abs_error_2023_usd"] <= 0.01),
+            "Pass",
+            "Fail",
+        ),
+    )
+    .rename(columns={
+        "background_size": "Background Rows",
+        "permutation_rounds": "Permutation Rounds",
+        "background_baseline_absolute_relative_difference": (
+            "Background vs. Training Difference"
+        ),
+        "first_call_latency_s": "First-Call Latency",
+        "p50_subsequent_call_latency_s": "P50 Latency",
+        "p95_subsequent_call_latency_s": "P95 Latency",
+        "share_rows_with_at_least_4_of_5_matches": "Top-5 Match Rate",
+        "material_direction_reversal_count": "Direction Reversals",
+        "median_matched_top_5_abs_delta_2023_usd": (
+            "Median Contribution Difference"
+        ),
+        "background_validation": "Background Validation",
+        "explanation_stability": "Explanation Stability",
+        "additivity_check": "Additivity Check",
+        "test_confirmation": "Test Confirmation",
+    })
+    [[
+        "Background Rows",
+        "Permutation Rounds",
+        "Background vs. Training Difference",
+        "Background Validation",
+        "First-Call Latency",
+        "P50 Latency",
+        "P95 Latency",
+        "Top-5 Match Rate",
+        "Direction Reversals",
+        "Median Contribution Difference",
+        "Explanation Stability",
+        "Additivity Check",
+        "Test Confirmation",
+    ]]
+)
+
+display(
+    shap_test_confirmation_table.style
+    .pipe(add_table_caption, "SHAP Test-Set Confirmation")
+    .format({
+        "Background vs. Training Difference": "{:.1%}",
+        "First-Call Latency": "{:.2f} s",
+        "P50 Latency": "{:.2f} s",
+        "P95 Latency": "{:.2f} s",
+        "Top-5 Match Rate": "{:.0%}",
+        "Direction Reversals": "{:.0f}",
+        "Median Contribution Difference": DOLLAR + "{:,.2f}",
+    })
+    .map(
+        style_status_cells,
+        subset=[
+            "Background Validation",
+            "Explanation Stability",
+            "Additivity Check",
+            "Test Confirmation",
+        ],
+    )
+    .hide()
+)
+
+# %% [markdown]
+# <em>Note: P50 and P95 summarize subsequent SHAP explanation calls after the separately measured first call. This excludes other prediction-request work and does not replace complete request-latency measurement on the target Hugging Face hardware.</em>
+
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Feature Importance Audit</h2>
