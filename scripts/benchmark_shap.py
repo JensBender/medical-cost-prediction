@@ -1,31 +1,49 @@
-"""Benchmark permutation SHAP configurations.
+"""Evaluate permutation SHAP configurations.
 
-Compare candidate background sizes and permutation budgets with a larger
-reference configuration on fixed validation rows. Evaluate background
-representativeness, top-five explanation stability, contribution direction
-and size, additivity, and subsequent-call single-row latency.
+Compare candidate configurations with different background sizes and
+permutation rounds against a larger reference configuration on fixed
+validation or test rows. Evaluate background representativeness, top-five
+explanation stability, contribution direction and size, additivity, and
+single-row latency. Measure first-call latency separately. Summarize
+subsequent-call latency with P50, P90, and P95.
 
 Modes:
     smoke:
-        Check the complete benchmark path on two rows. Print a compact
-        diagnostic summary without saving results.
+        Check the complete evaluation path on two rows. Print a compact
+        diagnostic summary without saving files.
 
     stage1:
-        Screen the full candidate grid on 20 validation rows. Save candidate
-        results and reference timings in the models directory.
+        Screen the full candidate grid on 20 validation rows.
 
     stage2:
         Evaluate three shortlisted configurations on 100 validation rows that
-        are separate from the Stage 1 rows. Save candidate results and
-        reference timings in the models directory.
+        are separate from the Stage 1 rows.
 
-For the detailed benchmarking rationale and selection criteria, see the
-"SHAP Benchmarking" section in notebooks/2_modeling.py.
+    test:
+        Run the final evaluation of the fixed production configuration on 100
+        test rows. 
+
+Outputs:
+    Stage 1, Stage 2, and test modes save two CSV files:
+
+        models/shap_benchmark_<mode>_results.csv
+        models/shap_benchmark_<mode>_reference.csv
+
+    The results file stores configuration, validation, explanation-stability,
+    additivity, and latency metrics. The reference file stores the background
+    summary and latency metrics for the larger reference configuration. Both
+    files include first-call latency and subsequent-call P50, P90, and P95.
+    Individual subsequent-call timings are used to calculate the percentiles
+    but are not saved.
+
+For the detailed evaluation rationale and selection criteria, see the
+"SHAP Configuration Evaluation" section in notebooks/2_modeling.py.
 
 Usage:
     .venv-train/Scripts/python scripts/benchmark_shap.py smoke
     .venv-train/Scripts/python scripts/benchmark_shap.py stage1
     .venv-train/Scripts/python scripts/benchmark_shap.py stage2
+    .venv-train/Scripts/python scripts/benchmark_shap.py test
 """
 
 from argparse import ArgumentParser
@@ -47,6 +65,7 @@ from src.constants import (
 from src.modeling import (
     TRAIN_PREPROCESSOR_INPUT_DATA_PATH,
     VAL_PREPROCESSOR_INPUT_DATA_PATH,
+    TEST_PREPROCESSOR_INPUT_DATA_PATH,
     load_model,
     postprocess_quantile_predictions,
 )
@@ -72,6 +91,7 @@ SHAP_MEDIAN_TOP_5_ABS_DELTA_MAX_2023_USD = 25.0
 
 SHAP_STAGE_1_ROWS = 20
 SHAP_STAGE_2_ROWS = 100
+SHAP_TEST_ROWS = 100
 SHAP_STAGE_1_CANDIDATES = [
     (background_size, rounds * SHAP_MASKS_PER_ROUND)
     for background_size in [225, 250, 275, 300]
@@ -84,6 +104,9 @@ SHAP_STAGE_2_CANDIDATES = [
     (250, SHAP_MASKS_PER_ROUND),
     (225, 2 * SHAP_MASKS_PER_ROUND),
 ]
+
+# Production configuration selected after reviewing Stage 2.
+SHAP_SELECTED_CONFIGURATION = (225, SHAP_MASKS_PER_ROUND)
 
 SHAP_REFERENCE_BACKGROUND_SIZE = 500
 SHAP_REFERENCE_MAX_EVALS = 24 * SHAP_MASKS_PER_ROUND
@@ -392,9 +415,9 @@ def run_shap_benchmark(
     *,
     reference_background_size,
     reference_max_evals,
+    show_progress=False,
 ):
     """Benchmark candidate configurations against one reference."""
-    show_progress = len(candidate_configurations) > 1
     background_sizes = {
         background_size
         for background_size, _ in candidate_configurations
@@ -553,7 +576,7 @@ def run_shap_benchmark(
     return benchmark_results, pd.DataFrame([reference_summary])
 
 
-def select_benchmark_mode(mode, X_stage_1, X_stage_2):
+def select_benchmark_mode(mode, X_stage_1, X_stage_2, X_test):
     """Return evaluation rows and configurations for one CLI mode."""
     if mode == "smoke":
         return (
@@ -569,14 +592,21 @@ def select_benchmark_mode(mode, X_stage_1, X_stage_2):
             SHAP_REFERENCE_BACKGROUND_SIZE,
             SHAP_REFERENCE_MAX_EVALS,
         )
-    if len(SHAP_STAGE_2_CANDIDATES) != 3:
-        raise ValueError(
-            "Set SHAP_STAGE_2_CANDIDATES to exactly three "
-            "(background_size, max_evals) pairs after reviewing Stage 1."
+    if mode == "stage2":
+        if len(SHAP_STAGE_2_CANDIDATES) != 3:
+            raise ValueError(
+                "Set SHAP_STAGE_2_CANDIDATES to exactly three "
+                "(background_size, max_evals) pairs after reviewing Stage 1."
+            )
+        return (
+            X_stage_2,
+            SHAP_STAGE_2_CANDIDATES,
+            SHAP_REFERENCE_BACKGROUND_SIZE,
+            SHAP_REFERENCE_MAX_EVALS,
         )
     return (
-        X_stage_2,
-        SHAP_STAGE_2_CANDIDATES,
+        X_test,
+        [SHAP_SELECTED_CONFIGURATION],
         SHAP_REFERENCE_BACKGROUND_SIZE,
         SHAP_REFERENCE_MAX_EVALS,
     )
@@ -587,8 +617,11 @@ def parse_args():
     parser = ArgumentParser(description=__doc__)
     parser.add_argument(
         "mode",
-        choices=["smoke", "stage1", "stage2"],
-        help="Run a smoke test, Stage 1 screen, or Stage 2 validation.",
+        choices=["smoke", "stage1", "stage2", "test"],
+        help=(
+            "Run a smoke test, Stage 1 candidate screening, Stage 2 "
+            "shortlist evaluation, or final test-set evaluation."
+        ),
     )
     return parser.parse_args()
 
@@ -676,6 +709,12 @@ def main():
         VAL_PREPROCESSOR_INPUT_DATA_PATH,
         columns=SHAP_INPUT_FEATURES,
     )
+    df_test = None
+    if args.mode == "test":
+        df_test = pd.read_parquet(
+            TEST_PREPROCESSOR_INPUT_DATA_PATH,
+            columns=SHAP_INPUT_FEATURES,
+        )
     X_train_preprocessor_input = df_train.loc[:, SHAP_INPUT_FEATURES]
     w_train = df_train[WEIGHT_COLUMN]
     preprocessor = load_model(PREPROCESSOR_PATH, verbose=False)
@@ -695,23 +734,51 @@ def main():
         n=required_rows,
         random_state=RANDOM_STATE,
     )
-    X_shap_first_call = validation_sample.iloc[[0]]
     stage_2_start = 1 + SHAP_STAGE_1_ROWS
     X_stage_1 = validation_sample.iloc[1:stage_2_start]
     X_stage_2 = validation_sample.iloc[stage_2_start:]
+
+    X_test = None
+    X_shap_first_call = validation_sample.iloc[[0]]
+    if args.mode == "test":
+        required_test_rows = 1 + SHAP_TEST_ROWS
+        if len(df_test) < required_test_rows:
+            raise ValueError(
+                f"Test data must contain at least {required_test_rows} rows."
+            )
+        test_sample = df_test.sample(
+            n=required_test_rows,
+            random_state=RANDOM_STATE,
+        )
+        X_shap_first_call = test_sample.iloc[[0]]
+        X_test = test_sample.iloc[1:]
 
     (
         X_evaluation,
         candidate_configurations,
         reference_background_size,
         reference_max_evals,
-    ) = select_benchmark_mode(args.mode, X_stage_1, X_stage_2)
+    ) = select_benchmark_mode(
+        args.mode,
+        X_stage_1,
+        X_stage_2,
+        X_test,
+    )
 
     if args.mode == "smoke":
         print("Running SHAP smoke test...")
-    else:
+    elif args.mode == "test":
         print(
-            f"Running SHAP {args.mode} benchmark on {len(X_evaluation)} rows "
+            "Running final SHAP test-set evaluation on "
+            f"{len(X_evaluation)} rows..."
+        )
+    else:
+        phase_name = {
+            "stage1": "Stage 1 candidate screening",
+            "stage2": "Stage 2 shortlist evaluation",
+        }[args.mode]
+        print(
+            f"Running SHAP {phase_name} on {len(X_evaluation)} rows "
             f"and {len(candidate_configurations)} candidate(s)..."
         )
     results, reference = run_shap_benchmark(
@@ -719,6 +786,7 @@ def main():
         candidate_configurations,
         reference_background_size=reference_background_size,
         reference_max_evals=reference_max_evals,
+        show_progress=args.mode != "smoke",
     )
 
     if args.mode == "smoke":
