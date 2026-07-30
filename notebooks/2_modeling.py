@@ -5234,7 +5234,7 @@ shap_stage_1_decision_table = (
 
 display(
     shap_stage_1_decision_table.style
-    .pipe(add_table_caption, "SHAP Stage 1: Candidate Screening Results")
+    .pipe(add_table_caption, "SHAP Benchmarking Stage 1: Candidate Configurations (20 Validation Rows)")
     .format({
         "Background vs. Training Difference": "{:.1%}",
         "First-Call Latency": "{:.2f} s",
@@ -5352,7 +5352,7 @@ shap_stage_2_decision_table = (
 
 display(
     shap_stage_2_decision_table.style
-    .pipe(add_table_caption, "SHAP Stage 2: Shortlist Evaluation Results")
+    .pipe(add_table_caption, "SHAP Benchmarking Stage 2: Shortlisted Configurations (100 Validation Rows)")
     .format({
         "Background vs. Training Difference": "{:.1%}",
         "First-Call Latency": "{:.2f} s",
@@ -5396,7 +5396,7 @@ display(
 #
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 After running the final test-set evaluation with <code>scripts/benchmark_shap.py test</code>, load the result for the fixed production configuration (225 background rows and 1 permutation round).
+#     📌 After running the final test-set evaluation with <code>scripts/benchmark_shap.py test</code>, load and display the result for the fixed production configuration (225 background rows and 1 permutation round).
 # </div>
 
 # %%
@@ -5468,7 +5468,7 @@ shap_test_evaluation_table = (
 
 display(
     shap_test_evaluation_table.style
-    .pipe(add_table_caption, "SHAP Final Test-Set Evaluation")
+    .pipe(add_table_caption, "SHAP Benchmarking: Final Configuration Evaluation (100 Test Rows)")
     .format({
         "Background vs. Training Difference": "{:.1%}",
         "First-Call Latency": "{:.2f} s",
