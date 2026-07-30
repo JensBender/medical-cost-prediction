@@ -32,12 +32,12 @@ Outputs:
     The results file stores configuration, validation, explanation-stability,
     additivity, and latency metrics. The reference file stores the background
     summary and latency metrics for the larger reference configuration. Both
-    files include first-call latency and subsequent-call P50, P90, and P95.
-    Individual subsequent-call timings are used to calculate the percentiles
-    but are not saved.
+    files include permutation rounds, derived max_evals, first-call latency,
+    and subsequent-call P50, P90, and P95. Individual subsequent-call timings
+    are used to calculate the percentiles but are not saved.
 
 For the detailed evaluation rationale and selection criteria, see the
-"SHAP Configuration Evaluation" section in notebooks/2_modeling.py.
+"SHAP Benchmarking" section in notebooks/2_modeling.py.
 
 Usage:
     .venv-train/Scripts/python scripts/benchmark_shap.py smoke
@@ -92,30 +92,39 @@ SHAP_MEDIAN_TOP_5_ABS_DELTA_MAX_2023_USD = 25.0
 SHAP_STAGE_1_ROWS = 20
 SHAP_STAGE_2_ROWS = 100
 SHAP_TEST_ROWS = 100
+
+# Each configuration is (background_size, permutation_rounds).
+SHAP_STAGE_1_BACKGROUND_SIZES = [225, 250, 275, 300]
+SHAP_STAGE_1_PERMUTATION_ROUNDS = [1, 2, 3]
 SHAP_STAGE_1_CANDIDATES = [
-    (background_size, rounds * SHAP_MASKS_PER_ROUND)
-    for background_size in [225, 250, 275, 300]
-    for rounds in [1, 2, 3]
+    (background_size, permutation_rounds)
+    for background_size in SHAP_STAGE_1_BACKGROUND_SIZES
+    for permutation_rounds in SHAP_STAGE_1_PERMUTATION_ROUNDS
 ]
 
 # Shortlist selected after reviewing Stage 1.
 SHAP_STAGE_2_CANDIDATES = [
-    (225, SHAP_MASKS_PER_ROUND),
-    (250, SHAP_MASKS_PER_ROUND),
-    (225, 2 * SHAP_MASKS_PER_ROUND),
+    (225, 1),
+    (250, 1),
+    (225, 2),
 ]
 
 # Production configuration selected after reviewing Stage 2.
-SHAP_SELECTED_CONFIGURATION = (225, SHAP_MASKS_PER_ROUND)
+SHAP_SELECTED_BACKGROUND_SIZE = 225
+SHAP_SELECTED_PERMUTATION_ROUNDS = 1
+SHAP_SELECTED_CONFIGURATION = (
+    SHAP_SELECTED_BACKGROUND_SIZE,
+    SHAP_SELECTED_PERMUTATION_ROUNDS,
+)
 
 SHAP_REFERENCE_BACKGROUND_SIZE = 500
-SHAP_REFERENCE_MAX_EVALS = 24 * SHAP_MASKS_PER_ROUND
+SHAP_REFERENCE_PERMUTATION_ROUNDS = 24
 
 # The smoke test checks the complete code path without running Stage 1.
 SHAP_SMOKE_ROWS = 2
-SHAP_SMOKE_CANDIDATES = [(300, SHAP_MASKS_PER_ROUND)]
+SHAP_SMOKE_CANDIDATES = [(300, 1)]
 SHAP_SMOKE_REFERENCE_BACKGROUND_SIZE = 500
-SHAP_SMOKE_REFERENCE_MAX_EVALS = 2 * SHAP_MASKS_PER_ROUND
+SHAP_SMOKE_REFERENCE_PERMUTATION_ROUNDS = 2
 
 # Loaded once in main and used by the SHAP prediction function.
 preprocessor = None
@@ -148,11 +157,11 @@ def predict_median_cost(X):
     return postprocess_quantile_predictions(quantile_predictions)[:, 1]
 
 
-def calculate_shap_permutation_budget(max_evals):
-    """Calculate complete permutation rounds and planned mask evaluations."""
-    permutation_rounds = max_evals // SHAP_MASKS_PER_ROUND
-    planned_mask_evaluations = permutation_rounds * SHAP_MASKS_PER_ROUND
-    return permutation_rounds, planned_mask_evaluations
+def calculate_max_evals(permutation_rounds):
+    """Convert complete permutation rounds to the SHAP evaluation budget."""
+    if permutation_rounds < 1:
+        raise ValueError("permutation_rounds must be at least 1.")
+    return permutation_rounds * SHAP_MASKS_PER_ROUND
 
 
 def create_and_validate_shap_background(background_size):
@@ -320,7 +329,7 @@ def calculate_top_5_stability(shap_values, reference_shap_values):
 def summarize_shap_configuration(
     *,
     background_size,
-    max_evals,
+    permutation_rounds,
     background_info,
     first_call_latency_s,
     shap_values,
@@ -330,9 +339,8 @@ def summarize_shap_configuration(
     reference_shap_values,
 ):
     """Summarize one candidate's latency and stability metrics."""
-    permutation_rounds, planned_mask_evaluations = (
-        calculate_shap_permutation_budget(max_evals)
-    )
+    max_evals = calculate_max_evals(permutation_rounds)
+    planned_mask_evaluations = max_evals
     additivity_abs_error = np.abs(
         predicted_median_costs
         - (shap_base_values + shap_values.sum(axis=1))
@@ -371,11 +379,14 @@ def summarize_shap_configuration(
     }
 
 
-def failed_background_result(background_size, max_evals, background_info):
+def failed_background_result(
+    background_size,
+    permutation_rounds,
+    background_info,
+):
     """Return a visible result row when background validation fails."""
-    permutation_rounds, planned_mask_evaluations = (
-        calculate_shap_permutation_budget(max_evals)
-    )
+    max_evals = calculate_max_evals(permutation_rounds)
+    planned_mask_evaluations = max_evals
     return {
         "background_size": background_size,
         "max_evals": max_evals,
@@ -414,7 +425,7 @@ def run_shap_benchmark(
     candidate_configurations,
     *,
     reference_background_size,
-    reference_max_evals,
+    reference_permutation_rounds,
     show_progress=False,
 ):
     """Benchmark candidate configurations against one reference."""
@@ -443,14 +454,14 @@ def run_shap_benchmark(
             "The reference SHAP background failed baseline validation."
         )
 
-    reference_rounds, _ = calculate_shap_permutation_budget(
-        reference_max_evals
+    reference_max_evals = calculate_max_evals(
+        reference_permutation_rounds
     )
     if show_progress:
         print(
             "Running reference configuration: "
             f"background={reference_background_size}, "
-            f"rounds={reference_rounds}..."
+            f"rounds={reference_permutation_rounds}..."
         )
     reference_start_time = perf_counter()
     reference_explainer = build_shap_explainer(
@@ -479,13 +490,11 @@ def run_shap_benchmark(
 
     benchmark_results = []
     candidate_count = len(candidate_configurations)
-    for candidate_number, (background_size, max_evals) in enumerate(
-        candidate_configurations,
-        start=1,
-    ):
-        permutation_rounds, _ = calculate_shap_permutation_budget(
-            max_evals
-        )
+    for candidate_number, (
+        background_size,
+        permutation_rounds,
+    ) in enumerate(candidate_configurations, start=1):
+        max_evals = calculate_max_evals(permutation_rounds)
         if show_progress:
             print(
                 f"Candidate {candidate_number}/{candidate_count}: "
@@ -498,7 +507,7 @@ def run_shap_benchmark(
             benchmark_results.append(
                 failed_background_result(
                     background_size,
-                    max_evals,
+                    permutation_rounds,
                     background_info,
                 )
             )
@@ -530,7 +539,7 @@ def run_shap_benchmark(
         benchmark_results.append(
             summarize_shap_configuration(
                 background_size=background_size,
-                max_evals=max_evals,
+                permutation_rounds=permutation_rounds,
                 background_info=background_info,
                 first_call_latency_s=first_call_latency_s,
                 shap_values=candidate_shap_values,
@@ -560,6 +569,7 @@ def run_shap_benchmark(
     reference_summary = {
         "background_size": reference_background_size,
         "max_evals": reference_max_evals,
+        "permutation_rounds": reference_permutation_rounds,
         "background_baseline_2023_usd": (
             reference_background_info["baseline_2023_usd"]
         ),
@@ -583,32 +593,33 @@ def select_benchmark_mode(mode, X_stage_1, X_stage_2, X_test):
             X_stage_1.iloc[:SHAP_SMOKE_ROWS],
             SHAP_SMOKE_CANDIDATES,
             SHAP_SMOKE_REFERENCE_BACKGROUND_SIZE,
-            SHAP_SMOKE_REFERENCE_MAX_EVALS,
+            SHAP_SMOKE_REFERENCE_PERMUTATION_ROUNDS,
         )
     if mode == "stage1":
         return (
             X_stage_1,
             SHAP_STAGE_1_CANDIDATES,
             SHAP_REFERENCE_BACKGROUND_SIZE,
-            SHAP_REFERENCE_MAX_EVALS,
+            SHAP_REFERENCE_PERMUTATION_ROUNDS,
         )
     if mode == "stage2":
         if len(SHAP_STAGE_2_CANDIDATES) != 3:
             raise ValueError(
                 "Set SHAP_STAGE_2_CANDIDATES to exactly three "
-                "(background_size, max_evals) pairs after reviewing Stage 1."
+                "(background_size, permutation_rounds) pairs "
+                "after reviewing Stage 1."
             )
         return (
             X_stage_2,
             SHAP_STAGE_2_CANDIDATES,
             SHAP_REFERENCE_BACKGROUND_SIZE,
-            SHAP_REFERENCE_MAX_EVALS,
+            SHAP_REFERENCE_PERMUTATION_ROUNDS,
         )
     return (
         X_test,
         [SHAP_SELECTED_CONFIGURATION],
         SHAP_REFERENCE_BACKGROUND_SIZE,
-        SHAP_REFERENCE_MAX_EVALS,
+        SHAP_REFERENCE_PERMUTATION_ROUNDS,
     )
 
 
@@ -757,7 +768,7 @@ def main():
         X_evaluation,
         candidate_configurations,
         reference_background_size,
-        reference_max_evals,
+        reference_permutation_rounds,
     ) = select_benchmark_mode(
         args.mode,
         X_stage_1,
@@ -785,7 +796,7 @@ def main():
         X_evaluation,
         candidate_configurations,
         reference_background_size=reference_background_size,
-        reference_max_evals=reference_max_evals,
+        reference_permutation_rounds=reference_permutation_rounds,
         show_progress=args.mode != "smoke",
     )
 
