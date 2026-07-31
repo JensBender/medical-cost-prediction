@@ -5541,14 +5541,14 @@ shap_feature_importance = (
         "rank": "Rank",
         "feature_label": "Feature",
         "mean_absolute_contribution_2023_usd": (
-            "Mean Absolute Contribution (2023 USD)"
+            "Mean Absolute Contribution"
         ),
         "share_of_total_importance": "Share of Total Importance",
     })
     [[
         "Rank",
         "Feature",
-        "Mean Absolute Contribution (2023 USD)",
+        "Mean Absolute Contribution",
         "Share of Total Importance",
     ]]
 )
@@ -5558,25 +5558,28 @@ display(
     shap_feature_importance.style
     .pipe(
         add_table_caption,
-        "SHAP Feature Importance (Test Set, Weighted)",
+        "SHAP Feature Importance (Test Set)",
     )
     .format({
-        "Mean Absolute Contribution (2023 USD)": "${:,.2f}",
+        "Mean Absolute Contribution": "${:,.2f}",
         "Share of Total Importance": "{:.1%}",
     })
     .hide()
 )
 
+# %% [markdown]
+# <em>Note: Mean absolute contributions are averaged across test rows using MEPS survey weights and shown in 2023 USD.</em>
+
 # %%
 # Bar chart of top 15 SHAP feature importances
 shap_top_15 = shap_feature_importance.head(15).sort_values(
-    "Mean Absolute Contribution (2023 USD)"
+    "Mean Absolute Contribution"
 )
 
 fig, ax = plt.subplots(figsize=(10, 7))
 bars = ax.barh(
     shap_top_15["Feature"],
-    shap_top_15["Mean Absolute Contribution (2023 USD)"],
+    shap_top_15["Mean Absolute Contribution"],
     color=POP_COLOR,
 )
 ax.bar_label(
@@ -5584,15 +5587,15 @@ ax.bar_label(
     labels=[
         f"${contribution:,.0f} ({share:.1%})"
         for contribution, share in zip(
-            shap_top_15["Mean Absolute Contribution (2023 USD)"],
-            shap_top_15["Share of Total Importance"],
+            shap_top_15["Mean Absolute Contribution"],
+            shap_top_15["Percentage of Total Importance"],
         )
     ],
     padding=4,
 )
 ax.set_xlim(
     0,
-    shap_top_15["Mean Absolute Contribution (2023 USD)"].max() * 1.30,
+    shap_top_15["Mean Absolute Contribution"].max() * 1.30,
 )
 ax.xaxis.set_major_formatter(
     plt.FuncFormatter(lambda value, _: f"${value:,.0f}")
