@@ -355,14 +355,17 @@ The app adjusts all user-facing dollar amounts from 2023 to current dollars usin
 │   └── 2_modeling.py                  # Script version (generated via Jupytext)
 │
 ├── scripts/                           # Reproducible pipeline scripts
-│   ├── preprocess.py                  # Production-ready data preprocessing
-│   ├── benchmark_llm.py               # LLM prediction benchmark
+│   ├── preprocess.py                  # Data preparation and preprocessing
 │   ├── train_baseline.py              # Baseline model training
 │   ├── tune_elastic_net.py            # Hyperparameter tuning for Elastic Net
 │   ├── tune_random_forest.py          # Hyperparameter tuning for Random Forest
 │   ├── tune_xgboost.py                # Hyperparameter tuning for XGBoost
 │   ├── train_xgboost_quantile.py      # Quantile model training
-│   └── build_app_artifacts.py         # Generate cost benchmarks and prediction metadata
+│   ├── benchmark_llm.py               # LLM prediction benchmark
+│   ├── benchmark_shap.py              # SHAP configuration and latency benchmark
+│   ├── audit_shap_feature_importance.py  # Global SHAP feature importance audit
+│   ├── build_app_artifacts.py         # Generate cost benchmarks and prediction metadata
+│   └── update_medical_inflation.py    # Update the medical inflation artifact
 │
 ├── src/                               # Core packages source code
 │   ├── constants.py                   # Feature lists
@@ -376,9 +379,10 @@ The app adjusts all user-facing dollar amounts from 2023 to current dollars usin
 ├── app/                               # (Planned) Web application source code
 │   └── data/
 │       ├── cost_benchmarks.json       # Cost comparison for app users
+│       ├── medical_inflation.json     # Medical-cost inflation adjustment
 │       └── prediction_metadata.json   # Prediction warning cutoff
 │
-├── models/                            # Trained model artifacts (ignored by Git)
+├── models/                            # Model and evaluation artifacts (ignored by Git)
 │
 ├── data/                              # Raw and processed datasets (ignored by Git)
 │   └── h251.sas7bdat.dvc              # DVC pointer for MEPS 2023 dataset (SAS V9 format)
@@ -411,11 +415,15 @@ The app adjusts all user-facing dollar amounts from 2023 to current dollars usin
 ├── requirements.txt                   # Proxy for production dependencies
 ├── requirements-train.txt             # Training dependencies
 ├── requirements-test.txt              # Test dependencies
+├── pytest.ini                         # Pytest configuration
+├── run_jupyter_lab.sh                 # Launch the training notebook environment
+├── run_mlflow_ui.sh                   # Launch the local MLflow UI
 ├── .env.example                       # Template for environment variables
 │
 ├── dvc.yaml                           # Preprocessing and modeling pipeline definitions
 ├── dvc.lock                           # Hash-based data lineage lockfile
 ├── .dvc/                              # DVC configuration
+├── .dvcignore                         # Files and directories excluded from DVC
 │
 ├── README.md                          # Project overview
 ├── AGENTS.md                          # Instructions for AI agents
@@ -703,4 +711,3 @@ Fairness analysis evaluates whether the model's prediction intervals provide equ
 [DVC-url]: https://dvc.org/
 [MLflow-badge]: https://img.shields.io/badge/MLflow-0194E2?style=for-the-badge&logo=MLflow&logoColor=white
 [MLflow-url]: https://mlflow.org/
-
