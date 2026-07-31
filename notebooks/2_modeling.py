@@ -4947,8 +4947,11 @@ pd.testing.assert_frame_equal(
 del X_train_reprocessed
 
 # %%
-# 3. Create and validate the background sample
-SHAP_BACKGROUND_N = 300
+# 3. Create and validate the background sample using the selected SHAP configuration
+SHAP_BACKGROUND_N = 225
+SHAP_PERMUTATION_ROUNDS = 1
+SHAP_MASKS_PER_ROUND = 2 * len(SHAP_INPUT_FEATURES) + 1
+SHAP_MAX_EVALS = SHAP_PERMUTATION_ROUNDS * SHAP_MASKS_PER_ROUND
 SHAP_BASELINE_REL_DIFF_MAX = 0.10
 
 shap_background = X_train_preprocessor_input.sample(
@@ -5005,7 +5008,11 @@ def calculate_shap_explanation(X):
             f"{missing_features}"
         )
 
-    return explainer(X.loc[:, SHAP_INPUT_FEATURES])
+    return explainer(
+        X.loc[:, SHAP_INPUT_FEATURES],
+        max_evals=SHAP_MAX_EVALS,
+        silent=True,
+    )
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
@@ -5125,11 +5132,11 @@ display(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Interpretation:</b>
 #     <ul>
-#         <li><strong>Education:</strong> The answer &ldquo;No Degree&rdquo; moved the plan-around estimate down by about \$135.</li>
-#         <li><strong>Insurance:</strong> The answer &ldquo;Public Only&rdquo; moved the estimate down by about \$99.</li>
-#         <li><strong>Usual Source of Care:</strong> The answer &ldquo;No&rdquo; moved the estimate down by about \$82.</li>
-#         <li><strong>Age:</strong> The entered age of 70 moved the estimate up by about \$53.</li>
-#         <li><strong>Joint Pain:</strong> The answer &ldquo;No&rdquo; moved the estimate down by about \$51.</li>
+#         <li><strong>Education:</strong> The answer &ldquo;No Degree&rdquo; moved the plan-around estimate down by about \$132.</li>
+#         <li><strong>Insurance:</strong> The answer &ldquo;Public Only&rdquo; moved the estimate down by about \$104</li>
+#         <li><strong>Usual Source of Care:</strong> The answer &ldquo;No&rdquo; moved the estimate down by about \$80.</li>
+#         <li><strong>Age:</strong> The entered age of 70 moved the estimate up by about \$48.</li>
+#         <li><strong>Joint Pain:</strong> The answer &ldquo;No&rdquo; moved the estimate down by about \$47.</li>
 #     </ul>
 #     <em>Note: These are local contributions relative to the SHAP background and depend on the person's other answers. They are not comparisons with specific alternative answers. They explain predicted, not actual, costs and should not be interpreted causally. For example, they do not show how changing public to private insurance or stopping to smoke would change a person's costs.</em>
 # </div>
@@ -5491,7 +5498,7 @@ display(
 )
 
 # %% [markdown]
-# <em>Note: P50 and P95 summarize subsequent SHAP explanation calls after the separately measured first call. The final test-set evaluation does not compare or retune configurations. These timings exclude other prediction-request work and do not replace complete request-latency measurement on the target Hugging Face hardware.</em>
+# <em>Note: P50 and P95 summarize subsequent SHAP explanation calls after the separately measured first call. They exclude other prediction-request work and do not replace complete request-latency measurement on the target Hugging Face hardware.</em>
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
@@ -5521,6 +5528,97 @@ display(
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">SHAP Feature Importance</h3>
 # </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Calculate global SHAP feature importance on the hold-out test set.
+# </div>
+
+# %%
+pd.testing.assert_index_equal(X_test_preprocessor_input.index, w_test.index)
+
+test_shap_explanation = calculate_shap_explanation(X_test_preprocessor_input)
+mean_absolute_shap_contribution = np.average(
+    np.abs(test_shap_explanation.values),
+    axis=0,
+    weights=w_test.to_numpy(),
+)
+
+shap_feature_importance = (
+    pd.DataFrame({
+        "Feature": [
+            DISPLAY_LABELS.get(feature, feature)
+            for feature in SHAP_INPUT_FEATURES
+        ],
+        "Mean Absolute Contribution (2023 USD)": (
+            mean_absolute_shap_contribution
+        ),
+    })
+    .sort_values(
+        "Mean Absolute Contribution (2023 USD)",
+        ascending=False,
+    )
+    .reset_index(drop=True)
+)
+shap_feature_importance["Share of Total Importance"] = (
+    shap_feature_importance["Mean Absolute Contribution (2023 USD)"]
+    / shap_feature_importance["Mean Absolute Contribution (2023 USD)"].sum()
+)
+shap_feature_importance.insert(
+    0,
+    "Rank",
+    np.arange(1, len(shap_feature_importance) + 1),
+)
+
+# Display the SHAP feature importance for all 27 features
+display(
+    shap_feature_importance.style
+    .pipe(
+        add_table_caption,
+        "Survey-Weighted SHAP Feature Importance (Full Test Set)",
+    )
+    .format({
+        "Mean Absolute Contribution (2023 USD)": "${:,.2f}",
+        "Share of Total Importance": "{:.1%}",
+    })
+    .hide()
+)
+
+# %%
+# Bar chart of top 15 SHAP feature importances
+shap_top_15 = shap_feature_importance.head(15).sort_values(
+    "Mean Absolute Contribution (2023 USD)"
+)
+
+fig, ax = plt.subplots(figsize=(10, 7))
+bars = ax.barh(
+    shap_top_15["Feature"],
+    shap_top_15["Mean Absolute Contribution (2023 USD)"],
+    color=POP_COLOR,
+)
+ax.bar_label(
+    bars,
+    labels=[
+        f"${contribution:,.0f} ({share:.1%})"
+        for contribution, share in zip(
+            shap_top_15["Mean Absolute Contribution (2023 USD)"],
+            shap_top_15["Share of Total Importance"],
+        )
+    ],
+    padding=4,
+)
+ax.set_xlim(
+    0,
+    shap_top_15["Mean Absolute Contribution (2023 USD)"].max() * 1.30,
+)
+ax.xaxis.set_major_formatter(
+    plt.FuncFormatter(lambda value, _: f"${value:,.0f}")
+)
+ax.set_title("Top 15 SHAP Feature Importances (Test Set)")
+ax.set_xlabel("Survey-weighted mean absolute contribution (2023 USD)")
+ax.set_ylabel("")
+sns.despine(ax=ax)
+plt.tight_layout()
+plt.show()
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
