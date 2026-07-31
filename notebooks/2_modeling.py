@@ -5530,51 +5530,35 @@ display(
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Calculate global SHAP feature importance on the hold-out test set.
+#     📌 After running <code>scripts/audit_shap_feature_importance.py</code>, display SHAP feature importance results on held-out test set.
 # </div>
 
 # %%
-pd.testing.assert_index_equal(X_test_preprocessor_input.index, w_test.index)
-
-test_shap_explanation = calculate_shap_explanation(X_test_preprocessor_input)
-mean_absolute_shap_contribution = np.average(
-    np.abs(test_shap_explanation.values),
-    axis=0,
-    weights=w_test.to_numpy(),
-)
-
+# Load SHAP feature importances from .csv to DataFrame
 shap_feature_importance = (
-    pd.DataFrame({
-        "Feature": [
-            DISPLAY_LABELS.get(feature, feature)
-            for feature in SHAP_INPUT_FEATURES
-        ],
-        "Mean Absolute Contribution (2023 USD)": (
-            mean_absolute_shap_contribution
+    pd.read_csv("../models/shap_feature_importance_test.csv")
+    .rename(columns={
+        "rank": "Rank",
+        "feature_label": "Feature",
+        "mean_absolute_contribution_2023_usd": (
+            "Mean Absolute Contribution (2023 USD)"
         ),
+        "share_of_total_importance": "Share of Total Importance",
     })
-    .sort_values(
+    [[
+        "Rank",
+        "Feature",
         "Mean Absolute Contribution (2023 USD)",
-        ascending=False,
-    )
-    .reset_index(drop=True)
-)
-shap_feature_importance["Share of Total Importance"] = (
-    shap_feature_importance["Mean Absolute Contribution (2023 USD)"]
-    / shap_feature_importance["Mean Absolute Contribution (2023 USD)"].sum()
-)
-shap_feature_importance.insert(
-    0,
-    "Rank",
-    np.arange(1, len(shap_feature_importance) + 1),
+        "Share of Total Importance",
+    ]]
 )
 
-# Display the SHAP feature importance for all 27 features
+# Display table of SHAP feature importance for all 27 features
 display(
     shap_feature_importance.style
     .pipe(
         add_table_caption,
-        "Survey-Weighted SHAP Feature Importance (Full Test Set)",
+        "SHAP Feature Importance (Test Set, Weighted)",
     )
     .format({
         "Mean Absolute Contribution (2023 USD)": "${:,.2f}",
