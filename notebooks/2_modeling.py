@@ -5530,7 +5530,7 @@ display(
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 After running <code>scripts/audit_shap_feature_importance.py</code>, display SHAP feature importance results on held-out test set.
+#     📌 After running <code>scripts/audit_shap_feature_importance.py</code>, load and display the SHAP feature importances on the test set.
 # </div>
 
 # %%
@@ -5570,8 +5570,12 @@ display(
 # %% [markdown]
 # <em>Note: Mean absolute contributions are averaged across test rows using MEPS survey weights and shown in 2023 USD.</em>
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Bar chart of top 15 SHAP feature importances.
+# </div>
+
 # %%
-# Bar chart of top 15 SHAP feature importances
 shap_top_15 = shap_feature_importance.head(15).sort_values(
     "Mean Absolute Contribution"
 )
@@ -5588,10 +5592,11 @@ ax.bar_label(
         f"${contribution:,.0f} ({share:.1%})"
         for contribution, share in zip(
             shap_top_15["Mean Absolute Contribution"],
-            shap_top_15["Percentage of Total Importance"],
+            shap_top_15["Share of Total Importance"],
         )
     ],
     padding=4,
+    fontsize=9,
 )
 ax.set_xlim(
     0,
@@ -5600,11 +5605,37 @@ ax.set_xlim(
 ax.xaxis.set_major_formatter(
     plt.FuncFormatter(lambda value, _: f"${value:,.0f}")
 )
-ax.set_title("Top 15 SHAP Feature Importances (Test Set)")
-ax.set_xlabel("Survey-weighted mean absolute contribution (2023 USD)")
+ax.set_title(
+    "SHAP Feature Importance: Top 15 Features (Test Set)",
+    fontsize=13,
+    fontweight="bold",
+)
+ax.set_xlabel("Mean Absolute Contribution")
 ax.set_ylabel("")
-sns.despine(ax=ax)
-plt.tight_layout()
+ax.grid(axis="x", alpha=0.20)
+ax.set_axisbelow(True)
+sns.despine(ax=ax, left=True)
+
+fig.text(
+    0.01,
+    0.01,
+    (
+        "Note: Test-set mean absolute contributions use MEPS survey weights "
+        "and 2023 USD. Percentages show each feature's share of total "
+        "importance across all 27 features."
+    ),
+    ha="left",
+    va="bottom",
+    fontsize=9,
+    style="italic",
+    color="#4A4A4A",
+)
+fig.tight_layout(rect=(0, 0.05, 1, 1))
+fig.savefig(
+    "../figures/evaluation/shap_feature_importance.png",
+    bbox_inches="tight",
+    dpi=200,
+)
 plt.show()
 
 # %% [markdown]
