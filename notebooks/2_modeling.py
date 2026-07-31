@@ -5529,14 +5529,25 @@ display(
 #     <h3 style="margin:0px">SHAP Feature Importance</h3>
 # </div>
 #
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ SHAP feature importance will be evaluated with two plots:
+#     <ul>
+#         <li><strong>Bar Plot:</strong> Tells us which features had the largest average absolute contribution.</li>
+#         <li><strong>Beeswarm Plot:</strong> Tells us in which direction each feature moved estimates across people, and how much those contributions vary between people.</li>
+#     </ul>
+# </div>
+#
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 After running <code>scripts/audit_shap_feature_importance.py</code>, load and display the SHAP feature importances on the test set.
 # </div>
 
 # %%
 # Load SHAP feature importances from .csv to DataFrame
+shap_feature_importance_results = pd.read_csv(
+    "../models/shap_feature_importance_test.csv"
+)
 shap_feature_importance = (
-    pd.read_csv("../models/shap_feature_importance_test.csv")
+    shap_feature_importance_results
     .rename(columns={
         "rank": "Rank",
         "feature_label": "Feature",
@@ -5572,7 +5583,8 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Bar chart of top 15 SHAP feature importances.
+#     <strong>Bar Plot</strong><br>
+#     📌 Create bar chart of the top 15 SHAP feature importances on the test set.
 # </div>
 
 # %%
@@ -5646,6 +5658,95 @@ fig.text(
 fig.tight_layout(rect=(0, 0.04, 1, 1))
 fig.savefig(
     "../figures/evaluation/shap_feature_importance.png",
+    bbox_inches="tight",
+    dpi=200,
+)
+plt.show()
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>Beeswarm Plot</strong><br>
+#     📌 Create a contribution distribution plot for the top 15 features. Because the beeswarm plot does not accept survey weights, use weighted bootstrap sampling with replacement so the displayed dot density approximates the U.S. adult population represented by MEPS.
+# </div>
+
+# %%
+# Create a sample of the test set that is representative for the population by using the same weighted bootstrap approach as in the EDA notebook.
+SHAP_BEESWARM_SAMPLE_N = 5000
+shap_test_contributions = pd.read_parquet(
+    "../models/shap_test_contributions.parquet"
+)
+shap_beeswarm_sample = shap_test_contributions.sample(
+    n=SHAP_BEESWARM_SAMPLE_N,
+    weights=WEIGHT_COLUMN,
+    replace=True,
+    random_state=RANDOM_STATE,
+)
+
+# Keep the exact top 15 features from the global SHAP importance table.
+shap_top_feature_names = (
+    shap_feature_importance_results.head(15)["feature"].tolist()
+)
+shap_top_feature_labels = [
+    DISPLAY_LABELS.get(feature, feature)
+    for feature in shap_top_feature_names
+]
+shap_beeswarm_explanation = shap.Explanation(
+    values=shap_beeswarm_sample[shap_top_feature_names].to_numpy(),
+    feature_names=shap_top_feature_labels,
+)
+
+fig, ax = plt.subplots(figsize=(10, 7))
+
+# SHAP uses NumPy's global random state for dot jitter. Preserve the notebook's state while making the saved plot reproducible.
+numpy_random_state = np.random.get_state()
+np.random.seed(RANDOM_STATE)
+try:
+    shap.plots.beeswarm(
+        shap_beeswarm_explanation,
+        max_display=15,
+        order=np.arange(len(shap_top_feature_names)),
+        color=POP_COLOR,
+        alpha=0.45,
+        s=12,
+        color_bar=False,
+        group_remaining_features=False,
+        plot_size=None,
+        ax=ax,
+        show=False,
+    )
+finally:
+    np.random.set_state(numpy_random_state)
+
+ax.set_title(
+    "SHAP Contribution Distributions: Top 15 Features (Test Set)",
+    fontsize=13,
+    fontweight="bold",
+    pad=15,
+)
+ax.set_xlabel("SHAP Contribution to Predicted Median Cost")
+ax.xaxis.set_major_formatter(
+    plt.FuncFormatter(lambda value, _: f"${value:,.0f}")
+)
+ax.grid(axis="x", alpha=0.15)
+ax.set_axisbelow(True)
+
+fig.text(
+    0.01,
+    0.01,
+    (
+        "Note: Dots are a survey-weighted bootstrap sample of test rows. "
+        "Contributions are in 2023 USD. Negative values moved estimates down "
+        "and positive values moved them up."
+    ),
+    ha="left",
+    va="bottom",
+    fontsize=9,
+    style="italic",
+    color="#4A4A4A",
+)
+fig.tight_layout(rect=(0, 0.04, 1, 1))
+fig.savefig(
+    "../figures/evaluation/shap_contribution_distributions.png",
     bbox_inches="tight",
     dpi=200,
 )
