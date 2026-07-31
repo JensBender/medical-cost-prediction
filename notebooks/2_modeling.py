@@ -5579,6 +5579,9 @@ display(
 shap_top_15 = shap_feature_importance.head(15).sort_values(
     "Mean Absolute Contribution"
 )
+top_15_importance_share = shap_top_15[
+    "Share of Total Importance"
+].sum()
 
 fig, ax = plt.subplots(figsize=(10, 7))
 bars = ax.barh(
@@ -5609,6 +5612,16 @@ ax.set_title(
     "SHAP Feature Importance: Top 15 Features (Test Set)",
     fontsize=13,
     fontweight="bold",
+    pad=15,
+)
+ax.text(
+    0.5,
+    0.99,
+    f"Top 15 share of total importance: {top_15_importance_share:.1%}",
+    transform=ax.transAxes,
+    ha="center",
+    fontsize=10,
+    fontweight="normal",
 )
 ax.set_xlabel("Mean Absolute Contribution")
 ax.set_ylabel("")
@@ -5630,7 +5643,7 @@ fig.text(
     style="italic",
     color="#4A4A4A",
 )
-fig.tight_layout(rect=(0, 0.05, 1, 1))
+fig.tight_layout(rect=(0, 0.04, 1, 1))
 fig.savefig(
     "../figures/evaluation/shap_feature_importance.png",
     bbox_inches="tight",
