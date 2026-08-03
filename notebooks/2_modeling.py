@@ -5701,7 +5701,7 @@ shap_beeswarm_explanation = shap.Explanation(
 # Create beeswarm plot
 fig, ax = plt.subplots(figsize=(10, 7))
 
-# SHAP uses NumPy's global random state for dot jitter. Preserve the notebook's state while making the saved plot reproducible.
+# Make SHAP's dot jitter reproducible without changing NumPy's global random state.
 numpy_random_state = np.random.get_state()
 np.random.seed(RANDOM_STATE)
 try:
@@ -5727,9 +5727,13 @@ ax.set_title(
     fontweight="bold",
     pad=15,
 )
-ax.set_xlabel("SHAP Contribution to Predicted Median Cost")
+ax.set_xlabel("SHAP Contribution to Predicted Median Cost", labelpad=10)
 ax.xaxis.set_major_formatter(
-    plt.FuncFormatter(lambda value, _: f"${value:,.0f}")
+    plt.FuncFormatter(
+        lambda value, _: (
+            f"−${abs(value):,.0f}" if value < 0 else f"${value:,.0f}"
+        )
+    )
 )
 ax.grid(axis="x", alpha=0.15)
 ax.set_axisbelow(True)
