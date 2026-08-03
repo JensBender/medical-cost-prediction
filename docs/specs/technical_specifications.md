@@ -106,7 +106,7 @@ To balance performance with a frictionless experience (target < 90s completion),
 **Decision Matrix**:
 | | **Low User Friction**<br>*(Non-sensitive/Easy to answer)* | **High User Friction**<br>*(Sensitive/Hard to know)* |
 | :--- | :--- | :--- |
-| **High Feature Importance** | **REQUIRED**<br>High predictive power + 100% data completeness in training.<br>*Examples: Age, Sex, Insurance* | **OPTIONAL**<br>High predictive power but sensitive. High-quality defaults available from clean training data.<br>*Examples: Income, Mental Health* |
+| **High Feature Importance** | **REQUIRED**<br>High predictive power + 100% data completeness in training.<br>*Examples: Age, Sex, Insurance* | **OPTIONAL**<br>High predictive power but sensitive. High-quality defaults available from clean training data.<br>*Examples: Family Income, Mental Health* |
 | **Low Feature Importance** | **OPTIONAL**<br>Nice-to-have. Low impact of missingness on model stability.<br>*Examples: Region, Usual Care* | **DROP**<br>Hard to answer and low value. Remove entirely.<br>*Examples: Complex medical history* |
 
 **Selection Process**:
@@ -136,8 +136,8 @@ The following MEPS variables have been identified as candidate features for the 
 **Socioeconomic**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Family Income** | `POVCAT23` | Ordinal (Int) | Family income mapped to poverty category. | ✅ Correlated with insurance type and ability to pay OOP. |
-| **Family Size** | `FAMSZE23` | Numerical (Int) | Number of related persons residing together (CPS definition). | ✅ Required to derive Poverty Category; captures household resource sharing. |
+| **Family Income** | `POVCAT23` | Ordinal (Int) | Family income mapped to ordered categories relative to the poverty line. | ✅ Correlated with insurance type and ability to pay OOP. |
+| **Family Size** | `FAMSZE23` | Numerical (Int) | Number of related persons residing together (CPS definition). | ✅ Used to determine the applicable poverty threshold; captures household resource sharing. |
 | **Education** | `HIDEG` | Nominal (Int) | Highest degree attained. Maps UI labels to MEPS `HIDEG` categories. | ⚠️ Correlates with health literacy; treated as nominal due to 'Other' category. |
 | **Employment** | `EMPST31` | Nominal (Int) | Employment status at beginning of year. | ⚠️ Strong proxy for insurance type. |
 
@@ -185,7 +185,7 @@ The following MEPS variables have been identified as candidate features for the 
 
 **Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). The count features allow the model to capture complex health profiles efficiently. In the UI, individual chronic conditions and limitations/symptoms are presented as multi-select checklists to minimize cognitive load (~12–14 total UI interactions).
 
-#### Income Mapping Table (POVCAT23)
+#### Family Income Mapping Table (POVCAT23)
 To ensure stigma-free and accurate income reporting, the UI displays dynamic income ranges based on the user's reported family size. These ranges map directly to the `POVCAT23` categories used in training, based on 2023 Federal Poverty Level (FPL) thresholds.
 
 | Family Size | Poor (<100% FPL) | Near Poor (100–124%) | Low Income (125–199%) | Middle Income (200–399%) | High Income (≥400%) |
@@ -691,7 +691,7 @@ Bucket edges should be fixed before launch, documented with the model version, a
 | Limitation count | 0, 1, 2+ |
 | Physical or mental health | Excellent/Very Good, Good, Fair/Poor |
 | Insurance | Private, Public Only, Uninsured |
-| Income / poverty category | Poor/Near Poor, Low Income, Middle Income, High Income, Missing |
+| Family Income | Poor/Near Poor, Low Income, Middle Income, High Income, Missing |
 | Predicted q50 | $0-$49, $50-$149, $150-$299, $300-$599, $600-$999, $1,000-$1,499, $1,500+ |
 | q25-q75 width | $0-$249, $250-$499, $500-$999, $1,000-$1,499, $1,500-$2,499, $2,500+ |
 | Predicted q90 | $0-$499, $500-$999, $1,000-$1,999, $2,000-$3,499, $3,500-$4,999, $5,000+ |

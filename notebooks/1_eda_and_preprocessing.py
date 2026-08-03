@@ -1536,7 +1536,7 @@ plot_correlation_heatmap(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> 
 #     <ul style="margin-top:10px; margin-bottom:0px">
-#         <li><b>Primary Drivers:</b> Age (0.30) is the strongest demographic predictor, capturing the natural accumulation of healthcare needs. Poverty Category (0.26) shows a positive correlation, suggesting that higher income levels are associated with higher out-of-pocket spending, likely due to increased financial access and utilization of services.</li>
+#         <li><b>Primary Drivers:</b> Age (0.30) is the strongest demographic predictor, capturing the natural accumulation of healthcare needs. Family Income (0.26) shows a positive correlation, suggesting that higher income levels are associated with higher out-of-pocket spending, likely due to increased financial access and utilization of services.</li>
 #         <li><b>The Chronic Engine:</b> Arthritis (0.23), High Cholesterol (0.22), and High Blood Pressure (0.19) are the most significant medical predictors. Their consistent correlation suggests they act as "steady drivers" of costs through frequent prescription fills and specialist office visits.</li>
 #         <li><b>Family Size Paradox:</b> The negative correlation with out-of-pocket costs (-0.22) likely reflects a demographic shift—larger households often include more children, who generally incur significantly lower healthcare expenses than adults, pulling down the per-person average.</li>
 #         <li><b>Feature Redundancy:</b> High correlations between ADL/IADL Help (0.60) and Arthritis/Joint Pain (0.56) indicate strong multicollinearity. While tree-based models handle this well, these features may provide redundant signals for regression-based models during training.</li>
@@ -1877,7 +1877,7 @@ plot_categorical_feature_target_relationships(
 #     💡 <b>Insights:</b> 
 #     <ul style="margin-top:8px; margin-bottom:0px">
 #         <li><b>The Insurance Paradox:</b> "Any Private" insurance holders face the highest medians (~\$399), significantly higher than "Public Only" (~\$111). While counter-intuitive at first glance, this reflects the prevalence of high-deductible plans in the private market, whereas public programs (like Medicaid) often have minimal co-pays. The \$0 median for the Uninsured may reflect a major barrier to care rather than better health, as this group likely avoids utilization until absolutely necessary.</li>
-#         <li><b>The Socioeconomic Spending Gradient:</b> Both income and education exhibit a clear "staircase" relationship with costs. High-income individuals have a median cost (\$502) nearly 20x higher than those in the poor/negative category ($27), with educational attainment following an identical upward trend. This confirms that out-of-pocket spending is as much a measure of financial capacity as it is a measure of medical need.</li>
+#         <li><b>The Socioeconomic Spending Gradient:</b> Both family income and education exhibit a clear "staircase" relationship with costs. High-income individuals have a median cost (\$502) nearly 20x higher than those in the poor/negative category ($27), with educational attainment following an identical upward trend. This confirms that out-of-pocket spending is as much a measure of financial capacity as it is a measure of medical need.</li>
 #         <li><b>Life Transition Signal:</b> Recent marital transitions (e.g., "Married in Round" at \$788) show significantly higher costs than stable categories, strongly validating the creation of a <code>RECENT_LIFE_TRANSITION</code> feature to capture the financial volatility caused by major "life shocks".</li>
 #     </ul>
 # </div>
@@ -2443,7 +2443,7 @@ missing_value_df.sort_values("Training", ascending=False).style \
 #     <ul style="margin-top:10px; margin-bottom:0px">
 #         <li><b>High Data Quality:</b> Missingness is quite low (Maximum ~3.8% for Usual Source of Care), with most features well below 1%, minimizing the risk of imputation bias.</li>
 #         <li><b>Consistent Splits:</b> Missing value frequencies are near-identical across Training, Validation, and Test sets, suggesting the stratification did not introduce feature bias.</li>
-#         <li><b>Key Variable Completeness:</b> Expected cost drivers such as Age, Sex, Region, Poverty Status, Insurance, and the Target Variable are 100% complete.</li>
+#         <li><b>Key Variable Completeness:</b> Expected cost drivers such as Age, Sex, Region, Family Income, Insurance, and the Target Variable are 100% complete.</li>
 #         <li><b>Implication for App Design:</b> The 100% completeness of demographics justifies making them required in the app, while high completeness allows us to safely treat unchecked boxes as an explicit "No" (0) rather than a missing value.</li>
 #     </ul>
 # </div>
@@ -3479,7 +3479,7 @@ display(verify_loaded_dtypes.style.pipe(add_table_caption, "Data Types"))
 #         - **Categorical Features:** Revealed 66% hold private insurance, suggesting costs will be driven by plan-specific cost-sharing. Identified oversampling of healthy and low socio-economic status individuals, confirming the importance of sample weights.
 #         - **Binary Features:** Identified high prevalence of joint pain (45%), high bood pressure (32%), and high cholesterol (31%), while severe conditions such as cancer (11%), coronary heart disease (5%), and stroke (4%) are more sparse.
 #     - **Relationships (Bivariate EDA):** 
-#         - **Correlations:** A heatmap of Spearman rank correlations revealed age (0.30) and poverty category (0.26) as primary cost correlates, alongside arthritis, high cholesterol, and joint pain (~0.22).
+#         - **Correlations:** A heatmap of Spearman rank correlations revealed age (0.30) and family income (0.26) as primary cost correlates, alongside arthritis, high cholesterol, and joint pain (~0.22).
 #         - **Numerical Features vs. Target:** Visualized feature-target relationships with scatter plots, revealing age as the primary cost driver and a negative relationship with family size likely due to shared family insurance limits.
 #         - **Categorical Features vs. Target:** Grouped box plots revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization.
 #         - **Binary Features vs. Target:** Identified high-prevalence "global drivers" (arthritis) vs. high-severity "local triggers" (cancer), and confirmed a massive "utilization hurdle" where women and people with a usual source of care spend more.

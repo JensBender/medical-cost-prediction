@@ -28,7 +28,7 @@ DISPLAY_LABELS = {
     "RACETHX": "Race/Ethnicity",  # Used only for model fairness audit, not model training
     
     # Socioeconomic
-    "POVCAT23": "Poverty Category",
+    "POVCAT23": "Family Income",
     "HIDEG": "Education",
     "EMPST31": "Employment",
     

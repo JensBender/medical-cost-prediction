@@ -73,6 +73,6 @@ To satisfy these requirements, the project implements the following technical sa
 1.  **Population Weighting**: Using MEPS survey weights to ensure the model doesn't "over-optimize" for majority groups at the expense of minorities.
 2.  **Tiered Evaluation**: Stratified error metrics (MdAE) across:
     *   **Legally Protected Groups**: (Sex, Age, Race) for direct statutory compliance.
-    *   **Vulnerable & Proxy Groups**: (Income, Education, Region, Disability Proxies) to detect indirect Disparate Impact.
+    *   **Vulnerable & Proxy Groups**: (Family Income, Education, Region, Disability Proxies) to detect indirect Disparate Impact.
 3.  **Legitimate Business Necessity Defense**: Any detected disparities are investigated to determine if they reflect legitimate medical complexity (e.g., chronic condition counts) rather than algorithmic bias.
 4.  **Advisory Focus**: The tool as a financial planning aid for consumer (low risk), not a binding automated decision-maker (high risk).
