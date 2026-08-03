@@ -5693,8 +5693,32 @@ shap_top_feature_names = (
 shap_top_feature_labels = (
     shap_feature_importance_test.head(15)["Feature"].tolist()
 )
+
+# Align the corresponding test inputs used only to color the plotted dots.
+shap_beeswarm_feature_values = X_test_preprocessor_input.loc[
+    shap_beeswarm_sample.index,
+    shap_top_feature_names,
+].copy()
+
+# Keep unordered categories neutral instead of implying a low-to-high order.
+shap_beeswarm_neutral_features = PIPELINE_NOMINAL_FEATURES + [
+    "EMPST31_GRP"
+]
+for feature in shap_beeswarm_neutral_features:
+    if feature in shap_beeswarm_feature_values:
+        shap_beeswarm_feature_values[feature] = (
+            shap_beeswarm_feature_values[feature].astype("category")
+        )
+
+# Plot-only mapping: blue for Male and red for Female.
+if "SEX" in shap_beeswarm_feature_values:
+    shap_beeswarm_feature_values["SEX"] = (
+        1 - shap_beeswarm_feature_values["SEX"]
+    )
+
 shap_beeswarm_explanation = shap.Explanation(
     values=shap_beeswarm_sample[shap_top_feature_names].to_numpy(),
+    data=shap_beeswarm_feature_values,
     feature_names=shap_top_feature_labels,
 )
 
@@ -5709,7 +5733,7 @@ try:
         shap_beeswarm_explanation,
         max_display=15,
         order=np.arange(len(shap_top_feature_names)),
-        color=POP_COLOR,
+        color=shap.plots.colors.red_blue,
         alpha=0.45,
         s=12,
         color_bar=False,
@@ -5720,6 +5744,7 @@ try:
     )
 finally:
     np.random.set_state(numpy_random_state)
+
 
 ax.set_title(
     "SHAP Contribution Distributions: Top 15 Features (Test Set)",
@@ -5742,9 +5767,9 @@ fig.text(
     0.01,
     0.01,
     (
-        "Note: Dots are a survey-weighted bootstrap sample of test rows. "
-        "Contributions are in 2023 USD. Negative values moved estimates down "
-        "and positive values moved them up."
+        "Note: Dots are survey-weighted bootstrap test rows. Contributions are in 2023 USD. "
+        "Blue to red means lower to higher, No to Yes, and Male to Female. "
+        "Unordered categories and missing inputs are gray."
     ),
     ha="left",
     va="bottom",
