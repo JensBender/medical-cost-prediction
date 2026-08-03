@@ -5550,6 +5550,7 @@ shap_feature_importance_test = (
     shap_feature_importance_test
     .rename(columns={
         "rank": "Rank",
+        "feature": "Feature Code",
         "feature_label": "Feature",
         "mean_absolute_contribution_2023_usd": (
             "Mean Absolute Contribution"
@@ -5558,6 +5559,7 @@ shap_feature_importance_test = (
     })
     [[
         "Rank",
+        "Feature Code",
         "Feature",
         "Mean Absolute Contribution",
         "Share of Total Importance",
@@ -5566,7 +5568,9 @@ shap_feature_importance_test = (
 
 # Display table of SHAP feature importance for all 27 preprocessor input features
 display(
-    shap_feature_importance_test.style
+    shap_feature_importance_test
+    .drop(columns="Feature Code")
+    .style
     .pipe(
         add_table_caption,
         "SHAP Feature Importance (Test Set)",
@@ -5584,7 +5588,7 @@ display(
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>Bar Plot</strong><br>
-#     📌 Create bar chart of the top 15 SHAP feature importances on the test set.
+#     📌 Create bar chart of the top 15 features on the test set.
 # </div>
 
 # %%
@@ -5684,17 +5688,17 @@ shap_beeswarm_sample = shap_test_contributions.sample(
 
 # Keep the exact top 15 features from the global SHAP importance table.
 shap_top_feature_names = (
-    shap_feature_importance_results.head(15)["feature"].tolist()
+    shap_feature_importance_test.head(15)["Feature Code"].tolist()
 )
-shap_top_feature_labels = [
-    DISPLAY_LABELS.get(feature, feature)
-    for feature in shap_top_feature_names
-]
+shap_top_feature_labels = (
+    shap_feature_importance_test.head(15)["Feature"].tolist()
+)
 shap_beeswarm_explanation = shap.Explanation(
     values=shap_beeswarm_sample[shap_top_feature_names].to_numpy(),
     feature_names=shap_top_feature_labels,
 )
 
+# Create beeswarm plot
 fig, ax = plt.subplots(figsize=(10, 7))
 
 # SHAP uses NumPy's global random state for dot jitter. Preserve the notebook's state while making the saved plot reproducible.
