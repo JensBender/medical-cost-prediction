@@ -5786,6 +5786,18 @@ fig.savefig(
 plt.show()
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b>
+#     <ul style="margin-top:10px; margin-bottom:8px">
+#         <li><strong>Contribution direction and size vary across people:</strong> The same feature can move predicted median costs up for some people and down for others. The wide spreads show that its contribution can also be much larger for some people than for others, depending on the feature value and the person’s other inputs.</li>
+#         <li><strong>Family income and family size show opposite gradients:</strong> Higher family income generally moves estimates up, while lower family income moves them down. Smaller families generally move estimates up, while larger families move them down. Family income has the widest contribution range, from roughly −\$460 to +\$240.</li>
+#         <li><strong>Age and sex are strong demographic signals:</strong> Older ages increasingly move estimates up, with the largest age contributions above +\$300. Female contributions are positive and Male contributions are negative.</li>
+#         <li><strong>Medical conditions show clear separation:</strong> Joint pain, high cholesterol, high blood pressure, walking limitations, arthritis, cancer, and asthma move estimates up when present and down when absent. Having a usual source of care follows the same pattern.</li>
+#         <li><strong>Categorical features need a closer look:</strong> Insurance ranks first overall and both insurance and education have large contributions in both directions. Their unordered categories are intentionally gray, so this plot shows their spread, not which categories drive direction and magnitude.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">XGBoost Native Feature Importance</h3>
 # </div>
