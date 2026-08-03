@@ -24,7 +24,7 @@
 #     <div style="font-size:14px; font-weight:normal; color:#666; margin-top:16px;">
 #         Author: Jens Bender <br> 
 #         Created: March 2026<br>
-#         Last updated: July 2026
+#         Last updated: August 2026
 #     </div>
 # </div>
 
@@ -5512,13 +5512,13 @@ display(
 #
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Feature Importance Audit</h2>
+#     <h2 style="margin:0px">Feature Importance</h2>
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Feature importance will be evaluated with two complementary approaches:
 #     <ul>
-#         <li><strong>SHAP feature importance</strong> ranks the 27 preprocessor input features by their survey-weighted mean absolute SHAP contribution across evaluated predictions. It shows which interpretable inputs have the largest average impact on the postprocessed q50 prediction, measured in 2023 dollars. Because the contributions are made absolute before averaging, the ranking shows the size of their impact, not whether they usually move predictions up or down.</li>
+#         <li><strong>SHAP feature importance</strong> ranks the 27 preprocessor input features by their mean absolute SHAP contribution across predictions (survey-weighted). It shows which interpretable inputs have the largest average impact on the postprocessed q50 prediction, measured in 2023 dollars.</li>
 #         <li><strong>XGBoost native feature importance</strong> ranks the 40 model-ready features primarily by their share of <code>total_gain</code>. It shows how much each feature reduced the training objective across the joint q25, q50, q75, and q90 estimator. It is not q50-specific and is not measured in dollars.</li>
 #     </ul>
 #     The rankings are not directly comparable because they use different features, outputs, units, and data stages. Neither approach is causal or measures a feature's true effect on medical costs. Instead, they provide complementary views: SHAP shows what drives the model's q50 predictions, while native importance shows what the model used during training. Agreement strengthens confidence that the model relies on plausible signals. Differences identify features, transformations, derived features, or correlations that need closer review.
@@ -5532,22 +5532,22 @@ display(
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ SHAP feature importance will be evaluated with two plots:
 #     <ul>
-#         <li><strong>Bar Plot:</strong> Tells us which features had the largest average absolute contribution.</li>
+#         <li><strong>Bar Plot:</strong> Tells us which features had the largest average absolute contribution. The ranking shows the absolute size of their impact, not whether they usually move predictions up or down.</li>
 #         <li><strong>Beeswarm Plot:</strong> Tells us in which direction each feature moved estimates across people, and how much those contributions vary between people.</li>
 #     </ul>
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 After running <code>scripts/audit_shap_feature_importance.py</code>, load and display the SHAP feature importances on the test set.
+#     📌 After running <code>scripts/audit_shap_feature_importance.py</code>, load the SHAP feature importances on the test set. Display a table of all 27 features and a bar plot of the top 15 features.
 # </div>
 
 # %%
-# Load SHAP feature importances from .csv to DataFrame
-shap_feature_importance_results = pd.read_csv(
+# Load SHAP feature importances from .csv into a DataFrame
+shap_feature_importance_test = pd.read_csv(
     "../models/shap_feature_importance_test.csv"
 )
-shap_feature_importance = (
-    shap_feature_importance_results
+shap_feature_importance_test = (
+    shap_feature_importance_test
     .rename(columns={
         "rank": "Rank",
         "feature_label": "Feature",
@@ -5564,9 +5564,9 @@ shap_feature_importance = (
     ]]
 )
 
-# Display table of SHAP feature importance for all 27 features
+# Display table of SHAP feature importance for all 27 preprocessor input features
 display(
-    shap_feature_importance.style
+    shap_feature_importance_test.style
     .pipe(
         add_table_caption,
         "SHAP Feature Importance (Test Set)",
@@ -5588,7 +5588,7 @@ display(
 # </div>
 
 # %%
-shap_top_15 = shap_feature_importance.head(15).sort_values(
+shap_top_15 = shap_feature_importance_test.head(15).sort_values(
     "Mean Absolute Contribution"
 )
 top_15_importance_share = shap_top_15[
