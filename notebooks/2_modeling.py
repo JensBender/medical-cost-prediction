@@ -5840,6 +5840,7 @@ plt.show()
 # Summarize categorical SHAP contribution distributions with exact survey weights.
 SHAP_CATEGORICAL_FEATURES = ["INSCOV23", "HIDEG", "MARRY31X_GRP"]
 SHAP_CATEGORICAL_QUANTILES = np.array([0.10, 0.25, 0.50, 0.75, 0.90])
+shap_total_test_weight = shap_test_contributions[WEIGHT_COLUMN].sum()
 
 shap_categorical_summary_rows = []
 for feature in SHAP_CATEGORICAL_FEATURES:
@@ -5866,6 +5867,13 @@ for feature in SHAP_CATEGORICAL_FEATURES:
         shap_categorical_summary_rows.append({
             "Feature": feature,
             "Category": category,
+            "Population Share": (
+                shap_test_contributions.loc[
+                    category_mask,
+                    WEIGHT_COLUMN,
+                ].sum()
+                / shap_total_test_weight
+            ),
             "P10": contribution_quantiles[0],
             "P25": contribution_quantiles[1],
             "Median": contribution_quantiles[2],
@@ -5924,7 +5932,14 @@ for ax, feature in zip(axes, SHAP_CATEGORICAL_FEATURES):
         zorder=3,
     )
     ax.axvline(0, color="#4A4A4A", linewidth=1)
-    ax.set_yticks(category_positions, feature_summary["Category"])
+    category_tick_labels = [
+        f"{category} ({population_share:.0%})"
+        for category, population_share in zip(
+            feature_summary["Category"],
+            feature_summary["Population Share"],
+        )
+    ]
+    ax.set_yticks(category_positions, category_tick_labels)
     ax.set_ylim(len(feature_summary) - 0.5, -0.5)
     ax.set_title(
         DISPLAY_LABELS[feature],
@@ -5955,7 +5970,7 @@ fig.text(
     0.01,
     0.01,
     (
-        "Note: Dots show weighted medians, thick lines the 25th–75th percentiles, and thin lines the 10th–90th percentiles. Contributions are in 2023 USD."
+        "Note: Dots show survey-weighted medians, blue bars the 25th–75th percentiles, and gray lines the 10th–90th. Labels show population shares. Values are in 2023 USD."
     ),
     ha="left",
     va="bottom",
