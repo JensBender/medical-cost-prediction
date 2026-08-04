@@ -5986,6 +5986,18 @@ fig.savefig(
 )
 plt.show()
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b>
+#     <ul style="margin-top:10px; margin-bottom:8px">
+#         <li><strong>Insurance moves estimates the most:</strong> Private insurance moves estimates up by about \$70 (weighted median), while public-only insurance moves them down by about \$142 and being uninsured by about \$85. In this test-set analysis, every insurance contribution was positive for private insurance and negative for public-only insurance or no insurance.</li>
+#         <li><strong>Higher education generally moves estimates up:</strong> No Degree, GED, and HS Diploma generally move estimates down, while Bachelor's, Master's, and Doctorate generally move them up. The pattern is not perfectly ordered, with Master's showing the largest positive median contribution.</li>
+#         <li><strong>Marital Status plays a smaller role:</strong> Married, Widowed, and Divorced move estimates slightly up, Never Married moves them down, and Separated is centered near zero.</li>
+#         <li><strong>Contribution size varies within categories:</strong> The percentile ranges show that a category's contribution depends on the person's other features.</li>
+#         <li><strong>Limitations:</strong> Interpret sparse categories such as Separated (1%), Doctorate (3%), and GED (4%) cautiously. These are model attributions, not causal effects, and do not show what would happen if someone changed categories.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">XGBoost Native Feature Importance</h3>
 # </div>
