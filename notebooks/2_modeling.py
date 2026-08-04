@@ -5530,10 +5530,11 @@ display(
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ SHAP feature importance will be evaluated primarily with two plots:
+#     ℹ️ SHAP feature importance will be evaluated primarily with three plots:
 #     <ul>
 #         <li><strong>Bar Plot:</strong> Tells us which features had the largest average absolute contribution. The ranking shows the absolute size of their impact, not whether they usually move predictions up or down.</li>
 #         <li><strong>Beeswarm Plot:</strong> Tells us in which direction each feature moved estimates across people, and how much those contributions vary between people.</li>
+#         <li><strong>Categorical Contribution Plot:</strong> Shows how the SHAP contribution distribution differs across the categories of Insurance, Education, and Marital Status.</li>
 #     </ul>
 # </div>
 #
@@ -5829,6 +5830,146 @@ plt.show()
 #     </ul>
 # </div>
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>Categorical Contribution Plot</strong><br>
+#     📌 Compare survey-weighted SHAP contribution distributions for Insurance, Education, and Marital Status. Show the weighted median and middle ranges for each category so contribution direction and variation are easy to compare.
+# </div>
+
+# %%
+# Summarize categorical SHAP contribution distributions with exact survey weights.
+SHAP_CATEGORICAL_FEATURES = ["INSCOV23", "HIDEG", "MARRY31X_GRP"]
+SHAP_CATEGORICAL_QUANTILES = np.array([0.10, 0.25, 0.50, 0.75, 0.90])
+
+shap_categorical_summary_rows = []
+for feature in SHAP_CATEGORICAL_FEATURES:
+    category_labels = (
+        X_test_preprocessor_input[feature]
+        .map(CATEGORY_LABELS_EDA[feature])
+        .fillna("Missing")
+    )
+    category_order = [
+        category
+        for category in CATEGORY_LABELS_EDA[feature].values()
+        if category_labels.eq(category).any()
+    ]
+    if category_labels.eq("Missing").any():
+        category_order.append("Missing")
+
+    for category in category_order:
+        category_mask = category_labels.eq(category)
+        contribution_quantiles = weighted_quantile(
+            shap_test_contributions.loc[category_mask, feature],
+            shap_test_contributions.loc[category_mask, WEIGHT_COLUMN],
+            SHAP_CATEGORICAL_QUANTILES,
+        )
+        shap_categorical_summary_rows.append({
+            "Feature": feature,
+            "Category": category,
+            "P10": contribution_quantiles[0],
+            "P25": contribution_quantiles[1],
+            "Median": contribution_quantiles[2],
+            "P75": contribution_quantiles[3],
+            "P90": contribution_quantiles[4],
+        })
+
+shap_categorical_summary = pd.DataFrame(shap_categorical_summary_rows)
+
+category_counts = [
+    shap_categorical_summary["Feature"].eq(feature).sum()
+    for feature in SHAP_CATEGORICAL_FEATURES
+]
+fig, axes = plt.subplots(
+    nrows=3,
+    ncols=1,
+    figsize=(10, 8),
+    sharex=True,
+    gridspec_kw={"height_ratios": category_counts},
+)
+shap_currency_formatter = plt.FuncFormatter(
+    lambda value, _: (
+        f"−${abs(value):,.0f}" if value < 0 else f"${value:,.0f}"
+    )
+)
+
+for ax, feature in zip(axes, SHAP_CATEGORICAL_FEATURES):
+    feature_summary = (
+        shap_categorical_summary
+        .loc[shap_categorical_summary["Feature"].eq(feature)]
+        .reset_index(drop=True)
+    )
+    category_positions = np.arange(len(feature_summary))
+
+    ax.hlines(
+        category_positions,
+        feature_summary["P10"],
+        feature_summary["P90"],
+        color="#AEB8C2",
+        linewidth=2,
+    )
+    ax.hlines(
+        category_positions,
+        feature_summary["P25"],
+        feature_summary["P75"],
+        color=POP_COLOR,
+        linewidth=6,
+    )
+    ax.scatter(
+        feature_summary["Median"],
+        category_positions,
+        color=POP_COLOR,
+        edgecolor="white",
+        linewidth=0.8,
+        s=45,
+        zorder=3,
+    )
+    ax.axvline(0, color="#4A4A4A", linewidth=1)
+    ax.set_yticks(category_positions, feature_summary["Category"])
+    ax.set_ylim(len(feature_summary) - 0.5, -0.5)
+    ax.set_title(
+        DISPLAY_LABELS[feature],
+        loc="left",
+        fontsize=11,
+        fontweight="bold",
+        pad=12,
+    )
+    ax.grid(axis="x", alpha=0.15)
+    ax.set_axisbelow(True)
+    ax.spines[["top", "right", "left"]].set_visible(False)
+    ax.tick_params(axis="y", length=0)
+    ax.tick_params(axis="x", labelbottom=True)
+    ax.xaxis.set_major_formatter(shap_currency_formatter)
+
+axes[-1].set_xlabel(
+    "SHAP Contribution to Predicted Median Cost",
+    labelpad=10,
+)
+fig.suptitle(
+    "SHAP Contributions by Category (Test Set)",
+    fontsize=13,
+    fontweight="bold",
+    x=0.5,
+    y=0.99,
+)
+fig.text(
+    0.01,
+    0.01,
+    (
+        "Note: Dots show weighted medians, thick lines the 25th–75th percentiles, and thin lines the 10th–90th percentiles. Contributions are in 2023 USD."
+    ),
+    ha="left",
+    va="bottom",
+    fontsize=9,
+    style="italic",
+    color="#4A4A4A",
+)
+fig.tight_layout(rect=(0, 0.04, 1, 1), h_pad=1.8)
+fig.savefig(
+    "../figures/evaluation/shap_categorical_contributions.png",
+    bbox_inches="tight",
+    dpi=200,
+)
+plt.show()
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">XGBoost Native Feature Importance</h3>
