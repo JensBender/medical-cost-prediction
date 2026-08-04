@@ -5673,12 +5673,14 @@ plt.show()
 #     <ul style="margin-top:10px; margin-bottom:8px">
 #         <li><strong>The model draws on four types of information:</strong>
 #             <ul>
-#                 <li><strong>Medical need features (7):</strong> Joint Pain, High Cholesterol, Walking Limitation, High Blood Pressure, Arthritis, Cancer, and Asthma.</li>
-#                 <li><strong>Demographic features (4):</strong> Family Size, Sex, Age, and Marital Status.</li>
-#                 <li><strong>Socioeconomic features (2):</strong> Family Income and Education.</li>
-#                 <li><strong>Healthcare access features (2):</strong> Insurance and Usual Source of Care.</li>
+#                 <li><strong>Medical need features (7; 30.6% of total importance):</strong> Joint Pain, High Cholesterol, Walking Limitation, High Blood Pressure, Arthritis, Cancer, and Asthma.</li>
+#                 <li><strong>Demographic features (4; 25.9% of total importance):</strong> Family Size, Sex, Age, and Marital Status.</li>
+#                 <li><strong>Socioeconomic features (2; 17.8% of total importance):</strong> Family Income and Education.</li>
+#                 <li><strong>Healthcare access features (2; 18.0% of total importance):</strong> Insurance and Usual Source of Care.</li>
 #             </ul>
 #         </li>
+#         <li><strong>Importance is concentrated but not dominated by one feature:</strong> The top 15 account for 92.3% of total importance. Insurance ranks first at 12.2%, followed by Family Income at 10.8%, but the model still distributes importance across many inputs.</li>
+#         <li><strong>The bars show size, not direction:</strong> The bars show the average size of each feature's contribution, not whether it moves estimates up or down. The contribution distribution plot below shows direction and variation across people.</li>
 #     </ul>
 # </div>
 
