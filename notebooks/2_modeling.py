@@ -5530,7 +5530,7 @@ display(
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ SHAP feature importance will be evaluated with two plots:
+#     ℹ️ SHAP feature importance will be evaluated primarily with two plots:
 #     <ul>
 #         <li><strong>Bar Plot:</strong> Tells us which features had the largest average absolute contribution. The ranking shows the absolute size of their impact, not whether they usually move predictions up or down.</li>
 #         <li><strong>Beeswarm Plot:</strong> Tells us in which direction each feature moved estimates across people, and how much those contributions vary between people.</li>
@@ -5538,7 +5538,7 @@ display(
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 After running <code>scripts/audit_shap_feature_importance.py</code>, load the SHAP feature importances on the test set. Display a table of all 27 features and a bar plot of the top 15 features.
+#     📌 After running <code>scripts/audit_shap_feature_importance.py</code>, load the SHAP feature importances from the test set. Display a table of all 27 features and a bar plot of the top 15 features.
 # </div>
 
 # %%
@@ -5668,6 +5668,21 @@ fig.savefig(
 plt.show()
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b>
+#     <ul style="margin-top:10px; margin-bottom:8px">
+#         <li><strong>The model draws on four types of information:</strong>
+#             <ul>
+#                 <li><strong>Medical need features (7):</strong> Joint Pain, High Cholesterol, Walking Limitation, High Blood Pressure, Arthritis, Cancer, and Asthma.</li>
+#                 <li><strong>Demographic features (4):</strong> Family Size, Sex, Age, and Marital Status.</li>
+#                 <li><strong>Socioeconomic features (2):</strong> Family Income and Education.</li>
+#                 <li><strong>Healthcare access features (2):</strong> Insurance and Usual Source of Care.</li>
+#             </ul>
+#         </li>
+#     </ul>
+# </div>
+
+# %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>Beeswarm Plot</strong><br>
 #     📌 Create a contribution distribution plot for the top 15 features. Because the beeswarm plot does not accept survey weights, use weighted bootstrap sampling with replacement so the displayed dot density approximates the U.S. adult population represented by MEPS.
@@ -5789,9 +5804,9 @@ plt.show()
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b>
 #     <ul style="margin-top:10px; margin-bottom:8px">
-#         <li><strong>Contribution direction and size vary across people:</strong> The same feature can move predicted median costs up for some people and down for others. The wide spreads show that its contribution can also be much larger for some people than for others, depending on the feature value and the person’s other inputs.</li>
+#         <li><strong>Contribution direction and size vary across people:</strong> The same feature can move predicted median costs up for some people and down for others. The wide spreads show that a feature's contribution can also be much larger for some people than for others, depending on the feature value and the other features.</li>
 #         <li><strong>Family income and family size show opposite gradients:</strong> Higher family income generally moves estimates up, while lower family income moves them down. Smaller families generally move estimates up, while larger families move them down. Family income has the widest contribution range, from roughly −\$460 to +\$240.</li>
-#         <li><strong>Age and sex are strong demographic signals:</strong> Older ages increasingly move estimates up, with the largest age contributions above +\$300. Female contributions are positive and Male contributions are negative.</li>
+#         <li><strong>Age and sex are strong demographic signals:</strong> Older ages increasingly move estimates up, with the largest age contributions above +\$300. Estimates move up for Females and down for Males.</li>
 #         <li><strong>Medical conditions show clear separation:</strong> Joint pain, high cholesterol, high blood pressure, walking limitations, arthritis, cancer, and asthma move estimates up when present and down when absent. Having a usual source of care follows the same pattern.</li>
 #         <li><strong>Categorical features need a closer look:</strong> Insurance ranks first overall and both insurance and education have large contributions in both directions. Their unordered categories are intentionally gray, so this plot shows their spread, not which categories drive direction and magnitude.</li>
 #     </ul>
