@@ -5772,11 +5772,12 @@ finally:
     np.random.set_state(numpy_random_state)
 
 
-ax.set_title(
+fig.suptitle(
     "SHAP Contribution Distributions: Top 15 Features (Test Set)",
     fontsize=13,
     fontweight="bold",
-    pad=15,
+    x=0.5,
+    y=0.98,
 )
 ax.set_xlabel("SHAP Contribution to Predicted Median Cost", labelpad=10)
 ax.xaxis.set_major_formatter(
@@ -5793,8 +5794,7 @@ fig.text(
     0.01,
     0.01,
     (
-        "Note: Dots are survey-weighted bootstrap test rows. Contributions are in 2023 USD. "
-        "Blue to red means lower to higher, No to Yes, and Male to Female. "
+        "Note: Dots are survey-weighted bootstrap test rows. Contributions are in 2023 USD. Blue to red means lower to higher, No to Yes, and Male to Female.\n"
         "Unordered categories and missing inputs are gray."
     ),
     ha="left",
@@ -5803,7 +5803,7 @@ fig.text(
     style="italic",
     color="#4A4A4A",
 )
-fig.tight_layout(rect=(0, 0.04, 1, 1))
+fig.tight_layout(rect=(0, 0.06, 1, 0.99))
 fig.savefig(
     "../figures/evaluation/shap_contribution_distributions.png",
     bbox_inches="tight",
