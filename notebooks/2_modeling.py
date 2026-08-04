@@ -5680,11 +5680,12 @@ plt.show()
 #             </ul>
 #         </li>
 #         <li><strong>Importance is concentrated but not dominated by one feature:</strong> The top five features account for 47% of total importance, while the top 15 account for 92%. Insurance ranks first at 12.2%, followed by Family Income at 10.8%, but the model still distributes importance across many inputs.</li>
+#         <li><strong>Age remains important but ranks sixth:</strong> This analysis explains median (q50) out-of-pocket costs after accounting for health conditions, limitations, insurance, and other features that capture part of the age-related signal. MEPS also top-codes age at 85, so the model cannot distinguish among people aged 85 and older. Age importance could differ for mean costs or upper quantiles, where rare high-cost cases have more influence.</li>
 #         <li><strong>SHAP broadly agrees with EDA but adds model context:</strong>
 #             <ul>
 #                 <li>EDA correlations describe one-feature-at-a-time relationships with actual out-of-pocket costs. SHAP importance describes how the fitted model combines features to predict median out-of-pocket costs. Agreement supports model plausibility, while differences highlight nonlinear effects, interactions, shared information, or model limitations.</li>
 #                 <li>Across the 20 features included in both analyses, absolute correlation strength and SHAP importance show strong rank agreement (Spearman's ρ = 0.83). Family Income, Joint Pain, Usual Source of Care, and Walking Limitation have similar relative importance.</li>
-#                 <li>Family Size and Sex become more important in the model, while Age and Arthritis become less important, suggesting nonlinear effects or information shared with other features.</li>
+#                 <li>Family Size and Sex become more important in the model, while Arthritis becomes less important, suggesting nonlinear effects or information shared with other features.</li>
 #                 <li>Mental Health, ADL Help, IADL Help, Stroke, and Smoking show weak relationships in both analyses. Their low SHAP importance therefore mirrors weak observed relationships with actual out-of-pocket costs.</li>
 #             </ul>
 #         </li>
