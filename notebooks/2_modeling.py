@@ -6033,6 +6033,13 @@ for income_value, income_label in CATEGORY_LABELS_EDA["POVCAT23"].items():
     shap_ordered_summary_rows.append({
         "Feature": "POVCAT23",
         "Value": income_label,
+        "Population Share": (
+            shap_test_contributions.loc[
+                income_mask,
+                WEIGHT_COLUMN,
+            ].sum()
+            / shap_total_test_weight
+        ),
         "P10": income_quantiles[0],
         "P25": income_quantiles[1],
         "Median": income_quantiles[2],
@@ -6054,6 +6061,13 @@ for family_size_label, family_size_mask in family_size_groups:
     shap_ordered_summary_rows.append({
         "Feature": "FAMSZE23",
         "Value": family_size_label,
+        "Population Share": (
+            shap_test_contributions.loc[
+                family_size_mask,
+                WEIGHT_COLUMN,
+            ].sum()
+            / shap_total_test_weight
+        ),
         "P10": family_size_quantiles[0],
         "P25": family_size_quantiles[1],
         "Median": family_size_quantiles[2],
@@ -6143,7 +6157,20 @@ def plot_ordered_shap_intervals(ax, feature, title):
         s=45,
         zorder=3,
     )
-    ax.set_xticks(positions, feature_summary["Value"])
+    value_labels = feature_summary["Value"].astype(str).tolist()
+    if feature == "FAMSZE23":
+        value_labels = [
+            f"{value} person" if value == "1" else f"{value} people"
+            for value in value_labels
+        ]
+    tick_labels = [
+        f"{value}\n({population_share:.0%})"
+        for value, population_share in zip(
+            value_labels,
+            feature_summary["Population Share"],
+        )
+    ]
+    ax.set_xticks(positions, tick_labels)
     ax.set_title(title, loc="left", fontsize=11, fontweight="bold", pad=10)
 
 
@@ -6153,7 +6180,7 @@ income_ax.tick_params(axis="x", labelrotation=20)
 for label in income_ax.get_xticklabels():
     label.set_horizontalalignment("right")
 
-family_size_ax.set_xlabel("Number of Family Members", labelpad=8)
+
 
 plotted_contribution_min = min(
     shap_test_contributions["AGE23X"].min(),
@@ -6190,7 +6217,7 @@ fig.text(
     (
         "Note: Age dots are test rows sampled with replacement using MEPS survey weights, and the blue line shows the five-year rolling weighted median. "
         "Family Income and Family Size dots\n"
-        "show weighted medians, blue bars show the 25th–75th percentiles, and gray lines the 10th–90th. Values are in 2023 USD."
+        "show weighted medians, blue bars show the 25th–75th percentiles, and gray lines the 10th–90th. Values are in 2023 USD. Percentages show weighted population shares."
     ),
     ha="left",
     va="bottom",
@@ -6210,7 +6237,7 @@ plt.show()
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b>
 #     <ul style="margin-top:10px; margin-bottom:8px">
-#         <li><strong>Age contributions rise most after the mid-50s:</strong> Age generally moves estimates down for younger adults, approaches zero around the mid-50s, and increasingly moves estimates up at older ages.</li>
+#         <li><strong>Age contributions change most after the mid-50s:</strong> The Age contribution stays fairly stable and negative through early and middle adulthood, rises from around age 55 to 75, and then levels off. Contributions also vary much more among older adults.</li>
 #         <li><strong>Family Income shows a strong ordered gradient:</strong> Poor through Middle Income generally move estimates down, while High Income moves them up. This is consistent with the access and utilization pattern identified in the EDA.</li>
 #         <li><strong>Family Size changes direction between two and three people:</strong> Family sizes of one or two generally move estimates up, while three or more move them down. The negative contribution levels off among the largest families.</li>
 #         <li><strong>Scope:</strong> These patterns show how the fitted model uses ordered feature values for q50 predictions. They do not establish that changing age, income, or family size would cause costs to change.</li>
