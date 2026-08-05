@@ -6238,9 +6238,8 @@ plt.show()
 #     💡 <b>Insights:</b>
 #     <ul style="margin-top:10px; margin-bottom:8px">
 #         <li><strong>Age contributions change most after the mid-50s:</strong> The Age contribution stays fairly stable and negative through early and middle adulthood, rises from around age 55 to 75, and then levels off. Contributions also vary much more among older adults.</li>
-#         <li><strong>Family Income shows a strong ordered gradient:</strong> Poor through Middle Income generally move estimates down, while High Income moves them up. This is consistent with the access and utilization pattern identified in the EDA.</li>
-#         <li><strong>Family Size changes direction between two and three people:</strong> Family sizes of one or two generally move estimates up, while three or more move them down. The negative contribution levels off among the largest families.</li>
-#         <li><strong>Scope:</strong> These patterns show how the fitted model uses ordered feature values for q50 predictions. They do not establish that changing age, income, or family size would cause costs to change.</li>
+#         <li><strong>Only High Income moves estimates up:</strong> Poor through Middle Income generally move estimates down, while High Income generally moves them up.</li>
+#         <li><strong>Family Size changes direction after two people:</strong> Contributions generally move estimates up for family sizes one and two and down for sizes three or more, with little additional change beyond five people.</li>
 #     </ul>
 # </div>
 # %% [markdown]
