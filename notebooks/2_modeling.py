@@ -6069,7 +6069,7 @@ grid = fig.add_gridspec(
     nrows=2,
     ncols=2,
     height_ratios=[1.2, 1],
-    hspace=0.42,
+    hspace=0.30,
     wspace=0.20,
 )
 age_ax = fig.add_subplot(grid[0, :])
@@ -6087,9 +6087,9 @@ age_ax.scatter(
     age_plot_values + age_plot_jitter,
     shap_beeswarm_sample["AGE23X"],
     color=POP_COLOR,
-    alpha=0.10,
+    alpha=0.15,
     edgecolors="none",
-    s=10,
+    s=12,
     rasterized=True,
 )
 age_ax.plot(
@@ -6101,7 +6101,7 @@ age_ax.plot(
 age_ax.set_xlim(age_values.min() - 1, age_values.max() + 1)
 age_ticks = [18, 25, 35, 45, 55, 65, 75, 85]
 age_ax.set_xticks(age_ticks, [*map(str, age_ticks[:-1]), "85+"])
-age_ax.set_xlabel("Age", labelpad=8)
+
 age_ax.set_title("Age", loc="left", fontsize=11, fontweight="bold", pad=10)
 
 
