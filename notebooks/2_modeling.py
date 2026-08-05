@@ -5530,11 +5530,12 @@ display(
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ SHAP feature importance is examined with three complementary plots:
+#     ℹ️ SHAP feature importance is examined with four complementary plots:
 #     <ul>
 #         <li><strong>Overall Feature Importance (Bar Plot):</strong> Shows which features matter most overall by ranking their mean absolute SHAP contributions (survey-weighted). It shows typical contribution size, not whether a feature usually moves estimates up or down.</li>
 #         <li><strong>Contribution Direction and Variation (Beeswarm Plot):</strong> Shows whether the most important features move estimates up or down and how much their contributions vary across people. For unordered categorical features, it doesn't show which category produced each contribution.</li>
 #         <li><strong>Category-Specific Direction and Variation (Interval Plot):</strong> Shows the median and percentile ranges for each category of the unordered categorical features (survey-weighted). This reveals which categories tend to move estimates up or down and how much contributions vary within each category.</li>
+#         <li><strong>Contribution Patterns Across Ordered Values (Dependence and Interval Plots):</strong> Zooms in on Age, Family Income, and Family Size, the three highest-ranked numerical or ordinal features. It shows how contributions change across their values, revealing gradients, nonlinear patterns, and plateaus that the broader beeswarm plot cannot show precisely.</li>
 #     </ul>
 # </div>
 #
@@ -5998,6 +5999,222 @@ plt.show()
 #     </ul>
 # </div>
 
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>Contribution Patterns Across Ordered Values (Dependence and Interval Plots)</strong><br>
+#     📌 Examine Age, Family Income, and Family Size in more detail. Use a dependence plot for Age and interval plots for Family Income and Family Size to show how SHAP contributions change across ordered values.
+# </div>
+
+# %%
+# Calculate a five-year rolling weighted median for the Age dependence plot.
+age_values = X_test_preprocessor_input["AGE23X"]
+age_trend_rows = []
+for age in range(int(age_values.min()), int(age_values.max()) + 1):
+    age_window = age_values.between(age - 2, age + 2)
+    age_trend_rows.append({
+        "Age": age,
+        "Median": weighted_quantile(
+            shap_test_contributions.loc[age_window, "AGE23X"],
+            shap_test_contributions.loc[age_window, WEIGHT_COLUMN],
+            0.50,
+        ),
+    })
+age_trend = pd.DataFrame(age_trend_rows)
+
+# Summarize the ordered Family Income and Family Size contributions.
+shap_ordered_summary_rows = []
+for income_value, income_label in CATEGORY_LABELS_EDA["POVCAT23"].items():
+    income_mask = X_test_preprocessor_input["POVCAT23"].eq(income_value)
+    income_quantiles = weighted_quantile(
+        shap_test_contributions.loc[income_mask, "POVCAT23"],
+        shap_test_contributions.loc[income_mask, WEIGHT_COLUMN],
+        SHAP_CATEGORICAL_QUANTILES,
+    )
+    shap_ordered_summary_rows.append({
+        "Feature": "POVCAT23",
+        "Value": income_label,
+        "P10": income_quantiles[0],
+        "P25": income_quantiles[1],
+        "Median": income_quantiles[2],
+        "P75": income_quantiles[3],
+        "P90": income_quantiles[4],
+    })
+
+family_size_groups = [
+    (str(family_size), X_test_preprocessor_input["FAMSZE23"].eq(family_size))
+    for family_size in range(1, 6)
+]
+family_size_groups.append(("6+", X_test_preprocessor_input["FAMSZE23"].ge(6)))
+for family_size_label, family_size_mask in family_size_groups:
+    family_size_quantiles = weighted_quantile(
+        shap_test_contributions.loc[family_size_mask, "FAMSZE23"],
+        shap_test_contributions.loc[family_size_mask, WEIGHT_COLUMN],
+        SHAP_CATEGORICAL_QUANTILES,
+    )
+    shap_ordered_summary_rows.append({
+        "Feature": "FAMSZE23",
+        "Value": family_size_label,
+        "P10": family_size_quantiles[0],
+        "P25": family_size_quantiles[1],
+        "Median": family_size_quantiles[2],
+        "P75": family_size_quantiles[3],
+        "P90": family_size_quantiles[4],
+    })
+
+shap_ordered_summary = pd.DataFrame(shap_ordered_summary_rows)
+
+# Create one figure with a wide Age panel above two compact interval plots.
+fig = plt.figure(figsize=(12, 9))
+grid = fig.add_gridspec(
+    nrows=2,
+    ncols=2,
+    height_ratios=[1.2, 1],
+    hspace=0.42,
+    wspace=0.20,
+)
+age_ax = fig.add_subplot(grid[0, :])
+income_ax = fig.add_subplot(grid[1, 0], sharey=age_ax)
+family_size_ax = fig.add_subplot(grid[1, 1], sharey=age_ax)
+
+# Plot weighted-bootstrap test rows for Age without changing NumPy's global state.
+age_plot_rng = np.random.default_rng(RANDOM_STATE)
+age_plot_values = X_test_preprocessor_input.loc[
+    shap_beeswarm_sample.index,
+    "AGE23X",
+].to_numpy()
+age_plot_jitter = age_plot_rng.uniform(-0.20, 0.20, len(age_plot_values))
+age_ax.scatter(
+    age_plot_values + age_plot_jitter,
+    shap_beeswarm_sample["AGE23X"],
+    color=POP_COLOR,
+    alpha=0.10,
+    edgecolors="none",
+    s=10,
+    rasterized=True,
+)
+age_ax.plot(
+    age_trend["Age"],
+    age_trend["Median"],
+    color=POP_COLOR,
+    linewidth=2.5,
+)
+age_ax.set_xlim(age_values.min() - 1, age_values.max() + 1)
+age_ticks = [18, 25, 35, 45, 55, 65, 75, 85]
+age_ax.set_xticks(age_ticks, [*map(str, age_ticks[:-1]), "85+"])
+age_ax.set_xlabel("Age", labelpad=8)
+age_ax.set_title("Age", loc="left", fontsize=11, fontweight="bold", pad=10)
+
+
+def plot_ordered_shap_intervals(ax, feature, title):
+    """Plot weighted SHAP medians and percentile intervals by ordered value."""
+    feature_summary = (
+        shap_ordered_summary
+        .loc[shap_ordered_summary["Feature"].eq(feature)]
+        .reset_index(drop=True)
+    )
+    positions = np.arange(len(feature_summary))
+    ax.vlines(
+        positions,
+        feature_summary["P10"],
+        feature_summary["P90"],
+        color="#AEB8C2",
+        linewidth=2,
+    )
+    ax.vlines(
+        positions,
+        feature_summary["P25"],
+        feature_summary["P75"],
+        color=POP_COLOR,
+        linewidth=6,
+    )
+    ax.plot(
+        positions,
+        feature_summary["Median"],
+        color=POP_COLOR,
+        linewidth=1.5,
+        alpha=0.65,
+    )
+    ax.scatter(
+        positions,
+        feature_summary["Median"],
+        color=POP_COLOR,
+        edgecolor="white",
+        linewidth=0.8,
+        s=45,
+        zorder=3,
+    )
+    ax.set_xticks(positions, feature_summary["Value"])
+    ax.set_title(title, loc="left", fontsize=11, fontweight="bold", pad=10)
+
+
+plot_ordered_shap_intervals(income_ax, "POVCAT23", "Family Income")
+plot_ordered_shap_intervals(family_size_ax, "FAMSZE23", "Family Size")
+income_ax.tick_params(axis="x", labelrotation=20)
+for label in income_ax.get_xticklabels():
+    label.set_horizontalalignment("right")
+income_ax.set_xlabel("Family Income Category", labelpad=8)
+family_size_ax.set_xlabel("Number of Family Members", labelpad=8)
+
+plotted_contribution_min = min(
+    shap_test_contributions["AGE23X"].min(),
+    shap_ordered_summary["P10"].min(),
+)
+plotted_contribution_max = max(
+    shap_test_contributions["AGE23X"].max(),
+    shap_ordered_summary["P90"].max(),
+)
+y_min = np.floor(plotted_contribution_min / 50) * 50
+y_max = np.ceil(plotted_contribution_max / 50) * 50
+for ax in (age_ax, income_ax, family_size_ax):
+    ax.axhline(0, color="#4A4A4A", linewidth=1)
+    ax.set_ylim(y_min, y_max)
+    ax.grid(axis="y", alpha=0.15)
+    ax.set_axisbelow(True)
+    ax.spines[["top", "right"]].set_visible(False)
+    ax.yaxis.set_major_formatter(shap_currency_formatter)
+
+fig.supylabel(
+    "SHAP Contribution to Predicted Median Cost",
+    x=0.01,
+)
+fig.suptitle(
+    "SHAP Contribution Patterns for Key Ordered Features (Test Set)",
+    fontsize=13,
+    fontweight="bold",
+    x=0.5,
+    y=0.99,
+)
+fig.text(
+    0.01,
+    0.01,
+    (
+        "Note: Age dots are weighted-bootstrap test rows and the blue line is a five-year rolling weighted median.\n"
+        "Interval dots show weighted medians, blue bars the 25th–75th percentiles, and gray lines the 10th–90th. Values are in 2023 USD."
+    ),
+    ha="left",
+    va="bottom",
+    fontsize=9,
+    style="italic",
+    color="#4A4A4A",
+)
+fig.subplots_adjust(left=0.09, right=0.98, bottom=0.13, top=0.92)
+fig.savefig(
+    "../figures/evaluation/shap_ordered_feature_contributions.png",
+    bbox_inches="tight",
+    dpi=200,
+)
+plt.show()
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b>
+#     <ul style="margin-top:10px; margin-bottom:8px">
+#         <li><strong>Age contributions rise most after the mid-50s:</strong> Age generally moves estimates down for younger adults, approaches zero around the mid-50s, and increasingly moves estimates up at older ages.</li>
+#         <li><strong>Family Income shows a strong ordered gradient:</strong> Poor through Middle Income generally move estimates down, while High Income moves them up. This is consistent with the access and utilization pattern identified in the EDA.</li>
+#         <li><strong>Family Size changes direction between two and three people:</strong> Family sizes of one or two generally move estimates up, while three or more move them down. The negative contribution levels off among the largest families.</li>
+#         <li><strong>Scope:</strong> These patterns show how the fitted model uses ordered feature values for q50 predictions. They do not establish that changing age, income, or family size would cause costs to change.</li>
+#     </ul>
+# </div>
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">XGBoost Native Feature Importance</h3>
