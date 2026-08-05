@@ -5530,11 +5530,11 @@ display(
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ SHAP feature importance will be evaluated primarily with three plots:
+#     ℹ️ SHAP feature importance is examined with three complementary plots:
 #     <ul>
-#         <li><strong>Bar Plot:</strong> Tells us which features had the largest average absolute contribution. The ranking shows the absolute size of their impact, not whether they usually move predictions up or down.</li>
-#         <li><strong>Beeswarm Plot:</strong> Tells us in which direction each feature moved estimates across people, and how much those contributions vary between people.</li>
-#         <li><strong>Categorical Contribution Plot:</strong> Shows how the SHAP contribution distribution differs across the categories of Insurance, Education, and Marital Status.</li>
+#         <li><strong>Overall Feature Importance (Bar Plot):</strong> Shows which features matter most overall by ranking their mean absolute SHAP contributions (survey-weighted). It shows typical contribution size, not whether a feature usually moves estimates up or down.</li>
+#         <li><strong>Contribution Direction and Variation (Beeswarm Plot):</strong> Shows whether the most important features move estimates up or down and how much their contributions vary across people. For categorical features, it doesn't show which category produced each contribution.</li>
+#         <li><strong>Category-Specific Direction and Variation (Interval Plot):</strong> Shows the median and percentile ranges (survey-weighted) for each unordered categorical feature. This reveals which categories tend to move estimates up or down and how much contributions vary within each category.</li>
 #     </ul>
 # </div>
 #
@@ -5588,7 +5588,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Bar Plot</strong><br>
+#     <strong>Overall Feature Importance (Bar Plot)</strong><br>
 #     📌 Create bar chart of the top 15 features on the test set.
 # </div>
 
@@ -5674,10 +5674,10 @@ plt.show()
 #     <ul style="margin-top:10px; margin-bottom:8px">
 #         <li><strong>The model draws on four types of information:</strong>
 #             <ul>
-#                 <li><strong>Medical need features (7; 30.6% of total importance):</strong> Joint Pain, High Cholesterol, Walking Limitation, High Blood Pressure, Arthritis, Cancer, and Asthma.</li>
-#                 <li><strong>Demographic features (4; 25.9% of total importance):</strong> Family Size, Sex, Age, and Marital Status.</li>
-#                 <li><strong>Socioeconomic features (2; 17.8% of total importance):</strong> Family Income and Education.</li>
-#                 <li><strong>Healthcare access features (2; 18.0% of total importance):</strong> Insurance and Usual Source of Care.</li>
+#                 <li><strong>Medical need (7 features; 30.6% of total importance):</strong> Joint Pain, High Cholesterol, Walking Limitation, High Blood Pressure, Arthritis, Cancer, and Asthma.</li>
+#                 <li><strong>Demographic (4 features; 25.9% of total importance):</strong> Family Size, Sex, Age, and Marital Status.</li>
+#                 <li><strong>Socioeconomic (2 features; 17.8% of total importance):</strong> Family Income and Education.</li>
+#                 <li><strong>Healthcare access (2 features; 18.0% of total importance):</strong> Insurance and Usual Source of Care.</li>
 #             </ul>
 #         </li>
 #         <li><strong>Importance is concentrated but not dominated by one feature:</strong> The top five features account for 47% of total importance, while the top 15 account for 92%. Insurance ranks first at 12.2%, followed by Family Income at 10.8%, but the model still distributes importance across many inputs.</li>
@@ -5690,13 +5690,13 @@ plt.show()
 #                 <li>Mental Health, ADL Help, IADL Help, Stroke, and Smoking show weak relationships in both analyses. Their low SHAP importance therefore mirrors weak observed relationships with actual out-of-pocket costs.</li>
 #             </ul>
 #         </li>
-#         <li><strong>SHAP bar plot shows size, not direction:</strong> The bars shows the average size of each feature's contribution, not whether it moves estimates up or down. The contribution distribution plot below shows direction and variation across people.</li>
+#         <li><strong>SHAP bar plot shows size, not direction:</strong> The bars show the average size of each feature's contribution, not whether it moves estimates up or down. The contribution distribution plot below shows direction and variation across people.</li>
 #     </ul>
 # </div>
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Beeswarm Plot</strong><br>
+#     <strong>Contribution Direction and Variation (Beeswarm Plot)</strong><br>
 #     📌 Create a contribution distribution plot for the top 15 features. Because the beeswarm plot does not accept survey weights, use weighted bootstrap sampling with replacement so the displayed dot density approximates the U.S. adult population represented by MEPS.
 # </div>
 
@@ -5832,8 +5832,8 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Categorical Contribution Plot</strong><br>
-#     📌 Compare survey-weighted SHAP contribution distributions for Insurance, Education, and Marital Status. Show the weighted median and middle ranges for each category so contribution direction and variation are easy to compare.
+#     <strong>Category-Specific Direction and Variation (Interval Plot)</strong><br>
+#     📌 Compare SHAP contributions for Insurance, Education, and Marital Status. Show the median and percentile ranges (survey-weighted) for each category so contribution direction and variation are easy to compare.
 # </div>
 
 # %%
