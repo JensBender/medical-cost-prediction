@@ -5533,9 +5533,9 @@ display(
 #     ℹ️ SHAP feature importance is examined with four complementary plots:
 #     <ul>
 #         <li><strong>Overall Feature Importance (Bar Plot):</strong> Shows which features matter most overall by ranking their mean absolute SHAP contributions (survey-weighted). It shows typical contribution size, not whether a feature usually moves estimates up or down.</li>
-#         <li><strong>Contribution Direction and Variation (Beeswarm Plot):</strong> Shows whether the most important features move estimates up or down and how much their contributions vary across people. For unordered categorical features, it doesn't show which category produced each contribution.</li>
-#         <li><strong>Category-Specific Direction and Variation (Interval Plot):</strong> Shows the median and percentile ranges for each category of the unordered categorical features (survey-weighted). This reveals which categories tend to move estimates up or down and how much contributions vary within each category.</li>
-#         <li><strong>Contribution Patterns Across Ordered Values (Dependence and Interval Plots):</strong> Zooms in on Age, Family Income, and Family Size, the three highest-ranked numerical or ordinal features. It shows how contributions change across their values, revealing gradients, nonlinear patterns, and plateaus that the broader beeswarm plot cannot show precisely.</li>
+#         <li><strong>Contribution Distributions (Beeswarm Plot):</strong> Shows whether features move estimates up or down and how much their contributions vary across people. For unordered categorical features, it doesn't show which category produced each contribution.</li>
+#         <li><strong>Contributions by Category (Interval Plot):</strong> Shows the median and percentile ranges for each category of the unordered categorical features (survey-weighted). This reveals which categories tend to move estimates up or down and how much contributions vary within each category.</li>
+#         <li><strong>Contributions Across Ordered Values (Dependence and Interval Plots):</strong> Zooms in on Age, Family Income, and Family Size, the three highest-ranked numerical or ordinal features. It shows how contributions change across their values, revealing gradients, nonlinear patterns, and plateaus that the broader beeswarm plot cannot show precisely.</li>
 #     </ul>
 # </div>
 #
@@ -5697,7 +5697,7 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Contribution Direction and Variation (Beeswarm Plot)</strong><br>
+#     <strong>Contribution Distributions (Beeswarm Plot)</strong><br>
 #     📌 Create a contribution distribution plot for the top 15 features. Because the beeswarm plot does not accept survey weights, use weighted bootstrap sampling with replacement so the displayed dot density approximates the U.S. adult population represented by MEPS.
 # </div>
 
@@ -5796,8 +5796,8 @@ fig.text(
     0.01,
     0.01,
     (
-        "Note: Dots are survey-weighted bootstrap test rows. Contributions are in 2023 USD. Blue to red means lower to higher, No to Yes, and Male to Female.\n"
-        "Unordered categories and missing inputs are gray."
+        "Note: Dots are test rows sampled with replacement using MEPS survey weights. Contributions are in 2023 USD. Blue to red means lower to higher,\n"
+        "No to Yes, and Male to Female. Unordered categories and missing inputs are gray."
     ),
     ha="left",
     va="bottom",
@@ -5833,7 +5833,7 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Category-Specific Direction and Variation (Interval Plot)</strong><br>
+#     <strong>Contributions by Category (Interval Plot)</strong><br>
 #     📌 Compare SHAP contributions for Insurance, Education, and Marital Status. Show the median and percentile ranges for each category (survey-weighted) so contribution direction and variation are easy to compare.
 # </div>
 
@@ -6001,7 +6001,7 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Contribution Patterns Across Ordered Values (Dependence and Interval Plots)</strong><br>
+#     <strong>Contributions Across Ordered Values (Dependence and Interval Plots)</strong><br>
 #     📌 Examine Age, Family Income, and Family Size in more detail. Use a dependence plot for Age and interval plots for Family Income and Family Size to show how SHAP contributions change across ordered values.
 # </div>
 
@@ -6178,7 +6178,7 @@ fig.supylabel(
     x=0.01,
 )
 fig.suptitle(
-    "SHAP Contribution Patterns for Key Ordered Features (Test Set)",
+    "SHAP Contributions Across Ordered Values (Test Set)",
     fontsize=13,
     fontweight="bold",
     x=0.5,
@@ -6188,9 +6188,9 @@ fig.text(
     0.01,
     0.01,
     (
-        "Note: Age dots are survey-weighted bootstrap test rows and the blue line shows the five-year rolling weighted median. "
-        "Family Income and Family Size dots show weighted medians,\n"
-        "blue bars show the 25th–75th percentiles, and gray lines the 10th–90th. Values are in 2023 USD."
+        "Note: Age dots are test rows sampled with replacement using MEPS survey weights, and the blue line shows the five-year rolling weighted median. "
+        "Family Income and Family Size dots\n"
+        "show weighted medians, blue bars show the 25th–75th percentiles, and gray lines the 10th–90th. Values are in 2023 USD."
     ),
     ha="left",
     va="bottom",
