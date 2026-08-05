@@ -6152,7 +6152,7 @@ plot_ordered_shap_intervals(family_size_ax, "FAMSZE23", "Family Size")
 income_ax.tick_params(axis="x", labelrotation=20)
 for label in income_ax.get_xticklabels():
     label.set_horizontalalignment("right")
-income_ax.set_xlabel("Family Income Category", labelpad=8)
+
 family_size_ax.set_xlabel("Number of Family Members", labelpad=8)
 
 plotted_contribution_min = min(
@@ -6188,8 +6188,9 @@ fig.text(
     0.01,
     0.01,
     (
-        "Note: Age dots are weighted-bootstrap test rows and the blue line is a five-year rolling weighted median.\n"
-        "Interval dots show weighted medians, blue bars the 25th–75th percentiles, and gray lines the 10th–90th. Values are in 2023 USD."
+        "Note: Age dots are survey-weighted bootstrap test rows and the blue line shows the five-year rolling weighted median. "
+        "Family Income and Family Size dots show weighted medians,\n"
+        "blue bars show the 25th–75th percentiles, and gray lines the 10th–90th. Values are in 2023 USD."
     ),
     ha="left",
     va="bottom",
