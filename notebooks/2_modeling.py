@@ -5827,7 +5827,7 @@ plt.show()
 #             </ul>
 #         </li>
 #         <li><strong>Unordered categories need a closer look:</strong> Insurance, Education, and Marital Status are gray, so the plot shows their contribution distributions but not which categories drive each direction.</li>
-#         <li><strong>Scope:</strong> These contributions explain q50 only. They may differ for q90 and do not show that changing an input would cause actual costs to change.</li>
+#         <li><strong>Limitations:</strong> These contributions explain q50 only. They may differ for q90 and do not show that changing an input would cause actual costs to change.</li>
 #     </ul>
 # </div>
 
@@ -5971,7 +5971,8 @@ fig.text(
     0.01,
     0.01,
     (
-        "Note: Dots show survey-weighted medians, blue bars the 25th–75th percentiles, and gray lines the 10th–90th. Labels show population shares. Values are in 2023 USD."
+        "Note: Dots show survey-weighted medians, blue bars the 25th–75th percentiles, and gray lines the 10th–90th. Values are in 2023 USD.\n"
+        "Percentages show weighted population shares."
     ),
     ha="left",
     va="bottom",
@@ -5979,7 +5980,7 @@ fig.text(
     style="italic",
     color="#4A4A4A",
 )
-fig.tight_layout(rect=(0, 0.04, 1, 1), h_pad=1.8)
+fig.tight_layout(rect=(0, 0.06, 1, 1), h_pad=1.8)
 fig.savefig(
     "../figures/evaluation/shap_categorical_contributions.png",
     bbox_inches="tight",
@@ -6245,4 +6246,8 @@ plt.show()
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">XGBoost Native Feature Importance</h3>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Extract <code>total_gain</code>, <code>gain</code>, and <code>weight</code> from the fitted XGBoost. Use each feature's share of total gain for the primary ranking. Display a table of all 40 model-ready features and a bar plot of the top 15 features.
 # </div>
