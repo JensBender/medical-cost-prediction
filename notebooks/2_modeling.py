@@ -4878,9 +4878,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>At Inference Time:</strong> Map the user inputs to the preprocessor inputs. Predict all quantiles using the fitted preprocessor and model, postprocess them, and compute permutation SHAP for q50. Rank contributions by absolute value and select the five largest. Apply medical-cost inflation to predictions, comparison benchmarks, and the selected SHAP contributions.</li>
 #     </ol>
 #     API response and privacy requirements are defined in the <a href="../docs/specs/technical_specifications.md#api-contract">API Contract</a> and <a href="../docs/specs/technical_specifications.md#privacy-preserving-monitoring">Privacy-Preserving Monitoring</a> sections of the technical specifications.
-# </div>
-
-# %% [markdown]
+# </div># %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">SHAP Explainer Setup</h2>
 # </div>
@@ -5810,9 +5808,7 @@ fig.savefig(
     bbox_inches="tight",
     dpi=200,
 )
-plt.show()
-
-# %% [markdown]
+plt.show()# %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b>
 #     <ul style="margin-top:10px; margin-bottom:8px">
@@ -5985,8 +5981,7 @@ fig.savefig(
     bbox_inches="tight",
     dpi=200,
 )
-plt.show()
-# %% [markdown]
+plt.show()# %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b>
 #     <ul style="margin-top:10px; margin-bottom:8px">
@@ -6231,9 +6226,7 @@ fig.savefig(
     bbox_inches="tight",
     dpi=200,
 )
-plt.show()
-
-# %% [markdown]
+plt.show()# %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b>
 #     <ul style="margin-top:10px; margin-bottom:8px">
@@ -6347,7 +6340,7 @@ display(
     .style
     .pipe(
         add_table_caption,
-        "XGBoost Native Feature Importance (Training)",
+        "XGBoost Quantile Feature Importance (Model-Ready Features, Training)",
     )
     .format({
         "Total Gain": "{:,.0f}",
@@ -6363,7 +6356,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>XGBoost Feature Importance (Bar Plot)</strong><br>
+#     <strong>Model-Ready Feature Importance (Bar Plot)</strong><br>
 #     📌 Plot the top 15 model-ready features by share of total gain.
 # </div>
 
@@ -6401,7 +6394,7 @@ ax.xaxis.set_major_formatter(
 )
 ax.xaxis.set_major_locator(plt.MultipleLocator(0.05))
 ax.set_title(
-    "XGBoost Quantile Feature Importance (Training)",
+    "XGBoost Quantile Feature Importance (Model-Ready Features, Training)",
     fontsize=13,
     fontweight="bold",
     pad=16,
@@ -6439,7 +6432,180 @@ fig.text(
 )
 fig.tight_layout(rect=(0, 0.06, 1, 1))
 fig.savefig(
-    "../figures/evaluation/xgb_quantile_feature_importance.png",
+    "../figures/evaluation/xgb_quantile_model_ready_feature_importance.png",
+    bbox_inches="tight",
+    dpi=200,
+)
+plt.show()
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>Consolidated Feature Importance</strong><br>
+#     📌 Combine the one-hot encoded columns that belong to the same source feature. Sum their total gain and split counts, then recalculate average gain per split. Keep derived features such as Chronic Conditions Count and Limitations Count separate. This produces 29 consolidated features: the 27 preprocessor inputs plus two derived features.
+# </div>
+
+# %%
+def get_consolidated_feature_code(model_ready_feature):
+    """Return the consolidated feature code for a model-ready feature."""
+    for source_feature in PIPELINE_NOMINAL_FEATURES:
+        if model_ready_feature.startswith(f"{source_feature}_"):
+            return source_feature
+    return model_ready_feature
+
+
+xgb_consolidated_feature_importance = (
+    xgb_native_feature_importance
+    .assign(**{
+        "Consolidated Feature Code": xgb_native_feature_importance[
+            "Feature Code"
+        ].map(get_consolidated_feature_code),
+    })
+    .groupby("Consolidated Feature Code", as_index=False, sort=False)
+    .agg({
+        "Total Gain": "sum",
+        "Split Count (Weight)": "sum",
+    })
+)
+
+if not np.isclose(
+    xgb_consolidated_feature_importance["Total Gain"].sum(),
+    total_native_gain,
+):
+    raise ValueError("Consolidated total gain does not match model-ready total gain.")
+
+xgb_consolidated_feature_importance["Feature"] = (
+    xgb_consolidated_feature_importance["Consolidated Feature Code"].map(
+        lambda feature: DISPLAY_LABELS.get(
+            feature,
+            feature.replace("_", " ").title(),
+        )
+    )
+)
+xgb_consolidated_feature_importance["Share of Total Gain"] = (
+    xgb_consolidated_feature_importance["Total Gain"]
+    / total_native_gain
+)
+xgb_consolidated_feature_importance["Average Gain per Split"] = (
+    xgb_consolidated_feature_importance["Total Gain"]
+    / xgb_consolidated_feature_importance["Split Count (Weight)"].replace(0, np.nan)
+).fillna(0.0)
+xgb_consolidated_feature_importance = (
+    xgb_consolidated_feature_importance
+    .sort_values("Total Gain", ascending=False)
+    .reset_index(drop=True)
+)
+xgb_consolidated_feature_importance.insert(
+    0,
+    "Rank",
+    np.arange(1, len(xgb_consolidated_feature_importance) + 1),
+)
+
+# Display consolidated native feature importance for all source and derived features.
+display(
+    xgb_consolidated_feature_importance[[
+        "Rank",
+        "Feature",
+        "Total Gain",
+        "Share of Total Gain",
+        "Average Gain per Split",
+        "Split Count (Weight)",
+    ]]
+    .style
+    .pipe(
+        add_table_caption,
+        "XGBoost Quantile Feature Importance (Consolidated Features, Training)",
+    )
+    .format({
+        "Total Gain": "{:,.0f}",
+        "Share of Total Gain": "{:.1%}",
+        "Average Gain per Split": "{:,.1f}",
+        "Split Count (Weight)": "{:,.0f}",
+    })
+    .hide()
+)
+
+# %% [markdown]
+# <em>Note: One-hot encoded columns are combined by source feature. Derived features remain separate. Feature importance measures are aggregated across the q25, q50, q75, and q90 trees.</em>
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>Consolidated Feature Importance (Bar Plot)</strong><br>
+#     📌 Plot the top 15 consolidated features by share of total gain.
+# </div>
+
+# %%
+xgb_consolidated_top_15 = (
+    xgb_consolidated_feature_importance
+    .head(15)
+    .sort_values("Share of Total Gain")
+)
+xgb_consolidated_top_15_share = xgb_consolidated_top_15[
+    "Share of Total Gain"
+].sum()
+
+fig, ax = plt.subplots(figsize=(10, 7))
+bars = ax.barh(
+    xgb_consolidated_top_15["Feature"],
+    xgb_consolidated_top_15["Share of Total Gain"],
+    color=POP_COLOR,
+)
+ax.bar_label(
+    bars,
+    labels=[
+        f"{share:.1%}"
+        for share in xgb_consolidated_top_15["Share of Total Gain"]
+    ],
+    padding=4,
+    fontsize=9,
+)
+ax.set_xlim(
+    0,
+    xgb_consolidated_top_15["Share of Total Gain"].max() * 1.14,
+)
+ax.xaxis.set_major_formatter(
+    plt.FuncFormatter(lambda value, _: f"{value:.0%}")
+)
+ax.xaxis.set_major_locator(plt.MultipleLocator(0.05))
+ax.set_title(
+    "XGBoost Quantile Feature Importance (Consolidated Features, Training)",
+    fontsize=13,
+    fontweight="bold",
+    pad=16,
+)
+ax.text(
+    0.5,
+    0.99,
+    (
+        "Top 15 consolidated features account for "
+        f"{xgb_consolidated_top_15_share:.1%} of total gain"
+    ),
+    transform=ax.transAxes,
+    ha="center",
+    fontsize=10,
+    fontweight="normal",
+)
+ax.set_xlabel("Share of Total Gain")
+ax.set_ylabel("")
+ax.grid(axis="x", alpha=0.20)
+ax.set_axisbelow(True)
+sns.despine(ax=ax, left=True)
+
+fig.text(
+    0.01,
+    0.01,
+    (
+        "Note: One-hot encoded columns are combined by source feature; derived features remain separate. Percentages show each feature's share of total gain across 29 consolidated features.\n"
+        "Total gain is aggregated across the q25, q50, q75, and q90 trees and describes training split improvements, not improvements in prediction accuracy."
+    ),
+    ha="left",
+    va="bottom",
+    fontsize=9,
+    style="italic",
+    color="#4A4A4A",
+)
+fig.tight_layout(rect=(0, 0.06, 1, 1))
+fig.savefig(
+    "../figures/evaluation/xgb_quantile_consolidated_feature_importance.png",
     bbox_inches="tight",
     dpi=200,
 )
