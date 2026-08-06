@@ -6251,3 +6251,171 @@ plt.show()
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     📌 Extract <code>total_gain</code>, <code>gain</code>, and <code>weight</code> from the fitted XGBoost. Use each feature's share of total gain for the primary ranking. Display a table of all 40 model-ready features and a bar plot of the top 15 features.
 # </div>
+
+# %%
+def format_model_ready_feature(feature):
+    """Return a readable label for a model-ready feature."""
+    for source_feature in PIPELINE_NOMINAL_FEATURES:
+        prefix = f"{source_feature}_"
+        if feature.startswith(prefix):
+            category = feature.removeprefix(prefix)
+            return f"{DISPLAY_LABELS[source_feature]}: {category}"
+    return DISPLAY_LABELS.get(
+        feature,
+        feature.replace("_", " ").title(),
+    )
+
+
+xgb_booster = xgb_quantile_model.regressor_.get_booster()
+model_ready_features = X_train_preprocessed.columns.tolist()
+if xgb_booster.feature_names != model_ready_features:
+    raise ValueError(
+        "XGBoost booster features do not match the model-ready training features."
+    )
+
+native_total_gain = xgb_booster.get_score(importance_type="total_gain")
+native_gain = xgb_booster.get_score(importance_type="gain")
+native_weight = xgb_booster.get_score(importance_type="weight")
+
+# get_score omits unused features, so explicitly retain all model inputs with zeros.
+xgb_native_feature_importance = pd.DataFrame({
+    "Feature Code": model_ready_features,
+    "Feature": [
+        format_model_ready_feature(feature)
+        for feature in model_ready_features
+    ],
+    "Total Gain": [
+        native_total_gain.get(feature, 0.0)
+        for feature in model_ready_features
+    ],
+    "Average Gain per Split": [
+        native_gain.get(feature, 0.0)
+        for feature in model_ready_features
+    ],
+    "Split Count (Weight)": [
+        native_weight.get(feature, 0.0)
+        for feature in model_ready_features
+    ],
+})
+
+total_native_gain = xgb_native_feature_importance["Total Gain"].sum()
+if total_native_gain <= 0:
+    raise ValueError("XGBoost total gain must be greater than zero.")
+
+xgb_native_feature_importance["Share of Total Gain"] = (
+    xgb_native_feature_importance["Total Gain"]
+    / total_native_gain
+)
+xgb_native_feature_importance = (
+    xgb_native_feature_importance
+    .sort_values("Total Gain", ascending=False)
+    .reset_index(drop=True)
+)
+xgb_native_feature_importance.insert(
+    0,
+    "Rank",
+    np.arange(1, len(xgb_native_feature_importance) + 1),
+)
+
+display(
+    xgb_native_feature_importance
+    .drop(columns="Feature Code")
+    .style
+    .pipe(
+        add_table_caption,
+        "XGBoost Native Feature Importance (Training)",
+    )
+    .format({
+        "Total Gain": "{:,.1f}",
+        "Share of Total Gain": "{:.1%}",
+        "Average Gain per Split": "{:,.2f}",
+        "Split Count (Weight)": "{:,.0f}",
+    })
+    .hide()
+)
+
+# %% [markdown]
+# <em>Note: Total gain is aggregated across the q25, q50, q75, and q90 trees and measured on the training-objective scale, not in dollars. Weight is the number of splits using the feature, while gain is the average objective improvement per split.</em>
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     <strong>XGBoost Feature Importance (Bar Plot)</strong><br>
+#     📌 Plot the top 15 model-ready features by share of total gain.
+# </div>
+
+# %%
+xgb_native_top_15 = (
+    xgb_native_feature_importance
+    .head(15)
+    .sort_values("Share of Total Gain")
+)
+xgb_native_top_15_share = xgb_native_top_15[
+    "Share of Total Gain"
+].sum()
+
+fig, ax = plt.subplots(figsize=(10, 7))
+bars = ax.barh(
+    xgb_native_top_15["Feature"],
+    xgb_native_top_15["Share of Total Gain"],
+    color=POP_COLOR,
+)
+ax.bar_label(
+    bars,
+    labels=[
+        f"{share:.1%}"
+        for share in xgb_native_top_15["Share of Total Gain"]
+    ],
+    padding=4,
+    fontsize=9,
+)
+ax.set_xlim(
+    0,
+    xgb_native_top_15["Share of Total Gain"].max() * 1.20,
+)
+ax.xaxis.set_major_formatter(
+    plt.FuncFormatter(lambda value, _: f"{value:.0%}")
+)
+ax.set_title(
+    "XGBoost Quantile Feature Importance (Training)",
+    fontsize=13,
+    fontweight="bold",
+    pad=15,
+)
+ax.text(
+    0.5,
+    0.99,
+    (
+        "Top 15 model-ready features account for "
+        f"{xgb_native_top_15_share:.1%} of total gain"
+    ),
+    transform=ax.transAxes,
+    ha="center",
+    fontsize=10,
+    fontweight="normal",
+)
+ax.set_xlabel("Share of Total Gain")
+ax.set_ylabel("")
+ax.grid(axis="x", alpha=0.20)
+ax.set_axisbelow(True)
+sns.despine(ax=ax, left=True)
+
+fig.text(
+    0.01,
+    0.01,
+    (
+        "Note: Total gain is aggregated across the q25, q50, q75, and q90 trees and measured on the training-objective scale, not in dollars. "
+        "Percentages show each feature's share across all 40 model-ready features."
+    ),
+    ha="left",
+    va="bottom",
+    fontsize=9,
+    style="italic",
+    color="#4A4A4A",
+)
+fig.tight_layout(rect=(0, 0.04, 1, 1))
+fig.savefig(
+    "../figures/evaluation/xgb_quantile_feature_importance.png",
+    bbox_inches="tight",
+    dpi=200,
+)
+plt.show()
