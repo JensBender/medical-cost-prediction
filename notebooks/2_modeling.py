@@ -6335,24 +6335,30 @@ xgb_native_feature_importance.insert(
 )
 
 display(
-    xgb_native_feature_importance
-    .drop(columns="Feature Code")
+    xgb_native_feature_importance[[
+        "Rank",
+        "Feature",
+        "Total Gain",
+        "Share of Total Gain",
+        "Average Gain per Split",
+        "Split Count (Weight)",
+    ]]
     .style
     .pipe(
         add_table_caption,
         "XGBoost Native Feature Importance (Training)",
     )
     .format({
-        "Total Gain": "{:,.1f}",
+        "Total Gain": "{:,.0f}",
         "Share of Total Gain": "{:.1%}",
-        "Average Gain per Split": "{:,.2f}",
+        "Average Gain per Split": "{:,.1f}",
         "Split Count (Weight)": "{:,.0f}",
     })
     .hide()
 )
 
 # %% [markdown]
-# <em>Note: Values are aggregated across the q25, q50, q75, and q90 trees and measured on the training-objective scale, not in dollars.</em>
+# <em>Note: Feature importance measures are aggregated across the q25, q50, q75, and q90 trees. Total gain and average gain are improvements in the weighted quantile training objective on log-transformed costs, not dollar amounts.</em>
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
