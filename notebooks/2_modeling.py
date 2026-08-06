@@ -6395,16 +6395,17 @@ ax.bar_label(
 )
 ax.set_xlim(
     0,
-    xgb_native_top_15["Share of Total Gain"].max() * 1.20,
+    xgb_native_top_15["Share of Total Gain"].max() * 1.14,
 )
 ax.xaxis.set_major_formatter(
     plt.FuncFormatter(lambda value, _: f"{value:.0%}")
 )
+ax.xaxis.set_major_locator(plt.MultipleLocator(0.05))
 ax.set_title(
     "XGBoost Quantile Feature Importance (Training)",
     fontsize=13,
     fontweight="bold",
-    pad=15,
+    pad=16,
 )
 ax.text(
     0.5,
@@ -6428,8 +6429,8 @@ fig.text(
     0.01,
     0.01,
     (
-        "Note: Total gain is aggregated across the q25, q50, q75, and q90 trees and measured on the training-objective scale, not in dollars. "
-        "Percentages show each feature's share across all 40 model-ready features."
+        "Note: Percentages show each feature's share of total gain across 40 model-ready features. Total gain aggregates improvements in the weighted quantile\n"
+        "training objective across the q25, q50, q75, and q90 trees. They describe training split improvements, not improvements in prediction accuracy."
     ),
     ha="left",
     va="bottom",
@@ -6437,7 +6438,7 @@ fig.text(
     style="italic",
     color="#4A4A4A",
 )
-fig.tight_layout(rect=(0, 0.04, 1, 1))
+fig.tight_layout(rect=(0, 0.06, 1, 1))
 fig.savefig(
     "../figures/evaluation/xgb_quantile_feature_importance.png",
     bbox_inches="tight",
