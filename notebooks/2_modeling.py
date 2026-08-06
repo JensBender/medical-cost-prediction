@@ -4841,7 +4841,7 @@ plot_quantile_subgroup_predictions(
 #     <strong>Feature Importance</strong><br>
 #     SHAP feature importance is based on the preprocessor input features produced by several MEPS data preparation steps, but before the preprocessor performs imputation, medical feature engineering, scaling, and one-hot encoding. The callable follows the complete prediction path: <code>27 preprocessor input features → preprocessor → 40 model-ready features → quantile model prediction → inverse target transformation → quantile postprocessing → q50</code>.
 #     <br><br>
-#     XGBoost native feature importance is based on all quantiles (q25, q50, q75, q90) and the 40 model-ready features. These are the scaled numerical features, one-hot encoded nominal features, passed-through binary features, and derived medical features (e.g., chronic condition count) that the trees use for splits. Use <code>total_gain</code>, which measures the total reduction in the training objective from all splits using that feature. For this fitted multi-quantile model, it is aggregated across the q25, q50, q75, and q90 trees; it is not q50-specific and is not measured in dollars. Report <code>weight</code> and <code>gain</code> as supporting diagnostics. <code>weight</code> is the number of splits using the feature, while <code>gain</code> is the average objective improvement per split. Together, they show whether a high total gain comes from frequent modest improvements or fewer high-value splits.
+#     XGBoost native feature importance is based on all quantiles (q25, q50, q75, q90) and the 40 model-ready features. These are the scaled numerical features, one-hot encoded nominal features, passed-through binary features, and derived medical features (e.g., chronic condition count) that the trees use for splits. Unlike SHAP, native importance describes each feature's role in reducing the training objective rather than its dollar contribution to q50.
 #     <br><br>
 #     Treat SHAP and XGBoost native importance as complementary rather than interchangeable. SHAP explains the postprocessed q50 prediction over 27 interpretable preprocessor input features and reports dollar impacts. Native <code>total_gain</code> summarizes how the joint four-quantile estimator used 40 model-ready features during training.
 #     <br><br>
@@ -5526,7 +5526,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">SHAP Feature Importance</h3>
+#     <h3 style="margin:0px">SHAP</h3>
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
@@ -6245,7 +6245,22 @@ plt.show()
 # </div>
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">XGBoost Native Feature Importance</h3>
+#     <h3 style="margin:0px">XGBoost</h3>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <strong>How Native XGBoost Feature Importance Works</strong><br>
+#     Native XGBoost feature importance summarizes how the 40 model-ready features were used across the fitted trees. This model has 400 boosting rounds. Each round adds one tree for each of the four quantiles, producing 400 trees per quantile and 1,600 trees in total.
+#     <br><br>
+#     Each internal tree split uses one feature and has a gain, which measures how much that split improved the training objective. Each split belongs to one quantile tree. XGBoost calculates feature importance by aggregating these split statistics across all 1,600 trees and therefore across q25, q50, q75, and q90.
+#     <br><br>
+#     XGBoost provides several native importance measures:
+#     <ul>
+#         <li><code>total_gain</code> is the total training-objective improvement from all splits using a feature. It is the primary ranking because it combines how often the feature was used with how valuable those splits were.</li>
+#         <li><code>gain</code> is the average objective improvement per split. It identifies features that produced valuable splits when used.</li>
+#         <li><code>weight</code> is the number of splits using the feature. It shows how frequently the model relied on that feature.</li>
+#     </ul>
+#     Gain and weight are supporting diagnostics that explain whether high total gain came from frequent modest improvements or fewer high-value splits. These measures are based on training, are not q50-specific, and are not measured in dollars or shares of predictive accuracy.
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -6335,7 +6350,7 @@ display(
 )
 
 # %% [markdown]
-# <em>Note: Total gain is aggregated across the q25, q50, q75, and q90 trees and measured on the training-objective scale, not in dollars. Weight is the number of splits using the feature, while gain is the average objective improvement per split.</em>
+# <em>Note: Values are aggregated across the q25, q50, q75, and q90 trees and measured on the training-objective scale, not in dollars.</em>
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
