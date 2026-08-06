@@ -5774,12 +5774,11 @@ finally:
     np.random.set_state(numpy_random_state)
 
 
-fig.suptitle(
+ax.set_title(
     "SHAP Contribution Distributions: Top 15 Features (Test Set)",
     fontsize=13,
     fontweight="bold",
-    x=0.5,
-    y=0.98,
+    pad=15,
 )
 ax.set_xlabel("SHAP Contribution to Predicted Median Cost", labelpad=10)
 ax.xaxis.set_major_formatter(
