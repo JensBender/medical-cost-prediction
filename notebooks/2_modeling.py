@@ -6252,7 +6252,9 @@ plt.show()
 #     ℹ️ <strong>How Native XGBoost Feature Importance Works</strong><br>
 #     Native XGBoost feature importance summarizes how the 40 model-ready features were used across the fitted trees. This model has 400 boosting rounds. Each round adds one tree for each of the four quantiles, producing 400 trees per quantile and 1,600 trees in total.
 #     <br><br>
-#     Each internal tree split uses one feature and has a gain, which measures how much that split improved the training objective. Each split belongs to one quantile tree. XGBoost calculates feature importance by aggregating these split statistics across all 1,600 trees and therefore across q25, q50, q75, and q90.
+#     The training objective combines the MEPS-weighted pinball loss for q25, q50, q75, and q90 on log-transformed costs, plus penalties that limit tree complexity. Pinball loss weighs underprediction and overprediction differently for each quantile. Each quantile contributes its own loss component, and each quantile tree is built to reduce that component.
+#     <br><br>
+#     Each internal tree split uses one feature and has a gain, which measures how much the split improved its quantile's part of the training objective. Each split belongs to one quantile tree. XGBoost calculates feature importance by aggregating these split statistics across all 1,600 trees and therefore across q25, q50, q75, and q90.
 #     <br><br>
 #     XGBoost provides several native importance measures:
 #     <ul>
