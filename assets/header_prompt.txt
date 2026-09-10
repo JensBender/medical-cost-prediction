@@ -1,6 +1,6 @@
 # Prompts for AI image generators to create header image 
 
-# Nana Banana Pro & ChatGPT Image 1.5 (use 3:1 aspect ratio, since 4:1 and 5:1 is not natively supported)
+# Nana Banana Pro & ChatGPT Images 2 & 2.5 (use 3:1 aspect ratio, since 4:1 and 5:1 is not natively supported)
 A header image with 3:1 aspect ratio for a web app to help everyone predict their annual out-of-pocket healthcare costs. Only text is the app name "Medical Cost Planner".
 
 # Nano Banana 2 (allows 4:1 and 8:1 aspect ratio) 

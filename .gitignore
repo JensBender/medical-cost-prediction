@@ -21,6 +21,7 @@ figures/*_sample.png
 
 # IDE artifacts
 .vscode/
+.jupyter/collaboration_sessions.json
 **/.ipynb_checkpoints/
 **/.jupyter_ystore.db*
 
