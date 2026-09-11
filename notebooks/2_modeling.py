@@ -85,7 +85,6 @@ import shap
 
 # Local imports
 from src.modeling import (
-    get_baseline_models,
     train_and_evaluate,
     weighted_median_absolute_error,
     save_model,
@@ -234,7 +233,7 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Train 6 baseline models with distribution-aware baseline hyperparameters.  
+#     ℹ️ Six baseline models were trained with distribution-aware baseline hyperparameters.
 #     <ul>
 #         <li>Linear Regression (lr)</li>
 #         <li>Elastic Net Regression (en)</li>
@@ -252,101 +251,11 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 #         <li>Implement polynomial features for elastic net regression using second-degree <code>PolynomialFeatures</code> with a small <code>Pipeline</code>.</li>
 #         <li>For each model, store the following artifacts: the fitted model as a <code>.joblib</code> file, evaluation metrics as a <code>.json</code> file, model parameters as a <code>.json</code> file, predictions as a <code>.joblib</code> file.</li>
 #     </ul>  
-#     For more details, see <a href="../src/modeling.py">src/modeling.py</a>.
+#     The actual baseline model training run is implemented in <code><a href="../scripts/train_baseline.py">scripts/train_baseline.py</a></code>, uses the shared modeling logic in <code><a href="../src/modeling.py">src/modeling.py</a></code>, and is managed by the <code>baseline</code> DVC stage. This notebook contains documentation of the training setup and model evaluation of the saved model results.
 #     <br><br>
-#     Note: This notebook is used for prototyping, the production training run was executed via the reproducible script <code><a href="../scripts/train_baseline.py">scripts/train_baseline.py</a></code>.
-# </div>
-#
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Train and evaluate each baseline model and store model results.
+#     To reproduce baseline training from the project root, run:<br>
+#     <code>.\.venv-train\Scripts\dvc.exe repro baseline</code>
 # </div> 
-
-# %%
-# Build baseline models (using helper function from "src/modeling.py")
-baseline_models = get_baseline_models()
-
-# Train and evaluate linear regression model (example usage of train_and_evaluate) 
-# lr_results = train_and_evaluate(baseline_models["Linear Regression"], X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
-# lr_metrics = pd.DataFrame([lr_results])[["mdae", "mae", "r2", "training_time"]]
-# display(lr_metrics.rename(columns=METRIC_LABELS).style.pipe(add_table_caption, "Linear Regression: Metrics").format("{:.2f}").hide()) 
-
-
-def train_and_evaluate_all_models(models, X_train, y_train, X_val, y_val, w_train=None, w_val=None):
-    """
-    Train and evaluate multiple models and consolidate their results.
-
-    Args:
-        models (dict): A dictionary mapping model names (str) to model objects (estimators).
-        X_train (pd.DataFrame): Preprocessed training features.
-        y_train (pd.Series): Target variable for training data.
-        X_val (pd.DataFrame): Preprocessed validation features.
-        y_val (pd.Series): Target variable for validation data.
-        w_train (pd.Series, optional): Sample weights for training data. Defaults to None.
-        w_val (pd.Series, optional): Sample weights for validation data. Defaults to None.
-
-    Returns:
-        dict: A dictionary of evaluation results for each model, where keys are model names and
-              values are the dictionaries returned by the `train_and_evaluate` function.
-    """
-    print("Training and evaluating baseline models...")    
-    results = {}
-    for model_name, model in models.items():
-        print(f"Training {model_name}...")
-        result = train_and_evaluate(model, X_train, y_train, X_val, y_val, w_train, w_val)
-        results[model_name] = result
-        print(f"  {model_name} trained in {result['training_time']:.2f} sec (MdAE: {result['val_mdae']:.2f})")        
-    return results
-
-
-def persist_all_models(model_results):
-    """
-    Save baseline model results in various files:
-      1.  Saves each fitted model object individually as a .joblib file.
-      2.  Aggregates all performance metrics into a single JSON file.
-      3.  Saves predictions of all models on the validation data into a single .joblib file.
-    Args:
-        model_results (dict): A nested dictionary mapping model names to results 
-            dictionaries (containing 'fitted_model', training and validation metrics 
-            (e.g. 'val_mdae', 'train_mdae'), and 'y_val_pred').
-    """
-    print("Persisting baseline models...")
-    all_metrics = {}
-    all_predictions = {}
-    for model_name, result in model_results.items():        
-        # Save fitted model as .joblib file 
-        model_id = model_name.lower().replace(" ", "_")
-        model_path = f"models/{model_id}_baseline.joblib"
-        save_model(result["fitted_model"], model_path, verbose=False)
-        print(f"  Saved fitted {model_name} model to '{model_path}'")
-        
-        # Collect evaluation metrics of all models in single dictionary
-        all_metrics[model_name] = {
-            "val_mdae": result["val_mdae"],
-            "val_mae": result["val_mae"],
-            "val_r2": result["val_r2"],
-            "train_mdae": result["train_mdae"],
-            "train_mae": result["train_mae"],
-            "train_r2": result["train_r2"]
-        }
-        
-        # Collect predicted values of all models in single dictionary
-        all_predictions[model_name] = result["y_val_pred"]
-
-    # Save evaluation metrics as JSON 
-    save_metrics(all_metrics, "models/baseline_metrics.json", verbose=False)
-    print(f"  Saved model evaluation metrics to 'models/baseline_metrics.json'")
-    
-    # Save predictions as .joblib file 
-    save_model(all_predictions, "models/baseline_predictions.joblib", verbose=False)
-    print(f"  Saved predicted values of all baseline models to 'models/baseline_predictions.joblib'")
-
-
-# Train and evaluate baseline models
-# baseline_results = train_and_evaluate_all_models(baseline_models, X_train_preprocessed, y_train, X_val_preprocessed, y_val, w_train, w_val)
-
-# Save baseline model results
-# persist_all_models(baseline_results)
-
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
@@ -409,7 +318,7 @@ display(
 #         <li><strong>Log-Transformation</strong>: While log-transforming handles skewness, small errors in "log-space" become exponential errors when converted back to raw dollars.</li>
 #         <li><strong>Sample Weights</strong>: Weighted $R^2$ penalizes errors more heavily on observations that represent larger portions of the US population.</li>
 #     </ul>
-#     Observation: The relatively small MdAE (~\$250) vs. large MAE (~\$1000) confirms that the baseline models predict typical costs well, but fail on high-cost outliers.
+#     <strong>Insight</strong>: The relatively small MdAE (~\$250) vs. large MAE (~\$1000) confirms that the baseline models predict typical costs well, but fail on high-cost outliers.
 # </div>
 
 # %% [markdown]
@@ -492,8 +401,8 @@ display(
 #     <ul style="margin-top:8px; margin-bottom:8px">
 #         <li><strong>The Log-Scale "North Star":</strong> While R² on the raw dollar scale is near zero (or negative), the <b>Log-Scale R² is ~0.30</b> across all top models. This confirms the features have strong predictive signal for healthcare costs and that the negative raw R² is simply a scaling artifact caused by rare high-cost "black swan" events.</li>
 #         <li><strong>MdAE Priority:</strong> For our typical app user, <b>MdAE is the most meaningful success metric</b>. The data confirms that predicting the "typical experience" is statistically distinct from predicting the catastrophic extreme costs.</li>
-#         <li><strong>MdAE vs. R² Trade-off:</strong> Elastic Net has the <b>best MdAE (163)</b> but a weak Log R² (0.09), while XGBoost has the <b>best Log R² (0.30)</b> but a higher MdAE (281). Elastic Net's polynomial features concentrate predictions tightly around the median, excelling for the typical user but compressing the prediction range. XGBoost captures more of the full cost structure but hasn't been optimized for median accuracy yet — a gap that tuning can close.</li>
-#         <li><strong>Median Prediction Sanity Check:</strong> The naive "always predict the median" baseline achieves MdAE = 248. Notably, <b>XGBoost (281), Decision Tree (271), and SVM (291) perform worse than this naive baseline on MdAE</b> despite having strong log-scale signal. Their <code>absolute_error</code> objectives minimize mean errors, not median errors — tuning should address this misalignment.</li>
+#         <li><strong>MdAE vs. R² Trade-off:</strong> Elastic Net has the <b>best MdAE (163)</b> but a weak Log R² (0.09), while XGBoost has the <b>best Log R² (0.30)</b> but a higher MdAE (281). Elastic Net's polynomial features concentrate predictions tightly around the median, excelling for the typical user but compressing the prediction range. XGBoost captures more of the full cost structure but hasn't been optimized for median accuracy yet, a gap that tuning can close.</li>
+#         <li><strong>Median Prediction Sanity Check:</strong> The naive "always predict the median" baseline achieves MdAE = 248. Notably, <b>XGBoost (281), Decision Tree (271), and SVM (291) perform worse than this naive baseline on MdAE</b> despite having strong log-scale signal. Their <code>absolute_error</code> objectives minimize mean errors, not median errors. Tuning should address this misalignment.</li>
 #         <li><strong>Overfitting Paradox:</strong> XGBoost and SVM show extreme overfitting (+98% to +191% MdAE gap). Their aggressive "memorization" of training data (Train MdAE < 142) fails to generalize, confirming they require heavy regularization to handle the noisy nature of healthcare costs.</li>
 #         <li><strong>Stability of Regularized Linear Models:</strong> Elastic Net's low overfitting (+6.6%) combined with its top-tier validation MdAE (163) suggests that L1/L2 regularization is highly effective at denoising medical feature sets, often outperforming complex non-linear models that haven't been properly constrained.</li>
 #     </ul>
