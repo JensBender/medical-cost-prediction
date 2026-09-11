@@ -760,6 +760,15 @@ display(
 )
 
 # %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b>
+#     <ul style="margin-top:8px; margin-bottom:0px">
+#         <li><strong>Typical accuracy:</strong> Elastic Net has the lowest validation MdAE at \$159.</li>
+#         <li><strong>Average error:</strong> XGBoost has the lowest MAE at \$954, but all models have weak raw-dollar R². These metrics alone do not determine which model best supports financial planning.</li>
+#     </ul>
+# </div>
+
+# %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
 #     <h3 style="margin:0px">Overfitting Analysis</h3>
 # </div>
@@ -795,6 +804,15 @@ display(
     .format({"MdAE (Train)": "{:.2f}", "MdAE (Val)": "{:.2f}", "Delta": "{:.2f}", "Delta %": "{:+.1f}%"})
     .highlight_min(subset=["Delta %"], color="#d4edda")
 )
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b>
+#     <ul style="margin-top:8px; margin-bottom:0px">
+#         <li><strong>Stable tuned models:</strong> All three tuned models have training-to-validation MdAE gaps below 8%, indicating no concerning overfitting.</li>
+#         <li><strong>Largest improvement:</strong> Tuning reduced XGBoost's gap from +98.0% to +6.2% while improving validation MdAE from \$281 to \$242.</li>
+#     </ul>
+# </div>
 
 # %% [markdown]
 # <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
