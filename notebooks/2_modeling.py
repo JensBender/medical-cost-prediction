@@ -24,7 +24,7 @@
 #     <div style="font-size:14px; font-weight:normal; color:#666; margin-top:16px;">
 #         Author: Jens Bender <br> 
 #         Created: March 2026<br>
-#         Last updated: August 2026
+#         Last updated: September 2026
 #     </div>
 # </div>
 
@@ -99,6 +99,7 @@ from src.stats import (
     weighted_std,
     create_stratification_bins
 )
+from src.data import load_preprocessor_input_split
 from src.params import (
     EN_PARAM_DISTRIBUTIONS,
     RF_PARAM_DISTRIBUTIONS, 
@@ -126,6 +127,25 @@ from src.display import (
 )
 
 # %% [markdown]
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     <strong>Paths</strong>
+# </div>
+
+# %%
+# Raw source data
+RAW_DATA_PATH = "../data/h251.sas7bdat"
+
+# Preprocessor-input data
+TRAIN_PREPROCESSOR_INPUT_DATA_PATH = "../data/training_data_preprocessor_input.parquet"
+VAL_PREPROCESSOR_INPUT_DATA_PATH = "../data/validation_data_preprocessor_input.parquet"
+TEST_PREPROCESSOR_INPUT_DATA_PATH = "../data/test_data_preprocessor_input.parquet"
+
+# Model-ready data
+TRAIN_MODEL_READY_DATA_PATH = "../data/training_data_model_ready.parquet"
+VAL_MODEL_READY_DATA_PATH = "../data/validation_data_model_ready.parquet"
+TEST_MODEL_READY_DATA_PATH = "../data/test_data_model_ready.parquet"
+
+# %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Data Loading</h1>
 # </div>
@@ -134,9 +154,9 @@ from src.display import (
 # </div>
 
 # %%
-df_train_preprocessed = pd.read_parquet("../data/training_data_model_ready.parquet")
-df_val_preprocessed = pd.read_parquet("../data/validation_data_model_ready.parquet")
-df_test_preprocessed = pd.read_parquet("../data/test_data_model_ready.parquet")
+df_train_preprocessed = pd.read_parquet(TRAIN_MODEL_READY_DATA_PATH)
+df_val_preprocessed = pd.read_parquet(VAL_MODEL_READY_DATA_PATH)
+df_test_preprocessed = pd.read_parquet(TEST_MODEL_READY_DATA_PATH)
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px"> 
@@ -423,433 +443,13 @@ display(
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Note: This notebook is used for prototyping, the entire benchmarking run was executed via the reproducible script <code><a href="../scripts/benchmark_llm.py">scripts/benchmark_llm.py</a></code>.
+#     ℹ️ The LLM benchmark tests whether a general-purpose model can estimate annual out-of-pocket healthcare costs from the same cleaned, pre-pipeline features available to the specialized models. Missing values are omitted from the generated profiles, and requests use structured, batched output. The saved results use survey-weighted metrics for a fair comparison.
+#     <br><br>
+#     The actual code implementation, prompt, configuration, API calls, and result persistence live in <code><a href="../scripts/benchmark_llm.py">scripts/benchmark_llm.py</a></code>. This notebook evaluates the saved benchmark results.
+#     <br><br>
+#     To run the benchmark from the project root, use:<br>
+#     <code>.\.venv-train\Scripts\python.exe scripts\benchmark_llm.py</code>
 # </div>
-
-# %% [markdown]
-# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Setup 
-# </div>
-
-# %%
-# Standard library imports
-import os
-import re
-import sys
-import json
-
-# Third-party imports
-from google import genai
-from pydantic import BaseModel, Field
-from typing import Annotated
-from dotenv import load_dotenv
-
-# Local imports
-from src.constants import (
-    RAW_COLUMNS_TO_KEEP, RAW_BINARY_FEATURES,
-    MEPS_MISSING_CODES,
-    MARRY31X_TRANSITION_CODES, EMPST31_TRANSITION_CODES,
-    MARRY31X_COLLAPSE_MAP, EMPST31_COLLAPSE_MAP,
-)
-
-# Load environment variables from .env file
-load_dotenv()
-
-# Configuration
-LLM_MODEL = "gemini-3-flash-preview"  # "gemini-3.1-flash-lite-preview" | "gemma-4-31b-it"
-LLM_TEMPERATURE = 0          # Almost deterministic model outputs (except for tiny variations due to floating-point math)
-LLM_THINKING_LEVEL = "high"  # Reasoning depth 
-BATCH_SIZE = 25              # User profiles per API call (fits well within context window)
-DELAY_SECONDS = 4            # Seconds between API calls to stay within free-tier limit (5 RPM for gemini-3-flash)
-MAX_ATTEMPTS = 5             # Maximum times to try API call before giving up
-
-# Paths (relative to /notebooks directory)
-RAW_DATA_PATH = "../data/h251.sas7bdat"
-TRAIN_PREPROCESSOR_INPUT_DATA_PATH = "../data/training_data_preprocessor_input.parquet"
-VAL_PREPROCESSOR_INPUT_DATA_PATH = "../data/validation_data_preprocessor_input.parquet"
-TEST_PREPROCESSOR_INPUT_DATA_PATH = "../data/test_data_preprocessor_input.parquet"
-TRAIN_MODEL_READY_DATA_PATH = "../data/training_data_model_ready.parquet"
-VAL_MODEL_READY_DATA_PATH = "../data/validation_data_model_ready.parquet"
-TEST_MODEL_READY_DATA_PATH = "../data/test_data_model_ready.parquet"
-
-# Human-Readable Label Maps
-SEX_LABELS = {1: "Male", 0: "Female"}
-REGION_LABELS = {1: "Northeast", 2: "Midwest", 3: "South", 4: "West"}
-MARITAL_LABELS = {1: "Married", 2: "Widowed", 3: "Divorced", 4: "Separated", 5: "Never Married"}
-INCOME_LABELS = {1: "Poor/Negative", 2: "Near Poor", 3: "Low Income", 4: "Middle Income", 5: "High Income"}
-EDUCATION_LABELS = {1: "No Degree", 2: "GED", 3: "High School Diploma", 4: "Bachelor's Degree", 5: "Master's Degree", 6: "Doctorate", 7: "Other Degree"}
-INSURANCE_LABELS = {1: "Private Insurance", 2: "Public Insurance Only (Medicare/Medicaid)", 3: "Uninsured"}
-EMPLOYMENT_LABELS = {1: "Employed", 0: "Not Employed"}
-HEALTH_SCALE = {1: "Excellent", 2: "Very Good", 3: "Good", 4: "Fair", 5: "Poor"}
-YES_NO = {1: "Yes", 0: "No"}
-
-CHRONIC_CONDITIONS = {
-    "HIBPDX": "High Blood Pressure",
-    "CHOLDX": "High Cholesterol",
-    "DIABDX_M18": "Diabetes",
-    "CHDDX": "Coronary Heart Disease",
-    "STRKDX": "Stroke",
-    "CANCERDX": "Cancer",
-    "ARTHDX": "Arthritis",
-    "ASTHDX": "Asthma",
-}
-
-FUNCTIONAL_LIMITATIONS = {
-    "ADLHLP31": "Needs help with personal care (bathing, dressing)",
-    "IADLHP31": "Needs help with daily tasks (bills, medications, shopping)",
-    "WLKLIM31": "Difficulty walking or climbing stairs",
-    "COGLIM31": "Difficulty concentrating, remembering, or making decisions",
-    "JTPAIN31_M18": "Joint pain, aching, or stiffness",
-}
-
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Define structured output schema.
-# </div> 
-
-# %%
-class PredictionBatch(BaseModel):
-    """
-    Schema for a batch of LLM cost predictions.
-    Annotated with Field(ge=0) to ensure costs are never negative.
-    """
-    costs: list[Annotated[float, Field(ge=0)]]
-
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Prepare raw MEPS data for LLM input.
-# </div> 
-
-# %%
-def prepare_human_readable_split_data(split_data_path=VAL_MODEL_READY_DATA_PATH, split_label="validation"):
-    """
-    Recover human-readable feature values for a preprocessed split (like val or test).
-
-    The saved parquet contains scaled/encoded features (after StandardScaler and
-    OneHotEncoder). This function reloads the raw MEPS SAS file, applies the same
-    cleaning steps 1-7 as preprocess.py (but NOT the sklearn pipeline), then filters
-    to only the requested split rows by matching DUPERSID indices. It manually
-    includes 'Race' for fairness audit while ensuring it remains excluded from model
-    training and LLM benchmarking.
-
-    Args:
-        split_data_path (str): Path to the preprocessed split parquet file.
-        split_label (str): Human-readable split name for progress messages.
-
-    Returns:
-        tuple: (df_raw_split, y_split, w_split) where df_raw_split has human-readable
-               feature values, y_split is the target, and w_split are sample weights.
-               All aligned by DUPERSID index in parquet row order.
-    """
-    # Load preprocessed split data to get row IDs, target, and weights
-    df_split = pd.read_parquet(split_data_path)
-    split_ids = set(df_split.index.astype(str))
-    y_split = df_split[TARGET_COLUMN]
-    w_split = df_split[WEIGHT_COLUMN]
-
-    # --- Data Preparation (mirrors preprocess.py steps 1-7) ---
-    # Step 1: Load raw MEPS data
-    print("  Loading raw MEPS SAS data...")
-    df = pd.read_sas(RAW_DATA_PATH, format="sas7bdat", encoding="latin1")
-
-    # Step 2: Variable selection
-    print("  Selecting variables...")
-    # Manually include 'Race' for fairness monitoring only; strictly excluded from model training and LLM benchmarking.
-    columns_to_load = list(set(RAW_COLUMNS_TO_KEEP + ["RACETHX"]))
-    df = df[columns_to_load]
-
-    # Step 3: Population filtering (adults with positive weights)
-    print("  Filtering target population...")
-    df = df[(df[WEIGHT_COLUMN] > 0) & (df["AGE23X"] >= 18)].copy()
-
-    # Step 4: Data type handling
-    print("  Handling data types...")
-    df[ID_COLUMN] = df[ID_COLUMN].astype(str)
-    df.set_index(ID_COLUMN, inplace=True)
-
-    # Step 5: Missing value standardization
-    print("  Standardizing missing values...")
-    # Recover implied values from survey skip patterns
-    df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2    # -1 "Never Smoker" → 2 "No"
-    df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
-    # Convert remaining MEPS codes to NaN
-    df.replace(MEPS_MISSING_CODES, np.nan, inplace=True)
-
-    # Step 6: Binary standardization (MEPS 1/2 → 1/0)
-    print("  Standardizing binary features...")
-    df[RAW_BINARY_FEATURES] = df[RAW_BINARY_FEATURES].replace({2: 0})
-
-    # Step 7: Feature engineering (stateless)
-    print("  Engineering stateless features...")
-    df["RECENT_LIFE_TRANSITION"] = (
-        df["MARRY31X"].isin(MARRY31X_TRANSITION_CODES) | df["EMPST31"].isin(EMPST31_TRANSITION_CODES)
-    ).astype(float)
-    df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] = np.nan
-    df["MARRY31X_GRP"] = df["MARRY31X"].replace(MARRY31X_COLLAPSE_MAP)
-    df["EMPST31_GRP"] = df["EMPST31"].replace(EMPST31_COLLAPSE_MAP)
-
-    # Filter to requested split rows and align to preprocessed data row order
-    print(f"  Filtering rows to match preprocessed {split_label} data...")
-    df_raw_split = df.loc[df.index.isin(split_ids)].reindex(y_split.index)
-    n_matched = df_raw_split.index.isin(split_ids).sum()
-    n_complete = df_raw_split.notna().all(axis=1).sum()
-    print(f"  Matched {n_matched:,} of {len(split_ids):,} rows of the preprocessed {split_label} data ({n_complete:,} complete, {n_matched - n_complete:,} with missing values)")
-
-    return df_raw_split, y_split, w_split
-
-
-# Example usage: Prepare validation data for LLM benchmarking
-# df_raw_val, y_val, w_val = prepare_human_readable_split_data(VAL_MODEL_READY_DATA_PATH, "validation")
-
-# Align all arrays by common indices
-# common_ids = df_raw_val.dropna(how="all").index.intersection(y_val.index)
-# df_raw_val = df_raw_val.loc[common_ids]
-# y_val = y_val.loc[common_ids]
-# w_val = w_val.loc[common_ids]
-# df_raw_val.head()
-
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Create natural language profiles for LLM input.
-# </div> 
-
-# %%
-def row_to_profile(row):
-    """
-    Convert a single row of cleaned (pre-pipeline) data to a natural language profile
-    that we feed as input to the LLM. Profiles use a bulleted list of explicit 
-    feature names with corresponding values to maximize clarity during batch inference.
-
-    Missing values (NaN) are intentionally omitted from the profile rather than
-    imputed. This simulates a real-world "just ask an LLM" scenario where a user
-    would simply not mention information they don't know or don't want to provide.
-    This establishes a fair benchmark for the LLM's performance on natural,
-    unstructured input compared to the app's structured and imputed results.
-    """
-    lines = []
-
-    # --- Demographics ---
-    if pd.notna(row.get("AGE23X")):
-        lines.append(f"- Age: {int(row['AGE23X'])}")
-    if pd.notna(row.get("SEX")):
-        lines.append(f"- Sex: {SEX_LABELS.get(int(row['SEX']), 'Unknown')}")
-    if pd.notna(row.get("REGION23")):
-        lines.append(f"- U.S. Region: {REGION_LABELS.get(int(row['REGION23']), 'Unknown')}")
-    if pd.notna(row.get("MARRY31X_GRP")):
-        lines.append(f"- Marital Status: {MARITAL_LABELS.get(int(row['MARRY31X_GRP']), 'Unknown')}")
-    if pd.notna(row.get("FAMSZE23")):
-        lines.append(f"- Family Size: {int(row['FAMSZE23'])}")
-
-    # --- Socioeconomic ---
-    if pd.notna(row.get("POVCAT23")):
-        lines.append(f"- Family Income: {INCOME_LABELS.get(int(row['POVCAT23']), 'Unknown')}")
-    if pd.notna(row.get("HIDEG")):
-        lines.append(f"- Education: {EDUCATION_LABELS.get(int(row['HIDEG']), 'Unknown')}")
-    if pd.notna(row.get("EMPST31_GRP")):
-        lines.append(f"- Employment: {EMPLOYMENT_LABELS.get(int(row['EMPST31_GRP']), 'Unknown')}")
-
-    # --- Insurance & Access ---
-    if pd.notna(row.get("INSCOV23")):
-        lines.append(f"- Insurance: {INSURANCE_LABELS.get(int(row['INSCOV23']), 'Unknown')}")
-    if pd.notna(row.get("HAVEUS42")):
-        lines.append(f"- Has Usual Source of Healthcare: {YES_NO.get(int(row['HAVEUS42']), 'Unknown')}")
-
-    # --- Health & Lifestyle ---
-    if pd.notna(row.get("RTHLTH31")):
-        lines.append(f"- Self-Rated Physical Health: {HEALTH_SCALE.get(int(row['RTHLTH31']), 'Unknown')}")
-    if pd.notna(row.get("MNHLTH31")):
-        lines.append(f"- Self-Rated Mental Health: {HEALTH_SCALE.get(int(row['MNHLTH31']), 'Unknown')}")
-    if pd.notna(row.get("ADSMOK42")):
-        lines.append(f"- Current Smoker: {YES_NO.get(int(row['ADSMOK42']), 'Unknown')}")
-
-    # --- Chronic Conditions (list only diagnosed) ---
-    conditions = [
-        label for var, label in CHRONIC_CONDITIONS.items()
-        if pd.notna(row.get(var)) and int(row[var]) == 1
-    ]
-    lines.append(f"- Diagnosed Chronic Conditions: {', '.join(conditions) if conditions else 'None'}")
-
-    # --- Functional Limitations (list only present) ---
-    limitations = [
-        label for var, label in FUNCTIONAL_LIMITATIONS.items()
-        if pd.notna(row.get(var)) and int(row[var]) == 1
-    ]
-    lines.append(f"- Functional Limitations: {', '.join(limitations) if limitations else 'None'}")
-
-    return "\n".join(lines)
-
-    
-# Example usage: Create natural language profiles for LLM input
-# profiles = [row_to_profile(row) for _, row in df_raw_val.head(5).iterrows()]
-# print(profiles[0])
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Build LLM prompt with prompt-batching.
-# </div> 
-
-# %%
-# System Prompt
-# Ensures LLM and the domain-specifc ML model solve the same problem by defining costs explicitly.
-# This sets a higher bar compared to real LLM chatbot usage by providing expert-level clarity in prompt.
-SYSTEM_PROMPT = """\
-You are a healthcare cost estimation expert for the United States.
-
-You will be given demographic and health profiles of US adults. For each profile, \
-predict their total annual out-of-pocket healthcare costs for the year 2023 in US dollars.
-
-Out-of-pocket costs include deductibles, copays, and coinsurance for: \
-office visits, prescriptions, hospital stays, ER visits, dental, vision, \
-home health care, and medical equipment.
-Out-of-pocket costs EXCLUDE monthly insurance premiums and over-the-counter medications.
-
-For each profile, provide your best single-number estimate (in dollars), 
-returned in the requested list format."""
-
-
-def build_batch_prompt(profiles, start_idx):
-    """
-    Build a prompt containing multiple profiles for prompt-batching.
-    
-    Rationale: Bundling multiple profiles into a single request maximizes 
-    throughput under RPM-constrained free tier, reduces total latency by 
-    minimizing round-trips, and improves token efficiency. 
-    
-    Trade-offs: Large batches can suffer from "lost in the middle" effects 
-    (reduced attention to middle profiles) or cross-profile information 
-    leakage/anchoring (e.g., first prediction influences subsequent 
-    predictions). A batch size of 25 is chosen as a "sweet spot" that 
-    maintains high prediction quality and reliable JSON arrays while reducing 
-    total latency and improving token efficiency.
-    """
-    profile_texts = []
-    for i, profile in enumerate(profiles):
-        profile_texts.append(f"Profile {start_idx + i + 1}:\n{profile}")
-
-    n = len(profiles)
-    return (
-        f"Predict the total annual out-of-pocket healthcare costs (in 2023 US dollars) "
-        f"for each of the following {n} US adults.\n\n"
-        + "\n\n".join(profile_texts)
-        + f"\n\nReturn the {n} estimates as an ordered array."
-    )
-
-    
-# Example usage: Build a prompt containing multiple profiles for prompt-batching
-# batch_prompt = build_batch_prompt(profiles[:3], start_idx=0)
-# print(batch_prompt)
-
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Query LLM with batch-prompt in single API request.
-# </div> 
-
-# %%
-def query_llm_batch(client, profiles, start_idx, batch_num):
-    """Send a batch of profiles in a single prompt to the LLM API with retry logic."""
-    batch_prompt = build_batch_prompt(profiles, start_idx)
-
-    for attempt in range(MAX_ATTEMPTS):
-        try:
-            response = client.models.generate_content(
-                model=LLM_MODEL,
-                contents=batch_prompt,
-                config=genai.types.GenerateContentConfig(
-                    system_instruction=SYSTEM_PROMPT,
-                    temperature=LLM_TEMPERATURE,
-                    thinking_config=genai.types.ThinkingConfig(thinking_level=LLM_THINKING_LEVEL),                   
-                    # Use structured JSON output
-                    response_mime_type="application/json",
-                    response_schema=PredictionBatch,
-                ),
-            )
-            return parse_llm_response(response, len(profiles))
-
-        except Exception as e:
-            error_msg = str(e)
-            if attempt < MAX_ATTEMPTS - 1:  
-                wait_time = DELAY_SECONDS * (2 ** attempt)  # 20 sec after first failed attempt, 40 after 2nd, 80 after 3rd, 160 after 4th
-                if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
-                    print(f"    ⚠️ Rate limited (attempt {attempt + 1}/{MAX_ATTEMPTS}). Waiting {wait_time}s...")
-                else:
-                    print(f"    ⚠️ API error (attempt {attempt + 1}/{MAX_ATTEMPTS}): {error_msg[:120]}. Waiting {wait_time}s...")
-                time.sleep(wait_time)
-            else:
-                # Dont't wait after last attempt failed
-                if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
-                    print(f"    ❌ Rate limited (final attempt {MAX_ATTEMPTS}/{MAX_ATTEMPTS}).")
-                else:
-                    print(f"    ❌ API error (final attempt {MAX_ATTEMPTS}/{MAX_ATTEMPTS}): {error_msg[:120]}.")
-
-    print(f"    ❌ Batch {batch_num} failed after {MAX_ATTEMPTS} attempts")
-    return [np.nan] * len(profiles)
-
-    
-# Example usage: Query a single batch of profiles via LLM API
-# api_key = os.environ.get("GEMINI_API_KEY")  
-# client = genai.Client(api_key=api_key)
-# batch_results = query_llm_batch(client, profiles[:BATCH_SIZE], start_idx=0, batch_num=1)
-# client.close()
-# print(batch_results)
-
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Parse LLM response.
-# </div> 
-
-# %%
-def parse_llm_response(response, expected_count):
-    """
-    Extract predictions from the LLM response object.
-
-    Handles the parsed Pydantic object if available, falling back to 
-    manual string parsing if the structured output failed.
-
-    Division of Labor:
-      1. Data Integrity (Pydantic): Ensures JSON is valid, values are floats, 
-         and costs are non-negative (Field ge=0). Errors here trigger a
-         ValidationError caught in the try/except block.
-      2. Contextual Alignment (Manual): Ensures the LLM didn't "hallucinate" 
-         extra values or omit profiles. If the count mismatches, the entire 
-         batch is discarded (returned as NaNs) to prevent data shifting, where 
-         a single skipped profile would cause all subsequent predictions to 
-         be misaligned with ground-truth labels.
-    """
-    try:
-        # Preferred: Use the SDK's parsed field (v1.0+)
-        if hasattr(response, "parsed") and response.parsed:
-            predictions = response.parsed.costs
-            if len(predictions) == expected_count:
-                return predictions
-            
-            print(f"    ⚠️  Count mismatch in parsed output: Expected {expected_count}, got {len(predictions)}. Returning NaNs for this batch.")
-            return [np.nan] * expected_count
-
-        # Fallback: Manual parsing of raw text if structured output is missing
-        text = response.text.strip()
-        match = re.search(r"\[[\s\S]*?\]", text)
-        if match:
-            predictions = json.loads(match.group())
-            if isinstance(predictions, list) and len(predictions) == expected_count:
-                return [float(p) for p in predictions]
-
-    except (Exception) as e:
-        # Capture specific validation/parsing errors for easier debugging
-        err_msg = str(e).replace('\n', ' ')
-        print(f"    ⚠️  Parse/Validation error: {err_msg[:150]}... Returning NaNs for this batch.")
-
-    print(f"    ❌ Unparseable or mismatched response. Returning NaNs for this batch.")
-    return [np.nan] * expected_count
-
-    
-# Example usage: Extract costs from an LLM response object
-# costs = parse_llm_response(response, expected_count=BATCH_SIZE)
-# print(costs)
 
 
 # %% [markdown]
@@ -860,6 +460,9 @@ def parse_llm_response(response, expected_count):
 # %%
 # Load LLM metrics from JSON file
 llm_metrics = load_metrics("../models/llm_benchmark_metrics.json")
+if len(llm_metrics) != 1:
+    raise ValueError("Expected metrics for exactly one LLM benchmark.")
+llm_model_label = next(iter(llm_metrics))
 
 # Load baseline model metrics from JSON files 
 baseline_models_to_evaluate = ["median", "lr", "en", "tree", "rf", "xgb", "svm"]
@@ -899,10 +502,10 @@ display(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b> 
 #     <ul style="margin-top:8px; margin-bottom:0px">
-#         <li><strong>Specialized ML Crushes General Intelligence:</strong> The best specialized model (Elastic Net, MdAE=\$163) outperforms the LLM (MdAE=\$600) by a factor of 3.7x. For the typical user, the domain-specific model is far more accurate.</li>
-#         <li><strong>The LLM "Sanity Check" Failure:</strong> Notably, Gemini performs significantly worse than the naive "Median Prediction" baseline (MdAE \$600 vs. \$248). This indicates the LLM lacks a grounded statistical understanding of typical US healthcare costs, potentially overestimating based on "catastrophic" outliers.</li>
-#         <li><strong>The R² Paradox:</strong> Despite poor median accuracy, the LLM achieves the best R² (0.11), while ML models are near-zero. This suggests the LLM's high-variance predictions capture the high-cost "tails" better than the conservative ML models, which prioritize the typical case (MdAE) over outlier variance (R²).</li>
-#         <li><strong>Proof of Value:</strong> This benchmark justifies the entire project. Even a state-of-the-art LLM with expert instructions cannot match a model trained on the specific distribution of US medical expenditures.</li>
+#         <li><strong>Specialized Model Advantage:</strong> The best specialized model (Elastic Net, MdAE=\$163) outperforms the LLM (Gemini, MdAE=\$518) by a factor of 3.2. For the typical user, the domain-specific model is far more accurate.</li>
+#         <li><strong>Naive Benchmark:</strong> Gemini also performs worse than always predicting the population median (MdAE \$518 vs. \$248). This indicates the LLM lacks a grounded statistical understanding of typical US healthcare costs, potentially overestimating based on "catastrophic" outliers.</li>
+#         <li><strong>R² Trade-off:</strong> Gemini has the best raw-dollar R² among the baseline comparisons, but the value is still modest at 0.04. Its wider predictions capture some high-cost variation while producing much larger errors for typical people.</li>
+#         <li><strong>Conclusion:</strong> The benchmark supports using a specialized intelligence model trained on MEPS data rather than a general-purpose LLM for medical cost planning.</li>
 #     </ul>
 # </div>
 # %% [markdown]
@@ -1520,7 +1123,7 @@ comparison_df["overfitting_mdae"] = (
 # Define custom order for model comparison: Benchmarks -> Baselines -> Tuned Model Pairs
 custom_order = [
     "Median Prediction (Baseline)",
-    f"LLM ({LLM_MODEL})",
+    llm_model_label,
     "Decision Tree (Baseline)",
     "Support Vector Machine (Baseline)",
     "Linear Regression (Baseline)",
@@ -1557,7 +1160,7 @@ display(
 # %%
 # Define the curated list of finalists 
 finalists = [
-    f"LLM ({LLM_MODEL})",
+    llm_model_label,
     "Median Prediction (Baseline)",
     "Linear Regression (Baseline)",
     "Elastic Net (Tuned)",
@@ -1821,20 +1424,23 @@ plot_residuals_vs_predicted(
 
 # %%
 # --- Prepare Features ---
-# Recover raw features of validation data for stratification
-# We need the original categorical codes (before pipeline one-hot encoding) to group the data
-print("Recovering raw validation features...")
-df_raw_val, y_val_true, w_val_weights = prepare_human_readable_split_data(VAL_MODEL_READY_DATA_PATH, "validation")
+# Load cleaned, pre-pipeline validation features and attach race for fairness auditing
+print("Loading analysis-ready validation features...")
+df_val_analysis, y_val_true, w_val_weights = load_preprocessor_input_split(
+    VAL_PREPROCESSOR_INPUT_DATA_PATH,
+    audit_columns=["RACETHX"],
+    raw_data_path=RAW_DATA_PATH,
+)
 
 # Create chronic conditions count  
-chronic_cols = list(CHRONIC_CONDITIONS.keys())
-df_raw_val["CHRONIC_COUNT"] = df_raw_val[chronic_cols].sum(axis=1).astype(int)
-df_raw_val["CHRONIC_COUNT_GRP"] = df_raw_val["CHRONIC_COUNT"].apply(lambda x: f"{x} Condition" if x == 1 else (f"{x} Conditions" if x < 4 else "4+ Conditions"))  # Merge 4 or more due to small group sample sizes
+chronic_cols = MedicalFeatureDeriver.CHRONIC_CONDITION_FEATURES
+df_val_analysis["CHRONIC_COUNT"] = df_val_analysis[chronic_cols].sum(axis=1).astype(int)
+df_val_analysis["CHRONIC_COUNT_GRP"] = df_val_analysis["CHRONIC_COUNT"].apply(lambda x: f"{x} Condition" if x == 1 else (f"{x} Conditions" if x < 4 else "4+ Conditions"))  # Merge 4 or more due to small group sample sizes
 
 # Create age groups for a more stable and interpretable Fairness Audit
 age_bins = [18, 35, 50, 65, 120]
 age_labels = ["18-34", "35-49", "50-64", "65+"]
-df_raw_val["AGE_GRP"] = pd.cut(df_raw_val["AGE23X"], bins=age_bins, labels=age_labels, right=False)
+df_val_analysis["AGE_GRP"] = pd.cut(df_val_analysis["AGE23X"], bins=age_bins, labels=age_labels, right=False)
 
 
 # --- Prepare Target Variable ---
@@ -1860,7 +1466,7 @@ actual_cost_bin_map = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 4}
 # For predicted costs, also merge the Zero Costs bin (0) into Low Spend (1) for n>30 subgroup sample size because tree model predictions are almost never zero
 predicted_cost_bin_map = {0: 1, 1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 4}
 
-df_raw_val["ACTUAL_COSTS"] = create_stratification_bins(y_val_true).map(actual_cost_bin_map) 
+df_val_analysis["ACTUAL_COSTS"] = create_stratification_bins(y_val_true).map(actual_cost_bin_map)
 
 
 # --- Define Stratified Error Configurations ---
@@ -1911,7 +1517,7 @@ for model_key, y_val_pred in tuned_model_predictions.items():
             y_val_pred_series = pd.Series(y_val_pred, index=y_val_true.index)  # Converts y_val_pred numpy array to Series to align on index
             col_bins = create_stratification_bins(y_val_pred_series).map(predicted_cost_bin_map)  
         else:
-            col_bins = df_raw_val[col]
+            col_bins = df_val_analysis[col]
             
         # Calculate weighted MdAE for each subgroup of current column
         groups = sorted(col_bins.dropna().unique())
@@ -1921,7 +1527,7 @@ for model_key, y_val_pred in tuned_model_predictions.items():
             # Calculate weighted MdAE
             group_mdae = weighted_median_absolute_error(
                 y_val_true[mask],  # Aligns via Index
-                y_val_pred[mask],  # Aligns via Position (df_raw_val was reindexed to match the validation parquet)
+                y_val_pred[mask],  # Aligns by position with the saved validation split
                 sample_weight=w_val_weights[mask]  # Aligns via Index
             )
             
@@ -3275,7 +2881,7 @@ plot_residuals_vs_predicted(
 
 # %%
 # --- Stratification Setup ---
-chronic_cols = list(CHRONIC_CONDITIONS.keys())
+chronic_cols = MedicalFeatureDeriver.CHRONIC_CONDITION_FEATURES
 age_bins = [18, 35, 50, 65, 120]
 age_labels = ["18-34", "35-49", "50-64", "65+"]
 
@@ -3316,23 +2922,23 @@ quantile_fairness_configs = [
 quantile_stratified_configs = quantile_reliability_configs + quantile_fairness_configs
 
 
-def add_quantile_stratification_columns(df_raw, y_true, y_pred_q50, y_pred_q90):
+def add_quantile_stratification_columns(analysis_df, y_true, y_pred_q50, y_pred_q90):
     """
-    Add reliability and fairness audit columns to a raw split dataframe (like val or test).
+    Add reliability and fairness audit columns to an analysis DataFrame.
     """
-    df_raw = df_raw.copy()
-    df_raw["CHRONIC_COUNT"] = df_raw[chronic_cols].sum(axis=1).astype(int)
-    df_raw["CHRONIC_COUNT_GRP"] = df_raw["CHRONIC_COUNT"].apply(
+    analysis_df = analysis_df.copy()
+    analysis_df["CHRONIC_COUNT"] = analysis_df[chronic_cols].sum(axis=1).astype(int)
+    analysis_df["CHRONIC_COUNT_GRP"] = analysis_df["CHRONIC_COUNT"].apply(
         lambda x: f"{x} Condition" if x == 1 else (f"{x} Conditions" if x < 4 else "4+ Conditions")
     )
-    df_raw["AGE_GRP"] = pd.cut(df_raw["AGE23X"], bins=age_bins, labels=age_labels, right=False)
-    df_raw["ACTUAL_COSTS"] = create_stratification_bins(y_true).map(actual_cost_bin_map)
-    df_raw["PREDICTED_MEDIAN_COSTS"] = create_stratification_bins(y_pred_q50).map(predicted_cost_bin_map)
-    df_raw["PREDICTED_CUSHION_COSTS"] = create_stratification_bins(y_pred_q90).map(predicted_cost_bin_map)
-    return df_raw
+    analysis_df["AGE_GRP"] = pd.cut(analysis_df["AGE23X"], bins=age_bins, labels=age_labels, right=False)
+    analysis_df["ACTUAL_COSTS"] = create_stratification_bins(y_true).map(actual_cost_bin_map)
+    analysis_df["PREDICTED_MEDIAN_COSTS"] = create_stratification_bins(y_pred_q50).map(predicted_cost_bin_map)
+    analysis_df["PREDICTED_CUSHION_COSTS"] = create_stratification_bins(y_pred_q90).map(predicted_cost_bin_map)
+    return analysis_df
 
 
-def create_quantile_subgroup_df(df_raw, y_true, weights, y_pred_quantiles, configs):
+def create_quantile_subgroup_df(analysis_df, y_true, weights, y_pred_quantiles, configs):
     """
     Build subgroup metrics and diagnostic flags for a quantile model audit.
     """
@@ -3343,7 +2949,7 @@ def create_quantile_subgroup_df(df_raw, y_true, weights, y_pred_quantiles, confi
         col = config["col"]
         label = config["label"]
         category_map = config["category_map"]
-        col_bins = df_raw[col]
+        col_bins = analysis_df[col]
 
         for group in sorted(col_bins.dropna().unique()):
             mask = (col_bins == group)
@@ -3408,8 +3014,12 @@ def create_quantile_subgroup_df(df_raw, y_true, weights, y_pred_quantiles, confi
 
 
 # --- Prepare Validation Audit ---
-print("Recovering raw validation features...")
-df_raw_val, y_val_audit, w_val_audit = prepare_human_readable_split_data(VAL_MODEL_READY_DATA_PATH, "validation")
+print("Loading analysis-ready validation features...")
+df_val_analysis, y_val_audit, w_val_audit = load_preprocessor_input_split(
+    VAL_PREPROCESSOR_INPUT_DATA_PATH,
+    audit_columns=["RACETHX"],
+    raw_data_path=RAW_DATA_PATH,
+)
 
 print("Loading XGBoost quantile predictions...")
 y_val_quantile_pred = load_model("../models/xgb_quantile_predictions.joblib", verbose=False)
@@ -3419,14 +3029,14 @@ y_val_pred_q25_audit, y_val_pred_q50_audit, y_val_pred_q75_audit, y_val_pred_q90
 ]
 print(f"  Loaded predictions for {y_val_quantile_pred.shape[1]} quantiles on {len(y_val_quantile_pred)} validation set samples")
 
-df_raw_val = add_quantile_stratification_columns(
-    df_raw_val,
+df_val_analysis = add_quantile_stratification_columns(
+    df_val_analysis,
     y_val_audit,
     y_val_pred_q50_audit,
     y_val_pred_q90_audit,
 )
 quantile_subgroup_df = create_quantile_subgroup_df(
-    df_raw_val,
+    df_val_analysis,
     y_val_audit,
     w_val_audit,
     (y_val_pred_q25_audit, y_val_pred_q50_audit, y_val_pred_q75_audit, y_val_pred_q90_audit),
@@ -4488,8 +4098,12 @@ display(
 
 # %%
 # --- Prepare Features ---
-print("Recovering raw test features...")
-df_raw_test, y_test_audit, w_test_audit = prepare_human_readable_split_data(TEST_MODEL_READY_DATA_PATH, "test")
+print("Loading analysis-ready test features...")
+df_test_analysis, y_test_audit, w_test_audit = load_preprocessor_input_split(
+    TEST_PREPROCESSOR_INPUT_DATA_PATH,
+    audit_columns=["RACETHX"],
+    raw_data_path=RAW_DATA_PATH,
+)
 
 # Align test-set quantile predictions to the raw test rows
 y_test_pred_q25_audit, y_test_pred_q50_audit, y_test_pred_q75_audit, y_test_pred_q90_audit = [
@@ -4497,14 +4111,14 @@ y_test_pred_q25_audit, y_test_pred_q50_audit, y_test_pred_q75_audit, y_test_pred
     for values in y_test_quantile_pred.T
 ]
 
-df_raw_test = add_quantile_stratification_columns(
-    df_raw_test,
+df_test_analysis = add_quantile_stratification_columns(
+    df_test_analysis,
     y_test_audit,
     y_test_pred_q50_audit,
     y_test_pred_q90_audit,
 )
 test_quantile_subgroup_df = create_quantile_subgroup_df(
-    df_raw_test,
+    df_test_analysis,
     y_test_audit,
     w_test_audit,
     (y_test_pred_q25_audit, y_test_pred_q50_audit, y_test_pred_q75_audit, y_test_pred_q90_audit),

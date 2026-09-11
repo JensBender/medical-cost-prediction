@@ -8,10 +8,8 @@ definitions to test its maximum potential, demonstrating that a specialized mode
 adds value even against a well instructed LLM.
 
 Approach:
-  1.  Data Preprocessing (Partial): Load raw MEPS SAS data, apply cleaning steps 1-7
-      (mirroring preprocess.py), then filter to validation set rows by ID.
-      This recovers human-readable feature values (e.g., Age=42, Region=South)
-      from the already-preprocessed parquet which contains scaled/encoded values.
+  1.  Data Loading: Load the saved validation preprocessor-input data. It
+      contains cleaned feature values before scaling, encoding, and imputation.
   2.  Profile Generation: Convert each row into a natural language description
       that a layperson would provide to an LLM (zero-shot, no training examples).
   3.  Batched LLM Inference: Send profiles in batches to the Gemini API with structured JSON 
@@ -51,14 +49,8 @@ from sklearn.metrics import mean_absolute_error, r2_score
 from dotenv import load_dotenv
 
 # Local imports
-from src.constants import (
-    ID_COLUMN, WEIGHT_COLUMN, TARGET_COLUMN,
-    RAW_COLUMNS_TO_KEEP, RAW_BINARY_FEATURES,
-    MEPS_MISSING_CODES,
-    MARRY31X_TRANSITION_CODES, EMPST31_TRANSITION_CODES,
-    MARRY31X_COLLAPSE_MAP, EMPST31_COLLAPSE_MAP,
-)
-from src.modeling import RAW_DATA_PATH, VAL_MODEL_READY_DATA_PATH, weighted_median_absolute_error, save_metrics, save_model, load_model
+from src.data import load_preprocessor_input_split
+from src.modeling import VAL_PREPROCESSOR_INPUT_DATA_PATH, weighted_median_absolute_error, save_metrics, save_model, load_model
 
 # Suppress benign MLflow warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="mlflow")
@@ -133,83 +125,6 @@ Out-of-pocket costs EXCLUDE monthly insurance premiums and over-the-counter medi
 
 For each profile, provide your best single-number estimate (in dollars), 
 returned in the requested list format."""
-
-
-# =========================
-# Data Preparation
-# =========================
-
-def prepare_human_readable_split_data(split_data_path=VAL_MODEL_READY_DATA_PATH, split_label="validation"):
-    """
-    Recover human-readable feature values for a preprocessed split (like val or test).
-
-    The saved parquet contains scaled/encoded features (after StandardScaler and
-    OneHotEncoder). This function reloads the raw MEPS SAS file, applies the same
-    cleaning steps 1-7 as preprocess.py (but NOT the sklearn pipeline), then filters
-    to only the requested split rows by matching DUPERSID indices.
-
-    Args:
-        split_data_path (str): Path to the preprocessed split parquet file.
-        split_label (str): Human-readable split name for progress messages.
-
-    Returns:
-        tuple: (df_raw_split, y_split, w_split) where df_raw_split has human-readable
-               feature values, y_split is the target, and w_split are sample weights.
-               All aligned by DUPERSID index in parquet row order.
-    """
-    # Load preprocessed split data to get row IDs, target, and weights
-    df_split = pd.read_parquet(split_data_path)
-    split_ids = set(df_split.index.astype(str))
-    y_split = df_split[TARGET_COLUMN]
-    w_split = df_split[WEIGHT_COLUMN]
-
-    # --- Data Preparation (mirrors preprocess.py steps 1-7) ---
-    # Step 1: Load raw MEPS data
-    print("  Loading raw MEPS SAS data...")
-    df = pd.read_sas(RAW_DATA_PATH, format="sas7bdat", encoding="latin1")
-
-    # Step 2: Variable selection
-    print("  Selecting variables...")
-    df = df[RAW_COLUMNS_TO_KEEP]
-
-    # Step 3: Population filtering (adults with positive weights)
-    print("  Filtering target population...")
-    df = df[(df[WEIGHT_COLUMN] > 0) & (df["AGE23X"] >= 18)].copy()
-
-    # Step 4: Data type handling
-    print("  Handling data types...")
-    df[ID_COLUMN] = df[ID_COLUMN].astype(str)
-    df.set_index(ID_COLUMN, inplace=True)
-
-    # Step 5: Missing value standardization
-    print("  Standardizing missing values...")
-    # Recover implied values from survey skip patterns
-    df.loc[df["ADSMOK42"] == -1, "ADSMOK42"] = 2    # -1 "Never Smoker" → 2 "No"
-    df.loc[(df["JTPAIN31_M18"] == -1) & (df["ARTHDX"] == 1), "JTPAIN31_M18"] = 1
-    # Convert remaining MEPS codes to NaN
-    df.replace(MEPS_MISSING_CODES, np.nan, inplace=True)
-
-    # Step 6: Binary standardization (MEPS 1/2 → 1/0)
-    print("  Standardizing binary features...")
-    df[RAW_BINARY_FEATURES] = df[RAW_BINARY_FEATURES].replace({2: 0})
-
-    # Step 7: Feature engineering (stateless)
-    print("  Engineering stateless features...")
-    df["RECENT_LIFE_TRANSITION"] = (
-        df["MARRY31X"].isin(MARRY31X_TRANSITION_CODES) | df["EMPST31"].isin(EMPST31_TRANSITION_CODES)
-    ).astype(float)
-    df.loc[df["MARRY31X"].isna() & df["EMPST31"].isna(), "RECENT_LIFE_TRANSITION"] = np.nan
-    df["MARRY31X_GRP"] = df["MARRY31X"].replace(MARRY31X_COLLAPSE_MAP)
-    df["EMPST31_GRP"] = df["EMPST31"].replace(EMPST31_COLLAPSE_MAP)
-
-    # Filter to requested split rows and align to preprocessed data row order
-    print(f"  Filtering rows to match preprocessed {split_label} data...")
-    df_raw_split = df.loc[df.index.isin(split_ids)].reindex(y_split.index)
-    n_matched = df_raw_split.index.isin(split_ids).sum()
-    n_complete = df_raw_split.notna().all(axis=1).sum()
-    print(f"  Matched {n_matched:,} out of {len(split_ids):,} rows of the preprocessed {split_label} data ({n_complete:,} complete, {n_matched - n_complete:,} with missing values)")
-
-    return df_raw_split, y_split, w_split
 
 
 # =========================
@@ -441,20 +356,18 @@ def main():
         print("  Logged parameters to MLflow")
         
         # --- 1. Data Preparation ---
-        print("Step 1: Preparing human-readable validation data...")
-        df_raw_val, y_val, w_val = prepare_human_readable_split_data(VAL_MODEL_READY_DATA_PATH, "validation")
-
-        # Ensure indices are aligned between raw features and preprocessed targets
-        print(f"  Aligning row indices with preprocessed validation data...")
-        common_ids = df_raw_val.dropna(how="all").index.intersection(y_val.index)
-        df_raw_val = df_raw_val.loc[common_ids]
-        y_val = y_val.loc[common_ids]
-        w_val = w_val.loc[common_ids]
-        print(f"  Benchmarking on {len(common_ids):,} validation rows")
+        print("Step 1: Loading analysis-ready validation data...")
+        X_val_preprocessor_input, y_val, w_val = load_preprocessor_input_split(
+            VAL_PREPROCESSOR_INPUT_DATA_PATH
+        )
+        print(f"  Benchmarking on {len(X_val_preprocessor_input):,} validation rows")
 
         # --- 2. Build Natural Language Profiles ---
         print("Step 2: Converting features to natural language profiles...")
-        profiles = [row_to_profile(row) for _, row in df_raw_val.iterrows()]
+        profiles = [
+            row_to_profile(row)
+            for _, row in X_val_preprocessor_input.iterrows()
+        ]
         print(f"  Created {len(profiles):,} profiles for LLM input")
 
         # --- 3. Query LLM in Batches ---
