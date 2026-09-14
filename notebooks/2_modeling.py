@@ -1333,7 +1333,7 @@ plot_subgroup_performance(
 #     <strong>⚖️ Responsible AI</strong> <br>
 #     The US-focused product uses survey-weighted evaluation, subgroup audits, uncertainty-aware predictions, clear scope limits, and privacy-preserving monitoring to manage model risk.
 #     <p style="margin-top:10px;">
-#         For details, refer to: <a href="../docs/research/responsible_ai.md">docs/research/responsible_ai.md</a>
+#         For details, refer to: <a href="../docs/responsible_ai.md">docs/responsible_ai.md</a>
 #     </p>
 # </div>
 #
