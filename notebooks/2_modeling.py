@@ -1823,7 +1823,7 @@ plt.show()
 #     Defined release gates and product target performance for each metric, or clarified whenever the metric is only for additional diagnostic purposes.
 #     <ul style="margin-top:8px">
 #         <li><b>Release gate:</b> Minimum acceptable performance required to ship. Used for pass/fail decisions.</li>
-#         <li><b>Product target:</b> Stronger performance that means the model has high useful for budgeting.</li>
+#         <li><b>Product target:</b> Stronger performance that means the model has high usefulness for budgeting.</li>
 #         <li><b>Diagnostic metric:</b> Monitored for model understanding, but not used as a pass/fail requirement.</li>
 #     </ul>
 #     <b>Product Coverage</b> <br>
@@ -2234,13 +2234,7 @@ plot_residuals_vs_predicted(
 
 # %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Insights:</b> 
-#     <ul>
-#         <li><strong>Identical Error Profiles (No Degradation):</strong> The side-by-side comparison shows virtually identical residual spreads and binned median trends. This confirms that jointly training a single multi-quantile model (minimizing pinball loss across 4 quantiles) does not degrade the median prediction quality compared to a dedicated point-estimate model.</li>
-#         <li><strong>Unbiased Median Predictions:</strong> For both models, the binned median residual line remains close to zero across the entire prediction range, demonstrating that predictions are stable and free of systematic bias for typical healthcare costs.</li>
-#         <li><strong>Shared Fan-Shaped Uncertainty:</strong> Both plots display a widening "fan shape" (heteroscedasticity) and a heavy upward skew of positive residuals. This indicates that predicting out-of-pocket costs becomes increasingly uncertain as expected health risk rises, and both models systematically underpredict extreme catastrophic expenditures (outliers).</li>
-#         <li><strong>Justification for Range Modeling:</strong> The presence of heteroscedasticity confirms that a single point estimate (q50) is insufficient for high-cost users. A range model with prediction intervals (q25-q75) and safety cushions (q90) is necessary to communicate this uncertainty to users.</li>
-#     </ul>
+#     💡 <b>Insight:</b> The quantile model's q50 residual spread and binned median trend closely match the tuned point-estimate XGBoost model. Multi-quantile training therefore shows no meaningful degradation in median performance while adding the prediction ranges used by the product.
 # </div>
 
 # %% [markdown]
