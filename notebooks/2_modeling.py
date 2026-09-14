@@ -56,14 +56,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Preprocessing
-from sklearn.compose import TransformedTargetRegressor  # to log-transform target
-
 # Custom transformers
 from src.transformers import MedicalFeatureDeriver
-
-# Models
-from xgboost import XGBRegressor
 
 # Model evaluation
 from sklearn.metrics import (
@@ -71,7 +65,6 @@ from sklearn.metrics import (
     mean_pinball_loss,
     r2_score
 )
-import time  # to measure training time
 
 # Model explainability
 import shap 
@@ -80,9 +73,7 @@ import shap
 from src.modeling import (
     train_and_evaluate,
     weighted_median_absolute_error,
-    save_model,
     load_model,
-    save_metrics,
     load_metrics,
     get_core_model_params,
     postprocess_quantile_predictions
@@ -1448,159 +1439,17 @@ plot_subgroup_performance(
 # </div>
 
 # %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Training</h2>
-# </div> 
-#
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Train an XGBoost multi-quantile regression model that returns q25, q50, q75, and q90 predictions. 
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <strong>Validation-Set Evaluation</strong><br>
+#     The analyses below evaluate the saved XGBoost quantile model on the validation set. Model training, MLflow logging, and artifact generation are handled by <code><a href="../scripts/train_xgboost_quantile.py">scripts/train_xgboost_quantile.py</a></code>. The notebook loads the saved model, metrics, and validation predictions without retraining or overwriting them.
 #     <br><br>
-#     Production Script: This notebook is for prototyping; the production run was executed via <code><a href="../scripts/train_xgboost_quantile.py">scripts/train_xgboost_quantile.py</a></code>.
+#     To reproduce quantile regression training from the project root, run:<br>
+#     <code>.\.venv-train\Scripts\dvc.exe repro quantile</code>
 # </div>
 
-# %%
-def train_xgboost_quantile():
-    # --- 1. Model Configuration ---
-    print("Step 1: Configuring XGBoost multi-quantile model parameters...")
-    QUANTILES = [0.25, 0.50, 0.75, 0.90]
-
-    tuned_params = load_metrics("../models/xgb_tuned_params.json", verbose=False)
-    keep_params = [
-            "n_estimators",
-            "max_depth",
-            "learning_rate",
-            "min_child_weight",
-            "subsample",
-            "colsample_bytree",
-            "reg_lambda",
-            "reg_alpha",
-            "tree_method",
-            "n_jobs",
-            "random_state",
-    ]
-    xgb_quantile_params = {k: tuned_params[k] for k in keep_params}
-    xgb_quantile_params.update({
-        "objective": "reg:quantileerror",
-        "quantile_alpha": QUANTILES,
-    })
-    print(f"  Loaded hyperparameters of best tuned model and updated them for {len(QUANTILES)} quantiles: {QUANTILES}")
-
-    # --- 2. Model Training ---
-    print("Step 2: Training XGBoost quantile regression model...")
-    # Train on log-costs: quantiles are invariant to monotonic transformations, and the log scale
-    # stabilizes tree-splitting logic by preventing extreme outliers from dominating the partition search.
-    xgb_quantile_model = TransformedTargetRegressor(
-        regressor=XGBRegressor(**xgb_quantile_params),
-        func=np.log1p,
-        inverse_func=np.expm1,
-    )
-
-    # Normalize training weights (mean=1.0) for numerical stability during model fitting
-    w_train_norm = w_train / w_train.mean()
-
-    start_time = time.time()
-    xgb_quantile_model.fit(X_train_preprocessed, y_train, sample_weight=w_train_norm)
-    training_time = time.time() - start_time
-
-    print(f"  Completed training in {training_time:.1f} s")
-
-    # --- 3. Predictions ---
-    print("Step 3: Predicting on training and validation set...")
-    # Predict on training and validation set
-    y_train_pred_raw = xgb_quantile_model.predict(X_train_preprocessed)
-    y_val_pred_raw = xgb_quantile_model.predict(X_val_preprocessed)
-
-    # Ensure valid cost quantiles (non-negative and monotonic q25 <= q50 <= q75 <= q90)
-    y_train_pred = postprocess_quantile_predictions(y_train_pred_raw)
-    y_val_pred = postprocess_quantile_predictions(y_val_pred_raw)
-    print(f"  Generated predictions for {len(y_train_pred):,} train and {len(y_val_pred):,} validation samples and ensured non-negative and monotonic predictions")
-
-    # --- 4. Evaluation ---
-    print("Step 4: Evaluating model performance...")
-    # Unpack quantiles
-    y_train_pred_q25, y_train_pred_q50, y_train_pred_q75, y_train_pred_q90 = y_train_pred.T
-    y_val_pred_q25, y_val_pred_q50, y_val_pred_q75, y_val_pred_q90 = y_val_pred.T
-
-    # Evaluate median prediction
-    train_q50_mdae = weighted_median_absolute_error(y_train, y_train_pred_q50, sample_weight=w_train)
-    train_q50_mae = mean_absolute_error(y_train, y_train_pred_q50, sample_weight=w_train)
-    train_q50_r2 = r2_score(y_train, y_train_pred_q50, sample_weight=w_train)
-
-    val_q50_mdae = weighted_median_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val)
-    val_q50_mae = mean_absolute_error(y_val, y_val_pred_q50, sample_weight=w_val)
-    val_q50_r2 = r2_score(y_val, y_val_pred_q50, sample_weight=w_val)
-
-    # Evaluate coverage (share of population whose actual cost is within the predicted range)
-    train_q25_q75_coverage = np.average((y_train >= y_train_pred_q25) & (y_train <= y_train_pred_q75), weights=w_train)
-    train_q90_coverage = np.average(y_train <= y_train_pred_q90, weights=w_train)
-    val_q25_q75_coverage = np.average((y_val >= y_val_pred_q25) & (y_val <= y_val_pred_q75), weights=w_val)
-    val_q90_coverage = np.average(y_val <= y_val_pred_q90, weights=w_val)
-
-    # Evaluate interval precision
-    train_q25_q75_width = np.average(y_train_pred_q75 - y_train_pred_q25, weights=w_train)
-    train_q50_q90_width = np.average(y_train_pred_q90 - y_train_pred_q50, weights=w_train)  # Safety cushion width
-    val_q25_q75_width = np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val)
-    val_q50_q90_width = np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_val)
-
-    print(f"  Plan Around MdAE       →  Train: {f'${train_q50_mdae:,.2f}':>10} | Val: {f'${val_q50_mdae:,.2f}':>10}")
-    print(f"  Plan Around MAE        →  Train: {f'${train_q50_mae:,.2f}':>10} | Val: {f'${val_q50_mae:,.2f}':>10}")
-    print(f"  Plan Around R²         →  Train: {train_q50_r2:10.2f} | Val: {val_q50_r2:10.2f}")
-    print(f"  Typical Range Coverage →  Train: {train_q25_q75_coverage:10.1%} | Val: {val_q25_q75_coverage:10.1%}")
-    print(f"  Safety Cushion Coverage →  Train: {train_q90_coverage:10.1%} | Val: {val_q90_coverage:10.1%}")
-    print(f"  Avg Typical Range Width →  Train: {f'${train_q25_q75_width:,.0f}':>10} | Val: {f'${val_q25_q75_width:,.0f}':>10}")
-    print(f"  Avg Safety Cushion W.  →  Train: {f'${train_q50_q90_width:,.0f}':>10} | Val: {f'${val_q50_q90_width:,.0f}':>10}")
-
-    # --- 5. Model Persistence ---
-    print("Step 5: Persisting model results...")
-    # 5.1. Save fitted model as .joblib file
-    save_model(xgb_quantile_model, "../models/xgb_quantile_model.joblib", verbose=False)
-    print("  Saved XGBoost quantile regression model to 'models/xgb_quantile_model.joblib'")
-
-    # 5.2. Save evaluation metrics as JSON
-    xgb_quantile_metrics = {
-        "XGBoost (Quantile)": {
-            "train_q50_mdae": train_q50_mdae,
-            "train_q50_mae": train_q50_mae,
-            "train_q50_r2": train_q50_r2,
-            "train_q25_q75_coverage": train_q25_q75_coverage,
-            "train_q90_coverage": train_q90_coverage,
-            "train_q25_q75_width": train_q25_q75_width,
-            "train_q50_q90_width": train_q50_q90_width,
-            "val_q50_mdae": val_q50_mdae,
-            "val_q50_mae": val_q50_mae,
-            "val_q50_r2": val_q50_r2,
-            "val_q25_q75_coverage": val_q25_q75_coverage,
-            "val_q90_coverage": val_q90_coverage,
-            "val_q25_q75_width": val_q25_q75_width,
-            "val_q50_q90_width": val_q50_q90_width,
-            "training_time": training_time,
-        }
-    }
-    save_metrics(xgb_quantile_metrics, "../models/xgb_quantile_metrics.json", verbose=False)
-    print("  Saved evaluation metrics of XGBoost quantile regression to 'models/xgb_quantile_metrics.json'")
-
-    # 5.3. Save hyperparameters as JSON
-    save_metrics(xgb_quantile_params, "../models/xgb_quantile_params.json", verbose=False)
-    print("  Saved hyperparameters of XGBoost quantile regression to 'models/xgb_quantile_params.json'")
-
-    # 5.4. Save predicted values as .joblib file
-    save_model(y_val_pred, "../models/xgb_quantile_predictions.joblib", verbose=False)
-    print("  Saved predicted values of XGBoost quantile regression to 'models/xgb_quantile_predictions.joblib'")
-
-    print("\n✅ XGBoost quantile regression complete.")
-
-    
-# Commented out to avoid overwriting model artifacts during notebook reruns (training is handled by 'scripts/train_xgboost_quantile.py')
-# train_xgboost_quantile()
-
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Evaluation</h2>
-# </div> 
-
-# %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Pinball Loss & Skill Score</h3>
+#     <h2 style="margin:0px">Pinball Loss & Skill Score</h2>
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
@@ -1704,8 +1553,8 @@ display(
 
 
 # %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Quantile Calibration</h3>
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Quantile Calibration</h2>
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
@@ -1967,8 +1816,8 @@ plt.show()
 # </div>
 
 # %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Product Metrics</h3>
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Product Metrics</h2>
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
@@ -2361,8 +2210,8 @@ display(
 # </div>
 
 # %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Heteroscedasticity</h3>
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Heteroscedasticity</h2>
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -2400,8 +2249,8 @@ plot_residuals_vs_predicted(
 # </div>
 
 # %% [markdown]
-# <div style="background-color:#4e8ac8; color:white; padding:10px; border-radius:6px;">
-#     <h3 style="margin:0px">Stratified Error Analysis</h3>
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Stratified Error Analysis</h2>
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px; margin-bottom:12px;">
