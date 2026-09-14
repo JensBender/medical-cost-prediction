@@ -225,11 +225,6 @@ del df_train_preprocessed, df_val_preprocessed, df_test_preprocessed
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Baseline Models</h1>
 # </div>
-
-# %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Training</h2>
-# </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ Six baseline models were trained with distribution-aware baseline hyperparameters.
@@ -632,7 +627,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Evaluation</h2>
+#     <h2 style="margin:0px">Tuned Model Evaluation</h2>
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
