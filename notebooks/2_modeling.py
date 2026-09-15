@@ -3498,10 +3498,173 @@ display(
 #     <ul>
 #         <li><b>Plan Around:</b> The q50 estimate achieves MdAE = &#36;239.5, comfortably below both the release gate and product target.</li>
 #         <li><b>Typical Range and Safety Cushion:</b> Coverage remains within release gates. Interval widths meet the product targets. This suggests the model is calibrated without making the ranges overly broad.</li>
-#         <li><b>Usefulness vs Simple Baseline:</b> The trained model improves on naive population baselines for all user-facing outputs. Plan-around q50 skill = 9.75%, typical-range interval skill = 11.2%, and safety-cushion q90 skill = 15.63%. This shows that feature-based model predictions add value compared with giving every user the same population median, generic q25-q75 range, or population q90 estimate.</li>
+#         <li><b>Value Compared with Simple Baselines:</b> The next section compares these results with population and age-group estimates, including uncertainty in the measured improvements.</li>
 #         <li><b>Remaining Risk:</b> The model struggles with the rare high-cost cases, reflected by the large MAE-vs-MdAE gap and near-zero R².</li>
 #     </ul>
-#     <p style="margin-top:8px"><em>Note:</em> Skill scores for plan-around (q50) and safety-cushion (q90) are quantile skill scores based on pinball loss. Typical-range (q25-q75) skill score is an interval skill score based on Winkler score. Both compare the trained model against a naive population baseline, but based on different evaluation metrics.</p>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Baseline Comparison</h2>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <b>Does the model add value beyond a simple baseline?</b><br>
+#     Compare XGBoost with giving everyone the same population quantiles, or the quantiles for their age group (18–34, 35–49, 50–64, and 65+). Both baselines use training data and survey weights to estimate q25, q50, q75, and q90. All three approaches are evaluated on the same test participants.
+#     <p>Each approach provides a median estimate (q50), a typical range (q25–q75), and a safety cushion (q90). Population predictions are identical for everyone; age-group predictions are identical within each age band; XGBoost predictions depend on each person’s features.</p>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border:3px solid #f5ecda; border-radius:6px;">
+#     📌 Create the baselines on the training set and compare plan-around errors, typical ranges, and safety cushions on the test set.
+# </div>
+
+# %%
+baseline_train_inputs, baseline_y_train, baseline_w_train = load_preprocessor_input_split(
+    TRAIN_PREPROCESSOR_INPUT_DATA_PATH,
+)
+baseline_test_inputs, baseline_y_test, baseline_w_test = load_preprocessor_input_split(
+    TEST_PREPROCESSOR_INPUT_DATA_PATH,
+)
+
+# Align ages using the retained target and weight series after dataframe cleanup.
+for inputs, target, weights, model_target, model_weights in (
+    (baseline_train_inputs, baseline_y_train, baseline_w_train, y_train, w_train),
+    (baseline_test_inputs, baseline_y_test, baseline_w_test, y_test, w_test),
+):
+    assert model_target.index.equals(model_weights.index)
+    participant_ids = model_target.index.astype(str)
+    assert participant_ids.is_unique and inputs.index.is_unique
+    assert set(participant_ids) == set(inputs.index)
+    np.testing.assert_allclose(target.loc[participant_ids], model_target)
+    np.testing.assert_allclose(weights.loc[participant_ids], model_weights)
+
+baseline_train_ages = baseline_train_inputs.loc[
+    y_train.index.astype(str), "AGE23X"
+]
+baseline_test_ages = baseline_test_inputs.loc[
+    y_test.index.astype(str), "AGE23X"
+]
+baseline_train_groups = pd.cut(baseline_train_ages, bins=age_bins, labels=age_labels, right=False)
+baseline_test_groups = pd.cut(baseline_test_ages, bins=age_bins, labels=age_labels, right=False)
+assert baseline_train_groups.notna().all() and baseline_test_groups.notna().all()
+assert list(quantiles) == [0.25, 0.50, 0.75, 0.90]
+
+population_quantiles = weighted_quantile(y_train, w_train, quantiles)
+age_group_quantiles = pd.DataFrame(index=age_labels, columns=quantiles, dtype=float)
+for age_group in age_labels:
+    group_mask = (baseline_train_groups == age_group).to_numpy()
+    assert group_mask.any(), f"No training participants in age group {age_group}"
+    age_group_quantiles.loc[age_group] = weighted_quantile(
+        np.asarray(y_train)[group_mask], np.asarray(w_train)[group_mask], quantiles,
+    )
+
+baseline_test_predictions = {
+    "Population": np.tile(population_quantiles, (len(y_test), 1)),
+    "Age group": age_group_quantiles.loc[baseline_test_groups.to_numpy()].to_numpy(),
+    "XGBoost": np.asarray(y_test_quantile_pred),
+}
+for predictions in baseline_test_predictions.values():
+    assert predictions.shape == (len(y_test), 4)
+    assert np.isfinite(predictions).all() and (np.diff(predictions, axis=1) >= 0).all()
+
+
+def summarize_baseline_comparison(y_true, predictions, weights):
+    """Evaluate all three product outputs with the same survey-weighted metrics."""
+    q25, q50, q75, q90 = predictions.T
+    return {
+        "Plan around: median absolute error": weighted_median_absolute_error(
+            y_true, q50, sample_weight=weights,
+        ),
+        "Plan around: mean absolute error": mean_absolute_error(y_true, q50, sample_weight=weights),
+        "Typical range: coverage": np.average((y_true >= q25) & (y_true <= q75), weights=weights),
+        "Typical range: average width": np.average(q75 - q25, weights=weights),
+        "Typical range: Winkler score": interval_score(y_true, q25, q75, alpha=0.50, sample_weight=weights),
+        "Safety cushion: q90 coverage": np.average(y_true <= q90, weights=weights),
+        "Safety cushion: q90 pinball loss": mean_pinball_loss(y_true, q90, alpha=0.90, sample_weight=weights),
+    }
+
+
+baseline_comparison_metrics = pd.DataFrame({
+    name: summarize_baseline_comparison(np.asarray(y_test), predictions, np.asarray(w_test))
+    for name, predictions in baseline_test_predictions.items()
+})
+baseline_coverage_rows = ["Typical range: coverage", "Safety cushion: q90 coverage"]
+baseline_metric_labels = {
+    "Plan around: median absolute error": "Plan around (q50): MdAE",
+    "Plan around: mean absolute error": "Plan around (q50): MAE",
+    "Typical range: coverage": "Typical range (q25–q75): coverage",
+    "Typical range: average width": "Typical range (q25–q75): average width",
+    "Typical range: Winkler score": "Typical range (q25–q75): Winkler score",
+    "Safety cushion: q90 coverage": "Safety cushion (q90): coverage",
+    "Safety cushion: q90 pinball loss": "Safety cushion (q90): pinball loss",
+}
+display(
+    baseline_comparison_metrics.rename_axis("Metric").style
+    .format_index(baseline_metric_labels.get, axis=0)
+    .format_index({"Population": "Population quantiles", "Age group": "Age-group quantiles", "XGBoost": "XGBoost"}.get, axis=1)
+    .format("${:,.0f}")
+    .format("{:.1%}", subset=pd.IndexSlice[baseline_coverage_rows, :])
+    .pipe(add_table_caption, "Performance Compared with Simple Baselines (Test)")
+)
+
+# %% [markdown]
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <b>How much better, and how certain?</b><br>
+#     Each reduction is 1 − (model error / baseline error). Positive values favor XGBoost. For q50, the percentage reduction in mean absolute error equals the quantile skill score; it does not equal the reduction in median absolute error. The Winkler score combines range width and penalties for missed outcomes. The q90 pinball loss penalizes underprediction more heavily than overprediction.
+#     <p>Use 1,000 paired bootstrap resamples: sample test rows uniformly with replacement and use the same rows for all three approaches. Keep predictions and survey weights with each participant, then apply the weights when calculating metrics. Recompute each reduction within each resample and take its 2.5th and 97.5th percentiles.</p>
+#     <p>These are approximate 95% confidence intervals for fixed predictors. They do not include training uncertainty or the full MEPS survey design. An interval spanning zero means the estimated improvement remains uncertain.</p>
+# </div>
+
+# %%
+baseline_improvement_metrics = [
+    "Plan around: median absolute error",
+    "Plan around: mean absolute error",
+    "Typical range: Winkler score",
+    "Safety cushion: q90 pinball loss",
+]
+baseline_improvement_samples = {
+    name: np.empty((N_BOOTSTRAP, len(baseline_improvement_metrics)))
+    for name in ("Population", "Age group")
+}
+baseline_rng = np.random.default_rng(RANDOM_STATE)
+for sample_idx in range(N_BOOTSTRAP):
+    row_idx = baseline_rng.integers(0, len(y_test), size=len(y_test))
+    sampled_metrics = {
+        name: summarize_baseline_comparison(
+            np.asarray(y_test)[row_idx], predictions[row_idx], np.asarray(w_test)[row_idx],
+        )
+        for name, predictions in baseline_test_predictions.items()
+    }
+    for baseline_name, samples in baseline_improvement_samples.items():
+        samples[sample_idx] = [
+            1 - sampled_metrics["XGBoost"][metric] / sampled_metrics[baseline_name][metric]
+            for metric in baseline_improvement_metrics
+        ]
+
+baseline_improvement_table = pd.DataFrame(index=baseline_improvement_metrics)
+for baseline_name, samples in baseline_improvement_samples.items():
+    formatted_improvements = []
+    for metric_idx, metric in enumerate(baseline_improvement_metrics):
+        improvement = 1 - baseline_comparison_metrics.loc[metric, "XGBoost"] / baseline_comparison_metrics.loc[metric, baseline_name]
+        lower, upper = get_bootstrap_ci(samples[:, metric_idx])
+        formatted_improvements.append(f"{improvement:.1%} [{lower:.1%}, {upper:.1%}]")
+    baseline_improvement_table[f"Versus {baseline_name.lower()} (95% CI)"] = formatted_improvements
+
+display(
+    baseline_improvement_table.rename_axis("Metric").style
+    .format_index(baseline_metric_labels.get, axis=0)
+    .pipe(add_table_caption, "XGBoost Error Reductions Compared with Simple Baselines (Test)")
+)
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Insights:</b>
+#     <ul>
+#         <li><b>Plan Around:</b> XGBoost reduces mean absolute error by 9.8% versus the population baseline and 7.6% versus age groups. Median absolute error improves only slightly over the population baseline (\$248 to \$240); the larger gain over age groups (\$305 to \$240) also reflects that age grouping worsens this metric.</li>
+#         <li><b>Uncertainty:</b> The approximate 95% confidence intervals favor XGBoost for mean absolute error, typical-range score, and q90 loss against both baselines. The median-error improvement over the population baseline remains uncertain (3.4%; CI −12.7% to 13.1%).</li>
+#         <li><b>Ranges and Upper Costs:</b> Versus age groups, XGBoost lowers the typical-range Winkler score by 9.0% and q90 pinball loss by 14.3%. Read widths alongside coverage: the age-group range covers 61.6% of outcomes versus 47.3% for XGBoost, so narrower alone does not establish better performance. Zero-cost outcomes at the lower boundary also affect coverage.</li>
+#         <li><b>Overall:</b> These comparisons support added value beyond population and age-group lookups, especially for upper-cost planning. They do not isolate individual feature contributions or establish superiority over every possible simple model.</li>
+#     </ul>
 # </div>
 
 # %% [markdown]
