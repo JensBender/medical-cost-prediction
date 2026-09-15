@@ -3821,7 +3821,8 @@ plot_quantile_subgroup_predictions(
 #     <b>Final Model: Summary and Launch Decision</b> 
 #     <ul style="margin-top:8px">
 #         <li><b>Decision:</b> Launch XGBoost quantile regression as the MVP model, with guardrails. The product should be framed as a budgeting aid for individual out-of-pocket cost planning, not as a bill estimate, procedure-price tool, or medical advice.</li>
-#         <li><b>Evidence:</b> The model passes all product-facing release gates on the unseen test set: q50 MdAE = \$240, q25-q75 coverage = 47.3%, q90 coverage = 91.0%, q25-q75 width = \$912, and q50-q90 width = \$2,032. It also improves on naive population baselines for every user-facing output: q50 skill = 9.8%, typical-range interval skill = 11.2%, and q90 skill = 15.6%.</li>
+#         <li><b>Evidence:</b> The model passes all product-facing release gates on the unseen test set, as shown above. </li>
+#         <li><b>Baseline Comparison:</b> XGBoost adds value compared with population and age-group baselines. Against the age-group baseline, it reduces MAE by 7.6%, typical-range interval score by 9.0%, and q90 loss by 14.3%.</li>
 #         <li><b>Calibration:</b> Do not add conformalized quantile regression for the MVP. Test calibration passes the predefined gates. Any calibration change should be evaluated in a new validation cycle, preferably against a later MEPS year when available.</li>
 #         <li><b>Prediction Output:</b> Show q50 as the plan-around estimate, q25-q75 as the typical range, and q90 as the safety cushion. Do not present a single point estimate.</li>
 #         <li><b>Launch Conditions:</b> Ship only with range-based predictions, the scope disclaimer, 2023-to-current-dollar adjustment, conditional planning notices to communicate prediction uncertainty for high predicted costs and uninsured users, and privacy-preserving aggregate monitoring.</li>
