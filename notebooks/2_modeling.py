@@ -3988,7 +3988,9 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>At Inference Time:</strong> Map the user inputs to the preprocessor inputs. Predict all quantiles using the fitted preprocessor and model, postprocess them, and compute permutation SHAP for q50. Rank contributions by absolute value and select the five largest. Apply medical-cost inflation to predictions, comparison benchmarks, and the selected SHAP contributions.</li>
 #     </ol>
 #     API response and privacy requirements are defined in the <a href="../docs/specs/technical_specifications.md#api-contract">API Contract</a> and <a href="../docs/specs/technical_specifications.md#privacy-preserving-monitoring">Privacy-Preserving Monitoring</a> sections of the technical specifications.
-# </div># %% [markdown]
+# </div>
+
+# %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">SHAP Explainer Setup</h2>
 # </div>
@@ -4043,7 +4045,7 @@ def predict_median_cost(X):
     return postprocess_quantile_predictions(quantile_predictions)[:, 1]
 
 # %%
-# Artifact consistency check: confirm that the saved preprocessor inputs and preprocessor reproduce the model-ready training features
+# Consistency check for preprocessor artifact: confirm that the saved preprocessor inputs and the preprocessor reproduce the model-ready training features
 X_train_reprocessed = preprocessor.transform(X_train_preprocessor_input)
 pd.testing.assert_frame_equal(
     X_train_reprocessed,
@@ -4116,11 +4118,19 @@ def calculate_shap_explanation(X):
             f"{missing_features}"
         )
 
-    return explainer(
-        X.loc[:, SHAP_INPUT_FEATURES],
-        max_evals=SHAP_MAX_EVALS,
-        silent=True,
-    )
+    # Make notebook reruns produce the same SHAP values for the same inputs.
+    # Reset NumPy's seed before each call so SHAP repeats the same feature permutations.
+    # Restore the previous random state afterward so other notebook code is unaffected.
+    numpy_random_state = np.random.get_state()
+    try:
+        np.random.seed(RANDOM_STATE)
+        return explainer(
+            X.loc[:, SHAP_INPUT_FEATURES],
+            max_evals=SHAP_MAX_EVALS,
+            silent=True,
+        )
+    finally:
+        np.random.set_state(numpy_random_state)
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
@@ -4176,8 +4186,8 @@ display(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Interpretation:</b> 
 #     <ul>
-#         <li><strong>For non-technical stakeholders:</strong> The explanation uses \$333 as its comparison point. This is the average of the model’s predicted median costs across a representative group of U.S. adults. This person’s inputs moved the model estimate down by \$251, resulting in a predicted median cost of \$82.</li>
-#         <li><strong>For end users:</strong> Your estimate is \$82, which is \$251 below the Medical Cost Planner&rsquo;s average estimate of \$333 for U.S. adults. <br><small>Note: This comparison amount is based on estimates for a representative group of U.S. adults.</small></li>
+#         <li><strong>For non-technical stakeholders:</strong> The explanation uses \$332 as its comparison point. This is the average of the model’s predicted median costs across a representative group of U.S. adults. This person’s inputs moved the model estimate down by \$250, resulting in a predicted median cost of \$82.</li>
+#         <li><strong>For end users:</strong> Your estimate is \$82, which is \$250 below the Medical Cost Planner&rsquo;s average estimate of \$332 for U.S. adults. <br><small>Note: This comparison amount is based on estimates for a representative group of U.S. adults.</small></li>
 #     </ul>
 # </div>
 
@@ -4240,11 +4250,11 @@ display(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Interpretation:</b>
 #     <ul>
-#         <li><strong>Education:</strong> The answer &ldquo;No Degree&rdquo; moved the plan-around estimate down by about \$132.</li>
-#         <li><strong>Insurance:</strong> The answer &ldquo;Public Only&rdquo; moved the estimate down by about \$104</li>
-#         <li><strong>Usual Source of Care:</strong> The answer &ldquo;No&rdquo; moved the estimate down by about \$80.</li>
-#         <li><strong>Age:</strong> The entered age of 70 moved the estimate up by about \$48.</li>
-#         <li><strong>Joint Pain:</strong> The answer &ldquo;No&rdquo; moved the estimate down by about \$47.</li>
+#         <li><strong>Education:</strong> The answer &ldquo;No Degree&rdquo; moved the plan-around estimate down by about \$135.</li>
+#         <li><strong>Insurance:</strong> The answer &ldquo;Public Only&rdquo; moved the estimate down by about \$97</li>
+#         <li><strong>Usual Source of Care:</strong> The answer &ldquo;No&rdquo; moved the estimate down by about \$82.</li>
+#         <li><strong>Age:</strong> The entered age of 70 moved the estimate up by about \$51.</li>
+#         <li><strong>High Cholesterol:</strong> The answer &ldquo;Yes&rdquo; moved the estimate up by about \$43.</li>
 #     </ul>
 #     <em>Note: These are local contributions relative to the SHAP background and depend on the person's other answers. They are not comparisons with specific alternative answers. They explain predicted, not actual, costs and should not be interpreted causally. For example, they do not show how changing public to private insurance or stopping to smoke would change a person's costs.</em>
 # </div>
