@@ -53,7 +53,6 @@ from time import perf_counter
 
 import numpy as np
 import pandas as pd
-import shap
 
 from src.constants import (
     PIPELINE_BINARY_FEATURES,
@@ -67,7 +66,12 @@ from src.modeling import (
     VAL_PREPROCESSOR_INPUT_DATA_PATH,
     TEST_PREPROCESSOR_INPUT_DATA_PATH,
     load_model,
-    postprocess_quantile_predictions,
+)
+from src.prediction import CostPredictor
+from src.explainability import (
+    build_shap_explainer,
+    calculate_max_evals,
+    calculate_shap_explanation,
 )
 
 
@@ -80,7 +84,6 @@ SHAP_INPUT_FEATURES = (
     + PIPELINE_NOMINAL_FEATURES
     + PIPELINE_BINARY_FEATURES
 )
-SHAP_MASKS_PER_ROUND = 2 * len(SHAP_INPUT_FEATURES) + 1
 SHAP_BASELINE_REL_DIFF_MAX = 0.10
 
 SHAP_TOP_K = 5
@@ -127,41 +130,11 @@ SHAP_SMOKE_REFERENCE_BACKGROUND_SIZE = 500
 SHAP_SMOKE_REFERENCE_PERMUTATION_ROUNDS = 2
 
 # Loaded once in main and used by the SHAP prediction function.
-preprocessor = None
-xgb_quantile_model = None
+predictor = None
 X_train_preprocessor_input = None
 w_train = None
 training_baseline = None
 X_shap_first_call = None
-
-
-def predict_median_cost(X):
-    """Predict postprocessed q50 cost from ordered preprocessor input features."""
-    if not isinstance(X, pd.DataFrame):
-        X = pd.DataFrame(X, columns=SHAP_INPUT_FEATURES)
-    else:
-        missing_features = [
-            feature
-            for feature in SHAP_INPUT_FEATURES
-            if feature not in X.columns
-        ]
-        if missing_features:
-            raise ValueError(
-                "SHAP input is missing preprocessor input features: "
-                f"{missing_features}"
-            )
-        X = X.loc[:, SHAP_INPUT_FEATURES]
-
-    X_model_ready = preprocessor.transform(X)
-    quantile_predictions = xgb_quantile_model.predict(X_model_ready)
-    return postprocess_quantile_predictions(quantile_predictions)[:, 1]
-
-
-def calculate_max_evals(permutation_rounds):
-    """Convert complete permutation rounds to the SHAP evaluation budget."""
-    if permutation_rounds < 1:
-        raise ValueError("permutation_rounds must be at least 1.")
-    return permutation_rounds * SHAP_MASKS_PER_ROUND
 
 
 def create_and_validate_shap_background(background_size):
@@ -172,7 +145,7 @@ def create_and_validate_shap_background(background_size):
         replace=True,
         random_state=RANDOM_STATE,
     )
-    background_baseline = predict_median_cost(background).mean()
+    background_baseline = predictor.predict_median_cost(background).mean()
     baseline_absolute_relative_difference = abs(
         background_baseline / training_baseline - 1
     )
@@ -189,27 +162,13 @@ def create_and_validate_shap_background(background_size):
     }
 
 
-def build_shap_explainer(background):
-    """Build a permutation SHAP explainer for one background sample."""
-    masker = shap.maskers.Independent(
-        background,
-        max_samples=len(background),
-    )
-    return shap.Explainer(
-        predict_median_cost,
-        masker,
-        algorithm="permutation",
-        seed=RANDOM_STATE,
-    )
-
-
 def measure_first_call_latency(explainer, max_evals):
     """Return seconds required for the first single-row SHAP call."""
     start_time = perf_counter()
-    explainer(
+    calculate_shap_explanation(
+        explainer,
         X_shap_first_call,
         max_evals=max_evals,
-        silent=True,
     )
     return perf_counter() - start_time
 
@@ -224,17 +183,17 @@ def explain_and_time_rows(explainer, X_rows, max_evals):
     for row_position in range(len(X_rows)):
         row_frame = X_rows.iloc[[row_position]]
         start_time = perf_counter()
-        explanation = explainer(
+        explanation = calculate_shap_explanation(
+            explainer,
             row_frame,
             max_evals=max_evals,
-            silent=True,
         )
         subsequent_call_latencies_s.append(perf_counter() - start_time)
         shap_values.append(explanation.values[0])
         shap_base_values.append(
             np.asarray(explanation.base_values).reshape(-1)[0]
         )
-        predicted_median_costs.append(predict_median_cost(row_frame)[0])
+        predicted_median_costs.append(predictor.predict_median_cost(row_frame)[0])
 
     return (
         np.vstack(shap_values),
@@ -339,7 +298,7 @@ def summarize_shap_configuration(
     reference_shap_values,
 ):
     """Summarize one candidate's latency and stability metrics."""
-    max_evals = calculate_max_evals(permutation_rounds)
+    max_evals = calculate_max_evals(permutation_rounds, len(SHAP_INPUT_FEATURES))
     planned_mask_evaluations = max_evals
     additivity_abs_error = np.abs(
         predicted_median_costs
@@ -385,7 +344,7 @@ def failed_background_result(
     background_info,
 ):
     """Return a visible result row when background validation fails."""
-    max_evals = calculate_max_evals(permutation_rounds)
+    max_evals = calculate_max_evals(permutation_rounds, len(SHAP_INPUT_FEATURES))
     planned_mask_evaluations = max_evals
     return {
         "background_size": background_size,
@@ -455,7 +414,7 @@ def run_shap_benchmark(
         )
 
     reference_max_evals = calculate_max_evals(
-        reference_permutation_rounds
+        reference_permutation_rounds, len(SHAP_INPUT_FEATURES)
     )
     if show_progress:
         print(
@@ -465,7 +424,7 @@ def run_shap_benchmark(
         )
     reference_start_time = perf_counter()
     reference_explainer = build_shap_explainer(
-        reference_background_info["background"]
+        predictor, reference_background_info["background"]
     )
     reference_first_call_latency_s = measure_first_call_latency(
         reference_explainer,
@@ -494,7 +453,7 @@ def run_shap_benchmark(
         background_size,
         permutation_rounds,
     ) in enumerate(candidate_configurations, start=1):
-        max_evals = calculate_max_evals(permutation_rounds)
+        max_evals = calculate_max_evals(permutation_rounds, len(SHAP_INPUT_FEATURES))
         if show_progress:
             print(
                 f"Candidate {candidate_number}/{candidate_count}: "
@@ -520,7 +479,7 @@ def run_shap_benchmark(
             continue
 
         candidate_explainer = build_shap_explainer(
-            background_info["background"]
+            predictor, background_info["background"]
         )
         first_call_latency_s = measure_first_call_latency(
             candidate_explainer,
@@ -695,8 +654,7 @@ def print_smoke_results(results):
 
 def main():
     """Load artifacts, select fixed rows, and run one benchmark mode."""
-    global preprocessor
-    global xgb_quantile_model
+    global predictor
     global X_train_preprocessor_input
     global w_train
     global training_baseline
@@ -730,9 +688,10 @@ def main():
     w_train = df_train[WEIGHT_COLUMN]
     preprocessor = load_model(PREPROCESSOR_PATH, verbose=False)
     xgb_quantile_model = load_model(MODEL_PATH, verbose=False)
+    predictor = CostPredictor(preprocessor, xgb_quantile_model, SHAP_INPUT_FEATURES)
 
     training_baseline = np.average(
-        predict_median_cost(X_train_preprocessor_input),
+        predictor.predict_median_cost(X_train_preprocessor_input),
         weights=w_train,
     )
 

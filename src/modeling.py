@@ -21,6 +21,7 @@ from sklearn.metrics import mean_absolute_error, r2_score
 
 # Local imports
 from src.constants import TARGET_COLUMN, RANDOM_STATE
+from src.prediction import postprocess_quantile_predictions
 
 # Paths (relative to project root)
 RAW_DATA_PATH = "data/h251.sas7bdat"
@@ -285,29 +286,6 @@ def train_and_evaluate(
                 mlflow.sklearn.log_model(model, "model")
 
     return results
-
-
-# =========================
-# Model Predictions
-# =========================
-
-def postprocess_quantile_predictions(y_pred):
-    """
-    Ensure quantile predictions are valid for cost planning.
-
-    Applies two constraints:
-      1. Predicted costs must be non-negative.
-      2. Quantiles must be monotonic: q25 <= q50 <= q75 <= q90.
-
-    Args:
-        y_pred (array-like): Quantile predictions with shape (n_samples, n_quantiles).
-
-    Returns:
-        np.ndarray: Postprocessed quantile predictions.
-    """
-    y_pred = np.asarray(y_pred, dtype=float)
-    y_pred = np.maximum(y_pred, 0)
-    return np.maximum.accumulate(y_pred, axis=1)
 
 
 # =========================

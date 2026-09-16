@@ -5,6 +5,9 @@ permutation round (max_evals=55). Explain test rows one at a time,
 then calculate survey-weighted mean absolute SHAP contributions 
 and each feature's share of total importance.
 
+Use the shared prediction and explanation functions, resetting the permutation
+seed for every row so its explanation does not depend on earlier audit rows.
+
 Modes:
     smoke:
         Explain two test rows and print a short validation summary without
@@ -32,7 +35,6 @@ from time import perf_counter
 
 import numpy as np
 import pandas as pd
-import shap
 
 from src.constants import (
     PIPELINE_BINARY_FEATURES,
@@ -46,7 +48,12 @@ from src.modeling import (
     TEST_PREPROCESSOR_INPUT_DATA_PATH,
     TRAIN_PREPROCESSOR_INPUT_DATA_PATH,
     load_model,
-    postprocess_quantile_predictions,
+)
+from src.prediction import CostPredictor
+from src.explainability import (
+    build_shap_explainer,
+    calculate_max_evals,
+    calculate_shap_explanation,
 )
 
 
@@ -62,13 +69,11 @@ SHAP_INPUT_FEATURES = (
 )
 SHAP_BACKGROUND_SIZE = 225
 SHAP_PERMUTATION_ROUNDS = 1
-SHAP_MASKS_PER_ROUND = 2 * len(SHAP_INPUT_FEATURES) + 1
-SHAP_MAX_EVALS = SHAP_PERMUTATION_ROUNDS * SHAP_MASKS_PER_ROUND
+SHAP_MAX_EVALS = calculate_max_evals(SHAP_PERMUTATION_ROUNDS, len(SHAP_INPUT_FEATURES))
 SHAP_BASELINE_REL_DIFF_MAX = 0.10
 SHAP_SMOKE_ROWS = 2
 
-preprocessor = None
-xgb_quantile_model = None
+predictor = None
 
 
 def parse_args():
@@ -76,28 +81,6 @@ def parse_args():
     parser = ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=("smoke", "full"))
     return parser.parse_args()
-
-
-def predict_median_cost(X):
-    """Predict postprocessed q50 cost from preprocessor input features."""
-    if not isinstance(X, pd.DataFrame):
-        X = pd.DataFrame(X, columns=SHAP_INPUT_FEATURES)
-    else:
-        missing_features = [
-            feature
-            for feature in SHAP_INPUT_FEATURES
-            if feature not in X.columns
-        ]
-        if missing_features:
-            raise ValueError(
-                "SHAP input is missing preprocessor input features: "
-                f"{missing_features}"
-            )
-        X = X.loc[:, SHAP_INPUT_FEATURES]
-
-    X_model_ready = preprocessor.transform(X)
-    quantile_predictions = xgb_quantile_model.predict(X_model_ready)
-    return postprocess_quantile_predictions(quantile_predictions)[:, 1]
 
 
 def create_and_validate_background(X_train, w_train):
@@ -109,10 +92,10 @@ def create_and_validate_background(X_train, w_train):
         random_state=RANDOM_STATE,
     )
     training_baseline = np.average(
-        predict_median_cost(X_train),
+        predictor.predict_median_cost(X_train),
         weights=w_train,
     )
-    background_baseline = predict_median_cost(background).mean()
+    background_baseline = predictor.predict_median_cost(background).mean()
     baseline_difference = abs(background_baseline / training_baseline - 1)
 
     print(f"Background rows:                  {SHAP_BACKGROUND_SIZE}")
@@ -128,33 +111,19 @@ def create_and_validate_background(X_train, w_train):
     return background
 
 
-def build_explainer(background):
-    """Build the permutation SHAP explainer."""
-    masker = shap.maskers.Independent(
-        background,
-        max_samples=len(background),
-    )
-    return shap.Explainer(
-        predict_median_cost,
-        masker,
-        algorithm="permutation",
-        seed=RANDOM_STATE,
-    )
-
-
 def calculate_contributions(explainer, X):
     """Explain rows individually and return contributions and validation data."""
     contributions = np.empty((len(X), len(SHAP_INPUT_FEATURES)))
     base_values = np.empty(len(X))
-    predictions = predict_median_cost(X)
+    predictions = predictor.predict_median_cost(X)
     start_time = perf_counter()
     progress_interval = 1 if len(X) <= SHAP_SMOKE_ROWS else 25
 
     for row_position in range(len(X)):
-        explanation = explainer(
+        explanation = calculate_shap_explanation(
+            explainer,
             X.iloc[[row_position]],
             max_evals=SHAP_MAX_EVALS,
-            silent=True,
         )
         contributions[row_position] = explanation.values[0]
         base_values[row_position] = explanation.base_values[0]
@@ -232,8 +201,7 @@ def create_shap_contribution_dataframe(
 
 def main():
     """Run the requested SHAP feature-importance audit mode."""
-    global preprocessor
-    global xgb_quantile_model
+    global predictor
 
     args = parse_args()
 
@@ -271,9 +239,10 @@ def main():
 
     preprocessor = load_model(PREPROCESSOR_PATH, verbose=False)
     xgb_quantile_model = load_model(MODEL_PATH, verbose=False)
+    predictor = CostPredictor(preprocessor, xgb_quantile_model, SHAP_INPUT_FEATURES)
 
     background = create_and_validate_background(X_train, w_train)
-    explainer = build_explainer(background)
+    explainer = build_shap_explainer(predictor, background)
 
     print(f"Explaining {len(X_evaluation)} test rows...")
     (

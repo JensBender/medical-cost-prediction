@@ -76,7 +76,12 @@ from src.modeling import (
     load_model,
     load_metrics,
     get_core_model_params,
-    postprocess_quantile_predictions
+)
+from src.prediction import CostPredictor, postprocess_quantile_predictions
+from src.explainability import (
+    build_shap_explainer,
+    calculate_max_evals,
+    calculate_shap_explanation,
 )
 from src.stats import (
     weighted_quantile,
@@ -3948,6 +3953,9 @@ plot_quantile_subgroup_predictions(
 #     <strong>Why Not TreeExplainer?</strong><br>
 #     TreeExplainer is faster for raw tree models, but it would explain only the inner XGBoost estimator operating on the 40 model-ready features. It would not include the fitted preprocessor, inverse target transformation, non-negative and monotonic quantile postprocessing, or q50 selection. Use <code>shap.Explainer(..., algorithm="permutation")</code> with the <code>predict_median_cost</code> prediction function so SHAP explains the q50 estimate based on the 27 preprocessor input features. These preprocessor input features are interpretable, semantically meaningful features.
 #     <br><br>
+#     <strong>Shared Code</strong><br> 
+#     <code>src/prediction.py</code> owns the prediction path and <code>src/explainability.py</code> owns SHAP setup and repeatable explanation calls. This notebook, the SHAP benchmarking script, the SHAP feature importance audit, and the future app import that same code. 
+#     <br><br>
 #     <strong>Feature Importance</strong><br>
 #     SHAP feature importance is based on the preprocessor input features produced by several MEPS data preparation steps, but before the preprocessor performs imputation, medical feature engineering, scaling, and one-hot encoding. The callable follows the complete prediction path: <code>27 preprocessor input features → preprocessor → 40 model-ready features → quantile model prediction → inverse target transformation → quantile postprocessing → q50</code>.
 #     <br><br>
@@ -4025,24 +4033,9 @@ xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=F
 
 
 # %%
-# 2. Define the prediction callable that SHAP will explain
-def predict_median_cost(X):
-    """Predict postprocessed q50 cost from preprocessor input features."""
-    if isinstance(X, pd.DataFrame):
-        X_preprocessor_input = X.loc[:, SHAP_INPUT_FEATURES]
-    else:
-        # SHAP arrays follow the column order defined by the background data.
-        X = np.asarray(X)
-        if X.ndim != 2 or X.shape[1] != len(SHAP_INPUT_FEATURES):
-            raise ValueError(
-                "SHAP input must have shape "
-                f"(n_rows, {len(SHAP_INPUT_FEATURES)})."
-            )
-        X_preprocessor_input = pd.DataFrame(X, columns=SHAP_INPUT_FEATURES)
-
-    X_model_ready = preprocessor.transform(X_preprocessor_input)
-    quantile_predictions = xgb_quantile_model.predict(X_model_ready)
-    return postprocess_quantile_predictions(quantile_predictions)[:, 1]
+# 2. Use the prediction callable 
+predictor = CostPredictor(preprocessor, xgb_quantile_model, SHAP_INPUT_FEATURES)
+predict_median_cost = predictor.predict_median_cost
 
 # %%
 # Consistency check for preprocessor artifact: confirm that the saved preprocessor inputs and the preprocessor reproduce the model-ready training features
@@ -4060,8 +4053,7 @@ del X_train_reprocessed
 # 3. Create and validate the background sample using the selected SHAP configuration
 SHAP_BACKGROUND_N = 225
 SHAP_PERMUTATION_ROUNDS = 1
-SHAP_MASKS_PER_ROUND = 2 * len(SHAP_INPUT_FEATURES) + 1
-SHAP_MAX_EVALS = SHAP_PERMUTATION_ROUNDS * SHAP_MASKS_PER_ROUND
+SHAP_MAX_EVALS = calculate_max_evals(SHAP_PERMUTATION_ROUNDS, len(SHAP_INPUT_FEATURES))
 SHAP_BASELINE_REL_DIFF_MAX = 0.10
 
 shap_background = X_train_preprocessor_input.sample(
@@ -4091,46 +4083,8 @@ if baseline_absolute_relative_difference > SHAP_BASELINE_REL_DIFF_MAX:
     )
 
 # %%
-# 4. Build the explainer and define the explanation function
-shap_masker = shap.maskers.Independent(
-    shap_background,
-    max_samples=SHAP_BACKGROUND_N,
-)
-explainer = shap.Explainer(
-    predict_median_cost,
-    shap_masker,
-    algorithm="permutation",
-    seed=RANDOM_STATE,
-)
-
-
-def calculate_shap_explanation(X):
-    """Calculate a 2023-dollar SHAP explanation for one or more input rows."""
-    if not isinstance(X, pd.DataFrame):
-        raise TypeError("SHAP inputs must be provided as a pandas DataFrame.")
-
-    missing_features = [
-        feature for feature in SHAP_INPUT_FEATURES if feature not in X.columns
-    ]
-    if missing_features:
-        raise ValueError(
-            "SHAP input is missing preprocessor input features: "
-            f"{missing_features}"
-        )
-
-    # Make notebook reruns produce the same SHAP values for the same inputs.
-    # Reset NumPy's seed before each call so SHAP repeats the same feature permutations.
-    # Restore the previous random state afterward so other notebook code is unaffected.
-    numpy_random_state = np.random.get_state()
-    try:
-        np.random.seed(RANDOM_STATE)
-        return explainer(
-            X.loc[:, SHAP_INPUT_FEATURES],
-            max_evals=SHAP_MAX_EVALS,
-            silent=True,
-        )
-    finally:
-        np.random.set_state(numpy_random_state)
+# 4. Build the SHAP explainer once
+explainer = build_shap_explainer(predictor, shap_background, random_state=RANDOM_STATE)
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
@@ -4144,7 +4098,9 @@ def calculate_shap_explanation(X):
 # %%
 example_idx = 0
 X_test_example = X_test_preprocessor_input.iloc[[example_idx]]
-shap_explanation = calculate_shap_explanation(X_test_example)
+shap_explanation = calculate_shap_explanation(
+    explainer, X_test_example, max_evals=SHAP_MAX_EVALS, random_state=RANDOM_STATE,
+)
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
@@ -4266,12 +4222,13 @@ display(
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ <strong>Benchmarking Plan</strong><br>
+#     <p><strong>Results Refresh Pending:</strong> The saved benchmark and global SHAP audit results predate the shared per-call seed policy. Regenerate those results before confirming the SHAP configuration and global contribution summaries under the new implementation.</p>
 #     <strong>Goal:</strong> Identify the least computationally expensive combination of permutation rounds and background size that produces stable explanations while supporting the prediction request latency requirement.
 #     <br><br>
 #     <strong>Implementation:</strong> The notebook documents the evaluation plan and reviews the results. The single source of truth for the benchmarking code implementation is the executable <a href="../scripts/benchmark_shap.py"><code>scripts/benchmark_shap.py</code></a>. See the technical specification for the complete <a href="../docs/specs/technical_specifications.md#latency-definitions-and-measurement">latency definitions and measurement boundaries</a>.
 #     <ul>
 #         <li><strong>Latency requirement:</strong> For requests that include a SHAP explanation, P95 prediction request latency (server-side) must be less than one second under subsequent-call conditions on the target hardware. Measure first-call latency separately. Target end-to-end latency (user-perceived) is approximately three seconds.</li>
-#         <li><strong>Core SHAP explanation latency:</strong> The benchmark measures one <code>explainer(...)</code> call for one validation or test row at a time. This includes the repeated masked predictions through the complete q50 callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection. It excludes the other server work, network transfer, and interface rendering.</li>
+#         <li><strong>Core SHAP explanation latency:</strong> The benchmark measures one shared <code>calculate_shap_explanation(...)</code> call for one validation or test row at a time. This includes per-call seed handling and repeated masked predictions through the complete q50 callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection. It excludes the other server work, network transfer, and interface rendering.</li>
 #         <li><strong>First-call and subsequent-call SHAP latency:</strong> For each candidate, build the explainer outside the timer and measure its first call separately. This is the first call for that explainer, not a full application cold start. Then measure the remaining rows individually and calculate p50, p90, and p95 from those subsequent calls.</li>
 #         <li><strong>Background data validation:</strong> Compare the baseline (mean postprocessed q50) of each candidate background sample against the full weighted training baseline. Accept a candidate only if the absolute relative difference is at most 10%.</li>
 #         <li><strong>Candidate grid:</strong> Benchmark background sizes <code>[225, 250, 275, 300]</code> and SHAP evaluation budgets (<code>max_evals</code>) <code>[55, 110, 165]</code>, equal to 1, 2, and 3 permutation rounds. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask. Note: This grid refines an initial broader screen of background sizes [50, 100, 200, 300] and 3, 6, and 12 rounds, which showed that the smaller backgrounds failed the initial representativeness gate and additional permutation rounds increased latency without meaningful stability gains.</li>

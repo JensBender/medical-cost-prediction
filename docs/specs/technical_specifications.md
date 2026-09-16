@@ -517,11 +517,14 @@ The schema is:
 }
 ```
 
-The `0.0` cutoff is a placeholder, the actual value for model deployment is in
-`app/data/prediction_metadata.json`. Trigger `HIGH_PREDICTED_UNCERTAINTY` when
+The `0.0` cutoff is a placeholder, the actual value for model deployment is in `app/data/prediction_metadata.json`. Trigger `HIGH_PREDICTED_UNCERTAINTY` when
 the pre-inflation predicted `q90` is greater than or equal to this fixed cutoff.
 
 ### Model Explainability (SHAP)
+
+Shared runtime code lives in `src/prediction.py` and `src/explainability.py`. `CostPredictor` reuses fitted preprocessing and model artifacts for all four
+quantiles and exposes `predict_median_cost` as the q50 callable. Build the explainer once per worker. 
+
 Use SHAP values for user-facing cost-driver explanations. SHAP must operate on the 27 preprocessor input features. These are interpretable, semantically meaningful features before imputation, medical feature derivation, scaling, and one-hot encoding. Build `shap.Explainer` with `shap.maskers.Independent` over a survey-weighted background sample. Use permutation SHAP rather than TreeExplainer because the explanation target is the full postprocessed q50 inference callable, not the raw inner XGBoost tree output. The permutation-SHAP callable must run the complete q50 prediction path: fitted preprocessor, transformed-target quantile model, inverse target transformation, quantile cleanup, and q50 selection. It returns the postprocessed q50 plan-around estimate in 2023 dollars before medical-cost inflation. This makes each SHAP feature an interpretable input. Before deployment, verify on the test set that monotonic quantile enforcement rarely changes q50 and that any q50 adjustment is negligible. Apply medical-cost inflation only during API/UI output formatting.
 
 Persist the fitted preprocessing pipeline as `models/preprocessor.joblib`. Store the SHAP background sample as `app/data/shap_background.parquet` and SHAP metadata as `app/data/shap_metadata.json`. The background sample should use MEPS person weights (`PERWT23F`) with replacement so the unweighted SHAP background approximates the weighted U.S. adult reference population. The initial target range is 200-500 background rows, and the final production size is selected by benchmarking. Validate the sample by comparing the SHAP background baseline with the full weighted training baseline. The artifact passes if `abs(relative_difference) <= 0.10`; if it exceeds 10%, increase the background size before deployment.
@@ -620,7 +623,7 @@ Use the following terms consistently so each latency measurement has a clear bou
 
 | Term | Measurement Boundary | What It Includes | Target |
 | :--- | :--- | :--- | :--- |
-| **Core SHAP explanation latency** | From calling <code>explainer(...)</code> for one row until it returns the SHAP explanation | The repeated masked predictions through the complete q50 callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection | Screening metric only; it is one component of prediction request latency |
+| **Core SHAP explanation latency** | From calling the <code>calculate_shap_explanation(...)</code> for one row until it returns the SHAP explanation | The repeated masked predictions through the complete q50 callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection | Screening metric only; it is one component of prediction request latency |
 | **Prediction request latency (server-side)** | From the prediction service receiving a request until the response is ready to return | Request parsing, input validation and mapping, prediction, SHAP explanation (optional for API requests), inflation adjustment, top-driver selection, and response construction and serialization | P95 < 1 second for requests that include SHAP under subsequent-call conditions on the target hardware. Report first-call latency separately (NFR-04) |
 | **API round-trip latency (client-observed)** | From an API client sending a request until it receives the complete response | Network transfer in both directions and prediction request latency | No separate MVP target |
 | **End-to-end latency (user-perceived)** | From the user clicking **Predict** until the result is rendered in the interface | Interface processing, API round-trip latency, interface state updates, and result rendering | Approximately 3 seconds under NFR-04 |

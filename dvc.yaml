@@ -74,6 +74,7 @@ stages:
       - scripts/train_xgboost_quantile.py         # Training script for reproducible quantile regression 
       - models/xgb_tuned_params.json              # Hyperparameters of the best tuned (point-estimate) model
       - src/modeling.py                           # Weighted MdAE function, data paths, model persistence functions
+      - src/prediction.py                         # Shared quantile postprocessing
       - src/constants.py                          # Column names for target and weights 
     outs:
       - models/xgb_quantile_model.joblib
