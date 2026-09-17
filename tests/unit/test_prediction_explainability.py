@@ -40,6 +40,15 @@ def test_postprocessing_clips_and_enforces_quantile_order():
     assert raw[0, 0] == -3  # Caller-owned raw predictions are preserved.
 
 
+@pytest.mark.parametrize(
+    "raw",
+    [np.ones(4), np.ones((2, 3)), np.ones((2, 5))],
+)
+def test_postprocessing_rejects_invalid_quantile_shapes(raw):
+    with pytest.raises(ValueError, match="q25/q50/q75/q90"):
+        postprocess_quantile_predictions(raw)
+
+
 def test_prediction_aligns_columns_and_matches_ordered_arrays(predictor):
     X = pd.DataFrame({'b': [1, 5], 'unused': [99, 99], 'a': [3, 2]})
     expected = [[2, 4, 6, 8], [0, 7, 9, 11]]
@@ -58,6 +67,12 @@ def test_prediction_rejects_missing_or_wrong_shape_inputs(predictor):
 def test_prediction_rejects_wrong_model_quantiles(predictor, monkeypatch):
     monkeypatch.setattr(predictor.model, 'predict', lambda X: np.ones((len(X), 3)))
     with pytest.raises(ValueError, match='q25/q50/q75/q90'):
+        predictor.predict_quantiles(np.ones((1, 2)))
+
+
+def test_prediction_rejects_wrong_model_row_count(predictor, monkeypatch):
+    monkeypatch.setattr(predictor.model, 'predict', lambda X: np.ones((len(X) + 1, 4)))
+    with pytest.raises(ValueError, match='one prediction row per input row'):
         predictor.predict_quantiles(np.ones((1, 2)))
 
 
