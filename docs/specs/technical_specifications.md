@@ -527,7 +527,7 @@ quantiles and exposes `predict_median_cost` as the q50 callable. Build the expla
 
 Use SHAP values for user-facing cost-driver explanations. SHAP must operate on the 27 preprocessor input features. These are interpretable, semantically meaningful features before imputation, medical feature derivation, scaling, and one-hot encoding. Build `shap.Explainer` with `shap.maskers.Independent` over a survey-weighted background sample. Use permutation SHAP rather than TreeExplainer because the explanation target is the full postprocessed q50 inference callable, not the raw inner XGBoost tree output. The permutation-SHAP callable must run the complete q50 prediction path: fitted preprocessor, transformed-target quantile model, inverse target transformation, quantile cleanup, and q50 selection. It returns the postprocessed q50 plan-around estimate in 2023 dollars before medical-cost inflation. This makes each SHAP feature an interpretable input. Before deployment, verify on the test set that monotonic quantile enforcement rarely changes q50 and that any q50 adjustment is negligible. Apply medical-cost inflation only during API/UI output formatting.
 
-Persist the fitted preprocessing pipeline as `models/preprocessor.joblib`. Store the SHAP background sample as `app/data/shap_background.parquet` and SHAP metadata as `app/data/shap_metadata.json`. The background sample should use MEPS person weights (`PERWT23F`) with replacement so the unweighted SHAP background approximates the weighted U.S. adult reference population. The initial target range is 200-500 background rows, and the final production size is selected by benchmarking. Validate the sample by comparing the SHAP background baseline with the full weighted training baseline. The artifact passes if `abs(relative_difference) <= 0.10`; if it exceeds 10%, increase the background size before deployment.
+Persist the fitted preprocessing pipeline as `models/preprocessor.joblib`. Store the SHAP background sample as `app/data/shap_background.joblib` and SHAP metadata as `app/data/shap_metadata.json`. Joblib preserves the background DataFrame's column types and missing values without adding a Parquet dependency to the application environment. The background sample should use MEPS person weights (`PERWT23F`) with replacement so the unweighted SHAP background approximates the weighted U.S. adult reference population. The initial target range is 200-500 background rows, and the final production size is selected by benchmarking. Validate the sample by comparing the SHAP background baseline with the full weighted training baseline. The artifact passes if `abs(relative_difference) <= 0.10`; if it exceeds 10%, increase the background size before deployment.
 
 <a id="shap-metadata-contract"></a>
 #### SHAP Metadata Artifact Contract
@@ -540,7 +540,7 @@ The following template defines the structure of `app/data/shap_metadata.json`.
   "artifacts": {
     "model": "models/xgb_quantile_model.joblib",
     "preprocessor": "models/preprocessor.joblib",
-    "background": "app/data/shap_background.parquet"
+    "background": "app/data/shap_background.joblib"
   },
   "data_source": "MEPS 2023 (HC-251), training split",
   "reference_population": "U.S. civilian noninstitutionalized adults represented by MEPS training rows",

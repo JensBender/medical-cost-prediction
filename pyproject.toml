@@ -20,7 +20,6 @@ dependencies = [
     "scikit-learn==1.7.2",
     "xgboost==3.1.2",
     "shap==0.52.0",
-    "pyarrow==19.0.1",
 ]
 
 [project.optional-dependencies]
@@ -32,6 +31,7 @@ train = [
     "ipywidgets==8.1.5",
     "matplotlib==3.10.7",
     "seaborn==0.13.2",
+    "pyarrow==19.0.1",  # Read and write Parquet files with pandas
     "mlflow==3.10.1",
     "dvc==3.67.0",
     "google-genai==1.73.1",
