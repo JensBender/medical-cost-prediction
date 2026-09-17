@@ -23,7 +23,6 @@ pytestmark = pytest.mark.unit
 def test_postprocessing_fixes_negative_costs_and_quantile_crossing(
     input_quantiles, expected_quantiles,
 ):
-    # One row contains one person's q25, q50, q75, and q90 predictions.
     input_quantiles = np.array([input_quantiles], dtype=float)
     original_quantiles = input_quantiles.copy()
     expected_quantiles = np.array([expected_quantiles], dtype=float)
@@ -31,17 +30,31 @@ def test_postprocessing_fixes_negative_costs_and_quantile_crossing(
     actual_quantiles = postprocess_quantile_predictions(input_quantiles)
 
     np.testing.assert_array_equal(actual_quantiles, expected_quantiles)
-    # Postprocessing returns a new array and leaves the supplied values intact.
+    # Ensure input quantiles remain unchanged.
     np.testing.assert_array_equal(input_quantiles, original_quantiles)
 
 
 @pytest.mark.parametrize(
-    "raw",
-    [np.ones(4), np.ones((2, 3)), np.ones((2, 5))],
+    "input_quantiles",
+    [
+        pytest.param(
+            np.array([1, 2, 3, 4]),  # must be [[1, 2, 3, 4]], not [1, 2, 3, 4]
+            id="missing_row_dimension",
+        ),
+        pytest.param(
+            np.array([[1, 2, 3], [4, 5, 6]]),
+            id="too_few_columns",
+        ),
+        pytest.param(
+            np.array([[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]),
+            id="too_many_columns",
+        ),
+    ],
 )
-def test_postprocessing_rejects_invalid_quantile_shapes(raw):
-    with pytest.raises(ValueError, match="q25/q50/q75/q90"):
-        postprocess_quantile_predictions(raw)
+def test_postprocessing_requires_rows_with_four_quantile_columns(input_quantiles):
+    """Reject inputs that are not a 2D array with four columns (for q25, q50, q75, q90)."""
+    with pytest.raises(ValueError, match="q25/q50/q75/q90"):  # ValueError message mentions the four quantiles
+        postprocess_quantile_predictions(input_quantiles)
 
 
 def test_prediction_aligns_columns_and_matches_ordered_arrays(predictor):
