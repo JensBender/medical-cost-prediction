@@ -9,9 +9,10 @@ def postprocess_quantile_predictions(y_pred):
 
     The input must have shape (n_rows, 4). The caller must supply the columns
     in q25/q50/q75/q90 order; this function checks the shape, not the column
-    meanings. Negative costs are clipped to zero. If a later quantile is lower
-    than the preceding one, it is raised to that value so that
-    q25 <= q50 <= q75 <= q90. The result is a new NumPy array of the same shape.
+    meanings. Negative costs are clipped to zero. Quantile crossing occurs when
+    a later quantile is lower than the preceding one. Raise it to that value to
+    enforce monotonic quantiles: q25 <= q50 <= q75 <= q90. The result is a new
+    NumPy array of the same shape.
     """
     y_pred = np.asarray(y_pred, dtype=float)
     if y_pred.ndim != 2 or y_pred.shape[1] != 4:

@@ -7,10 +7,32 @@ from src.prediction import postprocess_quantile_predictions
 pytestmark = pytest.mark.unit
 
 
-def test_postprocessing_clips_and_enforces_quantile_order():
-    raw = np.array([[-3., 2., 1., 5.], [-4., -2., -3., -1.]])
-    np.testing.assert_array_equal(postprocess_quantile_predictions(raw), [[0, 2, 2, 5], [0, 0, 0, 0]])
-    assert raw[0, 0] == -3  # Caller-owned raw predictions are preserved.
+@pytest.mark.parametrize(
+    "input_quantiles, expected_quantiles",
+    [
+        # Replace the negative q25 with zero.
+        pytest.param(
+            [-10, 20, 30, 40], [0, 20, 30, 40], id="negative_cost",
+        ),
+        # Fix quantile crossing by raising q75 to q50.
+        pytest.param(
+            [10, 30, 20, 40], [10, 30, 30, 40], id="quantile_crossing",
+        ),
+    ],
+)
+def test_postprocessing_fixes_negative_costs_and_quantile_crossing(
+    input_quantiles, expected_quantiles,
+):
+    # One row contains one person's q25, q50, q75, and q90 predictions.
+    input_quantiles = np.array([input_quantiles], dtype=float)
+    original_quantiles = input_quantiles.copy()
+    expected_quantiles = np.array([expected_quantiles], dtype=float)
+
+    actual_quantiles = postprocess_quantile_predictions(input_quantiles)
+
+    np.testing.assert_array_equal(actual_quantiles, expected_quantiles)
+    # Postprocessing returns a new array and leaves the supplied values intact.
+    np.testing.assert_array_equal(input_quantiles, original_quantiles)
 
 
 @pytest.mark.parametrize(
