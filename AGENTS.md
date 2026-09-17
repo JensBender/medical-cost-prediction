@@ -42,25 +42,38 @@ model evaluation, and a planned FastAPI/Gradio app.
 
 ## Writing style
 
-Use plain, natural English.
+Apply these rules to docstrings, comments, explanatory strings in code,
+notebook Markdown, analysis summaries, the README, the product requirements
+and technical specifications documents, and suggested commit messages.
 
-- Write for a smart reader who is new to the project.
-- Use short sentences and common words.
-- Prefer concrete examples over abstract explanations.
-- Use active voice.
-- Put the main point first.
-- Explain necessary technical terms the first time you use them.
-- Avoid academic language, corporate jargon, marketing language, and buzzwords.
-- Do not use a complicated word when a simple word means the same thing.
-- Remove filler, repetition, and unnecessary background.
-- Keep headings and lists short.
-- Do not make the writing sound formal just because it is documentation.
+- Use the same plain, direct tone as a helpful work summary. Documentation must
+  make sense without the conversation that led to it.
+- Write for a smart reader who is new to the project. Put the main point first,
+  then explain what happens, why it matters, or what the reader needs to do.
+- Use common words, active verbs, and concrete examples. Replace abstract labels
+  with explanations of the actual behavior.
+- Keep necessary technical terms and explain unfamiliar ones where they first
+  matter. Use real code names and call each thing by the same name throughout.
+- Prefer readable sentences over the fewest words. Vary sentence length and keep
+  related conditions and consequences together when that makes them clearer.
+- Remove filler, repetition, jargon, and unnecessary formality. Use headings and
+  lists only when they help the reader follow or find information.
+- In docstrings, explain behavior and any inputs, outputs, or limits the caller
+  needs to know. In comments, explain reasons that are not obvious from the code.
+- In analysis summaries, state the finding and its evidence, then explain what
+  it means. Preserve uncertainty, units, population scope, and whether results
+  use survey weights. Do not turn associations into causal claims.
+- Distinguish planned behavior, requirements, and implemented behavior. Preserve
+  technical meaning when simplifying wording.
 
-Before making changes to any document, rewrite sentences that a new team member might
-need to read twice.
+Before finishing, reread the text you added or changed from a new team member's
+perspective. Rewrite passages that need a second read, without expanding the edit
+to unrelated text. Use `$plain-writing` for a focused revision when requested.
 
 ## Commits
 
 - Do not commit directly unless explicitly asked.
 - After making code or documentation changes, suggest one atomic commit message
   that follows `docs/workflow/git_conventions.md`.
+- Apply the writing rules and readability pass to the first suggested message.
+- Write for someone reading the Git history without this conversation. 
