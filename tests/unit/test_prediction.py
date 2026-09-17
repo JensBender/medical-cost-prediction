@@ -57,12 +57,47 @@ def test_postprocessing_requires_rows_with_four_quantile_columns(input_quantiles
         postprocess_quantile_predictions(input_quantiles)
 
 
-def test_prediction_aligns_columns_and_matches_ordered_arrays(predictor):
-    X = pd.DataFrame({'b': [1, 5], 'unused': [99, 99], 'a': [3, 2]})
-    expected = [[2, 4, 6, 8], [0, 7, 9, 11]]
-    np.testing.assert_array_equal(predictor.predict_quantiles(X), expected)
-    np.testing.assert_array_equal(predictor.predict_quantiles(X[['a', 'b']].to_numpy()), expected)
-    np.testing.assert_array_equal(predictor.predict_median_cost(X), [4, 7])
+def test_predict_quantiles_selects_and_orders_preprocessor_input_features(
+    predictor,
+):
+    """Pass only the configured preprocessor input features, in their required order."""
+    prediction_input = pd.DataFrame(
+        {
+            "b": [1, 2],
+            "unused": [99, 99],
+            "a": [3, 6],
+        }
+    )
+    expected_quantiles = np.array(
+        [
+            [2, 4, 6, 8],   # The fake model maps a=3, b=1 to these quantiles.
+            [4, 8, 10, 12],  # The fake model maps a=6, b=2 to these quantiles.
+        ]
+    )
+
+    actual_quantiles = predictor.predict_quantiles(prediction_input)
+
+    np.testing.assert_array_equal(actual_quantiles, expected_quantiles)
+
+
+def test_array_prediction_uses_configured_feature_order(predictor):
+    """Treat array columns as already ordered a followed by b."""
+    input_features = np.array([[3, 1], [6, 2]])
+    expected_quantiles = np.array([[2, 4, 6, 8], [4, 8, 10, 12]])
+
+    actual_quantiles = predictor.predict_quantiles(input_features)
+
+    np.testing.assert_array_equal(actual_quantiles, expected_quantiles)
+
+
+def test_median_prediction_returns_q50(predictor):
+    """Return q50, the second of the four predicted quantiles."""
+    input_features = np.array([[3, 1], [6, 2]])
+    expected_median_costs = np.array([4, 8])
+
+    actual_median_costs = predictor.predict_median_cost(input_features)
+
+    np.testing.assert_array_equal(actual_median_costs, expected_median_costs)
 
 
 def test_prediction_rejects_missing_or_wrong_shape_inputs(predictor):
