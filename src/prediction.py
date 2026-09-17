@@ -5,12 +5,13 @@ import pandas as pd
 
 
 def postprocess_quantile_predictions(y_pred):
-    """Enforce non-negative, monotonic quantiles.
+    """Return non-negative quantiles in increasing order without changing the input.
 
-    Ensure predictions have one row per observation and four columns in
-    q25/q50/q75/q90 order. Negative costs are clipped to zero. Quantile
-    crossing is resolved by raising each later quantile to the preceding
-    quantile when needed (q25 <= q50 <= q75 <= q90).
+    The input must have shape (n_rows, 4). The caller must supply the columns
+    in q25/q50/q75/q90 order; this function checks the shape, not the column
+    meanings. Negative costs are clipped to zero. If a later quantile is lower
+    than the preceding one, it is raised to that value so that
+    q25 <= q50 <= q75 <= q90. The result is a new NumPy array of the same shape.
     """
     y_pred = np.asarray(y_pred, dtype=float)
     if y_pred.ndim != 2 or y_pred.shape[1] != 4:
@@ -23,21 +24,21 @@ def postprocess_quantile_predictions(y_pred):
 
 
 class CostPredictor:
-    """Run the core q25/q50/q75/q90 inference path with fitted artifacts.
+    """Predict out-of-pocket costs using a fitted preprocessor and quantile model.
 
-    The class holds an already-loaded fitted preprocessor, fitted quantile
-    model, and required preprocessor-input feature order. It aligns input
-    features, applies preprocessing, predicts all four quantiles, applies the
-    model's inverse target transformation, and postprocesses the quantiles.
+    Create this object once with the loaded preprocessor, model, and input
+    feature names. Each prediction orders the input features, applies the
+    preprocessor, calls the model, and makes the four quantiles non-negative
+    and increasing. ``predict_median_cost`` selects q50 from these results
+    for SHAP explanations.
 
-    ``predict_median_cost`` additionally selects q50 for SHAP explanations.
+    The model must return q25/q50/q75/q90 in 2023 dollars, in that order.
+    Our saved model is a TransformedTargetRegressor, whose ``predict``
+    method converts predictions from log-transformed costs back to dollars.
 
-    The model must return q25/q50/q75/q90 in that order. The model is nested in 
-    a TransformedTargetRegressor, which applies the inverse target transformation 
-    during ``model.predict``. 
-    
-    This class does not load or persist artifacts and does not perform API 
-    validation, inflation adjustment, or output formatting.
+    The caller loads the artifacts. This class does not load or save them.
+    API input validation, inflation adjustment, and response formatting
+    happen outside this class.
     """
 
     def __init__(self, preprocessor, model, input_features):
@@ -53,7 +54,8 @@ class CostPredictor:
         DataFrame columns are selected and ordered using ``input_features``.
         Array inputs, such as SHAP's masked inputs, must already use that order.
         The method then applies the fitted preprocessor, calls the fitted model,
-        and enforces non-negative, monotonic quantiles.
+        and enforces non-negative, monotonic quantiles. The result is a NumPy
+        array with shape (n_rows, 4), with one column for each quantile.
         """
         if isinstance(X, pd.DataFrame):
             missing_features = [feature for feature in self.input_features if feature not in X.columns]
@@ -76,5 +78,10 @@ class CostPredictor:
         return predictions
 
     def predict_median_cost(self, X):
-        """Return q50 from the complete postprocessed inference path for SHAP."""
+        """Run preprocessing, prediction, and postprocessing, then select q50.
+
+        Return a NumPy array with shape (n_rows,) containing median cost
+        predictions in 2023 dollars. SHAP uses this method to explain the
+        prediction after all these steps.
+        """
         return self.predict_quantiles(X)[:, 1]
