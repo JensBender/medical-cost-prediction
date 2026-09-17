@@ -21,7 +21,6 @@ from sklearn.metrics import mean_absolute_error, r2_score
 
 # Local imports
 from src.constants import TARGET_COLUMN, RANDOM_STATE
-from src.prediction import postprocess_quantile_predictions
 
 # Paths (relative to project root)
 RAW_DATA_PATH = "data/h251.sas7bdat"

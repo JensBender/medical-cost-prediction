@@ -46,11 +46,11 @@ from sklearn.metrics import mean_absolute_error, r2_score
 
 # Local imports
 from src.constants import TARGET_COLUMN, WEIGHT_COLUMN
+from src.prediction import postprocess_quantile_predictions
 from src.modeling import (
     TRAIN_MODEL_READY_DATA_PATH,
     VAL_MODEL_READY_DATA_PATH,
     weighted_median_absolute_error,
-    postprocess_quantile_predictions,
     save_model,
     save_metrics,
     load_metrics,
