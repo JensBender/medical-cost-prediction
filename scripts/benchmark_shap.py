@@ -36,6 +36,12 @@ Outputs:
     and subsequent-call P50, P90, and P95. Individual subsequent-call timings
     are used to calculate the percentiles but are not saved.
 
+    After the selected configuration passes the final test evaluation, test
+    mode also saves the exact evaluated production artifacts:
+
+        app/data/shap_background.joblib
+        app/data/shap_metadata.json
+
 For the detailed evaluation rationale and selection criteria, see the
 "SHAP Benchmarking" section in notebooks/2_modeling.py.
 
@@ -47,10 +53,12 @@ Usage:
 """
 
 from argparse import ArgumentParser
+import json
 import logging
 from pathlib import Path
 from time import perf_counter
 
+import joblib
 import numpy as np
 import pandas as pd
 
@@ -78,6 +86,9 @@ from src.explainability import (
 PREPROCESSOR_PATH = Path("models/preprocessor.joblib")
 MODEL_PATH = Path("models/xgb_quantile_model.joblib")
 RESULTS_DIR = Path("models")
+APP_DATA_DIR = Path("app/data")
+SHAP_BACKGROUND_PATH = APP_DATA_DIR / "shap_background.joblib"
+SHAP_METADATA_PATH = APP_DATA_DIR / "shap_metadata.json"
 
 SHAP_INPUT_FEATURES = (
     PIPELINE_NUMERICAL_FEATURES
@@ -91,6 +102,7 @@ SHAP_MIN_TOP_5_MATCHES = 4
 SHAP_MIN_TOP_5_MATCH_ROW_SHARE = 0.90
 SHAP_MATERIAL_CONTRIBUTION_MIN_2023_USD = 25.0
 SHAP_MEDIAN_TOP_5_ABS_DELTA_MAX_2023_USD = 25.0
+SHAP_ADDITIVITY_ABS_ERROR_MAX_2023_USD = 0.01
 
 SHAP_STAGE_1_ROWS = 20
 SHAP_STAGE_2_ROWS = 100
@@ -160,6 +172,119 @@ def create_and_validate_shap_background(background_size):
             <= SHAP_BASELINE_REL_DIFF_MAX
         ),
     }
+
+
+def build_shap_metadata(background_info, test_result):
+    """Describe the exact SHAP background and explainer configuration."""
+    background_baseline = float(background_info["baseline_2023_usd"])
+    relative_difference = background_baseline / training_baseline - 1
+    return {
+        "schema_version": 1,
+        "artifacts": {
+            "model": str(MODEL_PATH).replace("\\", "/"),
+            "preprocessor": str(PREPROCESSOR_PATH).replace("\\", "/"),
+            "background": str(SHAP_BACKGROUND_PATH).replace("\\", "/"),
+        },
+        "data_source": "MEPS 2023 (HC-251), training split",
+        "reference_population": (
+            "U.S. civilian noninstitutionalized adults represented by "
+            "MEPS training rows"
+        ),
+        "explained_output": {
+            "quantile": "q50",
+            "meaning": (
+                "plan-around estimate, predicted median out-of-pocket cost"
+            ),
+            "unit": "USD",
+            "currency_year": 2023,
+            "postprocessed": True,
+            "inflation_adjusted": False,
+        },
+        "background_sample": {
+            "feature_set": "preprocessor_input",
+            "feature_count": len(SHAP_INPUT_FEATURES),
+            "rows": len(background_info["background"]),
+            "sampling_method": (
+                "weighted sample with replacement using PERWT23F"
+            ),
+            "random_state": RANDOM_STATE,
+        },
+        "explainer_contract": {
+            "algorithm": "permutation",
+            "permutation_rounds": int(test_result["permutation_rounds"]),
+            "max_evals": int(test_result["max_evals"]),
+            "prediction_function": "predict_median_cost",
+            "input_feature_set": "preprocessor_input",
+            "input_feature_count": len(SHAP_INPUT_FEATURES),
+            "prediction_pipeline": [
+                {
+                    "operation": "preprocess",
+                    "artifact_ref": "preprocessor",
+                    "output_feature_set": "model_ready",
+                    "output_feature_count": 40,
+                },
+                {
+                    "operation": "predict_quantiles",
+                    "artifact_ref": "model",
+                    "outputs": ["q25", "q50", "q75", "q90"],
+                    "includes_inverse_target_transformation": True,
+                },
+                {
+                    "operation": "postprocess_quantiles",
+                    "rules": ["non_negative", "monotonic"],
+                },
+                {
+                    "operation": "select_quantile",
+                    "quantile": "q50",
+                },
+            ],
+        },
+        "background_validation": {
+            "method": "baseline_relative_difference",
+            "comparison": (
+                "compare mean postprocessed q50 of background vs. full "
+                "training data"
+            ),
+            "background_baseline_2023_usd": background_baseline,
+            "weighted_training_baseline_2023_usd": float(training_baseline),
+            "relative_difference": relative_difference,
+            "absolute_relative_difference": abs(relative_difference),
+            "max_allowed_absolute_relative_difference": (
+                SHAP_BASELINE_REL_DIFF_MAX
+            ),
+            "passed": bool(
+                test_result["background_baseline_validation_passed"]
+            ),
+        },
+        "final_test_evaluation": {
+            "results": "models/shap_benchmark_test_results.csv",
+            "reference": "models/shap_benchmark_test_reference.csv",
+            "rows": SHAP_TEST_ROWS,
+            "passed": True,
+        },
+    }
+
+
+def persist_production_shap_artifacts(background_info, test_result):
+    """Save the exact background only after its final test gates pass."""
+    final_evaluation_passed = (
+        bool(test_result["background_baseline_validation_passed"])
+        and bool(test_result["explanation_stability_passed"])
+        and float(test_result["p95_additivity_abs_error_2023_usd"])
+        <= SHAP_ADDITIVITY_ABS_ERROR_MAX_2023_USD
+    )
+    if not final_evaluation_passed:
+        raise RuntimeError(
+            "The selected SHAP configuration failed the final evaluation. "
+            "Production SHAP artifacts were not updated."
+        )
+
+    APP_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    joblib.dump(background_info["background"], SHAP_BACKGROUND_PATH)
+    metadata = build_shap_metadata(background_info, test_result)
+    with SHAP_METADATA_PATH.open("w", encoding="utf-8") as file:
+        json.dump(metadata, file, indent=2)
+        file.write("\n")
 
 
 def measure_first_call_latency(explainer, max_evals):
@@ -542,7 +667,11 @@ def run_shap_benchmark(
         "p90_subsequent_call_latency_s": np.percentile(reference_subsequent_call_latencies_s, 90),
         "p95_subsequent_call_latency_s": np.percentile(reference_subsequent_call_latencies_s, 95),
     }
-    return benchmark_results, pd.DataFrame([reference_summary])
+    return (
+        benchmark_results,
+        pd.DataFrame([reference_summary]),
+        backgrounds_by_size,
+    )
 
 
 def select_benchmark_mode(mode, X_stage_1, X_stage_2, X_test):
@@ -751,7 +880,7 @@ def main():
             f"Running SHAP {phase_name} on {len(X_evaluation)} rows "
             f"and {len(candidate_configurations)} candidate(s)..."
         )
-    results, reference = run_shap_benchmark(
+    results, reference, backgrounds_by_size = run_shap_benchmark(
         X_evaluation,
         candidate_configurations,
         reference_background_size=reference_background_size,
@@ -783,6 +912,18 @@ def main():
     print(results.to_string(index=False))
     print(f"\nSaved results to {results_path}")
     print(f"Saved reference timing to {reference_path}")
+
+    if args.mode == "test":
+        test_result = results.iloc[0]
+        production_background_info = backgrounds_by_size[
+            SHAP_SELECTED_BACKGROUND_SIZE
+        ]
+        persist_production_shap_artifacts(
+            production_background_info,
+            test_result,
+        )
+        print(f"Saved production SHAP background to {SHAP_BACKGROUND_PATH}")
+        print(f"Saved SHAP metadata to {SHAP_METADATA_PATH}")
 
 
 if __name__ == "__main__":

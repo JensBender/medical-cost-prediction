@@ -1,9 +1,9 @@
 """Calculate global SHAP feature importance on the held-out test set.
 
-Use the selected SHAP configuration: 225 background rows and one 
-permutation round (max_evals=55). Explain test rows one at a time, 
-then calculate survey-weighted mean absolute SHAP contributions 
-and each feature's share of total importance.
+Load the production SHAP background and selected explainer configuration
+created by `benchmark_shap.py`. Explain test rows one at a time, then
+calculate survey-weighted mean absolute SHAP contributions and each feature's
+share of total importance.
 
 Use the shared prediction and explanation functions, resetting the permutation
 seed for every row so its explanation does not depend on earlier audit rows.
@@ -46,8 +46,8 @@ from src.constants import (
 from src.display import DISPLAY_LABELS
 from src.modeling import (
     TEST_PREPROCESSOR_INPUT_DATA_PATH,
-    TRAIN_PREPROCESSOR_INPUT_DATA_PATH,
     load_model,
+    load_metrics,
 )
 from src.prediction import CostPredictor
 from src.explainability import (
@@ -59,6 +59,8 @@ from src.explainability import (
 
 PREPROCESSOR_PATH = Path("models/preprocessor.joblib")
 MODEL_PATH = Path("models/xgb_quantile_model.joblib")
+SHAP_BACKGROUND_PATH = Path("app/data/shap_background.joblib")
+SHAP_METADATA_PATH = Path("app/data/shap_metadata.json")
 CONTRIBUTIONS_PATH = Path("models/shap_test_contributions.parquet")
 IMPORTANCE_PATH = Path("models/shap_feature_importance_test.csv")
 
@@ -67,10 +69,6 @@ SHAP_INPUT_FEATURES = (
     + PIPELINE_NOMINAL_FEATURES
     + PIPELINE_BINARY_FEATURES
 )
-SHAP_BACKGROUND_SIZE = 225
-SHAP_PERMUTATION_ROUNDS = 1
-SHAP_MAX_EVALS = calculate_max_evals(SHAP_PERMUTATION_ROUNDS, len(SHAP_INPUT_FEATURES))
-SHAP_BASELINE_REL_DIFF_MAX = 0.10
 SHAP_SMOKE_ROWS = 2
 
 predictor = None
@@ -83,35 +81,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def create_and_validate_background(X_train, w_train):
-    """Create the background data and validate its baseline."""
-    background = X_train.sample(
-        n=SHAP_BACKGROUND_SIZE,
-        weights=w_train,
-        replace=True,
-        random_state=RANDOM_STATE,
-    )
-    training_baseline = np.average(
-        predictor.predict_median_cost(X_train),
-        weights=w_train,
-    )
-    background_baseline = predictor.predict_median_cost(background).mean()
-    baseline_difference = abs(background_baseline / training_baseline - 1)
-
-    print(f"Background rows:                  {SHAP_BACKGROUND_SIZE}")
-    print(f"Permutation rounds:              {SHAP_PERMUTATION_ROUNDS}")
-    print(f"Background vs. training:         {baseline_difference:.1%}")
-
-    if baseline_difference > SHAP_BASELINE_REL_DIFF_MAX:
-        raise ValueError(
-            "SHAP background baseline differs from the weighted training "
-            f"baseline by {baseline_difference:.1%}, which exceeds the "
-            f"{SHAP_BASELINE_REL_DIFF_MAX:.0%} acceptance threshold."
-        )
-    return background
-
-
-def calculate_contributions(explainer, X):
+def calculate_contributions(explainer, X, max_evals):
     """Explain rows individually and return contributions and validation data."""
     contributions = np.empty((len(X), len(SHAP_INPUT_FEATURES)))
     base_values = np.empty(len(X))
@@ -123,7 +93,7 @@ def calculate_contributions(explainer, X):
         explanation = calculate_shap_explanation(
             explainer,
             X.iloc[[row_position]],
-            max_evals=SHAP_MAX_EVALS,
+            max_evals=max_evals,
         )
         contributions[row_position] = explanation.values[0]
         base_values[row_position] = explanation.base_values[0]
@@ -212,17 +182,11 @@ def main():
     if len(SHAP_INPUT_FEATURES) != len(set(SHAP_INPUT_FEATURES)):
         raise ValueError("SHAP_INPUT_FEATURES contains duplicate names.")
 
-    print("Loading preprocessor-input data (train & test) and fitted artifacts (preprocessor & model)...")
-    df_train = pd.read_parquet(
-        TRAIN_PREPROCESSOR_INPUT_DATA_PATH,
-        columns=SHAP_INPUT_FEATURES + [WEIGHT_COLUMN],
-    )
+    print("Loading test data and production SHAP artifacts...")
     df_test = pd.read_parquet(
         TEST_PREPROCESSOR_INPUT_DATA_PATH,
         columns=SHAP_INPUT_FEATURES + [WEIGHT_COLUMN],
     )
-    X_train = df_train.loc[:, SHAP_INPUT_FEATURES]
-    w_train = df_train[WEIGHT_COLUMN]
     X_test = df_test.loc[:, SHAP_INPUT_FEATURES]
     w_test = df_test[WEIGHT_COLUMN]
 
@@ -239,9 +203,48 @@ def main():
 
     preprocessor = load_model(PREPROCESSOR_PATH, verbose=False)
     xgb_quantile_model = load_model(MODEL_PATH, verbose=False)
+    background = load_model(SHAP_BACKGROUND_PATH, verbose=False)
+    shap_metadata = load_metrics(SHAP_METADATA_PATH, verbose=False)
     predictor = CostPredictor(preprocessor, xgb_quantile_model, SHAP_INPUT_FEATURES)
 
-    background = create_and_validate_background(X_train, w_train)
+    expected_rows = shap_metadata["background_sample"]["rows"]
+    expected_feature_count = shap_metadata["background_sample"]["feature_count"]
+    if list(background.columns) != SHAP_INPUT_FEATURES:
+        raise ValueError(
+            "Production SHAP background columns do not match SHAP_INPUT_FEATURES."
+        )
+    if background.shape[1] != expected_feature_count:
+        raise ValueError(
+            "Production SHAP background feature count does not match its metadata."
+        )
+    if len(background) != expected_rows:
+        raise ValueError(
+            "Production SHAP background row count does not match its metadata."
+        )
+    if not shap_metadata["final_test_evaluation"]["passed"]:
+        raise ValueError("Production SHAP background did not pass final evaluation.")
+
+    permutation_rounds = shap_metadata["explainer_contract"]["permutation_rounds"]
+    max_evals = calculate_max_evals(
+        permutation_rounds,
+        len(SHAP_INPUT_FEATURES),
+    )
+    if max_evals != shap_metadata["explainer_contract"]["max_evals"]:
+        raise ValueError("SHAP max_evals does not match its metadata.")
+
+    background_baseline = predictor.predict_median_cost(background).mean()
+    if not np.isclose(
+        background_baseline,
+        shap_metadata["background_validation"]["background_baseline_2023_usd"],
+        rtol=0,
+        atol=1e-10,
+    ):
+        raise ValueError(
+            "Production SHAP background baseline does not match its metadata."
+        )
+
+    print(f"Background rows:                  {len(background)}")
+    print(f"Permutation rounds:              {permutation_rounds}")
     explainer = build_shap_explainer(predictor, background)
 
     print(f"Explaining {len(X_evaluation)} test rows...")
@@ -250,7 +253,7 @@ def main():
         base_values,
         predictions,
         additivity_error,
-    ) = calculate_contributions(explainer, X_evaluation)
+    ) = calculate_contributions(explainer, X_evaluation, max_evals)
     importance_df = summarize_shap_feature_importance(
         contributions,
         w_evaluation.to_numpy(),

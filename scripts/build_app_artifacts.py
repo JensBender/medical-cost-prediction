@@ -1,5 +1,8 @@
 """Build cost benchmarks and prediction metadata artifacts for app deployment.
 
+This script does not create the fitted model, fitted preprocessor, SHAP background 
+data, or SHAP metadata file. 
+
 Run after XGBoost quantile regression model training:
     .venv-train/Scripts/python scripts/build_app_artifacts.py
 """

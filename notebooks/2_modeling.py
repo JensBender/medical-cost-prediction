@@ -129,6 +129,10 @@ TRAIN_MODEL_READY_DATA_PATH = "../data/training_data_model_ready.parquet"
 VAL_MODEL_READY_DATA_PATH = "../data/validation_data_model_ready.parquet"
 TEST_MODEL_READY_DATA_PATH = "../data/test_data_model_ready.parquet"
 
+# Production SHAP artifacts
+SHAP_BACKGROUND_PATH = "../app/data/shap_background.joblib"
+SHAP_METADATA_PATH = "../app/data/shap_metadata.json"
+
 # %% [markdown]
 # <div style="background-color:#2c699d; color:white; padding:15px; border-radius:6px;">
 #     <h1 style="margin:0px">Data Loading</h1>
@@ -3991,7 +3995,7 @@ plot_quantile_subgroup_predictions(
 #     <br><br>
 #     <strong>App/API Implementation Plan</strong>
 #     <ol>
-#         <li><strong>Create Artifacts:</strong> Use <code>scripts/preprocess.py</code> to create <code>data/training_data_preprocessor_input.parquet</code> and <code>models/preprocessor.joblib</code>. Use <code>scripts/train_xgboost_quantile.py</code> to create <code>models/xgb_quantile_model.joblib</code>. Use <code>scripts/build_app_artifacts.py</code> to create <code>app/data/shap_background.joblib</code> and <code>app/data/shap_metadata.json</code>.</li>
+#         <li><strong>Create Artifacts:</strong> Use <code>scripts/preprocess.py</code> to create <code>data/training_data_preprocessor_input.parquet</code> and <code>models/preprocessor.joblib</code>. Use <code>scripts/train_xgboost_quantile.py</code> to create <code>models/xgb_quantile_model.joblib</code>. Use <code>scripts/benchmark_shap.py test</code> to create <code>app/data/shap_background.joblib</code> and <code>app/data/shap_metadata.json</code> artifacts.</li>
 #         <li><strong>During Application Startup:</strong> Load the preprocessor, quantile model, and SHAP background. Build the explainer once.</li>
 #         <li><strong>At Inference Time:</strong> Map the user inputs to the preprocessor inputs. Predict all quantiles using the fitted preprocessor and model, postprocess them, and compute permutation SHAP for q50. Rank contributions by absolute value and select the five largest. Apply medical-cost inflation to predictions, comparison benchmarks, and the selected SHAP contributions.</li>
 #     </ol>
@@ -4050,18 +4054,25 @@ pd.testing.assert_frame_equal(
 del X_train_reprocessed
 
 # %%
-# 3. Create and validate the background sample using the selected SHAP configuration
-SHAP_BACKGROUND_N = 225
-SHAP_PERMUTATION_ROUNDS = 1
-SHAP_MAX_EVALS = calculate_max_evals(SHAP_PERMUTATION_ROUNDS, len(SHAP_INPUT_FEATURES))
-SHAP_BASELINE_REL_DIFF_MAX = 0.10
+# 3. Load and validate the production background and selected SHAP configuration
+shap_background = load_model(SHAP_BACKGROUND_PATH, verbose=False)
+shap_metadata = load_metrics(SHAP_METADATA_PATH, verbose=False)
 
-shap_background = X_train_preprocessor_input.sample(
-    n=SHAP_BACKGROUND_N,
-    weights=w_train,
-    replace=True,
-    random_state=RANDOM_STATE,
-)
+SHAP_BACKGROUND_N = shap_metadata["background_sample"]["rows"]
+SHAP_PERMUTATION_ROUNDS = shap_metadata["explainer_contract"]["permutation_rounds"]
+SHAP_MAX_EVALS = calculate_max_evals(SHAP_PERMUTATION_ROUNDS, len(SHAP_INPUT_FEATURES))
+SHAP_BASELINE_REL_DIFF_MAX = shap_metadata["background_validation"][
+    "max_allowed_absolute_relative_difference"
+]
+
+if list(shap_background.columns) != SHAP_INPUT_FEATURES:
+    raise ValueError("Production SHAP background columns do not match SHAP_INPUT_FEATURES.")
+if len(shap_background) != SHAP_BACKGROUND_N:
+    raise ValueError("Production SHAP background row count does not match its metadata.")
+if SHAP_MAX_EVALS != shap_metadata["explainer_contract"]["max_evals"]:
+    raise ValueError("SHAP max_evals does not match its metadata.")
+if not shap_metadata["final_test_evaluation"]["passed"]:
+    raise ValueError("Production SHAP background did not pass final evaluation.")
 
 background_baseline = predict_median_cost(shap_background).mean()
 training_baseline = np.average(
@@ -4069,6 +4080,13 @@ training_baseline = np.average(
     weights=w_train,
 )
 baseline_absolute_relative_difference = abs(background_baseline / training_baseline - 1)
+
+np.testing.assert_allclose(
+    background_baseline,
+    shap_metadata["background_validation"]["background_baseline_2023_usd"],
+    rtol=0,
+    atol=1e-10,
+)
 
 print(f"SHAP background baseline: ${background_baseline:,.2f}")
 print(f"Full training baseline:   ${training_baseline:,.2f}")
@@ -4079,7 +4097,7 @@ if baseline_absolute_relative_difference > SHAP_BASELINE_REL_DIFF_MAX:
         "SHAP background baseline differs from the weighted training baseline by "
         f"{baseline_absolute_relative_difference:.1%}, which exceeds the "
         f"{SHAP_BASELINE_REL_DIFF_MAX:.0%} acceptance threshold. "
-        "Resample the background data or increase SHAP_BACKGROUND_N."
+        "Revise the selected configuration and rerun benchmark_shap.py test."
     )
 
 # %%

@@ -555,12 +555,14 @@ The following template defines the structure of `app/data/shap_metadata.json`.
   "background_sample": {
     "feature_set": "preprocessor_input",
     "feature_count": 27,
-    "rows": 300,
+    "rows": 225,
     "sampling_method": "weighted sample with replacement using PERWT23F",
     "random_state": 42
   },
   "explainer_contract": {
     "algorithm": "permutation",
+    "permutation_rounds": 1,
+    "max_evals": 55,
     "prediction_function": "predict_median_cost",
     "input_feature_set": "preprocessor_input",
     "input_feature_count": 27,
@@ -595,6 +597,12 @@ The following template defines the structure of `app/data/shap_metadata.json`.
     "relative_difference": null,
     "absolute_relative_difference": null,
     "max_allowed_absolute_relative_difference": 0.10,
+    "passed": null
+  },
+  "final_test_evaluation": {
+    "results": "models/shap_benchmark_test_results.csv",
+    "reference": "models/shap_benchmark_test_reference.csv",
+    "rows": 100,
     "passed": null
   }
 }
