@@ -1,5 +1,3 @@
-"""SHAP setup and repeatable explanation calls."""
-
 import numpy as np
 import pandas as pd
 import shap
@@ -8,8 +6,14 @@ from src.constants import RANDOM_STATE
 
 
 def calculate_max_evals(permutation_rounds, n_features):
-    """Convert complete forward/backward permutation rounds to a mask budget."""
-    if not isinstance(permutation_rounds, (int, np.integer)) or permutation_rounds < 1:
+    """Return the ``max_evals`` given the SHAP permutation rounds and number of
+    features.
+
+    Each round evaluates one fully masked input, followed by one forward and one
+    backward step per feature: ``2 * n_features + 1`` evaluations. Both arguments
+    must be positive integers.
+    """
+    if (not isinstance(permutation_rounds, (int, np.integer)) or permutation_rounds < 1):
         raise ValueError("permutation_rounds must be a positive integer.")
     if not isinstance(n_features, (int, np.integer)) or n_features < 1:
         raise ValueError("n_features must be a positive integer.")
@@ -17,45 +21,73 @@ def calculate_max_evals(permutation_rounds, n_features):
 
 
 def build_shap_explainer(predictor, background, *, random_state=RANDOM_STATE):
-    """Build once from a CostPredictor and an already selected background sample.
+    """Build a reusable permutation SHAP explainer for q50 predictions.
 
-    The caller loads or samples the background. Keep every supplied row: repeated
-    rows in a survey-weighted sample represent their greater population weight.
+    ``background`` must be a non-empty DataFrame containing the predictor's
+    preprocessor input features. The explainer keeps every supplied row, including
+    duplicates that represent greater population weight in the survey-weighted
+    background.
+
+    SHAP resets NumPy's global random state while building the explainer. This
+    function restores the previous state afterward to prevent side effects on
+    unrelated NumPy random sampling. ``calculate_shap_explanation`` separately
+    controls reproducibility for explanation calls.
     """
     if not isinstance(background, pd.DataFrame) or background.empty:
         raise ValueError("SHAP background must be a non-empty DataFrame.")
     background = background.loc[:, predictor.input_features]
-    numpy_random_state = np.random.get_state()
+    previous_numpy_random_state = np.random.get_state()
     try:
-        masker = shap.maskers.Independent(background, max_samples=len(background))
+        background_masker = shap.maskers.Independent(
+            background,
+            max_samples=len(background),
+        )
         return shap.Explainer(
             predictor.predict_median_cost,
-            masker,
+            background_masker,
             algorithm="permutation",
             feature_names=predictor.input_features,
             seed=random_state,
         )
     finally:
-        # SHAP's constructor also seeds NumPy's global random generator.
-        np.random.set_state(numpy_random_state)
+        np.random.set_state(previous_numpy_random_state)
 
 
-def calculate_shap_explanation(explainer, X, *, max_evals, random_state=RANDOM_STATE):
-    """Calculate a SHAP explanation in 2023 USD for one or more input rows 
-    using an existing explainer.
+def calculate_shap_explanation(
+    explainer,
+    explanation_input,
+    *,
+    max_evals,
+    random_state=RANDOM_STATE,
+):
+    """Explain q50 predictions for one or more preprocessor-input rows.
+
+    ``explanation_input`` must be a DataFrame containing every feature expected by
+    the explainer. The function orders those columns. The same inputs and
+    ``random_state`` produce the same SHAP values. ``max_evals`` controls the
+    permutation mask budget. SHAP values and base values are in 2023 USD because
+    the predictor returns q50 in that unit.
     """
-    if not isinstance(X, pd.DataFrame):
+    if not isinstance(explanation_input, pd.DataFrame):
         raise TypeError("SHAP inputs must be provided as a pandas DataFrame.")
-    features = explainer.feature_names
-    missing_features = [feature for feature in features if feature not in X.columns]
+    input_features = explainer.feature_names
+    missing_features = [feature for feature in input_features if feature not in explanation_input.columns]
     if missing_features:
-        raise ValueError(f"SHAP input is missing preprocessor input features: {missing_features}")
+        raise ValueError(
+            "SHAP input is missing preprocessor input features: "
+            f"{missing_features}"
+        )
 
-    # Repeat the same feature permutations for the same ordered inputs.
-    # Restore the random state afterward so other code is unaffected.
-    numpy_random_state = np.random.get_state()
+    # SHAP uses NumPy's global random state for feature permutations. Reset it for
+    # reproducible explanations, then restore it to avoid affecting unrelated
+    # NumPy random sampling.
+    previous_numpy_random_state = np.random.get_state()
     try:
         np.random.seed(random_state)
-        return explainer(X.loc[:, features], max_evals=max_evals, silent=True)
+        return explainer(
+            explanation_input.loc[:, input_features],
+            max_evals=max_evals,
+            silent=True,
+        )
     finally:
-        np.random.set_state(numpy_random_state)
+        np.random.set_state(previous_numpy_random_state)
