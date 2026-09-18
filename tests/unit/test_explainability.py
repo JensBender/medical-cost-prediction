@@ -22,8 +22,12 @@ def _assert_numpy_random_state_is_unchanged(random_state_before):
     assert actual_state[2:] == random_state_before[2:]
 
 
-def test_build_shap_explainer_keeps_every_background_row(predictor):
-    """Keep duplicate background rows instead of applying SHAP's 100-row limit."""
+def test_build_shap_explainer_preserves_selected_background(predictor):
+    """Keep the full 225-row weighted background.
+
+    SHAP otherwise subsamples backgrounds larger than its default maximum of 100
+    rows, which would change the selected background and its repeated weighted rows.
+    """
     shap_background = pd.DataFrame(
         {
             "a": [0.0, 2.0, 1.0] * 75,
