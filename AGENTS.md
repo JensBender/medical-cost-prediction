@@ -80,4 +80,7 @@ to unrelated text. Use `$plain-writing` for a focused revision when requested.
 - After making code or documentation changes, suggest one atomic commit message
   that follows `docs/workflow/git_conventions.md`.
 - Apply the writing rules and readability pass to the first suggested message.
+- Make the subject describe the meaningful change or outcome, not merely the
+  files edited. Mention a filename or use an established scope only when it adds
+  useful context; otherwise omit it.
 - Write for someone reading the Git history without this conversation. 
