@@ -90,30 +90,71 @@ def test_shap_numpy_array_uses_preprocessor_input_feature_order(predictor):
     np.testing.assert_array_equal(actual_quantiles, expected_quantiles)
 
 
-def test_median_prediction_returns_q50(predictor):
-    """Return q50, the second of the four predicted quantiles."""
-    input_features = np.array([[3, 1], [6, 2]])
+def test_predict_median_cost_returns_q50(predictor):
+    """Return q50, the second predicted quantile, for each input row."""
+    prediction_input = pd.DataFrame(
+        {
+            "a": [3, 6],
+            "b": [1, 2],
+        }
+    )
     expected_median_costs = np.array([4, 8])
 
-    actual_median_costs = predictor.predict_median_cost(input_features)
+    actual_median_costs = predictor.predict_median_cost(prediction_input)
 
     np.testing.assert_array_equal(actual_median_costs, expected_median_costs)
 
 
-def test_prediction_rejects_missing_or_wrong_shape_inputs(predictor):
-    with pytest.raises(ValueError, match='missing features'):
-        predictor.predict_quantiles(pd.DataFrame({'a': [1]}))
-    with pytest.raises(ValueError, match='shape'):
-        predictor.predict_quantiles(np.ones((1, 3)))
+def test_predict_quantiles_reports_missing_preprocessor_input_features(predictor):
+    """Reject a DataFrame that omits a configured preprocessor input feature."""
+    # The predictor is configured for a and b, so b is required.
+    prediction_input = pd.DataFrame({"a": [1]})
+
+    with pytest.raises(ValueError, match="missing features"):
+        predictor.predict_quantiles(prediction_input)
 
 
-def test_prediction_rejects_wrong_model_quantiles(predictor, monkeypatch):
-    monkeypatch.setattr(predictor.model, 'predict', lambda X: np.ones((len(X), 3)))
-    with pytest.raises(ValueError, match='q25/q50/q75/q90'):
-        predictor.predict_quantiles(np.ones((1, 2)))
+def test_shap_numpy_array_requires_one_column_per_preprocessor_input_feature(
+    predictor,
+):
+    """Reject a SHAP array with the wrong number of preprocessor input columns."""
+    # A third column has no matching configured preprocessor input feature.
+    shap_masked_input = np.array([[1, 2, 3]])
+
+    with pytest.raises(ValueError, match="n_rows, 2"):
+        predictor.predict_quantiles(shap_masked_input)
 
 
-def test_prediction_rejects_wrong_model_row_count(predictor, monkeypatch):
-    monkeypatch.setattr(predictor.model, 'predict', lambda X: np.ones((len(X) + 1, 4)))
-    with pytest.raises(ValueError, match='one prediction row per input row'):
-        predictor.predict_quantiles(np.ones((1, 2)))
+def test_predict_quantiles_requires_four_model_output_columns(predictor, monkeypatch):
+    """Reject model output that does not contain q25, q50, q75, and q90."""
+    prediction_input = pd.DataFrame({"a": [3], "b": [1]})
+
+    def predict_without_q90(_):
+        return np.array([[10, 20, 30]])
+
+    # Temporarily simulate a broken model that omits the q90 column.
+    monkeypatch.setattr(predictor.model, "predict", predict_without_q90)
+
+    with pytest.raises(ValueError, match="q25/q50/q75/q90"):
+        predictor.predict_quantiles(prediction_input)
+
+
+def test_predict_quantiles_requires_one_model_output_row_per_input_row(
+    predictor,
+    monkeypatch,
+):
+    """Reject model output with a different number of rows than the input."""
+    prediction_input = pd.DataFrame({"a": [3], "b": [1]})
+
+    def predict_two_rows_for_one_input(_):
+        return np.array([[2, 4, 6, 8], [4, 8, 10, 12]])
+
+    # Temporarily simulate a broken model that returns two rows for one person.
+    monkeypatch.setattr(
+        predictor.model,
+        "predict",
+        predict_two_rows_for_one_input,
+    )
+
+    with pytest.raises(ValueError, match="one prediction row per input row"):
+        predictor.predict_quantiles(prediction_input)
