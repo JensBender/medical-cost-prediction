@@ -80,12 +80,12 @@ def test_predict_quantiles_selects_and_orders_preprocessor_input_features(
     np.testing.assert_array_equal(actual_quantiles, expected_quantiles)
 
 
-def test_array_prediction_uses_configured_feature_order(predictor):
-    """Treat array columns as already ordered a followed by b."""
-    input_features = np.array([[3, 1], [6, 2]])
+def test_shap_numpy_array_uses_preprocessor_input_feature_order(predictor):
+    """Assign preprocessor input names to SHAP's ordered NumPy array columns."""
+    shap_masked_input = np.array([[3, 1], [6, 2]])
     expected_quantiles = np.array([[2, 4, 6, 8], [4, 8, 10, 12]])
 
-    actual_quantiles = predictor.predict_quantiles(input_features)
+    actual_quantiles = predictor.predict_quantiles(shap_masked_input)
 
     np.testing.assert_array_equal(actual_quantiles, expected_quantiles)
 

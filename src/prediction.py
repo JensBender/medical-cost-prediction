@@ -52,8 +52,15 @@ class CostPredictor:
     def predict_quantiles(self, X):
         """Return postprocessed q25/q50/q75/q90 predictions in 2023 dollars.
 
-        DataFrame columns are selected and ordered using ``input_features``.
-        Array inputs, such as SHAP's masked inputs, must already use that order.
+        For regular prediction calls, pass a pandas DataFrame. The method selects
+        and orders its columns using ``input_features``.
+
+        NumPy array support exists only for SHAP, which calls
+        ``predict_median_cost`` with masked arrays. These arrays must already
+        follow the ``input_features`` order. This method restores their column
+        names in a DataFrame before running the preprocessor. Arrays are not 
+        intended for general prediction calls.
+
         The method then applies the fitted preprocessor, calls the fitted model,
         and enforces non-negative, monotonic quantiles. The result is a NumPy
         array with shape (n_rows, 4), with one column for each quantile.
