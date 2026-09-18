@@ -60,6 +60,10 @@ and technical specifications documents, and suggested commit messages.
   lists only when they help the reader follow or find information.
 - In docstrings, explain behavior and any inputs, outputs, or limits the caller
   needs to know. In comments, explain reasons that are not obvious from the code.
+- When writing or revising unit tests, use `tests/unit/test_prediction.py` as the
+  reference for behavior-focused names, concrete inputs and expected outputs,
+  descriptive variables, and clear setup/action/assertion structure. Split
+  unrelated behaviors and parameterize variations with descriptive IDs.
 - In analysis summaries, state the finding and its evidence, then explain what
   it means. Preserve uncertainty, units, population scope, and whether results
   use survey weights. Do not turn associations into causal claims.
