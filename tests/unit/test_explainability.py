@@ -5,62 +5,217 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.explainability import build_shap_explainer, calculate_max_evals, calculate_shap_explanation
+from src.explainability import (
+    build_shap_explainer,
+    calculate_max_evals,
+    calculate_shap_explanation,
+)
 
 pytestmark = pytest.mark.unit
 
 
-def assert_random_state_equal(expected):
-    actual = np.random.get_state()
-    assert actual[0] == expected[0]
-    np.testing.assert_array_equal(actual[1], expected[1])
-    assert actual[2:] == expected[2:]
+def _assert_numpy_random_state_is_unchanged(random_state_before):
+    """Internal assertion helper for tests that must preserve NumPy's random state."""
+    actual_state = np.random.get_state()
+    assert actual_state[0] == random_state_before[0]
+    np.testing.assert_array_equal(actual_state[1], random_state_before[1])
+    assert actual_state[2:] == random_state_before[2:]
 
 
-def test_shap_preserves_background_and_repeats_after_other_random_work(predictor):
-    # More than SHAP's default 100 background rows, including deliberate duplicates.
-    background = pd.DataFrame({'a': [0., 2., 1.] * 75, 'b': [1., 0., 3.] * 75})
-    state = np.random.get_state()
-    explainer = build_shap_explainer(predictor, background)
-    assert_random_state_equal(state)
-    np.testing.assert_array_equal(explainer.masker.data, background.to_numpy())
-    rows = pd.DataFrame({'b': [4., 1.], 'a': [3., 6.]})
-    first = calculate_shap_explanation(explainer, rows, max_evals=5)
-    assert_random_state_equal(state)
+def test_build_shap_explainer_keeps_every_background_row(predictor):
+    """Keep duplicate background rows instead of applying SHAP's 100-row limit."""
+    shap_background = pd.DataFrame(
+        {
+            "a": [0.0, 2.0, 1.0] * 75,
+            "b": [1.0, 0.0, 3.0] * 75,
+        }
+    )
+
+    explainer = build_shap_explainer(predictor, shap_background)
+
+    np.testing.assert_array_equal(
+        explainer.masker.data,
+        shap_background.to_numpy(),
+    )
+
+
+def test_build_shap_explainer_restores_numpy_random_state(predictor):
+    """Leave NumPy's global random state unchanged after building the explainer."""
+    shap_background = pd.DataFrame(
+        {
+            "a": [0.0, 2.0, 1.0],
+            "b": [1.0, 0.0, 3.0],
+        }
+    )
+    random_state_before = np.random.get_state()
+
+    build_shap_explainer(predictor, shap_background)
+
+    _assert_numpy_random_state_is_unchanged(random_state_before)
+
+
+def test_calculate_shap_explanation_is_repeatable_after_other_random_work(
+    predictor,
+):
+    """Return the same explanation after unrelated code advances NumPy's RNG."""
+    shap_background = pd.DataFrame(
+        {
+            "a": [0.0, 2.0, 1.0],
+            "b": [1.0, 0.0, 3.0],
+        }
+    )
+    explanation_input = pd.DataFrame(
+        {
+            "a": [3.0, 6.0],
+            "b": [4.0, 1.0],
+        }
+    )
+    explainer = build_shap_explainer(predictor, shap_background)
+
+    first_explanation = calculate_shap_explanation(
+        explainer,
+        explanation_input,
+        max_evals=5,
+    )
+
+    # Advance the global RNG to confirm that each explanation resets its own seed.
     np.random.random(13)
-    state = np.random.get_state()
-    second = calculate_shap_explanation(explainer, rows, max_evals=5)
-    assert_random_state_equal(state)
-    np.testing.assert_array_equal(first.values, second.values)
-    np.testing.assert_array_equal(first.base_values, second.base_values)
-    np.testing.assert_allclose(first.base_values + first.values.sum(axis=1), predictor.predict_median_cost(rows))
+
+    second_explanation = calculate_shap_explanation(
+        explainer,
+        explanation_input,
+        max_evals=5,
+    )
+
+    np.testing.assert_array_equal(
+        first_explanation.values,
+        second_explanation.values,
+    )
+    np.testing.assert_array_equal(
+        first_explanation.base_values,
+        second_explanation.base_values,
+    )
 
 
-def test_random_state_is_restored_after_explainer_failure():
+def test_calculate_shap_explanation_restores_numpy_random_state(predictor):
+    """Leave NumPy's global random state unchanged after an explanation."""
+    shap_background = pd.DataFrame(
+        {
+            "a": [0.0, 2.0, 1.0],
+            "b": [1.0, 0.0, 3.0],
+        }
+    )
+    explanation_input = pd.DataFrame(
+        {
+            "a": [3.0, 6.0],
+            "b": [4.0, 1.0],
+        }
+    )
+    explainer = build_shap_explainer(predictor, shap_background)
+    random_state_before = np.random.get_state()
+
+    calculate_shap_explanation(
+        explainer,
+        explanation_input,
+        max_evals=5,
+    )
+
+    _assert_numpy_random_state_is_unchanged(random_state_before)
+
+
+def test_shap_contributions_sum_to_median_predictions(predictor):
+    """Reconstruct each q50 prediction from its SHAP base value and contributions."""
+    shap_background = pd.DataFrame(
+        {
+            "a": [0.0, 2.0, 1.0],
+            "b": [1.0, 0.0, 3.0],
+        }
+    )
+    explanation_input = pd.DataFrame(
+        {
+            "a": [3.0, 6.0],
+            "b": [4.0, 1.0],
+        }
+    )
+    explainer = build_shap_explainer(predictor, shap_background)
+    explanation = calculate_shap_explanation(
+        explainer,
+        explanation_input,
+        max_evals=5,
+    )
+
+    reconstructed_median_costs = (
+        explanation.base_values + explanation.values.sum(axis=1)
+    )
+    expected_median_costs = predictor.predict_median_cost(explanation_input)
+
+    np.testing.assert_allclose(
+        reconstructed_median_costs,
+        expected_median_costs,
+    )
+
+
+def test_calculate_shap_explanation_restores_random_state_after_failure():
+    """Restore NumPy's random state even when the explainer raises an error."""
+
     class FailingExplainer:
-        feature_names = ['a', 'b']
+        """Advance NumPy's RNG, then simulate an explanation failure."""
 
-        def __call__(self, *args, **kwargs):
+        feature_names = ["a", "b"]
+
+        def __call__(self, input_rows, *, max_evals, silent):
             np.random.random(5)
-            raise RuntimeError('expected failure')
+            raise RuntimeError("expected failure")
 
-    state = np.random.get_state()
-    with pytest.raises(RuntimeError, match='expected failure'):
-        calculate_shap_explanation(FailingExplainer(), pd.DataFrame({'a': [1], 'b': [2]}), max_evals=5)
-    assert_random_state_equal(state)
+    explanation_input = pd.DataFrame({"a": [1], "b": [2]})
+    random_state_before = np.random.get_state()
+
+    with pytest.raises(RuntimeError, match="expected failure"):
+        calculate_shap_explanation(
+            FailingExplainer(),
+            explanation_input,
+            max_evals=5,
+        )
+
+    _assert_numpy_random_state_is_unchanged(random_state_before)
 
 
-def test_mask_budget_matches_rounds_and_rejects_partial_rounds():
-    assert calculate_max_evals(1, 27) == 55
-    assert calculate_max_evals(3, 27) == 165
-    with pytest.raises(ValueError, match='positive integer'):
+@pytest.mark.parametrize(
+    "permutation_rounds, expected_max_evals",
+    [
+        pytest.param(1, 55, id="one_round"),
+        pytest.param(3, 165, id="three_rounds"),
+    ],
+)
+def test_calculate_max_evals_counts_complete_permutation_rounds(
+    permutation_rounds,
+    expected_max_evals,
+):
+    """Count one masked state plus forward and backward steps for 27 features."""
+    actual_max_evals = calculate_max_evals(permutation_rounds, n_features=27)
+
+    assert actual_max_evals == expected_max_evals
+
+
+def test_calculate_max_evals_rejects_fractional_permutation_rounds():
+    """Reject a fraction of a round because both permutation passes must finish."""
+    with pytest.raises(ValueError, match="positive integer"):
         calculate_max_evals(1.5, 27)
 
 
-def test_runtime_imports_do_not_load_training_dependencies():
-    subprocess.run([
-        sys.executable, '-c',
-        'import sys; import src.prediction, src.explainability; '
-        'assert "src.modeling" not in sys.modules; '
-        'assert "mlflow" not in sys.modules; assert "dvc" not in sys.modules',
-    ], check=True)
+def test_runtime_modules_import_without_training_dependencies():
+    """Import prediction and explainability without loading modeling, MLflow, or DVC."""
+    import_check = (
+        "import sys\n"
+        "import src.prediction\n"
+        "import src.explainability\n"
+        'assert "src.modeling" not in sys.modules\n'
+        'assert "mlflow" not in sys.modules\n'
+        'assert "dvc" not in sys.modules\n'
+    )
+
+    # Use a fresh process so imports from earlier tests cannot affect sys.modules.
+    subprocess.run(
+        [sys.executable, "-c", import_check],
+        check=True,
+    )
