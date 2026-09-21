@@ -180,7 +180,7 @@ def test_calculate_shap_explanation_restores_random_state_after_failure():
     """Restore NumPy's random state even when the explainer raises an error."""
 
     class FailingExplainer:
-        """Advance NumPy's RNG, then simulate an explanation failure."""
+        """Advance NumPy's random state, then simulate an explanation failure."""
 
         feature_names = ["a", "b"]
 
@@ -208,11 +208,16 @@ def test_calculate_shap_explanation_restores_random_state_after_failure():
         pytest.param(3, 165, id="three_rounds"),
     ],
 )
-def test_calculate_max_evals_counts_complete_permutation_rounds(
+def test_calculate_max_evals_counts_every_step_in_each_permutation_round(
     permutation_rounds,
     expected_max_evals,
 ):
-    """Count one masked state plus forward and backward steps for 27 features."""
+    """Count 55 SHAP evaluations per permutation round for 27 features.
+
+    Each round evaluates one fully masked input, followed by 27 forward steps
+    and 27 backward steps: 1 + 27 + 27 = 55. Three rounds therefore require
+    165 evaluations.
+    """
     actual_max_evals = calculate_max_evals(permutation_rounds, n_features=27)
 
     assert actual_max_evals == expected_max_evals
