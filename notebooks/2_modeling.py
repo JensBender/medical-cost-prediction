@@ -4001,237 +4001,6 @@ plot_quantile_subgroup_predictions(
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">SHAP Explainer Setup</h2>
-# </div>
-#
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Set up the SHAP explainer with the preprocessor, model, background data (derived from training data), and prediction function.
-# </div>
-
-# %%
-# 1. Prepare SHAP inputs and load the data (with preprocessor input features), preprocessing pipeline and model artifacts
-SHAP_INPUT_FEATURES = (
-    PIPELINE_NUMERICAL_FEATURES
-    + PIPELINE_NOMINAL_FEATURES
-    + PIPELINE_BINARY_FEATURES
-)
-
-X_train_preprocessor_input = pd.read_parquet(
-    TRAIN_PREPROCESSOR_INPUT_DATA_PATH,
-    columns=SHAP_INPUT_FEATURES,
-)
-X_val_preprocessor_input = pd.read_parquet(
-    VAL_PREPROCESSOR_INPUT_DATA_PATH,
-    columns=SHAP_INPUT_FEATURES,
-)
-X_test_preprocessor_input = pd.read_parquet(
-    TEST_PREPROCESSOR_INPUT_DATA_PATH,
-    columns=SHAP_INPUT_FEATURES,
-)
-
-preprocessor = load_model("../models/preprocessor.joblib", verbose=False)
-xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
-
-
-# %%
-# 2. Use the prediction callable 
-predictor = CostPredictor(preprocessor, xgb_quantile_model, SHAP_INPUT_FEATURES)
-predict_median_cost = predictor.predict_median_cost
-
-# %%
-# Consistency check for preprocessor artifact: confirm that the saved preprocessor inputs and the preprocessor reproduce the model-ready training features
-X_train_reprocessed = preprocessor.transform(X_train_preprocessor_input)
-pd.testing.assert_frame_equal(
-    X_train_reprocessed,
-    X_train_preprocessed,
-    check_exact=False,
-    rtol=0,
-    atol=1e-12,
-)
-del X_train_reprocessed
-
-# %%
-# 3. Load and validate the production background and selected SHAP configuration
-shap_background = load_model(SHAP_BACKGROUND_PATH, verbose=False)
-shap_metadata = load_metrics(SHAP_METADATA_PATH, verbose=False)
-
-SHAP_BACKGROUND_N = shap_metadata["background_sample"]["rows"]
-SHAP_PERMUTATION_ROUNDS = shap_metadata["explainer_contract"]["permutation_rounds"]
-SHAP_MAX_EVALS = calculate_max_evals(SHAP_PERMUTATION_ROUNDS, len(SHAP_INPUT_FEATURES))
-SHAP_BASELINE_REL_DIFF_MAX = shap_metadata["background_validation"][
-    "max_allowed_absolute_relative_difference"
-]
-
-if list(shap_background.columns) != SHAP_INPUT_FEATURES:
-    raise ValueError("Production SHAP background columns do not match SHAP_INPUT_FEATURES.")
-if len(shap_background) != SHAP_BACKGROUND_N:
-    raise ValueError("Production SHAP background row count does not match its metadata.")
-if SHAP_MAX_EVALS != shap_metadata["explainer_contract"]["max_evals"]:
-    raise ValueError("SHAP max_evals does not match its metadata.")
-if not shap_metadata["final_test_evaluation"]["passed"]:
-    raise ValueError("Production SHAP background did not pass final evaluation.")
-
-background_baseline = predict_median_cost(shap_background).mean()
-training_baseline = np.average(
-    predict_median_cost(X_train_preprocessor_input),
-    weights=w_train,
-)
-baseline_absolute_relative_difference = abs(background_baseline / training_baseline - 1)
-
-np.testing.assert_allclose(
-    background_baseline,
-    shap_metadata["background_validation"]["background_baseline_2023_usd"],
-    rtol=0,
-    atol=1e-10,
-)
-
-print(f"SHAP background baseline: ${background_baseline:,.2f}")
-print(f"Full training baseline:   ${training_baseline:,.2f}")
-print(f"Absolute relative difference: {baseline_absolute_relative_difference:.1%}")
-
-if baseline_absolute_relative_difference > SHAP_BASELINE_REL_DIFF_MAX:
-    raise ValueError(
-        "SHAP background baseline differs from the weighted training baseline by "
-        f"{baseline_absolute_relative_difference:.1%}, which exceeds the "
-        f"{SHAP_BASELINE_REL_DIFF_MAX:.0%} acceptance threshold. "
-        "Revise the selected configuration and rerun benchmark_shap.py test."
-    )
-
-# %%
-# 4. Build the SHAP explainer once
-explainer = build_shap_explainer(predictor, shap_background, random_state=RANDOM_STATE)
-
-# %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Local Prediction Explanation</h2>
-# </div>
-#
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Calculate a SHAP explanation for one example test row.
-# </div>
-
-# %%
-example_idx = 0
-X_test_example = X_test_preprocessor_input.iloc[[example_idx]]
-shap_explanation = calculate_shap_explanation(
-    explainer, X_test_example, max_evals=SHAP_MAX_EVALS, random_state=RANDOM_STATE,
-)
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Explanation summary (for single row).
-# </div>
-
-# %%
-baseline = shap_explanation.base_values[0]
-example_prediction = predict_median_cost(X_test_example)[0]
-example_actual = y_test.loc[X_test_example.index[0]]
-example_shap_sum = shap_explanation.values[0].sum()
-
-example_shap_result = pd.DataFrame({
-    "Metric": [
-        "Baseline",
-        "Feature contribution sum",
-        "Predicted median cost",
-        "Actual cost",
-        "Baseline + SHAP sum",
-        "Additivity error",
-    ],
-    "Value": [
-        baseline,
-        example_shap_sum,
-        example_prediction,
-        example_actual,
-        baseline + example_shap_sum,
-        abs(example_prediction - (baseline + example_shap_sum)),
-    ],
-})
-
-display(
-    example_shap_result.style
-    .pipe(add_table_caption, f"SHAP Explanation Summary (Test Row {example_idx})")
-    .format({"Value": "${:,.2f}"})
-    .hide()
-)
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Interpretation:</b> 
-#     <ul>
-#         <li><strong>For non-technical stakeholders:</strong> The explanation uses \$332 as its comparison point. This is the average of the model’s predicted median costs across a representative group of U.S. adults. This person’s inputs moved the model estimate down by \$250, resulting in a predicted median cost of \$82.</li>
-#         <li><strong>For end users:</strong> Your estimate is \$82, which is \$250 below the Medical Cost Planner&rsquo;s average estimate of \$332 for U.S. adults. <br><small>Note: This comparison amount is based on estimates for a representative group of U.S. adults.</small></li>
-#     </ul>
-# </div>
-
-# %% [markdown]
-# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Contribution breakdown by feature (for single row).
-# </div>
-
-# %%
-def format_shap_input(feature, value):
-    """Return one preprocessor input value in a readable format."""
-    if pd.isna(value):
-        return "Missing"
-
-    category_labels = CATEGORY_LABELS_EDA.get(feature)
-    if category_labels is not None:
-        try:
-            category_key = int(value)
-        except (TypeError, ValueError):
-            category_key = value
-        value = category_labels.get(category_key, value)
-
-    if isinstance(value, (int, float, np.integer, np.floating)):
-        if np.isclose(value, round(value)):
-            return f"{value:,.0f}"
-        return f"{value:,.1f}"
-    return value
-
-
-example_row = X_test_example.iloc[0]
-example_shap_feature_values = pd.DataFrame({
-    "Feature": [
-        DISPLAY_LABELS.get(feature, feature)
-        for feature in SHAP_INPUT_FEATURES
-    ],
-    "Input Value": [
-        format_shap_input(feature, example_row[feature])
-        for feature in SHAP_INPUT_FEATURES
-    ],
-    "SHAP Contribution (2023 USD)": shap_explanation.values[0],
-}).sort_values(
-    "SHAP Contribution (2023 USD)",
-    key=lambda values: values.abs(),
-    ascending=False,
-)
-
-display(
-    example_shap_feature_values.style
-    .pipe(
-        add_table_caption,
-        f"SHAP Contribution Breakdown by Feature (Test Row {example_idx})",
-    )
-    .format({
-        "SHAP Contribution (2023 USD)": lambda value: f"{'-' if value < 0 else ''}${abs(value):,.1f}",
-    })
-    .hide()
-)
-
-# %% [markdown]
-# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
-#     💡 <b>Interpretation:</b>
-#     <ul>
-#         <li><strong>Education:</strong> The answer &ldquo;No Degree&rdquo; moved the plan-around estimate down by about \$135.</li>
-#         <li><strong>Insurance:</strong> The answer &ldquo;Public Only&rdquo; moved the estimate down by about \$97</li>
-#         <li><strong>Usual Source of Care:</strong> The answer &ldquo;No&rdquo; moved the estimate down by about \$82.</li>
-#         <li><strong>Age:</strong> The entered age of 70 moved the estimate up by about \$51.</li>
-#         <li><strong>High Cholesterol:</strong> The answer &ldquo;Yes&rdquo; moved the estimate up by about \$43.</li>
-#     </ul>
-#     <em>Note: These are local contributions relative to the SHAP background and depend on the person's other answers. They are not comparisons with specific alternative answers. They explain predicted, not actual, costs and should not be interpreted causally. For example, they do not show how changing public to private insurance or stopping to smoke would change a person's costs.</em>
-# </div>
-
-# %% [markdown]
-# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">SHAP Benchmarking</h2>
 # </div>
 #
@@ -4246,7 +4015,7 @@ display(
 #         <li><strong>Core SHAP explanation latency:</strong> The benchmark measures one shared <code>calculate_shap_explanation(...)</code> call for one validation or test row at a time. This includes per-call seed handling and repeated masked predictions through the complete q50 callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection. It excludes the other server work, network transfer, and interface rendering.</li>
 #         <li><strong>First-call and subsequent-call SHAP latency:</strong> For each candidate, build the explainer outside the timer and measure its first call separately. This is the first call for that explainer, not a full application cold start. Then measure the remaining rows individually and calculate p50, p90, and p95 from those subsequent calls.</li>
 #         <li><strong>Background data validation:</strong> Compare the baseline (mean postprocessed q50) of each candidate background sample against the full weighted training baseline. Accept a candidate only if the absolute relative difference is at most 10%.</li>
-#         <li><strong>Preliminary screen (historical):</strong> Before the current Stage 1, an exploratory run tested background sizes <code>[50, 100, 200, 300]</code> with 3, 6, and 12 permutation rounds. Backgrounds of size 300 or smaller failed the 10% representativeness gate. Additional rounds increased latency without meaningful stability gains. These findings motivated the refined Stage 1 grid. The results are stored as <code>shap_benchmark_stage1_initial_results.csv</code> and <code>shap_benchmark_stage1_initial_reference.csv</code>.</li>
+#         <li><strong>Preliminary screen (historical):</strong> Before the current Stage 1, an exploratory run tested background sizes <code>[50, 100, 200, 300]</code> with 3, 6, and 12 permutation rounds. Backgrounds with 200 rows or fewer failed the 10% representativeness gate. Additional rounds increased latency without meaningful stability gains. These findings motivated the refined Stage 1 grid. The results are stored as <code>shap_benchmark_stage1_initial_results.csv</code> and <code>shap_benchmark_stage1_initial_reference.csv</code>.</li>
 #         <li><strong>Stage 1 candidate grid:</strong> Benchmark background sizes <code>[225, 250, 275, 300]</code> and SHAP evaluation budgets (<code>max_evals</code>) <code>[55, 110, 165]</code>, equal to 1, 2, and 3 permutation rounds. With 27 preprocessor input features, one permutation round uses <code>2 * 27 + 1 = 55</code> masks because SHAP evaluates one forward and one backward pass through a feature ordering plus the baseline mask.</li>
 #         <li><strong>Reference:</strong> Compare candidates against a reference configuration with a larger background size (<code>500</code>) and higher evaluation budget (<code>max_evals=1,320</code>, or 24 permutation rounds).</li>
 #         <li><strong>Explanation stability:</strong>
@@ -4601,6 +4370,238 @@ display(
 #     </ul>
 # </div>
 #
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">SHAP Explainer Setup</h2>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Set up the SHAP explainer with the preprocessor, model, background data (derived from training data), and prediction function.
+# </div>
+
+# %%
+# 1. Prepare SHAP inputs and load the data (with preprocessor input features), preprocessing pipeline and model artifacts
+SHAP_INPUT_FEATURES = (
+    PIPELINE_NUMERICAL_FEATURES
+    + PIPELINE_NOMINAL_FEATURES
+    + PIPELINE_BINARY_FEATURES
+)
+
+X_train_preprocessor_input = pd.read_parquet(
+    TRAIN_PREPROCESSOR_INPUT_DATA_PATH,
+    columns=SHAP_INPUT_FEATURES,
+)
+X_val_preprocessor_input = pd.read_parquet(
+    VAL_PREPROCESSOR_INPUT_DATA_PATH,
+    columns=SHAP_INPUT_FEATURES,
+)
+X_test_preprocessor_input = pd.read_parquet(
+    TEST_PREPROCESSOR_INPUT_DATA_PATH,
+    columns=SHAP_INPUT_FEATURES,
+)
+
+preprocessor = load_model("../models/preprocessor.joblib", verbose=False)
+xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
+
+
+# %%
+# 2. Use the prediction callable
+predictor = CostPredictor(preprocessor, xgb_quantile_model, SHAP_INPUT_FEATURES)
+predict_median_cost = predictor.predict_median_cost
+
+# %%
+# Consistency check for preprocessor artifact: confirm that the saved preprocessor inputs and the preprocessor reproduce the model-ready training features
+X_train_reprocessed = preprocessor.transform(X_train_preprocessor_input)
+pd.testing.assert_frame_equal(
+    X_train_reprocessed,
+    X_train_preprocessed,
+    check_exact=False,
+    rtol=0,
+    atol=1e-12,
+)
+del X_train_reprocessed
+
+# %%
+# 3. Load and validate the production background and selected SHAP configuration
+shap_background = load_model(SHAP_BACKGROUND_PATH, verbose=False)
+shap_metadata = load_metrics(SHAP_METADATA_PATH, verbose=False)
+
+SHAP_BACKGROUND_N = shap_metadata["background_sample"]["rows"]
+SHAP_PERMUTATION_ROUNDS = shap_metadata["explainer_contract"]["permutation_rounds"]
+SHAP_MAX_EVALS = calculate_max_evals(SHAP_PERMUTATION_ROUNDS, len(SHAP_INPUT_FEATURES))
+SHAP_BASELINE_REL_DIFF_MAX = shap_metadata["background_validation"][
+    "max_allowed_absolute_relative_difference"
+]
+
+if list(shap_background.columns) != SHAP_INPUT_FEATURES:
+    raise ValueError("Production SHAP background columns do not match SHAP_INPUT_FEATURES.")
+if len(shap_background) != SHAP_BACKGROUND_N:
+    raise ValueError("Production SHAP background row count does not match its metadata.")
+if SHAP_MAX_EVALS != shap_metadata["explainer_contract"]["max_evals"]:
+    raise ValueError("SHAP max_evals does not match its metadata.")
+if not shap_metadata["final_test_evaluation"]["passed"]:
+    raise ValueError("Production SHAP background did not pass final evaluation.")
+
+background_baseline = predict_median_cost(shap_background).mean()
+training_baseline = np.average(
+    predict_median_cost(X_train_preprocessor_input),
+    weights=w_train,
+)
+baseline_absolute_relative_difference = abs(background_baseline / training_baseline - 1)
+
+np.testing.assert_allclose(
+    background_baseline,
+    shap_metadata["background_validation"]["background_baseline_2023_usd"],
+    rtol=0,
+    atol=1e-10,
+)
+
+print(f"SHAP background baseline: ${background_baseline:,.2f}")
+print(f"Full training baseline:   ${training_baseline:,.2f}")
+print(f"Absolute relative difference: {baseline_absolute_relative_difference:.1%}")
+
+if baseline_absolute_relative_difference > SHAP_BASELINE_REL_DIFF_MAX:
+    raise ValueError(
+        "SHAP background baseline differs from the weighted training baseline by "
+        f"{baseline_absolute_relative_difference:.1%}, which exceeds the "
+        f"{SHAP_BASELINE_REL_DIFF_MAX:.0%} acceptance threshold. "
+        "Revise the selected configuration and rerun benchmark_shap.py test."
+    )
+
+# %%
+# 4. Build the SHAP explainer once
+explainer = build_shap_explainer(predictor, shap_background, random_state=RANDOM_STATE)
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Local Prediction Explanation</h2>
+# </div>
+#
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Calculate a SHAP explanation for one example test row.
+# </div>
+
+# %%
+example_idx = 0
+X_test_example = X_test_preprocessor_input.iloc[[example_idx]]
+shap_explanation = calculate_shap_explanation(
+    explainer, X_test_example, max_evals=SHAP_MAX_EVALS, random_state=RANDOM_STATE,
+)
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Explanation summary (for single row).
+# </div>
+
+# %%
+baseline = shap_explanation.base_values[0]
+example_prediction = predict_median_cost(X_test_example)[0]
+example_actual = y_test.loc[X_test_example.index[0]]
+example_shap_sum = shap_explanation.values[0].sum()
+
+example_shap_result = pd.DataFrame({
+    "Metric": [
+        "Baseline",
+        "Feature contribution sum",
+        "Predicted median cost",
+        "Actual cost",
+        "Baseline + SHAP sum",
+        "Additivity error",
+    ],
+    "Value": [
+        baseline,
+        example_shap_sum,
+        example_prediction,
+        example_actual,
+        baseline + example_shap_sum,
+        abs(example_prediction - (baseline + example_shap_sum)),
+    ],
+})
+
+display(
+    example_shap_result.style
+    .pipe(add_table_caption, f"SHAP Explanation Summary (Test Row {example_idx})")
+    .format({"Value": "${:,.2f}"})
+    .hide()
+)
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Interpretation:</b>
+#     <ul>
+#         <li><strong>For non-technical stakeholders:</strong> The explanation uses \$332 as its comparison point. This is the average of the model’s predicted median costs across a representative group of U.S. adults. This person’s inputs moved the model estimate down by \$250, resulting in a predicted median cost of \$82.</li>
+#         <li><strong>For end users:</strong> Your estimate is \$82, which is \$250 below the Medical Cost Planner&rsquo;s average estimate of \$332 for U.S. adults. <br><small>Note: This comparison amount is based on estimates for a representative group of U.S. adults.</small></li>
+#     </ul>
+# </div>
+
+# %% [markdown]
+# <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
+#     📌 Contribution breakdown by feature (for single row).
+# </div>
+
+# %%
+def format_shap_input(feature, value):
+    """Return one preprocessor input value in a readable format."""
+    if pd.isna(value):
+        return "Missing"
+
+    category_labels = CATEGORY_LABELS_EDA.get(feature)
+    if category_labels is not None:
+        try:
+            category_key = int(value)
+        except (TypeError, ValueError):
+            category_key = value
+        value = category_labels.get(category_key, value)
+
+    if isinstance(value, (int, float, np.integer, np.floating)):
+        if np.isclose(value, round(value)):
+            return f"{value:,.0f}"
+        return f"{value:,.1f}"
+    return value
+
+
+example_row = X_test_example.iloc[0]
+example_shap_feature_values = pd.DataFrame({
+    "Feature": [
+        DISPLAY_LABELS.get(feature, feature)
+        for feature in SHAP_INPUT_FEATURES
+    ],
+    "Input Value": [
+        format_shap_input(feature, example_row[feature])
+        for feature in SHAP_INPUT_FEATURES
+    ],
+    "SHAP Contribution (2023 USD)": shap_explanation.values[0],
+}).sort_values(
+    "SHAP Contribution (2023 USD)",
+    key=lambda values: values.abs(),
+    ascending=False,
+)
+
+display(
+    example_shap_feature_values.style
+    .pipe(
+        add_table_caption,
+        f"SHAP Contribution Breakdown by Feature (Test Row {example_idx})",
+    )
+    .format({
+        "SHAP Contribution (2023 USD)": lambda value: f"{'-' if value < 0 else ''}${abs(value):,.1f}",
+    })
+    .hide()
+)
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <b>Interpretation:</b>
+#     <ul>
+#         <li><strong>Education:</strong> The answer &ldquo;No Degree&rdquo; moved the plan-around estimate down by about \$135.</li>
+#         <li><strong>Insurance:</strong> The answer &ldquo;Public Only&rdquo; moved the estimate down by about \$97</li>
+#         <li><strong>Usual Source of Care:</strong> The answer &ldquo;No&rdquo; moved the estimate down by about \$82.</li>
+#         <li><strong>Age:</strong> The entered age of 70 moved the estimate up by about \$51.</li>
+#         <li><strong>High Cholesterol:</strong> The answer &ldquo;Yes&rdquo; moved the estimate up by about \$43.</li>
+#     </ul>
+#     <em>Note: These are local contributions relative to the SHAP background and depend on the person's other answers. They are not comparisons with specific alternative answers. They explain predicted, not actual, costs and should not be interpreted causally. For example, they do not show how changing public to private insurance or stopping to smoke would change a person's costs.</em>
+# </div>
+
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
 #     <h2 style="margin:0px">Feature Importance</h2>
