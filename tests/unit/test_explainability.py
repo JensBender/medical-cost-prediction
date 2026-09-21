@@ -224,8 +224,11 @@ def test_calculate_max_evals_counts_every_step_in_each_permutation_round(
 
 
 def test_calculate_max_evals_rejects_fractional_permutation_rounds():
-    """Reject a fraction of a round because both permutation passes must finish."""
-    with pytest.raises(ValueError, match="positive integer"):
+    """Reject 1.5 rounds because each round requires every forward and backward step."""
+    with pytest.raises(
+        ValueError,
+        match=r"permutation_rounds must be a positive integer",
+    ):
         calculate_max_evals(1.5, 27)
 
 
