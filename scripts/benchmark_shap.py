@@ -7,6 +7,17 @@ explanation stability, contribution direction and size, additivity, and
 single-row latency. Measure first-call latency separately. Summarize
 subsequent-call latency with P50, P90, and P95.
 
+Historical preliminary screen:
+    Before the current Stage 1, an exploratory run tested background sizes
+    [50, 100, 200, 300] with 3, 6, and 12 permutation rounds. Backgrounds
+    of size 200 or smaller failed the 10% representativeness gate. Additional
+    rounds increased latency without meaningful stability gains. These findings
+    motivated the current Stage 1 grid. The preliminary screen is not a CLI mode. 
+    Its outputs are:
+
+        models/shap_benchmark_stage1_initial_results.csv
+        models/shap_benchmark_stage1_initial_reference.csv
+
 Modes:
     smoke:
         Check the complete evaluation path on two rows. Print a compact
