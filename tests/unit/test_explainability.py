@@ -107,10 +107,10 @@ def test_shap_contributions_sum_to_median_predictions(predictor):
     )
 
 
-def test_calculate_shap_explanation_is_repeatable_after_other_random_work(
+def test_calculate_shap_explanation_is_reproducible_after_numpy_random_state_advances(
     predictor,
 ):
-    """Return the same explanation after unrelated code advances NumPy's RNG."""
+    """Verify identical SHAP results from calls with different NumPy random states."""
     shap_background = pd.DataFrame(
         {
             "a": [0.0, 2.0, 1.0],
@@ -131,7 +131,7 @@ def test_calculate_shap_explanation_is_repeatable_after_other_random_work(
         max_evals=5,
     )
 
-    # Advance the global RNG to confirm that each explanation resets its own seed.
+    # Advance NumPy's random state to simulate unrelated random sampling.
     np.random.random(13)
 
     second_explanation = calculate_shap_explanation(
