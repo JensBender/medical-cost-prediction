@@ -71,11 +71,9 @@ import shap
 
 # Local imports
 from src.modeling import (
-    train_and_evaluate,
     weighted_median_absolute_error,
     load_model,
     load_metrics,
-    get_core_model_params,
 )
 from src.prediction import CostPredictor, postprocess_quantile_predictions
 from src.explainability import (
@@ -85,7 +83,6 @@ from src.explainability import (
 )
 from src.stats import (
     weighted_quantile,
-    weighted_std,
     create_stratification_bins
 )
 from src.data import load_preprocessor_input_split
