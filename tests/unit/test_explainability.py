@@ -43,14 +43,14 @@ def test_build_shap_explainer_preserves_selected_background(predictor):
     )
 
 
-def test_build_shap_explainer_reports_missing_preprocessor_input_features(
+def test_build_shap_explainer_reports_missing_predictor_input_features(
     predictor,
 ):
-    """Report required predictor features missing from the SHAP background."""
+    """Report predictor input features missing from the SHAP background."""
     # The predictor is configured for a and b, so b is required.
     shap_background = pd.DataFrame({"a": [1.0]})
 
-    with pytest.raises(ValueError, match=r"missing preprocessor input features.*'b'"):
+    with pytest.raises(ValueError, match=r"missing predictor input features.*'b'"):
         build_shap_explainer(predictor, shap_background)
 
 

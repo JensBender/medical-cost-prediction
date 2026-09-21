@@ -5,26 +5,12 @@ import shap
 from src.constants import RANDOM_STATE
 
 
-def calculate_max_evals(permutation_rounds, n_features):
-    """Return the ``max_evals`` given the SHAP permutation rounds and number of
-    features.
-
-    Each round evaluates one fully masked input, followed by one forward and one
-    backward step per feature: ``2 * n_features + 1`` evaluations. Both arguments
-    must be positive integers.
-    """
-    if (not isinstance(permutation_rounds, (int, np.integer)) or permutation_rounds < 1):
-        raise ValueError("permutation_rounds must be a positive integer.")
-    if not isinstance(n_features, (int, np.integer)) or n_features < 1:
-        raise ValueError("n_features must be a positive integer.")
-    return permutation_rounds * (2 * n_features + 1)
-
-
 def build_shap_explainer(predictor, background, *, random_state=RANDOM_STATE):
     """Build a reusable permutation SHAP explainer for q50 predictions.
 
-    ``background`` must be a non-empty DataFrame containing the predictor's
-    preprocessor input features. The explainer keeps every supplied row, including
+    ``background`` must be a non-empty DataFrame containing every predictor input
+    feature. These are the cleaned columns in the form expected as input by the
+    preprocessing pipeline. The explainer keeps every supplied row, including
     duplicates that represent greater population weight in the survey-weighted
     background.
 
@@ -37,7 +23,7 @@ def build_shap_explainer(predictor, background, *, random_state=RANDOM_STATE):
     missing_features = [feature for feature in predictor.input_features if feature not in background.columns]
     if missing_features:
         raise ValueError(
-            "SHAP background is missing preprocessor input features: "
+            "SHAP background is missing predictor input features: "
             f"{missing_features}"
         )
     background = background.loc[:, predictor.input_features]
@@ -96,3 +82,18 @@ def calculate_shap_explanation(
         )
     finally:
         np.random.set_state(previous_numpy_random_state)
+
+
+def calculate_max_evals(permutation_rounds, n_features):
+    """Return the ``max_evals`` given the SHAP permutation rounds and number of
+    features.
+
+    Each round evaluates one fully masked input, followed by one forward and one
+    backward step per feature: ``2 * n_features + 1`` evaluations. Both arguments
+    must be positive integers.
+    """
+    if (not isinstance(permutation_rounds, (int, np.integer)) or permutation_rounds < 1):
+        raise ValueError("permutation_rounds must be a positive integer.")
+    if not isinstance(n_features, (int, np.integer)) or n_features < 1:
+        raise ValueError("n_features must be a positive integer.")
+    return permutation_rounds * (2 * n_features + 1)
