@@ -15,19 +15,21 @@ pytestmark = pytest.mark.unit
 
 
 def _assert_numpy_random_state_is_unchanged(random_state_before):
-    """Internal assertion helper for tests that must preserve NumPy's random state."""
+    """Helper called within other tests to also verify that NumPy's random state was preserved."""
     actual_state = np.random.get_state()
     assert actual_state[0] == random_state_before[0]
     np.testing.assert_array_equal(actual_state[1], random_state_before[1])
     assert actual_state[2:] == random_state_before[2:]
 
 
-def test_build_shap_explainer_preserves_selected_background(predictor):
-    """Keep the full 225-row weighted background.
+def test_build_shap_explainer_preserves_full_background(predictor):
+    """Verify that the explainer keeps all 225 rows in the weighted background.
 
     SHAP otherwise subsamples backgrounds larger than its default maximum of 100
-    rows, which would change the selected background and its repeated weighted rows.
+    rows. This would discard part of the background and could change the population
+    representation carried by its repeated rows.
     """
+    # Repeat three distinct rows 75 times to create 225 rows with deliberate duplicates.
     shap_background = pd.DataFrame(
         {
             "a": [0.0, 2.0, 1.0] * 75,
