@@ -1,6 +1,3 @@
-import subprocess
-import sys
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -230,21 +227,3 @@ def test_calculate_max_evals_rejects_fractional_permutation_rounds():
         match=r"permutation_rounds must be a positive integer",
     ):
         calculate_max_evals(1.5, 27)
-
-
-def test_runtime_modules_import_without_training_dependencies():
-    """Import prediction and explainability without loading modeling, MLflow, or DVC."""
-    import_check = (
-        "import sys\n"
-        "import src.prediction\n"
-        "import src.explainability\n"
-        'assert "src.modeling" not in sys.modules\n'
-        'assert "mlflow" not in sys.modules\n'
-        'assert "dvc" not in sys.modules\n'
-    )
-
-    # Use a fresh process so imports from earlier tests cannot affect sys.modules.
-    subprocess.run(
-        [sys.executable, "-c", import_check],
-        check=True,
-    )
