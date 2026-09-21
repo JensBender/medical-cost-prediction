@@ -7,8 +7,8 @@ import pytest
 
 from src.explainability import (
     build_shap_explainer,
-    calculate_max_evals,
     calculate_shap_explanation,
+    calculate_max_evals,
 )
 
 pytestmark = pytest.mark.unit
@@ -67,6 +67,38 @@ def test_build_shap_explainer_restores_numpy_random_state(predictor):
     build_shap_explainer(predictor, shap_background)
 
     _assert_numpy_random_state_is_unchanged(random_state_before)
+
+
+def test_shap_contributions_sum_to_median_predictions(predictor):
+    """Reconstruct each q50 prediction from its SHAP base value and contributions."""
+    shap_background = pd.DataFrame(
+        {
+            "a": [0.0, 2.0, 1.0],
+            "b": [1.0, 0.0, 3.0],
+        }
+    )
+    explanation_input = pd.DataFrame(
+        {
+            "a": [3.0, 6.0],
+            "b": [4.0, 1.0],
+        }
+    )
+    explainer = build_shap_explainer(predictor, shap_background)
+    explanation = calculate_shap_explanation(
+        explainer,
+        explanation_input,
+        max_evals=5,
+    )
+
+    reconstructed_median_costs = (
+        explanation.base_values + explanation.values.sum(axis=1)
+    )
+    expected_median_costs = predictor.predict_median_cost(explanation_input)
+
+    np.testing.assert_allclose(
+        reconstructed_median_costs,
+        expected_median_costs,
+    )
 
 
 def test_calculate_shap_explanation_is_repeatable_after_other_random_work(
@@ -136,38 +168,6 @@ def test_calculate_shap_explanation_restores_numpy_random_state(predictor):
     )
 
     _assert_numpy_random_state_is_unchanged(random_state_before)
-
-
-def test_shap_contributions_sum_to_median_predictions(predictor):
-    """Reconstruct each q50 prediction from its SHAP base value and contributions."""
-    shap_background = pd.DataFrame(
-        {
-            "a": [0.0, 2.0, 1.0],
-            "b": [1.0, 0.0, 3.0],
-        }
-    )
-    explanation_input = pd.DataFrame(
-        {
-            "a": [3.0, 6.0],
-            "b": [4.0, 1.0],
-        }
-    )
-    explainer = build_shap_explainer(predictor, shap_background)
-    explanation = calculate_shap_explanation(
-        explainer,
-        explanation_input,
-        max_evals=5,
-    )
-
-    reconstructed_median_costs = (
-        explanation.base_values + explanation.values.sum(axis=1)
-    )
-    expected_median_costs = predictor.predict_median_cost(explanation_input)
-
-    np.testing.assert_allclose(
-        reconstructed_median_costs,
-        expected_median_costs,
-    )
 
 
 def test_calculate_shap_explanation_restores_random_state_after_failure():
