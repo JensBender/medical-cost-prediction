@@ -72,7 +72,11 @@ def test_build_shap_explainer_restores_numpy_random_state(predictor):
 
 
 def test_shap_contributions_sum_to_median_predictions(predictor):
-    """Reconstruct each q50 prediction from its SHAP base value and contributions."""
+    """Reconstruct each q50 prediction from its SHAP base value and contributions.
+
+    The fake model defines q50 as ``a + b``, so the two input rows have explicit
+    expected median costs of 7 and 8 without loading the actual model.
+    """
     shap_background = pd.DataFrame(
         {
             "a": [0.0, 2.0, 1.0],
@@ -82,20 +86,20 @@ def test_shap_contributions_sum_to_median_predictions(predictor):
     explanation_input = pd.DataFrame(
         {
             "a": [3.0, 6.0],
-            "b": [4.0, 1.0],
+            "b": [4.0, 2.0],
         }
     )
+    expected_median_costs = np.array([7.0, 8.0])
     explainer = build_shap_explainer(predictor, shap_background)
     explanation = calculate_shap_explanation(
         explainer,
         explanation_input,
-        max_evals=5,
+        max_evals=5,  # One complete permutation round for two features.
     )
 
     reconstructed_median_costs = (
         explanation.base_values + explanation.values.sum(axis=1)
     )
-    expected_median_costs = predictor.predict_median_cost(explanation_input)
 
     np.testing.assert_allclose(
         reconstructed_median_costs,
