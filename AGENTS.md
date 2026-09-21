@@ -40,39 +40,19 @@ model evaluation, and a planned FastAPI/Gradio app.
 - `docs/specs/technical_specifications.md`: technical design.
 - `docs/workflow/git_conventions.md`: commit message rules.
 
-## Writing style
+## Writing
 
-Apply these rules to docstrings, comments, explanatory strings in code,
-notebook Markdown, analysis summaries, the README, the product requirements
-and technical specifications documents, and suggested commit messages.
+- Apply `$plain-writing` when writing or revising project documentation, README,
+  product requirements, technical specifications, code comments, docstrings, 
+  notebook analysis, or commit messages.
 
-- Use the same plain, direct tone as a helpful work summary. Documentation must
-  make sense without the conversation that led to it.
-- Write for a smart reader who is new to the project. Put the main point first,
-  then explain what happens, why it matters, or what the reader needs to do.
-- Use common words, active verbs, and concrete examples. Replace abstract labels
-  with explanations of the actual behavior.
-- Keep necessary technical terms and explain unfamiliar ones where they first
-  matter. Use real code names and call each thing by the same name throughout.
-- Prefer readable sentences over the fewest words. Vary sentence length and keep
-  related conditions and consequences together when that makes them clearer.
-- Remove filler, repetition, jargon, and unnecessary formality. Use headings and
-  lists only when they help the reader follow or find information.
-- In docstrings, explain behavior and any inputs, outputs, or limits the caller
-  needs to know. In comments, explain reasons that are not obvious from the code.
-- When writing or revising unit tests, use `tests/unit/test_prediction.py` as the
-  reference for behavior-focused names, concrete inputs and expected outputs,
-  descriptive variables, and clear setup/action/assertion structure. Split
-  unrelated behaviors and parameterize variations with descriptive IDs.
-- In analysis summaries, state the finding and its evidence, then explain what
-  it means. Preserve uncertainty, units, population scope, and whether results
-  use survey weights. Do not turn associations into causal claims.
-- Distinguish planned behavior, requirements, and implemented behavior. Preserve
-  technical meaning when simplifying wording.
+## Unit Tests
 
-Before finishing, reread the text you added or changed from a new team member's
-perspective. Rewrite passages that need a second read, without expanding the edit
-to unrelated text. Use `$plain-writing` for a focused revision when requested.
+- When writing or revising unit tests, use `tests/unit/test_prediction.py` as
+  the style reference. Prefer behavior-focused names, concrete inputs and
+  expected outputs, and a clear setup/action/assertion structure. Split
+  unrelated behaviors and parameterize closely related cases with descriptive
+  IDs.
 
 ## Commits
 
