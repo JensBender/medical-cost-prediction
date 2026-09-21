@@ -30,11 +30,16 @@ def build_shap_explainer(predictor, background, *, random_state=RANDOM_STATE):
 
     SHAP resets NumPy's global random state while building the explainer. This
     function restores the previous state afterward to prevent side effects on
-    unrelated NumPy random sampling. ``calculate_shap_explanation`` separately
-    controls reproducibility for explanation calls.
+    unrelated NumPy random sampling. 
     """
     if not isinstance(background, pd.DataFrame) or background.empty:
         raise ValueError("SHAP background must be a non-empty DataFrame.")
+    missing_features = [feature for feature in predictor.input_features if feature not in background.columns]
+    if missing_features:
+        raise ValueError(
+            "SHAP background is missing preprocessor input features: "
+            f"{missing_features}"
+        )
     background = background.loc[:, predictor.input_features]
     previous_numpy_random_state = np.random.get_state()
     try:

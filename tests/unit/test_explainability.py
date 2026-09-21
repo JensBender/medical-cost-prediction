@@ -43,6 +43,17 @@ def test_build_shap_explainer_preserves_selected_background(predictor):
     )
 
 
+def test_build_shap_explainer_reports_missing_preprocessor_input_features(
+    predictor,
+):
+    """Report required predictor features missing from the SHAP background."""
+    # The predictor is configured for a and b, so b is required.
+    shap_background = pd.DataFrame({"a": [1.0]})
+
+    with pytest.raises(ValueError, match=r"missing preprocessor input features.*'b'"):
+        build_shap_explainer(predictor, shap_background)
+
+
 def test_build_shap_explainer_restores_numpy_random_state(predictor):
     """Leave NumPy's global random state unchanged after building the explainer."""
     shap_background = pd.DataFrame(
