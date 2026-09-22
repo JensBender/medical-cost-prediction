@@ -4028,7 +4028,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Stage 2 - Shortlist Evaluation:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep these rows separate from the Stage 1 and first-call rows.</li>
 #         <li><strong>Final Test-Set Evaluation:</strong> Freeze the winning configuration from Stage 2. Evaluate it once on 100 test rows plus one separate first-call row. Use this final evaluation to confirm that explanation stability and correctness generalize. Afterward, measure prediction request latency (server-side) on the intended Hugging Face hardware.</li>
 #     </ul>
-#     <p><strong>Results Refresh Pending:</strong> The saved benchmark and global SHAP audit results predate the current per-call random-seed handling. Regenerate them before reconfirming the SHAP configuration and global contribution summaries under the current implementation.</p>
+#     <p><strong>Results Refresh Status:</strong> Stage 1 and Stage 2 reflect the current per-call random-seed handling. The final test evaluation and global SHAP audit still need to be regenerated before their results are treated as current.</p>
 # </div>
 
 # %% [markdown]
@@ -4250,12 +4250,11 @@ display(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <strong>Insights:</strong>
 #     <ul>
-#         <li>All three shortlisted SHAP configurations passed background validation, explanation stability, and the additivity check.</li>
 #         <li><strong>Decision:</strong> <code>225 background rows, 1 permutation round</code> (<code>max_evals=55</code>).</li>
-#         <li><strong>Justification:</strong> It is the fastest configuration and still matched at least four of the reference top-five drivers for 99 of 100 validation rows, with no material direction reversals and a median contribution difference of \$6.36.</li>
-#         <li>Increasing the background to 250 rows produced the same 99% top-five match rate and improved the median contribution difference by only \$0.62, while increasing P95 core SHAP latency from 0.38 to 0.42 seconds.</li>
-#         <li>Using two rounds improved the match rate from 99% to 100% and the median contribution difference by \$1.59, but more than doubled P95 core SHAP latency from 0.38 to 0.80 seconds.</li>
-#         <li>The selected configuration is the fastest candidate that passes background validation and explanation stability in line with the predetermined decision rule.</li>
+#         <li>All three shortlisted SHAP configurations passed background validation, explanation stability, and the additivity check.</li>
+#         <li>The selected configuration was the fastest, with a P95 latency of 0.21 seconds. It matched at least four of the reference top-five drivers for 99 of 100 validation rows, had no material direction reversals, and had a median contribution difference of \$6.10.</li>
+#         <li>Increasing the background to 250 rows produced the same 99% top-five match rate and reduced the median contribution difference by only \$0.22, while increasing P95 latency from 0.21 to 0.22 seconds. This small gain does not justify the larger background.</li>
+#         <li>Using two rounds increased the match rate from 99% to 100% and reduced the median contribution difference by \$2.01, but approximately doubled P95 latency from 0.21 to 0.41 seconds. This does not justify the additional permutation round.</li>
 #         <li>Next, confirm the selected configuration once on 100 held-out test rows.</li>
 #     </ul>
 # </div>
