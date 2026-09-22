@@ -4133,15 +4133,15 @@ display(
 #     💡 <strong>Insights:</strong>
 #     <ul>
 #         <li>All 12 candidate SHAP configurations passed background validation, explanation stability, and the additivity check.</li>
-#         <li>One permutation round produced a 95% top-five match rate, which means 19 of the 20 validation rows passed. Two and three rounds produced 100%. This sample is too small to know whether the extra round provides a consistent improvement.</li>
+#         <li>Every candidate matched at least four of the reference top-five drivers for all 20 validation rows, with no material direction reversals. Additional rounds reduced the median contribution difference but increased latency.</li>
 #         <li><strong>Stage 2 Shortlist:</strong>
 #             <ul>
-#                 <li><code>225 background rows, 1 round</code>: the fastest configuration.</li>
-#                 <li><code>250 background rows, 1 round</code>: a slightly larger background with almost the same latency.</li>
-#                 <li><code>225 background rows, 2 rounds</code>: tests whether a second round improves explanation stability enough to justify the added latency.</li>
+#                 <li><code>225 background rows, 1 round</code>: the fastest configuration, with a P95 latency of 0.18 seconds.</li>
+#                 <li><code>250 background rows, 1 round</code>: tests whether the smaller contribution differences and closer background baseline justify using a larger background and increasing P95 latency to 0.19 seconds.</li>
+#                 <li><code>225 background rows, 2 rounds</code>: tests whether the even smaller contribution differences justifies adding a second permutation round and increasing P95 latency to 0.41 seconds.</li>
 #             </ul>
 #         </li>
-#         <li>Stage 2 will compare these configurations on 100 separate validation rows. After Stage 2, confirm the selected configuration once on test data and measure complete P95 prediction request latency on the target Hugging Face hardware.</li>
+#         <li>Stage 2 will compare these configurations on 100 separate validation rows.</li>
 #     </ul>
 # </div>
 #
@@ -4256,7 +4256,7 @@ display(
 #         <li>Increasing the background to 250 rows produced the same 99% top-five match rate and improved the median contribution difference by only \$0.62, while increasing P95 core SHAP latency from 0.38 to 0.42 seconds.</li>
 #         <li>Using two rounds improved the match rate from 99% to 100% and the median contribution difference by \$1.59, but more than doubled P95 core SHAP latency from 0.38 to 0.80 seconds.</li>
 #         <li>The selected configuration is the fastest candidate that passes background validation and explanation stability in line with the predetermined decision rule.</li>
-#         <li>Before deployment, confirm this configuration once on held-out test data and measure complete P95 prediction request latency on the target Hugging Face hardware. Report first-call latency separately.</li>
+#         <li>Next, confirm the selected configuration once on 100 held-out test rows.</li>
 #     </ul>
 # </div>
 #
