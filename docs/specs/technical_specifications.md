@@ -24,8 +24,8 @@
    - [Application Data Artifacts](#application-data-artifacts)
    - [API Contract](#api-contract)
    - [Model Explainability (SHAP)](#model-explainability-shap)
-   - [Prediction Request Flow](#prediction-request-flow)
-   - [Latency Definitions and Measurement](#latency-definitions-and-measurement)
+   - [Prediction Requests](#prediction-requests)
+   - [Latency](#latency)
    - [Privacy-Preserving Monitoring](#privacy-preserving-monitoring)
 4. [Testing Strategy](#testing-strategy)
 5. [Technical Stack Recommendation](#technical-stack-recommendation)
@@ -354,7 +354,7 @@ The Gradio UI may call the prediction service directly because both run in the s
 | :--- | :--- | :--- |
 | **Web UI layer** | User-input controls, interaction feedback, and human-readable presentation of prediction results | Prediction calculations, medical-cost inflation, SHAP calculations, or API serialization |
 | **API layer** | Routes, public request models and validation, batch-size limits, HTTP errors and status codes, and JSON serialization | Prediction calculations, medical-cost inflation, SHAP calculations, or user-facing presentation |
-| **Prediction service** | Single and batch prediction orchestration; mapping validated inputs to preprocessor inputs; warning flags; cost benchmarks; optional SHAP explanations; medical-cost inflation; and Pydantic `PredictionResult` and `BatchPredictionResult` models | HTTP behavior, JSON-specific formatting, or Web UI presentation |
+| **Prediction service** | Single and batch prediction; mapping validated inputs to preprocessor inputs; warning flags; cost benchmarks; optional SHAP explanations; medical-cost inflation; and Pydantic `PredictionResult` and `BatchPredictionResult` models | HTTP behavior, JSON-specific formatting, or Web UI presentation |
 | **Core model inference** | `CostPredictor`: input feature ordering, preprocessing, quantile-model prediction, inverse target transformation, and non-negative monotonic q25/q50/q75/q90 outputs in 2023 dollars | Medical-cost inflation, benchmarks, warning flags, SHAP explanations, or interface behavior |
 
 The API and Web UI depend on the prediction service, which depends on the core model inference (`CostPredictor`) and the SHAP functions in `src/explainability.py`; dependencies must not point back toward the interface layers. The API may serialize the prediction result models directly or wrap them with API-specific metadata, while the Web UI renders them for people. 
@@ -547,7 +547,7 @@ the pre-inflation predicted `q90` is greater than or equal to this fixed cutoff.
 Shared runtime code lives in `src/prediction.py` and `src/explainability.py`. `CostPredictor` reuses fitted preprocessing and model artifacts for all four
 quantiles and exposes `predict_median_cost` as the q50 callable. Build the explainer once per worker. 
 
-Use SHAP values for user-facing cost-driver explanations. SHAP must operate on the 27 preprocessor input features. These are interpretable, semantically meaningful features before imputation, medical feature derivation, scaling, and one-hot encoding. Build `shap.Explainer` with `shap.maskers.Independent` over a survey-weighted background sample. Use permutation SHAP rather than TreeExplainer because the explanation target is the full postprocessed q50 inference callable, not the raw inner XGBoost tree output. The permutation-SHAP callable must run the core q50 model-inference flow: fitted preprocessor, transformed-target quantile model, inverse target transformation, quantile cleanup, and q50 selection. It returns the postprocessed q50 plan-around estimate in 2023 dollars before medical-cost inflation. This makes each SHAP feature an interpretable input. Before deployment, verify on the test set that monotonic quantile enforcement rarely changes q50 and that any q50 adjustment is negligible. The prediction service applies medical-cost inflation when it builds the structured prediction result.
+Use SHAP values for user-facing cost-driver explanations. SHAP must operate on the 27 preprocessor input features. These are interpretable, semantically meaningful features before imputation, medical feature derivation, scaling, and one-hot encoding. Build `shap.Explainer` with `shap.maskers.Independent` over a survey-weighted background sample. Use permutation SHAP rather than TreeExplainer because the explanation target is the full postprocessed q50 inference callable, not the raw inner XGBoost tree output. The permutation-SHAP callable must run the core q50 model-inference flow: fitted preprocessor, transformed-target quantile model, inverse target transformation, quantile cleanup, and q50 selection. It returns the postprocessed q50 plan-around estimate in 2023 dollars before medical-cost inflation. This makes each SHAP feature an interpretable input. Test-set verification for the final model confirmed that monotonic quantile enforcement changed q50 for only 0.24% of the weighted test population (3 of 1,477 rows), with a maximum adjustment of $0.01. Repeat this verification before deploying a new model or postprocessing implementation. The prediction service applies medical-cost inflation when it builds the structured prediction result.
 
 Persist the fitted preprocessing pipeline as `models/preprocessor.joblib`. Store the SHAP background sample as `app/data/shap_background.joblib` and SHAP metadata as `app/data/shap_metadata.json`. Joblib preserves the background DataFrame's column types and missing values without adding a Parquet dependency to the application environment. The background sample should use MEPS person weights (`PERWT23F`) with replacement so the unweighted SHAP background approximates the weighted U.S. adult reference population. The initial target range is 200-500 background rows, and the final production size is selected by benchmarking. Validate the sample by comparing the SHAP background baseline with the full weighted training baseline. The artifact passes if `abs(relative_difference) <= 0.10`; if it exceeds 10%, increase the background size before deployment.
 
@@ -636,16 +636,16 @@ Select production background data size (`background_n`) and SHAP evaluation budg
 
 Interpretation constraints belong in UI copy and tests: SHAP values explain the fitted model prediction, not causal effects or actual future costs. Correlated features can split or shift attribution, so related health and limitation factors may need grouped display labels.
 
-### Prediction Request Flow
+### Prediction Requests
 1.  **API request validation:** For API calls, validate the public request schema, input ranges (e.g., Age 18-85), and batch limits. The in-process Gradio handler supplies the same validated values to the prediction service.
 2.  **Prediction service input mapping:** Convert the validated human-readable inputs (e.g., condition lists) into the 27 preprocessor input features, including binary indicators and collapsed categories such as `RECENT_LIFE_TRANSITION` and `MARRY31X_GRP`.
 3.  **Preprocessing:** Use the fitted preprocessing pipeline to impute missing values, derive medical features such as `CHRONIC_COUNT` and `LIMITATION_COUNT`, and apply scaling and one-hot encoding.
-4.  **Core prediction:** Run the fitted quantile model, apply the inverse target transformation, and enforce non-negative monotonic 2023-dollar quantiles (`q25 <= q50 <= q75 <= q90`).
+4.  **Prediction and postprocessing:** Run the fitted transformed-target quantile model, which predicts q25/q50/q75/q90 and converts them back to 2023 dollars. Then call `postprocess_quantile_predictions` to clip negative values and enforce monotonic quantiles (`q25 <= q50 <= q75 <= q90`).
 5.  **Prediction result enrichment:** Create warning flags from the pre-inflation predictions, add national and age-group benchmarks, and optionally calculate permutation SHAP for the postprocessed q50 plan-around estimate.
 6.  **Prediction result construction:** Apply medical-cost inflation once to predictions, benchmarks, and SHAP dollar impacts. Return a service-owned Pydantic `PredictionResult` or `BatchPredictionResult`.
 7.  **Interface output:** The API serializes the structured result to JSON. The Web UI formats the same result for human display without repeating prediction calculations.
 
-### Latency Definitions and Measurement
+### Latency
 Use the following terms consistently so each latency measurement has a clear boundary.
 
 | Term | Measurement Boundary | What It Includes | Target |
