@@ -3971,7 +3971,7 @@ plot_quantile_subgroup_predictions(
 #     <strong>Core SHAP Explanation Latency</strong><br>
 #     A normal prediction scores one user row. A SHAP explanation scores many masked versions of that row against the background. With 27 preprocessor input features, the selected single permutation round evaluates up to <code>2 × 27 + 1 = 55</code> masked feature combinations: one initial fully masked state, 27 forward steps that add features, and 27 backward steps that remove them. With the 225-row background, this produces up to 12,375 synthetic predictions for one explanation. SHAP predicts them in batches, but this computation is the main expected contributor to prediction request latency.
 #     <br><br>
-#     Benchmarking experiments were used to select the 225 background size and one permutation round (<code>max_evals=55</code>) as the lowest latency candidate configuration that passed background validation and explanation-stability requirements. <a href="../scripts/benchmark_shap.py"><code>scripts/benchmark_shap.py</code></a> is the source of truth for the benchmark implementation and the SHAP benchmarking section below summarizes the results. 
+#     Benchmarking selected a 225-row background and one permutation round (<code>max_evals=55</code>) as the lowest-latency candidate that passed background validation and explanation-stability requirements. <a href="../scripts/benchmark_shap.py"><code>scripts/benchmark_shap.py</code></a> is the source of truth for the benchmark implementation; the SHAP benchmarking section below summarizes the results.
 #     <br><br>
 #     <strong>Communicating SHAP Values</strong>
 #     <ul>
@@ -4005,10 +4005,9 @@ plot_quantile_subgroup_predictions(
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     ℹ️ <strong>Benchmarking Plan</strong><br>
-#     <p><strong>Results Refresh Pending:</strong> The saved benchmark and global SHAP audit results predate the shared per-call seed policy. Regenerate those results before confirming the SHAP configuration and global contribution summaries under the new implementation.</p>
-#     <strong>Goal:</strong> Identify the least computationally expensive combination of permutation rounds and background size that produces stable explanations while supporting the prediction request latency requirement.
+#     <strong>Goal:</strong> Identify the lowest-latency combination of background size and permutation rounds that passes background validation and produces stable explanations.
 #     <br><br>
-#     <strong>Implementation:</strong> The notebook documents the evaluation plan and reviews the results. The single source of truth for the benchmarking code implementation is the executable <a href="../scripts/benchmark_shap.py"><code>scripts/benchmark_shap.py</code></a>. See the technical specification for the complete <a href="../docs/specs/technical_specifications.md#latency">latency definitions and measurement boundaries</a>.
+#     <strong>Implementation:</strong> The notebook documents the evaluation plan and reviews the results. The single source of truth for the benchmarking code implementation is the executable <a href="../scripts/benchmark_shap.py"><code>scripts/benchmark_shap.py</code></a>. See the technical specification for the complete <a href="../docs/specs/technical_specifications.md#latency">latency definitions</a>.
 #     <ul>
 #         <li><strong>Latency requirement:</strong> For requests that include a SHAP explanation, P95 prediction request latency (server-side) must be less than one second under subsequent-call conditions on the target hardware. Measure first-call latency separately. Target end-to-end latency (user-perceived) is approximately three seconds.</li>
 #         <li><strong>Core SHAP explanation latency:</strong> The benchmark measures one shared <code>calculate_shap_explanation(...)</code> call for one validation or test row at a time. This includes per-call seed handling and repeated masked predictions through the complete q50 callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection. It excludes the other server work, network transfer, and interface rendering.</li>
@@ -4029,6 +4028,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Stage 2 - Shortlist Evaluation:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep these rows separate from the Stage 1 and first-call rows.</li>
 #         <li><strong>Final Test-Set Evaluation:</strong> Freeze the winning configuration from Stage 2. Evaluate it once on 100 test rows plus one separate first-call row. Use this final evaluation to confirm that explanation stability and correctness generalize. Afterward, measure prediction request latency (server-side) on the intended Hugging Face hardware.</li>
 #     </ul>
+#     <p><strong>Results Refresh Pending:</strong> The saved benchmark and global SHAP audit results predate the current per-call random-seed handling. Regenerate them before reconfirming the SHAP configuration and global contribution summaries under the current implementation.</p>
 # </div>
 
 # %% [markdown]
