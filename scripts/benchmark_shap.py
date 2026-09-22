@@ -9,8 +9,8 @@ subsequent-call latency with P50, P90, and P95.
 
 Historical preliminary screen:
     Before the current Stage 1, an exploratory run tested background sizes
-    [50, 100, 200, 300] with 3, 6, and 12 permutation rounds. Backgrounds
-    of size 200 or smaller failed the 10% representativeness gate. Additional
+    [50, 100, 200, 300] with 3, 6, and 12 permutation rounds. Backgrounds with 
+    200 rows or fewer failed the 10% representativeness gate. Additional
     rounds increased latency without meaningful stability gains. These findings
     motivated the current Stage 1 grid. The preliminary screen is not a CLI mode. 
     Its outputs are:
