@@ -625,6 +625,24 @@ The following template defines the structure of `app/data/shap_metadata.json`.
     "results": "models/shap_benchmark_test_results.csv",
     "reference": "models/shap_benchmark_test_reference.csv",
     "rows": 100,
+    "reference_configuration": {
+      "background_size": 500,
+      "permutation_rounds": 24,
+      "max_evals": 1320
+    },
+    "explanation_stability": {
+      "share_rows_with_at_least_4_of_5_matches": null,
+      "min_required_share": 0.90,
+      "material_direction_reversal_count": null,
+      "median_matched_top_5_abs_delta_2023_usd": null,
+      "max_allowed_median_matched_top_5_abs_delta_2023_usd": 25.0,
+      "passed": null
+    },
+    "additivity": {
+      "p95_absolute_error_2023_usd": null,
+      "max_allowed_p95_absolute_error_2023_usd": 0.01,
+      "passed": null
+    },
     "passed": null
   }
 }

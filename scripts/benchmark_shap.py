@@ -271,6 +271,44 @@ def build_shap_metadata(background_info, test_result):
             "results": "models/shap_benchmark_test_results.csv",
             "reference": "models/shap_benchmark_test_reference.csv",
             "rows": SHAP_TEST_ROWS,
+            "reference_configuration": {
+                "background_size": SHAP_REFERENCE_BACKGROUND_SIZE,
+                "permutation_rounds": SHAP_REFERENCE_PERMUTATION_ROUNDS,
+                "max_evals": calculate_max_evals(
+                    SHAP_REFERENCE_PERMUTATION_ROUNDS,
+                    len(SHAP_INPUT_FEATURES),
+                ),
+            },
+            "explanation_stability": {
+                "share_rows_with_at_least_4_of_5_matches": float(
+                    test_result["share_rows_with_at_least_4_of_5_matches"]
+                ),
+                "min_required_share": SHAP_MIN_TOP_5_MATCH_ROW_SHARE,
+                "material_direction_reversal_count": int(
+                    test_result["material_direction_reversal_count"]
+                ),
+                "median_matched_top_5_abs_delta_2023_usd": float(
+                    test_result[
+                        "median_matched_top_5_abs_delta_2023_usd"
+                    ]
+                ),
+                "max_allowed_median_matched_top_5_abs_delta_2023_usd": (
+                    SHAP_MEDIAN_TOP_5_ABS_DELTA_MAX_2023_USD
+                ),
+                "passed": bool(test_result["explanation_stability_passed"]),
+            },
+            "additivity": {
+                "p95_absolute_error_2023_usd": float(
+                    test_result["p95_additivity_abs_error_2023_usd"]
+                ),
+                "max_allowed_p95_absolute_error_2023_usd": (
+                    SHAP_ADDITIVITY_ABS_ERROR_MAX_2023_USD
+                ),
+                "passed": bool(
+                    float(test_result["p95_additivity_abs_error_2023_usd"])
+                    <= SHAP_ADDITIVITY_ABS_ERROR_MAX_2023_USD
+                ),
+            },
             "passed": True,
         },
     }

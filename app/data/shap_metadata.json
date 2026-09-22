@@ -74,6 +74,24 @@
     "results": "models/shap_benchmark_test_results.csv",
     "reference": "models/shap_benchmark_test_reference.csv",
     "rows": 100,
+    "reference_configuration": {
+      "background_size": 500,
+      "permutation_rounds": 24,
+      "max_evals": 1320
+    },
+    "explanation_stability": {
+      "share_rows_with_at_least_4_of_5_matches": 1.0,
+      "min_required_share": 0.9,
+      "material_direction_reversal_count": 0,
+      "median_matched_top_5_abs_delta_2023_usd": 6.469185116677963,
+      "max_allowed_median_matched_top_5_abs_delta_2023_usd": 25.0,
+      "passed": true
+    },
+    "additivity": {
+      "p95_absolute_error_2023_usd": 5.684341886080802e-14,
+      "max_allowed_p95_absolute_error_2023_usd": 0.01,
+      "passed": true
+    },
     "passed": true
   }
 }
