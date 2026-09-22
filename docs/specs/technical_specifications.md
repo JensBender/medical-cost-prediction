@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Model Development |
 | **Created** | 2025-12-12 |
-| **Last Updated** | 2026-07-29 |
+| **Last Updated** | 2026-09-22 |
 
 **Note:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
 
@@ -20,10 +20,11 @@
    - [Model Evaluation](#model-evaluation)
 3. [Deployment Specifications](#deployment-specifications)
    - [MVP Deployment Architecture](#mvp-deployment-architecture)
+   - [Prediction Architecture](#prediction-architecture)
    - [Application Data Artifacts](#application-data-artifacts)
    - [API Contract](#api-contract)
    - [Model Explainability (SHAP)](#model-explainability-shap)
-   - [Inference Pipeline](#inference-pipeline)
+   - [Prediction Request Flow](#prediction-request-flow)
    - [Latency Definitions and Measurement](#latency-definitions-and-measurement)
    - [Privacy-Preserving Monitoring](#privacy-preserving-monitoring)
 4. [Testing Strategy](#testing-strategy)
@@ -115,7 +116,7 @@ To balance performance with a frictionless experience (target < 90s completion),
 3.  **Feature Importance Ranking**: Train preliminary models to obtain importance scores.
 4.  **Final Feature Selection**: Map features to the matrix above.
     *   **Imputation Strategy**: Use Mode/Median imputation. Implement a "Safety First" imputation layer for **all** features:
-        *   **Production Robustness**: Even for required features with 0% missingness in training (e.g., Age, Sex, Region, Physical Health), the inference pipeline will include fallback imputation to handle malformed production inputs and avoid system crashes.
+        *   **Production Robustness**: Even for required features with 0% missingness in training (e.g., Age, Sex, Region, Physical Health), the fitted preprocessing pipeline will include fallback imputation to handle malformed production inputs and avoid system crashes.
         *   **Implicit "No" Logic**: Given the high feature completeness in training (>96%), "absence of a checked box" in UI checklists can be statistically justified as an explicit "No" response rather than a missing value.
     *   **Outlier Retention**: While univariate (3SD) and multivariate (Isolation Forest) outliers are identified for profiling, they are **retained** in the training data. Profiling confirms that these outliers represent legitimate high-risk clinical profiles (e.g., multiple comorbidities) rather than noise or measurement errors. Retaining them ensures the model captures the drivers of high-impact tail risk.
 
@@ -331,11 +332,32 @@ The MVP product release should use a single-deployment, modular application rath
 **Recommended shape**
 *   **Hosting:** One Hugging Face Space for the app, with the trained model artifact loaded from Hugging Face Hub.
 *   **Web application:** FastAPI as the main ASGI application, served by an ASGI server such as Uvicorn.
-*   **UI:** Gradio mounted inside the FastAPI app for the user-facing planner experience.
-*   **Prediction service:** A shared internal prediction service module validates inputs, formats features, calls the model artifact, applies post-processing, updates aggregate monitoring counters, and returns prediction outputs.
-*   **API surface:** Expose `/health` for operational checks and `/api/predict` if programmatic access is needed. The Gradio UI may call the shared prediction function directly inside the same process rather than making a local HTTP request.
+*   **UI:** Gradio mounted inside the FastAPI app for the user-facing planner experience. Its event handlers call the prediction service directly inside the same process.
+*   **API surface:** Expose `/health` for operational checks and `/api/predict` for programmatic access. The API and Gradio UI use the same prediction service rather than duplicating prediction logic.
+*   **Prediction modules:** Keep the prediction service and core model inference as separate internal modules within the same deployment.
 
 This design gives the MVP product release clear module and API boundaries while keeping deployment simple. It should not be described as a microservices architecture unless the API, UI, monitoring, and model-serving components are split into independently deployed services.
+
+### Prediction Architecture
+
+The MVP uses four logical layers. These layers define responsibilities and dependency boundaries inside one modular deployment; they are not separate network services.
+
+```text
+Web UI layer ─┐
+              ├─> Prediction service ─> Core model inference
+API layer ────┘
+```
+
+The Gradio UI may call the prediction service directly because both run in the same process. Programmatic clients call the API layer, which delegates to the same service. If the UI is separated from the backend later, it can call the API without changing the prediction service or core model inference.
+
+| Layer | Owns | Does Not Own |
+| :--- | :--- | :--- |
+| **Web UI layer** | User-input controls, interaction feedback, and human-readable presentation of prediction results | Prediction calculations, medical-cost inflation, SHAP calculations, or API serialization |
+| **API layer** | Routes, public request models and validation, batch-size limits, HTTP errors and status codes, and JSON serialization | Prediction calculations, medical-cost inflation, SHAP calculations, or user-facing presentation |
+| **Prediction service** | Single and batch prediction orchestration; mapping validated inputs to preprocessor inputs; warning flags; cost benchmarks; optional SHAP explanations; medical-cost inflation; and Pydantic `PredictionResult` and `BatchPredictionResult` models | HTTP behavior, JSON-specific formatting, or Web UI presentation |
+| **Core model inference** | `CostPredictor`: input feature ordering, preprocessing, quantile-model prediction, inverse target transformation, and non-negative monotonic q25/q50/q75/q90 outputs in 2023 dollars | Medical-cost inflation, benchmarks, warning flags, SHAP explanations, or interface behavior |
+
+The API and Web UI depend on the prediction service, which depends on the core model inference (`CostPredictor`) and the SHAP functions in `src/explainability.py`; dependencies must not point back toward the interface layers. The API may serialize the prediction result models directly or wrap them with API-specific metadata, while the Web UI renders them for people. 
 
 ### Application Data Artifacts
 
@@ -407,15 +429,15 @@ Store the inflation factor in `app/data/medical_inflation.json` for each applica
 
 The `base_index` is the 2023 mean across all 12 months and `target_index` is the latest published month. Calculate `medical_cost_inflation_factor` as `target_index / base_index`. For example, a 2023 index of `549` and a May 2026 index of `593` produce a medical inflation factor of `593 / 549 = 1.08`. The Medical Care CPI level in May 2026 is therefore 8% higher than the average level in 2023, so a $1,000 model cost prediction in 2023 dollars becomes about $1,080.
 
-Model inference and SHAP calculations operate in 2023 dollars. During API/UI output formatting, apply the inflation factor exactly once to q25, q50, q75, q90, national and age-group benchmarks, and SHAP dollar impacts. Round monetary values only after this adjustment. Return only inflation-adjusted amounts; do not return a second set of 2023-dollar values.
+Core model inference and SHAP calculations operate in 2023 dollars. The prediction service applies the inflation factor exactly once to q25, q50, q75, q90, national and age-group benchmarks, and SHAP dollar impacts when it builds the structured prediction result. Round monetary values only after this adjustment. Return only inflation-adjusted amounts; do not return a second set of 2023-dollar values. The API serializes these values, and the Web UI presents them without recalculating inflation.
 
 Every API response must identify the currency, the model price year, the output price year represented by the inflation artifact's target period, and the inflation factor actually applied. This gives API consumers enough information to interpret the returned amounts and, if needed, approximately recover the original 2023-dollar values.
 
 ### API Contract
-The prediction service will expose the trained model artifact via a Python API (internal to the web app process) or a REST endpoint if decoupled.
+The FastAPI layer exposes the prediction service through REST endpoints. It owns the public request schemas, validates external requests, delegates prediction work to the service, and serializes the returned Pydantic result models to JSON. The prediction service remains independent of HTTP behavior. It may also be called directly by the Gradio UI inside the same process.
 *   **Input Schema (Pydantic Style):**
     ```python
-    class InferenceInput(BaseModel):
+    class PredictionRequest(BaseModel):
         # REQUIRED (100% completeness in training)
         age: int = Field(..., ge=18, le=85)
         sex: int = Field(...)
@@ -476,7 +498,7 @@ The prediction service will expose the trained model artifact via a Python API (
 
     Rank SHAP contributions by their absolute values and return the five largest contributions. The API returns feature names, user-facing labels, input values, SHAP contributions, and ranks. The Gradio UI uses these values to format the table, arrows, and rounded dollar amounts.
 
-    Explanation generation should be optional for batch prediction requests to the prediction service because permutation SHAP is substantially more expensive than prediction alone. The Gradio app requests an explanation for its single prediction. Batch API requests should default to predictions without explanations and enforce a limit on the number of rows that can be explained in one request.
+    The prediction service must support both single and batch prediction. Explanation generation should be optional for batch prediction because permutation SHAP is substantially more expensive than prediction alone. The Gradio app requests an explanation for its single prediction. Batch API requests should default to predictions without explanations and enforce a limit on the number of rows that can be explained in one request.
 
 #### Prediction Warning Flags
 `warning_flags` are API values. Planning notices are user-facing copy rendered from one or more warning flags. Generate `warning_flags` before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. The app can use subgroup diagnostics to decide when to show a note, but the rendered note should name the reason only when it is informative and unlikely to stigmatize.
@@ -525,7 +547,7 @@ the pre-inflation predicted `q90` is greater than or equal to this fixed cutoff.
 Shared runtime code lives in `src/prediction.py` and `src/explainability.py`. `CostPredictor` reuses fitted preprocessing and model artifacts for all four
 quantiles and exposes `predict_median_cost` as the q50 callable. Build the explainer once per worker. 
 
-Use SHAP values for user-facing cost-driver explanations. SHAP must operate on the 27 preprocessor input features. These are interpretable, semantically meaningful features before imputation, medical feature derivation, scaling, and one-hot encoding. Build `shap.Explainer` with `shap.maskers.Independent` over a survey-weighted background sample. Use permutation SHAP rather than TreeExplainer because the explanation target is the full postprocessed q50 inference callable, not the raw inner XGBoost tree output. The permutation-SHAP callable must run the complete q50 prediction path: fitted preprocessor, transformed-target quantile model, inverse target transformation, quantile cleanup, and q50 selection. It returns the postprocessed q50 plan-around estimate in 2023 dollars before medical-cost inflation. This makes each SHAP feature an interpretable input. Before deployment, verify on the test set that monotonic quantile enforcement rarely changes q50 and that any q50 adjustment is negligible. Apply medical-cost inflation only during API/UI output formatting.
+Use SHAP values for user-facing cost-driver explanations. SHAP must operate on the 27 preprocessor input features. These are interpretable, semantically meaningful features before imputation, medical feature derivation, scaling, and one-hot encoding. Build `shap.Explainer` with `shap.maskers.Independent` over a survey-weighted background sample. Use permutation SHAP rather than TreeExplainer because the explanation target is the full postprocessed q50 inference callable, not the raw inner XGBoost tree output. The permutation-SHAP callable must run the core q50 model-inference flow: fitted preprocessor, transformed-target quantile model, inverse target transformation, quantile cleanup, and q50 selection. It returns the postprocessed q50 plan-around estimate in 2023 dollars before medical-cost inflation. This makes each SHAP feature an interpretable input. Before deployment, verify on the test set that monotonic quantile enforcement rarely changes q50 and that any q50 adjustment is negligible. The prediction service applies medical-cost inflation when it builds the structured prediction result.
 
 Persist the fitted preprocessing pipeline as `models/preprocessor.joblib`. Store the SHAP background sample as `app/data/shap_background.joblib` and SHAP metadata as `app/data/shap_metadata.json`. Joblib preserves the background DataFrame's column types and missing values without adding a Parquet dependency to the application environment. The background sample should use MEPS person weights (`PERWT23F`) with replacement so the unweighted SHAP background approximates the weighted U.S. adult reference population. The initial target range is 200-500 background rows, and the final production size is selected by benchmarking. Validate the sample by comparing the SHAP background baseline with the full weighted training baseline. The artifact passes if `abs(relative_difference) <= 0.10`; if it exceeds 10%, increase the background size before deployment.
 
@@ -608,33 +630,30 @@ The following template defines the structure of `app/data/shap_metadata.json`.
 }
 ```
 
-The prediction service should load the fitted preprocessor, quantile model, and SHAP background at startup and build the explainer once. At inference time, map the user inputs into the preprocessor input schema; run preprocessing, q25/q50/q75/q90 prediction, and quantile postprocessing; compute SHAP for q50 through the same full callable; apply the medical-cost inflation factor to displayed SHAP dollar impacts; and return the top cost drivers. Do not mix q25, q75, or q90 SHAP explanations into the q50 explanation.
+The prediction service should load the fitted preprocessor, quantile model, and SHAP background at startup and build the explainer once. At prediction time, map validated user inputs into the preprocessor input schema; call core model inference for q25/q50/q75/q90; compute SHAP for q50 through the same core model-inference callable; apply the medical-cost inflation factor to the SHAP dollar impacts; and include the top cost drivers in the structured prediction result. Do not mix q25, q75, or q90 SHAP explanations into the q50 explanation.
 
 Select production background data size (`background_n`) and SHAP evaluation budget (`max_evals`) empirically. Benchmark candidate combinations against a reference configuration with larger background size and higher SHAP evaluation budget, then choose the smallest configuration that supports the P95 prediction request latency target while keeping user-facing explanations stable. Track at least p50/p90/p95 core SHAP explanation latency, top-k driver overlap, sign stability, SHAP dollar drift for top drivers, baseline drift, and additivity error. Top-driver and sign stability matter more than exact low-ranked feature dollar values.
 
 Interpretation constraints belong in UI copy and tests: SHAP values explain the fitted model prediction, not causal effects or actual future costs. Correlated features can split or shift attribution, so related health and limitation factors may need grouped display labels.
 
-### Inference Pipeline
-1.  **Validation:** Ensure inputs are within valid ranges (e.g., Age 18-85).
-2.  **Initial Formatting:** Convert human-readable API inputs (e.g., condition lists) into the binary indicators and collapsed categories (`RECENT_LIFE_TRANSITION`, `MARRY31X_GRP`) expected by the pipeline.
-3.  **Imputation:** Fill missing values (Mode for categorical, Median for numerical).
-4.  **Medical Feature Derivation:** Calculate aggregate counts (`CHRONIC_COUNT`, `LIMITATION_COUNT`).
-5.  **Transformation:** Apply `ColumnTransformer` (Scaling/Encoding).
-6.  **Prediction:** Run model inference.
-7.  **Model Output Post-Processing:** Apply inverse target transform and enforce valid 2023-dollar quantiles (non-negative, monotonic `q25 <= q50 <= q75 <= q90`).
-8.  **Warning Flags:** Create `warning_flags` from pre-inflation postprocessed predictions.
-9.  **Explainability:** Run permutation SHAP for the postprocessed q50 plan-around estimate only.
-10. **Output Formatting:** Apply medical-cost inflation to predictions, comparison benchmarks, and SHAP dollar impacts returned to the UI/API.
+### Prediction Request Flow
+1.  **API request validation:** For API calls, validate the public request schema, input ranges (e.g., Age 18-85), and batch limits. The in-process Gradio handler supplies the same validated values to the prediction service.
+2.  **Prediction service input mapping:** Convert the validated human-readable inputs (e.g., condition lists) into the 27 preprocessor input features, including binary indicators and collapsed categories such as `RECENT_LIFE_TRANSITION` and `MARRY31X_GRP`.
+3.  **Preprocessing:** Use the fitted preprocessing pipeline to impute missing values, derive medical features such as `CHRONIC_COUNT` and `LIMITATION_COUNT`, and apply scaling and one-hot encoding.
+4.  **Core prediction:** Run the fitted quantile model, apply the inverse target transformation, and enforce non-negative monotonic 2023-dollar quantiles (`q25 <= q50 <= q75 <= q90`).
+5.  **Prediction result enrichment:** Create warning flags from the pre-inflation predictions, add national and age-group benchmarks, and optionally calculate permutation SHAP for the postprocessed q50 plan-around estimate.
+6.  **Prediction result construction:** Apply medical-cost inflation once to predictions, benchmarks, and SHAP dollar impacts. Return a service-owned Pydantic `PredictionResult` or `BatchPredictionResult`.
+7.  **Interface output:** The API serializes the structured result to JSON. The Web UI formats the same result for human display without repeating prediction calculations.
 
 ### Latency Definitions and Measurement
 Use the following terms consistently so each latency measurement has a clear boundary.
 
 | Term | Measurement Boundary | What It Includes | Target |
 | :--- | :--- | :--- | :--- |
-| **Core SHAP explanation latency** | From calling the <code>calculate_shap_explanation(...)</code> for one row until it returns the SHAP explanation | The repeated masked predictions through the complete q50 callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection | Screening metric only; it is one component of prediction request latency |
-| **Prediction request latency (server-side)** | From the prediction service receiving a request until the response is ready to return | Request parsing, input validation and mapping, prediction, SHAP explanation (optional for API requests), inflation adjustment, top-driver selection, and response construction and serialization | P95 < 1 second for requests that include SHAP under subsequent-call conditions on the target hardware. Report first-call latency separately (NFR-04) |
+| **Core SHAP explanation latency** | From calling the <code>calculate_shap_explanation(...)</code> for one row until it returns the SHAP explanation | The repeated masked predictions through the core q50 model-inference callable: preprocessing, quantile prediction, inverse target transformation, quantile postprocessing, and q50 selection | Screening metric only; it is one component of prediction request latency |
+| **Prediction request latency (server-side)** | From the API layer receiving a request until JSON serialization is complete | Request parsing, input validation and mapping, prediction, SHAP explanation (optional for API requests), inflation adjustment, top-driver selection, result construction, and response serialization | P95 < 1 second for requests that include SHAP under subsequent-call conditions on the target hardware. Report first-call latency separately (NFR-04) |
 | **API round-trip latency (client-observed)** | From an API client sending a request until it receives the complete response | Network transfer in both directions and prediction request latency | No separate MVP target |
-| **End-to-end latency (user-perceived)** | From the user clicking **Predict** until the result is rendered in the interface | Interface processing, API round-trip latency, interface state updates, and result rendering | Approximately 3 seconds under NFR-04 |
+| **End-to-end latency (user-perceived)** | From the user clicking **Predict** until the result is rendered in the interface | Interface processing, the prediction-service call (or API round trip for a separate client), interface state updates, and result rendering | Approximately 3 seconds under NFR-04 |
 
 The measurements are nested: core SHAP explanation latency is part of prediction request latency; prediction request latency is part of API round-trip latency; and API round-trip latency is part of end-to-end latency.
 
@@ -783,7 +802,7 @@ GRADIO_FLAGGING_MODE=never
 *   **Modeling:** Scikit-Learn, XGBoost, SHAP (for explainability), Joblib (for serialization).
 *   **Web App:**
     *   **Frontend:** Gradio mounted in the FastAPI app.
-    *   **Backend:** FastAPI main app with Pydantic validation and a shared prediction service module.
+    *   **Backend:** FastAPI main app with Pydantic API request schemas, Pydantic prediction-result models, and a shared prediction service module.
 *   **Testing:** Pytest.
 *   **Hosting:**
     *   **Source Code**: GitHub.
