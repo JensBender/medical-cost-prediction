@@ -4028,7 +4028,6 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Stage 2 - Shortlist Evaluation:</strong> Evaluate the three most promising candidates on the same 100 validation rows. Keep these rows separate from the Stage 1 and first-call rows.</li>
 #         <li><strong>Final Test-Set Evaluation:</strong> Freeze the winning configuration from Stage 2. Evaluate it once on 100 test rows plus one separate first-call row. Use this final evaluation to confirm that explanation stability and correctness generalize. Afterward, measure prediction request latency (server-side) on the intended Hugging Face hardware.</li>
 #     </ul>
-#     <p><strong>Results Refresh Status:</strong> Stage 1 and Stage 2 reflect the current per-call random-seed handling. The final test evaluation and global SHAP audit still need to be regenerated before their results are treated as current.</p>
 # </div>
 
 # %% [markdown]
@@ -4362,9 +4361,10 @@ display(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <strong>Insights:</strong>
 #     <ul>
-#         <li>The final configuration passed background validation, explanation stability, and the additivity check on 100 test rows.</li>
-#         <li>It matched at least four of the reference top-five drivers for 98 of 100 rows, had no material direction reversals, and had a median contribution difference of \$6.32.</li>
-#         <li>Core SHAP explanation latency was 0.31 seconds at P50 and 0.65 seconds at P95. The higher P95 on test than validation (0.38 seconds) reinforces the need to measure complete prediction-request latency on the target Hugging Face hardware.</li>
+#         <li><strong>Final evaluation:</strong> The selected configuration passed background validation, explanation stability, and the additivity check on 100 held-out test rows.</li>
+#         <li>All 100 rows matched at least four of the reference top-five drivers. There were no material direction reversals, and the median contribution difference was \$6.47.</li>
+#         <li>Core SHAP explanation latency was 0.17 seconds at P50 and 0.20 seconds at P95, consistent with the 0.21-second P95 measured on the Stage 2 validation rows.</li>
+#         <li>The remaining latency check is to measure the complete prediction request on the target Hugging Face hardware.</li>
 #     </ul>
 # </div>
 #

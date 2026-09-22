@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "artifacts": {
+    "model": "models/xgb_quantile_model.joblib",
+    "preprocessor": "models/preprocessor.joblib",
+    "background": "app/data/shap_background.joblib"
+  },
+  "data_source": "MEPS 2023 (HC-251), training split",
+  "reference_population": "U.S. civilian noninstitutionalized adults represented by MEPS training rows",
+  "explained_output": {
+    "quantile": "q50",
+    "meaning": "plan-around estimate, predicted median out-of-pocket cost",
+    "unit": "USD",
+    "currency_year": 2023,
+    "postprocessed": true,
+    "inflation_adjusted": false
+  },
+  "background_sample": {
+    "feature_set": "preprocessor_input",
+    "feature_count": 27,
+    "rows": 225,
+    "sampling_method": "weighted sample with replacement using PERWT23F",
+    "random_state": 42
+  },
+  "explainer_contract": {
+    "algorithm": "permutation",
+    "permutation_rounds": 1,
+    "max_evals": 55,
+    "prediction_function": "predict_median_cost",
+    "input_feature_set": "preprocessor_input",
+    "input_feature_count": 27,
+    "prediction_pipeline": [
+      {
+        "operation": "preprocess",
+        "artifact_ref": "preprocessor",
+        "output_feature_set": "model_ready",
+        "output_feature_count": 40
+      },
+      {
+        "operation": "predict_quantiles",
+        "artifact_ref": "model",
+        "outputs": [
+          "q25",
+          "q50",
+          "q75",
+          "q90"
+        ],
+        "includes_inverse_target_transformation": true
+      },
+      {
+        "operation": "postprocess_quantiles",
+        "rules": [
+          "non_negative",
+          "monotonic"
+        ]
+      },
+      {
+        "operation": "select_quantile",
+        "quantile": "q50"
+      }
+    ]
+  },
+  "background_validation": {
+    "method": "baseline_relative_difference",
+    "comparison": "compare mean postprocessed q50 of background vs. full training data",
+    "background_baseline_2023_usd": 331.9722151379536,
+    "weighted_training_baseline_2023_usd": 364.16639887390295,
+    "relative_difference": -0.08840514620652029,
+    "absolute_relative_difference": 0.08840514620652029,
+    "max_allowed_absolute_relative_difference": 0.1,
+    "passed": true
+  },
+  "final_test_evaluation": {
+    "results": "models/shap_benchmark_test_results.csv",
+    "reference": "models/shap_benchmark_test_reference.csv",
+    "rows": 100,
+    "passed": true
+  }
+}
