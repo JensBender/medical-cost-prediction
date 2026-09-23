@@ -4569,7 +4569,8 @@ display(
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 After running <code>scripts/audit_shap_feature_importance.py</code>, load the SHAP feature importances from the test set. Display a table of all 27 features and a bar plot of the top 15 features.
+#     <strong>Overall Feature Importance: Table</strong><br>
+#     📌 Load the SHAP feature importances from the test set and display a table of all 27 features.
 # </div>
 
 # %%
@@ -4618,7 +4619,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Overall Feature Importance (Bar Plot)</strong><br>
+#     <strong>Overall Feature Importance: Bar Plot</strong><br>
 #     📌 Create bar chart of the top 15 features on the test set.
 # </div>
 
@@ -4726,7 +4727,7 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Contribution Distributions (Beeswarm Plot)</strong><br>
+#     <strong>Contribution Distributions: Beeswarm Plot</strong><br>
 #     📌 Create a contribution distribution plot for the top 15 features. Because the beeswarm plot does not accept survey weights, use weighted bootstrap sampling with replacement so the displayed dot density approximates the U.S. adult population represented by MEPS.
 # </div>
 
@@ -4859,7 +4860,7 @@ plt.show()# %% [markdown]
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Contributions by Category (Interval Plot)</strong><br>
+#     <strong>Contributions by Category: Interval Plot</strong><br>
 #     📌 Compare SHAP contributions for Insurance, Education, and Marital Status. Show the median and percentile ranges for each category (survey-weighted) so contribution direction and variation are easy to compare.
 # </div>
 
@@ -5027,7 +5028,7 @@ plt.show()# %% [markdown]
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Contributions Across Ordered Values (Dependence and Interval Plots)</strong><br>
+#     <strong>Contributions Across Ordered Values: Dependence and Interval Plots</strong><br>
 #     📌 Examine Age, Family Income, and Family Size in more detail. Use a dependence plot for Age and interval plots for Family Income and Family Size to show how SHAP contributions change across ordered values.
 # </div>
 
@@ -5291,7 +5292,8 @@ plt.show()# %% [markdown]
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Extract <code>total_gain</code>, <code>gain</code>, and <code>weight</code> from the fitted XGBoost. Use each feature's share of total gain for the primary ranking. Display a table of all 40 model-ready features and a bar plot of the top 15 features.
+#     <strong>Model-Ready Feature Importance: Table</strong><br>
+#     📌 Extract <code>total_gain</code>, <code>gain</code>, and <code>weight</code> from the fitted XGBoost. Rank features by their share of total gain and display all 40 model-ready features in a table.
 # </div>
 
 # %%
@@ -5387,7 +5389,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Model-Ready Feature Importance (Bar Plot)</strong><br>
+#     <strong>Model-Ready Feature Importance: Bar Plot</strong><br>
 #     📌 Plot the top 15 model-ready features by share of total gain.
 # </div>
 
@@ -5471,8 +5473,8 @@ plt.show()
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Consolidated Feature Importance</strong><br>
-#     📌 Combine the one-hot encoded columns that belong to the same source feature. Sum their total gain and split counts, then recalculate average gain per split. Keep derived features such as Chronic Conditions Count and Limitations Count separate. This produces 29 consolidated features: the 27 preprocessor inputs plus two derived features.
+#     <strong>Consolidated Feature Importance: Table</strong><br>
+#     📌 Combine the one-hot encoded columns that belong to the same source feature. Sum their total gain and split counts, then recalculate average gain per split. Keep derived features such as Chronic Conditions Count and Limitations Count separate. Display the 29 consolidated features in a table: the 27 preprocessor inputs plus two derived features.
 # </div>
 
 # %%
@@ -5560,7 +5562,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     <strong>Consolidated Feature Importance (Bar Plot)</strong><br>
+#     <strong>Consolidated Feature Importance: Bar Plot</strong><br>
 #     📌 Plot the top 15 consolidated features by share of total gain.
 # </div>
 
