@@ -3943,7 +3943,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use individual SHAP values to show which inputs moved that user's plan-around estimate above or below the SHAP baseline. This is a product feature, not just a diagnostic. It makes the prediction more useful for financial planning by explaining the main cost drivers. Use cautious wording ("moved the estimate") and avoid causal language.</li>
 #     </ol>
 #     <strong>Explained Output</strong><br>
-#     SHAP explanations focus on the q50 plan-around estimate (predicted median cost). The q25, q75, and q90 outputs define the typical range and safety cushion, but should not be mixed into the q50 explanation.
+#     SHAP explanations focus on the q50 plan-around estimate (predicted median cost). The q25, q75, and q90 outputs define the typical range and safety cushion, but should not be mixed into the q50 explanation. A separate explanation of q90 could show different feature contributions.
 #     <br><br>
 #     <strong>SHAP Prediction Function</strong><br>
 #     SHAP can explain a callable prediction function, not only a raw model object. The saved <code>xgb_quantile_model</code> is a <code>TransformedTargetRegressor</code> wrapping the inner XGBoost estimator, but the explainer calls <code>predict_median_cost</code> instead. This callable converts 27 preprocessor input features into 40 model-ready features, predicts all four quantiles, applies the inverse target transformation, enforces non-negative and monotonic quantiles (<code>q25 ≤ q50 ≤ q75 ≤ q90</code>), and selects q50. Medical-cost inflation remains outside the callable and is applied only during API/UI output formatting.
@@ -4857,7 +4857,6 @@ plt.show()
 #             </ul>
 #         </li>
 #         <li><strong>Unordered categories need a closer look:</strong> Insurance has substantial contributions in both directions, but its gray dots do not reveal which insurance category produced each one. Education and Marital Status have the same limitation; the next plot separates the categories.</li>
-#         <li><strong>Limitations:</strong> These contributions explain q50 only. They may differ for q90 and do not show that changing an input would cause actual costs to change.</li>
 #     </ul>
 # </div>
 
@@ -5016,7 +5015,9 @@ fig.savefig(
     bbox_inches="tight",
     dpi=200,
 )
-plt.show()# %% [markdown]
+plt.show()
+
+# %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b>
 #     <ul style="margin-top:10px; margin-bottom:8px">
@@ -5025,7 +5026,7 @@ plt.show()# %% [markdown]
 #         <li><strong>Marital Status plays a smaller role:</strong> Married, Widowed, and Divorced move estimates slightly up, Never Married moves them down, and Separated is centered near zero.</li>
 #         <li><strong>Access and utilization may explain the pattern:</strong> Higher family income, higher educational attainment, private insurance, and having a usual source of care generally move q50 estimates up. This matches the EDA and may reflect greater healthcare access and use and, for private insurance, deductibles and other cost sharing rather than greater medical need alone. These analyses identify the pattern but do not establish its cause.</li>
 #         <li><strong>Contribution size varies within categories:</strong> The percentile ranges show that a category's contribution depends on the person's other features.</li>
-#         <li><strong>Limitations:</strong> Interpret sparse categories such as Separated (1%), Doctorate (3%), and GED (4%) cautiously. These are model attributions, not causal effects, and do not show what would happen if someone changed categories.</li>
+#         <li><strong>Sparse categories:</strong> Interpret results for Separated (1%), Doctorate (3%), and GED (4%) cautiously.</li>
 #     </ul>
 # </div>
 
@@ -5261,7 +5262,9 @@ fig.savefig(
     bbox_inches="tight",
     dpi=200,
 )
-plt.show()# %% [markdown]
+plt.show()
+
+# %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b>
 #     <ul style="margin-top:10px; margin-bottom:8px">
