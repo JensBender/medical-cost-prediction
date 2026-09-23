@@ -4651,7 +4651,7 @@ ax.bar_label(
 )
 ax.set_xlim(
     0,
-    shap_top_15["Mean Absolute Contribution"].max() * 1.30,
+    shap_top_15["Mean Absolute Contribution"].max() * 1.20,
 )
 ax.xaxis.set_major_formatter(
     plt.FuncFormatter(lambda value, _: f"${value:,.0f}")
@@ -4681,9 +4681,8 @@ fig.text(
     0.01,
     0.01,
     (
-        "Note: Test-set mean absolute contributions use MEPS survey weights "
-        "and 2023 USD. Percentages show each feature's share of total "
-        "importance across all 27 features."
+        "Note: Test-set mean absolute contributions use MEPS survey weights and 2023 USD. Percentages show each feature's share of total importance\n"
+        "across all 27 features."
     ),
     ha="left",
     va="bottom",
@@ -4691,7 +4690,7 @@ fig.text(
     style="italic",
     color="#4A4A4A",
 )
-fig.tight_layout(rect=(0, 0.04, 1, 1))
+fig.tight_layout(rect=(0, 0.05, 1, 1))
 fig.savefig(
     "../figures/evaluation/shap_feature_importance.png",
     bbox_inches="tight",
@@ -4705,18 +4704,18 @@ plt.show()
 #     <ul style="margin-top:10px; margin-bottom:8px">
 #         <li><strong>The model draws on four types of information:</strong>
 #             <ul>
-#                 <li><strong>Medical need (7 features; 30.6% of total importance):</strong> Joint Pain, High Cholesterol, Walking Limitation, High Blood Pressure, Arthritis, Cancer, and Asthma.</li>
-#                 <li><strong>Demographic (4 features; 25.9% of total importance):</strong> Family Size, Sex, Age, and Marital Status.</li>
-#                 <li><strong>Socioeconomic (2 features; 17.8% of total importance):</strong> Family Income and Education.</li>
-#                 <li><strong>Healthcare access (2 features; 18.0% of total importance):</strong> Insurance and Usual Source of Care.</li>
+#                 <li><strong>Medical need (7 features; 30.5% of total importance):</strong> Joint Pain, High Cholesterol, Walking Limitation, High Blood Pressure, Arthritis, Cancer, and Asthma.</li>
+#                 <li><strong>Demographic (4 features; 26.0% of total importance):</strong> Family Size, Sex, Age, and Marital Status.</li>
+#                 <li><strong>Healthcare access (2 features; 18.3% of total importance):</strong> Insurance and Usual Source of Care.</li>
+#                 <li><strong>Socioeconomic (2 features; 17.7% of total importance):</strong> Family Income and Education.</li>
 #             </ul>
 #         </li>
-#         <li><strong>Importance is concentrated but not dominated by one feature:</strong> The top five features account for 47% of total importance, while the top 15 account for 92%. Insurance ranks first at 12.2%, followed by Family Income at 10.8%, but the model still distributes importance across many inputs.</li>
-#         <li><strong>Age remains important but ranks sixth:</strong> This analysis explains median (q50) out-of-pocket costs after accounting for health conditions, limitations, insurance, and other features that capture part of the age-related signal. MEPS also top-codes age at 85, so the model cannot distinguish among people aged 85 and older. Age importance could differ for mean costs or upper quantiles, where rare high-cost cases have more influence.</li>
+#         <li><strong>Importance is concentrated but not dominated by one feature:</strong> The top five features account for 46% of total importance, while the top 15 account for 93%. Insurance ranks first at 12.3%, followed by Family Income at 10.3%, but the model still distributes importance across many inputs.</li>
+#         <li><strong>Age remains important and ranks fourth:</strong> This analysis explains median (q50) out-of-pocket costs after accounting for health conditions, limitations, insurance, and other features that capture part of the age-related signal. MEPS also top-codes age at 85, so the model cannot distinguish among people aged 85 and older. Age importance could differ for mean costs or upper quantiles, where rare high-cost cases have more influence.</li>
 #         <li><strong>SHAP broadly agrees with EDA but adds model context:</strong>
 #             <ul>
 #                 <li>EDA correlations describe one-feature-at-a-time relationships with actual out-of-pocket costs. SHAP importance describes how the fitted model combines features to predict median out-of-pocket costs. Agreement supports model plausibility, while differences highlight nonlinear effects, interactions, shared information, or model limitations.</li>
-#                 <li>Across the 20 features included in both analyses, absolute correlation strength and SHAP importance show strong rank agreement (Spearman's ρ = 0.83). Family Income, Joint Pain, Usual Source of Care, and Walking Limitation have similar relative importance.</li>
+#                 <li>Across the 20 features included in both analyses, absolute correlation strength and SHAP importance show strong rank agreement (Spearman's ρ = 0.82). Joint Pain, Usual Source of Care, and Walking Limitation have similar relative importance.</li>
 #                 <li>Family Size and Sex become more important in the model, while Arthritis becomes less important, suggesting nonlinear effects or information shared with other features.</li>
 #                 <li>Mental Health, ADL Help, IADL Help, Stroke, and Smoking show weak relationships in both analyses. Their low SHAP importance therefore mirrors weak observed relationships with actual out-of-pocket costs.</li>
 #             </ul>
@@ -4826,8 +4825,8 @@ fig.text(
     0.01,
     0.01,
     (
-        "Note: Dots are test rows sampled with replacement using MEPS survey weights. Contributions are in 2023 USD. Color shows input values:\n"
-        "blue to red means lower to higher, No to Yes, or Male to Female; unordered categories and missing inputs are gray."
+        "Note: Dots are test rows sampled with replacement using MEPS survey weights. Contributions are in 2023 USD. Color shows input values: blue to red\n"
+        "means lower to higher, No to Yes, or Male to Female; unordered categories and missing inputs are gray."
     ),
     ha="left",
     va="bottom",
@@ -5021,7 +5020,7 @@ plt.show()
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b>
 #     <ul style="margin-top:10px; margin-bottom:8px">
-#         <li><strong>Insurance contributions vary by coverage:</strong> Among test respondents, "Any Private" typically moved the estimate by +\$70, "Public Only" moved it by -\$142, and "Uninsured" moved it by -\$85 (survey-weighted medians). In this test set, the insurance contribution was positive for everyone in "Any Private" and negative for everyone in "Public Only" or "Uninsured".</li>
+#         <li><strong>Insurance contributions vary by coverage:</strong> Among test respondents, "Any Private" typically moved the estimate by +\$66, "Public Only" moved it by -\$142, and "Uninsured" moved it by -\$82 (survey-weighted medians). In this test set, the insurance contribution was positive for everyone in "Any Private" and negative for everyone in "Public Only" or "Uninsured".</li>
 #         <li><strong>Higher education generally moves estimates up:</strong> No Degree, GED, and HS Diploma generally move estimates down, while Bachelor's, Master's, and Doctorate generally move them up. The pattern is not perfectly ordered, with Master's showing the largest positive median contribution.</li>
 #         <li><strong>Marital Status plays a smaller role:</strong> Married, Widowed, and Divorced move estimates slightly up, Never Married moves them down, and Separated is centered near zero.</li>
 #         <li><strong>Possible explanation:</strong> Positive contributions from higher family income, higher education, private insurance, and a usual source of care broadly match the EDA patterns. Greater access to care and insurance cost sharing may play a role.</li>
