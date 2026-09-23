@@ -4820,13 +4820,14 @@ ax.xaxis.set_major_formatter(
 )
 ax.grid(axis="x", alpha=0.15)
 ax.set_axisbelow(True)
+ax.tick_params(axis="y", pad=-8)
 
 fig.text(
     0.01,
     0.01,
     (
-        "Note: Dots are test rows sampled with replacement using MEPS survey weights. Contributions are in 2023 USD. Blue to red means lower to higher,\n"
-        "No to Yes, and Male to Female. Unordered categories and missing inputs are gray."
+        "Note: Dots are test rows sampled with replacement using MEPS survey weights. Contributions are in 2023 USD. Color shows input values:\n"
+        "blue to red means lower to higher, No to Yes, or Male to Female; unordered categories and missing inputs are gray."
     ),
     ha="left",
     va="bottom",
@@ -4840,7 +4841,9 @@ fig.savefig(
     bbox_inches="tight",
     dpi=200,
 )
-plt.show()# %% [markdown]
+plt.show()
+
+# %% [markdown]
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Insights:</b>
 #     <ul style="margin-top:10px; margin-bottom:8px">
@@ -4849,11 +4852,11 @@ plt.show()# %% [markdown]
 #             <ul>
 #                 <li><strong>Medical need:</strong> Conditions and limitations generally move estimates up when present and down when absent.</li>
 #                 <li><strong>Demographic:</strong> Older ages, Female, and smaller families move estimates up; younger ages, Male, and larger families move them down.</li>
-#                 <li><strong>Socioeconomic:</strong> Higher family income moves estimates up and lower family income moves them down.</li>
+#                 <li><strong>Socioeconomic:</strong> Lower family income tends to contribute negatively; middle income is usually negative but closer to zero; high income contributes positively.</li>
 #                 <li><strong>Healthcare access:</strong> Having a usual source of care moves estimates up, while not having one moves them down.</li>
 #             </ul>
 #         </li>
-#         <li><strong>Unordered categories need a closer look:</strong> Insurance, Education, and Marital Status are gray, so the plot shows their contribution distributions but not which categories drive each direction.</li>
+#         <li><strong>Unordered categories need a closer look:</strong> Insurance has substantial contributions in both directions, but its gray dots do not reveal which insurance category produced each one. Education and Marital Status have the same limitation; the next plot separates the categories.</li>
 #         <li><strong>Limitations:</strong> These contributions explain q50 only. They may differ for q90 and do not show that changing an input would cause actual costs to change.</li>
 #     </ul>
 # </div>
