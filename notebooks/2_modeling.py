@@ -4438,20 +4438,20 @@ example_shap_sum = shap_explanation.values[0].sum()
 
 example_shap_result = pd.DataFrame({
     "Metric": [
+        "Predicted median cost",
         "Baseline",
         "Feature contribution sum",
-        "Predicted median cost",
-        "Actual cost",
         "Baseline + SHAP sum",
         "Additivity error",
+        "Actual cost",
     ],
     "Value": [
+        example_prediction,
         baseline,
         example_shap_sum,
-        example_prediction,
-        example_actual,
         baseline + example_shap_sum,
         abs(example_prediction - (baseline + example_shap_sum)),
+        example_actual,
     ],
 })
 
@@ -4529,11 +4529,11 @@ display(
 # <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
 #     💡 <b>Interpretation:</b>
 #     <ul>
-#         <li><strong>Education:</strong> The answer &ldquo;No Degree&rdquo; moved the plan-around estimate down by about \$135.</li>
-#         <li><strong>Insurance:</strong> The answer &ldquo;Public Only&rdquo; moved the estimate down by about \$97</li>
-#         <li><strong>Usual Source of Care:</strong> The answer &ldquo;No&rdquo; moved the estimate down by about \$82.</li>
-#         <li><strong>Age:</strong> The entered age of 70 moved the estimate up by about \$51.</li>
-#         <li><strong>High Cholesterol:</strong> The answer &ldquo;Yes&rdquo; moved the estimate up by about \$43.</li>
+#         <li><strong>Education (-\$135):</strong> The answer &ldquo;No Degree&rdquo; moved the plan-around estimate down.</li>
+#         <li><strong>Insurance (-\$97):</strong> The answer &ldquo;Public Only&rdquo; moved the estimate down.</li>
+#         <li><strong>Usual Source of Care (-\$82):</strong> The answer &ldquo;No&rdquo; moved the estimate down.</li>
+#         <li><strong>Age (+\$51):</strong> The entered age of 70 moved the estimate up.</li>
+#         <li><strong>High Cholesterol (+\$43):</strong> The answer &ldquo;Yes&rdquo; moved the estimate up.</li>
 #     </ul>
 #     <em>Note: These are local contributions relative to the SHAP background and depend on the person's other answers. They are not comparisons with specific alternative answers. They explain predicted, not actual, costs and should not be interpreted causally. For example, they do not show how changing public to private insurance or stopping to smoke would change a person's costs.</em>
 # </div>
