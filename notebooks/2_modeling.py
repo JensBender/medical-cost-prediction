@@ -3965,7 +3965,7 @@ plot_quantile_subgroup_predictions(
 #     Treat SHAP and XGBoost native importance as complementary rather than interchangeable. SHAP explains the postprocessed q50 prediction over 27 interpretable preprocessor input features and reports dollar impacts. Native <code>total_gain</code> summarizes how the joint four-quantile estimator used 40 model-ready features during training.
 #     <br><br>
 #     <strong>Background Data</strong><br>
-#     The selected SHAP background contains 225 rows with the 27 preprocessor input features, drawn from the training data using weighted sampling with replacement. SHAP treats background rows as equal-weight, so sampling with MEPS person weights (<code>PERWT23F</code>) makes the background approximate the U.S. adult population distribution. High-weight respondents may appear more than once because duplicates represent their larger population share. The background's mean postprocessed q50 prediction is \$331.97, an absolute relative difference of 8.8% from the full weighted training data baseline. This passes the predetermined 10% background-validation threshold.
+#     The selected SHAP background contains 225 rows with the 27 preprocessor input features, drawn from the training data using weighted sampling with replacement. SHAP treats background rows as equal-weight, so sampling with MEPS person weights (<code>PERWT23F</code>) makes the background approximate the U.S. adult population distribution. High-weight respondents may appear more than once because duplicates represent their larger population share. The background's mean postprocessed q50 prediction is \$332, an absolute relative difference of 8.8% from the full weighted training data baseline. This passes the predetermined 10% background-validation threshold.
 #     <br><br>
 #     <strong>Core SHAP Explanation Latency</strong><br>
 #     A normal prediction scores one user row. A SHAP explanation scores many masked versions of that row against the background. In one permutation round, SHAP reveals the input features one by one, then masks them again. With 27 preprocessor input features, that takes up to <code>2 × 27 + 1 = 55</code> masked feature combinations. Against a 225-row background, one explanation can involve up to 12,375 synthetic predictions. SHAP processes these in batches, but this work is expected to account for most of the prediction request's latency.
@@ -4458,7 +4458,7 @@ example_shap_result = pd.DataFrame({
 display(
     example_shap_result.style
     .pipe(add_table_caption, f"SHAP Explanation Summary (Test Row {example_idx})")
-    .format({"Value": "${:,.2f}"})
+    .format({"Value": lambda value: f"{'-' if value < 0 else ''}${abs(value):,.2f}"})
     .hide()
 )
 # %% [markdown]
