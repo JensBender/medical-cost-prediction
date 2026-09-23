@@ -1,27 +1,16 @@
-"""Calculate global SHAP feature importance on the held-out test set.
+"""Audit SHAP feature importance on the held-out test set.
 
-Load the production SHAP background and selected explainer configuration
-created by `benchmark_shap.py`. Explain test rows one at a time, then
-calculate survey-weighted mean absolute SHAP contributions and each feature's
+Explain each test row's postprocessed q50 prediction using the production
+SHAP background and configuration from `benchmark_shap.py`. Rank features
+by survey-weighted mean absolute contribution and report each feature's
 share of total importance.
 
-Use the shared prediction and explanation functions, resetting the permutation
-seed for every row so its explanation does not depend on earlier audit rows.
-
 Modes:
-    smoke:
-        Explain two test rows and print a short validation summary without
-        saving artifacts.
-
-    full:
-        Explain the complete test set and save:
-
-            models/shap_test_contributions.parquet
-            models/shap_feature_importance_test.csv
-
-        The Parquet file retains row-level contributions for later SHAP
-        distribution plots. The CSV contains the aggregated feature-importance
-        results loaded by the modeling notebook.
+    smoke: Explain two test rows and print the additivity error and top
+        features. Do not save files.
+    full: Explain every test row and save row-level contributions to
+        `models/shap_test_contributions.parquet` and the feature-importance
+        ranking to `models/shap_feature_importance_test.csv`.
 
 Usage:
     .venv-train/Scripts/python scripts/audit_shap_feature_importance.py smoke
