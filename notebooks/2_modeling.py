@@ -4562,9 +4562,10 @@ display(
 #     <ul>
 #         <li><strong>Overall Feature Importance (Bar Plot):</strong> Shows which features matter most overall by ranking their mean absolute SHAP contributions (survey-weighted). It shows typical contribution size, not whether a feature usually moves estimates up or down.</li>
 #         <li><strong>Contribution Distributions (Beeswarm Plot):</strong> Shows whether features move estimates up or down and how much their contributions vary across people. For unordered categorical features, it doesn't show which category produced each contribution.</li>
-#         <li><strong>Contributions by Category (Interval Plot):</strong> Shows the median and percentile ranges for each category of the unordered categorical features (survey-weighted). This reveals which categories tend to move estimates up or down and how much contributions vary within each category.</li>
-#         <li><strong>Contributions Across Ordered Values (Dependence and Interval Plots):</strong> Zooms in on Age, Family Income, and Family Size, the three highest-ranked numerical or ordinal features. It shows how contributions change across their values, revealing gradients, nonlinear patterns, and plateaus that the broader beeswarm plot cannot show precisely.</li>
+#         <li><strong>Contributions by Category (Interval Plot):</strong> Shows contribution median and percentile ranges for each category of unordered categorical features (survey-weighted). This reveals which categories move estimates up or down and how much contributions vary within each category.</li>
+#         <li><strong>Contributions Across Ordered Values (Dependence and Interval Plots):</strong> Zooms in on the highest-ranked numerical or ordinal features (Age, Family Income, Family Size). It shows how contributions change across their values, revealing gradients, nonlinear patterns, and plateaus that the broader beeswarm plot cannot show precisely.</li>
 #     </ul>
+#     <code>scripts/audit_shap_feature_importance.py</code> calculates SHAP contributions for the full test set. It saves row-level contributions to <code>models/shap_test_contributions.parquet</code> and the survey-weighted feature-importance ranking to <code>models/shap_feature_importance_test.csv</code>. This notebook loads both files to create the plots below rather than rerunning the full audit.
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
