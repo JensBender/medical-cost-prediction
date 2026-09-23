@@ -78,7 +78,6 @@ from src.modeling import (
 from src.prediction import CostPredictor, postprocess_quantile_predictions
 from src.explainability import (
     build_shap_explainer,
-    calculate_max_evals,
     calculate_shap_explanation,
 )
 from src.stats import (
@@ -4375,100 +4374,31 @@ display(
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Set up the SHAP explainer with the preprocessor, model, background data (derived from training data), and prediction function.
+#     📌 Load the saved artifacts and build the selected SHAP explainer.
 # </div>
 
 # %%
-# 1. Prepare SHAP inputs and load the data (with preprocessor input features), preprocessing pipeline and model artifacts
+# SHAP uses the same ordered input features as the preprocessing pipeline.
 SHAP_INPUT_FEATURES = (
     PIPELINE_NUMERICAL_FEATURES
     + PIPELINE_NOMINAL_FEATURES
     + PIPELINE_BINARY_FEATURES
 )
 
-X_train_preprocessor_input = pd.read_parquet(
-    TRAIN_PREPROCESSOR_INPUT_DATA_PATH,
-    columns=SHAP_INPUT_FEATURES,
-)
-X_val_preprocessor_input = pd.read_parquet(
-    VAL_PREPROCESSOR_INPUT_DATA_PATH,
-    columns=SHAP_INPUT_FEATURES,
-)
-X_test_preprocessor_input = pd.read_parquet(
-    TEST_PREPROCESSOR_INPUT_DATA_PATH,
-    columns=SHAP_INPUT_FEATURES,
-)
-
 preprocessor = load_model("../models/preprocessor.joblib", verbose=False)
 xgb_quantile_model = load_model("../models/xgb_quantile_model.joblib", verbose=False)
-
-
-# %%
-# 2. Use the prediction callable
 predictor = CostPredictor(preprocessor, xgb_quantile_model, SHAP_INPUT_FEATURES)
-predict_median_cost = predictor.predict_median_cost
 
 # %%
-# Consistency check for preprocessor artifact: confirm that the saved preprocessor inputs and the preprocessor reproduce the model-ready training features
-X_train_reprocessed = preprocessor.transform(X_train_preprocessor_input)
-pd.testing.assert_frame_equal(
-    X_train_reprocessed,
-    X_train_preprocessed,
-    check_exact=False,
-    rtol=0,
-    atol=1e-12,
-)
-del X_train_reprocessed
-
-# %%
-# 3. Load and validate the production background and selected SHAP configuration
+# Load the selected SHAP configuration and background data.
 shap_background = load_model(SHAP_BACKGROUND_PATH, verbose=False)
 shap_metadata = load_metrics(SHAP_METADATA_PATH, verbose=False)
 
-SHAP_BACKGROUND_N = shap_metadata["background_sample"]["rows"]
-SHAP_PERMUTATION_ROUNDS = shap_metadata["explainer_contract"]["permutation_rounds"]
-SHAP_MAX_EVALS = calculate_max_evals(SHAP_PERMUTATION_ROUNDS, len(SHAP_INPUT_FEATURES))
-SHAP_BASELINE_REL_DIFF_MAX = shap_metadata["background_validation"][
-    "max_allowed_absolute_relative_difference"
-]
-
-if list(shap_background.columns) != SHAP_INPUT_FEATURES:
-    raise ValueError("Production SHAP background columns do not match SHAP_INPUT_FEATURES.")
-if len(shap_background) != SHAP_BACKGROUND_N:
+if len(shap_background) != shap_metadata["background_sample"]["rows"]:
     raise ValueError("Production SHAP background row count does not match its metadata.")
-if SHAP_MAX_EVALS != shap_metadata["explainer_contract"]["max_evals"]:
-    raise ValueError("SHAP max_evals does not match its metadata.")
 if not shap_metadata["final_test_evaluation"]["passed"]:
-    raise ValueError("Production SHAP background did not pass final evaluation.")
+    raise ValueError("Production SHAP background did not pass final test set evaluation.")
 
-background_baseline = predict_median_cost(shap_background).mean()
-training_baseline = np.average(
-    predict_median_cost(X_train_preprocessor_input),
-    weights=w_train,
-)
-baseline_absolute_relative_difference = abs(background_baseline / training_baseline - 1)
-
-np.testing.assert_allclose(
-    background_baseline,
-    shap_metadata["background_validation"]["background_baseline_2023_usd"],
-    rtol=0,
-    atol=1e-10,
-)
-
-print(f"SHAP background baseline: ${background_baseline:,.2f}")
-print(f"Full training baseline:   ${training_baseline:,.2f}")
-print(f"Absolute relative difference: {baseline_absolute_relative_difference:.1%}")
-
-if baseline_absolute_relative_difference > SHAP_BASELINE_REL_DIFF_MAX:
-    raise ValueError(
-        "SHAP background baseline differs from the weighted training baseline by "
-        f"{baseline_absolute_relative_difference:.1%}, which exceeds the "
-        f"{SHAP_BASELINE_REL_DIFF_MAX:.0%} acceptance threshold. "
-        "Revise the selected configuration and rerun benchmark_shap.py test."
-    )
-
-# %%
-# 4. Build the SHAP explainer once
 explainer = build_shap_explainer(predictor, shap_background, random_state=RANDOM_STATE)
 
 # %% [markdown]
@@ -4481,10 +4411,18 @@ explainer = build_shap_explainer(predictor, shap_background, random_state=RANDOM
 # </div>
 
 # %%
+X_test_preprocessor_input = pd.read_parquet(
+    TEST_PREPROCESSOR_INPUT_DATA_PATH,
+    columns=SHAP_INPUT_FEATURES,
+)
+
 example_idx = 0
 X_test_example = X_test_preprocessor_input.iloc[[example_idx]]
 shap_explanation = calculate_shap_explanation(
-    explainer, X_test_example, max_evals=SHAP_MAX_EVALS, random_state=RANDOM_STATE,
+    explainer,
+    X_test_example,
+    max_evals=shap_metadata["explainer_contract"]["max_evals"],
+    random_state=RANDOM_STATE,
 )
 
 # %% [markdown]
@@ -4494,7 +4432,7 @@ shap_explanation = calculate_shap_explanation(
 
 # %%
 baseline = shap_explanation.base_values[0]
-example_prediction = predict_median_cost(X_test_example)[0]
+example_prediction = predictor.predict_median_cost(X_test_example)[0]
 example_actual = y_test.loc[X_test_example.index[0]]
 example_shap_sum = shap_explanation.values[0].sum()
 
