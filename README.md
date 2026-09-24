@@ -732,7 +732,7 @@ These plots show how contributions change across numerical and ordinal features.
 
 <a id="xgboost-native-feature-importance"></a>**XGBoost Native Importance**
 ![XGBoost Quantile Feature Importance: Top 15 Features (Training)](figures/evaluation/xgb_quantile_consolidated_feature_importance.png)
-The bar plot groups one-hot columns by input feature and keeps two derived medical counts separate. Chronic Conditions Count has the largest share of total training gain (18.6%), followed by Family Income and Insurance (15.0% each). Unlike SHAP, gain combines splits across all four quantiles and is not measured in dollars; its percentages cannot be compared directly with SHAP importance shares.
+XGBoost native feature importance ranks model-ready features by total gain: the summed improvement in the training objective across splits for all four quantiles (q25, q50, q75, q90). Chronic Conditions Count ranks first (18.6%), followed by Family Income and Insurance (15.0% each). SHAP uses preprocessor input features, so Chronic Conditions Count is derived later during preprocessing and has no SHAP score. The top-15 lists share 12 features, but measure different things. Prioritize SHAP for interpreting the product’s plan-around estimates.
 
 <p align="right">(<a href="#-feature-importance">Back to Feature Importance</a> | <a href="#readme-top">Back to Top</a>)</p>
 
