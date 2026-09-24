@@ -5647,3 +5647,13 @@ fig.savefig(
     dpi=200,
 )
 plt.show()
+
+# %% [markdown]
+# <div style="background-color:#f7fff8; padding:15px; border:3px solid #e0f0e0; border-radius:6px;">
+#     💡 <strong>Insights:</strong>
+#     <ul>
+#         <li><strong>Broad agreement:</strong> The SHAP and consolidated XGBoost rankings share 12 of their top 15 features. Insurance, Family Income, Age, Education, Family Size, and Usual Source of Care rank prominently in both.</li>
+#         <li><strong>Derived medical features:</strong> Chronic Conditions Count ranks first by native total gain (18.6%) but has no separate SHAP bar because it is derived during preprocessing. SHAP reflects the derived counts through their source inputs, including individual conditions and limitations.</li>
+#         <li><strong>What the comparison means:</strong> The shared top features show that many inputs important to q50 predictions also feature prominently in training. The ranks and percentages are not directly comparable: SHAP measures test-set q50 contributions in 2023 dollars, while native gain sums training split improvements across all four quantiles. Use SHAP to interpret the plan-around estimate and native gain to inspect the fitted trees.</li>
+#     </ul>
+# </div>
