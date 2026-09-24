@@ -553,10 +553,10 @@ These 26 candidate features will be further reduced based on importance scores t
 | Sex | `SEX` | Biological sex. | Binary (Int) | 1=Male, 2=Female |
 | Region | `REGION23` | Census region. | Nominal (Int) | 1=Northeast, 2=Midwest, 3=South, 4=West |
 | Marital Status | `MARRY31X` | Status at beginning of year. | Nominal (Int) | 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married |
-| Family Income | `POVCAT23` | Family income relative to poverty line. | Ordinal (Int) | 1=Poor, 2=Near Poor, 3=Low Income, 4=Middle Income, 5=High Income |
+| Family Income | `POVCAT23` | Family income relative to poverty line. | Ordinal (Int) | 1=Poor/Negative, 2=Near Poor, 3=Low Income, 4=Middle Income, 5=High Income |
 | Family Size | `FAMSZE23` | Number of related persons residing together. | Numerical (Int) | 1–14 |
 | Education | `HIDEG` | Highest degree attained. | Ordinal (Int) | 1=No Degree, 2=GED, 3=HS Diploma, 4=Bachelor's, 5=Master's, 6=Doctorate, 7=Other |
-| Employment Status | `EMPST31` | Status at beginning of year. | Nominal (Int) | 1=Employed, 2=Job to return to, 3=Job during reference period, 4=Not employed |
+| Employment Status | `EMPST31` | Status at beginning of year. | Nominal (Int) | 1=Employed, 2=Job to Return To, 3=Job in Ref Period, 4=Not Employed |
 | Insurance | `INSCOV23` | Coverage status. | Nominal (Int) | 1=Any Private, 2=Public Only, 3=Uninsured |
 | Usual Source of Care | `HAVEUS42` | Regular doctor or clinic. | Binary (Int) | 1=Yes, 2=No |
 | Physical Health | `RTHLTH31` | Self-rated physical health. | Numerical (Int) | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor |
@@ -730,7 +730,7 @@ The interval plot shows which categories tend to move estimates up or down and h
 ![SHAP Contributions by Category](figures/evaluation/shap_categorical_contributions.png)
 
 <a id="shap-contributions-across-ordered-values"></a>**Contributions Across Ordered Values**  
-These plots show how contributions change across numerical and ordinal features. Age generally moves estimates down at younger ages and up from around age 60, with greater variation among older adults. High Income generally moves estimates up, while Poor through Middle Income move them down. Family sizes of one or two move estimates up, while three or more move them down.
+These plots show how contributions change across numerical and ordinal features. Age generally moves estimates down at younger ages and up from around age 60, with greater variation among older adults. High Income generally moves estimates up, while Poor/Negative through Middle Income move them down. Family sizes of one or two move estimates up, while three or more move them down.
 
 ![SHAP Contributions across Ordered Values](figures/evaluation/shap_ordered_feature_contributions.png)
 
