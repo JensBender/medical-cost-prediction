@@ -435,11 +435,11 @@ The appendix zooms in on [contributions by category](#shap-contributions-by-cate
 ├── docs/                              # Project documentation and resources
 │   ├── references/                    # MEPS documentation, codebook, and data dictionary
 │   ├── research/                      # Background research
-│   ├── responsible_ai.md              # Responsible AI assessment
 │   ├── specs/                         # PRD and tech specs
 │   │   ├── product_requirements.md
 │   │   └── technical_specifications.md
-│   └── workflow/                      # Git conventions
+│   ├── git_conventions.md             # Commit message rules
+│   └── responsible_ai.md              # Responsible AI assessment
 │
 ├── pyproject.toml                     # Project configuration and dependencies
 ├── requirements.txt                   # Proxy for production dependencies
@@ -450,9 +450,9 @@ The appendix zooms in on [contributions by category](#shap-contributions-by-cate
 ├── run_mlflow_ui.sh                   # Launch the local MLflow UI
 ├── .env.example                       # Template for environment variables
 │
+├── .dvc/                              # DVC configuration
 ├── dvc.yaml                           # Preprocessing and modeling pipeline definitions
 ├── dvc.lock                           # Hash-based data lineage lockfile
-├── .dvc/                              # DVC configuration
 ├── .dvcignore                         # Files and directories excluded from DVC
 │
 ├── README.md                          # Project overview

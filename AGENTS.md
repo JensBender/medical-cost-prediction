@@ -38,7 +38,7 @@ model evaluation, and a planned FastAPI/Gradio app.
   for notebook/UI wording.
 - `docs/specs/product_requirements.md`: product goals and requirements.
 - `docs/specs/technical_specifications.md`: technical design.
-- `docs/workflow/git_conventions.md`: commit message rules.
+- `docs/git_conventions.md`: commit message rules.
 
 ## Writing
 
@@ -59,5 +59,5 @@ model evaluation, and a planned FastAPI/Gradio app.
 - Do not commit directly unless explicitly asked.
 - After changing project files, suggest one atomic commit message. Immediately
   before suggesting it, inspect the current Git state and relevant diff. 
-- Follow `docs/workflow/git_conventions.md` and apply `$plain-writing`. Write the
+- Follow `docs/git_conventions.md` and apply `$plain-writing`. Write the
   message for someone reading the Git history without this conversation.
