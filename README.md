@@ -723,15 +723,14 @@ Fairness analysis evaluates whether the model's prediction intervals provide equ
 
 
 ### Feature Importance Details
-These plots provide a closer look at the test-set SHAP contributions to the plan-around (`q50`) estimate. They describe the fitted model's predictions, not the effect of changing a person's circumstances.
 
 <a id="shap-contributions-by-category"></a>**Contributions by Category**  
-The interval plot zooms in on categorical features (insurance, education, marital status). It shows the median contribution and percentile intervals for each category.
+The interval plot shows which categories tend to move estimates up or down and how much contributions vary within each category. "Any Private" insurance generally moves estimates up, while "Public Only" and "Uninsured" move them down. No Degree, GED, and HS Diploma generally move estimates down, while a Bachelor's degree or higher generally moves them up.
 
 ![SHAP Contributions by Category](figures/evaluation/shap_categorical_contributions.png)
 
 <a id="shap-contributions-across-ordered-values"></a>**Contributions Across Ordered Values**  
-These plots zoom in on features with ordered values (numerical and ordinal). They show how contributions vary across Age, Family Income, and Family Size.
+These plots show how contributions change across numerical and ordinal features. Age generally moves estimates down at younger ages and up from around age 60, with greater variation among older adults. High Income generally moves estimates up, while Poor through Middle Income move them down. Family sizes of one or two move estimates up, while three or more move them down.
 
 ![SHAP Contributions across Ordered Values](figures/evaluation/shap_ordered_feature_contributions.png)
 
