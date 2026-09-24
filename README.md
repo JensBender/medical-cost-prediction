@@ -30,6 +30,7 @@
       <li><a href="#-baseline-models">Baseline Models</a></li>      
       <li><a href="#️-hyperparameter-tuning">Hyperparameter Tuning</a></li>
       <li><a href="#-final-model">Final Model</a></li>
+      <li><a href="#-feature-importance">Feature Importance</a></li>
     </ul>
   </li>
   <li>
@@ -59,6 +60,7 @@
       <li><a href="#heteroscedasticity">Heteroscedasticity</a></li>      
       <li><a href="#tuned-models-reliability--fairness">Tuned Models: Reliability & Fairness</a></li>      
       <li><a href="#xgboost-quantile-regression-reliability--fairness">XGBoost Quantile Regression: Reliability & Fairness</a></li>      
+      <li><a href="#feature-importance-details">Feature Importance Details</a></li>
     </ul>
   </li>
 </ol>
@@ -68,6 +70,8 @@
 End-to-end machine learning project to predict annual out-of-pocket healthcare costs from MEPS 2023 survey data. The modeling workflow now selects **XGBoost Quantile Regression** as the final MVP model, returning a plan-around estimate (`q50`), a typical range (`q25`-`q75`), and a safety cushion (`q90`) instead of a single point forecast.
 
 On the locked holdout test set, the final model passes the product-facing release gates: plan-around MdAE is **$240** (95% CI: $215-$279), typical-range coverage is **47.3%**, and safety-cushion coverage is **91.0%**. The planned app should present these outputs as budgeting guidance with scope disclaimers, current-dollar adjustment, planning notice for subgroups with prediction uncertainty, and privacy-preserving aggregate monitoring.
+
+This README highlights the main findings. For the detailed analyses and figures, see the [EDA and preprocessing notebook](notebooks/1_eda_and_preprocessing.ipynb) and [modeling notebook](notebooks/2_modeling.ipynb).
 
 🛠️ **Built With**
 - [![Python][Python-badge]][Python-url]
@@ -329,6 +333,8 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > - 🔽 "Good" physical health: -$90<br><br>
 > </details>
 >
+> [See which inputs matter most across the test set](#-feature-importance).
+>
 > <details>
 > <summary><strong>How you compare to others</strong> <i>(click to expand)</i></summary>
 > - Your plan-around estimate: $1,350<br>
@@ -342,6 +348,24 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 
 **Medical Inflation Adjustment**  
 The app adjusts all user-facing dollar amounts from 2023 to current dollars using a medical care inflation factor. This adjustment applies to the plan-around estimate, typical range, safety cushion, national and age-group benchmarks, and SHAP dollar impacts. The factor is calculated from the [U.S. Bureau of Labor Statistics Medical Care Consumer Price Index](https://data.bls.gov/timeseries/CUUR0000SAM), which tracks changes in medical care prices over time.
+
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
+
+
+### 🔎 Feature Importance
+SHAP explains the final model's plan-around (`q50`) estimates on the held-out test set in 2023 dollars. Contributions describe the model's predictions relative to a background population, not causal effects or actual future costs. This analysis does not explain the typical range (`q25`–`q75`) or safety cushion (`q90`).
+
+**Overall Importance**  
+The survey-weighted mean absolute contribution ranks inputs by their average contribution size, regardless of direction. Insurance ($93) and Family Income ($78) rank highest.
+
+![SHAP Feature Importance: Top 15 Features (Test Set)](figures/evaluation/shap_feature_importance.png)
+
+**Contribution Distributions**  
+The beeswarm plot shows how each feature's contribution to `q50` varies across test respondents, including whether it moves the estimate above or below the SHAP background prediction. A feature can contribute in different directions for different people.
+
+![SHAP Contribution Distributions: Top 15 Features (Test Set)](figures/evaluation/shap_contribution_distributions.png)
+
+The [appendix](#feature-importance-details) zooms in on contributions by category and ordered values and shows XGBoost's native feature importance.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
@@ -694,6 +718,27 @@ Fairness analysis evaluates whether the model's prediction intervals provide equ
 - **Audit Verdict:** The subgroup audit supports launch. Predicted-risk tiers remain usable for deployment, and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed.
 
 <p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
+
+
+### Feature Importance Details
+These plots provide a closer look at the test-set SHAP contributions to the plan-around (`q50`) estimate. They describe the fitted model's predictions, not the effect of changing a person's circumstances.
+
+**Contributions by Category**  
+The interval plot zooms in on categorical features (insurance, education, marital status). It shows the median contribution and percentile intervals for each category.
+
+![SHAP Contributions by Category](figures/evaluation/shap_categorical_contributions.png)
+
+**Contributions Across Ordered Values**  
+These plots zoom in on features with ordered values (numerical and ordinal). They show how contributions vary across Age, Family Income, and Family Size.
+
+![SHAP Contributions across Ordered Values](figures/evaluation/shap_ordered_feature_contributions.png)
+
+**XGBoost Native Importance**  
+The bar plot groups one-hot columns by input feature and keeps two derived medical counts separate. Chronic Conditions Count has the largest share of total training gain (18.6%), followed by Family Income and Insurance (15.0% each). Unlike SHAP, gain combines splits across all four quantiles and is not measured in dollars; its percentages cannot be compared directly with SHAP importance shares.
+
+![XGBoost Quantile Feature Importance: Top 15 Features (Training)](figures/evaluation/xgb_quantile_consolidated_feature_importance.png)
+
+<p align="right">(<a href="#-feature-importance">Back to Feature Importance</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 <!-- MARKDOWN LINKS -->
