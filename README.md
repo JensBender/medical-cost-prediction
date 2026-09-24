@@ -355,19 +355,19 @@ The app adjusts all user-facing dollar amounts from 2023 to current dollars usin
 
 
 ### 🔎 Feature Importance
-SHAP explains the final model's plan-around (`q50`) estimates on the held-out test set in 2023 dollars. Contributions describe the model's predictions relative to a background population, not causal effects or actual future costs. This analysis does not explain the typical range (`q25`–`q75`) or safety cushion (`q90`).
+SHAP shows how the model's 27 preprocessor input features contribute to its plan-around (`q50`) estimates on the held-out test set. These contributions explain the model's estimates, not actual costs, and should not be interpreted causally. They do not cover the typical range (`q25`–`q75`) or safety cushion (`q90`).
 
 **Overall Importance**  
-The survey-weighted mean absolute contribution ranks inputs by their average contribution size, regardless of direction. Insurance ($93) and Family Income ($78) rank highest.
+The survey-weighted mean absolute contribution ranks features by their average contribution size, regardless of direction. Insurance ($93) and Family Income ($78) rank highest, and the top 15 account for 92.5% of total importance. The bars do not show whether a feature moves estimates up or down or how much its contribution varies across people.
 
 ![SHAP Feature Importance: Top 15 Features (Test Set)](figures/evaluation/shap_feature_importance.png)
 
 **Contribution Distributions**  
-The beeswarm plot shows how each feature's contribution to `q50` varies across test respondents, including whether it moves the estimate above or below the SHAP background prediction. A feature can contribute in different directions for different people.
+The beeswarm plot shows whether each feature moves the plan-around estimate up or down and how much that varies between people. Older age, higher family income, and medical conditions or limitations generally move estimates up; younger age, lower income, and the absence of medical conditions or limitations generally move them down. Insurance and Education show large contributions in both directions, but the plot does not show which categories move estimates up or down.
 
 ![SHAP Contribution Distributions: Top 15 Features (Test Set)](figures/evaluation/shap_contribution_distributions.png)
 
-The [appendix](#feature-importance-details) zooms in on contributions by category and ordered values and shows XGBoost's native feature importance.
+The appendix zooms in on [contributions by category](#shap-contributions-by-category) and [contributions across ordered values](#shap-contributions-across-ordered-values), then uses [XGBoost native feature importance](#xgboost-native-feature-importance) to show which features the model relied on most during training.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
@@ -725,17 +725,17 @@ Fairness analysis evaluates whether the model's prediction intervals provide equ
 ### Feature Importance Details
 These plots provide a closer look at the test-set SHAP contributions to the plan-around (`q50`) estimate. They describe the fitted model's predictions, not the effect of changing a person's circumstances.
 
-**Contributions by Category**  
+<a id="shap-contributions-by-category"></a>**Contributions by Category**  
 The interval plot zooms in on categorical features (insurance, education, marital status). It shows the median contribution and percentile intervals for each category.
 
 ![SHAP Contributions by Category](figures/evaluation/shap_categorical_contributions.png)
 
-**Contributions Across Ordered Values**  
+<a id="shap-contributions-across-ordered-values"></a>**Contributions Across Ordered Values**  
 These plots zoom in on features with ordered values (numerical and ordinal). They show how contributions vary across Age, Family Income, and Family Size.
 
 ![SHAP Contributions across Ordered Values](figures/evaluation/shap_ordered_feature_contributions.png)
 
-**XGBoost Native Importance**  
+<a id="xgboost-native-feature-importance"></a>**XGBoost Native Importance**  
 The bar plot groups one-hot columns by input feature and keeps two derived medical counts separate. Chronic Conditions Count has the largest share of total training gain (18.6%), followed by Family Income and Insurance (15.0% each). Unlike SHAP, gain combines splits across all four quantiles and is not measured in dollars; its percentages cannot be compared directly with SHAP importance shares.
 
 ![XGBoost Quantile Feature Importance: Top 15 Features (Training)](figures/evaluation/xgb_quantile_consolidated_feature_importance.png)
