@@ -5287,11 +5287,11 @@ plt.show()
 #     <br><br>
 #     XGBoost provides several native importance measures:
 #     <ul>
-#         <li><code>total_gain</code> is the total training-objective improvement from all splits using a feature. It is the primary ranking because it combines how often the feature was used with how valuable those splits were.</li>
-#         <li><code>gain</code> is the average objective improvement per split. It identifies features that produced valuable splits when used.</li>
-#         <li><code>weight</code> is the number of splits using the feature. It shows how frequently the model relied on that feature.</li>
+#         <li><code>total_gain</code> is the total training-objective improvement from all splits using a feature. It combines how often the feature was used with how valuable those splits were. Use it as the primary diagnostic.</li>
+#         <li><code>gain</code> is the average objective improvement per split. It shows how valuable those splits were, but not how often the feature was used.</li>
+#         <li><code>weight</code> is the number of splits using the feature (split count). It shows how frequently the model relied on that feature, not how valuable those splits were.</li>
 #     </ul>
-#     Gain and weight are supporting diagnostics that explain whether high total gain came from frequent modest improvements or fewer high-value splits. For example, Mental Health was used in 797 splits, slightly more often than Uninsured at 733 splits. However, its average gain was only 1.0 compared with 12.8 for Uninsured. Mental Health therefore accounts for 0.7% of total gain, while Uninsured accounts for 8.0%. This shows why split count alone can give a misleading importance ranking.
+#     Use gain and weight are supporting diagnostics that explain whether high total gain came from frequent modest improvements or fewer high-value splits. For example, Mental Health was used in 797 splits, slightly more often than Uninsured at 733 splits. However, its average gain was only 1.0 compared with 12.8 for Uninsured. Mental Health therefore accounts for 0.7% of total gain, while Uninsured accounts for 8.0%. This shows why split count alone can give a misleading importance ranking.
 #     <br><br>
 #     These measures are based on training data, are not q50-specific, and are not measured in dollars or shares of predictive accuracy.
 # </div>
@@ -5605,7 +5605,7 @@ ax.xaxis.set_major_formatter(
 )
 ax.xaxis.set_major_locator(plt.MultipleLocator(0.05))
 ax.set_title(
-    "XGBoost Quantile Feature Importance (Consolidated Features, Training)",
+    "XGBoost Quantile Feature Importance: Top 15 Features (Training)",
     fontsize=13,
     fontweight="bold",
     pad=16,
@@ -5614,8 +5614,7 @@ ax.text(
     0.5,
     0.99,
     (
-        "Top 15 consolidated features account for "
-        f"{xgb_consolidated_top_15_share:.1%} of total gain"
+        f"Top 15 share of total gain: {xgb_consolidated_top_15_share:.1%}"
     ),
     transform=ax.transAxes,
     ha="center",
@@ -5632,8 +5631,8 @@ fig.text(
     0.01,
     0.01,
     (
-        "Note: One-hot encoded columns are combined by source feature; derived features remain separate. Percentages show each feature's share of total gain across 29 consolidated features.\n"
-        "Total gain is aggregated across the q25, q50, q75, and q90 trees and describes training split improvements, not improvements in prediction accuracy."
+        "Note: The full set contains 27 preprocessor inputs (with one-hot columns combined) and two derived features, 29 in total. Total gain sums split\n"
+        "improvements in the survey-weighted training objective across the q25, q50, q75, and q90 trees. It does not measure test-set performance."
     ),
     ha="left",
     va="bottom",
