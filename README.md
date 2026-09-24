@@ -375,10 +375,10 @@ The appendix zooms in on [contributions by category](#shap-contributions-by-cate
 ├── notebooks/                         # Jupyter notebooks 
 │   ├── 1_eda_and_preprocessing.ipynb  # EDA, preprocessing, and pipeline development
 │   ├── 1_eda_and_preprocessing.py     # Script version (generated via Jupytext)
-│   ├── 2_modeling.ipynb               # Model training, evaluation, and tuning
+│   ├── 2_modeling.ipynb               # Model evaluation, tuning results, and explainability
 │   └── 2_modeling.py                  # Script version (generated via Jupytext)
 │
-├── scripts/                           # Reproducible pipeline scripts
+├── scripts/                           # Data preparation, model training, evaluation, and app artifact generation
 │   ├── preprocess.py                  # Data preparation and preprocessing
 │   ├── train_baseline.py              # Baseline model training
 │   ├── tune_elastic_net.py            # Hyperparameter tuning for Elastic Net
@@ -387,24 +387,29 @@ The appendix zooms in on [contributions by category](#shap-contributions-by-cate
 │   ├── train_xgboost_quantile.py      # Quantile model training
 │   ├── benchmark_llm.py               # LLM prediction benchmark
 │   ├── benchmark_shap.py              # SHAP configuration and latency benchmark
-│   ├── audit_shap_feature_importance.py  # Global SHAP feature importance audit
+│   ├── audit_shap_feature_importance.py  # SHAP feature importance audit
 │   ├── build_app_artifacts.py         # Generate cost benchmarks and prediction metadata
 │   └── update_medical_inflation.py    # Update the medical inflation artifact
 │
-├── src/                               # Core packages source code
+├── src/                               # Shared project modules
 │   ├── constants.py                   # Feature lists
+│   ├── data.py                        # Shared data-loading helpers
 │   ├── display.py                     # Notebook and UI display labels/styles
+│   ├── explainability.py              # SHAP explanation functions
 │   ├── modeling.py                    # Core model training and evaluation functions
 │   ├── params.py                      # Hyperparameter search configuration
-│   ├── pipeline.py                    # Preprocessing and prediction pipelines
+│   ├── pipeline.py                    # Preprocessing pipeline
+│   ├── prediction.py                  # Core quantile model inference
 │   ├── stats.py                       # Weighted statistics and stratification helpers
 │   └── transformers.py                # Custom scikit-learn transformers
 │
-├── app/                               # (Planned) Web application source code
+├── app/                               # App data artifacts; web application planned
 │   └── data/
 │       ├── cost_benchmarks.json       # Cost comparison for app users
 │       ├── medical_inflation.json     # Medical-cost inflation adjustment
-│       └── prediction_metadata.json   # Prediction warning cutoff
+│       ├── prediction_metadata.json   # Prediction warning cutoff
+│       ├── shap_background.joblib     # SHAP background data
+│       └── shap_metadata.json         # SHAP configuration and validation results
 │
 ├── models/                            # Model and evaluation artifacts (ignored by Git)
 │
@@ -422,14 +427,15 @@ The appendix zooms in on [contributions by category](#shap-contributions-by-cate
 │   ├── infographic_meps_data.jpg      # MEPS data overview infographic
 │   └── pipeline.svg                   # Inference pipeline architecture diagram
 │
-├── tests/                             # (Planned) test suite
-│   ├── unit/                          # (Planned) Unit tests
-│   ├── integration/                   # (Planned) Integration tests
-│   └── e2e/                           # (Planned) End-to-end tests
+├── tests/                             # Unit tests; integration and end-to-end tests planned
+│   ├── unit/                          
+│   ├── integration/                   
+│   └── e2e/                           
 │
 ├── docs/                              # Project documentation and resources
 │   ├── references/                    # MEPS documentation, codebook, and data dictionary
 │   ├── research/                      # Background research
+│   ├── responsible_ai.md              # Responsible AI assessment
 │   ├── specs/                         # PRD and tech specs
 │   │   ├── product_requirements.md
 │   │   └── technical_specifications.md
