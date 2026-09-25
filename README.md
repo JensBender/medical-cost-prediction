@@ -208,7 +208,7 @@ Once the raw data is cleaned and prepared, the `preprocess.py` script *calls* a 
 
 
 ## 🧠 Modeling
-Utilized **MLflow** for experiment tracking to ensure all training runs were reproducible and comparable. To maintain a clean separation between development and production, MLflow tracking was exclusively integrated into the [reproducible scripts](scripts/), while [Jupyter notebooks](notebooks/) were reserved for quick prototyping and exploration.
+Dedicated [**scripts**](scripts/) run model training, tuning, and benchmarks, saving fitted models and results for later analysis. **DVC** tracks the preprocessing, baseline model and final model training stages for reproducible reruns. **MLflow** records runs so their parameters and results can be reviewed and compared. The [modeling notebook](notebooks/2_modeling.ipynb) loads those saved outputs for evaluation, visualizations, and documenting decisions.
 
 ### 📏 Baseline Models  
 Evaluated a diverse set of baseline model architectures to identify candidates for hyperparameter tuning.
