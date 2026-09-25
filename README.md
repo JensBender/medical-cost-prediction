@@ -280,13 +280,15 @@ To ensure responsible deployment, evaluated model reliability and fairness acros
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 ### 🏆 Final Model
-**Decision:** Use **XGBoost Quantile Regression** as the final model artifact behind the MVP product release.
+Evaluation of the tuned models showed that a single estimate cannot convey how widely next year's out-of-pocket costs may vary. The final model therefore uses quantile regression to give users a typical range and safety cushion alongside the plan-around estimate, helping them prepare for higher-cost years.
 
-**Why Quantile Regression?**  
-While the tuned Elastic Net achieves the best single-point MdAE, heteroscedasticity analysis as well as subgroup reliability and fairness analysis revealed that Elastic Net's compressed prediction range ($217 max) cannot differentiate high-risk users, and all point-estimate models systematically underpredict extreme costs. Rather than selecting a single "best" point-estimate model, the final architecture shifts to multi-quantile prediction to communicate cost uncertainty directly to users.
+**Decision:** Use **XGBoost Quantile Regression** as the final model for the MVP product release.
+
+**Why XGBoost Quantile Regression?**  
+While the tuned Elastic Net achieves the best point-estimate MdAE, heteroscedasticity analysis as well as subgroup reliability and fairness analysis revealed that Elastic Net's compressed prediction range ($217 max) offers little separation between people with lower and higher out-of-pocket costs, and all point-estimate models systematically underpredict extreme costs. Rather than selecting a single "best" point-estimate model, the final architecture shifts to multi-quantile prediction to communicate cost uncertainty directly to users.
 
 **Model Architecture**  
-The final model reuses the hyperparameters from the best tuned XGBoost point-estimate (which demonstrated the widest prediction range and best high-risk calibration among tuned models), switching only the objective from `reg:absoluteerror` to `reg:quantileerror` with four quantile levels (`q25`, `q50`, `q75`, `q90`). Predictions are postprocessed to enforce non-negativity and monotonicity (`q25 ≤ q50 ≤ q75 ≤ q90`).
+The final model reuses the hyperparameters from the best tuned XGBoost point-estimate, switching only the objective from `reg:absoluteerror` to `reg:quantileerror` with four quantile levels (`q25`, `q50`, `q75`, `q90`). Predictions are postprocessed to enforce non-negativity and monotonicity (`q25 ≤ q50 ≤ q75 ≤ q90`).
 
 **User-Facing Outputs:**
 - **Plan-around estimate** (`q50`): The median prediction (what users should budget for).
