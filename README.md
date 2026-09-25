@@ -263,13 +263,12 @@ Conducted hyperparameter optimization for the three selected finalists using a c
 | XGBoost (Baseline) | $281 | +98.0% | $961 | 0.00 |
 | XGBoost (Tuned) | $242 | +6.2% | **$954** | -0.02 |
 
-<sub>*Note:* Metrics on validation set; Overfitting represents the percentage MdAE difference (Val - Train).</sub>
+<sub>*Note:* Survey-weighted validation metrics. Overfitting = (validation MdAE - training MdAE) / training MdAE × 100.</sub>
 
 **Key Insights:**
 - **Tuned Champion:** Elastic Net remains the overall leader in median accuracy ($159 MdAE), confirming that regularized linear models are extremely competitive for typical cost profiles.
-- **Taming the Tail:** Hyperparameter tuning successfully "tamed" XGBoost, reducing its extreme overfitting from +98% to just +6% while simultaneously improving validation error.
-- **Overfitting:** Tuning successfully brought the generalization gap below 10% for all models, ensuring stable performance across both training and unseen data.
-- **Heteroscedasticity:** All models exhibit "fan-shaped" error spread, underestimating high out-of-pocket costs. While Elastic Net is the median accuracy leader, its limited prediction range ($217 max) prevents differentiating high spenders. Tree models (XGB/RF) maintain near-zero bias across a wider range, providing better calibration for high-risk identification. 🔗 [**See Heteroscedasticity Analysis**](#heteroscedasticity)
+- **Overfitting:** Tuning successfully brought the generalization gap below 10% for all three models. It lowered XGBoost's validation MdAE from $281 to $242 while narrowing its training–validation gap from +98.0% to +6.2%. 
+- **Heteroscedasticity:** All models exhibit "fan-shaped" error spread. While Elastic Net is the median accuracy leader, its limited prediction range ($217 max) prevents differentiating high spenders. Tree models produce a wider range of cost estimates that generally align with typical actual costs, though they still underestimate some very expensive years. 🔗 [**See Heteroscedasticity Analysis**](#heteroscedasticity)
 
 <a id="main-fairness-audit"></a>**Model Reliability & Fairness**  
 To ensure responsible deployment, evaluated model reliability and fairness across subgroups using stratified error analysis (weighted MdAE) for all tuned models across 13 dimensions. The analysis included both protected demographic groups (e.g., sex, age, race/ethnicity) and vulnerable groups (e.g., mental health, family income, education levels).
