@@ -224,18 +224,18 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 | Support Vector Machine | $291 | +190.7% | $1,027 | -0.03 |
 | *LLM (Benchmark)* | *$518* | *N/A* | *$1,168* | **0.04** |
 
-<sub>*Note:* Metrics on validation set; Overfitting represents the percentage MdAE difference (Val - Train).</sub>
+<sub>*Note:* Survey-weighted validation metrics. Overfitting = (validation MdAE - training MdAE) / training MdAE × 100.</sub>
 
 **Key Insights:**  
-- **Baseline Champion:** Elastic Net achieved the best median accuracy ($163 MdAE) with minimal overfitting (+6.6%), showing that regularized linear models are highly effective at denoising medical features.
-- **Overfitting:** While advanced non-linear models like XGBoost and SVM are highly capable in theory, they exhibited extreme overfitting (+98% to +191%) out-of-the-box, confirming that healthcare cost data is highly noisy and requires heavy regularization.
-- **LLM Benchmark:** Compared performance of specialized ML models against a general intelligence LLM ("Why not just ask Gemini?"). All specialist models significantly outperformed the generalist LLM (Gemini 3 Flash), with the best-performing baseline (Elastic Net) achieving a 3.2x improvement in predictive performance over Gemini (reducing MdAE from $518 to $163). This demonstrates added value of specialist ML models, which capture numerical cost nuances that general reasoning cannot. 🔗 [**See LLM Benchmarking Details**](#llm-benchmarking)
-- **Metric Paradox (MdAE vs. MAE vs. R²):** The massive gap between Median Error (MdAE ≈ $200) and Mean Error (MAE ≈ $1,000) reflects the extreme heavy-tail of U.S. healthcare costs. While the LLM captures the most variance (best R²) by identifying high-cost "black swan" profiles through medical reasoning, it lacks precision for the majority of typical profiles.
+- **Baseline Champion:** Elastic Net achieved the best median accuracy ($163 MdAE) with minimal overfitting (+6.6%).
+- **Overfitting:** XGBoost and SVM exhibited extreme overfitting (+98% to +191%) out-of-the-box. Their configurations did not generalize well, motivating stronger regularization during tuning.
+- **LLM Benchmark:** Compared performance of specialized ML models against a general intelligence LLM ("Why not just ask Gemini?"). Every specialist model showed better predictive performance than the general-purpose LLM (Gemini 3 Flash), with Elastic Net reducing MdAE from $518 to $163, a 3.2x improvement. This demonstrates added value of specialist ML models. 🔗 [**See LLM Benchmarking Details**](#llm-benchmarking)
+- **MdAE vs. MAE vs. R²:** MdAE near $200 and MAE near $1,000 for most models show that large errors pull up the mean, likely due to the extreme heavy-tail of U.S. healthcare costs. Gemini had the highest R² in the table (0.04) but much worse MdAE.
 
 **Selected Finalists:**  
-1. **Elastic Net:** The baseline champion; especially good for typical cost profiles.
-2. **XGBoost:** The promising candidate; captures complex, non-linear clinical interactions but prone to "chasing noise" without aggressive tuning.
-3. **Random Forest:** The robust ensemble; uses bagging to average out noise and prevent the extreme overfitting seen in sequential boosting.
+1. **Elastic Net:** The baseline champion.
+2. **XGBoost:** A promising candidate that can capture nonlinear feature interactions, though its large overfitting gap makes regularization a priority during tuning.
+3. **Random Forest:** The lowest validation MAE among the baselines, with less overfitting than XGBoost.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
