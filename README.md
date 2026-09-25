@@ -355,11 +355,11 @@ The app adjusts all user-facing dollar amounts from 2023 to current dollars usin
 
 
 ### 🔎 Feature Importance
-SHAP shows how the model's 27 preprocessor input features contribute to its plan-around (`q50`) estimates on the held-out test set. These contributions explain the model's estimates, not actual costs, and should not be interpreted causally. They do not cover the typical range (`q25`–`q75`) or safety cushion (`q90`).
+SHAP shows how the model's 27 preprocessor input features contribute to its plan-around (`q50`) estimates. These contributions explain the model's estimates, not actual costs, and should not be interpreted causally. They do not cover the typical range (`q25`–`q75`) or safety cushion (`q90`).
 
 **Overall Importance**
 ![SHAP Feature Importance: Top 15 Features (Test Set)](figures/evaluation/shap_feature_importance.png)
-The survey-weighted mean absolute contribution ranks features by their average contribution size, regardless of direction. Insurance ($93) and Family Income ($78) rank highest, and the top 15 account for 92.5% of total importance. The bars do not show whether a feature moves estimates up or down or how much its contribution varies across people.
+The plot ranks features by the average size of their SHAP contributions, regardless of direction. Insurance’s $93 means its contribution to plan-around estimates averaged $93 in size, moving estimates up for some people and down for others. Family Income follows at $78, and the top 15 features account for 92.5% of total importance.
 
 **Contribution Distributions**
 ![SHAP Contribution Distributions: Top 15 Features (Test Set)](figures/evaluation/shap_contribution_distributions.png)
