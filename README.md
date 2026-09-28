@@ -224,7 +224,7 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 | Support Vector Machine | $291 | +190.7% | $1,027 | -0.03 |
 | *LLM (Benchmark)* | *$518* | *N/A* | *$1,168* | **0.04** |
 
-<sub>*Note:* Survey-weighted validation metrics. Overfitting = (validation MdAE - training MdAE) / training MdAE × 100.</sub>
+<sub>*Note:* Survey-weighted validation metrics. Overfitting is the percentage change in MdAE from training to validation.</sub>
 
 **Key Insights:**  
 - **Baseline Champion:** Elastic Net achieved the best median accuracy ($163 MdAE) with minimal overfitting (+6.6%).
@@ -263,7 +263,7 @@ Conducted hyperparameter optimization for the three selected finalists using a c
 | XGBoost (Baseline) | $281 | +98.0% | $961 | 0.00 |
 | XGBoost (Tuned) | $242 | +6.2% | **$954** | -0.02 |
 
-<sub>*Note:* Survey-weighted validation metrics. Overfitting = (validation MdAE - training MdAE) / training MdAE × 100.</sub>
+<sub>*Note:* Survey-weighted validation metrics. Overfitting is the percentage change in MdAE from training to validation.</sub>
 
 **Key Insights:**
 - **Tuned Champion:** Elastic Net remains the overall leader in median accuracy ($159 MdAE), confirming that regularized linear models are extremely competitive for typical cost profiles.
