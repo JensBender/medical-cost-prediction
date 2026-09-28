@@ -282,7 +282,7 @@ To ensure responsible deployment, evaluated model reliability and fairness acros
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
 ### 🏆 Final Model
-Evaluation of the tuned models showed that a single estimate cannot convey how widely next year's out-of-pocket costs may vary. The final model therefore uses quantile regression to give users a typical range and safety cushion alongside the plan-around estimate, helping them prepare for higher-cost years.
+Despite tuning, a model that provides a single estimate cannot convey how widely next year's out-of-pocket costs may vary. The final model therefore uses quantile regression to give users a typical range and safety cushion alongside the plan-around estimate, helping them prepare for higher-cost years.
 
 **Decision:** Use **XGBoost Quantile Regression** as the final model for the MVP product release.
 
@@ -290,14 +290,16 @@ Evaluation of the tuned models showed that a single estimate cannot convey how w
 While the tuned Elastic Net achieves the best point-estimate MdAE, heteroscedasticity analysis as well as subgroup reliability and fairness analysis revealed that Elastic Net's compressed prediction range ($217 max) offers little separation between people with lower and higher out-of-pocket costs, and all point-estimate models systematically underpredict extreme costs. Rather than selecting a single "best" point-estimate model, the final architecture shifts to multi-quantile prediction to communicate cost uncertainty directly to users.
 
 **Model Architecture**  
-The final model reuses the hyperparameters from the best tuned XGBoost point-estimate, switching only the objective from `reg:absoluteerror` to `reg:quantileerror` with four quantile levels (`q25`, `q50`, `q75`, `q90`). Predictions are postprocessed to enforce non-negativity and monotonicity (`q25 ≤ q50 ≤ q75 ≤ q90`).
+The final model reuses the hyperparameters from the best tuned XGBoost point-estimate model, switching only the objective from `reg:absoluteerror` to `reg:quantileerror` with four quantile levels (`q25`, `q50`, `q75`, `q90`). Predictions are postprocessed to enforce non-negativity and monotonicity (`q25 ≤ q50 ≤ q75 ≤ q90`).
 
 **User-Facing Outputs:**
 - **Plan-around estimate** (`q50`): The median prediction (what users should budget for).
 - **Typical range** (`q25`–`q75`): The interquartile range (the range most users will fall within).
 - **Safety cushion** (`q90`): The 90th percentile (a conservative upper bound to help budget for a bad year).
 
-**Release Gate Metrics (Test)**
+**Release Gate Metrics (Test)**  
+These release gates are the test-set criteria the model must meet before launch. Unlike the earlier point-estimate metrics, they assess not only plan-around error (MdAE) but also whether the typical range and safety cushion cover the intended share of actual costs without being too wide.
+
 | Metric | Estimate (95% CI) | Release Gate | Product Target | Status |
 | :--- | ---: | ---: | ---: | :---: |
 | Plan-around MdAE (`q50`) | $240 [$215, $279] | < $500 | < $350 | Pass |
