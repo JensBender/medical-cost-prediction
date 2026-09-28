@@ -298,7 +298,7 @@ The final model reuses the hyperparameters from the best tuned XGBoost point-est
 - **Safety cushion** (`q90`): The 90th percentile (a conservative upper bound to help budget for a bad year).
 
 **Release Gate Metrics (Test)**  
-These release gates are the test-set criteria the model must meet before launch. Unlike the earlier point-estimate metrics, they assess not only plan-around error (MdAE) but also whether the typical range and safety cushion cover the intended share of actual costs without being too wide.
+Release gates are the minimum test-set performance needed to launch. Product targets are more ambitious goals for how well model predictions support budgeting. Unlike the earlier point-estimate metrics, they assess not only plan-around error (MdAE) but also whether the typical range and safety cushion cover the intended share of actual costs without being too wide.
 
 | Metric | Estimate (95% CI) | Release Gate | Product Target | Status |
 | :--- | ---: | ---: | ---: | :---: |
