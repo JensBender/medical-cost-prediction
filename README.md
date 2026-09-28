@@ -312,7 +312,7 @@ Release gates are the minimum test-set performance needed to launch. Product tar
 - **Decision:** Launch XGBoost quantile regression as the MVP model. It passes every release gate on the test set.
 - **Value Over Simple Baselines:** The comparison tests XGBoost against giving everyone the same population-based plan-around estimate, typical range, and safety cushion, and against giving each person those estimates based only on their age group. XGBoost improves on both, most clearly for the typical range and safety cushion (versus the population baseline: q50 quantile skill 9.8%, typical-range interval skill 11.2%, and q90 quantile skill 15.6%).
 - **Reliability & Fairness Audit:** The final subgroup audit supports launch. Predicted-risk tiers remain usable and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed. Typical-range undercoverage appears for uninsured users, users with a doctorate degree, poor mental health, and low income.<br>🔗 [**See Final Model Reliability & Fairness Audit**](#xgboost-quantile-regression-reliability--fairness)
-- **Launch Conditions:** Include a scope disclaimer, medical inflation adjustment, planning notices for higher-uncertainty cases (such as high predicted costs or uninsured users, as in the example below), and privacy-preserving aggregate monitoring.
+- **Launch Conditions:** Include a scope disclaimer, medical inflation adjustment, planning notices for higher-uncertainty cases (such as high predicted costs or uninsured users, as in the example below), and privacy-preserving aggregate monitoring. Show the median cost for U.S. adults and for the user's age group alongside their plan-around estimate, so users can see how it compares with typical spending.
 
 **Example Prediction Output**  
 High cost profile: 68-year-old, uninsured, multiple chronic conditions
@@ -341,8 +341,8 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > <details>
 > <summary><strong>How you compare to others</strong> <i>(click to expand)</i></summary>
 > - Your plan-around estimate: $1,350<br>
-> - Typical American: $248<br>
-> - Typical for ages 65+: $608<br>
+> - Typical American: $268<br>
+> - Typical for ages 65+: $657<br>
 > </details>
 > <br>
 >
@@ -350,7 +350,7 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. New diagnoses, accidents, hospitalizations, and plan-specific billing details can make actual costs higher.
 
 **Medical Inflation Adjustment**  
-The app adjusts all user-facing dollar amounts from 2023 to current dollars using a medical care inflation factor. This adjustment applies to the plan-around estimate, typical range, safety cushion, national and age-group benchmarks, and SHAP dollar impacts. The factor is calculated from the [U.S. Bureau of Labor Statistics Medical Care Consumer Price Index](https://data.bls.gov/timeseries/CUUR0000SAM), which tracks changes in medical care prices over time.
+The app adjusts all user-facing dollar amounts (plan-around estimate, typical range, safety cushion, national and age-group benchmarks, SHAP dollar impacts) from 2023 to current dollars using a medical inflation factor. The [medical inflation update script](scripts/update_medical_inflation.py) calculates and saves the factor from the [U.S. Bureau of Labor Statistics Medical Care Consumer Price Index](https://data.bls.gov/timeseries/CUUR0000SAM), which tracks changes in medical care prices over time.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
