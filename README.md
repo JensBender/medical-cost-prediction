@@ -232,7 +232,7 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 - **Baseline Champion:** Elastic Net achieved the best median accuracy ($163 MdAE) with minimal overfitting (+6.6%).
 - **Overfitting:** XGBoost and SVM exhibited extreme overfitting (+98% to +191%) out-of-the-box. Their configurations did not generalize well, motivating stronger regularization during tuning.
 - **LLM Benchmark:** Compared performance of specialized ML models against a general intelligence LLM ("Why not just ask Gemini?"). Every specialist model showed better predictive performance than the general-purpose LLM (Gemini 3 Flash), with Elastic Net reducing MdAE from $518 to $163, a 3.2x improvement. This demonstrates added value of specialist ML models. 🔗 [**See LLM Benchmarking Details**](#llm-benchmarking)
-- **MdAE vs. MAE vs. R²:** MdAE near $200 and MAE near $1,000 for most models show that large errors pull up the mean, likely due to the extreme heavy-tail of U.S. healthcare costs. Gemini had the highest R² in the table (0.04) but much worse MdAE.
+- **Typical vs. Large Errors:** For most models, MdAE is near $200 but MAE is near $1,000, showing that some predictions miss by far more than the typical one. R² is near zero or negative across all models, partly because it heavily penalizes misses on rare, high-cost outliers in this heavy-tailed distribution.
 
 **Selected Finalists:**  
 1. **Elastic Net:** The baseline champion.
