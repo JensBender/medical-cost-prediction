@@ -309,9 +309,8 @@ Release gates are the minimum test-set performance needed to launch. Product tar
 | Safety-cushion width (`q50`-`q90`) | $2,032 [$1,964, $2,108] | < $3,500 | < $2,500 | Pass |
 
 **Launch Decision**
-- **Decision:** Launch XGBoost quantile regression as the MVP model.
-- **Evidence:** The model passes every release gate on the test set.
-- **Value Over Simple Baselines:** Compared with simple population and age-group estimates, XGBoost adds value, most clearly in the typical range and safety cushion (versus the population baseline: q50 quantile skill 9.8%, typical-range interval skill 11.2%, and q90 quantile skill 15.6%).
+- **Decision:** Launch XGBoost quantile regression as the MVP model. It passes every release gate on the test set.
+- **Value Over Simple Baselines:** The comparison tests XGBoost against giving everyone the same population-based plan-around estimate, typical range, and safety cushion, and against giving each person those estimates based only on their age group. XGBoost improves on both, most clearly for the typical range and safety cushion (versus the population baseline: q50 quantile skill 9.8%, typical-range interval skill 11.2%, and q90 quantile skill 15.6%).
 - **Reliability & Fairness Audit:** The final subgroup audit supports launch. Predicted-risk tiers remain usable and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed. Typical-range undercoverage appears for uninsured users, users with a doctorate degree, poor mental health, and low income.<br>🔗 [**See Final Model Reliability & Fairness Audit**](#xgboost-quantile-regression-reliability--fairness)
 - **Launch Conditions:** Include a scope disclaimer, medical inflation adjustment, planning notices for higher-uncertainty cases (such as high predicted costs or uninsured users, as in the example below), and privacy-preserving aggregate monitoring.
 
