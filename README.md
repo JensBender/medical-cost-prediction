@@ -210,6 +210,8 @@ Once the raw data is cleaned and prepared, the `preprocess.py` script *calls* a 
 ## 🧠 Modeling
 Dedicated [**scripts**](scripts/) run model training, tuning, and benchmarks, saving fitted models and results for later analysis. **DVC** tracks the preprocessing, baseline model and final model training stages for reproducible reruns. **MLflow** records runs so their parameters and results can be reviewed and compared. The [modeling notebook](notebooks/2_modeling.ipynb) loads those saved outputs for evaluation, visualizations, and documenting decisions.
 
+Survey-weighted median absolute error (MdAE) is the primary evaluation metric because it reflects typical prediction error without letting rare, extreme costs dominate. Mean absolute error (MAE) and R² serve as supporting diagnostics because they are more sensitive to prediction errors on outliers in this heavy-tailed distribution.
+
 ### 📏 Baseline Models  
 Evaluated a diverse set of baseline model architectures to identify candidates for hyperparameter tuning.
 
@@ -244,9 +246,9 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 Conducted hyperparameter optimization for the three selected finalists using a custom randomized search framework with 50 iterations per model, tracked via MLflow.
 
 **Tuning Methodology**  
-- **Search Strategy:** Manual loop with `ParameterSampler` (instead of `RandomizedSearchCV`) to ensure correct `sample_weight` routing through nested `TransformedTargetRegressor` and `Pipeline` wrappers, and to evaluate weighted MdAE explicitly on the validation set.
+- **Search Strategy:** Manual loop with `ParameterSampler` (instead of `RandomizedSearchCV`) to ensure correct `sample_weight` routing through nested `TransformedTargetRegressor` and `Pipeline` wrappers.
 - **Target Transform:** All models train on `log1p`-transformed costs via `TransformedTargetRegressor`, stabilizing the heavy-tailed distribution while predicting in raw dollars.
-- **Scoring:** Weighted Median Absolute Error (MdAE) on raw-dollar validation predictions as the primary selection criterion.
+- **Scoring:** Selected each model's best configuration by the lowest weighted MdAE on the validation set.
 - **Model-Specific Configurations:**
   - **Elastic Net:** `Pipeline` with second-degree `PolynomialFeatures` + `ElasticNet`. Tuned `alpha` (regularization strength, log-uniform 0.01–1.0), `l1_ratio` (L1/L2 penalty mix, uniform 0.0–1.0), and `interaction_only` (squared terms on/off).
   - **Random Forest:** `RandomForestRegressor` with `criterion="absolute_error"`. Tuned `n_estimators` (200–400), `max_depth` (8–25), `min_samples_split` (20–150), `min_samples_leaf` (10–80), `max_features` (sqrt/log2/30%–70%), and `max_samples` (60%–100%).
