@@ -309,12 +309,11 @@ Release gates are the minimum test-set performance needed to launch. Product tar
 | Safety-cushion width (`q50`-`q90`) | $2,032 [$1,964, $2,108] | < $3,500 | < $2,500 | Pass |
 
 **Launch Decision**
-- **Decision:** Launch XGBoost quantile regression as the MVP model, with guardrails. Frame the product as a budgeting aid for individual out-of-pocket cost planning, not as a bill estimate, procedure-price tool, or medical advice.
-- **Evidence:** The model passes every product-facing release gate on the unseen test set: `q50` MdAE is **$240**, `q25`-`q75` coverage is **47.3%**, `q90` coverage is **91.0%**, `q25`-`q75` width is **$912**, and `q50`-`q90` width is **$2,032**. It also improves on naive population baselines for every user-facing output: plan-around skill is **9.8%**, typical-range interval skill is **11.2%**, and safety-cushion skill is **15.6%**.
-- **Prediction Output:** Show `q50` as the plan-around estimate, `q25`-`q75` as the typical range, and `q90` as the safety cushion. Do not present a single point estimate.
+- **Decision:** Launch XGBoost quantile regression as the MVP model.
+- **Evidence:** The model passes every release gate on the test set.
+- **Value Over Simple Baselines:** Compared with simple population and age-group estimates, XGBoost adds value, most clearly in the typical range and safety cushion (versus the population baseline: q50 quantile skill 9.8%, typical-range interval skill 11.2%, and q90 quantile skill 15.6%).
 - **Reliability & Fairness Audit:** The final subgroup audit supports launch. Predicted-risk tiers remain usable and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed. Typical-range undercoverage appears for uninsured users, users with a doctorate degree, poor mental health, and low income.<br>🔗 [**See Final Model Reliability & Fairness Audit**](#xgboost-quantile-regression-reliability--fairness)
-- **Launch Conditions:** Ship only with range-based predictions, a scope disclaimer, 2023-to-current-dollar adjustment, a planning notice for subgroups with prediction uncertainty, and privacy-preserving aggregate monitoring. Name high predicted costs and uninsured status in the planning note because they are informative and directly tied to budgeting. For low income, poor mental health, and doctorate degree typical-range undercoverage, show only the generic planning note and do not name the subgroup to avoid stigmatization.
-- **Monitoring:**  Track aggregate app health, completion rate, input drift, prediction drift, missingness, q50 distribution, q25-q75 width, q90 safety cushion, and high-uncertainty flags. Broad slices such as insurance status, family income, mental health, and chronic-condition count can explain shifts, but they cannot measure calibration without observed annual costs. Do not calibrate on app user data, because outcome collection would sacrifice user privacy.
+- **Launch Conditions:** Include a scope disclaimer, medical inflation adjustment, planning notices for higher-uncertainty cases (such as high predicted costs or uninsured users, as in the example below), and privacy-preserving aggregate monitoring.
 
 **Example Prediction Output**  
 High cost profile: 68-year-old, uninsured, multiple chronic conditions
@@ -339,8 +338,6 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > - 🔼 High blood pressure: +$180<br>
 > - 🔽 "Good" physical health: -$90<br><br>
 > </details>
->
-> [See which inputs matter most across the test set](#-feature-importance).
 >
 > <details>
 > <summary><strong>How you compare to others</strong> <i>(click to expand)</i></summary>
