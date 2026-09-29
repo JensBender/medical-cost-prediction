@@ -316,7 +316,7 @@ Release gates are the minimum test-set performance needed to launch. Product tar
 - **Launch Conditions:** Include prediction explanations, medical inflation adjustment, a scope disclaimer, planning notices for higher-uncertainty cases (such as high predicted costs or uninsured users, as in the example below), and privacy-preserving aggregate monitoring. Show the median cost for U.S. adults and for the user's age group alongside their plan-around estimate, so users can see how it compares with typical spending.
 
 **Prediction Explanations (SHAP)**  
-SHAP explains how a user's answers contribute to their plan-around estimate (`q50`). The starting point is the model's average prediction for a background sample drawn to represent U.S. adults. Each answer receives a dollar contribution: positive values raise the estimate from that starting point, and negative values lower it. The app shows the five largest contributions, helping users understand which answers mattered most to their estimate. 🔗 [**See SHAP Explanation Details**](#shap-explanation-details)
+SHAP explains how a user's answers contribute to their plan-around estimate (`q50`). The app highlights the five largest contributions and shows their dollar amounts, so users can see which answers moved the estimate up or down. 🔗 [**See SHAP Explanation Details**](#shap-explanation-details)
 
 **Example Prediction Output**  
 High cost profile: 68-year-old, uninsured, multiple chronic conditions
@@ -734,22 +734,20 @@ Fairness analysis evaluates whether the model's prediction intervals provide equ
 ### SHAP Explanation Details
 
 **Explained Prediction**  
-Permutation SHAP explains the plan-around estimate (`q50`) through the full model inference process: preprocessing, quantile prediction, conversion back to dollars, and quantile postprocessing. This lets it assign contributions to the 27 preprocessor input features that correspond to the user's answers. TreeExplainer would explain the inner XGBoost model using transformed features instead. The typical range and safety cushion would need their own explanations.
+Permutation SHAP explains the plan-around estimate (`q50`) through the full model inference process: preprocessing, quantile prediction, the inverse target transformation (from log-transformed costs back to dollars), and postprocessing (keeping quantiles non-negative and monotonic). This lets it assign contributions to the 27 preprocessor input features that correspond to the user's answers. These explanations cover the plan-around estimate only, not the typical range or safety cushion.
 
 **How SHAP Calculates Contributions**  
-The background contains 225 training rows sampled using survey weights to approximate the U.S. adult population. Its average predicted `q50` is the SHAP starting point, or baseline. This is an average of model predictions; the national median benchmark shown in the app summarizes observed spending.
+The background data contains 225 training rows sampled using survey weights to approximate the U.S. adult population. The model's average `q50` prediction across these rows is the SHAP starting point, or baseline.
 
-SHAP masks an answer by replacing it with values from the background rows. In each permutation round, it reveals the person's answers one by one in a shuffled order, then masks them again. At each step, it averages predictions across the background rows and records how that average changes. These changes determine each feature's contribution in the context of other features. Additional rounds use different feature orders. The baseline plus all 27 contributions reproduces the person's prediction; the app displays only the five largest contributions. 
+SHAP masks an answer by replacing it with values from the background data. In each permutation round, it reveals the person's answers one by one in a shuffled order, then masks them again. At each step, it averages predictions across the background rows and records how that average changes. These changes determine each feature's contribution in the context of other features. Additional rounds use different feature orders. The baseline plus all 27 contributions reproduces the person's prediction. The app displays only the five largest contributions.
 
 **Benchmarking**  
-The [benchmark SHAP script](scripts/benchmark_shap.py) compared background sizes and permutation rounds to find the lowest P95 explanation latency while meeting the quality checks. Candidate configurations were compared with a larger reference using 500 background rows and 24 rounds. The selected setup uses **225 background rows and one permutation round** (`max_evals=55`).
+The [benchmark SHAP script](scripts/benchmark_shap.py) compared the size of the background data and the number of permutation rounds to find the lowest P95 explanation latency while meeting the quality checks. Candidate configurations were compared with a larger reference using 500 rows and 24 rounds. The selected setup uses **225 rows of background data and one permutation round** (`max_evals=55`).
 
-- **Background Validation:** Its baseline differed by 8.8% from the average prediction across the full survey-weighted training data, within the predefined 10% limit.
-- **Explanation Stability:** On all 100 held-out test rows, at least four of the five leading drivers matched the reference. Matched drivers with reference contributions of $25 or more in either direction kept the same direction. The median absolute difference between matched contributions was $6.47.
+- **Background Data Validation:** Its baseline differed by 8.8% from the average prediction across the full survey-weighted training data, within the predefined 10% quality control limit.
+- **Explanation Stability:** On all 100 test-set rows, at least four of the five leading drivers matched the reference. Matched drivers with reference contributions of $25 or more in either direction kept the same direction. The median absolute difference between matched contributions was $6.47.
 - **Prediction Reconstruction:** The baseline plus all contributions matched each prediction to floating-point precision.
-- **Latency:** P95 core SHAP explanation time was 0.20 seconds after the separately measured first call. This measures the explanation calculation; complete prediction-request latency still needs testing on the target Hugging Face hardware.
-
-The [modeling notebook](notebooks/2_modeling.ipynb) contains the full benchmarking results.
+- **Latency:** P95 core SHAP explanation time was 0.20 seconds after the separately measured first call. This measures the explanation calculation, but complete prediction-request latency still needs testing on the target Hugging Face hardware.
 
 <p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
 
