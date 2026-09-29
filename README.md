@@ -562,7 +562,7 @@ Candidate features were selected from MEPS-HC 2023 based on the following criter
 - **Beginning-of-Year Data:** To enable the app to be used during Open Enrollment for predicting *upcoming* costs, only variables measured at the beginning of the year (`31` suffix) or stable traits are used to prevent data leakage.
 - **Predictive Power:** Features have established significance in healthcare cost literature.
 
-These 26 candidate features will be further reduced based on importance scores to meet the UX goal of a form completion time of less than 90 seconds.
+Form completion in under 90 seconds is a soft goal. Feature reduction will be considered only if user testing shows that completing the form takes substantially longer and harms the user experience.
 
 **Candidate Features**
 | Label | Variable | Description | Data Type | Value Range |

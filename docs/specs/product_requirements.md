@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Model Development |
 | **Created** | 2025-12-05 |
-| **Last Updated** | 2026-07-29 |
+| **Last Updated** | 2026-09-29 |
 | **Data Source** | Medical Expenditure Panel Survey (MEPS) |
 
 
@@ -74,7 +74,7 @@ We stand apart as the first consumer-centric planner for out-of-pocket healthcar
 | **Frictionless**: Quick, easy, and free to use, no login required. | **High Friction**: Requires CPT codes, logins, or deep insurance knowledge. |
 
 ### UX-First Rationale
-**Simplicity > Perfection**: Users need a "ballpark" estimate for decision making (e.g., $1k vs $3k FSA contribution), not a medical bill audit. By targeting form completion in **under 90 seconds** with ~10–12 high-impact inputs, we achieve user friendliness while keeping the median/q50 estimate within a useful error range for personal finance. The input count is a soft guideline; cognitive load and completion time are the true UX goals.
+**Simplicity > Perfection**: Users need a "ballpark" estimate for decision making (e.g., $1k vs $3k FSA contribution), not a medical bill audit. Form completion in **under 90 seconds** is a soft goal. Related inputs are grouped into checklists to keep the form easy to complete. User effort and completion time matter more than a strict input feature count.
 
 
 ## Out of Scope
@@ -96,11 +96,11 @@ The following are explicitly **not** part of this project:
 ## Functional Requirements
 
 ### User Inputs
-> **Status:** *Preliminary (Candidate Features). Final feature selection pending. Reduce number of features based on empirical feature importance ranking to meet the UX budget below.*
+> **MVP Decision:** Retain the current feature set. Consider feature reduction only if user testing shows that completing the form takes substantially longer than 90 seconds and harms the user experience.
 
 **UX Budget:**
-* Completion Time Goal: < 90 seconds
-* UI Interactions Target: ~12–14 
+* Completion Time Goal: < 90 seconds (soft goal)
+* UI Interactions Target: ~12–14 (soft guideline)
 * UI Interactions Current: 15 
 
 The UI must be a simple form on a single page. A multi-select checklist (e.g., chronic conditions) counts as one UI interaction. User inputs are mapped to MEPS variables with correct temporal alignment (beginning-of-year status for prospective prediction).

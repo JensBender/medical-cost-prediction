@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Model Development |
 | **Created** | 2025-12-12 |
-| **Last Updated** | 2026-09-22 |
+| **Last Updated** | 2026-09-29 |
 
 **Note:** This document details the technical implementation for the [Product Requirements Document (PRD)](./product_requirements.md).
 
@@ -72,10 +72,10 @@ Notes:
 The primary goal is a fast, frictionless user experience. We prioritize usability over predictive performance if it requires complex inputs.
 
 **Feature Selection Rationale**:
-1.  **UX-First Constraint**: Target form completion in **under 90 seconds**. This is a soft guideline. Cognitive load and completion time matter more than a strict input count. As a ballpark, aim for ~10–12 discrete UI interactions, noting that a multi-select checklist (e.g., chronic conditions) counts as one interaction even with many options.
+1.  **UX-First Constraint**: Target form completion in **under 90 seconds** as a soft goal. User effort and completion time matter more than a strict input feature count. Group related inputs into multi-select checklists (e.g., chronic conditions) to keep the form easy to complete.
 2.  **Consumer Accessibility**: Inputs must be information users know offhand (e.g., age, self-rated health). The user doesn't need to leave their chair to find an insurance card, past bill, or medical record. No asking for specifics like "deductible amount" or "ICD-10 codes" that require mental effort or looking up technical terms.
 3.  **Temporal Validity**: Variables must reflect **beginning-of-year status** to enable prospective prediction without data leakage (see box below).
-4.  **Optimize Within Constraints**: Among the pool of "accessible" inputs, select the variables with the highest feature importance to maximize predictive power within the UX constraints.
+4.  **MVP Feature Set**: Consider feature reduction only if user testing shows that completing the form takes substantially longer than 90 seconds and harms the user experience.
 
 <details>
 <summary>ℹ️ <strong>Temporal Alignment: Why Variable Suffixes Matter</strong> (click to expand)</summary>
@@ -102,7 +102,7 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 The primary goal is a fast, frictionless user experience. We prioritize usability over predictive performance if it requires complex inputs.
 
 **Feature Selection Dimensioning**:
-To balance performance with a frictionless experience (target < 90s completion), we classify features based on three dimensions: **Feature Importance**, **User Friction**, and **Data Completeness** (from EDA).
+The framework below applies only if user testing justifies revisiting the MVP feature set, as described above. Assess features using three dimensions: **Feature Importance**, **User Friction**, and **Data Completeness** (from EDA).
 
 **Decision Matrix**:
 | | **Low User Friction**<br>*(Non-sensitive/Easy to answer)* | **High User Friction**<br>*(Sensitive/Hard to know)* |
@@ -122,7 +122,7 @@ To balance performance with a frictionless experience (target < 90s completion),
 
 
 ### Candidate Features
-The following MEPS variables have been identified as candidate features for the model. All candidates satisfy three constraints: (1) users can answer from memory, (2) variables reflect beginning-of-year status (temporal validity), and (3) established predictive power in literature. The final feature set will be selected based on empirical feature importance ranking, targeting form completion in under 90 seconds.
+The following MEPS variables were selected for the model. All candidates satisfy three constraints: (1) users can answer from memory, (2) variables reflect beginning-of-year status (temporal validity), and (3) established predictive power in literature. The MVP uses all 26 selected MEPS features, which become 27 preprocessor input features after feature engineering.
 
 **Full Details:** See [Candidate Features Research](../research/candidate_features.md) document.
 
@@ -231,7 +231,7 @@ Perform once before pipeline:
 | Handle MEPS Negative Codes | Standardize missing/inapplicable values for modeling. | Convert `-1` (Inapplicable), `-7` (Refused), `-8` (Don't know), `-15` (Cannot be computed) to `NaN`.<br>Treating survey non-response and missing inputs from web app users identically (as `NaN` → Imputed Mode/Median) to align data handling between training and inference. |
 
 **Feature Preprocessing**
-Implemented via `ColumnTransformer`. Exact columns depend on final feature selection.
+Implemented via `ColumnTransformer`.
 
 | Feature Type | Example Columns | Transformer | Notes |
 | :--- | :--- | :--- | :--- |
@@ -261,14 +261,13 @@ We apply transformations selectively based on how each model handles this varian
 ### Model Training
 
 **Training Procedure**
-A 4-phase approach where each model is evaluated with its own optimal feature set.
+The MVP workflow retains the current feature set through training, tuning, and final evaluation.
 
 | Phase | Goal | Details |
 | :--- | :--- | :--- |
 | **1. Baseline Models** | Compare baseline models on full features | Train all models on all features (27 raw, 40 preprocessed) with mostly default hyperparameters. Evaluate MdAE on validation set. Select top 3–4 models. |
-| **2. Feature Selection** | Find optimal features per model | Each model uses its own selection method (see below). Target ~10–12 raw features for 90 sec UX. |
-| **3. Hyperparameter Tuning** | Optimize hyperparameters | Tune each model via randomized search on its own reduced feature set. Select best tuned model + features combination. |
-| **4. Final Model Artifact** | Evaluate selected model | Evaluate the final model artifact + features on the hold-out test set. Deployment happens through the prediction service and user-facing app. |
+| **2. Hyperparameter Tuning** | Optimize hyperparameters | Tune each finalist via randomized search. Select each model's best configuration. |
+| **3. Final Model Artifact** | Evaluate selected model | Evaluate the final model artifact on the hold-out test set. Deployment happens through the prediction service and user-facing app. |
 
 **Candidate Models**
 | Model | Loss Function | Target Transform | Notes |
@@ -282,6 +281,8 @@ A 4-phase approach where each model is evaluated with its own optimal feature se
 | MLP (sklearn) | MSE | `log(y+1)` | Inverse-transform predictions |
 
 **Feature Selection by Model Type**
+These methods are options for a future feature-reduction review under the usability condition above.
+
 | Model | Method | Notes |
 | :--- | :--- | :--- |
 | **Elastic Net** | L1 regularization + Polynomials | Non-zero coefficients = selected features; captures non-linearities via explicit interaction terms |
