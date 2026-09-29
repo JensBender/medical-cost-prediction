@@ -60,6 +60,7 @@
       <li><a href="#heteroscedasticity">Heteroscedasticity</a></li>      
       <li><a href="#tuned-models-reliability--fairness">Tuned Models: Reliability & Fairness</a></li>      
       <li><a href="#xgboost-quantile-regression-reliability--fairness">XGBoost Quantile Regression: Reliability & Fairness</a></li>      
+      <li><a href="#shap-explanation-details">SHAP Explanation Details</a></li>
       <li><a href="#feature-importance-details">Feature Importance Details</a></li>
     </ul>
   </li>
@@ -312,7 +313,10 @@ Release gates are the minimum test-set performance needed to launch. Product tar
 - **Decision:** Launch XGBoost quantile regression as the MVP model. It passes every release gate on the test set.
 - **Value Over Simple Baselines:** The comparison tests XGBoost against giving everyone the same population-based plan-around estimate, typical range, and safety cushion, and against giving each person those estimates based only on their age group. XGBoost improves on both, most clearly for the typical range and safety cushion (versus the population baseline: q50 quantile skill 9.8%, typical-range interval skill 11.2%, and q90 quantile skill 15.6%).
 - **Reliability & Fairness Audit:** The final subgroup audit supports launch. Predicted-risk tiers remain usable and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed. Typical-range undercoverage appears for uninsured users, users with a doctorate degree, poor mental health, and low income.<br>🔗 [**See Final Model Reliability & Fairness Audit**](#xgboost-quantile-regression-reliability--fairness)
-- **Launch Conditions:** Include a scope disclaimer, medical inflation adjustment, planning notices for higher-uncertainty cases (such as high predicted costs or uninsured users, as in the example below), and privacy-preserving aggregate monitoring. Show the median cost for U.S. adults and for the user's age group alongside their plan-around estimate, so users can see how it compares with typical spending.
+- **Launch Conditions:** Include prediction explanations, medical inflation adjustment, a scope disclaimer, planning notices for higher-uncertainty cases (such as high predicted costs or uninsured users, as in the example below), and privacy-preserving aggregate monitoring. Show the median cost for U.S. adults and for the user's age group alongside their plan-around estimate, so users can see how it compares with typical spending.
+
+**Prediction Explanations (SHAP)**  
+SHAP explains how a user's answers contribute to their plan-around estimate (`q50`). The starting point is the model's average prediction for a background sample drawn to represent U.S. adults. Each answer receives a dollar contribution: positive values raise the estimate from that starting point, and negative values lower it. The app shows the five largest contributions, helping users understand which answers mattered most to their estimate. 🔗 [**See SHAP Explanation Details**](#shap-explanation-details)
 
 **Example Prediction Output**  
 High cost profile: 68-year-old, uninsured, multiple chronic conditions
@@ -723,6 +727,29 @@ Fairness analysis evaluates whether the model's prediction intervals provide equ
 - **Prediction Usefulness:** Several low-cost groups have wide prediction intervals despite in-band coverage, including good physical health, good mental health, Asian respondents, and the West region. This is a practical-budgeting caveat rather than a safety failure.
 - **Planning Notice:** Show a planning note for predicted `q90` in the top 20%, uninsured users, and subgroups with typical-range undercoverage. Name high predicted costs and uninsured in the planning note, but use neutral generic wording to avoid stigmatization for poor mental health, low income, and doctorate degree subgroups: "Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." Near-poor income shows safety-cushion overcoverage, so it should not trigger safety-cushion guidance by itself.
 - **Audit Verdict:** The subgroup audit supports launch. Predicted-risk tiers remain usable for deployment, and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed.
+
+<p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
+
+
+### SHAP Explanation Details
+
+**Explained Prediction**  
+Permutation SHAP explains the plan-around estimate (`q50`) through the full model inference process: preprocessing, quantile prediction, conversion back to dollars, and quantile postprocessing. This lets it assign contributions to the 27 preprocessor input features that correspond to the user's answers. TreeExplainer would explain the inner XGBoost model using transformed features instead. The typical range and safety cushion would need their own explanations.
+
+**How SHAP Calculates Contributions**  
+The background contains 225 training rows sampled using survey weights to approximate the U.S. adult population. Its average predicted `q50` is the SHAP starting point, or baseline. This is an average of model predictions; the national median benchmark shown in the app summarizes observed spending.
+
+SHAP masks an answer by replacing it with values from the background rows. In each permutation round, it reveals the person's answers one by one in a shuffled order, then masks them again. At each step, it averages predictions across the background rows and records how that average changes. These changes determine each feature's contribution in the context of other features. Additional rounds use different feature orders. The baseline plus all 27 contributions reproduces the person's prediction; the app displays only the five largest contributions. 
+
+**Benchmarking**  
+The [benchmark SHAP script](scripts/benchmark_shap.py) compared background sizes and permutation rounds to find the lowest P95 explanation latency while meeting the quality checks. Candidate configurations were compared with a larger reference using 500 background rows and 24 rounds. The selected setup uses **225 background rows and one permutation round** (`max_evals=55`).
+
+- **Background Validation:** Its baseline differed by 8.8% from the average prediction across the full survey-weighted training data, within the predefined 10% limit.
+- **Explanation Stability:** On all 100 held-out test rows, at least four of the five leading drivers matched the reference. Matched drivers with reference contributions of $25 or more in either direction kept the same direction. The median absolute difference between matched contributions was $6.47.
+- **Prediction Reconstruction:** The baseline plus all contributions matched each prediction to floating-point precision.
+- **Latency:** P95 core SHAP explanation time was 0.20 seconds after the separately measured first call. This measures the explanation calculation; complete prediction-request latency still needs testing on the target Hugging Face hardware.
+
+The [modeling notebook](notebooks/2_modeling.ipynb) contains the full benchmarking results.
 
 <p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
 
