@@ -351,9 +351,9 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > <summary><strong>How you compare to others</strong> <i>(click to expand)</i></summary>
 > <table>
 > <tbody>
-> <tr><th scope="row" align="left">Your plan-around estimate</th><td align="right">$1,350</td></tr>
-> <tr><th scope="row" align="left">Typical American</th><td align="right">$268</td></tr>
-> <tr><th scope="row" align="left">Typical for ages 65+</th><td align="right">$657</td></tr>
+> <tr><td>Your plan-around estimate</td><td align="right">$1,350</td></tr>
+> <tr><td>Typical American</td><td align="right">$268</td></tr>
+> <tr><td>Typical for ages 65+</td><td align="right">$657</td></tr>
 > </tbody>
 > </table>
 > </details>
