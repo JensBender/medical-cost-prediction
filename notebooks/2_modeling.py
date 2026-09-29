@@ -3859,7 +3859,7 @@ plot_quantile_subgroup_predictions(
 #                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span>
 #                 <br><br>
 #                 <details style="margin-bottom:8px;">
-#                 <summary style="cursor:pointer;"><strong>Which answers shaped your estimate?</strong></summary>
+#                 <summary style="cursor:pointer;"><strong>Which answers shaped your estimate?</strong> <i>(click to expand)</i></summary>
 #                 <p style="font-size:0.85em; color:#555; margin-bottom:6px;">These answers made the largest contributions to your plan-around estimate:</p>
 #                 <table style="width:100%; border-collapse:collapse; font-size:0.85em;">
 #                     <thead><tr><th style="text-align:left; padding:4px;">Your answer</th><th style="text-align:right; padding:4px;">Contribution</th></tr></thead>
@@ -3873,13 +3873,15 @@ plot_quantile_subgroup_predictions(
 #                 </table>
 #                 </details>
 #                 <details style="margin-bottom:8px;">
-#                 <summary style="cursor:pointer;""><strong>How you compare to others</strong> <i>(click to expand)</i></summary>
-#                 <span style="font-size:0.85em; color:#555;">
-#                 <i>(bar chart in app)</i><br>
-#                 Your plan-around estimate: \$420<br>
-#                 Typical American: \$248<br>
-#                 Typical for ages 18-34: \$70<br>
-#                 </span>
+#                 <summary style="cursor:pointer;"><strong>How you compare to others</strong> <i>(click to expand)</i></summary>
+#                 <table style="width:100%; border-collapse:collapse; font-size:0.85em;">
+#                     <tbody>
+#                         <tr><th scope="row" style="text-align:left; padding:4px;">Your plan-around estimate</th><td style="text-align:right; padding:4px;">\$420</td></tr>
+#                         <tr><th scope="row" style="text-align:left; padding:4px;">Typical American</th><td style="text-align:right; padding:4px;">\$268</td></tr>
+#                         <tr><th scope="row" style="text-align:left; padding:4px;">Typical for ages 18-34</th><td style="text-align:right; padding:4px;">\$76</td></tr>
+#                     </tbody>
+#                 </table>
+#                 <p style="font-size:0.85em; color:#555;">The app will show these amounts as a bar chart to make the differences easier to see.</p>
 #                 </details>
 #                 <br>
 #                 <b>About this estimate</b><br>
@@ -3897,7 +3899,7 @@ plot_quantile_subgroup_predictions(
 #                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary a lot from year to year. This estimate falls in a higher-cost range, and because you are uninsured, out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion.</span>
 #                 <br><br>
 #                 <details style="margin-bottom:8px;">
-#                 <summary style="cursor:pointer;"><strong>Which answers shaped your estimate?</strong></summary>
+#                 <summary style="cursor:pointer;"><strong>Which answers shaped your estimate?</strong> <i>(click to expand)</i></summary>
 #                 <p style="font-size:0.85em; color:#555; margin-bottom:6px;">These answers made the largest contributions to your plan-around estimate:</p>
 #                 <table style="width:100%; border-collapse:collapse; font-size:0.85em;">
 #                     <thead><tr><th style="text-align:left; padding:4px;">Your answer</th><th style="text-align:right; padding:4px;">Contribution</th></tr></thead>
@@ -3911,13 +3913,15 @@ plot_quantile_subgroup_predictions(
 #                 </table>
 #                 </details>
 #                 <details style="margin-bottom:8px;">
-#                 <summary style="cursor:pointer;""><strong>How you compare to others</strong> <i>(click to expand)</i></summary>
-#                 <span style="font-size:0.85em; color:#555;">
-#                 <i>(bar chart in app)</i><br>
-#                 Your plan-around estimate: \$1,350<br>
-#                 Typical American: \$248<br>
-#                 Typical for ages 65+: \$608<br>
-#                 </span>
+#                 <summary style="cursor:pointer;"><strong>How you compare to others</strong> <i>(click to expand)</i></summary>
+#                 <table style="width:100%; border-collapse:collapse; font-size:0.85em;">
+#                     <tbody>
+#                         <tr><th scope="row" style="text-align:left; padding:4px;">Your plan-around estimate</th><td style="text-align:right; padding:4px;">\$1,350</td></tr>
+#                         <tr><th scope="row" style="text-align:left; padding:4px;">Typical American</th><td style="text-align:right; padding:4px;">\$268</td></tr>
+#                         <tr><th scope="row" style="text-align:left; padding:4px;">Typical for ages 65+</th><td style="text-align:right; padding:4px;">\$657</td></tr>
+#                     </tbody>
+#                 </table>
+#                 <p style="font-size:0.85em; color:#555;">The app will show these amounts as a bar chart to make the differences easier to see.</p>
 #                 </details>
 #                 <br>
 #                 <b>About this estimate</b><br>
