@@ -68,7 +68,7 @@
 
 
 ## 🎯 Summary
-End-to-end machine learning project to predict annual out-of-pocket healthcare costs from MEPS 2023 survey data. The modeling workflow now selects **XGBoost Quantile Regression** as the final MVP model, returning a plan-around estimate (`q50`), a typical range (`q25`-`q75`), and a safety cushion (`q90`) instead of a single point forecast.
+End-to-end machine learning project to predict annual out-of-pocket healthcare costs from MEPS 2023 survey data. **XGBoost Quantile Regression** was selected as the final MVP model. It produces a plan-around estimate (`q50`), a typical range (`q25`-`q75`), and a safety cushion (`q90`) instead of a single point forecast.
 
 On the locked holdout test set, the final model passes the product-facing release gates: plan-around MdAE is **$240** (95% CI: $215-$279), typical-range coverage is **47.3%**, and safety-cushion coverage is **91.0%**. The planned app should present these outputs as budgeting guidance with scope disclaimers, current-dollar adjustment, planning notice for subgroups with prediction uncertainty, and privacy-preserving aggregate monitoring.
 
@@ -91,9 +91,9 @@ This README highlights the main findings. For the detailed analyses and figures,
 ## 💡 Motivation
 **The Problem:** Healthcare pricing is a "black box." While insurance portals show prices for individual treatments (e.g., an MRI), consumers lack tools to predict their total expected costs for the year. Existing calculators are often too generic (ignoring health conditions) or too complex (requiring specific procedure codes).
 
-**Our Solution:** A personalized forecasting tool based on accessible inputs. Users simply enter demographic and health details such as age, insurance status, and chronic conditions to receive a cost estimate for the upcoming year. This empowers users to make data-driven decisions for FSA/HSA contributions and emergency planning.
+**Our Solution:** A personalized forecasting tool based on accessible inputs. In the planned app, users will enter demographic and health details such as age, insurance status, and chronic conditions to receive a cost estimate for the upcoming year. This will help users make data-driven decisions for FSA/HSA contributions and emergency planning.
 
-**How It Works:** The web app is powered by a machine learning model trained on the Medical Expenditure Panel Survey (MEPS), the gold standard for U.S. healthcare data. By analyzing what people with similar demographic and health profiles actually spent, our model learns real-world cost patterns and translates them into actionable financial insights without requiring complex medical records.
+**How It Works:** The planned web app will use a machine learning model trained on the Medical Expenditure Panel Survey (MEPS), the gold standard for U.S. healthcare data. By analyzing what people with similar demographic and health profiles actually spent, the model learns real-world cost patterns and translates them into actionable financial insights without requiring complex medical records.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
@@ -171,7 +171,7 @@ Based on EDA-driven insights, decided to implement sample weights for population
 
 
 ## 🧹 Data Preprocessing
-Utilized a hybrid workflow to bridge interactive exploration with production reproducibility. Logic was prototyped in [notebooks/1_eda_and_preprocessing.ipynb](notebooks/1_eda_and_preprocessing.ipynb), migrated to [scripts/preprocess.py](scripts/preprocess.py) for automation, and orchestrated by [DVC](https://dvc.org/) (via `dvc.yaml`) for data lineage. To reproduce the preprocessing stage:
+Preprocessing logic was prototyped in [notebooks/1_eda_and_preprocessing.ipynb](notebooks/1_eda_and_preprocessing.ipynb) and moved to [scripts/preprocess.py](scripts/preprocess.py) for automation. [DVC](https://dvc.org/) tracks the stage in `dvc.yaml` for data lineage and reproducible reruns. To reproduce the preprocessing stage:
   ```bash
   dvc repro preprocess
   ```
@@ -209,9 +209,9 @@ Once the raw data is cleaned and prepared, the `preprocess.py` script *calls* a 
 
 
 ## 🧠 Modeling
-Dedicated [**scripts**](scripts/) run model training, tuning, and benchmarks, saving fitted models and results for later analysis. **DVC** tracks the preprocessing, baseline model and final model training stages for reproducible reruns. **MLflow** records runs so their parameters and results can be reviewed and compared. The [modeling notebook](notebooks/2_modeling.ipynb) loads those saved outputs for evaluation, visualizations, and documenting decisions.
+Dedicated [**scripts**](scripts/) run model training, tuning, and benchmarks, saving fitted models and results for later analysis. **DVC** tracks the preprocessing, baseline model and final model training stages for reproducible reruns. **MLflow** records runs so their parameters and results can be reviewed and compared. The [**modeling notebook**](notebooks/2_modeling.ipynb) loads those saved outputs for evaluation, visualizations, and documenting decisions.
 
-Survey-weighted median absolute error (MdAE) is the primary evaluation metric because it reflects typical prediction error without letting rare, extreme costs dominate. Mean absolute error (MAE) and R² serve as supporting diagnostics because they are more sensitive to prediction errors on outliers in this heavy-tailed distribution.
+Survey-weighted median absolute error (MdAE) is the primary evaluation metric because it reflects typical prediction error without letting rare, extreme costs dominate. Mean absolute error (MAE) and R² serve as supporting diagnostics because they are more sensitive to outliers in this heavy-tailed distribution.
 
 ### 📏 Baseline Models  
 Evaluated a diverse set of baseline model architectures to identify candidates for hyperparameter tuning.
@@ -248,7 +248,7 @@ Conducted hyperparameter optimization for the three selected finalists using a c
 
 **Tuning Methodology**  
 - **Search Strategy:** Manual loop with `ParameterSampler` (instead of `RandomizedSearchCV`) to ensure correct `sample_weight` routing through nested `TransformedTargetRegressor` and `Pipeline` wrappers.
-- **Target Transform:** All models train on `log1p`-transformed costs via `TransformedTargetRegressor`, stabilizing the heavy-tailed distribution while predicting in raw dollars.
+- **Target Transform:** All models were trained on `log1p`-transformed costs via `TransformedTargetRegressor`, stabilizing the heavy-tailed distribution while predicting in raw dollars.
 - **Scoring:** Selected each model's best configuration by the lowest weighted MdAE on the validation set.
 - **Model-Specific Configurations:**
   - **Elastic Net:** `Pipeline` with second-degree `PolynomialFeatures` + `ElasticNet`. Tuned `alpha` (regularization strength, log-uniform 0.01–1.0), `l1_ratio` (L1/L2 penalty mix, uniform 0.0–1.0), and `interaction_only` (squared terms on/off).
@@ -316,7 +316,7 @@ Release gates are the minimum test-set performance needed to launch. Product tar
 - **Launch Conditions:** Include prediction explanations, medical inflation adjustment, a scope disclaimer, planning notices for higher-uncertainty cases (such as high predicted costs or uninsured users, as in the example below), and privacy-preserving aggregate monitoring. Show the median cost for U.S. adults and for the user's age group alongside their plan-around estimate, so users can see how it compares with typical spending.
 
 **Prediction Explanations (SHAP)**  
-SHAP explains how a user's answers contribute to their plan-around estimate (`q50`). The app highlights the five largest contributions and shows their dollar amounts, so users can see which answers moved the estimate up or down. 🔗 [**See SHAP Explanation Details**](#shap-explanation-details)
+SHAP explains how a user's answers contribute to their plan-around estimate (`q50`). The planned app will highlight the five largest contributions and show their dollar amounts, so users can see which answers moved the estimate up or down. 🔗 [**See SHAP Explanation Details**](#shap-explanation-details)
 
 **Example Prediction Output**  
 High cost profile: 68-year-old, uninsured, multiple chronic conditions
@@ -363,7 +363,7 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. New diagnoses, accidents, hospitalizations, and plan-specific billing details can make actual costs higher.
 
 **Medical Inflation Adjustment**  
-The app adjusts all user-facing dollar amounts (plan-around estimate, typical range, safety cushion, national and age-group benchmarks, SHAP dollar impacts) from 2023 to current dollars using a medical inflation factor. The [medical inflation update script](scripts/update_medical_inflation.py) calculates and saves the factor from the [U.S. Bureau of Labor Statistics Medical Care Consumer Price Index](https://data.bls.gov/timeseries/CUUR0000SAM), which tracks changes in medical care prices over time.
+The planned app will adjust all user-facing dollar amounts (plan-around estimate, typical range, safety cushion, national and age-group benchmarks, SHAP dollar impacts) from 2023 to current dollars using a medical inflation factor. The [medical inflation update script](scripts/update_medical_inflation.py) calculates and saves the factor from the [U.S. Bureau of Labor Statistics Medical Care Consumer Price Index](https://data.bls.gov/timeseries/CUUR0000SAM), which tracks changes in medical care prices over time.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
@@ -748,7 +748,7 @@ SHAP explains the plan-around estimate (`q50`) through the full model inference 
 **How SHAP Calculates Contributions**  
 The background data contains 225 training rows sampled using survey weights to approximate the U.S. adult population. The model's average `q50` prediction across these rows is the SHAP starting point, or baseline.
 
-The project uses permutation SHAP: it reveals a person's answers one by one in a shuffled order, then masks them again. Masking replaces an answer with values from the background data. This sequence is one permutation round. At each step, SHAP averages predictions across the background rows and records how that average changes. These changes determine each feature's contribution in the context of other features. Additional rounds use different feature orders. The baseline plus all 27 contributions reproduces the person's prediction. The app displays only the five largest contributions.
+The project uses permutation SHAP: it reveals a person's answers one by one in a shuffled order, then masks them again. Masking replaces an answer with values from the background data. This sequence is one permutation round. At each step, SHAP averages predictions across the background rows and records how that average changes. These changes determine each feature's contribution in the context of other features. Additional rounds use different feature orders. The baseline plus all 27 contributions reproduces the person's prediction. The planned app will display only the five largest contributions.
 
 **Benchmarking**  
 The [benchmark SHAP script](scripts/benchmark_shap.py) compared the size of the background data and the number of permutation rounds to find the lowest P95 explanation latency while meeting predefined quality control criteria. Candidate configurations were compared with a larger reference using 500 rows and 24 rounds. The selected setup uses **225 rows of background data and one permutation round** (`max_evals=55`) and passed all explanation quality checks.
