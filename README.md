@@ -664,7 +664,7 @@ To reproduce the LLM benchmark:
 
 
 ### Tuned Models: Heteroscedasticity
-![Tuned Models: Heteroscedasticity (Validation)](figures/evaluation/heteroscedasticity.png)
+![Tuned Models: Heteroscedasticity (Validation)](figures/evaluation/tuned_models_validation_heteroscedasticity.png)
 **Key Insights:**
 - **Fan-Shaped Errors:** Error spread widens with predicted cost across all models, reflecting the inherent unpredictability of rare, expensive medical events. Residuals skew heavily upward, confirming systematic underprediction of extreme costs.
 - **Elastic Net's Limited Range:** With a max prediction of only $217, Elastic Net treats the population as uniformly low-risk; its median residual trends upwards with its predictions, confirming systematic underestimation.

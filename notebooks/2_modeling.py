@@ -953,7 +953,7 @@ plot_residuals_vs_predicted(
     y_val, 
     tuned_model_predictions, 
     w_val,
-    save_to_file="../figures/evaluation/heteroscedasticity.png"
+    save_to_file="../figures/evaluation/tuned_models_validation_heteroscedasticity.png"
 )
 
 # %% [markdown]
@@ -2233,7 +2233,7 @@ plot_residuals_vs_predicted(
     }, 
     w_val,
     n_cols=2,
-    save_to_file="../figures/evaluation/quantile_heteroscedasticity.png"
+    save_to_file="../figures/evaluation/xgb_quantile_validation_heteroscedasticity.png"
 )
 
 
