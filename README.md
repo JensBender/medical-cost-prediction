@@ -543,11 +543,11 @@ This project is licensed under the [MIT License](LICENSE).
 ## 👏 Credits
 This project was made possible with the help of the following resources:
 - **Dataset**: [2023 Full Year Consolidated Data File (HC-251)](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251) from the [Medical Expenditure Panel Survey (MEPS)](https://meps.ahrq.gov/mepsweb/), provided by the [Agency for Healthcare Research and Quality (AHRQ)](https://www.ahrq.gov/).
-- **Medical Inflation Data**: [Medical Care Consumer Price Index](https://data.bls.gov/timeseries/CUUR0000SAM) from the [U.S. Bureau of Labor Statistics (BLS)](https://www.bls.gov/cpi/). Specifically, the project uses the CPI-U Medical Care series for all urban consumers, not seasonally adjusted.
+- **Medical Inflation Data**: The [U.S. Bureau of Labor Statistics (BLS)](https://www.bls.gov/cpi/) [CPI-U Medical Care series](https://data.bls.gov/timeseries/CUUR0000SAM) (all urban consumers, not seasonally adjusted) provides the data for the medical inflation adjustment.
 - **Images**: 
   - Header: The [header image](./assets/header.png) was generated using [GPT Image 1.5](https://openai.com/index/new-chatgpt-images-is-here/) via the [ChatGPT app](https://chatgpt.com/) by OpenAI. 
   - Infographics: The [MEPS data infographic](./assets/infographic_meps_data.jpg) and the [U.S. healthcare costs infographic](./assets/infographic_healthcare_costs.png) were generated using [Gemini 3 Pro Image](https://deepmind.google/models/gemini-image/pro/) via the [Gemini app](https://gemini.google.com/app) by Google.
-- **AI Coding Assistant**: [Antigravity](https://antigravity.google/) by Google and [Codex](https://openai.com/codex/) by OpenAI.
+- **AI Coding Assistant**: [Codex](https://openai.com/codex/) by OpenAI and [Antigravity](https://antigravity.google/) by Google.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
