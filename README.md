@@ -91,11 +91,9 @@ This README highlights the main findings. For the detailed analyses and figures,
 
 
 ## 💡 Motivation
-**The Problem:** Healthcare pricing is a "black box." While insurance portals show prices for individual treatments (e.g., an MRI), consumers lack tools to predict their total expected costs for the year. Existing calculators are often too generic (ignoring health conditions) or too complex (requiring specific procedure codes).
+**The Problem:** Knowing the price of an individual treatment does not tell someone how much to set aside for a full year of healthcare. Existing tools include procedure cost lookups, broad spending estimates, and calculators that ask users to enter their expected expenses. Planning remains difficult when future care needs are uncertain.
 
-**Our Solution:** A personalized forecasting tool based on accessible inputs. In the planned app, users will enter demographic and health details such as age, insurance status, and chronic conditions to receive a cost estimate for the upcoming year. This will help users make data-driven decisions for FSA/HSA contributions and emergency planning.
-
-**How It Works:** The planned web app will use a machine learning model trained on the Medical Expenditure Panel Survey (MEPS), the gold standard for U.S. healthcare data. By analyzing what people with similar demographic and health profiles actually spent, the model learns real-world cost patterns and translates them into actionable financial insights without requiring complex medical records.
+**The Approach:** The planned app will provide personalized annual budgeting guidance from questions people can answer from memory, including their age, insurance status, and specific health conditions. A plan-around estimate, typical range, and safety cushion will help users consider both typical spending and a more expensive year when planning their budget or FSA/HSA contributions, without needing medical records or a list of anticipated treatments.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
