@@ -52,11 +52,11 @@
   <li>
     <a href="#-appendix">Appendix</a>
     <ul>
-      <li><a href="#candidate-features">Candidate Features</a></li>      
+      <li><a href="#candidate-feature-details">Candidate Feature Details</a></li>
       <li><a href="#distributions">Distributions</a></li>        
       <li><a href="#feature-target-relationships">Feature-Target Relationships</a></li>      
       <li><a href="#outlier-analysis">Outlier Analysis</a></li>      
-      <li><a href="#llm-benchmarking">LLM Benchmarking</a></li>      
+      <li><a href="#llm-benchmarking-details">LLM Benchmarking Details</a></li>
       <li><a href="#tuned-models-heteroscedasticity">Tuned Models: Heteroscedasticity</a></li>
       <li><a href="#tuned-models-reliability--fairness">Tuned Models: Reliability & Fairness</a></li>      
       <li><a href="#xgboost-quantile-regression-reliability--fairness">XGBoost Quantile Regression: Reliability & Fairness</a></li>      
@@ -125,7 +125,7 @@ Selected 26 features out of 1,374 MEPS variables based on consumer accessibility
 - **Chronic Conditions:** Hypertension, High Cholesterol, Diabetes, Heart Disease, Stroke, Cancer, Arthritis, Asthma.
 - **Limitations:** Difficulties with Daily Living, Walking, Cognitive Tasks, Joint Pain.
 
-[🔗 **See Candidate Features**](#candidate-features)
+[🔗 **See Candidate Feature Details**](#candidate-feature-details)
 
 **Sample Weights**  
 Incorporated MEPS survey weights during training to account for the complex survey design and non-response. This corrects for the intentional oversampling of specific subgroups (e.g., elderly and low-income), ensuring model estimates remain representative of the general U.S. population.
@@ -232,7 +232,7 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 **Key Insights:**  
 - **Baseline Champion:** Elastic Net achieved the best median accuracy ($163 MdAE) with minimal overfitting (+6.6%).
 - **Overfitting:** XGBoost and SVM exhibited extreme overfitting (+98% to +191%) out-of-the-box. Their configurations did not generalize well, motivating stronger regularization during tuning.
-- **LLM Benchmark:** Compared performance of specialized ML models against a general intelligence LLM ("Why not just ask Gemini?"). Every specialist model showed better predictive performance than the general-purpose LLM (Gemini 3 Flash), with Elastic Net reducing MdAE from $518 to $163, a 3.2x improvement. This demonstrates added value of specialist ML models. 🔗 [**See LLM Benchmarking Details**](#llm-benchmarking)
+- **LLM Benchmark:** Compared performance of specialized ML models against a general intelligence LLM ("Why not just ask Gemini?"). Every specialist model showed better predictive performance than the general-purpose LLM (Gemini 3 Flash), with Elastic Net reducing MdAE from $518 to $163, a 3.2x improvement. This demonstrates added value of specialist ML models. 🔗 [**See LLM Benchmarking Details**](#llm-benchmarking-details)
 - **Typical vs. Large Errors:** For most models, MdAE is near $200 but MAE is near $1,000, showing that some predictions miss by far more than the typical one. R² is near zero or negative across all models, partly because it heavily penalizes misses on rare, high-cost outliers in this heavy-tailed distribution.
 
 **Selected Finalists:**  
@@ -555,7 +555,7 @@ This project was made possible with the help of the following resources:
 <!-- APPENDIX -->
 ## 📎 Appendix
 
-### Candidate Features
+### Candidate Feature Details
 **Feature Selection**  
 Candidate features were selected from MEPS-HC 2023 based on the following criteria:
 - **Consumer Accessibility:** Users can answer from memory without looking up records, ensuring the model is usable in a consumer-facing app.
@@ -656,7 +656,7 @@ While outliers are only 1.1x more likely to cross the median cost threshold, the
 <p align="right">(<a href="#main-outliers">Back to EDA</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
-### LLM Benchmarking
+### LLM Benchmarking Details
 To ensure a rigorous "High-Bar" benchmark, the LLM (Gemini 3 Flash) was evaluated using the following strategy:
 - **System Prompt:** Configured the LLM with a specialized expert persona and precise U.S.-specific medical cost definitions (explicitly distinguishing copays/deductibles from premiums) to evaluate out-of-pocket cost reasoning.
 - **Unstructured Feature Profiles:** Translated tabular features into clear, bulleted profiles. To establish a fair baseline, missing values were intentionally omitted rather than imputed, testing the LLM's performance on the same "incomplete" data.
