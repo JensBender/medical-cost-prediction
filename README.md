@@ -295,7 +295,7 @@ The final model reuses the hyperparameters from the best tuned XGBoost point-est
 
 **User-Facing Outputs:**
 - **Plan-around estimate** (`q50`): The median prediction (what users should budget for).
-- **Typical range** (`q25`–`q75`): The interquartile range (the range most users will fall within).
+- **Typical range** (`q25`–`q75`): The interquartile range (how much costs typically vary).
 - **Safety cushion** (`q90`): The 90th percentile (a conservative upper bound to help budget for a bad year).
 
 **Release Gate Metrics (Test)**  
@@ -310,7 +310,7 @@ Release gates are the minimum test-set performance needed to launch. Product tar
 | Safety-cushion width (`q50`-`q90`) | $2,032 [$1,964, $2,108] | < $3,500 | < $2,500 | Pass |
 
 **Launch Decision**
-- **Decision:** Launch XGBoost quantile regression as the MVP model. It passes every release gate on the test set.
+- **Decision:** Launch XGBoost quantile regression as the MVP model. It passes every release gate on the test set. Plan-around estimates are within $240 of actual costs for about half of the test population.
 - **Value Over Simple Baselines:** The comparison tests XGBoost against giving everyone the same population-based plan-around estimate, typical range, and safety cushion, and against giving each person those estimates based only on their age group. XGBoost improves on both, most clearly for the typical range and safety cushion (versus the population baseline: q50 quantile skill 9.8%, typical-range interval skill 11.2%, and q90 quantile skill 15.6%).
 - **Reliability & Fairness Audit:** The final subgroup audit supports launch. Predicted-risk tiers remain usable and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed. Typical-range undercoverage appears for uninsured users, users with a doctorate degree, poor mental health, and low income.<br>🔗 [**See Final Model Reliability & Fairness Audit**](#xgboost-quantile-regression-reliability--fairness)
 - **Launch Conditions:** Include prediction explanations, medical inflation adjustment, a scope disclaimer, planning notices for higher-uncertainty cases (such as high predicted costs or uninsured users, as in the example below), and privacy-preserving aggregate monitoring. Show the median cost for U.S. adults and for the user's age group alongside their plan-around estimate, so users can see how it compares with typical spending.
