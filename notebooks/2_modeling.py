@@ -1435,7 +1435,7 @@ plot_subgroup_performance(
 # <strong>3. Explainability (SHAP): Median Only</strong> <br>
 # A quantile model predicts four numbers per user. SHAP values explain feature contributions for a <em>specific</em> prediction target. Those contributions differ across quantiles (e.g., "Diabetes: +1,200" for the median vs. "Diabetes: +3,800" for the 90th percentile). Showing multiple, contradictory SHAP explanations would confuse users.
 # <br><br>
-# <strong>Decision:</strong> Display SHAP values for the plan-around estimate (median/q50) only. This gives users a single, coherent explanation of their "most likely" cost drivers. The typical range and safety cushion are presented as context for better financial planning.
+# <strong>Decision:</strong> Display SHAP values for the plan-around estimate (median/q50) only. This gives users a single, coherent explanation of which answers contributed most to their estimate. The typical range and safety cushion are presented as context for better financial planning.
 # </div>
 
 # %% [markdown]
@@ -3859,8 +3859,8 @@ plot_quantile_subgroup_predictions(
 #                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span>
 #                 <br><br>
 #                 <details style="margin-bottom:8px;">
-#                 <summary style="cursor:pointer;"><strong>What shaped your plan-around estimate?</strong></summary>
-#                 <p style="font-size:0.85em; color:#555; margin-bottom:6px;">These five answers contributed most to your plan-around estimate:</p>
+#                 <summary style="cursor:pointer;"><strong>Which answers shaped your estimate?</strong></summary>
+#                 <p style="font-size:0.85em; color:#555; margin-bottom:6px;">These answers made the largest contributions to your plan-around estimate:</p>
 #                 <table style="width:100%; border-collapse:collapse; font-size:0.85em;">
 #                     <thead><tr><th style="text-align:left; padding:4px;">Your answer</th><th style="text-align:right; padding:4px;">Contribution</th></tr></thead>
 #                     <tbody>
@@ -3897,8 +3897,8 @@ plot_quantile_subgroup_predictions(
 #                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary a lot from year to year. This estimate falls in a higher-cost range, and because you are uninsured, out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion.</span>
 #                 <br><br>
 #                 <details style="margin-bottom:8px;">
-#                 <summary style="cursor:pointer;"><strong>What shaped your plan-around estimate?</strong></summary>
-#                 <p style="font-size:0.85em; color:#555; margin-bottom:6px;">These five answers contributed most to your plan-around estimate:</p>
+#                 <summary style="cursor:pointer;"><strong>Which answers shaped your estimate?</strong></summary>
+#                 <p style="font-size:0.85em; color:#555; margin-bottom:6px;">These answers made the largest contributions to your plan-around estimate:</p>
 #                 <table style="width:100%; border-collapse:collapse; font-size:0.85em;">
 #                     <thead><tr><th style="text-align:left; padding:4px;">Your answer</th><th style="text-align:right; padding:4px;">Contribution</th></tr></thead>
 #                     <tbody>
@@ -3925,7 +3925,7 @@ plot_quantile_subgroup_predictions(
 #             </td>
 #         </tr>
 #     </table>
-#     App Implementation: For "What shaped your plan-around estimate?", use a Gradio accordion (<code>gr.Accordion(open=False)</code>) containing a Markdown table.
+#     App Implementation: For "Which answers shaped your estimate?", use a Gradio accordion (<code>gr.Accordion(open=False)</code>) containing a Markdown table.
 # </div>
 
 # %% [markdown]
@@ -3939,8 +3939,8 @@ plot_quantile_subgroup_predictions(
 #     <strong>SHAP Approach</strong><br>
 #     SHAP will be used in two ways:
 #     <ol>
-#         <li><strong>Feature Importance Analysis for Model Audit:</strong> Rank the features by mean absolute SHAP value (<code>mean(|SHAP|)</code>) across many predictions (survey-weighted) to identify which features have the largest dollar impact on predicted median costs (postprocessed q50). Compare this SHAP feature importance with native XGBoost importance to audit whether the model relies on plausible cost drivers.</li>
-#         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use individual SHAP values to show which inputs moved that user's plan-around estimate above or below the SHAP baseline. This is a product feature, not just a diagnostic. It makes the prediction more useful for financial planning by explaining the main cost drivers. Use cautious wording ("moved the estimate") and avoid causal language.</li>
+#         <li><strong>Feature Importance Analysis for Model Audit:</strong> Rank the features by mean absolute SHAP value (<code>mean(|SHAP|)</code>) across many predictions (survey-weighted) to identify which features have the largest dollar impact on predicted median costs (postprocessed q50). Compare this SHAP feature importance with native XGBoost importance to check whether the most important features make sense for predicting costs.</li>
+#         <li><strong>User-Facing Explanations as a Product Feature:</strong> Use individual SHAP values to show which answers moved that user's plan-around estimate above or below the SHAP baseline. This is a product feature, not just a diagnostic. It makes the prediction more useful for financial planning by explaining the largest contributions. Use cautious wording ("moved the estimate") and avoid causal language.</li>
 #     </ol>
 #     <strong>Explained Output</strong><br>
 #     SHAP explanations focus on the q50 plan-around estimate (predicted median cost). The q25, q75, and q90 outputs define the typical range and safety cushion, but should not be mixed into the q50 explanation. A separate explanation of q90 could show different feature contributions.
@@ -3977,16 +3977,16 @@ plot_quantile_subgroup_predictions(
 #     <br><br>
 #     <strong>Communicating SHAP Values</strong>
 #     <ul>
-#         <li><strong>End users (cost-driver overview):</strong> "These factors show which of your answers moved your estimate up or down the most."</li>
-#         <li><strong>End users (single cost driver):</strong> "Your insurance answer, <code>Public Only</code>, lowered this estimate by about \$99."</li>
-#         <li><strong>Non-technical stakeholders:</strong> "The estimate starts from an average predicted cost for a representative sample of U.S. adults. Each person's inputs then move the estimate up or down from that starting point. Because each feature is evaluated in the context of that person's other features, the same answer can have a different dollar impact for different people. For example, a <code>Public Only</code> insurance answer can affect the estimate differently for someone with several chronic conditions than for someone with none."</li>
+#         <li><strong>End users (overview):</strong> "These answers made the largest contributions to your plan-around estimate."</li>
+#         <li><strong>End users (single contribution):</strong> "Your insurance answer, <code>Public Only</code>, moved the estimate down by about \$99."</li>
+#         <li><strong>Non-technical stakeholders:</strong> "The estimate starts from an average predicted cost for a representative sample of U.S. adults. Each person's answers then move the estimate up or down from that starting point. Because each answer is evaluated in the context of that person's other answers, the same answer can have a different dollar impact for different people. For example, a <code>Public Only</code> insurance answer can affect the estimate differently for someone with several chronic conditions than for someone with none."</li>
 #     </ul>
 #     <strong>SHAP Limitations</strong>
 #     <ul>
 #         <li><strong>Not Causal:</strong> SHAP explains how each answer contributed to the model's estimate relative to the SHAP background. It does not explain what caused the person's actual costs. The explanation inherits any errors or missing relationships in the model. More fundamentally, the model learned associations from observational survey data, not the effects of changing someone's circumstances. For example, if smoking moved the estimate up by \$200, that does not mean quitting smoking would cause costs to fall by $200. Changing the smoking answer may lower the estimate, but this does not show what quitting would do to the person’s actual costs.</li>
 #         <li><strong>Background-Dependent:</strong> SHAP explains a prediction relative to the selected background data. Changing that reference group can change the baseline and the contribution assigned to each answer. For example, age 70 may move an estimate up substantially when the person is compared with U.S. adults of all ages, but it may contribute much less when the reference group contains only adults aged 65 and older. The person's prediction does not change, but the explanation of how it differs from the reference does.</li>
 #         <li><strong>Correlated Features:</strong> EDA shows notable correlations between ADL/IADL help (Spearman's ρ=0.60) and between arthritis/joint pain (ρ=0.56). When features are correlated, SHAP can distribute credit unevenly between them. For example, arthritis and joint pain both signal similar health burden, but one prediction may assign more dollar impact to arthritis and another to joint pain. Interpret correlated features as a group and do not treat small ranking differences between them as meaningful.</li>
-#         <li><strong>Predicted, Not Actual Costs:</strong> SHAP explains the model's prediction, not the true drivers of real-world medical costs. If the model overstates, understates, or misses a relationship, the SHAP values reflect that error. SHAP does not fix model limitations: if the model underpredicts high-cost cases, reflects noisy survey data, or lacks important predictors, SHAP explains those imperfect predictions.</li>
+#         <li><strong>Predicted, Not Actual Costs:</strong> SHAP explains the model's prediction, not the causes of actual medical costs. If the model overstates, understates, or misses a relationship, the SHAP values reflect that error. SHAP does not fix model limitations: if the model underpredicts high-cost cases, reflects noisy survey data, or lacks important predictors, SHAP explains those imperfect predictions.</li>
 #     </ul>
 #     <strong>App/API Implementation Plan</strong>
 #     <ol>
@@ -4017,7 +4017,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Reference:</strong> Compare candidates against a reference configuration with a larger background size (<code>500</code>) and higher evaluation budget (<code>max_evals=1,320</code>, or 24 permutation rounds).</li>
 #         <li><strong>Explanation stability:</strong>
 #             <ul>
-#                 <li><strong>Top-five overlap (primary metric):</strong> For at least 90% of evaluation rows, require at least four of the five drivers to match the reference.</li>
+#                 <li><strong>Top-five overlap (primary metric):</strong> Rank features by contribution size regardless of direction. For at least 90% of evaluation rows, require at least four of the candidate's top five features to also appear in the reference's top five.</li>
 #                 <li><strong>Direction agreement:</strong> A matched reference contribution of at least \$25 must not change from increasing to decreasing the estimate, or vice versa.</li>
 #                 <li><strong>Dollar difference:</strong> Use an initial tolerance of \$25 in 2023 dollars for the median absolute difference among matched top-five contributions.</li>
 #             </ul>
@@ -4131,7 +4131,7 @@ display(
 #     💡 <strong>Insights:</strong>
 #     <ul>
 #         <li>All 12 candidate SHAP configurations passed background validation, explanation stability, and the additivity check.</li>
-#         <li>Every candidate matched at least four of the reference top-five drivers for all 20 validation rows, with no material direction reversals. Additional rounds reduced the median contribution difference but increased latency.</li>
+#         <li>Every candidate matched at least four of the reference top-five features for all 20 validation rows, with no material direction reversals. Additional rounds reduced the median contribution difference but increased latency.</li>
 #         <li><strong>Stage 2 Shortlist:</strong>
 #             <ul>
 #                 <li><code>225 background rows, 1 round</code>: the fastest configuration, with a P95 latency of 0.18 seconds.</li>
@@ -4250,7 +4250,7 @@ display(
 #     <ul>
 #         <li><strong>Decision:</strong> <code>225 background rows, 1 permutation round</code> (<code>max_evals=55</code>).</li>
 #         <li>All three shortlisted SHAP configurations passed background validation, explanation stability, and the additivity check.</li>
-#         <li>The selected configuration was the fastest, with a P95 latency of 0.21 seconds. It matched at least four of the reference top-five drivers for 99 of 100 validation rows, had no material direction reversals, and had a median contribution difference of \$6.10.</li>
+#         <li>The selected configuration was the fastest, with a P95 latency of 0.21 seconds. It matched at least four of the reference top-five features for 99 of 100 validation rows, had no material direction reversals, and had a median contribution difference of \$6.10.</li>
 #         <li>Increasing the background to 250 rows produced the same 99% top-five match rate and reduced the median contribution difference by only \$0.22, while increasing P95 latency from 0.21 to 0.22 seconds. This small gain does not justify the larger background.</li>
 #         <li>Using two rounds increased the match rate from 99% to 100% and reduced the median contribution difference by \$2.01, but approximately doubled P95 latency from 0.21 to 0.41 seconds. This does not justify the additional permutation round.</li>
 #         <li>Next, confirm the selected configuration once on 100 held-out test rows.</li>
@@ -4361,7 +4361,7 @@ display(
 #     💡 <strong>Insights:</strong>
 #     <ul>
 #         <li><strong>Final evaluation:</strong> The selected configuration passed background validation, explanation stability, and the additivity check on 100 held-out test rows.</li>
-#         <li>All 100 rows matched at least four of the reference top-five drivers. There were no material direction reversals, and the median contribution difference was \$6.47.</li>
+#         <li>All 100 rows matched at least four of the reference top-five features. There were no material direction reversals, and the median contribution difference was \$6.47.</li>
 #         <li>Core SHAP explanation latency was 0.17 seconds at P50 and 0.20 seconds at P95, consistent with the 0.21-second P95 measured on the Stage 2 validation rows.</li>
 #         <li>The remaining latency check is to measure the complete prediction request on the target Hugging Face hardware.</li>
 #     </ul>
@@ -4549,7 +4549,7 @@ display(
 #         <li><strong>SHAP feature importance</strong> ranks the 27 preprocessor input features by their mean absolute SHAP contribution across predictions (survey-weighted). It shows which interpretable inputs have the largest average impact on the postprocessed q50 prediction, measured in 2023 dollars.</li>
 #         <li><strong>XGBoost native feature importance</strong> ranks the 40 model-ready features primarily by their share of <code>total_gain</code>. It shows how much each feature reduced the training objective across the joint q25, q50, q75, and q90 estimator. It is not q50-specific and is not measured in dollars.</li>
 #     </ul>
-#     The rankings are not directly comparable because they use different features, outputs, units, and data stages. Neither approach is causal or measures a feature's true effect on medical costs. Instead, they provide complementary views: SHAP shows what drives the model's q50 predictions, while native importance shows what the model used during training. Agreement strengthens confidence that the model relies on plausible signals. Differences identify features, transformations, derived features, or correlations that need closer review.
+#     The rankings are not directly comparable because they use different features, outputs, units, and data stages. Neither approach is causal or measures a feature's true effect on medical costs. Instead, they provide complementary views: SHAP shows which features contribute most to the model's q50 predictions, while native importance shows what the model used during training. Agreement strengthens confidence that the model relies on plausible signals. Differences identify features, transformations, derived features, or correlations that need closer review.
 # </div>
 
 # %% [markdown]

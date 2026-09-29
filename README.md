@@ -333,13 +333,18 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > Costs for profiles like yours can vary a lot from year to year. This estimate falls in a higher-cost range, and because you are uninsured, out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion.
 >
 > <details>
-> <summary><strong>What's driving your estimate</strong> <i>(click to expand)</i></summary>
-> These factors had the largest effect on your plan-around estimate:<br>
-> - 🔼 Your age (68): +$480<br>
-> - 🔼 Diabetes: +$370<br>
-> - 🔼 Uninsured: +$310<br>
-> - 🔼 High blood pressure: +$180<br>
-> - 🔽 "Good" physical health: -$90<br><br>
+> <summary><strong>Which answers shaped your estimate?</strong> <i>(click to expand)</i></summary>
+> <p>These answers made the largest contributions to your plan-around estimate:</p>
+> <table>
+> <thead><tr><th>Your answer</th><th align="right">Contribution</th></tr></thead>
+> <tbody>
+> <tr><td><strong>Age:</strong> 68</td><td align="right">↑ +$480</td></tr>
+> <tr><td><strong>Diabetes:</strong> Yes</td><td align="right">↑ +$370</td></tr>
+> <tr><td><strong>Insurance:</strong> Uninsured</td><td align="right">↑ +$310</td></tr>
+> <tr><td><strong>High blood pressure:</strong> Yes</td><td align="right">↑ +$180</td></tr>
+> <tr><td><strong>Physical health:</strong> Good</td><td align="right">↓ −$90</td></tr>
+> </tbody>
+> </table>
 > </details>
 >
 > <details>
@@ -745,7 +750,7 @@ The project uses permutation SHAP: it reveals a person's answers one by one in a
 The [benchmark SHAP script](scripts/benchmark_shap.py) compared the size of the background data and the number of permutation rounds to find the lowest P95 explanation latency while meeting predefined quality control criteria. Candidate configurations were compared with a larger reference using 500 rows and 24 rounds. The selected setup uses **225 rows of background data and one permutation round** (`max_evals=55`) and passed all explanation quality checks.
 
 - **Background Data Validation:** Its baseline differed by 8.8% from the average prediction across the full survey-weighted training data, within the predefined 10% quality control limit.
-- **Explanation Stability:** On all 100 test-set rows, at least four of the five leading drivers matched the reference. Matched drivers with reference contributions of $25 or more in either direction kept the same direction. The median absolute difference between matched contributions was $6.47.
+- **Explanation Stability:** On all 100 test rows, at least four of the five features with the largest contributions also appeared in the reference's top five. Ranking considers contribution size regardless of direction. For matched features with reference contributions of at least $25 in either direction, the contribution direction stayed the same. The median absolute difference between matched contributions was $6.47.
 - **Prediction Reconstruction:** The baseline plus all contributions matched each prediction to floating-point precision.
 - **Latency:** P95 core SHAP explanation time was 0.20 seconds after the separately measured first call. This measures the explanation calculation, but complete prediction-request latency still needs testing on the target Hugging Face hardware.
 
