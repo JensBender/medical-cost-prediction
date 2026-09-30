@@ -231,14 +231,15 @@ Perform once before pipeline:
 | Handle MEPS Negative Codes | Standardize missing/inapplicable values for modeling. | Convert `-1` (Inapplicable), `-7` (Refused), `-8` (Don't know), `-15` (Cannot be computed) to `NaN`.<br>Treating survey non-response and missing inputs from web app users identically (as `NaN` → Imputed Mode/Median) to align data handling between training and inference. |
 
 **Feature Preprocessing**
-Implemented via `ColumnTransformer`.
+Missing numerical inputs use median imputation; nominal and binary inputs use mode imputation. Scaling and encoding use a `ColumnTransformer`.
 
 | Feature Type | Example Columns | Transformer | Notes |
 | :--- | :--- | :--- | :--- |
-| Numerical | `AGE23X`, `FAMSZE23`, `RTHLTH31`, `MNHLTH31`, `CHRONIC_COUNT`, `LIMITATION_COUNT` | `StandardScaler` | Standardizes all continuous and count-based features. Applied to all models for pipeline consistency. |
-| Ordinal | `POVCAT23` | `OrdinalEncoder` | Preserve ordering (Low < Middle < High) |
-| Nominal | `SEX`, `REGION23`, `INSCOV23`, `MARRY31X`, `EMPST31`, `HIDEG` | `OneHotEncoder` | Drop designated baseline category to avoid multicollinearity |
-| Binary | `DIABDX_M18`, `HIBPDX`, `CHDDX`, etc. | passthrough | Already 0/1 encoded |
+| Numerical | `AGE23X`, `FAMSZE23`, `RTHLTH31`, `MNHLTH31`, `POVCAT23`, `CHRONIC_COUNT`, `LIMITATION_COUNT` | `RobustStandardScaler` | Standardizes numerical features, including derived counts, to mean 0 and variance 1. |
+| Nominal | `REGION23`, `INSCOV23`, `MARRY31X_GRP`, `HIDEG` | `RobustOneHotEncoder` | Drops the designated reference category for each feature. |
+| Binary | `SEX`, `EMPST31_GRP`, `RECENT_LIFE_TRANSITION`, `DIABDX_M18`, `HIBPDX`, etc. | passthrough | Already 0/1 encoded. |
+
+The `Robust*` wrappers add input validation and pass empty DataFrames through unchanged.
 
 **The Heteroscedasticity Problem (The "Blindness" Effect)**
 Medical cost data is inherently **heteroscedastic**, meaning the variance in errors grows with the target value.
