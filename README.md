@@ -74,14 +74,14 @@ On the held-out test set, the model passes all predefined performance thresholds
 
 **SHAP explanations** show which answers contribute most to the plan-around estimate. Cost comparison benchmarks help users compare their estimate with typical spending for U.S. adults and their age group, while medical inflation adjustment expresses amounts in current dollars. The next step is to build a **web app and API** that make these predictions available to users, with privacy-preserving aggregate monitoring.
 
-This README highlights the main findings. For details, see the [EDA and preprocessing notebook](notebooks/1_eda_and_preprocessing.ipynb) and [modeling notebook](notebooks/2_modeling.ipynb).
+This README highlights the main findings. For details, see the [EDA/preprocessing](notebooks/1_eda_and_preprocessing.ipynb) and [modeling](notebooks/2_modeling.ipynb) notebooks.
 
 🛠️ **Built With**  
 [![Python][Python-badge]][Python-url]
 [![NumPy][NumPy-badge]][NumPy-url]
 [![Pandas][Pandas-badge]][Pandas-url]
 [![Matplotlib][Matplotlib-badge]][Matplotlib-url]
-[![Seaborn][Seaborn-badge]][Seaborn-url]
+[![Seaborn][Seaborn-badge]][Seaborn-url]<br>
 [![scikit-learn][scikit-learn-badge]][scikit-learn-url]
 [![XGBoost][XGBoost-badge]][XGBoost-url]
 [![DVC][DVC-badge]][DVC-url]
