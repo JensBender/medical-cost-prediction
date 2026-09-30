@@ -92,7 +92,7 @@ This README highlights the main findings. For details, see the [EDA/preprocessin
 
 
 ## 💡 Motivation
-**The Problem:** Knowing the price of an individual treatment does not tell someone how much to set aside for a full year of healthcare. Existing tools include procedure cost lookups, broad spending estimates, and calculators that ask users to enter their expected expenses. Planning remains difficult when future care needs are uncertain.
+**The Problem:** Knowing the price of an individual treatment does not tell someone how much to budget for next year's out-of-pocket healthcare costs. Existing tools include procedure cost lookups, broad spending estimates, and calculators that ask users to enter their expected expenses. Planning remains difficult when future care needs are uncertain.
 
 **The Approach:** The planned app will provide personalized annual budgeting guidance from questions people can answer from memory, including their age, insurance status, and specific health conditions. A plan-around estimate, typical range, and safety cushion will help users consider both typical spending and a more expensive year when planning their budget or FSA/HSA contributions, without needing medical records or a list of anticipated treatments.
 
@@ -109,7 +109,7 @@ Utilized the **2023 Full-Year Consolidated Data File (HC-251)**:
 - **Variables:** 1,374 variables
 
 **Target Variable**  
-The target variable is **total out-of-pocket health care costs in 2023** (`TOTSLF23`), including copays, deductibles, and uncovered services. The goal is to facilitate financial planning and healthcare budgeting. By estimating next year's out-of-pocket costs, users can make data-driven decisions about FSA/HSA contributions and better prepare for their financial exposure. For uninsured users, out-of-pocket costs approximate total costs.  
+The target variable is **total out-of-pocket healthcare costs in 2023** (`TOTSLF23`), including copays, deductibles, and uncovered services. The goal is to facilitate financial planning and healthcare budgeting. By estimating next year's out-of-pocket costs, users can make data-driven decisions about FSA/HSA contributions and better prepare for their financial exposure. For uninsured users, out-of-pocket costs approximate total costs.
 
 <details>
 <summary>ℹ️ <strong>U.S. Healthcare Costs Explained</strong> <i>(click to expand)</i></summary>
