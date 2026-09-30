@@ -158,9 +158,9 @@ Analyzed distributions and relationships to inform data preprocessing, feature e
 ![Correlation Heatmap](figures/eda/correlation_heatmap.png)
 **Key Insights:**
 - **Correlations:** Spearman rank correlations (see heatmap above) revealed age (0.30) and family income (0.26) as primary cost correlates, alongside arthritis, high cholesterol, and joint pain (~0.22).
-- **Numerical Features vs. Target:** Visualized feature-target relationships, revealing age as the primary cost driver and a negative relationship with family size likely due to shared family insurance limits. [🔗 **See Scatter Plots**](#numerical-feature-target-relationships)
-- **Categorical Features vs. Target:** Grouped box plots revealed higher out-of-pocket spending for individuals with high income, high education, and private insurance, suggesting financial access drives healthcare utilization. [🔗 **See Grouped Box Plots**](#categorical-feature-target-relationships)
-- **Binary Features vs. Target:** Identified high-prevalence "global drivers" (arthritis) vs. high-severity "local triggers" (cancer), and confirmed a massive "utilization hurdle" where women and people with a usual source of care spend more. [🔗 **See Grouped Box Plots**](#binary-feature-target-relationships)
+- **Numerical Features vs. Target:** Visualized feature-target relationships, revealing age as the strongest numerical correlate of costs and a negative relationship with family size. [🔗 **See Scatter Plots**](#numerical-feature-target-relationships)
+- **Categorical Features vs. Target:** People with higher income, higher education, or private insurance generally had higher out-of-pocket spending. [🔗 **See Grouped Box Plots**](#categorical-feature-target-relationships)
+- **Binary Features vs. Target:** Arthritis was common and showed a stronger overall correlation with costs, while cancer was less common but showed a larger difference in median spending. Women and people with a usual source of care also had higher median spending. [🔗 **See Grouped Box Plots**](#binary-feature-target-relationships)
 
 <a id="main-outliers"></a>**Data Quality & Outliers**  
 Conducted deep-dive diagnostics in [notebooks/1_eda_and_preprocessing.ipynb](notebooks/1_eda_and_preprocessing.ipynb) to ensure data integrity:
