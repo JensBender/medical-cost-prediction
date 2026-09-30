@@ -104,7 +104,7 @@
 
   <!-- Global Header -->
   <g transform="translate(500, 45)">
-    <text class="text-title" style="font-size: 24px;">Inference Pipeline</text>
+    <text class="text-title" style="font-size: 24px;">Preprocessing Pipeline</text>
     <text y="25" class="text-subtitle" style="font-size: 14px; fill: #ffffff;">Standardization, Validation, Imputation, Medical Feature Engineering, Scaling &amp; Encoding</text>
   </g>
 
@@ -154,7 +154,7 @@
   <!-- Input Data -->
   <g id="input-data" transform="translate(200, 100)">
     <rect width="600" height="60" class="box-outer" style="fill: #0b0f19; border: 1px dashed #475569;" />
-    <text x="300" y="25" class="text-title">Input Data (Raw Features)</text>
+    <text x="300" y="25" class="text-title">Input Data (Preprocessor Input Features)</text>
     <text x="300" y="45" class="text-code">
       <tspan class="hl-num">Numerical</tspan> | <tspan class="hl-nom">Nominal</tspan> | <tspan class="hl-bin">Binary</tspan>
     </text>

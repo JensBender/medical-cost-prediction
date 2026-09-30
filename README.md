@@ -174,32 +174,37 @@ The zero-inflated, heavy-tailed cost distribution motivated log-transforming the
 Preprocessing logic was prototyped in the [EDA/preprocessing notebook](notebooks/1_eda_and_preprocessing.ipynb) and moved to a dedicated [preprocessing script](scripts/preprocess.py) for automated runs. [DVC](https://dvc.org/) tracks this stage for reproducible reruns.
 
 **Data Preparation Workflow**  
-To ensure a seamless transition from raw survey data to live application predictions, the preprocessing workflow follows a structured three-step process:
+The preprocessing workflow converts raw survey data into datasets for model training and evaluation and saves the fitted preprocessor for reuse during prediction.
 
 **Step 1: Data Preparation** (via `scripts/preprocess.py`)  
-This stage converts the raw MEPS data to the clean format expected by the inference pipeline. These steps are primarily for data cleaning and population filtering:
+This stage converts the raw MEPS data to the clean format expected by the preprocessing pipeline. These steps are primarily for data cleaning and population filtering:
 - **Data Loading:** Imports the MEPS-HC 2023 SAS data as a pandas DataFrame.
 - **Variable Selection:** Filters 29 essential columns (target variable, candidate features, ID, survey weights) from the original 1,374 columns.
 - **Target Population Filtering:** Filters rows for adults with positive survey weights (14,768 out of 18,919 respondents).
 - **Data Type Handling:** Converts ID to string and sets as index.
 - **Missing Value Standardization:** Recovers missing values from survey skip patterns and converts MEPS-specific missing codes to `np.nan`.
 - **Binary Feature Standardization:** Standardizes binary features to 0/1 encoding.
-- **Stateless Feature Engineering:** Creates a recent life transition feature and collapses sparse categories (e.g., recent divorce, job loss) into stable parent categories.
+- **Stateless Feature Engineering:** Collapses sparse marital and employment categories into stable groups (e.g., recently divorced → divorced), while recording recent transitions in a separate life transition feature.
 - **Train-Validation-Test Split:** Splits data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
 
-**Step 2: Inference Pipeline** (via `src/pipeline.py`)  
-Once the raw data is cleaned and prepared, the preprocessing script *calls* a Scikit-learn pipeline that is used for both training and inference (Web UI and API), ensuring absolute consistency across all environments.
+**Step 2: Preprocessing Pipeline** (via `src/pipeline.py`)  
+The preprocessing script fits a scikit-learn pipeline on the training set and applies it to all three splits. The same fitted pipeline will preprocess user inputs during prediction, keeping transformations at inference consistent with training.
 
 ![Preprocessing Pipeline](assets/pipeline.svg)
 
 - **Standardization:** Normalizes categorical inputs. Accepts both numeric codes (e.g. 0/1) and string labels (e.g. no/yes). 
-- **Validation & Imputation:** Implements a `MissingValueChecker` to catch required fields and a `RobustSimpleImputer` for median/mode-based imputation.
+- **Validation & Imputation:** Checks for missing required inputs and fills missing values with medians for numerical features and modes for categorical features.
 - **Medical Feature Derivation:** Calculates aggregate chronic condition and functional limitation counts to capture health burden.
-- **Scaling & Encoding:** Implements a `ColumnTransformer` with `RobustStandardScaler` and `RobustOneHotEncoder`.
+- **Scaling & Encoding:** Standardizes numerical features and one-hot encodes nominal features, leaving binary features unchanged.
 
 
 **Step 3: Data Persistence** (via `scripts/preprocess.py`)  
- This stage is used during training. It verifies the preprocessed data (e.g., absence of missing, infinite, or constant values, unique IDs), merges features with target and survey weights, and stores them as `.parquet` files.
+After checking row counts, unique IDs, and the absence of missing, infinite, or constant values in model-ready features, the script saves separate Parquet files for each training, validation, and test split:
+
+- **Preprocessor Input Datasets:** The 27 cleaned input features before pipeline transformations, used for SHAP explanations and other analyses.
+- **Model-Ready Datasets:** The transformed features used for model training and evaluation.
+
+Both versions include the target and survey weights, with respondent IDs preserved as the index. The fitted preprocessing pipeline is saved separately for reuse during prediction.
 
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
