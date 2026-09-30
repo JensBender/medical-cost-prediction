@@ -156,7 +156,7 @@
     <rect width="600" height="60" class="box-outer" style="fill: #0b0f19; border: 1px dashed #475569;" />
     <text x="300" y="25" class="text-title">Input Data (Preprocessor Input Features)</text>
     <text x="300" y="45" class="text-code">
-      <tspan class="hl-num">Numerical</tspan> | <tspan class="hl-nom">Nominal</tspan> | <tspan class="hl-bin">Binary</tspan>
+      <tspan class="hl-num">Numerical (including ordinal)</tspan> | <tspan class="hl-nom">Nominal</tspan> | <tspan class="hl-bin">Binary</tspan>
     </text>
   </g>
 
@@ -170,7 +170,7 @@
       <rect width="270" height="45" class="box-inner" />
       <rect width="4" height="45" fill="#facc15" rx="2" />
       <text x="135" y="18" class="text-subtitle" style="fill: #facc15;">Nominal Features</text>
-      <text x="135" y="35" class="text-desc">Map to descriptive strings</text>
+      <text x="135" y="35" class="text-desc">Numbers or text → consistent labels</text>
     </g>
 
     <!-- Step 1 Right Inner -->
@@ -178,7 +178,7 @@
       <rect width="270" height="45" class="box-inner" />
       <rect width="4" height="45" fill="#d8b4fe" rx="2" />
       <text x="135" y="18" class="text-subtitle" style="fill: #d8b4fe;">Binary Features</text>
-      <text x="135" y="35" class="text-desc">Recode to 0/1</text>
+      <text x="135" y="35" class="text-desc">Map labels to 0/1</text>
     </g>
   </g>
 
@@ -191,7 +191,7 @@
     <g transform="translate(20, 45)">
       <rect width="270" height="45" class="box-inner" />
       <text x="135" y="18" class="text-subtitle" style="fill: #f1f5f9;">Required Features</text>
-      <text x="135" y="35" class="text-desc">If missing → Raise Error</text>
+      <text x="135" y="35" class="text-desc">Strict mode: error; otherwise warning</text>
     </g>
 
     <!-- Step 2 Right Inner -->
@@ -259,7 +259,7 @@
       <rect width="5" height="110" fill="#38bdf8" rx="2.5" />
       <text x="140" y="25" class="text-subtitle" style="fill: #38bdf8;">Numerical Scaler</text>
       <text x="140" y="50" class="text-code hl-class">RobustStandardScaler()</text>
-      <text x="140" y="75" class="text-desc">Scales <tspan class="hl-num">raw &amp;</tspan> <tspan class="hl-eng">derived features</tspan></text>
+      <text x="140" y="75" class="text-desc">Scales <tspan class="hl-num">numerical &amp;</tspan> <tspan class="hl-eng">derived features</tspan></text>
       <text x="140" y="90" class="text-desc">to mean=0, variance=1</text>
     </g>
 
@@ -269,8 +269,8 @@
       <rect width="5" height="110" fill="#facc15" rx="2.5" />
       <text x="140" y="25" class="text-subtitle" style="fill: #facc15;">Nominal Encoder</text>
       <text x="140" y="50" class="text-code hl-class">RobustOneHotEncoder()</text>
-      <text x="140" y="75" class="text-desc">Creates binary dummies for <tspan class="hl-nom">nominal</tspan></text>
-      <text x="140" y="90" class="text-desc"><tspan class="hl-nom">features</tspan> &amp; drops designated baseline</text>
+      <text x="140" y="75" class="text-desc">Creates one-hot columns for <tspan class="hl-nom">nominal</tspan></text>
+      <text x="140" y="90" class="text-desc"><tspan class="hl-nom">features</tspan> &amp; drops the reference category</text>
     </g>
 
     <!-- Step 5 Inner 3 (Binary) -->

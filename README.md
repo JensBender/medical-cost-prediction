@@ -190,7 +190,7 @@ This stage converts the raw MEPS data to the clean format expected by the prepro
 **Step 2: Preprocessing Pipeline** (via `src/pipeline.py`)  
 The preprocessing script fits a scikit-learn pipeline on the training set and applies it to all three splits. The same fitted pipeline will preprocess user inputs during prediction, keeping transformations at inference consistent with training.
 
-![Preprocessing Pipeline](assets/pipeline.svg)
+![Preprocessing Pipeline](assets/preprocessing_pipeline.svg)
 
 - **Standardization:** Normalizes categorical inputs. Accepts both numeric codes (e.g. 0/1) and string labels (e.g. no/yes). 
 - **Validation & Imputation:** Checks for missing required inputs and fills missing values with medians for numerical features and modes for categorical features.
@@ -441,7 +441,7 @@ The appendix zooms in on [contributions by category](#shap-contributions-by-cate
 │   ├── header.png                     # Header image
 │   ├── infographic_healthcare_costs.png  # U.S. healthcare cost explainer
 │   ├── infographic_meps_data.jpg      # MEPS data overview infographic
-│   └── pipeline.svg                   # Inference pipeline architecture diagram
+│   └── preprocessing_pipeline.svg     # Preprocessing pipeline diagram
 │
 ├── tests/                             # Unit tests; integration and end-to-end tests planned
 │   ├── unit/                          
