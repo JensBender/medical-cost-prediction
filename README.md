@@ -171,10 +171,7 @@ The zero-inflated, heavy-tailed cost distribution motivated log-transforming the
 
 
 ## 🧹 Data Preprocessing
-Preprocessing logic was prototyped in [notebooks/1_eda_and_preprocessing.ipynb](notebooks/1_eda_and_preprocessing.ipynb) and moved to [scripts/preprocess.py](scripts/preprocess.py) for automation. [DVC](https://dvc.org/) tracks the stage in `dvc.yaml` for data lineage and reproducible reruns. To reproduce the preprocessing stage:
-  ```bash
-  dvc repro preprocess
-  ```
+Preprocessing logic was prototyped in the [EDA/preprocessing notebook](notebooks/1_eda_and_preprocessing.ipynb) and moved to a dedicated [preprocessing script](scripts/preprocess.py) for automated runs. [DVC](https://dvc.org/) tracks this stage for reproducible reruns.
 
 **Data Preparation Workflow**  
 To ensure a seamless transition from raw survey data to live application predictions, the preprocessing workflow follows a structured three-step process:
@@ -191,7 +188,7 @@ This stage converts the raw MEPS data to the clean format expected by the infere
 - **Train-Validation-Test Split:** Splits data into training (80%), validation (10%), and test (10%) sets using a distribution-informed stratified split to balance zero-inflation and the extreme tail of the target variable.
 
 **Step 2: Inference Pipeline** (via `src/pipeline.py`)  
-Once the raw data is cleaned and prepared, the `preprocess.py` script *calls* a Scikit-learn pipeline that is used for both training and inference (Web UI and API), ensuring absolute consistency across all environments.
+Once the raw data is cleaned and prepared, the preprocessing script *calls* a Scikit-learn pipeline that is used for both training and inference (Web UI and API), ensuring absolute consistency across all environments.
 
 ![Preprocessing Pipeline](assets/pipeline.svg)
 
@@ -751,7 +748,7 @@ The background data contains 225 training rows sampled using survey weights to a
 The project uses permutation SHAP: it reveals a person's answers one by one in a shuffled order, then masks them again. Masking replaces an answer with values from the background data. This sequence is one permutation round. At each step, SHAP averages predictions across the background rows and records how that average changes. These changes determine each feature's contribution in the context of other features. Additional rounds use different feature orders. The baseline plus all 27 contributions reproduces the person's prediction. The planned app will display only the five largest contributions.
 
 **Benchmarking**  
-The [benchmark SHAP script](scripts/benchmark_shap.py) compared the size of the background data and the number of permutation rounds to find the lowest P95 explanation latency while meeting predefined quality control criteria. Candidate configurations were compared with a larger reference using 500 rows and 24 rounds. The selected setup uses **225 rows of background data and one permutation round** (`max_evals=55`) and passed all explanation quality checks.
+The [SHAP benchmarking script](scripts/benchmark_shap.py) compared the size of the background data and the number of permutation rounds to find the lowest P95 explanation latency while meeting predefined quality control criteria. Candidate configurations were compared with a larger reference using 500 rows and 24 rounds. The selected setup uses **225 rows of background data and one permutation round** (`max_evals=55`) and passed all explanation quality checks.
 
 - **Background Data Validation:** Its baseline differed by 8.8% from the average prediction across the full survey-weighted training data, within the predefined 10% quality control limit.
 - **Explanation Stability:** On all 100 test rows, at least four of the five features with the largest contributions also appeared in the reference's top five. Ranking considers contribution size regardless of direction. For matched features with reference contributions of at least $25 in either direction, the contribution direction stayed the same. The median absolute difference between matched contributions was $6.47.
