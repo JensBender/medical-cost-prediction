@@ -55,7 +55,7 @@
       <li><a href="#candidate-feature-details">Candidate Feature Details</a></li>
       <li><a href="#distributions">Distributions</a></li>        
       <li><a href="#feature-target-relationships">Feature-Target Relationships</a></li>      
-      <li><a href="#outlier-analysis">Outlier Analysis</a></li>      
+      <li><a href="#outlier-analysis-details">Outlier Analysis Details</a></li>      
       <li><a href="#llm-benchmarking-details">LLM Benchmarking Details</a></li>
       <li><a href="#tuned-models-heteroscedasticity">Tuned Models: Heteroscedasticity</a></li>
       <li><a href="#tuned-models-reliability--fairness">Tuned Models: Reliability & Fairness</a></li>      
@@ -162,10 +162,9 @@ Analyzed distributions and relationships to inform data preprocessing, feature e
 - **Categorical Features vs. Target:** People with higher income, higher education, or private insurance generally had higher out-of-pocket spending. [🔗 **See Grouped Box Plots**](#categorical-feature-target-relationships)
 - **Binary Features vs. Target:** Arthritis was common and showed a stronger overall correlation with costs, while cancer was less common but showed a larger difference in median spending. Women and people with a usual source of care also had higher median spending. [🔗 **See Grouped Box Plots**](#binary-feature-target-relationships)
 
-<a id="main-outliers"></a>**Data Quality & Outliers**  
-Conducted deep-dive diagnostics in [notebooks/1_eda_and_preprocessing.ipynb](notebooks/1_eda_and_preprocessing.ipynb) to ensure data integrity:
+<a id="main-outliers"></a>**Data Quality & Outliers**
 - **Duplicates**: Verified the absence of duplicate records based on the ID column, complete rows, and all columns except ID.
-- **Outliers**: Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.<br>[🔗 **See Outlier Analysis**](#outlier-analysis)
+- **Outliers**: Detected univariate outliers using the 3-standard-deviation and 1.5×IQR methods, and multivariate outliers using isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Outliers generally had more medical conditions, functional limitations, and higher costs. All were retained to preserve this variation rather than remove potentially valid high-cost cases. [🔗 **See Outlier Analysis Details**](#outlier-analysis-details)
 
 **Modeling Strategy**  
 Based on EDA-driven insights, decided to implement survey weights for population representativeness and align models with the Median Absolute Error (MdAE) success metric through tailored loss functions, target log transformation, and polynomial features to effectively handle the zero-inflated, heavy-tailed cost distribution.
@@ -641,13 +640,13 @@ Table of population statistics for all numerical features:
 <p align="right">(<a href="#main-relationships">Back to EDA</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
-### Outlier Analysis
-**1. Outlier Detection:** Utilized an Isolation Forest (5% contamination) to identify multivariate outliers in training data.  
+### Outlier Analysis Details
+**1. Outlier Detection:** Used an isolation forest (5% contamination) to identify multivariate outliers in the training data.  
 **2. Outlier Profiling:** Compared out-of-pocket costs and feature distributions between inliers and outliers.  
-**3. Outlier Treatment:** Retained all outliers as legitimate "High Comorbidity" health profiles essential for robust tail-risk prediction.
+**3. Outlier Treatment:** Retained all outliers because their profiles were consistent with potentially valid health needs and costs.
 
 **Cost Concentration**  
-While outliers are only 1.1x more likely to cross the median cost threshold, they are **3.4x more likely** to be in the Top 1% of spenders.
+Compared with inliers, outliers were 1.2× as likely to have costs at or above the overall median and **3.9× as likely** to be among the top 1% of spenders.
 
 ![Outlier Lorenz Curves](figures/outliers/outlier_lorenz_curve.png)
 ![Outlier Profile for Numerical Features and Target](figures/outliers/outlier_numeric_profile.png)
