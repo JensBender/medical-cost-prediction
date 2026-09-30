@@ -70,11 +70,11 @@
 ## 🎯 Summary
 Machine learning project to help U.S. adults plan for annual out-of-pocket healthcare costs using accessible demographic and health information. Trained on MEPS 2023 survey data, **XGBoost quantile regression** was selected as the final MVP model. It provides a **plan-around estimate, typical range, and safety cushion** to help users budget for uncertain costs.
 
-On the held-out test set, the model passes all predefined performance thresholds for launch, with a **survey-weighted median absolute error (MdAE) of $240** for the plan-around estimate. Compared with population-wide or age-group estimates, it provides better predictions, especially for typical ranges and safety cushions.
+On the held-out test set, the model passes all predefined performance thresholds for launch, with a survey-weighted **median absolute error (MdAE) of $240** for the plan-around estimate. Compared with population-wide or age-group estimates, it provides better predictions, especially for typical ranges and safety cushions.
 
-Additional product features include **SHAP explanations** showing which answers contribute most to the plan-around estimate, medical inflation adjustment, and cost comparison benchmarks for U.S. adults and individual age groups. The next step is to build the **FastAPI/Gradio app and API**, integrating these features and adding privacy-preserving aggregate monitoring without retaining individual inputs or predictions.
+**SHAP explanations** show which answers contribute most to the plan-around estimate. Cost comparison benchmarks help users compare their estimate with typical spending for U.S. adults and their age group, while medical inflation adjustment expresses amounts in current dollars. The next step is to build a **web app and API** that make these predictions available to users, with privacy-preserving aggregate monitoring.
 
-This README highlights the main findings. For the detailed analyses and figures, see the [EDA and preprocessing notebook](notebooks/1_eda_and_preprocessing.ipynb) and [modeling notebook](notebooks/2_modeling.ipynb).
+This README highlights the main findings. For details, see the [EDA and preprocessing notebook](notebooks/1_eda_and_preprocessing.ipynb) and [modeling notebook](notebooks/2_modeling.ipynb).
 
 🛠️ **Built With**
 - [![Python][Python-badge]][Python-url]
