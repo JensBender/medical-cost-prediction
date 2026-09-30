@@ -76,17 +76,17 @@ On the held-out test set, the model passes all predefined performance thresholds
 
 This README highlights the main findings. For details, see the [EDA and preprocessing notebook](notebooks/1_eda_and_preprocessing.ipynb) and [modeling notebook](notebooks/2_modeling.ipynb).
 
-🛠️ **Built With**
-- [![Python][Python-badge]][Python-url]
-- [![NumPy][NumPy-badge]][NumPy-url]
-- [![Pandas][Pandas-badge]][Pandas-url]
-- [![Matplotlib][Matplotlib-badge]][Matplotlib-url] 
-- [![Seaborn][Seaborn-badge]][Seaborn-url]
-- [![scikit-learn][scikit-learn-badge]][scikit-learn-url]
-- [![XGBoost][XGBoost-badge]][XGBoost-url]
-- [![DVC][DVC-badge]][DVC-url]
-- [![MLflow][MLflow-badge]][MLflow-url]
-- [![pytest][Pytest-badge]][Pytest-url]
+🛠️ **Built With**  
+[![Python][Python-badge]][Python-url]
+[![NumPy][NumPy-badge]][NumPy-url]
+[![Pandas][Pandas-badge]][Pandas-url]
+[![Matplotlib][Matplotlib-badge]][Matplotlib-url]
+[![Seaborn][Seaborn-badge]][Seaborn-url]
+[![scikit-learn][scikit-learn-badge]][scikit-learn-url]
+[![XGBoost][XGBoost-badge]][XGBoost-url]
+[![DVC][DVC-badge]][DVC-url]
+[![MLflow][MLflow-badge]][MLflow-url]
+[![pytest][Pytest-badge]][Pytest-url]
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
