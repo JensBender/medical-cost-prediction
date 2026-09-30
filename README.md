@@ -128,8 +128,8 @@ Selected 26 features out of 1,374 MEPS variables based on consumer accessibility
 
 [🔗 **See Candidate Feature Details**](#candidate-feature-details)
 
-**Sample Weights**  
-Incorporated MEPS survey weights during training to account for the complex survey design and non-response. This corrects for the intentional oversampling of specific subgroups (e.g., elderly and low-income), ensuring model estimates remain representative of the general U.S. population.
+**Survey Weights**  
+MEPS survey weights (`PERWT23F`) adjust for unequal sampling probabilities and nonresponse, so each respondent contributes according to how many people they represent in the U.S. adult population. The project uses them during EDA, model training, and evaluation. Scikit-learn accepts them through its `sample_weight` parameter.
 
 **MEPS Resources**
 | Resource | Description | Link |
@@ -149,9 +149,9 @@ Analyzed distributions and relationships to inform data preprocessing, feature e
 ![Lorenz Curve](figures/eda/lorenz_curve.png)
 **Key Insights:**
 - **Target Variable:** Identified a zero-inflated (22.3%) and extremely right-skewed distribution where the top 20% of spenders drive 79.3% of costs (see Lorenz curve above).
-- **Sample Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
+- **Survey Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
 - **Numerical Features:** Visualized distribution of age, family size, and self-reported health, informing robust median-based imputation for right-skewed and discrete features. [🔗 **See Histograms**](#numerical-distributions)
-- **Categorical Features:** Revealed 66% hold private insurance, suggesting costs will be driven by plan-specific cost-sharing. Identified oversampling of healthy and low socio-economic status individuals, confirming the importance of sample weights. [🔗 **See Bar Plots**](#categorical-distributions)
+- **Categorical Features:** Revealed 66% hold private insurance, suggesting costs will be driven by plan-specific cost-sharing. Identified oversampling of healthy and low socio-economic status individuals, confirming the importance of survey weights. [🔗 **See Bar Plots**](#categorical-distributions)
 - **Binary Features:** Identified high prevalence of joint pain (45%), high blood pressure (32%), and high cholesterol (31%), while severe conditions such as cancer (11%), coronary heart disease (5%), and stroke (4%) are more sparse. [🔗 **See Bar Plots**](#binary-distributions)
 
 <a id="main-relationships"></a>**Relationships (Bivariate EDA)** 
@@ -168,7 +168,7 @@ Conducted deep-dive diagnostics in [notebooks/1_eda_and_preprocessing.ipynb](not
 - **Outliers**: Detected univariate outliers with 3SD and 1.5 IQR methods and multivariate outliers with an isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Confirmed that outliers represent legitimate high risk profiles rather than data errors, and retained all outliers to preserve the model's ability to predict extreme out-of-pocket costs.<br>[🔗 **See Outlier Analysis**](#outlier-analysis)
 
 **Modeling Strategy**  
-Based on EDA-driven insights, decided to implement sample weights for population representativeness and align models with the Median Absolute Error (MdAE) success metric through tailored loss functions, target log transformation, and polynomial features to effectively handle the zero-inflated, heavy-tailed cost distribution.
+Based on EDA-driven insights, decided to implement survey weights for population representativeness and align models with the Median Absolute Error (MdAE) success metric through tailored loss functions, target log transformation, and polynomial features to effectively handle the zero-inflated, heavy-tailed cost distribution.
 
 
 ## 🧹 Data Preprocessing
@@ -183,8 +183,8 @@ To ensure a seamless transition from raw survey data to live application predict
 **Step 1: Data Preparation** (via `scripts/preprocess.py`)  
 This stage converts the raw MEPS data to the clean format expected by the inference pipeline. These steps are primarily for data cleaning and population filtering:
 - **Data Loading:** Imports the MEPS-HC 2023 SAS data as a pandas DataFrame.
-- **Variable Selection:** Filters 29 essential columns (target variable, candidate features, ID, sample weights) from the original 1,374 columns.
-- **Target Population Filtering:** Filters rows for adults with positive person weights (14,768 out of 18,919 respondents).
+- **Variable Selection:** Filters 29 essential columns (target variable, candidate features, ID, survey weights) from the original 1,374 columns.
+- **Target Population Filtering:** Filters rows for adults with positive survey weights (14,768 out of 18,919 respondents).
 - **Data Type Handling:** Converts ID to string and sets as index.
 - **Missing Value Standardization:** Recovers missing values from survey skip patterns and converts MEPS-specific missing codes to `np.nan`.
 - **Binary Feature Standardization:** Standardizes binary features to 0/1 encoding.
@@ -203,7 +203,7 @@ Once the raw data is cleaned and prepared, the `preprocess.py` script *calls* a 
 
 
 **Step 3: Data Persistence** (via `scripts/preprocess.py`)  
- This stage is used during training. It verifies the preprocessed data (e.g., absence of missing, infinite, or constant values, unique IDs), merges features with target and sample weights, and stores them as `.parquet` files.
+ This stage is used during training. It verifies the preprocessed data (e.g., absence of missing, infinite, or constant values, unique IDs), merges features with target and survey weights, and stores them as `.parquet` files.
 
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
