@@ -167,7 +167,7 @@ Analyzed distributions and relationships to inform data preprocessing, feature e
 - **Outliers**: Detected univariate outliers using the 3-standard-deviation and 1.5×IQR methods, and multivariate outliers using isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Outliers generally had more medical conditions, functional limitations, and higher costs. All were retained to preserve this variation rather than remove potentially valid high-cost cases. [🔗 **See Outlier Analysis Details**](#outlier-analysis-details)
 
 **Modeling Strategy**  
-Based on EDA-driven insights, decided to implement survey weights for population representativeness and align models with the Median Absolute Error (MdAE) success metric through tailored loss functions, target log transformation, and polynomial features to effectively handle the zero-inflated, heavy-tailed cost distribution.
+The zero-inflated, heavy-tailed cost distribution motivated log-transforming the target to reduce the influence of extreme costs. MdAE was chosen as the primary evaluation metric to focus on typical prediction error. Where supported, absolute-error training objectives targeted median costs and were less sensitive to extreme errors than squared-error objectives. Polynomial features allowed Elastic Net to capture nonlinear relationships and feature interactions. Survey weights were used during training and evaluation.
 
 
 ## 🧹 Data Preprocessing
