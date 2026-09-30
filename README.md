@@ -135,8 +135,8 @@ MEPS survey weights (`PERWT23F`) adjust for unequal sampling probabilities and n
 | Resource | Description | Link |
 | :--- | :--- | :--- |
 | Data | MEPS-HC 2023 Full Year Consolidated Data File (HC-251). | [Visit Page](https://meps.ahrq.gov/mepsweb/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251) |
-| Full Documentation | Technical details on data collection, variable editing, and survey sampling. | [View PDF](docs/h251doc.pdf) |
-| Codebook | Variables, labels, coding schemes, and frequencies. | [View PDF](docs/h251cb.pdf) |
+| Full Documentation | Technical details on data collection, variable editing, and survey sampling. | [View PDF](docs/references/h251doc.pdf) |
+| Codebook | Variables, labels, coding schemes, and frequencies. | [View PDF](docs/references/h251cb.pdf) |
 | MEPS Overview | Background on MEPS components and larger survey history. | [Visit Page](https://meps.ahrq.gov/mepsweb/about_meps/survey_back.jsp) |
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
