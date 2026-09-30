@@ -83,6 +83,7 @@ This README highlights the main findings. For the detailed analyses and figures,
 - [![Matplotlib][Matplotlib-badge]][Matplotlib-url] 
 - [![Seaborn][Seaborn-badge]][Seaborn-url]
 - [![scikit-learn][scikit-learn-badge]][scikit-learn-url]
+- [![XGBoost][XGBoost-badge]][XGBoost-url]
 - [![DVC][DVC-badge]][DVC-url]
 - [![MLflow][MLflow-badge]][MLflow-url]
 - [![pytest][Pytest-badge]][Pytest-url]
@@ -791,6 +792,8 @@ XGBoost native feature importance ranks model-ready features by total gain: the 
 [Seaborn-url]: https://seaborn.pydata.org/
 [scikit-learn-badge]: https://img.shields.io/badge/scikit--learn-%23F7931E.svg?style=for-the-badge&logo=scikit-learn&logoColor=white
 [scikit-learn-url]: https://scikit-learn.org/stable/
+[XGBoost-badge]: https://img.shields.io/badge/XGBoost-006600?style=for-the-badge
+[XGBoost-url]: https://xgboost.readthedocs.io/
 [DVC-badge]: https://img.shields.io/badge/DVC-13ADC7?style=for-the-badge&logo=dvc&logoColor=white
 [DVC-url]: https://dvc.org/
 [MLflow-badge]: https://img.shields.io/badge/MLflow-0194E2?style=for-the-badge&logo=MLflow&logoColor=white
