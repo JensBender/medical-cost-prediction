@@ -68,11 +68,14 @@
 
 
 ## 🎯 Summary
+
+**Active Development:** Model training and evaluation are complete. The web app and API are next.
+
 Machine learning project to help U.S. adults plan for annual out-of-pocket healthcare costs using accessible demographic and health information. Trained on MEPS 2023 survey data, **XGBoost quantile regression** was selected as the final MVP model. It provides a **plan-around estimate, typical range, and safety cushion** to help users budget for uncertain costs.
 
 On the held-out test set, the model passes all predefined performance thresholds for launch, with a survey-weighted **median absolute error (MdAE) of $240** for the plan-around estimate. Compared with population-wide or age-group estimates, it provides better predictions, especially for typical ranges and safety cushions.
 
-**SHAP explanations** show which answers contribute most to the plan-around estimate. Cost comparison benchmarks help users compare their estimate with typical spending for U.S. adults and their age group, while medical inflation adjustment expresses amounts in current dollars. The next step is to build a **web app and API** that make these predictions available to users, with privacy-preserving aggregate monitoring.
+**SHAP explanations** show which answers contribute most to the plan-around estimate. Cost comparison benchmarks help users compare their estimate with typical spending for U.S. adults and their age group, while medical inflation adjustment expresses amounts in current dollars.
 
 This README highlights the main findings. For details, see the [EDA/preprocessing](notebooks/1_eda_and_preprocessing.ipynb) and [modeling](notebooks/2_modeling.ipynb) notebooks.
 
