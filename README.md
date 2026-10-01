@@ -486,55 +486,70 @@ The appendix zooms in on [contributions by category](#shap-contributions-by-cate
 ## ⚙️ Getting Started
 
 ### Installation and Setup
-This project uses three isolated virtual environments to keep application dependencies lightweight. In all three setups, the project is installed as a local package, ensuring that the `src/` module can be reliably imported from any folder.
+
+Use **Python 3.13** and run the commands from the project root. The examples below use **Git Bash on Windows**. The DVC stage commands and launch scripts currently use Windows virtual-environment paths. Linux/macOS users need to adapt these paths.
+
+The project uses three separate virtual environments to keep application dependencies lightweight. Each installs the project as a local package so scripts and notebooks can import `src`.
 
 **1. Training Environment (`.venv-train`)**
-- **Purpose:** Model development (preprocessing, EDA, training, evaluation, tuning).
+
+- **Purpose:** Preprocessing, EDA, model training, tuning, evaluation, and benchmarking.
 - **Setup:**
   ```bash
   python -m venv .venv-train
-  source .venv-train/bin/activate  # or .venv-train\Scripts\activate on Windows
-  pip install -r requirements-train.txt
+  source .venv-train/Scripts/activate
+  python -m pip install -r requirements-train.txt
   ```
-- **Import Logic:** This environment uses an **editable install** (`-e .[train]`). Changes you make to `src/` are instantly available in your notebooks without re-installation.
+- **Installation:** The editable install (`-e .[train]`) makes source changes available without reinstalling.
+- **Notebooks:** Launch JupyterLab with `./run_jupyter_lab.sh`.
+- **Experiment Tracking:** Start MLflow with `./run_mlflow_ui.sh` before model training or tuning.
 
 **2. Application Environment (`.venv-app`)**
-- **Purpose:** Run and test the web application.
+
+- **Purpose:** Run the planned web app and API.
 - **Setup:**
   ```bash
   python -m venv .venv-app
-  source .venv-app/bin/activate  # or .venv-app\Scripts\activate on Windows
-  pip install -r requirements.txt
+  source .venv-app/Scripts/activate
+  python -m pip install -r requirements.txt
   ```
-- **Import Logic:** This environment installs the project as a **regular package** (`.[app]`). This mirrors the production environment, allowing the app to reliably import from `src/` regardless of where it is launched.
+- **Installation:** The regular install (`.[app]`) mirrors the planned production setup.
 
 **3. Testing Environment (`.venv-test`)**
-- **Purpose:** Web App/API testing using unit, integration, and end-to-end tests with `pytest`.
+
+- **Purpose:** Test the web app and API.
 - **Setup:**
   ```bash
   python -m venv .venv-test
-  source .venv-test/bin/activate  # or .venv-test\Scripts\activate on Windows
-  pip install -r requirements-test.txt
+  source .venv-test/Scripts/activate
+  python -m pip install -r requirements-test.txt
   ```
-- **Import Logic:** This environment uses an **editable install** (`-e .[app,test]`). It combines both the application dependencies and the testing tools, allowing you to run tests against your latest code.
+- **Installation:** The editable install (`-e .[app,test]`) adds test tools to the application dependencies.
+- **Run Unit Tests:** With this environment active:
+  ```bash
+  python -m pytest -m unit
+  ```
 
-**4. Data Management (DVC)**
-- **Purpose:** Version control for local data and reproducibility of preprocessing and modeling.
-- **Workflow:**
-  - **Run Full Pipeline:** To execute all stages (preprocessing through baseline modeling):
-    ```bash
-    dvc repro
-    ```
-  - **Run Specific Stages:**
-    - `dvc repro preprocess`: Reproduce only the data preparation, feature engineering, and preprocessing.
-    - `dvc repro baseline`: Reproduce baseline model training (will re-run `preprocess` if data or script changed).
+**4. Data and Model Versioning (DVC)**
 
-#### Production Deployment 
-The project is optimized for deployment on Hugging Face. When you connect your repository to Hugging Face Spaces (or any platform using `requirements.txt`), it automatically runs:
-```bash
-pip install -r requirements.txt
-```
-Because `requirements.txt` contains `. [app]`, the platform installs the project itself as a package. This ensures your application can always find the `src` module regardless of the working directory.
+- **Purpose:** Track datasets, pipeline and model artifacts, and stage dependencies. 
+- **Fresh-Clone Prerequisites:** No shared DVC remote is configured, so `dvc pull` cannot retrieve the data or model artifacts from a fresh clone. Download the **SAS V9** archive from the [MEPS HC-251 data page](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251), extract it, and place `h251.sas7bdat` in `data/`.
+- **Quantile Training Prerequisite:** Both the quantile stage and the full pipeline require `models/xgb_tuned_params.json`, which is not included in Git. Restore it from an existing project copy, or run `dvc repro preprocess` followed by `python scripts/tune_xgboost.py` to generate it. 
+- **Run All DVC Stages:** With `.venv-train` active, the data and tuned parameters available, and MLflow running:
+  ```bash
+  dvc repro
+  ```
+  This covers preprocessing, baseline training, and XGBoost quantile training.
+- **Run Specific Stages:**
+  - `dvc repro preprocess`: Prepare the data splits and fit the preprocessing pipeline
+  - `dvc repro baseline`: Train and evaluate the baseline models
+  - `dvc repro quantile`: Train and evaluate the final XGBoost quantile model
+
+Not included in the DVC pipeline are hyperparameter tuning, [LLM benchmarking](scripts/benchmark_llm.py), [SHAP benchmarking](scripts/benchmark_shap.py), the [SHAP feature importance audit](scripts/audit_shap_feature_importance.py), [cost benchmark and prediction metadata generation](scripts/build_app_artifacts.py), and [medical inflation updates](scripts/update_medical_inflation.py).
+
+### Production Deployment
+
+The FastAPI/Gradio web app and API are planned. The intended target is a Hugging Face Docker Space. Its Dockerfile will install the application dependencies with `python -m pip install -r requirements.txt` and start the app. The `.[app]` entry installs the project package and application dependencies.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
