@@ -24,7 +24,7 @@
 #     <div style="font-size:14px; font-weight:normal; color:#666; margin-top:16px;">
 #         Author: Jens Bender <br> 
 #         Created: March 2026<br>
-#         Last updated: September 2026
+#         Last updated: October 2026
 #     </div>
 # </div>
 
@@ -33,6 +33,14 @@
 #     <h1 style="margin:0px">Setup</h1>
 # </div>
 #
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ <strong>Before running this notebook</strong><br>
+#     Follow the <a href="../README.md#prerequisites-and-clone">README setup instructions</a> to install the training environment, download the source data, and prepare the data and models. Select the "Medical Cost Prediction" kernel and run the notebook with <code>notebooks/</code> as its working directory so the relative file paths resolve correctly.
+#     <br><br>
+#     The repository includes saved evaluation results, such as model metrics and predictions used to create the tables and plots below. You do not need to rerun model tuning to review these results.
+# </div>
+
+# %% [markdown]
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     <strong>Notebook Settings</strong>
 # </div>
@@ -426,7 +434,7 @@ display(
 #     <br><br>
 #     The actual code implementation, prompt, configuration, API calls, and result persistence live in <code><a href="../scripts/benchmark_llm.py">scripts/benchmark_llm.py</a></code>. This notebook evaluates the saved benchmark results.
 #     <br><br>
-#     To run the benchmark from the project root, use:<br>
+#     To regenerate the benchmark, create <code>.env</code> from <code>.env.example</code> and set <code>GEMINI_API_KEY</code>. With MLflow running, use this command from the project root:<br>
 #     <code>.\.venv-train\Scripts\python.exe scripts\benchmark_llm.py</code>
 # </div>
 
@@ -493,7 +501,7 @@ display(
 # </div> 
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Review the completed hyperparameter searches for Elastic Net, Random Forest, and XGBoost. The actual tuning implementations live in dedicated scripts; this notebook loads their saved histories for evaluation.
+#     ℹ️ Review the completed hyperparameter searches for Elastic Net, Random Forest, and XGBoost. This notebook loads the histories, metrics, and validation predictions included in the repository, so no tuning run is required. The dedicated scripts can regenerate these files.
 #     <br><br>
 #     <b>Tuning Framework:</b>
 #     <ul>
@@ -4035,7 +4043,7 @@ plot_quantile_subgroup_predictions(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 After running the Stage 1 candidate screening with <code>scripts/benchmark_shap.py stage1</code>, load the generated <code>.csv</code> results and display a decision table to shortlist Stage 2 candidates.
+#     📌 Load the Stage 1 results and display a decision table to shortlist Stage 2 candidates. To regenerate these results, run <code>python scripts/benchmark_shap.py stage1</code> from the project root.
 # </div>
 
 # %%
@@ -4150,7 +4158,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 After running the Stage 2 shortlist evaluation with <code>scripts/benchmark_shap.py stage2</code>, load the results and display a decision table to select the production configuration.
+#     📌 Load the Stage 2 results and display a decision table to select the production configuration. To regenerate these results, run <code>python scripts/benchmark_shap.py stage2</code> from the project root.
 # </div>
 
 # %%
@@ -4263,7 +4271,7 @@ display(
 #
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 After running the final test-set evaluation with <code>scripts/benchmark_shap.py test</code>, load and display the result for the fixed production configuration (225 background rows and 1 permutation round).
+#     📌 Load the final test-set result for the fixed production configuration (225 background rows and 1 permutation round). To regenerate it, run <code>python scripts/benchmark_shap.py test</code> from the project root.
 # </div>
 
 # %%
@@ -4569,7 +4577,7 @@ display(
 #         <li><strong>Contributions by Category (Interval Plot):</strong> Shows contribution for each category (median and percentile ranges) of unordered categorical features (survey-weighted). This reveals which categories move estimates up or down and how much contributions vary within each category.</li>
 #         <li><strong>Contributions Across Ordered Values (Dependence and Interval Plots):</strong> Zooms in on the highest-ranked numerical or ordinal features (Age, Family Income, Family Size). It shows how contributions change across their values, revealing gradients, nonlinear patterns, and plateaus that the broader beeswarm plot cannot show precisely.</li>
 #     </ul>
-#     <code>scripts/audit_shap_feature_importance.py</code> calculates SHAP contributions on the test set and saves row-level contributions to <code>models/shap_test_contributions.parquet</code> and the survey-weighted feature-importance ranking to <code>models/shap_feature_importance_test.csv</code>. This notebook loads both files to create the plots below rather than rerunning the full audit.
+#     <code>scripts/audit_shap_feature_importance.py</code> calculates SHAP contributions on the test set and saves row-level contributions to <code>models/shap_test_contributions.parquet</code> and the survey-weighted feature-importance ranking to <code>models/shap_feature_importance_test.csv</code>. Both files are included in the repository, so this notebook can create the plots below without rerunning the full audit.
 # </div>
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">

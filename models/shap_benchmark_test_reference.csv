@@ -1,0 +1,2 @@
+background_size,max_evals,permutation_rounds,background_baseline_2023_usd,background_baseline_absolute_relative_difference,first_call_latency_s,p50_subsequent_call_latency_s,p90_subsequent_call_latency_s,p95_subsequent_call_latency_s
+500,1320,24,353.71018757175466,0.028712729495312006,12.943686099999468,6.810760399997889,7.946475669999928,8.625683295001362

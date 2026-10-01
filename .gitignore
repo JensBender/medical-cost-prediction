@@ -5,13 +5,32 @@ data/*
 models/*
 !models/*.dvc
 !models/.gitignore
+# Small evaluation results used by the modeling notebook
+!models/en_tuning_history.json
+!models/en_tuned_metrics.json
+!models/en_tuned_params.json
+!models/en_tuned_predictions.joblib
+!models/rf_tuning_history.json
+!models/rf_tuned_metrics.json
+!models/rf_tuned_params.json
+!models/rf_tuned_predictions.joblib
+!models/xgb_tuning_history.json
+!models/xgb_tuned_metrics.json
 !models/xgb_tuned_params.json
-notebooks/machine_learning_template.ipynb
-notebooks/loan_default_prediction.ipynb
+!models/xgb_tuned_predictions.joblib
+!models/llm_benchmark_metrics.json
+!models/llm_benchmark_params.json
+!models/shap_benchmark_stage1_results.csv
+!models/shap_benchmark_stage1_reference.csv
+!models/shap_benchmark_stage2_results.csv
+!models/shap_benchmark_stage2_reference.csv
+!models/shap_benchmark_test_results.csv
+!models/shap_benchmark_test_reference.csv
+!models/shap_feature_importance_test.csv
+!models/shap_test_contributions.parquet
 assets/header_*.png
 assets/header_*.jpg
 assets/linkedin_thumbnail.png
-assets/*pipeline_*.svg
 figures/*_sample.png
 
 # Environment variables

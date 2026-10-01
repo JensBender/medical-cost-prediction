@@ -75,7 +75,8 @@ footer:
      findings or changes when a notebook diff is hard to review.
 4. **No Large Files**: Do not commit generated datasets or model binaries
    (`.pkl`, `.joblib`, `.h5`) directly. Use DVC when the project tracks the
-   artifact, or commit the script that generates it.
+   artifact, or commit the script that generates it. The small evaluation
+   results explicitly allowlisted in `.gitignore` are an exception.
 5. **Header Formatting**: Use lowercase for the type, scope, and subject,
    except for proper nouns or acronyms (e.g., `FastAPI`, `JSON`). Do not end the
    subject with a period.

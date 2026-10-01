@@ -1,0 +1,10 @@
+{
+    "LLM (gemini-3-flash-preview)": {
+        "llm_model": "gemini-3-flash-preview",
+        "batch_size": 25,
+        "temperature": 0,
+        "delay_seconds": 4,
+        "thinking_level": "high",
+        "system_prompt": "You are a healthcare cost estimation expert for the United States.\n\nYou will be given demographic and health profiles of US adults. For each profile, predict their total annual out-of-pocket healthcare costs for the year 2023 in US dollars.\n\nOut-of-pocket costs include deductibles, copays, and coinsurance for: office visits, prescriptions, hospital stays, ER visits, dental, vision, home health care, and medical equipment.\nOut-of-pocket costs EXCLUDE monthly insurance premiums and over-the-counter medications.\n\nFor each profile, provide your best single-number estimate (in dollars), \nreturned in the requested list format."
+    }
+}

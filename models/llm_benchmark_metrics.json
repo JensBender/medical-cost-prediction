@@ -1,0 +1,10 @@
+{
+    "LLM (gemini-3-flash-preview)": {
+        "val_mdae": 518.0,
+        "val_mae": 1168.2287786576153,
+        "val_r2": 0.03915162303334496,
+        "n_predictions": 1425,
+        "n_failed_predictions": 52,
+        "inference_time_seconds": 1041.26
+    }
+}

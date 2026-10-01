@@ -1,0 +1,5 @@
+{
+    "model__alpha": 0.8692991511139546,
+    "model__l1_ratio": 0.7751328233611146,
+    "polynomials__interaction_only": false
+}
