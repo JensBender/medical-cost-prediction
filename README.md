@@ -525,17 +525,20 @@ The project uses three separate virtual environments to keep application depende
   python -m pip install -r requirements-test.txt
   ```
 - **Installation:** The editable install (`-e .[app,test]`) adds test tools to the application dependencies.
-- **Run Unit Tests:** With this environment active:
+- **Run Unit Tests:** 
   ```bash
   python -m pytest -m unit
   ```
 
-**4. Data and Model Versioning (DVC)**
+**4. Source Data**
 
-- **Purpose:** Track datasets, pipeline and model artifacts, and stage dependencies. 
-- **Fresh-Clone Prerequisites:** No shared DVC remote is configured, so `dvc pull` cannot retrieve the data or model artifacts from a fresh clone. Download the **SAS V9** archive from the [MEPS HC-251 data page](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251), extract it, and place `h251.sas7bdat` in `data/`.
-- **Quantile Training Prerequisite:** Both the quantile stage and the full pipeline require `models/xgb_tuned_params.json`, which is not included in Git. Restore it from an existing project copy, or run `dvc repro preprocess` followed by `python scripts/tune_xgboost.py` to generate it. 
-- **Run All DVC Stages:** With `.venv-train` active, the data and tuned parameters available, and MLflow running:
+To reproduce the analyses and train models, download the **SAS V9** archive from the [MEPS HC-251 data page](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251), extract it, and place `h251.sas7bdat` in `data/`.
+
+### Reproduce the Modeling Pipeline
+
+DVC tracks datasets, pipeline and model artifacts, and stage dependencies. No shared remote is configured, so artifacts must be generated locally rather than downloaded with `dvc pull`.
+
+- **Run All DVC Stages:** With `.venv-train` active, the MEPS source file downloaded under `data/h251.sas7bdat`, and MLflow running:
   ```bash
   dvc repro
   ```

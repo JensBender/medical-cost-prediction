@@ -5,6 +5,7 @@ data/*
 models/*
 !models/*.dvc
 !models/.gitignore
+!models/xgb_tuned_params.json
 notebooks/machine_learning_template.ipynb
 notebooks/loan_default_prediction.ipynb
 assets/header_*.png
