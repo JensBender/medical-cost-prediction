@@ -50,13 +50,13 @@ criteria served the intended budgeting use case.
 | --- | --- | ---: | --- |
 | M1 | Medical cost prediction for annual budgeting | 0:45 | Introduce the problem, contribution, and outcome |
 | M2 | Annual budgeting needs more than a treatment price | 1:00 | Define the user decision and prediction target |
-| M3 | MEPS connects accessible inputs to observed spending | 1:15 | Explain data scope, weights, and evaluation setup |
-| M4 | A small share of people accounts for most spending | 1:00 | Show the data challenge that shaped modeling |
-| M5 | The lowest median error did not settle model selection | 1:30 | Explain the key model-selection tradeoff |
-| M6 | Quantiles turn predictions into budgeting ranges | 1:30 | Explain the final model and its outputs |
-| M7 | The clearest gains are in ranges and upper-cost estimates | 1:30 | Present held-out evidence and baseline comparisons |
-| M8 | Overall coverage leaves important gaps | 1:00 | Demonstrate critical evaluation and limits |
-| M9 | The model is evaluated; application delivery comes next | 1:00 | Show engineering work and close with priorities |
+| M3 | MEPS data connect accessible inputs to observed spending | 1:15 | Explain data scope, weights, and evaluation setup |
+| M4 | Most out-of-pocket spending comes from a small share of adults | 1:00 | Show the data challenge that shaped modeling |
+| M5 | Model selection: the lowest median error was not enough | 1:30 | Explain the key model-selection tradeoff |
+| M6 | Quantile regression turns predictions into budgeting ranges | 1:30 | Explain the final model and its outputs |
+| M7 | Final model test results: ranges and q90 show the clearest gains | 1:30 | Present held-out evidence and baseline comparisons |
+| M8 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
+| M9 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
 | | **Total** | **10:30** | |
 
 ## Main slides
@@ -122,7 +122,7 @@ application and its benefits to users still need to be validated in practice.”
 **Sources:** [README: motivation and data](../../README.md);
 [product requirements: scope and user inputs](../specs/product_requirements.md).
 
-### M3 — MEPS connects accessible inputs to observed spending
+### M3 — MEPS data connect accessible inputs to observed spending
 
 **Takeaway:** Evaluation must reflect the intended population and keep model
 selection separate from final testing.
@@ -159,7 +159,7 @@ they do not establish performance in a future year.”
 inputs after adding a life-transition feature. Medical feature derivation and
 encoding produce 40 model-ready columns. These counts describe different stages.
 
-### M4 — A small share of people accounts for most spending
+### M4 — Most out-of-pocket spending comes from a small share of adults
 
 **Takeaway:** Typical errors and errors on expensive years describe different
 parts of model performance.
@@ -190,7 +190,7 @@ only the start of model selection.
 **Sources:** [EDA notebook script: zero costs and cost concentration](../../notebooks/1_eda_and_preprocessing.py);
 [README: EDA and outlier analysis](../../README.md).
 
-### M5 — The lowest median error did not settle model selection
+### M5 — Model selection: the lowest median error was not enough
 
 **Takeaway:** The model with the best typical error offered limited separation
 between lower- and higher-cost profiles.
@@ -233,7 +233,7 @@ medical event.”
 point-estimate models. Do not compare $159 here with the final model's $240 test
 result as if they came from the same evaluation.
 
-### M6 — Quantiles turn predictions into budgeting ranges
+### M6 — Quantile regression turns predictions into budgeting ranges
 
 **Takeaway:** The final model estimates different parts of the spending
 distribution for each input profile.
@@ -272,7 +272,7 @@ not confidence intervals around an average, and q90 is not a maximum possible bi
 [quantile training script](../../scripts/train_xgboost_quantile.py);
 [prediction postprocessing](../../src/prediction.py).
 
-### M7 — The clearest gains are in ranges and upper-cost estimates
+### M7 — Final model test results: ranges and q90 show the clearest gains
 
 **Takeaway:** The final model meets the project's overall performance gates,
 with its strongest evidence of added value in interval and upper-quantile scores.
@@ -312,7 +312,7 @@ and situations where the model is less reliable.
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
 Confidence intervals, widths, and scoring definitions are in A5 and A6.
 
-### M8 — Overall coverage leaves important gaps
+### M8 — Final model test audit: overall coverage hides subgroup gaps
 
 **Takeaway:** The model's limitations affect both interpretation and the next
 validation steps.
@@ -347,7 +347,7 @@ to turn it into a usable product.
 [feature timing notes](../research/candidate_features.md);
 [preprocessing split](../../scripts/preprocess.py).
 
-### M9 — The model is evaluated; application delivery comes next
+### M9 — Model evaluation is complete; app development comes next
 
 **Takeaway:** The project has reusable ML components and an explicit plan for
 the remaining product and validation work.
@@ -389,7 +389,7 @@ uncertainty, and subgroup reliability each reveal something different.”
 Each appendix item is an optional slide with a specific question to answer.
 Timings apply only when promoted into the main presentation.
 
-### A1 — Survey weights define the population being evaluated
+### A1 — Survey weights in training and population evaluation
 
 **Question:** Why use weights instead of evaluating the raw sample?
 
@@ -410,7 +410,7 @@ uncertainty estimates.
 **Sources:** [EDA notebook](../../notebooks/1_eda_and_preprocessing.py);
 [modeling helpers](../../src/modeling.py).
 
-### A2 — Feature timing limits the prospective claim
+### A2 — Feature timing: limits of next-year forecasting
 
 **Question:** Is this truly a next-year forecast?
 
@@ -431,7 +431,7 @@ Do not claim the size or direction of the resulting performance change is known.
 **Sources:** [candidate feature timing](../research/candidate_features.md);
 [technical specifications: candidate features](../specs/technical_specifications.md).
 
-### A3 — Model selection used a fixed validation split
+### A3 — Model tuning: comparisons on a fixed validation split
 
 **Question:** What alternatives and tuning procedure were used?
 
@@ -453,7 +453,7 @@ reuses the tuned point-model parameters rather than receiving its own search.
 **Sources:** [README: modeling](../../README.md);
 [XGBoost tuning script](../../scripts/tune_xgboost.py).
 
-### A4 — Residuals explain what median error hides
+### A4 — Point-model diagnostics: residuals and prediction ranges
 
 **Question:** Why did the lowest-MdAE model not meet the full product need?
 
@@ -473,7 +473,7 @@ residuals and subgroup errors alongside it.
 **Sources:** [README: heteroscedasticity and subgroup analysis](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A5 — Coverage and width jointly define the performance gates
+### A5 — Final model test results: coverage, width, and release gates
 
 **Question:** What does passing the project's gates mean?
 
@@ -500,7 +500,7 @@ resamples rows and retains their weights.
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: bootstrap implementation](../../notebooks/2_modeling.py).
 
-### A6 — Simple baselines test whether personalization adds value
+### A6 — Final model test benchmarks: gains over simple estimates
 
 **Question:** Why not give everyone a population or age-group estimate?
 
@@ -529,7 +529,7 @@ skill is not a percentage-point improvement in coverage.
 
 **Source:** [Modeling notebook: test baseline comparisons](../../notebooks/2_modeling.py).
 
-### A7 — Subgroup coverage needs separate review
+### A7 — Final model test audit: subgroup coverage gaps
 
 **Question:** Who receives less reliable ranges?
 
@@ -552,7 +552,7 @@ would be needed to address it.
 **Sources:** [README: final subgroup audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A8 — Observed expensive years differ from predicted high-risk profiles
+### A8 — Final model test audit: actual versus predicted cost tiers
 
 **Question:** Does the safety cushion protect the largest spenders?
 
@@ -574,7 +574,7 @@ quantile is not catastrophe insurance or a hard spending cap.
 **Sources:** [README: final reliability audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A9 — SHAP explains the model's median estimate
+### A9 — SHAP explains how inputs shape the median estimate
 
 **Question:** Which inputs influence predictions, and what can users infer?
 
@@ -594,7 +594,7 @@ does not by itself mean higher or lower healthcare need.
 **Sources:** [README: feature importance](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json).
 
-### A10 — Explanation quality was checked alongside calculation time
+### A10 — SHAP benchmarking: explanation quality and latency
 
 **Question:** How was the SHAP configuration chosen?
 
@@ -617,7 +617,7 @@ claim. Complete request latency on target hardware remains unverified.
 [SHAP metadata](../../app/data/shap_metadata.json);
 [benchmark script](../../scripts/benchmark_shap.py).
 
-### A11 — Shared inference connects experiments to the planned application
+### A11 — Inference architecture: shared prediction and explanation code
 
 **Question:** How will training and serving stay consistent?
 
@@ -640,7 +640,7 @@ experiment is a DVC stage or that the full service is implemented.
 **Sources:** [DVC pipeline](../../dvc.yaml); [prediction code](../../src/prediction.py);
 [technical specifications](../specs/technical_specifications.md); [unit tests](../../tests/unit/).
 
-### A12 — Anonymous monitoring cannot establish production accuracy
+### A12 — Production monitoring: drift signals without observed outcomes
 
 **Question:** How would the product be monitored without retaining user records?
 
@@ -661,7 +661,7 @@ care use, or the population. These are planned operating choices.
 **Sources:** [Technical specifications: privacy-preserving monitoring](../specs/technical_specifications.md);
 [product requirements](../specs/product_requirements.md).
 
-### A13 — An LLM benchmark tested one alternative
+### A13 — LLM benchmark: General versus Specific Intelligence
 
 **Question:** Why not ask a general-purpose language model for an estimate?
 
