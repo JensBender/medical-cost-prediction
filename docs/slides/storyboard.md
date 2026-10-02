@@ -11,8 +11,8 @@ Status: first draft for content review. No slide design yet.
 - **Emphasis:** data science, with optional emphasis on ML engineering.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The initial
-  allocation below totals 10 minutes 30 seconds, leaving room for transitions.
-- **Structure:** nine main slides and thirteen appendix slides. Appendix IDs
+  allocation below totals 10 minutes, leaving room for transitions.
+- **Structure:** a cover, eight content slides, and thirteen appendix slides. Appendix IDs
   remain stable so we can promote slides without rewriting their references.
 - **Purpose:** show how the project connects a user need to modeling choices,
   evidence, limitations, and implementation decisions.
@@ -48,7 +48,7 @@ criteria served the intended budgeting use case.
 
 | ID | Proposed slide title | Time | Purpose |
 | --- | --- | ---: | --- |
-| M1 | Medical cost prediction for annual budgeting | 0:45 | Introduce the problem, contribution, and outcome |
+| M1 | Medical cost prediction for annual budgeting | 0:15 | Cover and brief orientation |
 | M2 | Annual budgeting needs more than a treatment price | 1:00 | Define the user decision and prediction target |
 | M3 | MEPS data connect accessible inputs to observed spending | 1:15 | Explain data scope, weights, and evaluation setup |
 | M4 | Most out-of-pocket spending comes from a small share of adults | 1:00 | Show the data challenge that shaped modeling |
@@ -57,39 +57,33 @@ criteria served the intended budgeting use case.
 | M7 | Final model test results: ranges and q90 show the clearest gains | 1:30 | Present held-out evidence and baseline comparisons |
 | M8 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
 | M9 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
-| | **Total** | **10:30** | |
+| | **Total** | **10:00** | |
 
 ## Main slides
 
 ### M1 — Medical cost prediction for annual budgeting
 
-**Takeaway:** The project turns survey data into personalized annual spending
-estimates with explicit uncertainty.
+**Purpose:** Introduce the project and presenter before the problem statement.
 
 **On the slide**
 
-- Annual out-of-pocket healthcare costs for U.S. adults
-- XGBoost quantile regression: a median estimate, typical range, and safety cushion
-- Held-out survey-weighted median absolute error: **$240**
-- Contribution: problem framing, data preparation, modeling, evaluation, and
-  reusable prediction and explanation code
+- Title: Medical Cost Planner (in the project header)
+- Subtitle: Predicting annual out-of-pocket healthcare costs
+- Presenter: Jens [surname]
+- Event or setting: [presentation setting]
+- Date: [presentation date]
 
-**Visual:** A simple project cover with the three output labels. Use the $240
-result as one supporting number, not a claim of accuracy for every user.
+**Visual:** Use the [project header](../../assets/header.png) as a wide banner,
+preserving its proportions. Place the subtitle and presenter details below it.
 
-**Speaker notes — 0:45**
+**Speaker notes — 0:15**
 
-“This project asks how much a person might need to set aside for a year of
-healthcare. I used U.S. survey data to develop estimates from information people
-can provide without medical records. The final model produces a median estimate,
-a typical range, and an upper-cost planning reference. Its weighted median
-absolute error on the held-out test set is $240. The main decision I want to
-explain is why I selected this approach even though another model had a lower
-median error during model selection.”
+“This project aims to help U.S. adults plan for next year's out-of-pocket
+healthcare costs using machine learning.”
 
-**Transition:** Start with the decision the prediction is meant to support.
+**Transition:** Introduce the budgeting problem and why it matters.
 
-**Source:** [README: summary and final model](../../README.md).
+**Source:** [README: motivation](../../README.md).
 
 ### M2 — Annual budgeting needs more than a treatment price
 
