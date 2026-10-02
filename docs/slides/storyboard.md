@@ -12,7 +12,7 @@ Status: first draft for content review. No slide design yet.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The initial
   allocation below totals 10 minutes, leaving room for transitions.
-- **Structure:** a cover, eight content slides, and fourteen appendix slides. Appendix IDs
+- **Structure:** a cover, eight content slides, and fifteen appendix slides. Appendix IDs
   remain stable so we can promote slides without rewriting their references.
 - **Purpose:** show how the project connects a user need to modeling choices,
   evidence, limitations, and implementation decisions.
@@ -120,7 +120,7 @@ spending; weighting and stratification shape training and evaluation.
 
 - **MEPS 2023:** 14,768 adult respondents represent approximately **260 million
   U.S. adults**
-- **Inputs → target:** 26 candidate features covering demographics, insurance,
+- **Inputs → target:** 26 input features covering demographics, insurance,
   and health → observed annual out-of-pocket spending
 - **Survey weights:** how many people each respondent represents; used in
   training and evaluation
@@ -134,7 +134,7 @@ Footnote: “U.S. civilian noninstitutionalized adults; one survey year.”
 **Speaker notes — 1:15**
 
 “MEPS—the Medical Expenditure Panel Survey—records healthcare spending alongside
-demographics, insurance, and health information. I selected 26 candidate features
+demographics, insurance, and health information. I selected 26 input features
 that users can report without medical records, with annual out-of-pocket spending
 as the target. The 14,768 adult respondents represent about 260 million adults.
 Each survey weight tells us how many people that respondent represents. These
@@ -151,9 +151,12 @@ across splits and reduces chance imbalances in rare, expensive cases.”
 [preprocessing script](../../scripts/preprocess.py);
 [MEPS 2023 documentation: sampling and weights](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml).
 
-**Detail for questions:** The 26 candidate variables become 27 preprocessor
+**Detail for questions:** The 26 survey variables become 27 preprocessor
 inputs after adding a life-transition feature. Medical feature derivation and
 encoding produce 40 model-ready columns. These counts describe different stages.
+The current model uses these inputs. Feature reduction would be considered if
+user testing suggests that fewer inputs would improve the experience.
+See A15 for representative inputs and the link to the full list.
 Preprocessing is fitted on training data. The exact spending-bin boundaries and
 weighting methodology belong in technical questions or the appendix.
 
@@ -426,8 +429,8 @@ Do not claim the size or direction of the resulting performance change is known.
 
 **Promote:** After M3 or M8 for forecasting and validation questions; allow 1:00.
 
-**Sources:** [candidate feature timing](../research/candidate_features.md);
-[technical specifications: candidate features](../specs/technical_specifications.md).
+**Sources:** [input feature timing](../research/candidate_features.md);
+[technical specifications: input selection](../specs/technical_specifications.md).
 
 ### A3 — Model tuning: comparisons on a fixed validation split
 
@@ -694,6 +697,40 @@ as the main content.
 
 **Sources:** [README: target variable](../../README.md);
 [product requirements: out of scope](../specs/product_requirements.md).
+
+### A15 — Input features: what users provide
+
+**Question:** What information does the model use, and how much does it ask of users?
+
+**On the slide**
+
+| Input group | Examples |
+| --- | --- |
+| Demographics | Age, region, family size |
+| Socioeconomic information | Family income, education, employment status |
+| Insurance and access | Insurance status, usual source of care |
+| Health and lifestyle | Self-rated physical and mental health, smoking |
+| Conditions and limitations | Diabetes, arthritis, difficulty walking |
+
+- Examples from the 26 survey inputs; the full list is in the README
+- Inputs chosen for expected predictive value and answers users can provide
+  without medical records
+
+**Visual:** Use the grouped table as the slide's main content.
+
+**Talking points:** The current model uses all 26 survey inputs, which become
+27 preprocessor inputs after adding a life-transition feature and 40 model-ready
+columns after transformation. These counts do not equal the number of questions
+on the planned form: related conditions can be grouped, and some values are
+derived. User testing will assess the burden; feature reduction is an option if
+fewer inputs would improve the experience. Refer to A2 for input timing.
+
+**Promote:** After M3 when input design is relevant to the audience; allow 0:45.
+Otherwise, use only for questions.
+
+**Sources:** [README: feature details](../../README.md#feature-details);
+[input definitions](../../src/constants.py);
+[product requirements: input form](../specs/product_requirements.md).
 
 ## Adaptation and file organization
 

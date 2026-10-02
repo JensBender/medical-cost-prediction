@@ -48,7 +48,7 @@
   <li>
     <a href="#-appendix">Appendix</a>
     <ul>
-      <li><a href="#candidate-feature-details">Candidate Feature Details</a></li>
+      <li><a href="#feature-details">Feature Details</a></li>
       <li><a href="#distributions">Distributions</a></li>        
       <li><a href="#feature-target-relationships">Feature-Target Relationships</a></li>      
       <li><a href="#outlier-analysis-details">Outlier Analysis Details</a></li>      
@@ -117,7 +117,7 @@ The target variable is **total out-of-pocket healthcare costs in 2023** (`TOTSLF
 </details>
 <br>
 
-<a id="main-candidate-features"></a>**Candidate Features**  
+<a id="main-features"></a>**Features**<br>
 Selected 26 features out of 1,374 MEPS variables based on consumer accessibility (no record-checking required), timing (beginning-of-year data to prevent leakage) and expected predictive power. 
 - **Demographics:** Age, Sex, Region, Marital Status, Family Size.
 - **Socioeconomics:** Education, Family Income, Employment Status.
@@ -125,7 +125,7 @@ Selected 26 features out of 1,374 MEPS variables based on consumer accessibility
 - **Chronic Conditions:** Hypertension, High Cholesterol, Diabetes, Heart Disease, Stroke, Cancer, Arthritis, Asthma.
 - **Limitations:** Difficulties with Daily Living, Walking, Cognitive Tasks, Joint Pain.
 
-[🔗 **See Candidate Feature Details**](#candidate-feature-details)
+[🔗 **See Feature Details**](#feature-details)
 
 **Survey Weights**  
 MEPS survey weights (`PERWT23F`) adjust for unequal sampling probabilities and nonresponse, so each respondent contributes according to how many people they represent in the U.S. adult population. The project uses them during EDA, model training, and evaluation. Scikit-learn accepts them through its `sample_weight` parameter.
@@ -178,7 +178,7 @@ The preprocessing workflow converts raw survey data into datasets for model trai
 **Step 1: Data Preparation** (via `scripts/preprocess.py`)  
 This stage converts the raw MEPS data to the clean format expected by the preprocessing pipeline. These steps are primarily for data cleaning and population filtering:
 - **Data Loading:** Imports the MEPS-HC 2023 SAS data as a pandas DataFrame.
-- **Variable Selection:** Filters 29 essential columns (target variable, candidate features, ID, survey weights) from the original 1,374 columns.
+- **Variable Selection:** Filters 29 essential columns (target variable, features, ID, survey weights) from the original 1,374 columns.
 - **Target Population Filtering:** Filters rows for adults with positive survey weights (14,768 out of 18,919 respondents).
 - **Data Type Handling:** Converts ID to string and sets as index.
 - **Missing Value Standardization:** Recovers missing values from survey skip patterns and converts MEPS-specific missing codes to `np.nan`.
@@ -626,16 +626,16 @@ This project was made possible with the help of the following resources:
 <!-- APPENDIX -->
 ## 📎 Appendix
 
-### Candidate Feature Details
+### Feature Details
 **Feature Selection**  
-Candidate features were selected from MEPS-HC 2023 based on the following criteria:
+The 26 features were selected from MEPS-HC 2023 based on the following criteria:
 - **Consumer Accessibility:** Users can answer from memory without looking up records, ensuring the model is usable in a consumer-facing app.
 - **Beginning-of-Year Data:** To enable the app to be used during Open Enrollment for predicting *upcoming* costs, only variables measured at the beginning of the year (`31` suffix) or stable traits are used to prevent data leakage.
 - **Predictive Power:** Features have established significance in healthcare cost literature.
 
 Form completion in under 90 seconds is a soft goal. Feature reduction will be considered only if user testing shows that completing the form takes substantially longer and harms the user experience.
 
-**Candidate Features**
+**Features**
 | Label | Variable | Description | Data Type | Value Range |
 | :--- | :--- | :--- | :--- | :--- |
 | Age | `AGE23X` | Age as of Dec 31, 2023. | Numerical (Int) | 0–85 |
@@ -665,7 +665,7 @@ Form completion in under 90 seconds is a soft goal. Feature reduction will be co
 | Arthritis | `ARTHDX` | Diagnosed with arthritis. | Binary (Int) | 1=Yes, 2=No |
 | Asthma | `ASTHDX` | Diagnosed with asthma. | Binary (Int) | 1=Yes, 2=No |
 
-<p align="right">(<a href="#main-candidate-features">Back to Candidate Features</a> | <a href="#readme-top">Back to Top</a>)</p>
+<p align="right">(<a href="#main-features">Back to Features</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
 ### Distributions
