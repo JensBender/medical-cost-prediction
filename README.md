@@ -38,10 +38,6 @@
   </li>
   <li>
     <a href="#️-getting-started">Getting Started</a>
-    <ul>
-      <li><a href="#installation-and-setup">Installation and Setup</a></li>
-      <li><a href="#production-deployment">Production Deployment</a></li>
-    </ul>
   </li>
   <li>
     <a href="#️-license">License</a>
@@ -430,7 +426,7 @@ The appendix zooms in on [contributions by category](#shap-contributions-by-cate
 │       ├── shap_background.joblib     # SHAP background data
 │       └── shap_metadata.json         # SHAP configuration and validation results
 │
-├── models/                            # Model and evaluation artifacts (ignored by Git)
+├── models/                            # Saved evaluation results in Git; fitted models generated locally
 │
 ├── data/                              # Raw and processed datasets (ignored by Git)
 │   └── h251.sas7bdat.dvc              # DVC pointer for MEPS 2023 dataset (SAS V9 format)
@@ -485,74 +481,135 @@ The appendix zooms in on [contributions by category](#shap-contributions-by-cate
 
 ## ⚙️ Getting Started
 
-### Installation and Setup
+Clone the repository, then follow the workflow you need below. Each workflow uses its own Python environment.
 
-Use **Python 3.13** and run the commands from the project root. The examples below use **Git Bash on Windows**. The DVC stage commands and launch scripts currently use Windows virtual-environment paths. Linux/macOS users need to adapt these paths.
+### Prerequisites and Clone
 
-The project uses three separate virtual environments to keep application dependencies lightweight. Each installs the project as a local package so scripts and notebooks can import `src`.
+Install **Python 3.13.x** and **Git**, then open **Git Bash on Windows**. Check the Python version, download the project, and enter its folder:
 
-**1. Training Environment (`.venv-train`)**
+```bash
+python --version
+git clone https://github.com/JensBender/medical-cost-prediction.git
+cd medical-cost-prediction
+```
 
-- **Purpose:** Preprocessing, EDA, model training, tuning, evaluation, and benchmarking.
-- **Setup:**
-  ```bash
-  python -m venv .venv-train
-  source .venv-train/Scripts/activate
-  python -m pip install -r requirements-train.txt
-  ```
-- **Installation:** The editable install (`-e .[train]`) makes source changes available without reinstalling.
-- **Notebooks:** Launch JupyterLab with `./run_jupyter_lab.sh`.
-- **Experiment Tracking:** Start MLflow with `./run_mlflow_ui.sh` before model training or tuning.
+`python --version` must report Python 3.13. Run all remaining terminal commands from the `medical-cost-prediction` folder, called the **project root** below.
 
-**2. Application Environment (`.venv-app`)**
+These instructions use Windows paths. On Linux or macOS, use `bin/` instead of `Scripts/` and change the interpreter paths in `dvc.yaml` and both launch scripts (`run_jupyter_lab.sh` and `run_mlflow_ui.sh`). Changing only the activation command is insufficient. The Linux/macOS setup has not been verified.
 
-- **Purpose:** Run the planned web app and API.
-- **Setup:**
-  ```bash
-  python -m venv .venv-app
-  source .venv-app/Scripts/activate
-  python -m pip install -r requirements.txt
-  ```
-- **Installation:** The regular install (`.[app]`) mirrors the planned production setup.
+### Environments
 
-**3. Testing Environment (`.venv-test`)**
+A virtual environment keeps this project's Python packages separate from your other projects. You only need to install the environment for the workflow you choose.
 
-- **Purpose:** Test the web app and API.
-- **Setup:**
-  ```bash
-  python -m venv .venv-test
-  source .venv-test/Scripts/activate
-  python -m pip install -r requirements-test.txt
-  ```
-- **Installation:** The editable install (`-e .[app,test]`) adds test tools to the application dependencies.
-- **Run Unit Tests:** 
-  ```bash
-  python -m pytest -m unit
-  ```
+| Environment | Used for |
+| :--- | :--- |
+| `.venv-train` | Preparing data, training models, and running notebooks |
+| `.venv-app` | Running the planned web app and prediction API |
+| `.venv-test` | Running automated tests |
 
-**4. Source Data**
+### Reproduce Training and Evaluation
 
-To reproduce the analyses and train models, download the **SAS V9** archive from the [MEPS HC-251 data page](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251), extract it, and place `h251.sas7bdat` in `data/`.
+This workflow prepares the survey data, trains the models, and runs the notebook analyses. Saved evaluation results, such as model metrics and predictions, are included so you can review the comparisons without repeating expensive model tuning or benchmark runs.
 
-### Reproduce the Modeling Pipeline
+#### 1. Set Up the Training Environment
 
-DVC tracks datasets, pipeline and model artifacts, and stage dependencies. No shared remote is configured, so artifacts must be generated locally rather than downloaded with `dvc pull`.
+Create and activate `.venv-train`, then install its dependencies:
 
-- **Run All DVC Stages:** With `.venv-train` active, the MEPS source file downloaded under `data/h251.sas7bdat`, and MLflow running:
-  ```bash
-  dvc repro
-  ```
-  This covers preprocessing, baseline training, and XGBoost quantile training.
-- **Run Specific Stages:**
-  - `dvc repro preprocess`: Prepare the data splits and fit the preprocessing pipeline
-  - `dvc repro baseline`: Train and evaluate the baseline models
-  - `dvc repro quantile`: Train and evaluate the final XGBoost quantile model
+```bash
+python -m venv .venv-train
+source .venv-train/Scripts/activate
+python -m pip install -r requirements-train.txt
+```
 
-Not included in the DVC pipeline are hyperparameter tuning, [LLM benchmarking](scripts/benchmark_llm.py), [SHAP benchmarking](scripts/benchmark_shap.py), the [SHAP feature importance audit](scripts/audit_shap_feature_importance.py), [cost benchmark and prediction metadata generation](scripts/build_app_artifacts.py), and [medical inflation updates](scripts/update_medical_inflation.py).
+This also installs the project code so scripts and notebooks can import it. Local code edits take effect without reinstalling.
 
-### Production Deployment
+Activate the environment again with `source .venv-train/Scripts/activate` whenever you open a new training terminal.
 
-The FastAPI/Gradio web app and API are planned. The intended target is a Hugging Face Docker Space. Its Dockerfile will install the application dependencies with `python -m pip install -r requirements.txt` and start the app. The `.[app]` entry installs the project package and application dependencies.
+#### 2. Download the Source Data
+
+Download the **SAS V9** archive from the [MEPS HC-251 data page](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251). Extract it and put **`h251.sas7bdat`** in the project's **`data/`** folder.
+
+The source data and fitted models are not included in Git, and no shared DVC storage is available to download them. The next step prepares the data and trains the models locally. No API key or `.env` file is needed.
+
+#### 3. Run the Modeling Pipeline
+
+Open a **second Git Bash terminal** in the project root and start MLflow, which records training results:
+
+```bash
+./run_mlflow_ui.sh
+```
+
+Leave this terminal running during training. You can view the recorded runs at `http://127.0.0.1:5000` in your browser.
+
+In your first terminal, with `.venv-train` active, run:
+
+```bash
+dvc repro
+```
+
+DVC runs the data preparation and training steps defined in [dvc.yaml](dvc.yaml). It trains the baseline models and final XGBoost quantile model. The final model uses saved settings from `models/xgb_tuned_params.json`, so you do not need to rerun tuning.
+
+When the run finishes, `data/` contains the prepared training, validation, and test datasets. `models/` contains the fitted preprocessor, trained models, evaluation metrics, and predictions. Run the notebooks next to evaluate the final model on the test data and recreate the figures.
+
+You can also run a single stage. DVC runs any earlier steps it needs:
+
+| Command | Result |
+| :--- | :--- |
+| `dvc repro preprocess` | Prepare the data and fit the preprocessor. |
+| `dvc repro baseline` | Train and evaluate baseline models. |
+| `dvc repro quantile` | Train and evaluate the final quantile model. |
+
+DVC skips steps when their inputs and outputs have not changed.
+
+#### 4. Run the Notebooks
+
+Make the training environment available to JupyterLab, then launch it:
+
+```bash
+python -m ipykernel install --prefix .venv-train --name medical_cost_prediction --display-name "Medical Cost Prediction"
+./run_jupyter_lab.sh
+```
+
+In JupyterLab, open either notebook under `notebooks/`, select the **Medical Cost Prediction** kernel (the Python environment), and run its cells from top to bottom. Keep `notebooks/` as the notebook's working directory so its relative file paths work.
+
+- [EDA and preprocessing](notebooks/1_eda_and_preprocessing.ipynb) explores the survey data, prepares the datasets, and creates EDA figures. It also writes the prepared datasets to disk. You can skip it if you only want the modeling analysis and have already run DVC.
+- [Modeling](notebooks/2_modeling.ipynb) compares model performance, evaluates the final model on test data, and creates evaluation figures using the saved results. It also calculates example prediction explanations locally.
+
+The saved results come from the original project runs; new results and timings may differ. If you change the source data, data preparation, or training/validation/test split, regenerate the saved results too: they refer to the original rows and their order.
+
+### Run the App Locally
+
+**Planned:** The FastAPI/Gradio web app and API are not yet implemented. The workflow will use `.venv-app` and download the fitted model and preprocessor from Hugging Face Hub.
+
+### Optional: Regenerate Saved Results
+
+The following scripts repeat experiments or rebuild files used by the planned app. DVC does not run them. Use `.venv-train` from the project root after `dvc repro`, and keep MLflow running for tuning and the LLM benchmark.
+
+| Task | Command |
+| :--- | :--- |
+| Elastic Net tuning | `python scripts/tune_elastic_net.py` |
+| Random Forest tuning | `python scripts/tune_random_forest.py` |
+| XGBoost tuning | `python scripts/tune_xgboost.py` |
+| LLM benchmark (compare with Gemini) | Copy `.env.example` to `.env`, set `GEMINI_API_KEY`, then run `python scripts/benchmark_llm.py`. API calls may incur charges or require multiple runs because of request limits. |
+| SHAP configuration benchmark | Run `python scripts/benchmark_shap.py stage1`, then `python scripts/benchmark_shap.py stage2`, then `python scripts/benchmark_shap.py test`. Test mode also saves the SHAP background and settings under `app/data/`. |
+| Test-set SHAP feature importance | After SHAP test mode, run `python scripts/audit_shap_feature_importance.py`. |
+| App cost benchmarks and prediction metadata | `python scripts/build_app_artifacts.py` |
+| Update medical inflation | `python scripts/update_medical_inflation.py` fetches current BLS data and updates `app/data/medical_inflation.json`. |
+
+Each tuning script tries 50 configurations and can take much longer than training with saved settings. SHAP benchmarking and the full test-set audit also repeat many predictions. These scripts overwrite saved files, so review their changes with `git diff`. After rerunning XGBoost tuning, run `dvc repro quantile` before rebuilding SHAP and app files.
+
+If you edit a notebook, use its paired `.py` script and synchronize it with Jupytext, for example `python -m jupytext --sync notebooks/2_modeling.py`.
+
+### Optional: Run Tests
+
+Open a new terminal in the project root, install `.venv-test`, and run the current unit tests:
+
+```bash
+python -m venv .venv-test
+source .venv-test/Scripts/activate
+python -m pip install -r requirements-test.txt
+python -m pytest -m unit
+```
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
