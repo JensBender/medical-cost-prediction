@@ -12,7 +12,7 @@ Status: first draft for content review. No slide design yet.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The initial
   allocation below totals 10 minutes, leaving room for transitions.
-- **Structure:** a cover, eight content slides, and thirteen appendix slides. Appendix IDs
+- **Structure:** a cover, eight content slides, and fourteen appendix slides. Appendix IDs
   remain stable so we can promote slides without rewriting their references.
 - **Purpose:** show how the project connects a user need to modeling choices,
   evidence, limitations, and implementation decisions.
@@ -49,7 +49,7 @@ criteria served the intended budgeting use case.
 | ID | Proposed slide title | Time | Purpose |
 | --- | --- | ---: | --- |
 | M1 | Medical cost prediction for annual budgeting | 0:15 | Cover and brief orientation |
-| M2 | Annual budgeting needs more than a treatment price | 1:00 | Define the user decision and prediction target |
+| M2 | How much should I set aside for healthcare next year? | 1:00 | Establish the budgeting need and intended value |
 | M3 | MEPS data connect accessible inputs to observed spending | 1:15 | Explain data scope, weights, and evaluation setup |
 | M4 | Most out-of-pocket spending comes from a small share of adults | 1:00 | Show the data challenge that shaped modeling |
 | M5 | Model selection: the lowest median error was not enough | 1:30 | Explain the key model-selection tradeoff |
@@ -85,36 +85,31 @@ healthcare costs using machine learning.”
 
 **Source:** [README: motivation](../../README.md).
 
-### M2 — Annual budgeting needs more than a treatment price
+### M2 — How much should I set aside for healthcare next year?
 
-**Takeaway:** The target is annual spending paid by the individual, using inputs
-that are practical to collect.
+**Takeaway:** People need an estimate of next year's out-of-pocket
+spending to plan their budget and HSA/FSA contributions.
 
 **On the slide**
 
-- User question: “How much should I set aside for healthcare next year?”
-- Inputs: demographic information, insurance, self-reported health, and conditions
-- Target: annual out-of-pocket payments for healthcare services
-- Scope excludes insurance premiums, household totals, and individual procedure prices
-
-**Visual:** An input-to-output example using labels rather than invented dollar
-amounts. Label it “planned user experience”; there is no deployed app to show yet.
+- **Why it matters:** annual out-of-pocket budgeting and HSA/FSA contribution planning
+- **The challenge:** next year's care needs and out-of-pocket spending are uncertain
+- **Our aim:** a quick, personalized out-of-pocket estimate using the person's
+  insurance status and questions they can answer from memory
 
 **Speaker notes — 1:00**
 
-“A treatment price does not tell someone how much they will spend over a whole
-year, especially when they do not know which care they will need. The intended
-product supports annual budgeting using questions people can answer from
-memory. That constrains feature selection: a potentially predictive variable is
-less useful if the user needs records to supply it. The target includes payments
-such as copays, deductibles, and uncovered services. Premiums are outside the
-target, so this is not an estimate of every healthcare-related expense. The
-application and its benefits to users still need to be validated in practice.”
+“How much should I set aside for healthcare next year? Here, we mean
+out-of-pocket spending: the healthcare costs a person pays themselves. People
+need to plan their budget and HSA or FSA contributions before they know what
+care they will need. This project aims to give them a useful starting estimate
+quickly, using demographic and health questions they can answer from memory,
+without medical records or a list of anticipated treatments.”
 
 **Transition:** Explain the dataset that makes this target measurable.
 
-**Sources:** [README: motivation and data](../../README.md);
-[product requirements: scope and user inputs](../specs/product_requirements.md).
+**Sources:** [README: motivation](../../README.md);
+[product requirements: user needs and UX rationale](../specs/product_requirements.md).
 
 ### M3 — MEPS data connect accessible inputs to observed spending
 
@@ -672,6 +667,24 @@ LLMs.
 
 **Sources:** [README: LLM benchmark](../../README.md);
 [LLM benchmark script](../../scripts/benchmark_llm.py).
+
+### A14 — U.S. healthcare costs: out-of-pocket spending and HSA/FSA planning
+
+**Question:** What is out-of-pocket spending, and how does it relate to HSA/FSA planning?
+
+**On the slide**
+
+- The infographic explains out-of-pocket costs, HSA/FSA planning, and the costs
+  included in the prediction target
+- Scope note: annual costs for an individual U.S. civilian noninstitutionalized adult
+
+**Visual:** Use the existing [healthcare-cost infographic](../../assets/infographic_healthcare_costs.png)
+as the main content.
+
+**Talking points:** Out-of-pocket spending includes copays, deductibles, and uncovered services; premiums and over-the-counter purchases are excluded from the target. The estimate supports  individual annual budgeting, with household totals, procedure prices, and insurance plan comparisons outside scope.
+
+**Sources:** [README: target variable](../../README.md);
+[product requirements: out of scope](../specs/product_requirements.md).
 
 ## Adaptation and file organization
 
