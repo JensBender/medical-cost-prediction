@@ -113,40 +113,49 @@ without medical records or a list of anticipated treatments.”
 
 ### M3 — MEPS data connect accessible inputs to observed spending
 
-**Takeaway:** Evaluation must reflect the intended population and keep model
-selection separate from final testing.
+**Takeaway:** MEPS links accessible personal information to annual out-of-pocket
+spending; weighting and stratification shape training and evaluation.
 
 **On the slide**
 
-- MEPS 2023: **18,919 respondents → 14,768 adults with positive survey weights**
-- **26 candidate features** selected from 1,374 survey variables
-- **80% training / 10% validation / 10% test**, stratified by spending bins
-- Survey weights used in model training and population-level evaluation
+- **MEPS 2023:** 14,768 adult respondents represent approximately **260 million
+  U.S. adults**
+- **Inputs → target:** 26 candidate features covering demographics, insurance,
+  and health → observed annual out-of-pocket spending
+- **Survey weights:** how many people each respondent represents; used in
+  training and evaluation
+- **80% training / 10% validation / 10% test:** stratified by spending, with a
+  separate zero-cost group and finer bins for high costs
 
-**Visual:** A compact data-flow figure showing population filtering and the
-three splits. Footnote: “U.S. civilian noninstitutionalized adults; one survey year.”
+**Visual:** A compact diagram connecting the input groups to annual out-of-pocket
+spending, with a sample-to-population callout and an 80/10/10 split bar.
+Footnote: “U.S. civilian noninstitutionalized adults; one survey year.”
 
 **Speaker notes — 1:15**
 
-“MEPS records healthcare spending alongside demographic and health information.
-After restricting the data to adults with positive person weights, there are
-14,768 observations. The survey does not sample every type of person in equal
-proportion. Its person weights tell us how much each respondent contributes to
-population estimates. I used those weights in training and evaluation rather
-than treating the raw sample as the U.S. population. The data are split 80/10/10,
-with spending bins helping retain zero-cost and high-cost cases across splits.
-Preprocessing is fitted on training data, validation supports model selection,
-and the test set supports the final evaluation. These are splits within 2023;
-they do not establish performance in a future year.”
+“MEPS—the Medical Expenditure Panel Survey—records healthcare spending alongside
+demographics, insurance, and health information. I selected 26 candidate features
+that users can report without medical records, with annual out-of-pocket spending
+as the target. The 14,768 adult respondents represent about 260 million adults.
+Each survey weight tells us how many people that respondent represents. These
+weights account for unequal selection probabilities, including oversampling of
+certain groups, and survey nonresponse. I use them in both training and evaluation.
+The 80/10/10 split is random within spending groups: zero costs have their own
+group, and high costs use finer bins. This helps preserve the spending distribution
+across splits and reduces chance imbalances in rare, expensive cases.”
 
 **Transition:** Show why the spending distribution makes this task difficult.
 
 **Sources:** [README: data and preprocessing](../../README.md);
-[preprocessing script](../../scripts/preprocess.py).
+[EDA notebook script: survey weights and data splitting](../../notebooks/1_eda_and_preprocessing.py);
+[preprocessing script](../../scripts/preprocess.py);
+[MEPS 2023 documentation: sampling and weights](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml).
 
 **Detail for questions:** The 26 candidate variables become 27 preprocessor
 inputs after adding a life-transition feature. Medical feature derivation and
 encoding produce 40 model-ready columns. These counts describe different stages.
+Preprocessing is fitted on training data. The exact spending-bin boundaries and
+weighting methodology belong in technical questions or the appendix.
 
 ### M4 — Most out-of-pocket spending comes from a small share of adults
 
