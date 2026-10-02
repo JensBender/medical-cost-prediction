@@ -481,14 +481,13 @@ The appendix zooms in on [contributions by category](#shap-contributions-by-cate
 
 ## ⚙️ Getting Started
 
-To explore the saved analyses without installing anything, open the [EDA and preprocessing](notebooks/1_eda_and_preprocessing.ipynb) or [modeling](notebooks/2_modeling.ipynb) notebook. To run them locally, follow the setup below. The web app is still planned.
+Follow the instructions below to reproduce data preprocessing, model training, and evaluation on your machine. The web app is still planned.
 
 ### Prerequisites and Clone
 
 These commands use **Git Bash on Windows**. Install **Python 3.13.x** and **Git** first. In Git Bash, check that `python --version` reports Python 3.13, then clone the project:
 
 ```bash
-python --version
 git clone https://github.com/JensBender/medical-cost-prediction.git
 cd medical-cost-prediction
 ```
@@ -496,7 +495,7 @@ cd medical-cost-prediction
 Run the remaining terminal commands from this folder (project root).
 
 <details>
-<summary>Using Linux or macOS</summary>
+<summary>Using Linux or macOS <i>(click to expand)</i></summary>
 
 The commands and scripts use Windows paths. On Linux or macOS, replace `Scripts/` with `bin/` and update the Python path in `dvc.yaml` and the executable paths in `run_jupyter_lab.sh` and `run_mlflow_ui.sh`. This setup has not been verified on Linux or macOS.
 
@@ -508,7 +507,7 @@ Follow these four steps to prepare the MEPS data, train the baseline and final m
 
 #### 1. Set Up the Training Environment
 
-Create and activate `.venv-train` to keep training and notebook dependencies separate from your other projects, then install them:
+Create and activate `.venv-train`, then install the training and notebook dependencies:
 
 ```bash
 python -m venv .venv-train
@@ -520,7 +519,9 @@ python -m pip install -r requirements-train.txt
 
 Download the **SAS V9** archive from the [MEPS HC-251 data page](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251). Extract it and put **`h251.sas7bdat`** in the project's **`data/`** folder. The next step generates processed data and fitted models locally. No API key is required for the main workflow.
 
-#### 3. Run the Modeling Pipeline
+#### 3. Run Preprocessing and Training with DVC
+
+DVC runs three stages defined in [dvc.yaml](dvc.yaml): prepare the data, train the baseline models, and train the final XGBoost quantile model using saved settings. EDA runs in the notebooks. Hyperparameter tuning is a separate, optional step described below.
 
 In a **second Git Bash terminal** at the project root, start MLflow and leave it running during training:
 
@@ -536,28 +537,27 @@ In your first terminal, with `.venv-train` active, run:
 dvc repro
 ```
 
-DVC runs the steps in [dvc.yaml](dvc.yaml) in order: prepare the data, train the baseline models, and train the final XGBoost quantile model using saved settings.
 When it finishes, the processed datasets are in `data/`, and the trained models, predictions, and performance metrics are in `models/`.
 
 <details>
-<summary>Run individual pipeline steps</summary>
+<summary>Run individual DVC stages <i>(click to expand)</i></summary>
 
-To run only part of the pipeline, use one of these commands. DVC also runs any earlier steps it needs and skips steps whose inputs and outputs have not changed.
+To run a specific stage, use one of these commands. DVC also runs any earlier stages it needs and skips stages whose inputs and outputs have not changed.
 
-| Command | Result |
+| Command | Saved artifacts |
 | :--- | :--- |
-| `dvc repro preprocess` | Prepare the data and fit the preprocessor. |
-| `dvc repro baseline` | Train and evaluate baseline models. |
-| `dvc repro quantile` | Train and evaluate the final quantile model. |
+| `dvc repro preprocess` | Training, validation, and test datasets in preprocessor-input and model-ready formats (`data/*.parquet`), plus the fitted preprocessor (`models/preprocessor.joblib`). |
+| `dvc repro baseline` | Fitted baseline models and validation predictions (`models/*_baseline_*.joblib`), plus parameters and training/validation metrics (`models/*_baseline_*.json`). |
+| `dvc repro quantile` | Fitted quantile model and validation predictions (`models/xgb_quantile_*.joblib`), plus parameters and training/validation metrics (`models/xgb_quantile_*.json`). |
 
 </details>
 
+If you change the data, preprocessing, or data split, rerun `dvc repro` and regenerate affected tuning and benchmark results before running the notebooks. Saved predictions and explanations depend on the original rows and their order.
+
 <details>
-<summary>Optional: Rerun hyperparameter tuning and benchmarks</summary>
+<summary>Optional: Rerun hyperparameter tuning and benchmarks <i>(click to expand)</i></summary>
 
 Skip these runs if you are using the unchanged data and included results. DVC does not run these scripts. To repeat the experiments, use `.venv-train` from the project root after `dvc repro`, and keep MLflow running for tuning and the LLM benchmark.
-
-If you change the data, preprocessing, or data split, regenerate the affected results: saved predictions and explanations depend on the original rows and their order.
 
 | Task | Command |
 | :--- | :--- |
@@ -568,7 +568,7 @@ If you change the data, preprocessing, or data split, regenerate the affected re
 | SHAP configuration benchmark | Run `python scripts/benchmark_shap.py stage1`, then `python scripts/benchmark_shap.py stage2`, then `python scripts/benchmark_shap.py test`. Test mode also saves the SHAP background and settings under `app/data/`. |
 | SHAP feature importance | After SHAP test mode, run `python scripts/audit_shap_feature_importance.py`. |
 
-Tuning and benchmark runs can take much longer than the main pipeline. These scripts overwrite saved files. After XGBoost tuning, run `dvc repro quantile` before rerunning SHAP or the notebooks.
+Tuning and benchmark runs can take much longer than the DVC stages. These scripts overwrite saved files. After XGBoost tuning, run `dvc repro quantile` before rerunning SHAP or the notebooks.
 
 </details>
 
@@ -583,13 +583,13 @@ python -m ipykernel install --prefix .venv-train --name medical_cost_prediction 
 
 Open a notebook in JupyterLab, select the **Medical Cost Prediction** kernel, and choose **Run → Run All Cells**. The notebook's working directory must be `notebooks/` so it can find the data and models.
 
-- The [EDA/preprocessing notebook](notebooks/1_eda_and_preprocessing.ipynb) explores the survey data, recreates the EDA figures, and writes the prepared datasets. You can skip it if you only want the modeling analysis; DVC has already prepared the data.
-- The [modeling notebook](notebooks/2_modeling.ipynb) compares the models, evaluates the final model on test data, and recreates the performance and prediction-explanation figures.
+- The [EDA/preprocessing notebook](notebooks/1_eda_and_preprocessing.ipynb) explores the data preprocessing steps and creates EDA figures. You can skip it if you only want model evaluation. DVC has already prepared the data.
+- The [modeling notebook](notebooks/2_modeling.ipynb) evaluates the models using saved artifacts, with performance metrics, diagnostic plots, and prediction explanations.
 
 New results and timings may differ from the saved project results.
 
 <details>
-<summary>Run unit tests</summary>
+<summary>Run unit tests <i>(click to expand)</i></summary>
 
 In a new terminal at the project root, create a separate test environment and run them:
 
