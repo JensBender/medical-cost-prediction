@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: first draft for content review. No slide design yet.
+Status: content draft. An initial slide design for M2 and M7 is ready for review.
 
 ## Presentation context
 
@@ -742,7 +742,6 @@ Create variants as concrete requirements arise, such as a data science or ML
 engineering interview, tech meetup, or conference talk. Keep variant notes in
 `docs/slides/variants/`, referencing shared slide IDs and documenting the changes.
 
-Keep the storyboard, variant notes, and slide-generation code in Git under
-`docs/slides/`. Reuse existing project figures; add presentation-specific visuals
-in `assets/` and generated PPTX/PDF files in `exports/` when needed. Keep
-exports out of Git.
+Track only `docs/slides/storyboard.md` in Git. Keep variant notes, slide-generation
+code, presentation assets, build files, and exports local. Reuse existing project 
+figures where useful.
