@@ -183,4 +183,39 @@ for (const [index, id] of ['M2', 'M7'].entries()) {
   const layout = await slide.export({ format: 'layout' });
   await fs.writeFile(path.join(buildDir, `${id}.layout.json`), await layout.text());
 }
+
+// Remove numbered drafts only after validation and rendering succeed.
+async function pruneDrafts(parentDir, namePattern, currentName, previousCount) {
+  const root = await fs.realpath(parentDir);
+  const expectedRoot = path.join(await fs.realpath(workspaceDir), 'docs', 'slides', path.basename(parentDir));
+  if (root !== expectedRoot) throw new Error(`Unexpected cleanup directory: ${root}`);
+  const drafts = [];
+  for (const entry of await fs.readdir(root, { withFileTypes: true })) {
+    if (!entry.isDirectory() || !namePattern.test(entry.name) || entry.name === currentName) continue;
+    const draftPath = await fs.realpath(path.join(root, entry.name));
+    if (path.dirname(draftPath) !== root) throw new Error(`Unsafe cleanup path: ${draftPath}`);
+    drafts.push({ name: entry.name, path: draftPath, modified: (await fs.stat(draftPath)).mtimeMs });
+  }
+  drafts.sort((a, b) => b.modified - a.modified);
+  let retained = 0;
+  for (const draft of drafts) {
+    if (retained < previousCount) {
+      const draftRevision = draft.name.replace('design-sample-', '');
+      const requiredFiles = [`medical-cost-planner-design-${draftRevision}.pptx`, 'M2.png', 'M7.png'];
+      const complete = await Promise.all(requiredFiles.map(file =>
+        fs.stat(path.join(draft.path, file)).then(stat => stat.isFile()).catch(() => false)
+      ));
+      if (complete.every(Boolean)) {
+        retained++;
+        continue;
+      }
+    }
+    await fs.rm(draft.path, { recursive: true });
+  }
+}
+
+if (/^v\d+$/.test(revision)) {
+  await pruneDrafts(path.dirname(outputDir), /^design-sample-v\d+$/, path.basename(outputDir), 1);
+  await pruneDrafts(path.dirname(buildDir), /^v\d+$/, path.basename(buildDir), 0);
+}
 console.log(JSON.stringify({ finalPath, outputDir, font: theme.font }, null, 2));

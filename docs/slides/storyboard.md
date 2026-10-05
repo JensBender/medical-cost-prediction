@@ -761,6 +761,10 @@ allows common image formats but excludes prompt text files. Reuse existing
 project figures where useful. Keep variant notes, build files, previews, and
 PowerPoint exports local.
 
+After a numbered draft passes validation and its previews render, the generator
+keeps the new export, the most recent complete previous export, and only the new
+build directory. Named versions are preserved for presentation milestones.
+
 To recreate an earlier presentation, restore the generator, storyboard, and
 assets from the same commit. The generator uses the presentation runtime bundled
 with the ChatGPT desktop app or Codex; runtime changes may require adjustments.
