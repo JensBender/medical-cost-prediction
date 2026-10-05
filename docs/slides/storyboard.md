@@ -755,6 +755,12 @@ Create variants as concrete requirements arise, such as a data science or ML
 engineering interview, tech meetup, or conference talk. Keep variant notes in
 `docs/slides/variants/`, referencing shared slide IDs and documenting the changes.
 
-Track only `docs/slides/storyboard.md` in Git. Keep variant notes, slide-generation
-code, presentation assets, build files, and exports local. Reuse existing project 
-figures where useful.
+Track the storyboard, slide-generation JavaScript, and required custom images in
+Git. Store custom images in `docs/slides/assets/`, where the root `.gitignore`
+allows common image formats but excludes prompt text files. Reuse existing
+project figures where useful. Keep variant notes, build files, previews, and
+PowerPoint exports local.
+
+To recreate an earlier presentation, restore the generator, storyboard, and
+assets from the same commit. The generator uses the presentation runtime bundled
+with the ChatGPT desktop app or Codex; runtime changes may require adjustments.

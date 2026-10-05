@@ -33,9 +33,17 @@ assets/header_*.jpg
 assets/linkedin_thumbnail.png
 figures/*_sample.png
 
-# Presentation files (track only the storyboard)
+# Presentation slides
 /docs/slides/*
 !/docs/slides/storyboard.md
+!/docs/slides/generate_design_sample.mjs
+!/docs/slides/assets/
+/docs/slides/assets/*
+!/docs/slides/assets/*.png
+!/docs/slides/assets/*.jpg
+!/docs/slides/assets/*.jpeg
+!/docs/slides/assets/*.svg
+!/docs/slides/assets/*.webp
 
 # Environment variables
 .env
