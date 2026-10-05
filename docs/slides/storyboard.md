@@ -49,12 +49,12 @@ criteria served the intended budgeting use case.
 | ID | Proposed slide title | Time | Purpose |
 | --- | --- | ---: | --- |
 | M1 | Medical cost prediction for annual budgeting | 0:15 | Cover and brief orientation |
-| M2 | How much should I set aside for healthcare next year? | 1:00 | Establish the budgeting need and intended value |
+| M2 | How much to set aside for healthcare next year? | 1:00 | Establish the budgeting need and intended value |
 | M3 | MEPS data connect accessible inputs to observed spending | 1:15 | Explain data scope, weights, and evaluation setup |
 | M4 | Most out-of-pocket spending comes from a small share of adults | 1:00 | Show the data challenge that shaped modeling |
 | M5 | Model selection: the lowest median error was not enough | 1:30 | Explain the key model-selection tradeoff |
 | M6 | Quantile regression turns predictions into budgeting ranges | 1:30 | Explain the final model and its outputs |
-| M7 | Final model test results: ranges and q90 show the clearest gains | 1:30 | Present held-out evidence and baseline comparisons |
+| M7 | Final model audit: clearest gains in ranges and q90 | 1:30 | Present held-out evidence and baseline comparisons |
 | M8 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
 | M9 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
 | | **Total** | **10:00** | |
@@ -85,7 +85,7 @@ healthcare costs using machine learning.”
 
 **Source:** [README: motivation](../../README.md).
 
-### M2 — How much should I set aside for healthcare next year?
+### M2 — How much to set aside for healthcare next year?
 
 **Takeaway:** People need an estimate of next year's out-of-pocket
 spending to plan their budget and HSA/FSA contributions.
@@ -273,7 +273,7 @@ not confidence intervals around an average, and q90 is not a maximum possible bi
 [quantile training script](../../scripts/train_xgboost_quantile.py);
 [prediction postprocessing](../../src/prediction.py).
 
-### M7 — Final model test results: ranges and q90 show the clearest gains
+### M7 — Final model audit: clearest gains in ranges and q90
 
 **Takeaway:** The final model meets the project's overall performance gates,
 with its strongest evidence of added value in interval and upper-quantile scores.
