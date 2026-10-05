@@ -179,8 +179,9 @@ headline annotations. Simplify labels for slide readability during design.
 “The distribution has a large mass at zero and a long right tail. About 22% of
 adults have no out-of-pocket spending, while the top fifth accounts for almost
 80% of spending. This makes a single error metric an incomplete summary.
-Median absolute error describes a typical miss, but it tells us little about
-the worst misses. Mean absolute error and R² provide additional diagnostics.
+Median absolute error, or MdAE, describes a typical miss, but it tells us little
+about the worst misses. Mean absolute error, or MAE, and R² provide additional
+diagnostics.
 I also retained unusual but valid health profiles instead of deleting them just
 because they were outliers. Removing them would make the task look easier while
 discarding cases relevant to the intended use.”
@@ -210,6 +211,8 @@ between lower- and higher-cost profiles.
 **Visual:** A small comparison table and a focused excerpt from
 [validation residual diagnostics](../../figures/evaluation/tuned_models_validation_heteroscedasticity.png).
 Keep the complete figure in A4 if it cannot be read comfortably on this slide.
+At the first displayed use, include a metric key: “MdAE: median absolute error;
+MAE: mean absolute error.”
 
 **Speaker notes — 1:30**
 
@@ -280,16 +283,22 @@ with its strongest evidence of added value in interval and upper-quantile scores
 
 **On the slide**
 
-| Held-out test metric | Result | Reference |
+| Held-out test metric | Result | Release gate |
 | --- | ---: | --- |
-| Median absolute error for q50 | **$240** | Population baseline: $248 |
-| Typical-range coverage | **47.3%** | Target: 50% |
-| Safety-cushion coverage | **91.0%** | Target: 90% |
+| Plan-around estimate (q50): MdAE | **$240** | < $500 |
+| Typical range (q25–q75): coverage | **47.3%** | 45%–55% |
+| Safety cushion (q90): coverage | **91.0%** | 85%–95% |
 
-- Versus population baseline: **11.2% lower interval score**, **15.6% lower q90 loss**
-- Median-error improvement over the population baseline remains uncertain
+Compared with the population baseline:
 
-**Visual:** One results table with the two baseline improvements beneath it.
+| Budgeting output | Comparison result |
+| --- | --- |
+| Plan-around estimate (q50) | **≈$8** lower MdAE (improvement uncertain) |
+| Typical range (q25–q75) | **11.2%** interval skill score |
+| Safety cushion (q90) | **15.6%** quantile skill score |
+
+**Visual:** One results table with three aligned baseline-comparison rows beneath
+it, including the uncertain median-error improvement alongside the two gains.
 Footnote: “Survey-weighted test metrics; dollar amounts in 2023 USD.”
 
 **Speaker notes — 1:30**
@@ -299,12 +308,16 @@ the weighted test population has an absolute error no larger than that amount;
 it is not the mean error. The typical range covers 47.3% of spending outcomes,
 close to its 50% target, and q90 covers 91%. Mean range widths are $912 for
 q25 to q75 and $2,032 for q50 to q90, and the model meets all five project
-performance gates. But a simple population estimate is competitive on median
-error: $248 versus $240. The bootstrap comparison does not establish a clear
-MdAE improvement. The stronger result is an 11.2% reduction in interval score
-and a 15.6% reduction in q90 pinball loss. Those assess width and misses, or the
-size and direction of errors, rather than coverage alone. The age-group
-comparison also supports gains on these measures.”
+performance gates. Release gates are minimum requirements; the product targets
+are more ambitious goals. But a simple population estimate is competitive on plan-around
+MdAE: $248 versus $240. That is approximately $8 lower MdAE, using the rounded
+values shown. The bootstrap comparison does not establish a clear MdAE
+improvement. The stronger results are an 11.2% interval skill score and a
+15.6% quantile skill score at q90. These express the relative reduction in
+interval score and pinball loss compared with the baseline. The underlying
+scores assess width and misses, or the size and direction of errors, rather
+than coverage alone. The age-group comparison also supports gains on these
+measures.”
 
 **Transition:** Overall metrics still need to be checked against the groups
 and situations where the model is less reliable.
