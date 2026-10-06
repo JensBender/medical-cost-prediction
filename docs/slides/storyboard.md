@@ -12,7 +12,7 @@ remain in storyboard form.
 - **Emphasis:** data science, with optional emphasis on ML engineering.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The initial
-  allocation below totals 10 minutes, leaving room for transitions.
+  allocation below totals 9 minutes 45 seconds, leaving room for transitions.
 - **Structure:** a cover, eight content slides, and fifteen appendix slides. Appendix IDs
   remain stable so we can promote slides without rewriting their references.
 - **Purpose:** show how the project connects a user need to modeling choices,
@@ -50,7 +50,7 @@ criteria served the intended budgeting use case.
 | ID | Proposed slide title | Time | Purpose |
 | --- | --- | ---: | --- |
 | M1 | Medical cost prediction for annual budgeting | 0:15 | Cover and brief orientation |
-| M2 | How much to set aside for healthcare next year? | 1:00 | Establish the budgeting need and intended value |
+| M2 | How much to set aside for healthcare next year? | 0:45 | Establish the budgeting need and intended value |
 | M3 | MEPS data connect accessible inputs to observed spending | 1:15 | Explain data scope, weights, and evaluation setup |
 | M4 | Most out-of-pocket spending comes from a small share of adults | 1:00 | Show the data challenge that shaped modeling |
 | M5 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
@@ -58,7 +58,7 @@ criteria served the intended budgeting use case.
 | M7 | Final model audit: clearest gains in ranges and q90 | 1:30 | Present held-out evidence and baseline comparisons |
 | M8 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
 | M9 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
-| | **Total** | **10:00** | |
+| | **Total** | **9:45** | |
 
 ## Main slides
 
@@ -98,19 +98,26 @@ spending to plan their budget and HSA/FSA contributions.
 - **Our aim:** a quick, personalized out-of-pocket estimate using the person's
   insurance status and questions they can answer from memory
 
-**Speaker notes — 1:00**
+**Speaker notes — 0:45 (rehearsed)**
 
-“How much should I set aside for healthcare next year? Here, we mean
-out-of-pocket spending: the healthcare costs a person pays themselves. People
-need to plan their budget and HSA or FSA contributions before they know what
-care they will need. This project aims to give them a useful starting estimate
-quickly, using demographic and health questions they can answer from memory,
-without medical records or a list of anticipated treatments.”
+“How much should I set aside for healthcare next year? People in the U.S. face
+this question even with health insurance, because they still pay some costs out
+of their own pocket. Some also need to decide how much to contribute to an HSA
+or FSA, accounts that offer tax benefits for setting aside money for healthcare.
+
+But how do you know how much healthcare you're going to need next year? Even
+for planned care, working out what you'll actually pay can be cumbersome.
+
+This project aims to provide a quick and useful ballpark estimate for next
+year's out-of-pocket costs, using questions people can answer from memory,
+without researching procedure costs or digging through medical records.”
 
 **Transition:** Explain the dataset that makes this target measurable.
 
 **Sources:** [README: motivation](../../README.md);
-[product requirements: user needs and UX rationale](../specs/product_requirements.md).
+[product requirements: user needs and UX rationale](../specs/product_requirements.md);
+[HealthCare.gov: HSA overview](https://www.healthcare.gov/high-deductible-health-plan/);
+[HealthCare.gov: FSA overview](https://www.healthcare.gov/have-job-based-coverage/flexible-spending-accounts/).
 
 ### M3 — MEPS data connect accessible inputs to observed spending
 
