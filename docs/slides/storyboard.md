@@ -15,6 +15,10 @@ for review. The remaining appendix slides are in storyboard form.
   allocation below totals 9 minutes 45 seconds, leaving room for transitions.
 - **Structure:** a cover, eight content slides, and fifteen appendix slides. Appendix IDs
   remain stable so we can promote slides without rewriting their references.
+- **Appendix navigation:** Add links where a specific follow-up is likely, using
+  “Appendix: [topic]” at the bottom left and “Back to [main slide topic]” on the
+  appendix slide. Use small, muted gray, underlined text and keep slide IDs at
+  the bottom right. Add other footnotes only when needed to interpret the slide.
 - **Purpose:** show how the project connects a user need to modeling choices,
   evidence, limitations, and implementation decisions.
 - **Project status:** model training, selection, and evaluation for the MVP are
@@ -129,7 +133,7 @@ spending, with survey weights supporting population-level training and evaluatio
 
 **On the slide**
 
-- **MEPS:** Medical Expenditure Panel Survey, run by AHRQ
+- **MEPS:** Medical Expenditure Panel Survey
 - **Data:** 2023 Household Component (HC-251)
 - **Sample:** 14,768 adult respondents
 - **Features:** 26 inputs covering demographics, insurance, and health
@@ -137,9 +141,9 @@ spending, with survey weights supporting population-level training and evaluatio
 - **Survey weights:** How many people each respondent represents.
   This sample represents approximately 260 million U.S. adults.
 
-**Layout:** A simple bullet list with bold labels. A small link opens
-[A1: MEPS overview](#a1--meps-survey-overview) for follow-up questions.
-Footnote: “U.S. civilian noninstitutionalized adults. Source: AHRQ / MEPS 2023.”
+**Layout:** A simple bullet list with bold labels. A small footer link,
+“Appendix: MEPS overview,” opens [A1](#a1--meps-survey-overview) for follow-up
+questions. The infographic explains the population scope; full sources are below.
 
 **Speaker notes — 1:15**
 
@@ -431,8 +435,8 @@ Timings apply only when promoted into the main presentation.
 
 **Question:** How does MEPS collect its data, and which component does this project use?
 
-**On the slide:** The existing MEPS infographic, with a small return link to the
-main data slide.
+**On the slide:** The existing MEPS infographic, with a small footer link,
+“Back to MEPS data,” to return to the main data slide.
 
 **Visual:** Use the [MEPS infographic](../../assets/infographic_meps_data.jpg)
 at full slide width, preserving its proportions and all labels.

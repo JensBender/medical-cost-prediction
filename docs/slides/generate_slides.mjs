@@ -155,7 +155,7 @@ problem.speakerNotes.textFrame.setText(notesFor('M2'));
 // M3: introduce the survey before discussing the spending distribution.
 const data = newSlide('M3', 'MEPS links accessible inputs to observed spending');
 const dataBullets = makeNativeBulletParagraphs([
-  'MEPS: Medical Expenditure Panel Survey, run by AHRQ',
+  'MEPS: Medical Expenditure Panel Survey',
   'Data: 2023 Household Component (HC-251)',
   'Sample: 14,768 adult respondents',
   'Features: 26 inputs covering demographics, insurance, and health',
@@ -171,12 +171,11 @@ for (const paragraph of dataBullets) {
   ];
 }
 text(data, 'Survey and project data', dataBullets, 72, 148, 1136, 448, 30);
-const appendixLink = text(data, 'MEPS appendix link', 'MEPS overview in appendix',
-  72, 620, 560, 32, 22, { color: theme.secondary, underline: 'sng' });
-appendixLink.text.get('MEPS overview in appendix').link = {
+const appendixLink = text(data, 'MEPS appendix link', 'Appendix: MEPS overview',
+  72, 674, 800, 24, 18, { color: theme.secondary, underline: 'sng' });
+appendixLink.text.get('Appendix: MEPS overview').link = {
   uri: 'slide10.xml', isExternal: false, action: 'ppaction://hlinksldjump',
 };
-footnote(data, 'U.S. civilian noninstitutionalized adults. Source: AHRQ / MEPS 2023.');
 
 // M4: display the concentration figures directly instead of a dense Lorenz plot.
 const distribution = newSlide('M4', 'Most out-of-pocket spending comes\nfrom a small share of adults', true);
@@ -362,14 +361,14 @@ mepsOverview.images.add({
   blob: new Uint8Array(await fs.readFile(path.join(workspaceDir, 'assets/infographic_meps_data.jpg'))),
   contentType: 'image/jpeg',
   alt: 'MEPS household, provider, and employer survey components and the 2023 data used in this project.',
-  fit: 'contain', position: { left: 20, top: 0, width: 1240, height: 677 },
+  fit: 'contain', position: { left: 20, top: 0, width: 1240, height: 660 },
 });
-const returnLink = text(mepsOverview, 'Return to data slide', 'Return to MEPS data slide',
-  24, 685, 800, 24, 18, { color: theme.secondary, underline: 'sng' });
-returnLink.text.get('Return to MEPS data slide').link = {
+const returnLink = text(mepsOverview, 'Return to data slide', 'Back to MEPS data',
+  72, 674, 800, 24, 18, { color: theme.secondary, underline: 'sng' });
+returnLink.text.get('Back to MEPS data').link = {
   uri: 'slide3.xml', isExternal: false, action: 'ppaction://hlinksldjump',
 };
-text(mepsOverview, 'Slide ID', 'A1', 1166, 685, 42, 22, 16,
+text(mepsOverview, 'Slide ID', 'A1', 1166, 675, 42, 22, 16,
   { color: theme.secondary, alignment: 'right' });
 mepsOverview.speakerNotes.textFrame.setText(notesFor('A1'));
 
