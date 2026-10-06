@@ -1,7 +1,7 @@
 # Medical cost prediction: presentation storyboard
 
-Status: the nine-slide main presentation is ready for review. Appendix slides
-remain in storyboard form.
+Status: the nine-slide main presentation and the MEPS overview appendix are ready
+for review. The remaining appendix slides are in storyboard form.
 
 ## Presentation context
 
@@ -51,7 +51,7 @@ criteria served the intended budgeting use case.
 | --- | --- | ---: | --- |
 | M1 | Medical cost prediction for annual budgeting | 0:15 | Cover and brief orientation |
 | M2 | How much should I set aside for healthcare? | 0:45 | Establish the budgeting need and intended value |
-| M3 | MEPS data connect accessible inputs to observed spending | 1:15 | Explain data scope, weights, and evaluation setup |
+| M3 | MEPS links accessible inputs to observed spending | 1:15 | Explain the survey, project data, and population weights |
 | M4 | Most out-of-pocket spending comes from a small share of adults | 1:00 | Show the data challenge that shaped modeling |
 | M5 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
 | M6 | Quantile regression turns predictions into budgeting ranges | 1:30 | Explain the final model and its outputs |
@@ -122,44 +122,49 @@ without researching procedure costs or digging through medical records.”
 [HealthCare.gov: HSA overview](https://www.healthcare.gov/high-deductible-health-plan/);
 [HealthCare.gov: FSA overview](https://www.healthcare.gov/have-job-based-coverage/flexible-spending-accounts/).
 
-### M3 — MEPS data connect accessible inputs to observed spending
+### M3 — MEPS links accessible inputs to observed spending
 
 **Takeaway:** MEPS links accessible personal information to annual out-of-pocket
-spending; weighting and stratification shape training and evaluation.
+spending, with survey weights supporting population-level training and evaluation.
 
 **On the slide**
 
-- **MEPS 2023:** 14,768 adult respondents represent approximately **260 million
-  U.S. adults**
-- **Inputs → target:** 26 input features covering demographics, insurance,
-  and health → observed annual out-of-pocket spending
-- **Survey weights:** how many people each respondent represents; used in
-  training and evaluation
-- **80% training / 10% validation / 10% test:** stratified by spending, with a
-  separate zero-cost group and finer bins for high costs
+- **MEPS:** Medical Expenditure Panel Survey, run by AHRQ
+- **Data:** 2023 Household Component (HC-251)
+- **Sample:** 14,768 adult respondents
+- **Features:** 26 inputs covering demographics, insurance, and health
+- **Target:** Annual out-of-pocket spending
+- **Survey weights:** How many people each respondent represents.
+  This sample represents approximately 260 million U.S. adults.
 
-**Visual:** A compact diagram connecting the input groups to annual out-of-pocket
-spending, with a sample-to-population callout and an 80/10/10 split bar.
-Footnote: “U.S. civilian noninstitutionalized adults; one survey year.”
+**Layout:** A simple bullet list with bold labels. A small link opens
+[A1: MEPS overview](#a1--meps-survey-overview) for follow-up questions.
+Footnote: “U.S. civilian noninstitutionalized adults. Source: AHRQ / MEPS 2023.”
 
 **Speaker notes — 1:15**
 
-“MEPS—the Medical Expenditure Panel Survey—records healthcare spending alongside
-demographics, insurance, and health information. I selected 26 input features
-that users can report without medical records, with annual out-of-pocket spending
-as the target. The 14,768 adult respondents represent about 260 million adults.
-Each survey weight tells us how many people that respondent represents. These
-weights account for unequal selection probabilities, including oversampling of
-certain groups, and survey nonresponse. I use them in both training and evaluation.
-The 80/10/10 split is random within spending groups: zero costs have their own
-group, and high costs use finer bins. This helps preserve the spending distribution
-across splits and reduces chance imbalances in rare, expensive cases.”
+“The Medical Expenditure Panel Survey, or MEPS, is run by the Agency for
+Healthcare Research and Quality. AHRQ describes it as the most complete source
+of U.S. healthcare cost and use data. It combines repeated household interviews
+with information from medical providers to improve spending estimates. MEPS
+also surveys employers about insurance, but that is a separate component.
+
+This project uses the 2023 household data: 14,768 adults and 26 features covering
+demographics, insurance, and health, with annual out-of-pocket spending as the
+target. These inputs are information people can provide from memory.
+
+Survey weights tell us how many people each respondent represents. They account
+for unequal selection probabilities and nonresponse. With these weights, our
+sample represents about 260 million U.S. adults. I use them in both training
+and evaluation.”
 
 **Transition:** Show why the spending distribution makes this task difficult.
 
 **Sources:** [README: data and preprocessing](../../README.md);
 [EDA notebook script: survey weights and data splitting](../../notebooks/1_eda_and_preprocessing.py);
 [preprocessing script](../../scripts/preprocess.py);
+[AHRQ: MEPS overview](https://www.ahrq.gov/data/meps.html);
+[AHRQ: separate survey components](https://www.ahrq.gov/cpi/about/otherwebsites/meps.ahrq.gov/index.html);
 [MEPS 2023 documentation: sampling and weights](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml).
 
 **Detail for questions:** The 26 survey variables become 27 preprocessor
@@ -168,8 +173,11 @@ encoding produce 40 model-ready columns. These counts describe different stages.
 The current model uses these inputs. Feature reduction would be considered if
 user testing suggests that fewer inputs would improve the experience.
 See A15 for representative inputs and the link to the full list.
-Preprocessing is fitted on training data. The exact spending-bin boundaries and
-weighting methodology belong in technical questions or the appendix.
+Preprocessing is fitted on training data. The 80/10/10 split is random within
+spending groups, with a separate zero-cost group and finer bins for high costs.
+This helps preserve the distribution and reduces chance imbalances in rare,
+expensive cases. Explain this after the spending-distribution slide if asked;
+the exact bin boundaries belong in technical questions.
 
 ### M4 — Most out-of-pocket spending comes from a small share of adults
 
@@ -419,25 +427,37 @@ uncertainty, and subgroup reliability each reveal something different.”
 Each appendix item is an optional slide with a specific question to answer.
 Timings apply only when promoted into the main presentation.
 
-### A1 — Survey weights in training and population evaluation
+### A1 — MEPS survey overview
 
-**Question:** Why use weights instead of evaluating the raw sample?
+**Question:** How does MEPS collect its data, and which component does this project use?
 
-**On the slide:** `PERWT23F` supplies person weights. Training passes weights
-through to the estimator; metrics and simple benchmarks use weights too.
-Population summaries concern civilian noninstitutionalized adults.
+**On the slide:** The existing MEPS infographic, with a small return link to the
+main data slide.
 
-**Visual:** A small illustrative weighted-versus-unweighted example, clearly
-labeled as conceptual rather than MEPS observations.
+**Visual:** Use the [MEPS infographic](../../assets/infographic_meps_data.jpg)
+at full slide width, preserving its proportions and all labels.
 
-**Talking points:** Weights change whose errors contribute most to the objective
-and evaluation. They do not by themselves remove missing-feature bias, guarantee
-representativeness of future app users, or account for survey clustering in
-uncertainty estimates.
+**Speaker notes — 1:00 (optional)**
 
-**Promote:** After M3 for statistical depth; allow 1:00.
+“MEPS includes household, medical provider, and employer insurance surveys.
+The project uses the 2023 full-year Household Component file, HC-251. Households
+are interviewed repeatedly, and provider information supplements or replaces
+reported spending where needed. The employer insurance survey is a separate
+component, not an extra set of linked inputs in this project. The overlapping
+panels shown here contribute observations to the same calendar-year file.”
 
-**Sources:** [EDA notebook](../../notebooks/1_eda_and_preprocessing.py);
+**Transition:** Return to the main data slide or continue with questions.
+
+**Detail for questions:** `PERWT23F` supplies person weights. Training, metrics,
+and simple benchmarks use these weights. They do not by themselves remove
+missing-feature bias, guarantee representativeness of future app users, or
+account for survey clustering in uncertainty estimates.
+
+**Promote:** After M3 for survey background; allow 1:00.
+
+**Sources:** [AHRQ: MEPS overview](https://www.ahrq.gov/data/meps.html);
+[MEPS medical provider component](https://meps.ahrq.gov/mepsweb/survey_comp/mpc.jsp);
+[EDA notebook](../../notebooks/1_eda_and_preprocessing.py);
 [modeling helpers](../../src/modeling.py).
 
 ### A2 — Feature timing: limits of next-year forecasting

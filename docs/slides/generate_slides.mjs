@@ -8,6 +8,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
+import { execFileSync } from 'node:child_process';
 
 // Use the bundled presentation runtime returned by load_workspace_dependencies.
 const { RUNTIME_NODE_MODULES, RUNTIME_PYTHON, SKILL_DIR } = process.env;
@@ -18,7 +19,7 @@ const runtimeRequire = createRequire(path.join(RUNTIME_NODE_MODULES, 'package.js
 const { Presentation, PresentationFile, FileBlob } = await import(
   pathToFileURL(runtimeRequire.resolve('@oai/artifact-tool')).href
 );
-const { finalizePresentation, resolvePresentationFont, applyPresentationChartFont } = await import(
+const { finalizePresentation, resolvePresentationFont, applyPresentationChartFont, makeNativeBulletParagraphs } = await import(
   pathToFileURL(path.join(SKILL_DIR, 'container_tools/artifact_tool_utils.mjs')).href
 );
 
@@ -151,29 +152,31 @@ text(problem, 'Slide ID', 'M2', 1166, 675, 42, 22, 16,
   { color: theme.secondary, alignment: 'right' });
 problem.speakerNotes.textFrame.setText(notesFor('M2'));
 
-// M3: the editable diagram separates the data, population and split concepts.
-const data = newSlide('M3', 'MEPS data connect accessible inputs\nto observed spending', true);
-text(data, 'Survey name', 'Medical Expenditure Panel Survey · 2023', 72, 190, 1136, 36, 28,
-  { bold: true });
-text(data, 'Sample and population', '14,768 adult respondents represent ≈260 million U.S. adults',
-  72, 231, 1136, 40, 29);
-text(data, 'Inputs', '26 input features', 72, 313, 495, 38, 30, { bold: true });
-text(data, 'Input groups', 'Demographics, insurance and health', 72, 354, 525, 38, 27);
-text(data, 'Input target arrow', '→', 624, 325, 65, 55, 42);
-text(data, 'Target', 'Annual out-of-pocket spending', 728, 313, 480, 78, 30, { bold: true });
-text(data, 'Weight explanation', 'Survey weights: how many people each respondent represents',
-  72, 423, 1136, 38, 28, { bold: true });
-text(data, 'Weight use', 'Used in training, evaluation and population benchmarks',
-  72, 462, 1136, 38, 27);
-// Segment widths encode the 80/10/10 allocation; adjacent labels stay readable.
-rect(data, 'Training split 80%', 72, 535, 908.8, 24, theme.ink);
-rect(data, 'Validation split 10%', 980.8, 535, 113.6, 24, '#92ADB7');
-rect(data, 'Test split 10%', 1094.4, 535, 113.6, 24, '#C6D7DD');
-text(data, 'Split labels', '80% training / 10% validation / 10% test', 72, 570, 1136, 38, 27,
-  { bold: true });
-text(data, 'Stratification', 'Stratified by spending: separate zero-cost group; finer bins for high costs',
-  72, 610, 1136, 35, 26);
-footnote(data, 'U.S. civilian noninstitutionalized adults; one survey year. Source: MEPS 2023.');
+// M3: introduce the survey before discussing the spending distribution.
+const data = newSlide('M3', 'MEPS links accessible inputs to observed spending');
+const dataBullets = makeNativeBulletParagraphs([
+  'MEPS: Medical Expenditure Panel Survey, run by AHRQ',
+  'Data: 2023 Household Component (HC-251)',
+  'Sample: 14,768 adult respondents',
+  'Features: 26 inputs covering demographics, insurance, and health',
+  'Target: Annual out-of-pocket spending',
+  'Survey weights: How many people each respondent represents. This sample represents approximately 260 million U.S. adults.',
+], { marginLeftPoints: 18, hangingPoints: 12, spaceAfterPoints: 18 });
+for (const paragraph of dataBullets) {
+  const value = paragraph.runs[0];
+  const colon = value.indexOf(':') + 1;
+  paragraph.runs = [
+    { run: value.slice(0, colon), textStyle: { bold: true } },
+    { run: value.slice(colon) },
+  ];
+}
+text(data, 'Survey and project data', dataBullets, 72, 148, 1136, 448, 30);
+const appendixLink = text(data, 'MEPS appendix link', 'MEPS overview in appendix',
+  72, 620, 560, 32, 22, { color: theme.secondary, underline: 'sng' });
+appendixLink.text.get('MEPS overview in appendix').link = {
+  uri: 'slide10.xml', isExternal: false, action: 'ppaction://hlinksldjump',
+};
+footnote(data, 'U.S. civilian noninstitutionalized adults. Source: AHRQ / MEPS 2023.');
 
 // M4: display the concentration figures directly instead of a dense Lorenz plot.
 const distribution = newSlide('M4', 'Most out-of-pocket spending comes\nfrom a small share of adults', true);
@@ -353,13 +356,56 @@ text(next, 'Validation work', 'Check feature timing and performance on a later s
 text(next, 'Closing lesson', 'Evaluate the outputs needed for the user decision',
   72, 605, 1136, 44, 32, { bold: true });
 
+const mepsOverview = presentation.slides.add();
+mepsOverview.background.fill = theme.background;
+mepsOverview.images.add({
+  blob: new Uint8Array(await fs.readFile(path.join(workspaceDir, 'assets/infographic_meps_data.jpg'))),
+  contentType: 'image/jpeg',
+  alt: 'MEPS household, provider, and employer survey components and the 2023 data used in this project.',
+  fit: 'contain', position: { left: 20, top: 0, width: 1240, height: 677 },
+});
+const returnLink = text(mepsOverview, 'Return to data slide', 'Return to MEPS data slide',
+  24, 685, 800, 24, 18, { color: theme.secondary, underline: 'sng' });
+returnLink.text.get('Return to MEPS data slide').link = {
+  uri: 'slide3.xml', isExternal: false, action: 'ppaction://hlinksldjump',
+};
+text(mepsOverview, 'Slide ID', 'A1', 1166, 685, 42, 22, 16,
+  { color: theme.secondary, alignment: 'right' });
+mepsOverview.speakerNotes.textFrame.setText(notesFor('A1'));
+
 const candidatePath = path.join(buildDir, 'candidate.pptx');
 const finalPath = path.join(outputDir, `medical-cost-planner-main-${revision}.pptx`);
 await (await PresentationFile.exportPptx(presentation)).save(candidatePath);
+// The runtime exports internal slide jumps as generic hyperlinks. Give those
+// relationships the slide type required by PowerPoint before validation.
+execFileSync(RUNTIME_PYTHON, ['-c', `
+import os, sys, zipfile
+import xml.etree.ElementTree as ET
+source = sys.argv[1]
+namespace = 'http://schemas.openxmlformats.org/package/2006/relationships'
+prefix = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/'
+ET.register_namespace('', namespace)
+with zipfile.ZipFile(source) as package:
+    entries = [(info, package.read(info.filename)) for info in package.infolist()]
+replacements = {}
+for slide, target in [(3, 10), (10, 3)]:
+    part = f'ppt/slides/_rels/slide{slide}.xml.rels'
+    root = ET.fromstring(dict((info.filename, data) for info, data in entries)[part])
+    links = [rel for rel in root if rel.get('Target') == f'slide{target}.xml']
+    assert len(links) == 1, f'Expected one slide jump in {part}'
+    links[0].set('Type', prefix + 'slide')
+    links[0].attrib.pop('TargetMode', None)
+    replacements[part] = ET.tostring(root, encoding='utf-8', xml_declaration=True)
+temporary = source + '.links.tmp'
+with zipfile.ZipFile(temporary, 'w', zipfile.ZIP_DEFLATED) as package:
+    for info, data in entries:
+        package.writestr(info, replacements.get(info.filename, data))
+os.replace(temporary, source)
+`, candidatePath]);
 const existingChartStaging = new Set(await fs.readdir(slidesDir));
 await finalizePresentation({
   workspaceDir: slidesDir, candidatePath, finalPath,
-  explicitTotalSlideCount: 9,
+  explicitTotalSlideCount: 10,
   requiredNativeTableOwnerSlides: [5, 7], requiredNativeChartOwnerSlides: [4, 8],
   materializeLiteralChartWorkbooks: true,
   pythonExecutable: RUNTIME_PYTHON,
@@ -387,7 +433,7 @@ for (const entry of await fs.readdir(slidesDir, { withFileTypes: true })) {
 
 // Render the exported file so the previews represent the delivered deck.
 const finalDeck = await PresentationFile.importPptx(await FileBlob.load(finalPath));
-for (const [index, id] of Array.from({ length: 9 }, (_, i) => `M${i + 1}`).entries()) {
+for (const [index, id] of [...Array.from({ length: 9 }, (_, i) => `M${i + 1}`), 'A1'].entries()) {
   const slide = finalDeck.slides.getItem(index);
   const preview = await finalDeck.export({ slide, format: 'png', scale: 1.5 });
   await fs.writeFile(path.join(outputDir, `${id}.png`), new Uint8Array(await preview.arrayBuffer()));
