@@ -1,6 +1,7 @@
 # Medical cost prediction: presentation storyboard
 
-Status: content draft. An initial slide design for M2 and M7 is ready for review.
+Status: the nine-slide main presentation is ready for review. Appendix slides
+remain in storyboard form.
 
 ## Presentation context
 
@@ -52,7 +53,7 @@ criteria served the intended budgeting use case.
 | M2 | How much to set aside for healthcare next year? | 1:00 | Establish the budgeting need and intended value |
 | M3 | MEPS data connect accessible inputs to observed spending | 1:15 | Explain data scope, weights, and evaluation setup |
 | M4 | Most out-of-pocket spending comes from a small share of adults | 1:00 | Show the data challenge that shaped modeling |
-| M5 | Model selection: the lowest median error was not enough | 1:30 | Explain the key model-selection tradeoff |
+| M5 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
 | M6 | Quantile regression turns predictions into budgeting ranges | 1:30 | Explain the final model and its outputs |
 | M7 | Final model audit: clearest gains in ranges and q90 | 1:30 | Present held-out evidence and baseline comparisons |
 | M8 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
@@ -69,7 +70,7 @@ criteria served the intended budgeting use case.
 
 - Title: Medical Cost Planner (in the project header)
 - Subtitle: Predicting annual out-of-pocket healthcare costs
-- Presenter: Jens [surname]
+- Presenter: Jens Bender
 - Event or setting: [presentation setting]
 - Date: [presentation date]
 
@@ -171,8 +172,10 @@ parts of model performance.
 - The highest-spending **20% accounts for 79.3%** of spending
 - Evaluate typical error alongside large errors and uncertainty
 
-**Visual:** Use the [Lorenz curve](../../figures/eda/lorenz_curve.png), with its two
-headline annotations. Simplify labels for slide readability during design.
+**Visual:** An editable bar chart compares the highest-spending 20% of adults
+(79.3% of spending) with the remaining 80% (20.7%). Beside it, show the 22.3%
+with zero spending. These figures summarize the
+[Lorenz curve](../../figures/eda/lorenz_curve.png) at presentation scale.
 
 **Speaker notes — 1:00**
 
@@ -192,7 +195,7 @@ only the start of model selection.
 **Sources:** [EDA notebook script: zero costs and cost concentration](../../notebooks/1_eda_and_preprocessing.py);
 [README: EDA and outlier analysis](../../README.md).
 
-### M5 — Model selection: the lowest median error was not enough
+### M5 — Model selection: median error was not enough
 
 **Takeaway:** The model with the best typical error offered limited separation
 between lower- and higher-cost profiles.
@@ -208,9 +211,10 @@ between lower- and higher-cost profiles.
 - Elastic Net's largest validation prediction was about **$217**
 - Subgroup and residual analysis motivated a model that also describes uncertainty
 
-**Visual:** A small comparison table and a focused excerpt from
-[validation residual diagnostics](../../figures/evaluation/tuned_models_validation_heteroscedasticity.png).
-Keep the complete figure in A4 if it cannot be read comfortably on this slide.
+**Visual:** An editable comparison table followed by the $217 maximum-prediction
+finding and its implication. Keep the
+[validation residual diagnostics](../../figures/evaluation/tuned_models_validation_heteroscedasticity.png)
+in A4 so the main slide stays readable.
 At the first displayed use, include a metric key: “MdAE: median absolute error;
 MAE: mean absolute error.”
 
@@ -339,8 +343,10 @@ validation steps.
 - One-year holdout performance does not establish prospective performance
 - Subgroup audits inform safeguards; they do not prove absence of bias
 
-**Visual:** Two selected subgroup coverage markers against the 50% target,
-or a focused excerpt from the final audit. Use A7 for the complete audit.
+**Visual:** An editable bar chart compares typical-range coverage for poor
+mental health (30.1%) and low income (39.2%) with overall coverage (47.3%) and
+the 50% target. Label these as point estimates; use A7 for the fuller audit
+with subgroup counts and uncertainty.
 
 **Speaker notes — 1:00**
 
@@ -760,6 +766,10 @@ Git. Store custom images in `docs/slides/assets/`, where the root `.gitignore`
 allows common image formats but excludes prompt text files. Reuse existing
 project figures where useful. Keep variant notes, build files, previews, and
 PowerPoint exports local.
+
+`generate_slides.mjs` builds the main presentation, with spoken notes drawn from
+this storyboard. Slide text and layouts live in the generator; update both files
+when content changes. Exports use numbered folders such as `exports/main-v12/`.
 
 After a numbered draft passes validation and its previews render, the generator
 keeps the new export, the most recent complete previous export, and only the new

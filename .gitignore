@@ -36,7 +36,7 @@ figures/*_sample.png
 # Presentation slides
 /docs/slides/*
 !/docs/slides/storyboard.md
-!/docs/slides/generate_design_sample.mjs
+!/docs/slides/generate_slides.mjs
 !/docs/slides/assets/
 /docs/slides/assets/*
 !/docs/slides/assets/*.png
