@@ -131,25 +131,21 @@ cover.speakerNotes.textFrame.setText(notesFor('M1'));
 // M2: question first, with an illustration of the planning situation.
 const problem = presentation.slides.add();
 problem.background.fill = theme.background;
-text(problem, 'M2 title', 'How much to set aside for healthcare next year?',
+text(problem, 'M2 title', 'How much should I set aside for healthcare?',
   72, 48, 1136, 66, 46, { bold: true });
-text(problem, 'Budgeting need', 'Annual out-of-pocket budgeting',
-  72, 142, 644, 38, 28, { bold: true });
-text(problem, 'Contribution planning', 'Including HSA/FSA contributions',
-  72, 180, 644, 40, 27);
 text(problem, 'Challenge label', 'The challenge',
-  72, 273, 620, 34, 28, { bold: true });
-text(problem, 'Uncertainty', "Next year's care needs and\nout-of-pocket spending are uncertain.",
-  72, 309, 644, 78, 28);
+  72, 520, 532, 36, 30, { bold: true });
+text(problem, 'Budgeting challenge', "Planning next year's out-of-pocket\ncosts and HSA/FSA contributions\nis difficult.",
+  72, 560, 532, 108, 30);
 text(problem, 'Aim label', 'Our aim',
-  72, 429, 620, 34, 28, { bold: true });
-text(problem, 'Intended estimate', 'A quick estimate using your insurance\nstatus and answers you can give from memory.',
-  72, 465, 650, 78, 28);
+  676, 520, 532, 36, 30, { bold: true });
+text(problem, 'Intended estimate', 'A useful ballpark estimate from\nquestions people can answer\nfrom memory.',
+  676, 560, 532, 108, 30);
 problem.images.add({
   blob: new Uint8Array(await fs.readFile(path.join(slidesDir, 'assets/budget-planning.png'))),
   contentType: 'image/png',
   alt: 'Illustration of an adult considering a budget with a planner and calculator.',
-  fit: 'contain', position: { left: 748, top: 142, width: 460, height: 460 },
+  fit: 'contain', position: { left: 72, top: 120, width: 1136, height: 379 },
 });
 text(problem, 'Slide ID', 'M2', 1166, 675, 42, 22, 16,
   { color: theme.secondary, alignment: 'right' });

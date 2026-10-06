@@ -50,7 +50,7 @@ criteria served the intended budgeting use case.
 | ID | Proposed slide title | Time | Purpose |
 | --- | --- | ---: | --- |
 | M1 | Medical cost prediction for annual budgeting | 0:15 | Cover and brief orientation |
-| M2 | How much to set aside for healthcare next year? | 0:45 | Establish the budgeting need and intended value |
+| M2 | How much should I set aside for healthcare? | 0:45 | Establish the budgeting need and intended value |
 | M3 | MEPS data connect accessible inputs to observed spending | 1:15 | Explain data scope, weights, and evaluation setup |
 | M4 | Most out-of-pocket spending comes from a small share of adults | 1:00 | Show the data challenge that shaped modeling |
 | M5 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
@@ -86,17 +86,20 @@ healthcare costs using machine learning.”
 
 **Source:** [README: motivation](../../README.md).
 
-### M2 — How much to set aside for healthcare next year?
+### M2 — How much should I set aside for healthcare?
 
 **Takeaway:** People need an estimate of next year's out-of-pocket
 spending to plan their budget and HSA/FSA contributions.
 
 **On the slide**
 
-- **Why it matters:** annual out-of-pocket budgeting and HSA/FSA contribution planning
-- **The challenge:** next year's care needs and out-of-pocket spending are uncertain
-- **Our aim:** a quick, personalized out-of-pocket estimate using the person's
-  insurance status and questions they can answer from memory
+- **The challenge:** Planning next year's out-of-pocket costs and HSA/FSA
+  contributions is difficult.
+- **Our aim:** A useful ballpark estimate from questions people can answer from
+  memory.
+
+**Visual:** A wide [budgeting illustration](assets/budget-planning.png)
+below the title, with the challenge and aim in two aligned columns underneath.
 
 **Speaker notes — 0:45 (rehearsed)**
 
