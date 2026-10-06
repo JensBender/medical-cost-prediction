@@ -170,7 +170,13 @@ for (const paragraph of dataBullets) {
     { run: value.slice(colon) },
   ];
 }
-text(data, 'Survey and project data', dataBullets, 72, 148, 1136, 448, 30);
+text(data, 'Survey and project data', dataBullets, 72, 148, 744, 500, 30);
+data.images.add({
+  blob: new Uint8Array(await fs.readFile(path.join(slidesDir, 'assets/household-survey.png'))),
+  contentType: 'image/png',
+  alt: 'Illustration of an interviewer using a laptop while an adult respondent answers questions at home.',
+  fit: 'contain', position: { left: 868, top: 148, width: 340, height: 453.333 },
+});
 const appendixLink = text(data, 'MEPS appendix link', 'Appendix: MEPS overview',
   72, 674, 800, 24, 18, { color: theme.secondary, underline: 'sng' });
 appendixLink.text.get('Appendix: MEPS overview').link = {

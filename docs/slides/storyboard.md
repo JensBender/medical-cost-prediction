@@ -141,9 +141,11 @@ spending, with survey weights supporting population-level training and evaluatio
 - **Survey weights:** How many people each respondent represents.
   This sample represents approximately 260 million U.S. adults.
 
-**Layout:** A simple bullet list with bold labels. A small footer link,
-“Appendix: MEPS overview,” opens [A1](#a1--meps-survey-overview) for follow-up
-questions. The infographic explains the population scope; full sources are below.
+**Layout:** A simple bullet list with bold labels on the left and a small
+[household-interview illustration](assets/household-survey.png) in a 3:4 portrait
+format on the right, aligned with the top of the bullets. A small footer link, 
+“Appendix: MEPS overview,” opens [A1](#a1--meps-survey-overview) for follow-up 
+questions.
 
 **Speaker notes — 1:15**
 
