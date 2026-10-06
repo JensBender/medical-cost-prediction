@@ -121,10 +121,10 @@ cover.images.add({
   contentType: 'image/png', alt: 'Medical Cost Planner project header.', fit: 'contain',
   position: { left: 72, top: 72, width: 1136, height: 422 },
 });
-text(cover, 'Subtitle', 'Predicting annual out-of-pocket healthcare costs',
-  72, 522, 1136, 56, 38, { bold: true });
-text(cover, 'Presenter', 'Jens Bender', 72, 600, 400, 38, 28);
-text(cover, 'Event details', '[Event / setting] · [Date]', 72, 649, 1000, 28, 22,
+text(cover, 'Subtitle', 'Predicting Out-of-Pocket Healthcare Costs with Machine Learning',
+  72, 522, 1136, 56, 34, { bold: true });
+text(cover, 'Presenter', 'Jens Bender', 72, 594, 400, 36, 28);
+text(cover, 'Event details', '[Event / setting] · [Date]', 72, 632, 1000, 32, 24,
   { color: theme.secondary });
 cover.speakerNotes.textFrame.setText(notesFor('M1'));
 

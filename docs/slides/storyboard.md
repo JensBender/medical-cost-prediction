@@ -69,7 +69,7 @@ criteria served the intended budgeting use case.
 **On the slide**
 
 - Title: Medical Cost Planner (in the project header)
-- Subtitle: Predicting annual out-of-pocket healthcare costs
+- Subtitle: Predicting Out-of-Pocket Healthcare Costs with Machine Learning
 - Presenter: Jens Bender
 - Event or setting: [presentation setting]
 - Date: [presentation date]
