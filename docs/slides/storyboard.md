@@ -135,41 +135,45 @@ spending, with survey weights supporting population-level training and evaluatio
 
 - **MEPS:** Medical Expenditure Panel Survey
 - **Data:** 2023 Household Component (HC-251)
-- **Sample:** 14,768 adult respondents
+- **Sample:** 14,768 adults
+- **Target:** Annual out-of-pocket healthcare costs
 - **Features:** 26 inputs covering demographics, insurance, and health
-- **Target:** Annual out-of-pocket spending
-- **Survey weights:** How many people each respondent represents.
+- **Survey weights:** How many people each sampled person represents.
   This sample represents approximately 260 million U.S. adults.
 
 **Layout:** A simple bullet list with bold labels on the left and a small
 [household survey illustration](assets/household-survey.png) on the right.
 A small footer link,
-“Appendix: MEPS overview,” opens [A1](#a1--meps-survey-overview) for follow-up 
+“Appendix: MEPS overview,” opens [A1](#a1--meps-survey-overview) for follow-up
 questions.
 
 **Speaker notes — 1:30**
 
-“The Medical Expenditure Panel Survey, or MEPS, is a leading source of U.S.
-healthcare cost data. Households complete five interviews over two years.
+“The Medical Expenditure Panel Survey, or MEPS, is a nationally representative
+survey and a leading source of U.S. healthcare cost data. Households complete
+five interviews over two years.
 To improve healthcare cost estimates, MEPS obtains participants’ written
 permission to collect medical records directly from providers and pharmacies,
 including payment details.
 
-For this budgeting task, the target is out-of-pocket healthcare costs for 
-the entire year. This includes copays, deductibles, and uncovered services, 
-but excludes insurance premiums. For uninsured people, it can be close to 
+For this budgeting task, the target is out-of-pocket healthcare costs for
+the entire year. This includes copays, deductibles, and uncovered services,
+but excludes insurance premiums. For uninsured people, it can be close to
 their total healthcare costs.
 
-This project uses the 2023 household data for over 14,000 adults. I selected
-26 features from over 1,000 variables, including age, insurance status,
-family income, joint pain, and high cholesterol. I focused on information people can
-provide from memory, prioritizing measurements early in the year to reduce data
-leakage and predictive power supported by the healthcare cost literature.
+This project uses the 2023 household data for over 14,000 people, representing
+about 260 million U.S. adults. I selected 26 features from over 1,000 variables,
+including age, insurance status, family income, joint pain, and high cholesterol.
+I focused on information people can provide from memory, prioritizing
+measurements early in the year to reduce data leakage and predictive power
+supported by the healthcare cost literature.
 
-Survey weights tell us how many people each respondent represents. They account
-for unequal selection probabilities and nonresponse. With these weights, our
-sample represents about 260 million U.S. adults. I use them in both training
-and evaluation.”
+MEPS oversamples some groups, such as Hispanic households, for more reliable
+estimates. Each person has a survey weight showing how many people they represent
+in the population. These weights account for selection probabilities and
+nonresponse. I use them in data exploration, model training, and evaluation so the
+results reflect the population rather than the sample’s composition. Otherwise,
+oversampled groups would have disproportionate influence.”
 
 **Transition:** Show why the spending distribution makes this task difficult.
 
@@ -179,6 +183,7 @@ and evaluation.”
 [AHRQ: MEPS overview](https://www.ahrq.gov/data/meps.html);
 [AHRQ: separate survey components](https://www.ahrq.gov/cpi/about/otherwebsites/meps.ahrq.gov/index.html);
 [MEPS: interview design](https://meps.ahrq.gov/survey_comp/hc_data_collection.jsp);
+[MEPS 2023 methodology: oversampling](https://meps.ahrq.gov/data_files/publications/annual_contractor_report/MEPS-Methodology-Report-2023.html);
 [MEPS: medical provider follow-up and authorization](https://meps.ahrq.gov/communication/participants/faq_mpc.shtml);
 [MEPS: pharmacy follow-up and authorization](https://meps.ahrq.gov/communication/participants/faq_pharm.shtml);
 [MEPS 2023 documentation: expenditure construction, sampling, and weights](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml).

@@ -197,10 +197,10 @@ def survey_bullets(slide):
     items = [
         ("MEPS:", " Medical Expenditure Panel Survey"),
         ("Data:", " 2023 Household Component (HC-251)"),
-        ("Sample:", " 14,768 adult respondents"),
+        ("Sample:", " 14,768 adults"),
+        ("Target:", " Annual out-of-pocket healthcare costs"),
         ("Features:", " 26 inputs covering demographics, insurance, and health"),
-        ("Target:", " Annual out-of-pocket spending"),
-        ("Survey weights:", " How many people each respondent represents. "
+        ("Survey weights:", " How many people each sampled person represents. "
          "This sample represents approximately 260 million U.S. adults."),
     ]
     for index, (label, value) in enumerate(items):
