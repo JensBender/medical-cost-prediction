@@ -482,7 +482,7 @@ def render_previews(pptx_path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("revision", help="New revision name, for example python-v1")
+    parser.add_argument("revision", help="New revision name, for example v4")
     parser.add_argument("--render", action="store_true",
                         help="Also create PNG previews using the bundled renderer")
     args = parser.parse_args()

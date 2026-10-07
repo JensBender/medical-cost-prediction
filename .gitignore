@@ -36,7 +36,6 @@ figures/*_sample.png
 # Presentation slides
 /docs/slides/*
 !/docs/slides/storyboard.md
-!/docs/slides/generate_slides.mjs
 !/docs/slides/generate_slides.py
 !/docs/slides/README.md
 !/docs/slides/assets/

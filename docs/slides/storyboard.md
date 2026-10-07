@@ -797,20 +797,24 @@ Create variants as concrete requirements arise, such as a data science or ML
 engineering interview, tech meetup, or conference talk. Keep variant notes in
 `docs/slides/variants/`, referencing shared slide IDs and documenting the changes.
 
-Track the storyboard, slide-generation JavaScript, and required custom images in
-Git. Store custom images in `docs/slides/assets/`, where the root `.gitignore`
+Track the storyboard, Python generator, usage README, and required custom images
+in Git. Store custom images in `docs/slides/assets/`, where the root `.gitignore`
 allows common image formats but excludes prompt text files. Reuse existing
 project figures where useful. Keep variant notes, build files, previews, and
 PowerPoint exports local.
 
-`generate_slides.mjs` builds the main presentation, with spoken notes drawn from
+`generate_slides.py` builds the main presentation, with spoken notes drawn from
 this storyboard. Slide text and layouts live in the generator; update both files
 when content changes. Exports use numbered folders such as `exports/main-v12/`.
 
-After a numbered draft passes validation and its previews render, the generator
-keeps the new export, the most recent complete previous export, and only the new
-build directory. Named versions are preserved for presentation milestones.
+After a numbered draft passes validation and preview review, keep the new export
+and the previous complete export. Remove older draft exports and obsolete build
+files. Preserve named presentation milestones. The Python generator keeps
+existing exports; cleanup is part of the slide-editing workflow in the ChatGPT
+desktop app or Codex.
 
 To recreate an earlier presentation, restore the generator, storyboard, and
-assets from the same commit. The generator uses the presentation runtime bundled
-with the ChatGPT desktop app or Codex; runtime changes may require adjustments.
+assets from the same commit. PowerPoint generation uses `python-pptx` in
+`.venv-train`; optional previews and extended validation use the presentation
+tools bundled with the ChatGPT desktop app or Codex. The earlier JavaScript
+generator is available in Git history for versions created with it.
