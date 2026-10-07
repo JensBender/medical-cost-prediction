@@ -4,9 +4,10 @@
 contains M1–M9, using the approved M2 and M7 design. It uses a white background,
 dark blue text, and teal for model results in comparisons. Gray is reserved for
 supporting information and slide IDs. Titles can use one or two lines; the
-content starts below the title with a consistent gap. The MEPS overview and U.S.
-healthcare costs appendix slides are included; the remaining appendix slides are
-in storyboard form.
+content starts below the title with a consistent gap. The U.S. healthcare costs
+and MEPS overview appendix slides are included; the remaining appendix slides are
+in storyboard form. Order and number appendix slides by their first reference
+in the main presentation. Place unreferenced slides with their related topic.
 
 `generate_slides.py` creates an editable PowerPoint, with optional PNG previews.
 Speaker notes come from the storyboard; slide copy and layout are in the Python
@@ -55,7 +56,7 @@ Then add `--render`:
 ```
 
 The renderer reads the generated PowerPoint and writes `M1.png` through `M9.png`,
-`A1.png`, and `A14.png` beside it. Rendering failures leave the PowerPoint file
+`A1.png`, and `A2.png` beside it. Rendering failures leave the PowerPoint file
 available.
 Preview generation requires the bundled renderer; it is optional for someone
 cloning the repository. The bundled presentation validators can also inspect

@@ -14,8 +14,10 @@ storyboard form.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The initial
   allocation below totals 10 minutes, leaving room for transitions.
-- **Structure:** a cover, eight content slides, and fifteen appendix slides. Appendix IDs
-  remain stable so we can promote slides without rewriting their references.
+- **Structure:** a cover, eight content slides, and fifteen planned appendix slides.
+  Order and number appendix slides by their first reference in the main presentation.
+  Place unreferenced slides with their related topic. Update numbering and links
+  when the presentation order changes.
 - **Appendix navigation:** Add links where a specific follow-up is likely, using
   “Appendix: [topic]” at the bottom left and “Back to [main slide topic]” on the
   appendix slide. Use small, muted gray, underlined text and keep slide IDs at
@@ -98,15 +100,16 @@ spending to plan their budget and HSA/FSA contributions.
 
 **On the slide**
 
-- **The challenge:** Planning next year's out-of-pocket costs and HSA/FSA
-  contributions is difficult.
-- **Our aim:** A useful ballpark estimate from questions people can answer from
+- **The challenge:** Difficult to plan next year's out-of-pocket costs and HSA/FSA
+  contributions.
+- **The aim:** A useful ballpark estimate from questions people can answer from
   memory.
 
 **Visual:** A wide [budgeting illustration](assets/budget-planning.png)
 below the title, with the challenge and aim in two aligned columns underneath.
-A small footer link, “Appendix: U.S. healthcare costs,” opens
-[A14](#a14--us-healthcare-costs-out-of-pocket-spending-and-hsafsa-planning)
+Each column uses two lines of body text, leaving space above the footer.
+A small footer link, “Appendix: U.S. healthcare cost explainer,” opens
+[A1](#a1--us-healthcare-costs-out-of-pocket-spending-and-hsafsa-planning)
 for questions about the U.S. system.
 
 **Speaker notes — 0:45 (rehearsed)**
@@ -149,7 +152,7 @@ spending, with survey weights supporting population-level training and evaluatio
 **Layout:** A simple bullet list with bold labels on the left and a small
 [household survey illustration](assets/household-survey.png) on the right.
 A small footer link,
-“Appendix: MEPS overview,” opens [A1](#a1--meps-survey-overview) for follow-up
+“Appendix: MEPS overview,” opens [A2](#a2--meps-survey-overview) for follow-up
 questions.
 
 **Speaker notes — 1:30**
@@ -205,7 +208,7 @@ inputs after adding a life-transition feature. Medical feature derivation and
 encoding produce 40 model-ready columns. These counts describe different stages.
 The current model uses these inputs. Feature reduction would be considered if
 user testing suggests that fewer inputs would improve the experience.
-See A15 for representative inputs and the link to the full list.
+See A3 for representative inputs and the link to the full list.
 Preprocessing is fitted on training data. The 80/10/10 split is random within
 spending groups, with a separate zero-cost group and finer bins for high costs.
 This helps preserve the distribution and reduces chance imbalances in rare,
@@ -265,7 +268,7 @@ between lower- and higher-cost profiles.
 **Visual:** An editable comparison table followed by the $217 maximum-prediction
 finding and its implication. Keep the
 [validation residual diagnostics](../../figures/evaluation/tuned_models_validation_heteroscedasticity.png)
-in A4 so the main slide stays readable.
+in A7 so the main slide stays readable.
 At the first displayed use, include a metric key: “MdAE: median absolute error;
 MAE: mean absolute error.”
 
@@ -379,7 +382,7 @@ and situations where the model is less reliable.
 
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
-Confidence intervals, widths, and scoring definitions are in A5 and A6.
+Confidence intervals, widths, and scoring definitions are in A8 and A9.
 
 ### M8 — Final model test audit: overall coverage hides subgroup gaps
 
@@ -396,7 +399,7 @@ validation steps.
 
 **Visual:** An editable bar chart compares typical-range coverage for poor
 mental health (30.1%) and low income (39.2%) with overall coverage (47.3%) and
-the 50% target. Label these as point estimates; use A7 for the fuller audit
+the 50% target. Label these as point estimates; use A10 for the fuller audit
 with subgroup counts and uncertainty.
 
 **Speaker notes — 1:00**
@@ -460,309 +463,7 @@ uncertainty, and subgroup reliability each reveal something different.”
 Each appendix item is an optional slide with a specific question to answer.
 Timings apply only when promoted into the main presentation.
 
-### A1 — MEPS survey overview
-
-**Question:** How does MEPS collect its data, and which component does this project use?
-
-**On the slide:** The existing MEPS infographic, with a small footer link,
-“Back to MEPS data,” to return to the main data slide.
-
-**Visual:** Use the [MEPS infographic](../../assets/infographic_meps_data.jpg)
-at full slide width, preserving its proportions and all labels.
-
-**Speaker notes — 1:00 (optional)**
-
-“MEPS includes household, medical provider, and employer insurance surveys.
-The project uses the 2023 full-year Household Component file, HC-251. Households
-are interviewed repeatedly, and provider information supplements or replaces
-reported spending where needed. The employer insurance survey is a separate
-component, not an extra set of linked inputs in this project. The overlapping
-panels shown here contribute observations to the same calendar-year file.”
-
-**Transition:** Return to the main data slide or continue with questions.
-
-**Detail for questions:** `PERWT23F` supplies person weights. Training, metrics,
-and simple benchmarks use these weights. They do not by themselves remove
-missing-feature bias, guarantee representativeness of future app users, or
-account for survey clustering in uncertainty estimates.
-
-**Promote:** After M3 for survey background; allow 1:00.
-
-**Sources:** [AHRQ: MEPS overview](https://www.ahrq.gov/data/meps.html);
-[MEPS medical provider component](https://meps.ahrq.gov/mepsweb/survey_comp/mpc.jsp);
-[EDA notebook](../../notebooks/1_eda_and_preprocessing.py);
-[modeling helpers](../../src/modeling.py).
-
-### A2 — Feature timing: limits of next-year forecasting
-
-**Question:** Is this truly a next-year forecast?
-
-**On the slide:** Early-round health measures reduce reliance on later-year
-information, but interviews occur during the cost year. Variables such as
-`INSCOV23` summarize the full year. Current evaluation uses a within-year split.
-
-**Visual:** A timeline separating survey collection, the 2023 spending target,
-and the planned prospective application.
-
-**Talking points:** Training-fitted preprocessing addresses one source of
-leakage. Feature availability at the intended prediction date is a separate
-issue. Audit every input against that date and evaluate on later-year data.
-Do not claim the size or direction of the resulting performance change is known.
-
-**Promote:** After M3 or M8 for forecasting and validation questions; allow 1:00.
-
-**Sources:** [input feature timing](../research/candidate_features.md);
-[technical specifications: input selection](../specs/technical_specifications.md).
-
-### A3 — Model tuning: comparisons on a fixed validation split
-
-**Question:** What alternatives and tuning procedure were used?
-
-**On the slide:** Compare linear regression, Elastic Net, decision tree, Random
-Forest, SVM, and XGBoost with a population-median benchmark. Tune Elastic Net,
-Random Forest, and XGBoost with 50 sampled configurations each. Select by
-survey-weighted validation MdAE.
-
-**Visual:** The compact baseline and tuned comparison from the README, clearly
-labeled “validation.”
-
-**Talking points:** A manual `ParameterSampler` loop routes weights through
-nested pipeline and target-transform wrappers. This is not cross-validation.
-Repeated selection on one validation split has uncertainty. The quantile model
-reuses the tuned point-model parameters rather than receiving its own search.
-
-**Promote:** Before M5 for a longer modeling discussion; allow 1:30.
-
-**Sources:** [README: modeling](../../README.md);
-[XGBoost tuning script](../../scripts/tune_xgboost.py).
-
-### A4 — Point-model diagnostics: residuals and prediction ranges
-
-**Question:** Why did the lowest-MdAE model not meet the full product need?
-
-**On the slide:** Elastic Net's narrow prediction range; larger errors on
-expensive outcomes; differences across medical-complexity groups.
-
-**Visual:** [Tuned-model residual analysis](../../figures/evaluation/tuned_models_validation_heteroscedasticity.png).
-Use a readable crop or split the figure during design rather than shrinking it.
-
-**Talking points:** MdAE and MAE summarize different aspects of the error
-distribution. A lower MdAE alone does not establish useful risk separation.
-Wider prediction spread alone also does not establish accuracy; inspect
-residuals and subgroup errors alongside it.
-
-**Promote:** After M5; allow 1:00.
-
-**Sources:** [README: heteroscedasticity and subgroup analysis](../../README.md);
-[modeling notebook](../../notebooks/2_modeling.py).
-
-### A5 — Final model test results: coverage, width, and release gates
-
-**Question:** What does passing the project's gates mean?
-
-**On the slide:** All results are survey-weighted test estimates. Dollar amounts
-are in 2023 USD; intervals below are approximate 95% bootstrap confidence intervals.
-
-| Metric | Estimate [95% CI] | Project gate |
-| --- | --- | --- |
-| q50 MdAE | $240 [$215, $279] | < $500 |
-| q25–q75 coverage | 47.3% [44.0%, 50.6%] | 45%–55% |
-| q90 coverage | 91.0% [89.2%, 92.6%] | 85%–95% |
-| Mean q25–q75 width | $912 [$875, $955] | < $1,500 |
-| Mean q50–q90 width | $2,032 [$1,964, $2,108] | < $3,500 |
-
-**Visual:** This table, with gate results readable beside each estimate.
-
-**Talking points:** Point estimates pass the gates. The entire confidence
-interval does not need to fall inside the gate under the reported decision
-rule. These are project criteria, not external certification. The notebook
-resamples rows and retains their weights.
-
-**Promote:** After M7 for evaluation depth; allow 1:00.
-
-**Sources:** [README: release gates](../../README.md);
-[modeling notebook: bootstrap implementation](../../notebooks/2_modeling.py).
-
-### A6 — Final model test benchmarks: gains over simple estimates
-
-**Question:** Why not give everyone a population or age-group estimate?
-
-**On the slide**
-
-| Test comparison | Versus population baseline | Versus age-group baseline |
-| --- | ---: | ---: |
-| q50 MAE reduction | 9.8% | 7.6% |
-| Typical-range interval-score reduction | 11.2% | 9.0% |
-| q90 pinball-loss reduction | 15.6% | 14.3% |
-
-MdAE: XGBoost **$240**; population baseline **$248**; age-group baseline **$305**.
-
-**Visual:** A grouped comparison of these three loss reductions. Add the saved
-notebook's paired-bootstrap intervals when preparing the chart; do not invent
-interval endpoints.
-
-**Talking points:** Benchmarks use training data. The interval score penalizes
-width and observations outside the range. At q90, pinball loss penalizes
-underprediction more heavily than overprediction. The notebook reports
-confidence intervals above zero for the three reductions shown, but the small
-MdAE improvement versus the population baseline remains uncertain. Positive
-skill is not a percentage-point improvement in coverage.
-
-**Promote:** After M7; allow 1:00.
-
-**Source:** [Modeling notebook: test baseline comparisons](../../notebooks/2_modeling.py).
-
-### A7 — Final model test audit: subgroup coverage gaps
-
-**Question:** Who receives less reliable ranges?
-
-**On the slide:** Typical-range test coverage is **30.1%** for poor mental health,
-**39.2%** for low income, and **34.7%** for doctorate degree holders. The target
-is 50%; uninsured users are also on the undercoverage watchlist.
-
-**Visual:** Selected rows from [test subgroup fairness](../../figures/evaluation/xgb_quantile_test_subgroup_fairness.png)
-and [test subgroup reliability](../../figures/evaluation/xgb_quantile_test_subgroup_reliability.png).
-Retain sample sizes and uncertainty intervals where shown.
-
-**Talking points:** Smaller subgroups carry greater uncertainty. The audit uses
-wider diagnostic review bands than the overall gates and a minimum raw count
-of 30. Similar error patterns across models do not establish absence of bias.
-Planning notices communicate a limitation; further evaluation or recalibration
-would be needed to address it.
-
-**Promote:** After M8; allow 1:00.
-
-**Sources:** [README: final subgroup audit](../../README.md);
-[modeling notebook](../../notebooks/2_modeling.py).
-
-### A8 — Final model test audit: actual versus predicted cost tiers
-
-**Question:** Does the safety cushion protect the largest spenders?
-
-**On the slide:** q90 covers **91.0% overall**, but only **6.7%** in the audit's
-actual “Very High” spending group. Actual cost groups are retrospective;
-predicted cost groups are available at inference.
-
-**Visual:** The actual-versus-predicted cost-tier section of
-[test reliability](../../figures/evaluation/xgb_quantile_test_subgroup_reliability.png).
-Preserve the notebook's group definitions in the figure or footnote.
-
-**Talking points:** Selecting a subgroup using the outcome changes the question.
-Low coverage in the observed tail is a useful description of missed expensive
-years, not the same as conditional calibration by an available input. An upper
-quantile is not catastrophe insurance or a hard spending cap.
-
-**Promote:** After M8 when discussing tail risk; allow 1:00.
-
-**Sources:** [README: final reliability audit](../../README.md);
-[modeling notebook](../../notebooks/2_modeling.py).
-
-### A9 — SHAP explains how inputs shape the median estimate
-
-**Question:** Which inputs influence predictions, and what can users infer?
-
-**On the slide:** Insurance and family income have the largest average absolute
-SHAP contributions. Explanations concern postprocessed q50 in dollars, through
-the full inference function. They do not explain q90 or causal effects.
-
-**Visual:** [Test SHAP feature importance](../../figures/evaluation/shap_feature_importance.png).
-
-**Talking points:** Permutation SHAP operates on 27 interpretable preprocessor
-inputs, including the effects of transformations and derived medical counts.
-Correlated inputs can share attribution. Higher or lower observed spending
-does not by itself mean higher or lower healthcare need.
-
-**Promote:** Before M9 for explainability depth; allow 1:00.
-
-**Sources:** [README: feature importance](../../README.md);
-[SHAP metadata](../../app/data/shap_metadata.json).
-
-### A10 — SHAP benchmarking: explanation quality and latency
-
-**Question:** How was the SHAP configuration chosen?
-
-**On the slide:** 225 background rows; one permutation round. On 100 held-out
-test rows, every row matched at least four of the reference's top five features;
-median matched contribution difference **$6.47**; P95 core SHAP latency **0.20 s**.
-
-**Visual:** One compact quality-versus-latency summary, with the measurement
-boundary stated explicitly.
-
-**Talking points:** The reference uses 500 background rows and 24 rounds.
-The benchmark also checks material sign reversals and prediction reconstruction.
-P95 summarizes subsequent explanation calls after a separately measured first
-call. It excludes the rest of the request and is not a deployed API latency
-claim. Complete request latency on target hardware remains unverified.
-
-**Promote:** Before M9 for ML engineering roles; allow 1:00.
-
-**Sources:** [README: SHAP explanation details](../../README.md);
-[SHAP metadata](../../app/data/shap_metadata.json);
-[benchmark script](../../scripts/benchmark_shap.py).
-
-### A11 — Inference architecture: shared prediction and explanation code
-
-**Question:** How will training and serving stay consistent?
-
-**On the slide:** DVC stages produce fitted preprocessing and model artifacts.
-Shared prediction code applies the fitted preprocessor, predicts quantiles, and
-enforces ordered nonnegative outputs. The planned service handles user-input
-mapping, inflation adjustment, notices, and response formatting.
-
-**Visual:** An architecture diagram separating implemented modules from planned
-FastAPI/Gradio integration. Show explanations calling the same q50 inference path.
-
-**Talking points:** Keep UI concerns at the interface. DVC records stage
-dependencies; MLflow records experiments. Existing unit tests cover core
-prediction and explanation behavior. Integration, end-to-end behavior, and
-deployment performance still need verification. Do not imply that every
-experiment is a DVC stage or that the full service is implemented.
-
-**Promote:** Before M9 for ML engineering roles; allow 1:30.
-
-**Sources:** [DVC pipeline](../../dvc.yaml); [prediction code](../../src/prediction.py);
-[technical specifications](../specs/technical_specifications.md); [unit tests](../../tests/unit/).
-
-### A12 — Production monitoring: drift signals without observed outcomes
-
-**Question:** How would the product be monitored without retaining user records?
-
-**On the slide:** Planned aggregate counters track app health, input and output
-distributions, and warning rates. Individual inputs and predictions are not
-retained. Actual annual spending is unavailable by default.
-
-**Visual:** A table separating observable signals from unavailable outcomes.
-
-**Talking points:** Drift can trigger investigation, but it does not measure
-MdAE or interval coverage. Those require observed outcomes. Periodic evaluation
-on later MEPS data is a separate route for assessing the model. Medical
-inflation adjusts the dollar scale; it cannot correct all changes in insurance,
-care use, or the population. These are planned operating choices.
-
-**Promote:** Before M9 for deployment and product discussion; allow 1:00.
-
-**Sources:** [Technical specifications: privacy-preserving monitoring](../specs/technical_specifications.md);
-[product requirements](../specs/product_requirements.md).
-
-### A13 — LLM benchmark: General versus Specific Intelligence
-
-**Question:** Why not ask a general-purpose language model for an estimate?
-
-**On the slide:** The documented Gemini 3 Flash benchmark has validation MdAE
-of **$518**, versus **$163** for baseline Elastic Net. 
-
-**Visual:** Two bars labeled with model, metric, and validation split. Do not
-mix these with test-set results from the final quantile model.
-
-**Talking points:** This result describes one model and prompting setup, not all
-LLMs. 
-
-**Promote:** Optional, after A3; allow 1:00.
-
-**Sources:** [README: LLM benchmark](../../README.md);
-[LLM benchmark script](../../scripts/benchmark_llm.py).
-
-### A14 — U.S. healthcare costs: out-of-pocket spending and HSA/FSA planning
+### A1 — U.S. healthcare costs: out-of-pocket spending and HSA/FSA planning
 
 **Question:** What is out-of-pocket spending, and how does it relate to HSA/FSA planning?
 
@@ -796,7 +497,40 @@ plan comparisons are outside scope.
 [HealthCare.gov: HSA overview](https://www.healthcare.gov/high-deductible-health-plan/);
 [HealthCare.gov: FSA overview](https://www.healthcare.gov/have-job-based-coverage/flexible-spending-accounts/).
 
-### A15 — Input features: what users provide
+### A2 — MEPS survey overview
+
+**Question:** How does MEPS collect its data, and which component does this project use?
+
+**On the slide:** The existing MEPS infographic, with a small footer link,
+“Back to MEPS data,” to return to the main data slide.
+
+**Visual:** Use the [MEPS infographic](../../assets/infographic_meps_data.jpg)
+at full slide width, preserving its proportions and all labels.
+
+**Speaker notes — 1:00 (optional)**
+
+“MEPS includes household, medical provider, and employer insurance surveys.
+The project uses the 2023 full-year Household Component file, HC-251. Households
+are interviewed repeatedly, and provider information supplements or replaces
+reported spending where needed. The employer insurance survey is a separate
+component, not an extra set of linked inputs in this project. The overlapping
+panels shown here contribute observations to the same calendar-year file.”
+
+**Transition:** Return to the main data slide or continue with questions.
+
+**Detail for questions:** `PERWT23F` supplies person weights. Training, metrics,
+and simple benchmarks use these weights. They do not by themselves remove
+missing-feature bias, guarantee representativeness of future app users, or
+account for survey clustering in uncertainty estimates.
+
+**Promote:** After M3 for survey background; allow 1:00.
+
+**Sources:** [AHRQ: MEPS overview](https://www.ahrq.gov/data/meps.html);
+[MEPS medical provider component](https://meps.ahrq.gov/mepsweb/survey_comp/mpc.jsp);
+[EDA notebook](../../notebooks/1_eda_and_preprocessing.py);
+[modeling helpers](../../src/modeling.py).
+
+### A3 — Input features: what users provide
 
 **Question:** What information does the model use, and how much does it ask of users?
 
@@ -821,7 +555,7 @@ plan comparisons are outside scope.
 columns after transformation. These counts do not equal the number of questions
 on the planned form: related conditions can be grouped, and some values are
 derived. User testing will assess the burden; feature reduction is an option if
-fewer inputs would improve the experience. Refer to A2 for input timing.
+fewer inputs would improve the experience. Refer to A4 for input timing.
 
 **Promote:** After M3 when input design is relevant to the audience; allow 0:45.
 Otherwise, use only for questions.
@@ -829,6 +563,275 @@ Otherwise, use only for questions.
 **Sources:** [README: feature details](../../README.md#feature-details);
 [input definitions](../../src/constants.py);
 [product requirements: input form](../specs/product_requirements.md).
+
+### A4 — Feature timing: limits of next-year forecasting
+
+**Question:** Is this truly a next-year forecast?
+
+**On the slide:** Early-round health measures reduce reliance on later-year
+information, but interviews occur during the cost year. Variables such as
+`INSCOV23` summarize the full year. Current evaluation uses a within-year split.
+
+**Visual:** A timeline separating survey collection, the 2023 spending target,
+and the planned prospective application.
+
+**Talking points:** Training-fitted preprocessing addresses one source of
+leakage. Feature availability at the intended prediction date is a separate
+issue. Audit every input against that date and evaluate on later-year data.
+Do not claim the size or direction of the resulting performance change is known.
+
+**Promote:** After M3 or M8 for forecasting and validation questions; allow 1:00.
+
+**Sources:** [input feature timing](../research/candidate_features.md);
+[technical specifications: input selection](../specs/technical_specifications.md).
+
+### A5 — Model tuning: comparisons on a fixed validation split
+
+**Question:** What alternatives and tuning procedure were used?
+
+**On the slide:** Compare linear regression, Elastic Net, decision tree, Random
+Forest, SVM, and XGBoost with a population-median benchmark. Tune Elastic Net,
+Random Forest, and XGBoost with 50 sampled configurations each. Select by
+survey-weighted validation MdAE.
+
+**Visual:** The compact baseline and tuned comparison from the README, clearly
+labeled “validation.”
+
+**Talking points:** A manual `ParameterSampler` loop routes weights through
+nested pipeline and target-transform wrappers. This is not cross-validation.
+Repeated selection on one validation split has uncertainty. The quantile model
+reuses the tuned point-model parameters rather than receiving its own search.
+
+**Promote:** Before M5 for a longer modeling discussion; allow 1:30.
+
+**Sources:** [README: modeling](../../README.md);
+[XGBoost tuning script](../../scripts/tune_xgboost.py).
+
+### A6 — LLM benchmark: General versus Specific Intelligence
+
+**Question:** Why not ask a general-purpose language model for an estimate?
+
+**On the slide:** The documented Gemini 3 Flash benchmark has validation MdAE
+of **$518**, versus **$163** for baseline Elastic Net.
+
+**Visual:** Two bars labeled with model, metric, and validation split. Do not
+mix these with test-set results from the final quantile model.
+
+**Talking points:** This result describes one model and prompting setup, not all
+LLMs.
+
+**Promote:** Optional, after A5; allow 1:00.
+
+**Sources:** [README: LLM benchmark](../../README.md);
+[LLM benchmark script](../../scripts/benchmark_llm.py).
+
+### A7 — Point-model diagnostics: residuals and prediction ranges
+
+**Question:** Why did the lowest-MdAE model not meet the full product need?
+
+**On the slide:** Elastic Net's narrow prediction range; larger errors on
+expensive outcomes; differences across medical-complexity groups.
+
+**Visual:** [Tuned-model residual analysis](../../figures/evaluation/tuned_models_validation_heteroscedasticity.png).
+Use a readable crop or split the figure during design rather than shrinking it.
+
+**Talking points:** MdAE and MAE summarize different aspects of the error
+distribution. A lower MdAE alone does not establish useful risk separation.
+Wider prediction spread alone also does not establish accuracy; inspect
+residuals and subgroup errors alongside it.
+
+**Promote:** After M5; allow 1:00.
+
+**Sources:** [README: heteroscedasticity and subgroup analysis](../../README.md);
+[modeling notebook](../../notebooks/2_modeling.py).
+
+### A8 — Final model test results: coverage, width, and release gates
+
+**Question:** What does passing the project's gates mean?
+
+**On the slide:** All results are survey-weighted test estimates. Dollar amounts
+are in 2023 USD; intervals below are approximate 95% bootstrap confidence intervals.
+
+| Metric | Estimate [95% CI] | Project gate |
+| --- | --- | --- |
+| q50 MdAE | $240 [$215, $279] | < $500 |
+| q25–q75 coverage | 47.3% [44.0%, 50.6%] | 45%–55% |
+| q90 coverage | 91.0% [89.2%, 92.6%] | 85%–95% |
+| Mean q25–q75 width | $912 [$875, $955] | < $1,500 |
+| Mean q50–q90 width | $2,032 [$1,964, $2,108] | < $3,500 |
+
+**Visual:** This table, with gate results readable beside each estimate.
+
+**Talking points:** Point estimates pass the gates. The entire confidence
+interval does not need to fall inside the gate under the reported decision
+rule. These are project criteria, not external certification. The notebook
+resamples rows and retains their weights.
+
+**Promote:** After M7 for evaluation depth; allow 1:00.
+
+**Sources:** [README: release gates](../../README.md);
+[modeling notebook: bootstrap implementation](../../notebooks/2_modeling.py).
+
+### A9 — Final model test benchmarks: gains over simple estimates
+
+**Question:** Why not give everyone a population or age-group estimate?
+
+**On the slide**
+
+| Test comparison | Versus population baseline | Versus age-group baseline |
+| --- | ---: | ---: |
+| q50 MAE reduction | 9.8% | 7.6% |
+| Typical-range interval-score reduction | 11.2% | 9.0% |
+| q90 pinball-loss reduction | 15.6% | 14.3% |
+
+MdAE: XGBoost **$240**; population baseline **$248**; age-group baseline **$305**.
+
+**Visual:** A grouped comparison of these three loss reductions. Add the saved
+notebook's paired-bootstrap intervals when preparing the chart; do not invent
+interval endpoints.
+
+**Talking points:** Benchmarks use training data. The interval score penalizes
+width and observations outside the range. At q90, pinball loss penalizes
+underprediction more heavily than overprediction. The notebook reports
+confidence intervals above zero for the three reductions shown, but the small
+MdAE improvement versus the population baseline remains uncertain. Positive
+skill is not a percentage-point improvement in coverage.
+
+**Promote:** After M7; allow 1:00.
+
+**Source:** [Modeling notebook: test baseline comparisons](../../notebooks/2_modeling.py).
+
+### A10 — Final model test audit: subgroup coverage gaps
+
+**Question:** Who receives less reliable ranges?
+
+**On the slide:** Typical-range test coverage is **30.1%** for poor mental health,
+**39.2%** for low income, and **34.7%** for doctorate degree holders. The target
+is 50%; uninsured users are also on the undercoverage watchlist.
+
+**Visual:** Selected rows from [test subgroup fairness](../../figures/evaluation/xgb_quantile_test_subgroup_fairness.png)
+and [test subgroup reliability](../../figures/evaluation/xgb_quantile_test_subgroup_reliability.png).
+Retain sample sizes and uncertainty intervals where shown.
+
+**Talking points:** Smaller subgroups carry greater uncertainty. The audit uses
+wider diagnostic review bands than the overall gates and a minimum raw count
+of 30. Similar error patterns across models do not establish absence of bias.
+Planning notices communicate a limitation; further evaluation or recalibration
+would be needed to address it.
+
+**Promote:** After M8; allow 1:00.
+
+**Sources:** [README: final subgroup audit](../../README.md);
+[modeling notebook](../../notebooks/2_modeling.py).
+
+### A11 — Final model test audit: actual versus predicted cost tiers
+
+**Question:** Does the safety cushion protect the largest spenders?
+
+**On the slide:** q90 covers **91.0% overall**, but only **6.7%** in the audit's
+actual “Very High” spending group. Actual cost groups are retrospective;
+predicted cost groups are available at inference.
+
+**Visual:** The actual-versus-predicted cost-tier section of
+[test reliability](../../figures/evaluation/xgb_quantile_test_subgroup_reliability.png).
+Preserve the notebook's group definitions in the figure or footnote.
+
+**Talking points:** Selecting a subgroup using the outcome changes the question.
+Low coverage in the observed tail is a useful description of missed expensive
+years, not the same as conditional calibration by an available input. An upper
+quantile is not catastrophe insurance or a hard spending cap.
+
+**Promote:** After M8 when discussing tail risk; allow 1:00.
+
+**Sources:** [README: final reliability audit](../../README.md);
+[modeling notebook](../../notebooks/2_modeling.py).
+
+### A12 — SHAP explains how inputs shape the median estimate
+
+**Question:** Which inputs influence predictions, and what can users infer?
+
+**On the slide:** Insurance and family income have the largest average absolute
+SHAP contributions. Explanations concern postprocessed q50 in dollars, through
+the full inference function. They do not explain q90 or causal effects.
+
+**Visual:** [Test SHAP feature importance](../../figures/evaluation/shap_feature_importance.png).
+
+**Talking points:** Permutation SHAP operates on 27 interpretable preprocessor
+inputs, including the effects of transformations and derived medical counts.
+Correlated inputs can share attribution. Higher or lower observed spending
+does not by itself mean higher or lower healthcare need.
+
+**Promote:** Before M9 for explainability depth; allow 1:00.
+
+**Sources:** [README: feature importance](../../README.md);
+[SHAP metadata](../../app/data/shap_metadata.json).
+
+### A13 — SHAP benchmarking: explanation quality and latency
+
+**Question:** How was the SHAP configuration chosen?
+
+**On the slide:** 225 background rows; one permutation round. On 100 held-out
+test rows, every row matched at least four of the reference's top five features;
+median matched contribution difference **$6.47**; P95 core SHAP latency **0.20 s**.
+
+**Visual:** One compact quality-versus-latency summary, with the measurement
+boundary stated explicitly.
+
+**Talking points:** The reference uses 500 background rows and 24 rounds.
+The benchmark also checks material sign reversals and prediction reconstruction.
+P95 summarizes subsequent explanation calls after a separately measured first
+call. It excludes the rest of the request and is not a deployed API latency
+claim. Complete request latency on target hardware remains unverified.
+
+**Promote:** Before M9 for ML engineering roles; allow 1:00.
+
+**Sources:** [README: SHAP explanation details](../../README.md);
+[SHAP metadata](../../app/data/shap_metadata.json);
+[benchmark script](../../scripts/benchmark_shap.py).
+
+### A14 — Inference architecture: shared prediction and explanation code
+
+**Question:** How will training and serving stay consistent?
+
+**On the slide:** DVC stages produce fitted preprocessing and model artifacts.
+Shared prediction code applies the fitted preprocessor, predicts quantiles, and
+enforces ordered nonnegative outputs. The planned service handles user-input
+mapping, inflation adjustment, notices, and response formatting.
+
+**Visual:** An architecture diagram separating implemented modules from planned
+FastAPI/Gradio integration. Show explanations calling the same q50 inference path.
+
+**Talking points:** Keep UI concerns at the interface. DVC records stage
+dependencies; MLflow records experiments. Existing unit tests cover core
+prediction and explanation behavior. Integration, end-to-end behavior, and
+deployment performance still need verification. Do not imply that every
+experiment is a DVC stage or that the full service is implemented.
+
+**Promote:** Before M9 for ML engineering roles; allow 1:30.
+
+**Sources:** [DVC pipeline](../../dvc.yaml); [prediction code](../../src/prediction.py);
+[technical specifications](../specs/technical_specifications.md); [unit tests](../../tests/unit/).
+
+### A15 — Production monitoring: drift signals without observed outcomes
+
+**Question:** How would the product be monitored without retaining user records?
+
+**On the slide:** Planned aggregate counters track app health, input and output
+distributions, and warning rates. Individual inputs and predictions are not
+retained. Actual annual spending is unavailable by default.
+
+**Visual:** A table separating observable signals from unavailable outcomes.
+
+**Talking points:** Drift can trigger investigation, but it does not measure
+MdAE or interval coverage. Those require observed outcomes. Periodic evaluation
+on later MEPS data is a separate route for assessing the model. Medical
+inflation adjusts the dollar scale; it cannot correct all changes in insurance,
+care use, or the population. These are planned operating choices.
+
+**Promote:** Before M9 for deployment and product discussion; allow 1:00.
+
+**Sources:** [Technical specifications: privacy-preserving monitoring](../specs/technical_specifications.md);
+[product requirements](../specs/product_requirements.md).
 
 ## Adaptation and file organization
 

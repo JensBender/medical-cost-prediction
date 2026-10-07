@@ -24,7 +24,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [f"M{number}" for number in range(1, 10)] + ["A1", "A14"]
+SLIDE_IDS = [f"M{number}" for number in range(1, 10)] + ["A1", "A2"]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -301,17 +301,17 @@ def build_presentation():
 
     problem = new_slide(presentation, storyboard, "M2",
                         "How much should I set aside for healthcare?")
-    text(problem, "Challenge label", "The challenge", 72, 520, 532, 36, 30, bold=True)
-    text(problem, "Budgeting challenge", "Planning next year's out-of-pocket\n"
-         "costs and HSA/FSA contributions\nis difficult.", 72, 560, 532, 108, 30)
-    text(problem, "Aim label", "Our aim", 676, 520, 532, 36, 30, bold=True)
-    text(problem, "Intended estimate", "A useful ballpark estimate from\n"
-         "questions people can answer\nfrom memory.", 676, 560, 532, 108, 30)
+    text(problem, "Challenge label", "The challenge", 72, 520, 556, 36, 30, bold=True)
+    text(problem, "Budgeting challenge", "Difficult to plan next year's out-of-pocket\n"
+         "costs and HSA/FSA contributions.", 72, 560, 556, 72, 30)
+    text(problem, "Aim label", "The aim", 652, 520, 556, 36, 30, bold=True)
+    text(problem, "Intended estimate", "A useful ballpark estimate from questions "
+         "people can answer from memory.", 652, 560, 556, 72, 30)
     picture(problem, SLIDES_DIR / "assets/budget-planning.png",
             "Illustration of an adult considering a budget with a planner and calculator.",
             72, 120, 1136, 379)
     healthcare_appendix_link = text(
-        problem, "Healthcare costs appendix link", "Appendix: U.S. healthcare costs",
+        problem, "Healthcare costs appendix link", "Appendix: U.S. healthcare cost explainer",
         72, 674, 800, 24, 18, color=SECONDARY, underline=True,
     )
 
@@ -454,16 +454,7 @@ def build_presentation():
     text(next_steps, "Closing lesson", "Evaluate the outputs needed for the user decision",
          72, 605, 1136, 44, 32, bold=True)
 
-    meps_overview = new_slide(presentation, storyboard, "A1")
-    picture(meps_overview, WORKSPACE_DIR / "assets/infographic_meps_data.jpg",
-            "MEPS household, provider, and employer survey components and the 2023 "
-            "data used in this project.", 20, 0, 1240, 660)
-    return_link = text(meps_overview, "Return to data slide", "Back to MEPS data",
-                       72, 674, 800, 24, 18, color=SECONDARY, underline=True)
-    appendix_link.click_action.target_slide = meps_overview
-    return_link.click_action.target_slide = data
-
-    healthcare_overview = new_slide(presentation, storyboard, "A14")
+    healthcare_overview = new_slide(presentation, storyboard, "A1")
     picture(healthcare_overview, WORKSPACE_DIR / "assets/infographic_healthcare_costs.png",
             "Overview of U.S. healthcare payments, out-of-pocket costs, insurance "
             "terms, HSA/FSA planning, and the project target.", 20, 0, 1240, 660)
@@ -473,6 +464,15 @@ def build_presentation():
     )
     healthcare_appendix_link.click_action.target_slide = healthcare_overview
     healthcare_return_link.click_action.target_slide = problem
+
+    meps_overview = new_slide(presentation, storyboard, "A2")
+    picture(meps_overview, WORKSPACE_DIR / "assets/infographic_meps_data.jpg",
+            "MEPS household, provider, and employer survey components and the 2023 "
+            "data used in this project.", 20, 0, 1240, 660)
+    return_link = text(meps_overview, "Return to data slide", "Back to MEPS data",
+                       72, 674, 800, 24, 18, color=SECONDARY, underline=True)
+    appendix_link.click_action.target_slide = meps_overview
+    return_link.click_action.target_slide = data
     return presentation
 
 
