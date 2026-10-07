@@ -142,8 +142,8 @@ spending, with survey weights supporting population-level training and evaluatio
   This sample represents approximately 260 million U.S. adults.
 
 **Layout:** A simple bullet list with bold labels on the left and a small
-[household-interview illustration](assets/household-survey.png) in a 3:4 portrait
-format on the right, aligned with the top of the bullets. A small footer link, 
+[household survey illustration](assets/household-survey.png) on the right.
+A small footer link,
 “Appendix: MEPS overview,” opens [A1](#a1--meps-survey-overview) for follow-up 
 questions.
 
@@ -805,7 +805,7 @@ PowerPoint exports local.
 
 `generate_slides.py` builds the main presentation, with spoken notes drawn from
 this storyboard. Slide text and layouts live in the generator; update both files
-when content changes. Exports use numbered folders such as `exports/main-v12/`.
+when content changes. Exports use numbered folders such as `exports/v12/`.
 
 After a numbered draft passes validation and preview review, keep the new export
 and the previous complete export. Remove older draft exports and obsolete build

@@ -21,8 +21,8 @@ Python generator from the repository root:
 .\.venv-train\Scripts\python docs/slides/generate_slides.py v4
 ```
 
-The script writes `medical-cost-planner-main-v4.pptx` under
-`exports/main-v4/`. PowerPoint generation needs no ChatGPT or Codex runtime,
+The script writes `medical-cost-planner-v4.pptx` under
+`exports/v4/`. PowerPoint generation needs no ChatGPT or Codex runtime,
 model artifacts, or survey data. It uses `storyboard.md`, the images in `assets/`,
 and the project images `../../assets/header.png` and
 `../../assets/infographic_meps_data.jpg`. All these inputs are tracked by Git.

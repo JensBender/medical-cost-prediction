@@ -314,8 +314,9 @@ def build_presentation():
                      "MEPS links accessible inputs to observed spending")
     survey_bullets(data)
     picture(data, SLIDES_DIR / "assets/household-survey.png",
-            "Illustration of an interviewer using a laptop while an adult respondent "
-            "answers questions at home.", 868, 148, 340, 453.333)
+            "Illustration of a household survey interview: a respondent shows an empty "
+            "wallet beside bills, while an interviewer listens with a laptop.",
+            868, 148, 340, 453.333)
     appendix_link = text(data, "MEPS appendix link", "Appendix: MEPS overview",
                          72, 674, 800, 24, 18, color=SECONDARY, underline=True)
 
@@ -488,7 +489,7 @@ def main():
     args = parser.parse_args()
     if re.fullmatch(r"[a-zA-Z0-9_-]+", args.revision) is None:
         parser.error("Revision names can contain only letters, numbers, underscores and hyphens.")
-    output_dir = SLIDES_DIR / "exports" / f"main-{args.revision}"
+    output_dir = SLIDES_DIR / "exports" / args.revision
     if output_dir.exists():
         parser.error(f"Revision already exists: {output_dir}. Choose a new name.")
     if args.render:
@@ -498,7 +499,7 @@ def main():
             parser.error(f"PNG previews require: {', '.join(missing)}.")
     presentation = build_presentation()
     output_dir.mkdir(parents=True)
-    pptx_path = output_dir / f"medical-cost-planner-main-{args.revision}.pptx"
+    pptx_path = output_dir / f"medical-cost-planner-{args.revision}.pptx"
     presentation.save(pptx_path)
     print(f"PowerPoint: {pptx_path}")
     if args.render:
