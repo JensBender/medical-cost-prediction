@@ -24,7 +24,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [f"M{number}" for number in range(1, 10)] + ["A1"]
+SLIDE_IDS = [f"M{number}" for number in range(1, 10)] + ["A1", "A14"]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -310,6 +310,10 @@ def build_presentation():
     picture(problem, SLIDES_DIR / "assets/budget-planning.png",
             "Illustration of an adult considering a budget with a planner and calculator.",
             72, 120, 1136, 379)
+    healthcare_appendix_link = text(
+        problem, "Healthcare costs appendix link", "Appendix: U.S. healthcare costs",
+        72, 674, 800, 24, 18, color=SECONDARY, underline=True,
+    )
 
     data = new_slide(presentation, storyboard, "M3",
                      "MEPS links accessible inputs to observed spending")
@@ -458,6 +462,17 @@ def build_presentation():
                        72, 674, 800, 24, 18, color=SECONDARY, underline=True)
     appendix_link.click_action.target_slide = meps_overview
     return_link.click_action.target_slide = data
+
+    healthcare_overview = new_slide(presentation, storyboard, "A14")
+    picture(healthcare_overview, WORKSPACE_DIR / "assets/infographic_healthcare_costs.png",
+            "Overview of U.S. healthcare payments, out-of-pocket costs, insurance "
+            "terms, HSA/FSA planning, and the project target.", 20, 0, 1240, 660)
+    healthcare_return_link = text(
+        healthcare_overview, "Return to problem statement", "Back to problem statement",
+        72, 674, 800, 24, 18, color=SECONDARY, underline=True,
+    )
+    healthcare_appendix_link.click_action.target_slide = healthcare_overview
+    healthcare_return_link.click_action.target_slide = problem
     return presentation
 
 

@@ -1,7 +1,8 @@
 # Medical cost prediction: presentation storyboard
 
-Status: the nine-slide main presentation and the MEPS overview appendix are ready
-for review. The remaining appendix slides are in storyboard form.
+Status: the nine-slide main presentation and the MEPS and U.S. healthcare costs
+appendix slides are ready for review. The remaining appendix slides are in
+storyboard form.
 
 ## Presentation context
 
@@ -104,6 +105,9 @@ spending to plan their budget and HSA/FSA contributions.
 
 **Visual:** A wide [budgeting illustration](assets/budget-planning.png)
 below the title, with the challenge and aim in two aligned columns underneath.
+A small footer link, “Appendix: U.S. healthcare costs,” opens
+[A14](#a14--us-healthcare-costs-out-of-pocket-spending-and-hsafsa-planning)
+for questions about the U.S. system.
 
 **Speaker notes — 0:45 (rehearsed)**
 
@@ -762,19 +766,35 @@ LLMs.
 
 **Question:** What is out-of-pocket spending, and how does it relate to HSA/FSA planning?
 
-**On the slide**
-
-- The infographic explains out-of-pocket costs, HSA/FSA planning, and the costs
-  included in the prediction target
-- Scope note: annual costs for an individual U.S. civilian noninstitutionalized adult
+**On the slide:** The existing infographic, with a small footer link,
+“Back to problem statement,” to return to the main problem statement slide.
 
 **Visual:** Use the existing [healthcare-cost infographic](../../assets/infographic_healthcare_costs.png)
-as the main content.
+at full slide width, preserving its proportions and all labels.
 
-**Talking points:** Out-of-pocket spending includes copays, deductibles, and uncovered services; premiums and over-the-counter purchases are excluded from the target. The estimate supports  individual annual budgeting, with household totals, procedure prices, and insurance plan comparisons outside scope.
+**Speaker notes — 1:00 (optional)**
+
+“This is background for anyone unfamiliar with the U.S. healthcare system.
+Insurance may cover part of the bill, but people can still face deductibles,
+copays, and coinsurance. Those payments, plus uncovered services, are the costs
+the project aims to predict. Insurance premiums are excluded. HSA and FSA accounts
+offer tax benefits for eligible healthcare expenses, so choosing contributions
+is another reason to estimate costs ahead of time. The infographic is a simplified
+overview; actual payments depend on insurance coverage and the care received.”
+
+**Transition:** Return to the problem statement slide or continue with questions.
+
+**Detail for questions:** The target excludes premiums and over-the-counter
+purchases. It covers annual costs for an individual U.S. civilian
+noninstitutionalized adult. Household totals, procedure prices, and insurance
+plan comparisons are outside scope.
+
+**Promote:** After M2 when the audience needs U.S. healthcare background; allow 1:00.
 
 **Sources:** [README: target variable](../../README.md);
-[product requirements: out of scope](../specs/product_requirements.md).
+[product requirements: out of scope](../specs/product_requirements.md);
+[HealthCare.gov: HSA overview](https://www.healthcare.gov/high-deductible-health-plan/);
+[HealthCare.gov: FSA overview](https://www.healthcare.gov/have-job-based-coverage/flexible-spending-accounts/).
 
 ### A15 — Input features: what users provide
 

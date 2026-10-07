@@ -4,8 +4,9 @@
 contains M1–M9, using the approved M2 and M7 design. It uses a white background,
 dark blue text, and teal for model results in comparisons. Gray is reserved for
 supporting information and slide IDs. Titles can use one or two lines; the
-content starts below the title with a consistent gap. The MEPS overview appendix
-is included; the remaining appendix slides are in storyboard form.
+content starts below the title with a consistent gap. The MEPS overview and U.S.
+healthcare costs appendix slides are included; the remaining appendix slides are
+in storyboard form.
 
 `generate_slides.py` creates an editable PowerPoint, with optional PNG previews.
 Speaker notes come from the storyboard; slide copy and layout are in the Python
@@ -24,8 +25,9 @@ Python generator from the repository root:
 The script writes `medical-cost-planner-v4.pptx` under
 `exports/v4/`. PowerPoint generation needs no ChatGPT or Codex runtime,
 model artifacts, or survey data. It uses `storyboard.md`, the images in `assets/`,
-and the project images `../../assets/header.png` and
-`../../assets/infographic_meps_data.jpg`. All these inputs are tracked by Git.
+and the project images `../../assets/header.png`,
+`../../assets/infographic_meps_data.jpg`, and
+`../../assets/infographic_healthcare_costs.png`. All these inputs are tracked by Git.
 
 Choose a new revision name for each run. The Python generator refuses to overwrite
 an existing revision and keeps previous exports. Generated files remain ignored
@@ -52,8 +54,9 @@ Then add `--render`:
 .\.venv-train\Scripts\python docs/slides/generate_slides.py v5 --render
 ```
 
-The renderer reads the generated PowerPoint and writes `M1.png` through `M9.png`
-and `A1.png` beside it. Rendering failures leave the PowerPoint file available.
+The renderer reads the generated PowerPoint and writes `M1.png` through `M9.png`,
+`A1.png`, and `A14.png` beside it. Rendering failures leave the PowerPoint file
+available.
 Preview generation requires the bundled renderer; it is optional for someone
 cloning the repository. The bundled presentation validators can also inspect
 Python-generated decks separately. Previews do not verify behavior in PowerPoint.
