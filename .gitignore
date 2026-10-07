@@ -37,6 +37,8 @@ figures/*_sample.png
 /docs/slides/*
 !/docs/slides/storyboard.md
 !/docs/slides/generate_slides.mjs
+!/docs/slides/generate_slides.py
+!/docs/slides/README.md
 !/docs/slides/assets/
 /docs/slides/assets/*
 !/docs/slides/assets/*.png
