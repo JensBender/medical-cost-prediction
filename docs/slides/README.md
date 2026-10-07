@@ -27,8 +27,9 @@ The script writes `medical-cost-planner-v4.pptx` under
 `exports/v4/`. PowerPoint generation needs no ChatGPT or Codex runtime,
 model artifacts, or survey data. It uses `storyboard.md`, the images in `assets/`,
 and the project images `../../assets/header.png`,
-`../../assets/infographic_meps_data.jpg`, and
-`../../assets/infographic_healthcare_costs.png`. All these inputs are tracked by Git.
+`../../assets/infographic_meps_data.jpg`,
+`../../assets/infographic_healthcare_costs.png`, and
+`../../figures/eda/lorenz_curve.png`. All these inputs are tracked by Git.
 
 Choose a new revision name for each run. The Python generator refuses to overwrite
 an existing revision and keeps previous exports. Generated files remain ignored

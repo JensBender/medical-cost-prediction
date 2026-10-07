@@ -59,7 +59,7 @@ criteria served the intended budgeting use case.
 | M1 | Medical cost prediction for annual budgeting | 0:15 | Cover and brief orientation |
 | M2 | How much should I set aside for healthcare? | 0:45 | Establish the budgeting need and intended value |
 | M3 | MEPS links accessible inputs to observed spending | 1:30 | Explain the survey, project data, and population weights |
-| M4 | Most out-of-pocket spending comes from a small share of adults | 1:00 | Show the data challenge that shaped modeling |
+| M4 | Out-of-pocket costs: 20% of adults account for ~80% | 1:00 | Show the data challenge that shaped modeling |
 | M5 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
 | M6 | Quantile regression turns predictions into budgeting ranges | 1:30 | Explain the final model and its outputs |
 | M7 | Final model audit: clearest gains in ranges and q90 | 1:30 | Present held-out evidence and baseline comparisons |
@@ -215,7 +215,7 @@ This helps preserve the distribution and reduces chance imbalances in rare,
 expensive cases. Explain this after the spending-distribution slide if asked;
 the exact bin boundaries belong in technical questions.
 
-### M4 — Most out-of-pocket spending comes from a small share of adults
+### M4 — Out-of-pocket costs: 20% of adults account for ~80%
 
 **Takeaway:** Typical errors and errors on expensive years describe different
 parts of model performance.
@@ -224,18 +224,21 @@ parts of model performance.
 
 - **22.3%** of the weighted adult population has zero out-of-pocket spending
 - The highest-spending **20% accounts for 79.3%** of spending
-- Evaluate typical error alongside large errors and uncertainty
+- The highest-spending **1% accounts for 20.6%** of spending
 
-**Visual:** An editable bar chart compares the highest-spending 20% of adults
-(79.3% of spending) with the remaining 80% (20.7%). Beside it, show the 22.3%
-with zero spending. These figures summarize the
-[Lorenz curve](../../figures/eda/lorenz_curve.png) at presentation scale.
+**Visual:** The existing [Lorenz curve](../../figures/eda/lorenz_curve.png),
+with its embedded title cropped and its axes and annotations preserved.
+Use the curve as the sole main visual beneath a bold, one-line slide title.
+Use the available height for the figure, with no footnote. Explain the modeling
+implications in the speaker notes.
 
 **Speaker notes — 1:00**
 
-“The distribution has a large mass at zero and a long right tail. About 22% of
-adults have no out-of-pocket spending, while the top fifth accounts for almost
-80% of spending. This makes a single error metric an incomplete summary.
+“The horizontal axis orders adults from lowest to highest costs; the curve shows
+their cumulative share of costs. The distribution has a large mass at zero and
+a long right tail. About 22% of adults have no out-of-pocket spending, while the
+top fifth accounts for almost 80% of spending. This makes a single error metric an
+incomplete summary.
 Median absolute error, or MdAE, describes a typical miss, but it tells us little
 about the worst misses. Mean absolute error, or MAE, and R² provide additional
 diagnostics.

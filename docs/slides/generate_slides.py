@@ -325,20 +325,27 @@ def build_presentation():
     appendix_link = text(data, "MEPS appendix link", "Appendix: MEPS overview",
                          72, 674, 800, 24, 18, color=SECONDARY, underline=True)
 
-    distribution = new_slide(
-        presentation, storyboard, "M4", "Most out-of-pocket spending comes\n"
-        "from a small share of adults", two_lines=True,
+    distribution = new_slide(presentation, storyboard, "M4")
+    text(distribution, "M4 title", "Out-of-pocket costs: 20% of adults account for ~80%",
+         72, 48, 1136, 66, 44, bold=True)
+    lorenz_path = WORKSPACE_DIR / "figures/eda/lorenz_curve.png"
+    with Image.open(lorenz_path) as lorenz_image:
+        image_width, image_height = lorenz_image.size
+    # Crop the embedded title while preserving the axes and annotations.
+    title_crop = 70
+    chart_height = 580
+    chart_width = image_width / (image_height - title_crop) * chart_height
+    lorenz = distribution.shapes.add_picture(
+        str(lorenz_path), pixels((1280 - chart_width) / 2), pixels(120),
+        pixels(chart_width), pixels(chart_height),
     )
-    text(distribution, "Chart explanation", "Share of total out-of-pocket spending",
-         72, 190, 760, 38, 28, bold=True)
-    native_chart(distribution, ["Lower-spending 80%", "Highest-spending 20%"],
-                 [0.207, 0.793], "Share of spending", 72, 240, 740, 342)
-    text(distribution, "Zero spending", "22.3%", 867, 246, 330, 76, 56, bold=True)
-    text(distribution, "Zero spending explanation", "of adults have zero\n"
-         "out-of-pocket spending", 867, 328, 341, 90, 28)
-    text(distribution, "Metric implication", "Evaluate typical error alongside large "
-         "errors and uncertainty", 72, 610, 1136, 40, 28, bold=True)
-    footnote(distribution, "Survey-weighted MEPS 2023 estimates. Source: EDA notebook.")
+    lorenz.crop_top = title_crop / image_height
+    lorenz.name = "Survey-weighted Lorenz curve"
+    lorenz._element._nvXxPr.cNvPr.set(
+        "descr", "Lorenz curve of annual out-of-pocket costs: 22.3% of adults "
+        "have zero costs; the highest-spending 20% account for 79.3% of costs "
+        "and the highest-spending 1% for 20.6%.",
+    )
 
     selection = new_slide(presentation, storyboard, "M5",
                           "Model selection: median error was not enough")
