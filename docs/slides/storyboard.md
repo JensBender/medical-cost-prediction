@@ -12,7 +12,7 @@ for review. The remaining appendix slides are in storyboard form.
 - **Emphasis:** data science, with optional emphasis on ML engineering.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The initial
-  allocation below totals 9 minutes 45 seconds, leaving room for transitions.
+  allocation below totals 10 minutes, leaving room for transitions.
 - **Structure:** a cover, eight content slides, and fifteen appendix slides. Appendix IDs
   remain stable so we can promote slides without rewriting their references.
 - **Appendix navigation:** Add links where a specific follow-up is likely, using
@@ -55,14 +55,14 @@ criteria served the intended budgeting use case.
 | --- | --- | ---: | --- |
 | M1 | Medical cost prediction for annual budgeting | 0:15 | Cover and brief orientation |
 | M2 | How much should I set aside for healthcare? | 0:45 | Establish the budgeting need and intended value |
-| M3 | MEPS links accessible inputs to observed spending | 1:15 | Explain the survey, project data, and population weights |
+| M3 | MEPS links accessible inputs to observed spending | 1:30 | Explain the survey, project data, and population weights |
 | M4 | Most out-of-pocket spending comes from a small share of adults | 1:00 | Show the data challenge that shaped modeling |
 | M5 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
 | M6 | Quantile regression turns predictions into budgeting ranges | 1:30 | Explain the final model and its outputs |
 | M7 | Final model audit: clearest gains in ranges and q90 | 1:30 | Present held-out evidence and baseline comparisons |
 | M8 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
 | M9 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
-| | **Total** | **9:45** | |
+| | **Total** | **10:00** | |
 
 ## Main slides
 
@@ -147,17 +147,24 @@ A small footer link,
 “Appendix: MEPS overview,” opens [A1](#a1--meps-survey-overview) for follow-up 
 questions.
 
-**Speaker notes — 1:15**
+**Speaker notes — 1:30**
 
-“The Medical Expenditure Panel Survey, or MEPS, is run by the Agency for
-Healthcare Research and Quality. AHRQ describes it as the most complete source
-of U.S. healthcare cost and use data. It combines repeated household interviews
-with information from medical providers to improve spending estimates. MEPS
-also surveys employers about insurance, but that is a separate component.
+“The Medical Expenditure Panel Survey, or MEPS, is a leading source of U.S.
+healthcare cost data. Households complete five interviews over two years.
+To improve healthcare cost estimates, MEPS obtains participants’ written
+permission to collect medical records directly from providers and pharmacies,
+including payment details.
 
-This project uses the 2023 household data: 14,768 adults and 26 features covering
-demographics, insurance, and health, with annual out-of-pocket spending as the
-target. These inputs are information people can provide from memory.
+For this budgeting task, the target is out-of-pocket healthcare costs for 
+the entire year. This includes copays, deductibles, and uncovered services, 
+but excludes insurance premiums. For uninsured people, it can be close to 
+their total healthcare costs.
+
+This project uses the 2023 household data for over 14,000 adults. I selected
+26 features from over 1,000 variables, including age, insurance status,
+family income, joint pain, and high cholesterol. I focused on information people can
+provide from memory, prioritizing measurements early in the year to reduce data
+leakage and predictive power supported by the healthcare cost literature.
 
 Survey weights tell us how many people each respondent represents. They account
 for unequal selection probabilities and nonresponse. With these weights, our
@@ -171,9 +178,19 @@ and evaluation.”
 [preprocessing script](../../scripts/preprocess.py);
 [AHRQ: MEPS overview](https://www.ahrq.gov/data/meps.html);
 [AHRQ: separate survey components](https://www.ahrq.gov/cpi/about/otherwebsites/meps.ahrq.gov/index.html);
-[MEPS 2023 documentation: sampling and weights](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml).
+[MEPS: interview design](https://meps.ahrq.gov/survey_comp/hc_data_collection.jsp);
+[MEPS: medical provider follow-up and authorization](https://meps.ahrq.gov/communication/participants/faq_mpc.shtml);
+[MEPS: pharmacy follow-up and authorization](https://meps.ahrq.gov/communication/participants/faq_pharm.shtml);
+[MEPS 2023 documentation: expenditure construction, sampling, and weights](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml).
 
-**Detail for questions:** The 26 survey variables become 27 preprocessor
+**Detail for questions:** The target variable, `TOTSLF23`, sums self/family
+payments across healthcare services, including prescriptions. It excludes
+insurance premiums and over-the-counter medicines. Provider and pharmacy data
+supplement household reports for selected services; not every payment is
+independently verified. MEPS edits inconsistent reports and imputes missing
+expenditures before aggregating the annual total.
+
+The 26 survey variables become 27 preprocessor
 inputs after adding a life-transition feature. Medical feature derivation and
 encoding produce 40 model-ready columns. These counts describe different stages.
 The current model uses these inputs. Feature reduction would be considered if
