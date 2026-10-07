@@ -691,13 +691,13 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
     # Line of Equality (with label)
     plt.plot([0, 100], [0, 100], linestyle="--", color="gray", alpha=0.6)
     plt.text(50, 49, "Line of Equality", rotation=38, color="gray", 
-             fontsize=10, ha="center", va="bottom")
+             fontsize=14, ha="center", va="bottom")
 
     # Lorenz Curve
     plt.plot(cum_pct, cum_costs, color=POP_COLOR if weights else SAMPLE_COLOR, lw=3)
 
     # Add Gini Coefficient (in text box)
-    plt.text(4, 96, f"Gini Coefficient: {gini:.2f}", fontsize=12, fontweight="bold",
+    plt.text(4, 96, f"Gini Coefficient: {gini:.2f}", fontsize=16, fontweight="bold",
              va="top", bbox={"facecolor": "white", "alpha": 0.7, "edgecolor": "none", "boxstyle": "round,pad=0.4"})
 
     # Highlight Pareto Point (80/20 Rule) 
@@ -710,7 +710,7 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
     plt.annotate(f"Top 20% account for\n{top_20_share:.1f}% of costs", 
                  xy=(x_80, y_80), xytext=(x_80 - 30, y_80 + 10),
                  arrowprops={"arrowstyle": "->", "color": "black", "connectionstyle": "arc3,rad=-0.2", "alpha": 0.8},
-                 fontsize=10, fontweight="bold")
+                 fontsize=16, fontweight="bold")
 
     # Highlight Top 1%
     idx_99 = (cum_pct - 99).abs().idxmin()
@@ -720,9 +720,9 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
 
     plt.plot(x_99, y_99, "o", color="#fb8500", markersize=8)
     plt.annotate(f"Top 1% account for\n{top_1_share:.1f}% of costs", 
-                 xy=(x_99, y_99), xytext=(x_99 - 8, y_99 - 15),
+                 xy=(x_99, y_99), xytext=(x_99 - 8, y_99 - 25),
                  arrowprops={"arrowstyle": "->", "color": "black", "connectionstyle": "arc3,rad=-0.2", "alpha": 0.8},
-                 fontsize=10, fontweight="bold", ha="right")
+                 fontsize=16, fontweight="bold", ha="right")
 
     # Highlight Zero-Cost Threshold
     zero_mask = df[column].eq(0)
@@ -735,18 +735,18 @@ def plot_lorenz_curve(df, column, weights=None, save_to_file=None):
     plt.annotate(f"{zero_pct:.1f}% have $0 costs", 
                  xy=(zero_pct, 0), xytext=(zero_pct - 7, 10),
                  arrowprops={"arrowstyle": "->", "color": "black", "connectionstyle": "arc3,rad=-0.2", "alpha": 0.8},
-                 fontsize=10, fontweight="bold")
+                 fontsize=16, fontweight="bold")
 
     # Fill for emphasis (The "Inequality Gap")
     plt.fill_between(cum_pct, cum_costs, cum_pct, color=POP_COLOR if weights else SAMPLE_COLOR, alpha=0.08)
 
     # Customize
-    plt.title(f"Lorenz Curve: Concentration of {DISPLAY_LABELS.get(column, column)}", fontsize=14, fontweight="bold", pad=12)
-    plt.xlabel(f"Cumulative % of {'U.S. Population' if weights else 'Sample'} (Lowest to Highest Cost)", fontsize=12, labelpad=10)
-    plt.ylabel("Cumulative % of Total Costs", fontsize=12)
+    plt.title(f"Lorenz Curve: Concentration of {DISPLAY_LABELS.get(column, column)}", fontsize=18, fontweight="bold", pad=12)
+    plt.xlabel(f"Cumulative % of {'U.S. Population' if weights else 'Sample'} (Lowest to Highest Cost)", fontsize=16, labelpad=10)
+    plt.ylabel("Cumulative % of Total Costs", fontsize=16)
     plt.grid(True, alpha=0.2)
-    plt.xticks(range(0, 101, 10))
-    plt.yticks(range(0, 101, 10))
+    plt.xticks(range(0, 101, 10), fontsize=12)
+    plt.yticks(range(0, 101, 10), fontsize=12)
     plt.xlim(-3, 103)  # Adds space around the curve so no overlap with axis
     plt.ylim(-3, 103)
     plt.gca().xaxis.set_major_formatter(mtick.PercentFormatter())
