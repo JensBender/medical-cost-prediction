@@ -81,8 +81,8 @@ criteria served the intended budgeting use case.
 - Event or setting: [presentation setting]
 - Date: [presentation date]
 
-**Visual:** Use the [project header](../../assets/header.png) as a wide banner,
-preserving its proportions. Place the subtitle and presenter details below it.
+**Visual:** [Project header](../../assets/header.png) above the subtitle and
+presenter details.
 
 **Speaker notes — 0:15**
 
@@ -105,12 +105,10 @@ spending to plan their budget and HSA/FSA contributions.
 - **The aim:** A useful ballpark estimate from questions people can answer from
   memory.
 
-**Visual:** A wide [budgeting illustration](assets/budget-planning.png)
-below the title, with the challenge and aim in two aligned columns underneath.
-Each column uses two lines of body text, leaving space above the footer.
-A small footer link, “Appendix: U.S. healthcare cost explainer,” opens
-[A1](#a1--us-healthcare-costs-out-of-pocket-spending-and-hsafsa-planning)
-for questions about the U.S. system.
+**Visual:** Wide [budgeting illustration](assets/budget-planning.png) above
+two columns: challenge and aim.
+
+**Appendix link:** [U.S. healthcare cost explainer (A1)](#a1--us-healthcare-costs-out-of-pocket-spending-and-hsafsa-planning).
 
 **Speaker notes — 0:45 (rehearsed)**
 
@@ -149,11 +147,9 @@ spending, with survey weights supporting population-level training and evaluatio
 - **Survey weights:** Used in EDA, model training, and evaluation to reflect
   the population
 
-**Layout:** A simple bullet list with bold labels on the left and a small
-[household survey illustration](assets/household-survey.png) on the right.
-A small footer link,
-“Appendix: MEPS overview,” opens [A2](#a2--meps-survey-overview) for follow-up
-questions.
+**Visual:** Bullet list beside a [household survey illustration](assets/household-survey.png).
+
+**Appendix link:** [MEPS overview (A2)](#a2--meps-survey-overview).
 
 **Speaker notes — 1:30**
 
@@ -203,17 +199,11 @@ supplement household reports for selected services; not every payment is
 independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
-The 26 survey variables become 27 preprocessor
-inputs after adding a life-transition feature. Medical feature derivation and
-encoding produce 40 model-ready columns. These counts describe different stages.
-The current model uses these inputs. Feature reduction would be considered if
-user testing suggests that fewer inputs would improve the experience.
-See A3 for representative inputs and the link to the full list.
-Preprocessing is fitted on training data. The 80/10/10 split is random within
-spending groups, with a separate zero-cost group and finer bins for high costs.
-This helps preserve the distribution and reduces chance imbalances in rare,
-expensive cases. Explain this after the spending-distribution slide if asked;
-the exact bin boundaries belong in technical questions.
+See A3 for feature examples, counts, and possible feature reduction, and A4 for
+input timing. Preprocessing is fitted on training data. The 80/10/10 split is
+random within spending groups, with a separate zero-cost group and finer bins
+for high costs to reduce imbalances in rare, expensive cases. Discuss the split
+after the spending-distribution slide if asked.
 
 ### M4 — Out-of-pocket costs: 20% of adults account for ~80%
 
@@ -226,11 +216,8 @@ parts of model performance.
 - The highest-spending **20% accounts for 79.3%** of spending
 - The highest-spending **1% accounts for 20.6%** of spending
 
-**Visual:** The existing [Lorenz curve](../../figures/eda/lorenz_curve.png),
-with its embedded title cropped and its axes and annotations preserved.
-Use the curve as the sole main visual beneath a bold, one-line slide title.
-Use the available height for the figure, with no footnote. Explain the modeling
-implications in the speaker notes.
+**Visual:** Large [Lorenz curve](../../figures/eda/lorenz_curve.png) beneath the
+slide title, with the figure's own title cropped. No extra body text or footnote.
 
 **Speaker notes — 1:00**
 
@@ -268,11 +255,8 @@ between lower- and higher-cost profiles.
 - Elastic Net's largest validation prediction was about **$217**
 - Subgroup and residual analysis motivated a model that also describes uncertainty
 
-**Visual:** An editable comparison table followed by the $217 maximum-prediction
-finding and its implication. Keep the
-[validation residual diagnostics](../../figures/evaluation/tuned_models_validation_heteroscedasticity.png)
-in A7 so the main slide stays readable.
-At the first displayed use, include a metric key: “MdAE: median absolute error;
+**Display notes:** Comparison table with the $217 finding below it. Keep residual
+diagnostics in A7. Define the metrics here: “MdAE: median absolute error;
 MAE: mean absolute error.”
 
 **Speaker notes — 1:30**
@@ -314,8 +298,7 @@ distribution for each input profile.
 - XGBoost with a quantile objective; survey-weighted training on log-transformed costs
 - Evaluate coverage **and** width, plus losses that penalize missed outcomes
 
-**Visual:** A schematic cost axis with q25, q50, q75, and q90. Label it
-“conceptual”; avoid implying it is a prediction for an actual person.
+**Visual:** Cost axis with q25, q50, q75, and q90, labeled “conceptual.”
 
 **Speaker notes — 1:30**
 
@@ -358,9 +341,9 @@ Compared with the population baseline:
 | Typical range (q25–q75) | **11.2%** interval skill score |
 | Safety cushion (q90) | **15.6%** quantile skill score |
 
-**Visual:** One results table with three aligned baseline-comparison rows beneath
-it, including the uncertain median-error improvement alongside the two gains.
-Footnote: “Survey-weighted test metrics; dollar amounts in 2023 USD.”
+**Visual:** Results table above the baseline comparisons.
+
+**Footnote:** “Survey-weighted test metrics; dollar amounts in 2023 USD.”
 
 **Speaker notes — 1:30**
 
@@ -400,10 +383,9 @@ validation steps.
 - One-year holdout performance does not establish prospective performance
 - Subgroup audits inform safeguards; they do not prove absence of bias
 
-**Visual:** An editable bar chart compares typical-range coverage for poor
-mental health (30.1%) and low income (39.2%) with overall coverage (47.3%) and
-the 50% target. Label these as point estimates; use A10 for the fuller audit
-with subgroup counts and uncertainty.
+**Visual:** Bar chart of typical-range coverage: poor mental health 30.1%, low
+income 39.2%, overall 47.3%, and target 50%. Label results as point estimates;
+A10 adds subgroup counts and uncertainty.
 
 **Speaker notes — 1:00**
 
@@ -440,8 +422,8 @@ the remaining product and validation work.
 - Next validation priority: feature timing and performance on a later survey year
 - Main lesson: evaluate the outputs needed for the user decision
 
-**Visual:** A simple workflow from training artifacts to shared inference to
-the planned application. Visually distinguish implemented and planned elements.
+**Visual:** Workflow from training artifacts through shared inference to the
+application, distinguishing implemented and planned components.
 
 **Speaker notes — 1:00**
 
@@ -470,11 +452,8 @@ Timings apply only when promoted into the main presentation.
 
 **Question:** What is out-of-pocket spending, and how does it relate to HSA/FSA planning?
 
-**On the slide:** The existing infographic, with a small footer link,
-“Back to problem statement,” to return to the main problem statement slide.
-
-**Visual:** Use the existing [healthcare-cost infographic](../../assets/infographic_healthcare_costs.png)
-at full slide width, preserving its proportions and all labels.
+**On the slide:** [Healthcare-cost infographic](../../assets/infographic_healthcare_costs.png)
+with a “Back to problem statement” link.
 
 **Speaker notes — 1:00 (optional)**
 
@@ -504,11 +483,8 @@ plan comparisons are outside scope.
 
 **Question:** How does MEPS collect its data, and which component does this project use?
 
-**On the slide:** The existing MEPS infographic, with a small footer link,
-“Back to MEPS data,” to return to the main data slide.
-
-**Visual:** Use the [MEPS infographic](../../assets/infographic_meps_data.jpg)
-at full slide width, preserving its proportions and all labels.
+**On the slide:** [MEPS infographic](../../assets/infographic_meps_data.jpg)
+with a “Back to MEPS data” link.
 
 **Speaker notes — 1:00 (optional)**
 
@@ -550,8 +526,6 @@ account for survey clustering in uncertainty estimates.
 - Examples from the 26 survey inputs; the full list is in the README
 - Inputs chosen for expected predictive value and answers users can provide
   without medical records
-
-**Visual:** Use the grouped table as the slide's main content.
 
 **Talking points:** The current model uses all 26 survey inputs, which become
 27 preprocessor inputs after adding a life-transition feature and 40 model-ready
@@ -663,8 +637,6 @@ are in 2023 USD; intervals below are approximate 95% bootstrap confidence interv
 | Mean q25–q75 width | $912 [$875, $955] | < $1,500 |
 | Mean q50–q90 width | $2,032 [$1,964, $2,108] | < $3,500 |
 
-**Visual:** This table, with gate results readable beside each estimate.
-
 **Talking points:** Point estimates pass the gates. The entire confidence
 interval does not need to fall inside the gate under the reported decision
 rule. These are project criteria, not external certification. The notebook
@@ -689,9 +661,8 @@ resamples rows and retains their weights.
 
 MdAE: XGBoost **$240**; population baseline **$248**; age-group baseline **$305**.
 
-**Visual:** A grouped comparison of these three loss reductions. Add the saved
-notebook's paired-bootstrap intervals when preparing the chart; do not invent
-interval endpoints.
+**Visual:** Grouped comparison of the loss reductions, with paired-bootstrap
+intervals from the saved modeling notebook.
 
 **Talking points:** Benchmarks use training data. The interval score penalizes
 width and observations outside the range. At q90, pinball loss penalizes
@@ -838,32 +809,12 @@ care use, or the population. These are planned operating choices.
 
 ## Adaptation and file organization
 
-This storyboard defines the default 10–12-minute presentation. Adapt the
-emphasis, level of detail, and slide selection when the audience, available time,
-and setting are known. Move appendix slides into the main presentation as needed.
+Adapt the content and slide selection to the audience, time, and setting,
+promoting appendix slides as needed. Create variants when requirements are known;
+keep local notes in `docs/slides/variants/`, referencing the shared slides.
 
-Create variants as concrete requirements arise, such as a data science or ML
-engineering interview, tech meetup, or conference talk. Keep variant notes in
-`docs/slides/variants/`, referencing shared slide IDs and documenting the changes.
-
-Track the storyboard, Python generator, usage README, and required custom images
-in Git. Store custom images in `docs/slides/assets/`, where the root `.gitignore`
-allows common image formats but excludes prompt text files. Reuse existing
-project figures where useful. Keep variant notes, build files, previews, and
-PowerPoint exports local.
-
-`generate_slides.py` builds the main presentation, with spoken notes drawn from
-this storyboard. Slide text and layouts live in the generator; update both files
-when content changes. Exports use numbered folders such as `exports/v12/`.
-
-After a numbered draft passes validation and preview review, keep the new export
-and the previous complete export. Remove older draft exports and obsolete build
-files. Preserve named presentation milestones. The Python generator keeps
-existing exports; cleanup is part of the slide-editing workflow in the ChatGPT
-desktop app or Codex.
-
-To recreate an earlier presentation, restore the generator, storyboard, and
-assets from the same commit. PowerPoint generation uses `python-pptx` in
-`.venv-train`; optional previews and extended validation use the presentation
-tools bundled with the ChatGPT desktop app or Codex. The earlier JavaScript
-generator is available in Git history for versions created with it.
+The storyboard holds content and spoken notes; the generator holds slide text
+and layout. Update both when content changes. See the [slides README](README.md)
+for generation, version retention, and restoring earlier presentations. Track
+the storyboard, generator, README, and required images. Keep exports, build files,
+previews, variant notes, and image prompts local, as defined in the root `.gitignore`.
