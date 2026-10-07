@@ -135,11 +135,12 @@ spending, with survey weights supporting population-level training and evaluatio
 
 - **MEPS:** Medical Expenditure Panel Survey
 - **Data:** 2023 Household Component (HC-251)
-- **Sample:** 14,768 adults
+- **Sample:** 14,768 representing ~260 million U.S. adults
 - **Target:** Annual out-of-pocket healthcare costs
-- **Features:** 26 inputs covering demographics, insurance, and health
-- **Survey weights:** How many people each sampled person represents.
-  This sample represents approximately 260 million U.S. adults.
+- **Features:** 26 inputs across demographics, socioeconomics, health profile,
+  chronic conditions, and limitations
+- **Survey weights:** Used in EDA, model training, and evaluation to reflect
+  the population
 
 **Layout:** A simple bullet list with bold labels on the left and a small
 [household survey illustration](assets/household-survey.png) on the right.
