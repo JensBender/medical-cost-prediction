@@ -103,7 +103,8 @@ def new_slide(presentation, storyboard, slide_id, title=None, *, two_lines=False
         text(slide, f"{slide_id} title", title, 72, 48, 1136,
              112 if two_lines else 66, 46, bold=True)
     if slide_id != "M1":
-        text(slide, "Slide ID", slide_id, 1166, 675, 42, 22, 16,
+        slide_number = slide_id[1:] if slide_id.startswith("M") else slide_id
+        text(slide, "Slide ID", slide_number, 1166, 675, 42, 22, 16,
              color=SECONDARY, alignment=PP_ALIGN.RIGHT)
     slide.notes_slide.notes_text_frame.text = notes_for(storyboard, slide_id)
     return slide

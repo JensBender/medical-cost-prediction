@@ -18,6 +18,8 @@ storyboard form.
   Order and number appendix slides by their first reference in the main presentation.
   Place unreferenced slides with their related topic. Update numbering and links
   when the presentation order changes.
+- **Slide numbering:** Display 2–9 on the main content slides, with the cover
+  unnumbered, and A1, A2, etc. in the appendix. Keep M1–M9 as internal IDs.
 - **Appendix navigation:** Add links where a specific follow-up is likely, using
   “Appendix: [topic]” at the bottom left and “Back to [main slide topic]” on the
   appendix slide. Use small, muted gray, underlined text and keep slide IDs at
@@ -164,12 +166,12 @@ MEPS records healthcare spending and who paid for it. I chose out-of-pocket cost
 as the target because that is what people need to budget for themselves. This 
 includes copays, deductibles, and uncovered services, but excludes insurance premiums.
 
-I use the 2023 household data for over 14,000 U.S. adults, representing about 260 
+I used the 2023 household data for over 14,000 U.S. adults, representing about 260 
 million adults in the population. I selected 26 features from over 1,000 variables,
 including age, insurance status, family income, joint pain, and high cholesterol.
-I focused on information people can provide from memory, prioritizing variables
-measured early in the year to reduce data leakage and those with predictive value
-supported by the healthcare cost literature.
+My selection prioritized information people can provide from memory, prioritizing 
+variables measured early in the year to reduce data leakage and those with predictive 
+value supported by the healthcare cost literature.
 
 MEPS oversamples some groups, such as Hispanic households, to get more reliable
 estimates. Each person has a survey weight showing how many people they represent
