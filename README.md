@@ -717,12 +717,11 @@ Table of population statistics for all numerical features:
 Used an Isolation Forest configured to flag 5% of respondents in the training data as multivariate outliers.
 
 **Outlier Profiling**  
-Compared with inliers, outliers were older, had a greater health burden, and were more likely to have extreme costs:
+Compared out-of-pocket costs and feature distributions between inliers and outliers in the training data.
 
 - **Out-of-pocket costs:** Outliers were 3.9× as likely as inliers to be among the top 1% of spenders.
-- **Age and health burden:** Compared with inliers, outliers were 19 years older and had three more chronic conditions and three more functional limitations, based on group medians.
-- **Walking limitations:** Reported by 75% of outliers versus 9% of inliers.
-- **Insurance:** Public-only coverage was more common among outliers: 66% versus 25% of inliers.
+- **Age and health burden:** Outliers were 19 years older and had three more chronic conditions and three more functional limitations, based on group medians. They were also much more likely to report walking and cognitive limitations.
+- **Insurance:** Outliers were about half as likely as inliers to have private health insurance.
 
 **Outlier Treatment**  
 Retained all outliers because their profiles were consistent with potentially valid health needs and costs.
