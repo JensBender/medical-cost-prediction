@@ -535,8 +535,19 @@ account for survey clustering in uncertainty estimates.
   - **Insurance:** About half as likely to have private insurance.
 - **Treatment:** Retained all outliers as plausible, valuable training examples.
 
-**Visual:** One bullet list for detection, profiling, and treatment, with the three
-profiling findings as nested bullets. Include a “Back to cost distribution” link.
+**Visual:** Bullet list uses most of the slide width, with the profiling findings
+as nested bullets. A narrow, editable horizontal bar chart on the right compares:
+
+| Feature | Inliers | Outliers |
+| --- | ---: | ---: |
+| Walking limitations | 9% | 75% |
+| Cognitive limitations | 3% | 61% |
+| Private insurance | 68% | 32% |
+
+Keep the legend, percentages beside the bars, and two-line feature labels. Use
+thin bars and smaller labels so the chart supports the bullets. Omit the chart
+heading, axis percentages, and footnote. Include a “Back to cost distribution”
+link.
 
 **Speaker notes — 1:15 (optional, estimated)**
 

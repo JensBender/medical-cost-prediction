@@ -15,7 +15,9 @@ from PIL import Image
 from pptx import Presentation
 from pptx.chart.data import CategoryChartData
 from pptx.dml.color import RGBColor
-from pptx.enum.chart import XL_CHART_TYPE, XL_LABEL_POSITION, XL_TICK_MARK
+from pptx.enum.chart import (
+    XL_CHART_TYPE, XL_LABEL_POSITION, XL_LEGEND_POSITION, XL_TICK_MARK,
+)
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, MSO_AUTO_SIZE, PP_ALIGN
 from pptx.oxml.xmlchemy import OxmlElement
@@ -492,13 +494,13 @@ def build_presentation():
         presentation, storyboard, "A3",
         "Outlier analysis: retaining plausible cases",
     )
-    analysis = text(outliers, "Outlier analysis bullets", "", 72, 142, 1136, 490, 30)
+    analysis = text(outliers, "Outlier analysis bullets", "", 72, 142, 706, 490, 30)
     for index, (level, label, finding, spacing) in enumerate([
-        (0, "Detection: ", "Isolation Forest (flagging 5%)", 30),
-        (0, "Profiling: ", "Outliers compared with inliers", 16),
-        (1, "Extreme costs: ", "3.9× as likely to be among the top 1% of spenders.", 18),
-        (1, "Age and health burden: ", "Older, with more chronic conditions and limitations.", 18),
-        (1, "Insurance: ", "About half as likely to have private insurance.", 30),
+        (0, "Detection: ", "Isolation Forest (flagging 5%)", 20),
+        (0, "Profiling: ", "Outliers compared with inliers", 12),
+        (1, "Extreme costs: ", "3.9× as likely to be among the top 1% of spenders.", 14),
+        (1, "Age and health burden: ", "Older, with more chronic conditions and limitations.", 14),
+        (1, "Insurance: ", "About half as likely to have private insurance.", 20),
         (0, "Treatment: ", "Retained all outliers as plausible, valuable training examples.", 0),
     ]):
         paragraph = (analysis.text_frame.paragraphs[0] if index == 0
@@ -523,6 +525,56 @@ def build_presentation():
             run = paragraph.add_run()
             run.text = value
             style_font(run.font, size, bold=bold)
+    profile_data = CategoryChartData()
+    profile_data.categories = ["Walking\nlimitations", "Cognitive\nlimitations", "Private\ninsurance"]
+    profile_data.add_series("Inliers", [0.09, 0.03, 0.68], number_format="0%")
+    profile_data.add_series("Outliers", [0.75, 0.61, 0.32], number_format="0%")
+    profile_chart = outliers.shapes.add_chart(
+        XL_CHART_TYPE.BAR_CLUSTERED, pixels(816), pixels(208),
+        pixels(392), pixels(300), profile_data,
+    )
+    profile_chart.name = "Survey-weighted feature comparison"
+    chart = profile_chart.chart
+    for axis_id in chart._chartSpace.xpath(".//c:axId | .//c:crossAx"):
+        axis_id.set("val", str(int(axis_id.get("val")) % (2 ** 32)))
+    style_font(chart.font, 22)
+    chart.has_title = False
+    chart.has_legend = True
+    chart.legend.position = XL_LEGEND_POSITION.TOP
+    chart.legend.include_in_layout = False
+    style_font(chart.legend.font, 22)
+    plot = chart.plots[0]
+    plot.gap_width = 160
+    plot.overlap = 0
+    plot.has_data_labels = True
+    plot.data_labels.position = XL_LABEL_POSITION.OUTSIDE_END
+    plot.data_labels.show_value = True
+    plot.data_labels.show_category_name = False
+    plot.data_labels.show_series_name = False
+    plot.data_labels.show_legend_key = False
+    plot.data_labels.number_format = "0%"
+    plot.data_labels.number_format_is_linked = False
+    style_font(plot.data_labels.font, 22)
+    for series, color in zip(chart.series, ("7F9DBD", "CC686A")):
+        series.format.fill.solid()
+        series.format.fill.fore_color.rgb = RGBColor.from_string(color)
+        series.format.line.fill.background()
+    category_axis, value_axis = chart.category_axis, chart.value_axis
+    category_axis.reverse_order = True
+    category_axis.has_major_gridlines = False
+    style_font(category_axis.tick_labels.font, 22)
+    value_axis.minimum_scale = 0
+    value_axis.maximum_scale = 1
+    value_axis.major_unit = 0.5
+    # LibreOffice hides category names when value-axis labels are disabled.
+    # A blank number format hides only the scale values.
+    value_axis.tick_labels.number_format = ";;;"
+    value_axis.tick_labels.number_format_is_linked = False
+    value_axis.has_major_gridlines = False
+    for axis in (category_axis, value_axis):
+        axis.major_tick_mark = XL_TICK_MARK.NONE
+        axis.minor_tick_mark = XL_TICK_MARK.NONE
+        axis.format.line.fill.background()
     outlier_return_link = text(
         outliers, "Return to cost distribution", "Back to cost distribution",
         72, 674, 800, 24, 18, color=SECONDARY, underline=True,
