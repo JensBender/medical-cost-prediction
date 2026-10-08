@@ -12,8 +12,8 @@ storyboard form.
   survey weights, quantiles, and evaluation metrics when introducing them.
 - **Emphasis:** data science, with optional emphasis on ML engineering.
 - **Language:** English.
-- **Length:** 10–12 minutes of speaking, excluding questions. The initial
-  allocation below totals 10 minutes, leaving room for transitions.
+- **Length:** 10–12 minutes of speaking, excluding questions. The current
+  allocation below totals 10:25, leaving room for transitions.
 - **Structure:** a cover, eight content slides, and fifteen planned appendix slides.
   Order and number appendix slides by their first reference in the main presentation.
   Place unreferenced slides with their related topic. Update numbering and links
@@ -56,18 +56,20 @@ criteria served the intended budgeting use case.
 
 ## Main presentation at a glance
 
+The first three slide timings are rehearsed; the remaining timings are estimates.
+
 | ID | Proposed slide title | Time | Purpose |
 | --- | --- | ---: | --- |
-| M1 | Medical cost prediction for annual budgeting | 0:15 | Cover and brief orientation |
+| M1 | Medical cost prediction for annual budgeting | 0:10 | Cover and brief orientation |
 | M2 | How much should I set aside for healthcare? | 0:45 | Establish the budgeting need and intended value |
-| M3 | MEPS links accessible inputs to observed spending | 1:30 | Explain the survey, project data, and population weights |
+| M3 | MEPS links accessible inputs to observed spending | 2:00 | Explain the survey, project data, and population weights |
 | M4 | Out-of-pocket costs: 20% of adults account for ~80% | 1:00 | Show the data challenge that shaped modeling |
 | M5 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
 | M6 | Quantile regression turns predictions into budgeting ranges | 1:30 | Explain the final model and its outputs |
 | M7 | Final model audit: clearest gains in ranges and q90 | 1:30 | Present held-out evidence and baseline comparisons |
 | M8 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
 | M9 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
-| | **Total** | **10:00** | |
+| | **Total** | **10:25** | |
 
 ## Main slides
 
@@ -86,7 +88,7 @@ criteria served the intended budgeting use case.
 **Visual:** [Project header](../../assets/header.png) above the subtitle and
 presenter details.
 
-**Speaker notes — 0:15**
+**Speaker notes — 0:10 (rehearsed)**
 
 “This project aims to help U.S. adults plan for next year's out-of-pocket
 healthcare costs using machine learning.”
@@ -153,7 +155,7 @@ spending, with survey weights supporting population-level training and evaluatio
 
 **Appendix link:** [MEPS overview (A2)](#a2--meps-survey-overview).
 
-**Speaker notes — 1:30**
+**Speaker notes — 2:00 (rehearsed)**
 
 “To do so, I used data from the Medical Expenditure Panel Survey, or MEPS. 
 MEPS is a nationally representative survey and a leading data source for 
