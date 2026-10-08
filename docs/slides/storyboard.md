@@ -224,17 +224,20 @@ slide title, with the figure's own title cropped. No extra body text or footnote
 
 **Speaker notes — 1:00**
 
-“The horizontal axis orders adults from lowest to highest costs; the curve shows
-their cumulative share of costs. The distribution has a large mass at zero and
-a long right tail. About 22% of adults have no out-of-pocket spending, while the
-top fifth accounts for almost 80% of spending. This makes a single error metric an
-incomplete summary.
-Median absolute error, or MdAE, describes a typical miss, but it tells us little
-about the worst misses. Mean absolute error, or MAE, and R² provide additional
-diagnostics.
-I also retained unusual but valid health profiles instead of deleting them just
-because they were outliers. Removing them would make the task look easier while
-discarding cases relevant to the intended use.”
+“Out-of-pocket costs present two challenges: many people have no costs, while a
+small share have very high costs. About 22% of adults have zero costs for the year.
+The highest-spending 20% account for almost 80% of costs, and the top 1% account
+for about 21%.
+
+I chose median absolute error, or MdAE, as the primary evaluation metric to
+describe a typical miss without letting rare, extreme errors dominate. I also
+tracked mean absolute error and R-squared to assess performance beyond typical
+errors.
+
+Outlier profiling revealed unusual health profiles consistent with greater
+medical needs. I retained these cases because unusual values alone were not
+evidence of data errors, and removing them would exclude people relevant to the
+intended use.”
 
 **Transition:** This distribution explains why the validation leaderboard was
 only the start of model selection.
