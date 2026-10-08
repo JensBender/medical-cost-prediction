@@ -153,26 +153,25 @@ spending, with survey weights supporting population-level training and evaluatio
 
 **Speaker notes — 1:30**
 
-“The Medical Expenditure Panel Survey, or MEPS, is a nationally representative
-survey and a leading source of U.S. healthcare cost data. Households complete
-five interviews over two years.
+“To do so, I used data from the Medical Expenditure Panel Survey, or MEPS. 
+MEPS is a nationally representative survey and a leading data source for 
+U.S. healthcare costs. Households complete five interviews over two years.
 To improve healthcare cost estimates, MEPS obtains participants’ written
 permission to collect medical records directly from providers and pharmacies,
 including payment details.
 
-For this budgeting task, the target is out-of-pocket healthcare costs for
-the entire year. This includes copays, deductibles, and uncovered services,
-but excludes insurance premiums. For uninsured people, it can be close to
-their total healthcare costs.
+MEPS records healthcare spending and who paid for it. I chose out-of-pocket costs 
+as the target because that is what people need to budget for themselves. This 
+includes copays, deductibles, and uncovered services, but excludes insurance premiums.
 
-This project uses the 2023 household data for over 14,000 people, representing
-about 260 million U.S. adults. I selected 26 features from over 1,000 variables,
+I use the 2023 household data for over 14,000 U.S. adults, representing about 260 
+million adults in the population. I selected 26 features from over 1,000 variables,
 including age, insurance status, family income, joint pain, and high cholesterol.
-I focused on information people can provide from memory, prioritizing
-measurements early in the year to reduce data leakage and predictive power
+I focused on information people can provide from memory, prioritizing variables
+measured early in the year to reduce data leakage and those with predictive value
 supported by the healthcare cost literature.
 
-MEPS oversamples some groups, such as Hispanic households, for more reliable
+MEPS oversamples some groups, such as Hispanic households, to get more reliable
 estimates. Each person has a survey weight showing how many people they represent
 in the population. These weights account for selection probabilities and
 nonresponse. I use them in data exploration, model training, and evaluation so the
