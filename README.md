@@ -163,7 +163,7 @@ Analyzed distributions and relationships to inform data preprocessing, feature e
 
 <a id="main-outliers"></a>**Data Quality & Outliers**
 - **Duplicates**: Verified the absence of duplicate records based on the ID column, complete rows, and all columns except ID.
-- **Outliers**: Detected univariate outliers using the 3-standard-deviation and 1.5×IQR methods, and multivariate outliers using isolation forest (5% contamination). Profiled outliers by comparing out-of-pocket costs and feature distributions between inliers and outliers. Outliers generally had more medical conditions, functional limitations, and higher costs. All were retained to preserve this variation rather than remove potentially valid high-cost cases. [🔗 **See Outlier Analysis Details**](#outlier-analysis-details)
+- **Outliers**: Detected univariate outliers using the 3-standard-deviation and 1.5×IQR methods, and multivariate outliers using Isolation Forest, configured to flag 5% of respondents in the training data. Isolation Forest outliers were older, had a greater health burden, and were more likely to have extreme costs. All were retained because their profiles were plausible, with no clear evidence of data errors. Removing them could discard training information relevant to people with greater health burden and extreme costs. [🔗 **See Outlier Analysis Details**](#outlier-analysis-details)
 
 **Modeling Strategy**  
 The zero-inflated, heavy-tailed cost distribution motivated log-transforming the target to reduce the influence of extreme costs. MdAE was chosen as the primary evaluation metric to focus on typical prediction error. Where supported, absolute-error training objectives targeted median costs and were less sensitive to extreme errors than squared-error objectives. Polynomial features allowed Elastic Net to capture nonlinear relationships and feature interactions. Survey weights were used during training and evaluation.
@@ -724,7 +724,7 @@ Compared out-of-pocket costs and feature distributions between inliers and outli
 - **Insurance:** Outliers were about half as likely as inliers to have private health insurance.
 
 **Outlier Treatment**  
-Retained all outliers because their profiles were consistent with potentially valid health needs and costs.
+Retained all outliers because their profiles were plausible, with no clear evidence of data errors. Removing them could discard valuable training information about people with greater health burden and extreme out-of-pocket costs, limiting the model’s ability to learn patterns relevant to these groups.
 
 ![Outlier Profile for Numerical Features and Target](figures/outliers/outlier_numeric_profile.png)
 ![Outlier Profile for Binary Features](figures/outliers/outlier_binary_profile.png)
