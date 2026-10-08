@@ -24,7 +24,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [f"M{number}" for number in range(1, 10)] + ["A1", "A2"]
+SLIDE_IDS = [f"M{number}" for number in range(1, 10)] + ["A1", "A2", "A3"]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -347,6 +347,12 @@ def build_presentation():
         "have zero costs; the highest-spending 20% account for 79.3% of costs "
         "and the highest-spending 1% for 20.6%.",
     )
+    text(distribution, "EDA appendix label", "Appendix", 72, 490, 164, 28, 18,
+         color=SECONDARY)
+    outlier_appendix_link = text(
+        distribution, "Outlier appendix link", "Outlier analysis",
+        72, 530, 164, 48, 18, color=SECONDARY, underline=True,
+    )
 
     selection = new_slide(presentation, storyboard, "M5",
                           "Model selection: median error was not enough")
@@ -481,6 +487,31 @@ def build_presentation():
                        72, 674, 800, 24, 18, color=SECONDARY, underline=True)
     appendix_link.click_action.target_slide = meps_overview
     return_link.click_action.target_slide = data
+
+    outliers = new_slide(
+        presentation, storyboard, "A3",
+        "Outlier analysis: why unusual health profiles were retained", two_lines=True,
+    )
+    text(outliers, "Detection heading", "Detection", 72, 190, 190, 38, 30, bold=True)
+    text(outliers, "Detection detail",
+         "Univariate checks and Isolation Forest on training features.\n"
+         "Configured to flag 5% of training rows.", 286, 190, 922, 110, 28)
+    text(outliers, "Profiling heading", "Profiling", 72, 345, 190, 38, 30, bold=True)
+    text(outliers, "Profiling detail",
+         "More chronic conditions, functional limitations, and higher costs.\n"
+         "3.9× as likely as other cases to be among the top 1% of spenders.",
+         286, 345, 922, 110, 28)
+    text(outliers, "Decision heading", "Decision", 72, 500, 190, 38, 30, bold=True)
+    text(outliers, "Decision detail",
+         "Retained all cases: profiles were consistent with potentially valid\n"
+         "health needs and costs. Removing them would discard relevant variation.",
+         286, 500, 922, 110, 28)
+    outlier_return_link = text(
+        outliers, "Return to cost distribution", "Back to cost distribution",
+        72, 674, 800, 24, 18, color=SECONDARY, underline=True,
+    )
+    outlier_appendix_link.click_action.target_slide = outliers
+    outlier_return_link.click_action.target_slide = distribution
     return presentation
 
 

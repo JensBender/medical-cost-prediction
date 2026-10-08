@@ -1,8 +1,8 @@
 # Medical cost prediction: presentation storyboard
 
-Status: the nine-slide main presentation and the MEPS and U.S. healthcare costs
-appendix slides are ready for review. The remaining appendix slides are in
-storyboard form.
+Status: the nine-slide main presentation and the U.S. healthcare costs, MEPS,
+and outlier analysis appendix slides are ready for review. The remaining appendix
+slides are in storyboard form.
 
 ## Presentation context
 
@@ -14,7 +14,7 @@ storyboard form.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The current
   allocation below totals 10:25, leaving room for transitions.
-- **Structure:** a cover, eight content slides, and fifteen planned appendix slides.
+- **Structure:** a cover, eight content slides, and sixteen planned appendix slides.
   Order and number appendix slides by their first reference in the main presentation.
   Place unreferenced slides with their related topic. Update numbering and links
   when the presentation order changes.
@@ -24,6 +24,8 @@ storyboard form.
   “Appendix: [topic]” at the bottom left and “Back to [main slide topic]” on the
   appendix slide. Use small, muted gray, underlined text and keep slide IDs at
   the bottom right. Add other footnotes only when needed to interpret the slide.
+  On the cost-distribution slide, group EDA links in the left margin under
+  “Appendix” to preserve the plot size.
 - **Purpose:** show how the project connects a user need to modeling choices,
   evidence, limitations, and implementation decisions.
 - **Project status:** model training, selection, and evaluation for the MVP are
@@ -202,7 +204,7 @@ supplement household reports for selected services; not every payment is
 independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
-See A3 for feature examples, counts, and possible feature reduction, and A4 for
+See A4 for feature examples, counts, and possible feature reduction, and A5 for
 input timing. Preprocessing is fitted on training data. The 80/10/10 split is
 random within spending groups, with a separate zero-cost group and finer bins
 for high costs to reduce imbalances in rare, expensive cases. Discuss the split
@@ -221,6 +223,11 @@ parts of model performance.
 
 **Visual:** Large [Lorenz curve](../../figures/eda/lorenz_curve.png) beneath the
 slide title, with the figure's own title cropped. No extra body text or footnote.
+
+**Appendix links:** A small, muted “Appendix” label in the lower left margin with
+an underlined [Outlier analysis (A3)](#a3--outlier-analysis-why-unusual-health-profiles-were-retained)
+link beneath it. Keep the plot's current size and position. Add feature-distribution
+and correlation links here when those appendix slides are created.
 
 **Speaker notes — 1:00**
 
@@ -262,7 +269,7 @@ between lower- and higher-cost profiles.
 - Subgroup and residual analysis motivated a model that also describes uncertainty
 
 **Display notes:** Comparison table with the $217 finding below it. Keep residual
-diagnostics in A7. Define the metrics here: “MdAE: median absolute error;
+diagnostics in A8. Define the metrics here: “MdAE: median absolute error;
 MAE: mean absolute error.”
 
 **Speaker notes — 1:30**
@@ -374,7 +381,7 @@ and situations where the model is less reliable.
 
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
-Confidence intervals, widths, and scoring definitions are in A8 and A9.
+Confidence intervals, widths, and scoring definitions are in A9 and A10.
 
 ### M8 — Final model test audit: overall coverage hides subgroup gaps
 
@@ -391,7 +398,7 @@ validation steps.
 
 **Visual:** Bar chart of typical-range coverage: poor mental health 30.1%, low
 income 39.2%, overall 47.3%, and target 50%. Label results as point estimates;
-A10 adds subgroup counts and uncertainty.
+A11 adds subgroup counts and uncertainty.
 
 **Speaker notes — 1:00**
 
@@ -515,7 +522,42 @@ account for survey clustering in uncertainty estimates.
 [EDA notebook](../../notebooks/1_eda_and_preprocessing.py);
 [modeling helpers](../../src/modeling.py).
 
-### A3 — Input features: what users provide
+### A3 — Outlier analysis: why unusual health profiles were retained
+
+**Question:** How were outliers identified, and why were they retained?
+
+**On the slide**
+
+- **Detection:** Univariate checks and Isolation Forest on training features.
+  Configured to flag 5% of training rows.
+- **Profiling:** More chronic conditions, functional limitations, and higher costs.
+  Flagged cases were **3.9× as likely** as other cases to be among the top 1% of spenders.
+- **Decision:** Retained all cases. Their profiles were consistent with potentially
+  valid health needs and costs; removing them would discard relevant variation.
+
+**Visual:** Three text rows with a short section label on the left and its
+explanation on the right. Include a “Back to cost distribution” link.
+
+**Speaker notes — 1:00 (optional)**
+
+“I checked individual variables for extreme values and used Isolation Forest to
+identify unusual combinations of training features. The 5% flagging rate was a
+model setting, not an estimate of how many people in the population are outliers.
+
+I compared feature and cost distributions using survey weights. Flagged cases
+had more chronic conditions and limitations, and were 3.9 times as likely as
+other cases to be among the top 1% of spenders.
+
+These profiles were consistent with potentially valid health needs and costs.
+An outlier flag alone was not evidence of a data error, so I retained all cases
+to preserve variation relevant to the intended users.”
+
+**Transition:** Return to the cost-distribution slide or continue with questions.
+
+**Sources:** [README: outlier analysis](../../README.md#outlier-analysis-details);
+[EDA notebook: detection and profiling](../../notebooks/1_eda_and_preprocessing.py).
+
+### A4 — Input features: what users provide
 
 **Question:** What information does the model use, and how much does it ask of users?
 
@@ -538,7 +580,7 @@ account for survey clustering in uncertainty estimates.
 columns after transformation. These counts do not equal the number of questions
 on the planned form: related conditions can be grouped, and some values are
 derived. User testing will assess the burden; feature reduction is an option if
-fewer inputs would improve the experience. Refer to A4 for input timing.
+fewer inputs would improve the experience. Refer to A5 for input timing.
 
 **Promote:** After M3 when input design is relevant to the audience; allow 0:45.
 Otherwise, use only for questions.
@@ -547,7 +589,7 @@ Otherwise, use only for questions.
 [input definitions](../../src/constants.py);
 [product requirements: input form](../specs/product_requirements.md).
 
-### A4 — Feature timing: limits of next-year forecasting
+### A5 — Feature timing: limits of next-year forecasting
 
 **Question:** Is this truly a next-year forecast?
 
@@ -568,7 +610,7 @@ Do not claim the size or direction of the resulting performance change is known.
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
 
-### A5 — Model tuning: comparisons on a fixed validation split
+### A6 — Model tuning: comparisons on a fixed validation split
 
 **Question:** What alternatives and tuning procedure were used?
 
@@ -590,7 +632,7 @@ reuses the tuned point-model parameters rather than receiving its own search.
 **Sources:** [README: modeling](../../README.md);
 [XGBoost tuning script](../../scripts/tune_xgboost.py).
 
-### A6 — LLM benchmark: General versus Specific Intelligence
+### A7 — LLM benchmark: General versus Specific Intelligence
 
 **Question:** Why not ask a general-purpose language model for an estimate?
 
@@ -603,12 +645,12 @@ mix these with test-set results from the final quantile model.
 **Talking points:** This result describes one model and prompting setup, not all
 LLMs.
 
-**Promote:** Optional, after A5; allow 1:00.
+**Promote:** Optional, after A6; allow 1:00.
 
 **Sources:** [README: LLM benchmark](../../README.md);
 [LLM benchmark script](../../scripts/benchmark_llm.py).
 
-### A7 — Point-model diagnostics: residuals and prediction ranges
+### A8 — Point-model diagnostics: residuals and prediction ranges
 
 **Question:** Why did the lowest-MdAE model not meet the full product need?
 
@@ -628,7 +670,7 @@ residuals and subgroup errors alongside it.
 **Sources:** [README: heteroscedasticity and subgroup analysis](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A8 — Final model test results: coverage, width, and release gates
+### A9 — Final model test results: coverage, width, and release gates
 
 **Question:** What does passing the project's gates mean?
 
@@ -653,7 +695,7 @@ resamples rows and retains their weights.
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: bootstrap implementation](../../notebooks/2_modeling.py).
 
-### A9 — Final model test benchmarks: gains over simple estimates
+### A10 — Final model test benchmarks: gains over simple estimates
 
 **Question:** Why not give everyone a population or age-group estimate?
 
@@ -681,7 +723,7 @@ skill is not a percentage-point improvement in coverage.
 
 **Source:** [Modeling notebook: test baseline comparisons](../../notebooks/2_modeling.py).
 
-### A10 — Final model test audit: subgroup coverage gaps
+### A11 — Final model test audit: subgroup coverage gaps
 
 **Question:** Who receives less reliable ranges?
 
@@ -704,7 +746,7 @@ would be needed to address it.
 **Sources:** [README: final subgroup audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A11 — Final model test audit: actual versus predicted cost tiers
+### A12 — Final model test audit: actual versus predicted cost tiers
 
 **Question:** Does the safety cushion protect the largest spenders?
 
@@ -726,7 +768,7 @@ quantile is not catastrophe insurance or a hard spending cap.
 **Sources:** [README: final reliability audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A12 — SHAP explains how inputs shape the median estimate
+### A13 — SHAP explains how inputs shape the median estimate
 
 **Question:** Which inputs influence predictions, and what can users infer?
 
@@ -746,7 +788,7 @@ does not by itself mean higher or lower healthcare need.
 **Sources:** [README: feature importance](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json).
 
-### A13 — SHAP benchmarking: explanation quality and latency
+### A14 — SHAP benchmarking: explanation quality and latency
 
 **Question:** How was the SHAP configuration chosen?
 
@@ -769,7 +811,7 @@ claim. Complete request latency on target hardware remains unverified.
 [SHAP metadata](../../app/data/shap_metadata.json);
 [benchmark script](../../scripts/benchmark_shap.py).
 
-### A14 — Inference architecture: shared prediction and explanation code
+### A15 — Inference architecture: shared prediction and explanation code
 
 **Question:** How will training and serving stay consistent?
 
@@ -792,7 +834,7 @@ experiment is a DVC stage or that the full service is implemented.
 **Sources:** [DVC pipeline](../../dvc.yaml); [prediction code](../../src/prediction.py);
 [technical specifications](../specs/technical_specifications.md); [unit tests](../../tests/unit/).
 
-### A15 — Production monitoring: drift signals without observed outcomes
+### A16 — Production monitoring: drift signals without observed outcomes
 
 **Question:** How would the product be monitored without retaining user records?
 

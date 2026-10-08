@@ -6,8 +6,8 @@ dark blue text, and teal for model results in comparisons. Gray is reserved for
 supporting information and slide IDs. Main slides display plain numbers, the
 cover is unnumbered, and appendix slides display A1, A2, etc. M1–M9 remain
 internal IDs. Titles can use one or two lines; the content starts below the title
-with a consistent gap. The U.S. healthcare costs
-and MEPS overview appendix slides are included; the remaining appendix slides are
+with a consistent gap. The U.S. healthcare costs, MEPS overview, and outlier
+analysis appendix slides are included; the remaining appendix slides are
 in storyboard form. Order and number appendix slides by their first reference
 in the main presentation. Place unreferenced slides with their related topic.
 
@@ -59,7 +59,7 @@ Then add `--render`:
 ```
 
 The renderer reads the generated PowerPoint and writes `M1.png` through `M9.png`,
-`A1.png`, and `A2.png` beside it. Rendering failures leave the PowerPoint file
+`A1.png` through `A3.png` beside it. Rendering failures leave the PowerPoint file
 available.
 Preview generation requires the bundled renderer; it is optional for someone
 cloning the repository. The bundled presentation validators can also inspect
