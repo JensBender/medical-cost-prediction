@@ -538,19 +538,22 @@ account for survey clustering in uncertainty estimates.
 **Visual:** Three text rows with a short section label on the left and its
 explanation on the right. Include a “Back to cost distribution” link.
 
-**Speaker notes — 1:00 (optional)**
+**Speaker notes — 1:15 (optional, estimated)**
 
-“I checked individual variables for extreme values and used Isolation Forest to
-identify unusual combinations of training features. The 5% flagging rate was a
-model setting, not an estimate of how many people in the population are outliers.
+“To detect multivariate outliers, I used Isolation Forest configured to flag 5%
+of respondents in the training data. I then compared out-of-pocket costs and
+feature distributions between inliers and outliers, using survey weights.
 
-I compared feature and cost distributions using survey weights. Flagged cases
-had more chronic conditions and limitations, and were 3.9 times as likely as
-other cases to be among the top 1% of spenders.
+Outliers were 3.9 times as likely as inliers to be among the top 1% of spenders.
+Comparing group medians, they were 19 years older and had three more chronic
+conditions and three more functional limitations. They were also much more
+likely to report walking and cognitive limitations, and about half as likely
+to have private health insurance.
 
-These profiles were consistent with potentially valid health needs and costs.
-An outlier flag alone was not evidence of a data error, so I retained all cases
-to preserve variation relevant to the intended users.”
+I retained all outliers because their profiles were plausible, with no clear
+evidence of data errors. Removing them could discard valuable training
+information about people with greater health burden and extreme out-of-pocket
+costs, limiting the model's ability to learn patterns relevant to these groups.”
 
 **Transition:** Return to the cost-distribution slide or continue with questions.
 
