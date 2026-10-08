@@ -490,22 +490,39 @@ def build_presentation():
 
     outliers = new_slide(
         presentation, storyboard, "A3",
-        "Outlier analysis: why unusual health profiles were retained", two_lines=True,
+        "Outlier analysis: retaining plausible cases",
     )
-    text(outliers, "Detection heading", "Detection", 72, 190, 190, 38, 30, bold=True)
-    text(outliers, "Detection detail",
-         "Univariate checks and Isolation Forest on training features.\n"
-         "Configured to flag 5% of training rows.", 286, 190, 922, 110, 28)
-    text(outliers, "Profiling heading", "Profiling", 72, 345, 190, 38, 30, bold=True)
-    text(outliers, "Profiling detail",
-         "More chronic conditions, functional limitations, and higher costs.\n"
-         "3.9× as likely as other cases to be among the top 1% of spenders.",
-         286, 345, 922, 110, 28)
-    text(outliers, "Decision heading", "Decision", 72, 500, 190, 38, 30, bold=True)
-    text(outliers, "Decision detail",
-         "Retained all cases: profiles were consistent with potentially valid\n"
-         "health needs and costs. Removing them would discard relevant variation.",
-         286, 500, 922, 110, 28)
+    analysis = text(outliers, "Outlier analysis bullets", "", 72, 142, 1136, 490, 30)
+    for index, (level, label, finding, spacing) in enumerate([
+        (0, "Detection: ", "Isolation Forest (flagging 5%)", 30),
+        (0, "Profiling: ", "Outliers compared with inliers", 16),
+        (1, "Extreme costs: ", "3.9× as likely to be among the top 1% of spenders.", 18),
+        (1, "Age and health burden: ", "Older, with more chronic conditions and limitations.", 18),
+        (1, "Insurance: ", "About half as likely to have private insurance.", 30),
+        (0, "Treatment: ", "Retained all outliers as plausible, valuable training examples.", 0),
+    ]):
+        paragraph = (analysis.text_frame.paragraphs[0] if index == 0
+                     else analysis.text_frame.add_paragraph())
+        paragraph.level = level
+        paragraph.space_after = font_size(spacing)
+        size = 28 if level else 30
+        style_font(paragraph.font, size)
+        properties = paragraph._p.get_or_add_pPr()
+        properties.set("marL", str(pixels(64 if level else 24)))
+        properties.set("indent", str(-pixels(14)))
+        bullet_size = OxmlElement("a:buSzPct")
+        bullet_size.set("val", "100000")
+        properties.insert_element_before(bullet_size, "a:defRPr")
+        bullet_font = OxmlElement("a:buFont")
+        bullet_font.set("typeface", FONT)
+        properties.insert_element_before(bullet_font, "a:defRPr")
+        bullet = OxmlElement("a:buChar")
+        bullet.set("char", "○" if level else "•")
+        properties.insert_element_before(bullet, "a:defRPr")
+        for value, bold in ((label, True), (finding, False)):
+            run = paragraph.add_run()
+            run.text = value
+            style_font(run.font, size, bold=bold)
     outlier_return_link = text(
         outliers, "Return to cost distribution", "Back to cost distribution",
         72, 674, 800, 24, 18, color=SECONDARY, underline=True,

@@ -225,7 +225,7 @@ parts of model performance.
 slide title, with the figure's own title cropped. No extra body text or footnote.
 
 **Appendix links:** A small, muted “Appendix” label in the lower left margin with
-an underlined [Outlier analysis (A3)](#a3--outlier-analysis-why-unusual-health-profiles-were-retained)
+an underlined [Outlier analysis (A3)](#a3--outlier-analysis-retaining-plausible-cases)
 link beneath it. Keep the plot's current size and position. Add feature-distribution
 and correlation links here when those appendix slides are created.
 
@@ -522,21 +522,21 @@ account for survey clustering in uncertainty estimates.
 [EDA notebook](../../notebooks/1_eda_and_preprocessing.py);
 [modeling helpers](../../src/modeling.py).
 
-### A3 — Outlier analysis: why unusual health profiles were retained
+### A3 — Outlier analysis: retaining plausible cases
 
 **Question:** How were outliers identified, and why were they retained?
 
 **On the slide**
 
-- **Detection:** Univariate checks and Isolation Forest on training features.
-  Configured to flag 5% of training rows.
-- **Profiling:** More chronic conditions, functional limitations, and higher costs.
-  Flagged cases were **3.9× as likely** as other cases to be among the top 1% of spenders.
-- **Decision:** Retained all cases. Their profiles were consistent with potentially
-  valid health needs and costs; removing them would discard relevant variation.
+- **Detection:** Isolation Forest (flagging 5%).
+- **Profiling:** Outliers compared with inliers.
+  - **Extreme costs:** 3.9× as likely to be among the top 1% of spenders.
+  - **Age and health burden:** Older, with more chronic conditions and limitations.
+  - **Insurance:** About half as likely to have private insurance.
+- **Treatment:** Retained all outliers as plausible, valuable training examples.
 
-**Visual:** Three text rows with a short section label on the left and its
-explanation on the right. Include a “Back to cost distribution” link.
+**Visual:** One bullet list for detection, profiling, and treatment, with the three
+profiling findings as nested bullets. Include a “Back to cost distribution” link.
 
 **Speaker notes — 1:15 (optional, estimated)**
 
