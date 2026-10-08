@@ -712,14 +712,21 @@ Table of population statistics for all numerical features:
 
 
 ### Outlier Analysis Details
-**1. Outlier Detection:** Used an isolation forest (5% contamination) to identify multivariate outliers in the training data.  
-**2. Outlier Profiling:** Compared out-of-pocket costs and feature distributions between inliers and outliers.  
-**3. Outlier Treatment:** Retained all outliers because their profiles were consistent with potentially valid health needs and costs.
 
-**Cost Concentration**  
-Compared with inliers, outliers were 1.2× as likely to have costs at or above the overall median and **3.9× as likely** to be among the top 1% of spenders.
+**Outlier Detection**  
+Used an Isolation Forest configured to flag 5% of respondents in the training data as multivariate outliers.
 
-![Outlier Lorenz Curves](figures/outliers/outlier_lorenz_curve.png)
+**Outlier Profiling**  
+Compared with inliers, outliers were older, had a greater health burden, and were more likely to have extreme costs:
+
+- **Out-of-pocket costs:** Outliers were 3.9× as likely as inliers to be among the top 1% of spenders.
+- **Age and health burden:** Compared with inliers, outliers were 19 years older and had three more chronic conditions and three more functional limitations, based on group medians.
+- **Walking limitations:** Reported by 75% of outliers versus 9% of inliers.
+- **Insurance:** Public-only coverage was more common among outliers: 66% versus 25% of inliers.
+
+**Outlier Treatment**  
+Retained all outliers because their profiles were consistent with potentially valid health needs and costs.
+
 ![Outlier Profile for Numerical Features and Target](figures/outliers/outlier_numeric_profile.png)
 ![Outlier Profile for Binary Features](figures/outliers/outlier_binary_profile.png)
 ![Outlier Profile for Categorical Features](figures/outliers/outlier_categorical_profile.png)
