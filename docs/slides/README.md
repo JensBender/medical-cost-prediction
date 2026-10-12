@@ -7,10 +7,11 @@ dark blue text, and teal for model results in comparisons. Gray is reserved for
 supporting information and slide IDs. Main slides display plain numbers, the
 cover is unnumbered, and appendix slides display A1, A2, etc. The storyboard
 uses 1–9 for the main slides. Titles can use one or two lines; content starts
-below the title with a consistent gap. The U.S. healthcare costs, MEPS overview, and outlier
-analysis appendix slides are included; the remaining appendix slides are
-in storyboard form. Order and number appendix slides by their first reference
-in the main presentation. Place unreferenced slides with their related topic.
+below the title with a consistent gap. The appendix includes U.S. healthcare costs,
+MEPS, outliers, feature distributions and relationships, and preprocessing.
+The remaining appendix slides are in storyboard form. Order and number appendix
+slides by their first reference in the main presentation. Place unreferenced
+slides with their related topic.
 
 `generate_slides.py` creates an editable PowerPoint, with optional PNG previews.
 Speaker notes come from the storyboard; slide copy and layout are in the Python
@@ -33,6 +34,11 @@ and the project images `../../assets/header.png`,
 `../../assets/infographic_meps_data.jpg`,
 `../../assets/infographic_healthcare_costs.png`, and
 `../../figures/eda/lorenz_curve.png`. All these inputs are tracked by Git.
+
+The preprocessing slide uses the tracked `assets/preprocessing-pipeline.png`.
+Its editable source is `../../assets/preprocessing_pipeline.svg`. When changing
+the SVG, regenerate the PNG and include both files in the same commit. The slide
+generator embeds the PNG directly.
 
 Choose a new revision name for each run. The Python generator refuses to overwrite
 an existing revision and keeps previous exports. Generated files remain ignored
@@ -60,7 +66,7 @@ Then add `--render`:
 ```
 
 The renderer reads the generated PowerPoint and writes `1.png` through `9.png`,
-`A1.png` through `A3.png` beside it. Rendering failures leave the PowerPoint file
+`A1.png` through `A11.png` beside it. Rendering failures leave the PowerPoint file
 available.
 Preview generation requires the bundled renderer; it is optional for someone
 cloning the repository. The bundled presentation validators can also inspect

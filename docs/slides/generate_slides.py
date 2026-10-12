@@ -26,7 +26,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 10)] + [f"A{number}" for number in range(1, 11)]
+SLIDE_IDS = [str(number) for number in range(1, 10)] + [f"A{number}" for number in range(1, 12)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -584,6 +584,16 @@ def build_presentation():
         relationships_return_link.click_action.target_slide = distribution
         if slide_id == "A7":
             relationships_appendix_link.click_action.target_slide = feature_relationships
+    preprocessing = new_slide(presentation, storyboard, "A11")
+    picture(preprocessing, SLIDES_DIR / "assets/preprocessing-pipeline.png",
+            "Preprocessing pipeline fitted on training data: categorical input "
+            "standardization, missing-value validation and imputation, health-burden "
+            "feature derivation, scaling, and encoding.", 0, 0, 1280, 720)
+    preprocessing_return_link = text(
+        preprocessing, "Return to model selection", "Back",
+        20, 674, 100, 24, 18, color=SECONDARY, underline=True,
+    )
+    preprocessing_return_link.click_action.target_slide = selection
     return presentation
 
 
