@@ -21,7 +21,7 @@ slides are in storyboard form.
 - **Slide numbering:** Display 2–9 on the main content slides, with the cover
   unnumbered, and A1, A2, etc. in the appendix. Use 1–9 in the storyboard.
 - **Appendix navigation:** Add links where a specific follow-up is likely, using
-  “Appendix: [topic]” at the bottom left and “Back to [main slide topic]” on the
+  “Appendix: [topic]” at the bottom left and “Back” on the
   appendix slide. Use small, muted gray, underlined text and keep slide IDs at
   the bottom right. Add other footnotes only when needed to interpret the slide.
   On the cost-distribution slide, group EDA links in the left margin under
@@ -473,7 +473,7 @@ Timings apply only when promoted into the main presentation.
 **Question:** What is out-of-pocket spending, and how does it relate to HSA/FSA planning?
 
 **On the slide:** [Healthcare-cost infographic](../../assets/infographic_healthcare_costs.png)
-with a “Back to problem statement” link.
+with a “Back” link.
 
 **Speaker notes — 1:00 (optional)**
 
@@ -504,7 +504,7 @@ plan comparisons are outside scope.
 **Question:** How does MEPS collect its data, and which component does this project use?
 
 **On the slide:** [MEPS infographic](../../assets/infographic_meps_data.jpg)
-with a “Back to MEPS data” link.
+with a “Back” link.
 
 **Speaker notes — 1:00 (optional)**
 
@@ -553,7 +553,7 @@ Leave space between the three sections.
 | Walking limitations | 9% | 75% |
 | Cognitive limitations | 3% | 61% |
 
-Include a “Back to cost distribution” link.
+Include a “Back” link.
 
 **Speaker notes — 1:15 (optional, estimated)**
 
@@ -588,7 +588,7 @@ threshold is defined across all training respondents.
 using the figure's existing title.
 
 **Visual:** Fit the unchanged image to the full slide height. Place a small
-“Back to main slide” link in the unused lower-left side margin, pointing to the
+“Back” link in the unused lower-left side margin, pointing to the
 cost-distribution slide. Use the same layout for the next two distribution slides.
 
 **Speaker notes — 0:20 (optional)**

@@ -488,7 +488,7 @@ def build_presentation():
             "Overview of U.S. healthcare payments, out-of-pocket costs, insurance "
             "terms, HSA/FSA planning, and the project target.", 20, 0, 1240, 660)
     healthcare_return_link = text(
-        healthcare_overview, "Return to problem statement", "Back to problem statement",
+        healthcare_overview, "Return to problem statement", "Back",
         72, 674, 800, 24, 18, color=SECONDARY, underline=True,
     )
     healthcare_appendix_link.click_action.target_slide = healthcare_overview
@@ -498,7 +498,7 @@ def build_presentation():
     picture(meps_overview, WORKSPACE_DIR / "assets/infographic_meps_data.jpg",
             "MEPS household, provider, and employer survey components and the 2023 "
             "data used in this project.", 20, 0, 1240, 660)
-    return_link = text(meps_overview, "Return to data slide", "Back to MEPS data",
+    return_link = text(meps_overview, "Return to data slide", "Back",
                        72, 674, 800, 24, 18, color=SECONDARY, underline=True)
     appendix_link.click_action.target_slide = meps_overview
     return_link.click_action.target_slide = data
@@ -534,7 +534,7 @@ def build_presentation():
           ("Retained all outliers as plausible, valuable training examples.", False)],
          72, 600, 1136, 42, 30)
     outlier_return_link = text(
-        outliers, "Return to cost distribution", "Back to cost distribution",
+        outliers, "Return to cost distribution", "Back",
         72, 674, 800, 24, 18, color=SECONDARY, underline=True,
     )
     outlier_appendix_link.click_action.target_slide = outliers
@@ -551,8 +551,8 @@ def build_presentation():
         picture(feature_distributions, WORKSPACE_DIR / "figures/eda" / filename,
                 description, 0, 0, 1280, 720)
         distribution_return_link = text(
-            feature_distributions, "Return to cost distribution", "Back to\nmain slide",
-            20, 650, 100, 46, 18, color=SECONDARY, underline=True,
+            feature_distributions, "Return to cost distribution", "Back",
+            20, 674, 100, 24, 18, color=SECONDARY, underline=True,
         )
         distribution_return_link.click_action.target_slide = distribution
         if slide_id == "A4":
