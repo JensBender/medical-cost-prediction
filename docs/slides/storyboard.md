@@ -19,7 +19,7 @@ slides are in storyboard form.
   Place unreferenced slides with their related topic. Update numbering and links
   when the presentation order changes.
 - **Slide numbering:** Display 2–9 on the main content slides, with the cover
-  unnumbered, and A1, A2, etc. in the appendix. Keep M1–M9 as internal IDs.
+  unnumbered, and A1, A2, etc. in the appendix. Use 1–9 in the storyboard.
 - **Appendix navigation:** Add links where a specific follow-up is likely, using
   “Appendix: [topic]” at the bottom left and “Back to [main slide topic]” on the
   appendix slide. Use small, muted gray, underlined text and keep slide IDs at
@@ -62,20 +62,20 @@ The first three slide timings are rehearsed; the remaining timings are estimates
 
 | ID | Proposed slide title | Time | Purpose |
 | --- | --- | ---: | --- |
-| M1 | Medical cost prediction for annual budgeting | 0:10 | Cover and brief orientation |
-| M2 | How much should I set aside for healthcare? | 0:45 | Establish the budgeting need and intended value |
-| M3 | MEPS links accessible inputs to observed spending | 2:00 | Explain the survey, project data, and population weights |
-| M4 | Out-of-pocket costs: 20% of adults account for ~80% | 1:00 | Show the data challenge that shaped modeling |
-| M5 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
-| M6 | Quantile regression turns predictions into budgeting ranges | 1:30 | Explain the final model and its outputs |
-| M7 | Final model audit: clearest gains in ranges and q90 | 1:30 | Present held-out evidence and baseline comparisons |
-| M8 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
-| M9 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
+| 1 | Medical cost prediction for annual budgeting | 0:10 | Cover and brief orientation |
+| 2 | How much should I set aside for healthcare? | 0:45 | Establish the budgeting need and intended value |
+| 3 | MEPS links accessible inputs to observed spending | 2:00 | Explain the survey, project data, and population weights |
+| 4 | Out-of-pocket costs: 20% of adults account for ~80% | 1:00 | Show the data challenge that shaped modeling |
+| 5 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
+| 6 | Quantile regression turns predictions into budgeting ranges | 1:30 | Explain the final model and its outputs |
+| 7 | Final model audit: clearest gains in ranges and q90 | 1:30 | Present held-out evidence and baseline comparisons |
+| 8 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
+| 9 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
 | | **Total** | **10:25** | |
 
 ## Main slides
 
-### M1 — Medical cost prediction for annual budgeting
+### 1 — Medical cost prediction for annual budgeting
 
 **Purpose:** Introduce the project and presenter before the problem statement.
 
@@ -99,7 +99,7 @@ healthcare costs using machine learning.”
 
 **Source:** [README: motivation](../../README.md).
 
-### M2 — How much should I set aside for healthcare?
+### 2 — How much should I set aside for healthcare?
 
 **Takeaway:** People need an estimate of next year's out-of-pocket
 spending to plan their budget and HSA/FSA contributions.
@@ -137,7 +137,7 @@ without researching procedure costs or digging through medical records.”
 [HealthCare.gov: HSA overview](https://www.healthcare.gov/high-deductible-health-plan/);
 [HealthCare.gov: FSA overview](https://www.healthcare.gov/have-job-based-coverage/flexible-spending-accounts/).
 
-### M3 — MEPS links accessible inputs to observed spending
+### 3 — MEPS links accessible inputs to observed spending
 
 **Takeaway:** MEPS links accessible personal information to annual out-of-pocket
 spending, with survey weights supporting population-level training and evaluation.
@@ -159,22 +159,22 @@ spending, with survey weights supporting population-level training and evaluatio
 
 **Speaker notes — 2:00 (rehearsed)**
 
-“To do so, I used data from the Medical Expenditure Panel Survey, or MEPS. 
-MEPS is a nationally representative survey and a leading data source for 
+“To do so, I used data from the Medical Expenditure Panel Survey, or MEPS.
+MEPS is a nationally representative survey and a leading data source for
 U.S. healthcare costs. Households complete five interviews over two years.
 To improve healthcare cost estimates, MEPS obtains participants’ written
 permission to collect medical records directly from providers and pharmacies,
 including payment details.
 
-MEPS records healthcare spending and who paid for it. I chose out-of-pocket costs 
-as the target because that is what people need to budget for themselves. This 
+MEPS records healthcare spending and who paid for it. I chose out-of-pocket costs
+as the target because that is what people need to budget for themselves. This
 includes copays, deductibles, and uncovered services, but excludes insurance premiums.
 
-I used the 2023 household data for over 14,000 U.S. adults, representing about 260 
+I used the 2023 household data for over 14,000 U.S. adults, representing about 260
 million adults in the population. I selected 26 features from over 1,000 variables,
 including age, insurance status, family income, joint pain, and high cholesterol.
-My selection prioritized information people can provide from memory, prioritizing 
-variables measured early in the year to reduce data leakage and those with predictive 
+My selection prioritized information people can provide from memory, prioritizing
+variables measured early in the year to reduce data leakage and those with predictive
 value supported by the healthcare cost literature.
 
 MEPS oversamples some groups, such as Hispanic households, to get more reliable
@@ -210,7 +210,7 @@ random within spending groups, with a separate zero-cost group and finer bins
 for high costs to reduce imbalances in rare, expensive cases. Discuss the split
 after the spending-distribution slide if asked.
 
-### M4 — Out-of-pocket costs: 20% of adults account for ~80%
+### 4 — Out-of-pocket costs: 20% of adults account for ~80%
 
 **Takeaway:** Typical errors and errors on expensive years describe different
 parts of model performance.
@@ -252,7 +252,7 @@ only the start of model selection.
 **Sources:** [EDA notebook script: zero costs and cost concentration](../../notebooks/1_eda_and_preprocessing.py);
 [README: EDA and outlier analysis](../../README.md).
 
-### M5 — Model selection: median error was not enough
+### 5 — Model selection: median error was not enough
 
 **Takeaway:** The model with the best typical error offered limited separation
 between lower- and higher-cost profiles.
@@ -295,7 +295,7 @@ medical event.”
 point-estimate models. Do not compare $159 here with the final model's $240 test
 result as if they came from the same evaluation.
 
-### M6 — Quantile regression turns predictions into budgeting ranges
+### 6 — Quantile regression turns predictions into budgeting ranges
 
 **Takeaway:** The final model estimates different parts of the spending
 distribution for each input profile.
@@ -333,7 +333,7 @@ not confidence intervals around an average, and q90 is not a maximum possible bi
 [quantile training script](../../scripts/train_xgboost_quantile.py);
 [prediction postprocessing](../../src/prediction.py).
 
-### M7 — Final model audit: clearest gains in ranges and q90
+### 7 — Final model audit: clearest gains in ranges and q90
 
 **Takeaway:** The final model meets the project's overall performance gates,
 with its strongest evidence of added value in interval and upper-quantile scores.
@@ -383,7 +383,7 @@ and situations where the model is less reliable.
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
 Confidence intervals, widths, and scoring definitions are in A9 and A10.
 
-### M8 — Final model test audit: overall coverage hides subgroup gaps
+### 8 — Final model test audit: overall coverage hides subgroup gaps
 
 **Takeaway:** The model's limitations affect both interpretation and the next
 validation steps.
@@ -419,7 +419,7 @@ to turn it into a usable product.
 [feature timing notes](../research/candidate_features.md);
 [preprocessing split](../../scripts/preprocess.py).
 
-### M9 — Model evaluation is complete; app development comes next
+### 9 — Model evaluation is complete; app development comes next
 
 **Takeaway:** The project has reusable ML components and an explicit plan for
 the remaining product and validation work.
@@ -485,7 +485,7 @@ purchases. It covers annual costs for an individual U.S. civilian
 noninstitutionalized adult. Household totals, procedure prices, and insurance
 plan comparisons are outside scope.
 
-**Promote:** After M2 when the audience needs U.S. healthcare background; allow 1:00.
+**Promote:** After 2 when the audience needs U.S. healthcare background; allow 1:00.
 
 **Sources:** [README: target variable](../../README.md);
 [product requirements: out of scope](../specs/product_requirements.md);
@@ -515,7 +515,7 @@ and simple benchmarks use these weights. They do not by themselves remove
 missing-feature bias, guarantee representativeness of future app users, or
 account for survey clustering in uncertainty estimates.
 
-**Promote:** After M3 for survey background; allow 1:00.
+**Promote:** After 3 for survey background; allow 1:00.
 
 **Sources:** [AHRQ: MEPS overview](https://www.ahrq.gov/data/meps.html);
 [MEPS medical provider component](https://meps.ahrq.gov/mepsweb/survey_comp/mpc.jsp);
@@ -596,7 +596,7 @@ on the planned form: related conditions can be grouped, and some values are
 derived. User testing will assess the burden; feature reduction is an option if
 fewer inputs would improve the experience. Refer to A5 for input timing.
 
-**Promote:** After M3 when input design is relevant to the audience; allow 0:45.
+**Promote:** After 3 when input design is relevant to the audience; allow 0:45.
 Otherwise, use only for questions.
 
 **Sources:** [README: feature details](../../README.md#feature-details);
@@ -619,7 +619,7 @@ leakage. Feature availability at the intended prediction date is a separate
 issue. Audit every input against that date and evaluate on later-year data.
 Do not claim the size or direction of the resulting performance change is known.
 
-**Promote:** After M3 or M8 for forecasting and validation questions; allow 1:00.
+**Promote:** After 3 or 8 for forecasting and validation questions; allow 1:00.
 
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
@@ -641,7 +641,7 @@ nested pipeline and target-transform wrappers. This is not cross-validation.
 Repeated selection on one validation split has uncertainty. The quantile model
 reuses the tuned point-model parameters rather than receiving its own search.
 
-**Promote:** Before M5 for a longer modeling discussion; allow 1:30.
+**Promote:** Before 5 for a longer modeling discussion; allow 1:30.
 
 **Sources:** [README: modeling](../../README.md);
 [XGBoost tuning script](../../scripts/tune_xgboost.py).
@@ -679,7 +679,7 @@ distribution. A lower MdAE alone does not establish useful risk separation.
 Wider prediction spread alone also does not establish accuracy; inspect
 residuals and subgroup errors alongside it.
 
-**Promote:** After M5; allow 1:00.
+**Promote:** After 5; allow 1:00.
 
 **Sources:** [README: heteroscedasticity and subgroup analysis](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
@@ -704,7 +704,7 @@ interval does not need to fall inside the gate under the reported decision
 rule. These are project criteria, not external certification. The notebook
 resamples rows and retains their weights.
 
-**Promote:** After M7 for evaluation depth; allow 1:00.
+**Promote:** After 7 for evaluation depth; allow 1:00.
 
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: bootstrap implementation](../../notebooks/2_modeling.py).
@@ -733,7 +733,7 @@ confidence intervals above zero for the three reductions shown, but the small
 MdAE improvement versus the population baseline remains uncertain. Positive
 skill is not a percentage-point improvement in coverage.
 
-**Promote:** After M7; allow 1:00.
+**Promote:** After 7; allow 1:00.
 
 **Source:** [Modeling notebook: test baseline comparisons](../../notebooks/2_modeling.py).
 
@@ -755,7 +755,7 @@ of 30. Similar error patterns across models do not establish absence of bias.
 Planning notices communicate a limitation; further evaluation or recalibration
 would be needed to address it.
 
-**Promote:** After M8; allow 1:00.
+**Promote:** After 8; allow 1:00.
 
 **Sources:** [README: final subgroup audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
@@ -777,7 +777,7 @@ Low coverage in the observed tail is a useful description of missed expensive
 years, not the same as conditional calibration by an available input. An upper
 quantile is not catastrophe insurance or a hard spending cap.
 
-**Promote:** After M8 when discussing tail risk; allow 1:00.
+**Promote:** After 8 when discussing tail risk; allow 1:00.
 
 **Sources:** [README: final reliability audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
@@ -797,7 +797,7 @@ inputs, including the effects of transformations and derived medical counts.
 Correlated inputs can share attribution. Higher or lower observed spending
 does not by itself mean higher or lower healthcare need.
 
-**Promote:** Before M9 for explainability depth; allow 1:00.
+**Promote:** Before 9 for explainability depth; allow 1:00.
 
 **Sources:** [README: feature importance](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json).
@@ -819,7 +819,7 @@ P95 summarizes subsequent explanation calls after a separately measured first
 call. It excludes the rest of the request and is not a deployed API latency
 claim. Complete request latency on target hardware remains unverified.
 
-**Promote:** Before M9 for ML engineering roles; allow 1:00.
+**Promote:** Before 9 for ML engineering roles; allow 1:00.
 
 **Sources:** [README: SHAP explanation details](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json);
@@ -843,7 +843,7 @@ prediction and explanation behavior. Integration, end-to-end behavior, and
 deployment performance still need verification. Do not imply that every
 experiment is a DVC stage or that the full service is implemented.
 
-**Promote:** Before M9 for ML engineering roles; allow 1:30.
+**Promote:** Before 9 for ML engineering roles; allow 1:30.
 
 **Sources:** [DVC pipeline](../../dvc.yaml); [prediction code](../../src/prediction.py);
 [technical specifications](../specs/technical_specifications.md); [unit tests](../../tests/unit/).
@@ -864,7 +864,7 @@ on later MEPS data is a separate route for assessing the model. Medical
 inflation adjusts the dollar scale; it cannot correct all changes in insurance,
 care use, or the population. These are planned operating choices.
 
-**Promote:** Before M9 for deployment and product discussion; allow 1:00.
+**Promote:** Before 9 for deployment and product discussion; allow 1:00.
 
 **Sources:** [Technical specifications: privacy-preserving monitoring](../specs/technical_specifications.md);
 [product requirements](../specs/product_requirements.md).

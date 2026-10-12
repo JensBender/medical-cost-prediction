@@ -26,7 +26,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [f"M{number}" for number in range(1, 10)] + ["A1", "A2", "A3"]
+SLIDE_IDS = [str(number) for number in range(1, 10)] + ["A1", "A2", "A3"]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -94,7 +94,8 @@ def notes_for(storyboard, slide_id):
     )
     if notes is None:
         raise ValueError(f"Speaker notes missing for {slide_id}.")
-    return notes[1].replace("“", "").replace("”", "").replace("\n", " ")
+    paragraphs = re.split(r"\n\s*\n", notes[1].replace("“", "").replace("”", ""))
+    return "\n\n".join(" ".join(paragraph.split()) for paragraph in paragraphs)
 
 
 def new_slide(presentation, storyboard, slide_id, title=None, *, two_lines=False):
@@ -104,9 +105,8 @@ def new_slide(presentation, storyboard, slide_id, title=None, *, two_lines=False
     if title is not None:
         text(slide, f"{slide_id} title", title, 72, 48, 1136,
              112 if two_lines else 66, 46, bold=True)
-    if slide_id != "M1":
-        slide_number = slide_id[1:] if slide_id.startswith("M") else slide_id
-        text(slide, "Slide ID", slide_number, 1166, 675, 42, 22, 16,
+    if slide_id != "1":
+        text(slide, "Slide ID", slide_id, 1166, 675, 42, 22, 16,
              color=SECONDARY, alignment=PP_ALIGN.RIGHT)
     slide.notes_slide.notes_text_frame.text = notes_for(storyboard, slide_id)
     return slide
@@ -293,7 +293,7 @@ def build_presentation():
     presentation.slide_width = pixels(1280)
     presentation.slide_height = pixels(720)
 
-    cover = new_slide(presentation, storyboard, "M1")
+    cover = new_slide(presentation, storyboard, "1")
     picture(cover, WORKSPACE_DIR / "assets/header.png",
             "Medical Cost Planner project header.", 72, 72, 1136, 422)
     text(cover, "Subtitle", "Predicting Out-of-Pocket Healthcare Costs with Machine Learning",
@@ -302,7 +302,7 @@ def build_presentation():
     text(cover, "Event details", "[Event / setting] · [Date]", 72, 632, 1000, 32, 24,
          color=SECONDARY)
 
-    problem = new_slide(presentation, storyboard, "M2",
+    problem = new_slide(presentation, storyboard, "2",
                         "How much should I set aside for healthcare?")
     text(problem, "Challenge label", "The challenge", 72, 520, 556, 36, 30, bold=True)
     text(problem, "Budgeting challenge", "Difficult to plan next year's out-of-pocket\n"
@@ -318,7 +318,7 @@ def build_presentation():
         72, 674, 800, 24, 18, color=SECONDARY, underline=True,
     )
 
-    data = new_slide(presentation, storyboard, "M3",
+    data = new_slide(presentation, storyboard, "3",
                      "MEPS links accessible inputs to observed spending")
     survey_bullets(data)
     picture(data, SLIDES_DIR / "assets/household-survey.png",
@@ -328,8 +328,8 @@ def build_presentation():
     appendix_link = text(data, "MEPS appendix link", "Appendix: MEPS overview",
                          72, 674, 800, 24, 18, color=SECONDARY, underline=True)
 
-    distribution = new_slide(presentation, storyboard, "M4")
-    text(distribution, "M4 title", "Out-of-pocket costs: 20% of adults account for ~80%",
+    distribution = new_slide(presentation, storyboard, "4")
+    text(distribution, "4 title", "Out-of-pocket costs: 20% of adults account for ~80%",
          72, 48, 1136, 66, 44, bold=True)
     lorenz_path = WORKSPACE_DIR / "figures/eda/lorenz_curve.png"
     with Image.open(lorenz_path) as lorenz_image:
@@ -356,7 +356,7 @@ def build_presentation():
         72, 530, 164, 48, 18, color=SECONDARY, underline=True,
     )
 
-    selection = new_slide(presentation, storyboard, "M5",
+    selection = new_slide(presentation, storyboard, "5",
                           "Model selection: median error was not enough")
     model_table = native_table(selection, [
         ["Tuned point-estimate model", "Validation MdAE", "Validation MAE"],
@@ -377,7 +377,7 @@ def build_presentation():
     footnote(selection, "MdAE: median absolute error; MAE: mean absolute error. "
              "Validation; 2023 USD.")
 
-    quantiles = new_slide(presentation, storyboard, "M6", "Quantile regression turns "
+    quantiles = new_slide(presentation, storyboard, "6", "Quantile regression turns "
                           "predictions\ninto budgeting ranges", two_lines=True)
     text(quantiles, "Objective", "XGBoost quantile objective · survey weights · "
          "log-transformed costs", 72, 190, 1136, 38, 27)
@@ -406,8 +406,8 @@ def build_presentation():
     footnote(quantiles, "Conceptual diagram, not a prediction for an individual. "
              "q50 is the predicted median.")
 
-    results = new_slide(presentation, storyboard, "M7")
-    text(results, "M7 title", [("Final model audit:", True),
+    results = new_slide(presentation, storyboard, "7")
+    text(results, "7 title", [("Final model audit:", True),
          " clearest gains in ranges and q90"], 72, 48, 1136, 66, 46)
     native_table(results, [
         ["Held-out test metric", "Result", "Release gate"],
@@ -431,7 +431,7 @@ def build_presentation():
          450, 562, 758, 38, 26)
     footnote(results, "Survey-weighted test metrics. Dollar amounts in 2023 USD.")
 
-    audit = new_slide(presentation, storyboard, "M8", "Final model test audit: overall "
+    audit = new_slide(presentation, storyboard, "8", "Final model test audit: overall "
                       "coverage\nhides subgroup gaps", two_lines=True)
     text(audit, "Chart metric", "Typical-range coverage (q25–q75)",
          72, 190, 780, 38, 28, bold=True)
@@ -448,7 +448,7 @@ def build_presentation():
     footnote(audit, "Survey-weighted test point estimates; subgroup uncertainty matters. "
              "Source: modeling notebook.")
 
-    next_steps = new_slide(presentation, storyboard, "M9", "Model evaluation is complete;\n"
+    next_steps = new_slide(presentation, storyboard, "9", "Model evaluation is complete;\n"
                            "app development comes next", two_lines=True)
     text(next_steps, "Implemented", "Implemented", 72, 190, 700, 38, 30, bold=True)
     text(next_steps, "Planned", "Planned", 895, 190, 313, 38, 30, bold=True)
