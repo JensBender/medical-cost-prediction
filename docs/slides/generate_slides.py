@@ -339,7 +339,7 @@ def build_presentation():
     chart_height = 580
     chart_width = image_width / (image_height - title_crop) * chart_height
     lorenz = distribution.shapes.add_picture(
-        str(lorenz_path), pixels((1280 - chart_width) / 2), pixels(120),
+        str(lorenz_path), pixels((1280 - chart_width) / 2 + 64), pixels(120),
         pixels(chart_width), pixels(chart_height),
     )
     lorenz.crop_top = title_crop / image_height
@@ -349,6 +349,15 @@ def build_presentation():
         "have zero costs; the highest-spending 20% account for 79.3% of costs "
         "and the highest-spending 1% for 20.6%.",
     )
+    metrics = text(distribution, "Evaluation metrics",
+                   "Primary metric\nMdAE\nSupporting\nMAE, R²",
+                   75.8, 126.9, 184, 170, 24)
+    for paragraph, heading, spacing in zip(
+        metrics.text_frame.paragraphs, (True, False, True, False), (4, 18, 4, 0),
+    ):
+        paragraph.space_after = font_size(spacing)
+        for run in paragraph.runs:
+            style_font(run.font, 24, bold=heading)
     text(distribution, "EDA appendix label", "Appendix", 72, 588, 164, 22, 18,
          color=SECONDARY)
     outlier_appendix_link = text(

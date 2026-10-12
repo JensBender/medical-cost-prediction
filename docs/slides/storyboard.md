@@ -219,14 +219,19 @@ parts of model performance.
 - **22.3%** of the weighted adult population has zero out-of-pocket spending
 - The highest-spending **20% accounts for 79.3%** of spending
 - The highest-spending **1% accounts for 20.6%** of spending
+- **Primary metric:** MdAE
+- **Supporting:** MAE, R²
 
 **Visual:** Large [Lorenz curve](../../figures/eda/lorenz_curve.png) beneath the
-slide title, with the figure's own title cropped. No extra body text or footnote.
+slide title, with the figure's own title cropped. A compact text box in the
+upper-left margin lists the primary and supporting metrics, using the same font
+size with bold headings. Align it with the top of the plot. Keep the plot large
+and shift it right to leave a clear gap beside the text; no extra footnote.
 
 **Appendix links:** A compact block near the bottom left, with a small, muted
 “Appendix” label and
 an underlined [Outlier analysis (A3)](#a3--outlier-analysis-retaining-plausible-cases)
-link closely beneath it. Keep the plot's current size and position. Add
+link closely beneath it. Keep the plot's current size. Add
 feature-distribution and correlation links below it when those appendix slides
 are created.
 
