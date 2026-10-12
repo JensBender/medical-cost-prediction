@@ -162,13 +162,12 @@ spending, with survey weights supporting population-level training and evaluatio
 “To do so, I used data from the Medical Expenditure Panel Survey, or MEPS.
 MEPS is a nationally representative survey and a leading data source for
 U.S. healthcare costs. Households complete five interviews over two years.
-To improve healthcare cost estimates, MEPS obtains participants’ written
-permission to collect medical records directly from providers and pharmacies,
-including payment details.
+To improve cost estimates, MEPS also collects medical and payment records
+directly from providers and pharmacies.
 
-MEPS records healthcare spending and who paid for it. I chose out-of-pocket costs
-as the target because that is what people need to budget for themselves. This
-includes copays, deductibles, and uncovered services, but excludes insurance premiums.
+I chose out-of-pocket costs as the target because that is what people need to
+budget for themselves. This includes copays, deductibles, and uncovered services,
+but excludes insurance premiums.
 
 I used the 2023 household data for over 14,000 U.S. adults, representing about 260
 million adults in the population. I selected 26 features from over 1,000 variables,
