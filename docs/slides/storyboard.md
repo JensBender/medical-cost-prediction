@@ -20,6 +20,7 @@ slides are in storyboard form.
   when the presentation order changes.
 - **Slide numbering:** Display 2–9 on the main content slides, with the cover
   unnumbered, and A1, A2, etc. in the appendix. Use 1–9 in the storyboard.
+- **Title size:** Use 33 pt for all main content-slide titles, including two-line titles.
 - **Appendix navigation:** Add links where a specific follow-up is likely, using
   “Appendix: [topic]” at the bottom left and “Back” on the
   appendix slide. Use small, muted gray, underlined text and keep slide IDs at

@@ -104,7 +104,7 @@ def new_slide(presentation, storyboard, slide_id, title=None, *, two_lines=False
     slide.background.fill.fore_color.rgb = RGBColor.from_string(BACKGROUND)
     if title is not None:
         text(slide, f"{slide_id} title", title, 72, 48, 1136,
-             112 if two_lines else 66, 46, bold=True)
+             112 if two_lines else 66, 44 if slide_id.isdigit() else 46, bold=True)
     if slide_id != "1":
         text(slide, "Slide ID", slide_id, 1166, 675, 42, 22, 16,
              color=SECONDARY, alignment=PP_ALIGN.RIGHT)
@@ -421,7 +421,7 @@ def build_presentation():
 
     results = new_slide(presentation, storyboard, "7")
     text(results, "7 title", [("Final model audit:", True),
-         " clearest gains in ranges and q90"], 72, 48, 1136, 66, 46)
+         " clearest gains in ranges and q90"], 72, 48, 1136, 66, 44)
     native_table(results, [
         ["Held-out test metric", "Result", "Release gate"],
         ["Plan-around estimate (q50): MdAE", "$240", "< $500"],
@@ -519,7 +519,7 @@ def build_presentation():
         ["Private insurance", "68%", "32%"],
         ["Walking limitations", "9%", "75%"],
         ["Cognitive limitations", "3%", "61%"],
-    ], 220, [680, 228, 228], row_height=42)
+    ], 206, [680, 228, 228], row_height=42)
     for row_index in range(len(profile_table.rows)):
         for column_index in range(len(profile_table.columns)):
             cell = profile_table.cell(row_index, column_index)
@@ -532,7 +532,7 @@ def build_presentation():
     text(outliers, "Outlier treatment",
          [("Treatment: ", True),
           ("Retained all outliers as plausible, valuable training examples.", False)],
-         72, 600, 1136, 42, 30)
+         72, 583.56, 1136, 42, 30)
     outlier_return_link = text(
         outliers, "Return to cost distribution", "Back",
         72, 674, 800, 24, 18, color=SECONDARY, underline=True,
