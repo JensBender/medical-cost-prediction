@@ -26,7 +26,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 10)] + ["A1", "A2", "A3"]
+SLIDE_IDS = [str(number) for number in range(1, 10)] + [f"A{number}" for number in range(1, 7)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -364,6 +364,10 @@ def build_presentation():
         distribution, "Outlier appendix link", "Outlier analysis",
         72, 614, 164, 24, 18, color=SECONDARY, underline=True,
     )
+    distributions_appendix_link = text(
+        distribution, "Distributions appendix link", "Distributions",
+        72, 640, 164, 24, 18, color=SECONDARY, underline=True,
+    )
 
     selection = new_slide(presentation, storyboard, "5",
                           "Model selection: median error was not enough")
@@ -535,6 +539,24 @@ def build_presentation():
     )
     outlier_appendix_link.click_action.target_slide = outliers
     outlier_return_link.click_action.target_slide = distribution
+    for slide_id, filename, description in [
+        ("A4", "numerical_distributions.png", "Population distributions of age, "
+         "family size, physical health, and mental health."),
+        ("A5", "categorical_distributions.png", "Population distributions of "
+         "region, marital status, employment, insurance, education, and family income."),
+        ("A6", "binary_distributions.png", "Population distributions of binary "
+         "features, including chronic conditions, limitations, and access to care."),
+    ]:
+        feature_distributions = new_slide(presentation, storyboard, slide_id)
+        picture(feature_distributions, WORKSPACE_DIR / "figures/eda" / filename,
+                description, 0, 0, 1280, 720)
+        distribution_return_link = text(
+            feature_distributions, "Return to cost distribution", "Back to\nmain slide",
+            20, 650, 100, 46, 18, color=SECONDARY, underline=True,
+        )
+        distribution_return_link.click_action.target_slide = distribution
+        if slide_id == "A4":
+            distributions_appendix_link.click_action.target_slide = feature_distributions
     return presentation
 
 

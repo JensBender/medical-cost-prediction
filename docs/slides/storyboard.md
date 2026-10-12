@@ -203,7 +203,7 @@ supplement household reports for selected services; not every payment is
 independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
-See A4 for feature examples, counts, and possible feature reduction, and A5 for
+See A7 for feature examples, counts, and possible feature reduction, and A8 for
 input timing. Preprocessing is fitted on training data. The 80/10/10 split is
 random within spending groups, with a separate zero-cost group and finer bins
 for high costs to reduce imbalances in rare, expensive cases. Discuss the split
@@ -230,10 +230,11 @@ and shift it right to leave a clear gap beside the text; no extra footnote.
 
 **Appendix links:** A compact block near the bottom left, with a small, muted
 “Appendix” label and
-an underlined [Outlier analysis (A3)](#a3--outliers-greater-health-burden-and-higher-cost-risk)
-link closely beneath it. Keep the plot's current size. Add
-feature-distribution and correlation links below it when those appendix slides
-are created.
+underlined links to [Outlier analysis (A3)](#a3--outliers-greater-health-burden-and-higher-cost-risk)
+and [Distributions (A4–A6)](#a4--distributions-numerical-features) closely beneath it.
+Link to the first distribution slide, then advance through the group. Keep the
+plot's current size. Add the feature–target relationships link when that group
+is created, starting with the correlation heatmap.
 
 **Speaker notes — 1:00**
 
@@ -275,7 +276,7 @@ between lower- and higher-cost profiles.
 - Subgroup and residual analysis motivated a model that also describes uncertainty
 
 **Display notes:** Comparison table with the $217 finding below it. Keep residual
-diagnostics in A8. Define the metrics here: “MdAE: median absolute error;
+diagnostics in A11. Define the metrics here: “MdAE: median absolute error;
 MAE: mean absolute error.”
 
 **Speaker notes — 1:30**
@@ -387,7 +388,7 @@ and situations where the model is less reliable.
 
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
-Confidence intervals, widths, and scoring definitions are in A9 and A10.
+Confidence intervals, widths, and scoring definitions are in A12 and A13.
 
 ### 8 — Final model test audit: overall coverage hides subgroup gaps
 
@@ -404,7 +405,7 @@ validation steps.
 
 **Visual:** Bar chart of typical-range coverage: poor mental health 30.1%, low
 income 39.2%, overall 47.3%, and target 50%. Label results as point estimates;
-A11 adds subgroup counts and uncertainty.
+A14 adds subgroup counts and uncertainty.
 
 **Speaker notes — 1:00**
 
@@ -579,7 +580,66 @@ threshold is defined across all training respondents.
 **Sources:** [README: outlier analysis](../../README.md#outlier-analysis-details);
 [EDA notebook: detection and profiling](../../notebooks/1_eda_and_preprocessing.py).
 
-### A4 — Input features: what users provide
+### A4 — Distributions: numerical features
+
+**Question:** How are the numerical features distributed?
+
+**On the slide:** [Numerical distributions](../../figures/eda/numerical_distributions.png),
+using the figure's existing title.
+
+**Visual:** Fit the unchanged image to the full slide height. Place a small
+“Back to main slide” link in the unused lower-left side margin, pointing to the
+cost-distribution slide. Use the same layout for the next two distribution slides.
+
+**Speaker notes — 0:20 (optional)**
+
+“These plots show the distributions of age, family size, and self-reported
+physical and mental health. Survey weights turn respondent counts into
+population estimates. The completeness labels show how much information was
+available before imputation.”
+
+**Transition:** Continue to categorical distributions or return to the cost-distribution slide.
+
+**Sources:** [README: distributions](../../README.md#distributions);
+[numerical distributions](../../figures/eda/numerical_distributions.png).
+
+### A5 — Distributions: categorical features
+
+**Question:** How are the categorical features distributed?
+
+**On the slide:** [Categorical distributions](../../figures/eda/categorical_distributions.png),
+using the figure's existing title and the same layout as A4.
+
+**Speaker notes — 0:20 (optional)**
+
+“These plots show region, marital status, employment, insurance, education,
+and family income. The bars give each category's estimated population share
+and the number of people it represents.”
+
+**Transition:** Continue to binary distributions or return to the cost-distribution slide.
+
+**Sources:** [README: distributions](../../README.md#distributions);
+[categorical distributions](../../figures/eda/categorical_distributions.png).
+
+### A6 — Distributions: binary features
+
+**Question:** How common are the binary feature categories?
+
+**On the slide:** [Binary distributions](../../figures/eda/binary_distributions.png),
+using the figure's existing title and the same layout as A4.
+
+**Speaker notes — 0:20 (optional)**
+
+“Each panel shows the population shares for a binary feature. These include
+chronic conditions, functional limitations, and access to care. The percentages
+help distinguish common characteristics from less frequent ones.”
+
+**Transition:** Return to the cost-distribution slide or continue with questions.
+
+**Sources:** [README: distributions](../../README.md#distributions);
+[binary distributions](../../figures/eda/binary_distributions.png).
+
+### A7 — Input features: what users provide
 
 **Question:** What information does the model use, and how much does it ask of users?
 
@@ -602,7 +662,7 @@ threshold is defined across all training respondents.
 columns after transformation. These counts do not equal the number of questions
 on the planned form: related conditions can be grouped, and some values are
 derived. User testing will assess the burden; feature reduction is an option if
-fewer inputs would improve the experience. Refer to A5 for input timing.
+fewer inputs would improve the experience. Refer to A8 for input timing.
 
 **Promote:** After 3 when input design is relevant to the audience; allow 0:45.
 Otherwise, use only for questions.
@@ -611,7 +671,7 @@ Otherwise, use only for questions.
 [input definitions](../../src/constants.py);
 [product requirements: input form](../specs/product_requirements.md).
 
-### A5 — Feature timing: limits of next-year forecasting
+### A8 — Feature timing: limits of next-year forecasting
 
 **Question:** Is this truly a next-year forecast?
 
@@ -632,7 +692,7 @@ Do not claim the size or direction of the resulting performance change is known.
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
 
-### A6 — Model tuning: comparisons on a fixed validation split
+### A9 — Model tuning: comparisons on a fixed validation split
 
 **Question:** What alternatives and tuning procedure were used?
 
@@ -654,7 +714,7 @@ reuses the tuned point-model parameters rather than receiving its own search.
 **Sources:** [README: modeling](../../README.md);
 [XGBoost tuning script](../../scripts/tune_xgboost.py).
 
-### A7 — LLM benchmark: General versus Specific Intelligence
+### A10 — LLM benchmark: General versus Specific Intelligence
 
 **Question:** Why not ask a general-purpose language model for an estimate?
 
@@ -667,12 +727,12 @@ mix these with test-set results from the final quantile model.
 **Talking points:** This result describes one model and prompting setup, not all
 LLMs.
 
-**Promote:** Optional, after A6; allow 1:00.
+**Promote:** Optional, after A9; allow 1:00.
 
 **Sources:** [README: LLM benchmark](../../README.md);
 [LLM benchmark script](../../scripts/benchmark_llm.py).
 
-### A8 — Point-model diagnostics: residuals and prediction ranges
+### A11 — Point-model diagnostics: residuals and prediction ranges
 
 **Question:** Why did the lowest-MdAE model not meet the full product need?
 
@@ -692,7 +752,7 @@ residuals and subgroup errors alongside it.
 **Sources:** [README: heteroscedasticity and subgroup analysis](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A9 — Final model test results: coverage, width, and release gates
+### A12 — Final model test results: coverage, width, and release gates
 
 **Question:** What does passing the project's gates mean?
 
@@ -717,7 +777,7 @@ resamples rows and retains their weights.
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: bootstrap implementation](../../notebooks/2_modeling.py).
 
-### A10 — Final model test benchmarks: gains over simple estimates
+### A13 — Final model test benchmarks: gains over simple estimates
 
 **Question:** Why not give everyone a population or age-group estimate?
 
@@ -745,7 +805,7 @@ skill is not a percentage-point improvement in coverage.
 
 **Source:** [Modeling notebook: test baseline comparisons](../../notebooks/2_modeling.py).
 
-### A11 — Final model test audit: subgroup coverage gaps
+### A14 — Final model test audit: subgroup coverage gaps
 
 **Question:** Who receives less reliable ranges?
 
@@ -768,7 +828,7 @@ would be needed to address it.
 **Sources:** [README: final subgroup audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A12 — Final model test audit: actual versus predicted cost tiers
+### A15 — Final model test audit: actual versus predicted cost tiers
 
 **Question:** Does the safety cushion protect the largest spenders?
 
@@ -790,7 +850,7 @@ quantile is not catastrophe insurance or a hard spending cap.
 **Sources:** [README: final reliability audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A13 — SHAP explains how inputs shape the median estimate
+### A16 — SHAP explains how inputs shape the median estimate
 
 **Question:** Which inputs influence predictions, and what can users infer?
 
@@ -810,7 +870,7 @@ does not by itself mean higher or lower healthcare need.
 **Sources:** [README: feature importance](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json).
 
-### A14 — SHAP benchmarking: explanation quality and latency
+### A17 — SHAP benchmarking: explanation quality and latency
 
 **Question:** How was the SHAP configuration chosen?
 
@@ -833,7 +893,7 @@ claim. Complete request latency on target hardware remains unverified.
 [SHAP metadata](../../app/data/shap_metadata.json);
 [benchmark script](../../scripts/benchmark_shap.py).
 
-### A15 — Inference architecture: shared prediction and explanation code
+### A18 — Inference architecture: shared prediction and explanation code
 
 **Question:** How will training and serving stay consistent?
 
@@ -856,7 +916,7 @@ experiment is a DVC stage or that the full service is implemented.
 **Sources:** [DVC pipeline](../../dvc.yaml); [prediction code](../../src/prediction.py);
 [technical specifications](../specs/technical_specifications.md); [unit tests](../../tests/unit/).
 
-### A16 — Production monitoring: drift signals without observed outcomes
+### A19 — Production monitoring: drift signals without observed outcomes
 
 **Question:** How would the product be monitored without retaining user records?
 
