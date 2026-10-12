@@ -98,7 +98,7 @@
   <!-- Global Header -->
   <g transform="translate(500, 38)">
     <text class="text-title" style="font-size: 30px;">Preprocessing Pipeline</text>
-    <text y="28" class="text-subtitle" style="font-size: 20px; fill: #ffffff;">Fitted on Training Data</text>
+    <text y="28" class="text-subtitle" style="font-size: 20px;">Fitted on training data</text>
   </g>
 
   <!-- Connections between stages -->
@@ -246,8 +246,8 @@
   </g>
 
   <!-- Output features -->
-  <g id="output-data" transform="translate(250, 942)">
-    <rect width="500" height="44" class="box-outer pulse-out" style="fill: #1e293b; stroke: #818cf8; stroke-width: 3;" filter="url(#glow)" />
-    <text x="250" y="29" class="text-title">Model-ready features</text>
+  <g id="output-data" transform="translate(100, 942)">
+    <rect width="800" height="44" class="box-outer pulse-out" style="fill: #1e293b;" />
+    <text x="400" y="29" class="text-title">Model-ready features</text>
   </g>
 </svg>
