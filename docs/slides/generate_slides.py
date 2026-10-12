@@ -26,7 +26,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 10)] + [f"A{number}" for number in range(1, 7)]
+SLIDE_IDS = [str(number) for number in range(1, 10)] + [f"A{number}" for number in range(1, 11)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -358,7 +358,7 @@ def build_presentation():
         paragraph.space_after = font_size(spacing)
         for run in paragraph.runs:
             style_font(run.font, 24, bold=heading)
-    text(distribution, "EDA appendix label", "Appendix", 72, 588, 164, 22, 18,
+    text(distribution, "EDA appendix label", "Appendix:", 72, 588, 164, 22, 18,
          color=SECONDARY)
     outlier_appendix_link = text(
         distribution, "Outlier appendix link", "Outlier analysis",
@@ -367,6 +367,11 @@ def build_presentation():
     distributions_appendix_link = text(
         distribution, "Distributions appendix link", "Distributions",
         72, 640, 164, 24, 18, color=SECONDARY, underline=True,
+    )
+    relationships_appendix_link = text(
+        distribution, "Feature-target relationships appendix link",
+        "Feature–target relations",
+        72, 666, 240, 24, 18, color=SECONDARY, underline=True,
     )
 
     selection = new_slide(presentation, storyboard, "5",
@@ -557,6 +562,28 @@ def build_presentation():
         distribution_return_link.click_action.target_slide = distribution
         if slide_id == "A4":
             distributions_appendix_link.click_action.target_slide = feature_distributions
+    for slide_id, filename, description in [
+        ("A7", "correlation_heatmap.png", "Population Spearman rank correlations "
+         "between out-of-pocket costs and numerical, ordinal, and binary features."),
+        ("A8", "numerical_feature_target_relationships.png", "Relationships between "
+         "out-of-pocket costs and age, family size, physical health, and mental health."),
+        ("A9", "categorical_feature_target_relationships.png", "Out-of-pocket cost "
+         "distributions by region, marital status, employment, insurance, education, "
+         "and family income."),
+        ("A10", "binary_feature_target_relationships.png", "Out-of-pocket cost "
+         "distributions by binary features, including chronic conditions, limitations, "
+         "and access to care."),
+    ]:
+        feature_relationships = new_slide(presentation, storyboard, slide_id)
+        picture(feature_relationships, WORKSPACE_DIR / "figures/eda" / filename,
+                description, 0, 0, 1280, 720)
+        relationships_return_link = text(
+            feature_relationships, "Return to cost distribution", "Back",
+            20, 674, 100, 24, 18, color=SECONDARY, underline=True,
+        )
+        relationships_return_link.click_action.target_slide = distribution
+        if slide_id == "A7":
+            relationships_appendix_link.click_action.target_slide = feature_relationships
     return presentation
 
 

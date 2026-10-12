@@ -1,8 +1,7 @@
 # Medical cost prediction: presentation storyboard
 
-Status: the nine-slide main presentation and the U.S. healthcare costs, MEPS,
-and outlier analysis appendix slides are ready for review. The remaining appendix
-slides are in storyboard form.
+Status: the nine-slide main presentation and ten appendix slides are ready for
+review. The remaining appendix slides are in storyboard form.
 
 ## Presentation context
 
@@ -14,7 +13,7 @@ slides are in storyboard form.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The current
   allocation below totals 10:25, leaving room for transitions.
-- **Structure:** a cover, eight content slides, and sixteen planned appendix slides.
+- **Structure:** a cover, eight content slides, and twenty-three planned appendix slides.
   Order and number appendix slides by their first reference in the main presentation.
   Place unreferenced slides with their related topic. Update numbering and links
   when the presentation order changes.
@@ -26,7 +25,7 @@ slides are in storyboard form.
   appendix slide. Use small, muted gray, underlined text and keep slide IDs at
   the bottom right. Add other footnotes only when needed to interpret the slide.
   On the cost-distribution slide, group EDA links in the left margin under
-  “Appendix” to preserve the plot size.
+  “Appendix:” to preserve the plot size.
 - **Purpose:** show how the project connects a user need to modeling choices,
   evidence, limitations, and implementation decisions.
 - **Project status:** model training, selection, and evaluation for the MVP are
@@ -204,7 +203,7 @@ supplement household reports for selected services; not every payment is
 independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
-See A7 for feature examples, counts, and possible feature reduction, and A8 for
+See A11 for feature examples, counts, and possible feature reduction, and A12 for
 input timing. Preprocessing is fitted on training data. The 80/10/10 split is
 random within spending groups, with a separate zero-cost group and finer bins
 for high costs to reduce imbalances in rare, expensive cases. Discuss the split
@@ -230,12 +229,12 @@ size with bold headings. Align it with the top of the plot. Keep the plot large
 and shift it right to leave a clear gap beside the text; no extra footnote.
 
 **Appendix links:** A compact block near the bottom left, with a small, muted
-“Appendix” label and
-underlined links to [Outlier analysis (A3)](#a3--outliers-greater-health-burden-and-higher-cost-risk)
-and [Distributions (A4–A6)](#a4--distributions-numerical-features) closely beneath it.
-Link to the first distribution slide, then advance through the group. Keep the
-plot's current size. Add the feature–target relationships link when that group
-is created, starting with the correlation heatmap.
+“Appendix:” label and
+underlined links to [Outlier analysis (A3)](#a3--outliers-greater-health-burden-and-higher-cost-risk),
+[Distributions (A4–A6)](#a4--distributions-numerical-features), and
+[Feature–target relations (A7–A10)](#a7--featuretarget-relationships-correlations)
+closely beneath it. Link to the first slide of each group, then advance through
+the group. Keep each link on one line and preserve the plot's current size.
 
 **Speaker notes — 1:00**
 
@@ -277,7 +276,7 @@ between lower- and higher-cost profiles.
 - Subgroup and residual analysis motivated a model that also describes uncertainty
 
 **Display notes:** Comparison table with the $217 finding below it. Keep residual
-diagnostics in A11. Define the metrics here: “MdAE: median absolute error;
+diagnostics in A15. Define the metrics here: “MdAE: median absolute error;
 MAE: mean absolute error.”
 
 **Speaker notes — 1:30**
@@ -389,7 +388,7 @@ and situations where the model is less reliable.
 
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
-Confidence intervals, widths, and scoring definitions are in A12 and A13.
+Confidence intervals, widths, and scoring definitions are in A16 and A17.
 
 ### 8 — Final model test audit: overall coverage hides subgroup gaps
 
@@ -406,7 +405,7 @@ validation steps.
 
 **Visual:** Bar chart of typical-range coverage: poor mental health 30.1%, low
 income 39.2%, overall 47.3%, and target 50%. Label results as point estimates;
-A14 adds subgroup counts and uncertainty.
+A18 adds subgroup counts and uncertainty.
 
 **Speaker notes — 1:00**
 
@@ -640,7 +639,87 @@ help distinguish common characteristics from less frequent ones.”
 **Sources:** [README: distributions](../../README.md#distributions);
 [binary distributions](../../figures/eda/binary_distributions.png).
 
-### A7 — Input features: what users provide
+### A7 — Feature–target relationships: correlations
+
+**Question:** Which features are associated with costs and with one another?
+
+**On the slide:** [Correlation heatmap](../../figures/eda/correlation_heatmap.png),
+using the figure's existing title.
+
+**Visual:** Fit the unchanged image to the full slide height. Place a small
+“Back” link in the unused lower-left side margin, pointing to the
+cost-distribution slide. Use the same layout for the next three relationship slides.
+
+**Speaker notes — 0:20 (optional)**
+
+“This heatmap shows survey-weighted Spearman rank correlations. Age and family
+income have the strongest positive associations with costs among these features.
+It also shows relationships between features. These are individual associations,
+not causal effects or model feature importance.”
+
+**Transition:** Continue to the numerical relationships or return to the cost-distribution slide.
+
+**Sources:** [README: relationships](../../README.md#main-relationships);
+[correlation heatmap](../../figures/eda/correlation_heatmap.png).
+
+### A8 — Feature–target relationships: numerical features
+
+**Question:** How do costs vary with the numerical features?
+
+**On the slide:** [Numerical feature–target relationships](../../figures/eda/numerical_feature_target_relationships.png),
+using the figure's existing title and the same layout as A7.
+
+**Speaker notes — 0:20 (optional)**
+
+“These plots compare costs with age, family size, and self-reported physical
+and mental health. Costs are shown on a log scale. Age has a positive rank
+association with costs, while family size has a negative association. The wide
+spread shows that these features alone do not determine a person's costs.”
+
+**Transition:** Continue to the categorical relationships or return to the cost-distribution slide.
+
+**Sources:** [README: numerical relationships](../../README.md#numerical-feature-target-relationships);
+[numerical relationships](../../figures/eda/numerical_feature_target_relationships.png).
+
+### A9 — Feature–target relationships: categorical features
+
+**Question:** How do cost distributions differ across categorical feature groups?
+
+**On the slide:** [Categorical feature–target relationships](../../figures/eda/categorical_feature_target_relationships.png),
+using the figure's existing title and the same layout as A7.
+
+**Speaker notes — 0:20 (optional)**
+
+“These plots compare cost distributions across categories. The dollar labels
+show group medians, while the vertical axes use a log scale. Higher income,
+higher education, and private insurance generally coincide with higher
+out-of-pocket costs. The plots also show substantial variation within groups.”
+
+**Transition:** Continue to the binary relationships or return to the cost-distribution slide.
+
+**Sources:** [README: categorical relationships](../../README.md#categorical-feature-target-relationships);
+[categorical relationships](../../figures/eda/categorical_feature_target_relationships.png).
+
+### A10 — Feature–target relationships: binary features
+
+**Question:** How do costs differ between the two categories of each binary feature?
+
+**On the slide:** [Binary feature–target relationships](../../figures/eda/binary_feature_target_relationships.png),
+using the figure's existing title and the same layout as A7.
+
+**Speaker notes — 0:20 (optional)**
+
+“These plots compare costs between the two groups for each binary feature.
+Arthritis shows a stronger rank association with costs, while cancer shows a
+larger difference in median spending. Women and people with a usual source of
+care also have higher median costs. These comparisons describe associations.”
+
+**Transition:** Return to the cost-distribution slide or continue with questions.
+
+**Sources:** [README: binary relationships](../../README.md#binary-feature-target-relationships);
+[binary relationships](../../figures/eda/binary_feature_target_relationships.png).
+
+### A11 — Input features: what users provide
 
 **Question:** What information does the model use, and how much does it ask of users?
 
@@ -663,7 +742,7 @@ help distinguish common characteristics from less frequent ones.”
 columns after transformation. These counts do not equal the number of questions
 on the planned form: related conditions can be grouped, and some values are
 derived. User testing will assess the burden; feature reduction is an option if
-fewer inputs would improve the experience. Refer to A8 for input timing.
+fewer inputs would improve the experience. Refer to A12 for input timing.
 
 **Promote:** After 3 when input design is relevant to the audience; allow 0:45.
 Otherwise, use only for questions.
@@ -672,7 +751,7 @@ Otherwise, use only for questions.
 [input definitions](../../src/constants.py);
 [product requirements: input form](../specs/product_requirements.md).
 
-### A8 — Feature timing: limits of next-year forecasting
+### A12 — Feature timing: limits of next-year forecasting
 
 **Question:** Is this truly a next-year forecast?
 
@@ -693,7 +772,7 @@ Do not claim the size or direction of the resulting performance change is known.
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
 
-### A9 — Model tuning: comparisons on a fixed validation split
+### A13 — Model tuning: comparisons on a fixed validation split
 
 **Question:** What alternatives and tuning procedure were used?
 
@@ -715,7 +794,7 @@ reuses the tuned point-model parameters rather than receiving its own search.
 **Sources:** [README: modeling](../../README.md);
 [XGBoost tuning script](../../scripts/tune_xgboost.py).
 
-### A10 — LLM benchmark: General versus Specific Intelligence
+### A14 — LLM benchmark: General versus Specific Intelligence
 
 **Question:** Why not ask a general-purpose language model for an estimate?
 
@@ -728,12 +807,12 @@ mix these with test-set results from the final quantile model.
 **Talking points:** This result describes one model and prompting setup, not all
 LLMs.
 
-**Promote:** Optional, after A9; allow 1:00.
+**Promote:** Optional, after A13; allow 1:00.
 
 **Sources:** [README: LLM benchmark](../../README.md);
 [LLM benchmark script](../../scripts/benchmark_llm.py).
 
-### A11 — Point-model diagnostics: residuals and prediction ranges
+### A15 — Point-model diagnostics: residuals and prediction ranges
 
 **Question:** Why did the lowest-MdAE model not meet the full product need?
 
@@ -753,7 +832,7 @@ residuals and subgroup errors alongside it.
 **Sources:** [README: heteroscedasticity and subgroup analysis](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A12 — Final model test results: coverage, width, and release gates
+### A16 — Final model test results: coverage, width, and release gates
 
 **Question:** What does passing the project's gates mean?
 
@@ -778,7 +857,7 @@ resamples rows and retains their weights.
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: bootstrap implementation](../../notebooks/2_modeling.py).
 
-### A13 — Final model test benchmarks: gains over simple estimates
+### A17 — Final model test benchmarks: gains over simple estimates
 
 **Question:** Why not give everyone a population or age-group estimate?
 
@@ -806,7 +885,7 @@ skill is not a percentage-point improvement in coverage.
 
 **Source:** [Modeling notebook: test baseline comparisons](../../notebooks/2_modeling.py).
 
-### A14 — Final model test audit: subgroup coverage gaps
+### A18 — Final model test audit: subgroup coverage gaps
 
 **Question:** Who receives less reliable ranges?
 
@@ -829,7 +908,7 @@ would be needed to address it.
 **Sources:** [README: final subgroup audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A15 — Final model test audit: actual versus predicted cost tiers
+### A19 — Final model test audit: actual versus predicted cost tiers
 
 **Question:** Does the safety cushion protect the largest spenders?
 
@@ -851,7 +930,7 @@ quantile is not catastrophe insurance or a hard spending cap.
 **Sources:** [README: final reliability audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A16 — SHAP explains how inputs shape the median estimate
+### A20 — SHAP explains how inputs shape the median estimate
 
 **Question:** Which inputs influence predictions, and what can users infer?
 
@@ -871,7 +950,7 @@ does not by itself mean higher or lower healthcare need.
 **Sources:** [README: feature importance](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json).
 
-### A17 — SHAP benchmarking: explanation quality and latency
+### A21 — SHAP benchmarking: explanation quality and latency
 
 **Question:** How was the SHAP configuration chosen?
 
@@ -894,7 +973,7 @@ claim. Complete request latency on target hardware remains unverified.
 [SHAP metadata](../../app/data/shap_metadata.json);
 [benchmark script](../../scripts/benchmark_shap.py).
 
-### A18 — Inference architecture: shared prediction and explanation code
+### A22 — Inference architecture: shared prediction and explanation code
 
 **Question:** How will training and serving stay consistent?
 
@@ -917,7 +996,7 @@ experiment is a DVC stage or that the full service is implemented.
 **Sources:** [DVC pipeline](../../dvc.yaml); [prediction code](../../src/prediction.py);
 [technical specifications](../specs/technical_specifications.md); [unit tests](../../tests/unit/).
 
-### A19 — Production monitoring: drift signals without observed outcomes
+### A23 — Production monitoring: drift signals without observed outcomes
 
 **Question:** How would the product be monitored without retaining user records?
 
