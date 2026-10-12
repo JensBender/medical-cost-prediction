@@ -230,15 +230,16 @@ and correlation links here when those appendix slides are created.
 
 **Speaker notes — 1:00**
 
-“Out-of-pocket costs present two challenges: many people have no costs, while a
-small share have very high costs. About 22% of adults have zero costs for the year.
+“Out-of-pocket costs present two challenges: about 22% of adults have no costs
+for the entire year, while costs are heavily concentrated among the top spenders.
 The highest-spending 20% account for almost 80% of costs, and the top 1% account
-for about 21%.
+for about 21%. High costs could reflect ongoing care or unexpected events such
+as hospitalization. Unexpected events make costs especially difficult to predict.
 
-I chose median absolute error, or MdAE, as the primary evaluation metric to
-describe a typical miss without letting rare, extreme errors dominate. I also
-tracked mean absolute error and R-squared to assess performance beyond typical
-errors.
+Large errors on high-cost cases can strongly influence mean absolute error and
+R-squared. Therefore, I chose median absolute error as the primary evaluation
+metric to describe a typical prediction error, and complemented it with mean
+absolute error and R-squared as supporting diagnostics.
 
 Outlier profiling revealed unusual health profiles consistent with greater
 medical needs. I retained these cases because unusual values alone were not
