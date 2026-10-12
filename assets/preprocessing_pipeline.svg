@@ -98,7 +98,7 @@
   <!-- Global Header -->
   <g transform="translate(500, 45)">
     <text class="text-title" style="font-size: 24px;">Preprocessing Pipeline</text>
-    <text y="25" class="text-subtitle" style="font-size: 14px; fill: #ffffff;">Standardization, Validation, Imputation, Medical Feature Engineering, Scaling &amp; Encoding</text>
+    <text y="25" class="text-subtitle" style="font-size: 14px; fill: #ffffff;">Fitted on Training Data</text>
   </g>
 
   <!-- ============================================== PATHS (Connections) ============================================== -->
