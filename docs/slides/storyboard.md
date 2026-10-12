@@ -230,7 +230,7 @@ and shift it right to leave a clear gap beside the text; no extra footnote.
 
 **Appendix links:** A compact block near the bottom left, with a small, muted
 “Appendix” label and
-an underlined [Outlier analysis (A3)](#a3--outlier-analysis-retaining-plausible-cases)
+an underlined [Outlier analysis (A3)](#a3--outliers-greater-health-burden-and-higher-cost-risk)
 link closely beneath it. Keep the plot's current size. Add
 feature-distribution and correlation links below it when those appendix slides
 are created.
@@ -528,42 +528,41 @@ account for survey clustering in uncertainty estimates.
 [EDA notebook](../../notebooks/1_eda_and_preprocessing.py);
 [modeling helpers](../../src/modeling.py).
 
-### A3 — Outlier analysis: retaining plausible cases
+### A3 — Outliers: greater health burden and higher cost risk
 
 **Question:** How were outliers identified, and why were they retained?
 
 **On the slide**
 
 - **Detection:** Isolation Forest (flagging 5%).
-- **Profiling:** Outliers compared with inliers.
-  - **Extreme costs:** 3.9× as likely to be among the top 1% of spenders.
-  - **Age and health burden:** Older, with more chronic conditions and limitations.
-  - **Insurance:** About half as likely to have private insurance.
+- **Profiling:** Comparison table below.
 - **Treatment:** Retained all outliers as plausible, valuable training examples.
 
-**Visual:** Bullet list uses most of the slide width, with the profiling findings
-as nested bullets. A narrow, editable horizontal bar chart on the right compares:
+**Visual:** Detection above a wide, editable table; treatment below it. Use
+“Profiling” as the first-column header, with no separate heading or footnote.
+Leave space between the three sections.
 
-| Feature | Inliers | Outliers |
+| Profiling | Inliers | Outliers |
 | --- | ---: | ---: |
+| In top 1% of spenders | 0.9% | 3.5% |
+| Age (median) | 47 | 66 |
+| Chronic conditions (median) | 1 | 4 |
+| Functional limitations (median) | 0 | 3 |
+| Private insurance | 68% | 32% |
 | Walking limitations | 9% | 75% |
 | Cognitive limitations | 3% | 61% |
-| Private insurance | 68% | 32% |
 
-Keep the legend, percentages beside the bars, and two-line feature labels. Use
-thin bars and smaller labels so the chart supports the bullets. Omit the chart
-heading, axis percentages, and footnote. Include a “Back to cost distribution”
-link.
+Include a “Back to cost distribution” link.
 
 **Speaker notes — 1:15 (optional, estimated)**
 
-“To detect multivariate outliers, I used Isolation Forest configured to flag 5%
-of respondents in the training data. I then compared out-of-pocket costs and
-feature distributions between inliers and outliers, using survey weights.
+“To detect multivariate outliers, I used an Isolation Forest configured to flag 5%
+of respondents in the training data. I then compared survey-weighted out-of-pocket
+costs and feature distributions between inliers and outliers.
 
 Outliers were 3.9 times as likely as inliers to be among the top 1% of spenders.
-Comparing group medians, they were 19 years older and had three more chronic
-conditions and three more functional limitations. They were also much more
+They were 19 years older and had three more chronic conditions and three more
+functional limitations, based on group medians. They were also much more
 likely to report walking and cognitive limitations, and about half as likely
 to have private health insurance.
 
@@ -573,6 +572,9 @@ information about people with greater health burden and extreme out-of-pocket
 costs, limiting the model's ability to learn patterns relevant to these groups.”
 
 **Transition:** Return to the cost-distribution slide or continue with questions.
+
+**Detail for questions:** Percentages and medians use survey weights. The top-1%
+threshold is defined across all training respondents.
 
 **Sources:** [README: outlier analysis](../../README.md#outlier-analysis-details);
 [EDA notebook: detection and profiling](../../notebooks/1_eda_and_preprocessing.py).

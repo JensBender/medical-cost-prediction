@@ -501,89 +501,34 @@ def build_presentation():
 
     outliers = new_slide(
         presentation, storyboard, "A3",
-        "Outlier analysis: retaining plausible cases",
+        "Outliers: greater health burden and higher cost risk",
     )
-    analysis = text(outliers, "Outlier analysis bullets", "", 72, 142, 706, 490, 30)
-    for index, (level, label, finding, spacing) in enumerate([
-        (0, "Detection: ", "Isolation Forest (flagging 5%)", 20),
-        (0, "Profiling: ", "Outliers compared with inliers", 12),
-        (1, "Extreme costs: ", "3.9× as likely to be among the top 1% of spenders.", 14),
-        (1, "Age and health burden: ", "Older, with more chronic conditions and limitations.", 14),
-        (1, "Insurance: ", "About half as likely to have private insurance.", 20),
-        (0, "Treatment: ", "Retained all outliers as plausible, valuable training examples.", 0),
-    ]):
-        paragraph = (analysis.text_frame.paragraphs[0] if index == 0
-                     else analysis.text_frame.add_paragraph())
-        paragraph.level = level
-        paragraph.space_after = font_size(spacing)
-        size = 28 if level else 30
-        style_font(paragraph.font, size)
-        properties = paragraph._p.get_or_add_pPr()
-        properties.set("marL", str(pixels(64 if level else 24)))
-        properties.set("indent", str(-pixels(14)))
-        bullet_size = OxmlElement("a:buSzPct")
-        bullet_size.set("val", "100000")
-        properties.insert_element_before(bullet_size, "a:defRPr")
-        bullet_font = OxmlElement("a:buFont")
-        bullet_font.set("typeface", FONT)
-        properties.insert_element_before(bullet_font, "a:defRPr")
-        bullet = OxmlElement("a:buChar")
-        bullet.set("char", "○" if level else "•")
-        properties.insert_element_before(bullet, "a:defRPr")
-        for value, bold in ((label, True), (finding, False)):
-            run = paragraph.add_run()
-            run.text = value
-            style_font(run.font, size, bold=bold)
-    profile_data = CategoryChartData()
-    profile_data.categories = ["Walking\nlimitations", "Cognitive\nlimitations", "Private\ninsurance"]
-    profile_data.add_series("Inliers", [0.09, 0.03, 0.68], number_format="0%")
-    profile_data.add_series("Outliers", [0.75, 0.61, 0.32], number_format="0%")
-    profile_chart = outliers.shapes.add_chart(
-        XL_CHART_TYPE.BAR_CLUSTERED, pixels(816), pixels(208),
-        pixels(392), pixels(300), profile_data,
-    )
-    profile_chart.name = "Survey-weighted feature comparison"
-    chart = profile_chart.chart
-    for axis_id in chart._chartSpace.xpath(".//c:axId | .//c:crossAx"):
-        axis_id.set("val", str(int(axis_id.get("val")) % (2 ** 32)))
-    style_font(chart.font, 22)
-    chart.has_title = False
-    chart.has_legend = True
-    chart.legend.position = XL_LEGEND_POSITION.TOP
-    chart.legend.include_in_layout = False
-    style_font(chart.legend.font, 22)
-    plot = chart.plots[0]
-    plot.gap_width = 160
-    plot.overlap = 0
-    plot.has_data_labels = True
-    plot.data_labels.position = XL_LABEL_POSITION.OUTSIDE_END
-    plot.data_labels.show_value = True
-    plot.data_labels.show_category_name = False
-    plot.data_labels.show_series_name = False
-    plot.data_labels.show_legend_key = False
-    plot.data_labels.number_format = "0%"
-    plot.data_labels.number_format_is_linked = False
-    style_font(plot.data_labels.font, 22)
-    for series, color in zip(chart.series, ("7F9DBD", "CC686A")):
-        series.format.fill.solid()
-        series.format.fill.fore_color.rgb = RGBColor.from_string(color)
-        series.format.line.fill.background()
-    category_axis, value_axis = chart.category_axis, chart.value_axis
-    category_axis.reverse_order = True
-    category_axis.has_major_gridlines = False
-    style_font(category_axis.tick_labels.font, 22)
-    value_axis.minimum_scale = 0
-    value_axis.maximum_scale = 1
-    value_axis.major_unit = 0.5
-    # LibreOffice hides category names when value-axis labels are disabled.
-    # A blank number format hides only the scale values.
-    value_axis.tick_labels.number_format = ";;;"
-    value_axis.tick_labels.number_format_is_linked = False
-    value_axis.has_major_gridlines = False
-    for axis in (category_axis, value_axis):
-        axis.major_tick_mark = XL_TICK_MARK.NONE
-        axis.minor_tick_mark = XL_TICK_MARK.NONE
-        axis.format.line.fill.background()
+    text(outliers, "Outlier detection",
+         [("Detection: ", True), ("Isolation Forest (flagging 5%)", False)],
+         72, 142, 1136, 42, 30)
+    profile_table = native_table(outliers, [
+        ["Profiling", "Inliers", "Outliers"],
+        ["In top 1% of spenders", "0.9%", "3.5%"],
+        ["Age (median)", "47", "66"],
+        ["Chronic conditions (median)", "1", "4"],
+        ["Functional limitations (median)", "0", "3"],
+        ["Private insurance", "68%", "32%"],
+        ["Walking limitations", "9%", "75%"],
+        ["Cognitive limitations", "3%", "61%"],
+    ], 220, [680, 228, 228], row_height=42)
+    for row_index in range(len(profile_table.rows)):
+        for column_index in range(len(profile_table.columns)):
+            cell = profile_table.cell(row_index, column_index)
+            cell.margin_top = cell.margin_bottom = pixels(6)
+            paragraph = cell.text_frame.paragraphs[0]
+            paragraph.alignment = PP_ALIGN.LEFT if column_index == 0 else PP_ALIGN.CENTER
+            style_font(paragraph.font, 26, bold=row_index == 0)
+            for run in paragraph.runs:
+                style_font(run.font, 26, bold=row_index == 0)
+    text(outliers, "Outlier treatment",
+         [("Treatment: ", True),
+          ("Retained all outliers as plausible, valuable training examples.", False)],
+         72, 600, 1136, 42, 30)
     outlier_return_link = text(
         outliers, "Return to cost distribution", "Back to cost distribution",
         72, 674, 800, 24, 18, color=SECONDARY, underline=True,
