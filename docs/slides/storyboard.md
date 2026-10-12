@@ -223,10 +223,12 @@ parts of model performance.
 **Visual:** Large [Lorenz curve](../../figures/eda/lorenz_curve.png) beneath the
 slide title, with the figure's own title cropped. No extra body text or footnote.
 
-**Appendix links:** A small, muted “Appendix” label in the lower left margin with
+**Appendix links:** A compact block near the bottom left, with a small, muted
+“Appendix” label and
 an underlined [Outlier analysis (A3)](#a3--outlier-analysis-retaining-plausible-cases)
-link beneath it. Keep the plot's current size and position. Add feature-distribution
-and correlation links here when those appendix slides are created.
+link closely beneath it. Keep the plot's current size and position. Add
+feature-distribution and correlation links below it when those appendix slides
+are created.
 
 **Speaker notes — 1:00**
 
@@ -241,10 +243,9 @@ R-squared. Therefore, I chose median absolute error as the primary evaluation
 metric to describe a typical prediction error, and complemented it with mean
 absolute error and R-squared as supporting diagnostics.
 
-Outlier profiling revealed unusual health profiles consistent with greater
-medical needs. I retained these cases because unusual values alone were not
-evidence of data errors, and removing them would exclude people relevant to the
-intended use.”
+Outlier profiling revealed greater health burden and a higher likelihood of
+extreme costs. Outlier profiles were plausible, so I retained them to preserve
+valuable training information.”
 
 **Transition:** This distribution explains why the validation leaderboard was
 only the start of model selection.

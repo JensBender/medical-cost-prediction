@@ -349,11 +349,11 @@ def build_presentation():
         "have zero costs; the highest-spending 20% account for 79.3% of costs "
         "and the highest-spending 1% for 20.6%.",
     )
-    text(distribution, "EDA appendix label", "Appendix", 72, 490, 164, 28, 18,
+    text(distribution, "EDA appendix label", "Appendix", 72, 588, 164, 22, 18,
          color=SECONDARY)
     outlier_appendix_link = text(
         distribution, "Outlier appendix link", "Outlier analysis",
-        72, 530, 164, 48, 18, color=SECONDARY, underline=True,
+        72, 614, 164, 24, 18, color=SECONDARY, underline=True,
     )
 
     selection = new_slide(presentation, storyboard, "5",
