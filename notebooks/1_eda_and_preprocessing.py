@@ -1832,12 +1832,13 @@ def plot_categorical_feature_target_relationships(df, nominal_features, ordinal_
 
     # Add footnote
     footnote_parts = []
-    if plot_type == "box":
-        footnote_parts.append("Whiskers represent 1st and 99th percentiles.")  
     if weights:
-        footnote_parts.append("Population-weighted estimates via bootstrap resampling.")
+        footnote_parts.append("Box plots use survey-weighted resampled data.")
     else:
-        footnote_parts.append("Sample estimates.")      
+        footnote_parts.append("Sample estimates.")
+    footnote_parts.append("Dollar labels show group medians.")
+    if plot_type == "box":
+        footnote_parts.append("Whiskers show 1st to 99th percentiles.")
     footnote = f"Note: {' '.join(footnote_parts)}"
     plt.figtext(0.01, 0.01, footnote, ha="left", fontsize=9, style="italic", color="#555555")
 
@@ -2024,12 +2025,13 @@ def plot_binary_feature_target_relationships(df, features, target, plot_type="bo
 
     # Add footnote
     footnote_parts = []
-    if plot_type == "box":
-        footnote_parts.append("Whiskers represent 1st and 99th percentiles.")  
     if weights:
-        footnote_parts.append("Population-weighted estimates via bootstrap resampling.")
+        footnote_parts.append("Box plots use survey-weighted resampled data.")
     else:
-        footnote_parts.append("Sample estimates.")      
+        footnote_parts.append("Sample estimates.")
+    footnote_parts.append("Dollar labels show group medians.")
+    if plot_type == "box":
+        footnote_parts.append("Whiskers show 1st to 99th percentiles.")
     footnote = f"Note: {' '.join(footnote_parts)}"
     plt.figtext(0.01, 0.01, footnote, ha="left", fontsize=9, style="italic", color="#555555")
 
