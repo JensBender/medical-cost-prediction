@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1064" width="100%" height="100%">
   <defs>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;display=swap');
@@ -14,10 +14,10 @@
       .box-inner:hover { filter: brightness(1.15); stroke: #64748b; cursor: pointer; }
       
       /* Typography */
-      .text-title { font-family: 'Inter', system-ui, sans-serif; font-size: 22px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
-      .text-subtitle { font-family: 'Fira Code', monospace; font-size: 18px; font-weight: 500; fill: #94a3b8; text-anchor: middle; }
-      .text-code { font-family: 'Fira Code', monospace; font-size: 18px; fill: #cbd5e1; text-anchor: middle; }
-      .text-desc { font-family: 'Inter', system-ui, sans-serif; font-size: 18px; fill: #94a3b8; text-anchor: middle; }
+      .text-title { font-family: 'Inter', system-ui, sans-serif; font-size: 21px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+      .text-subtitle { font-family: 'Fira Code', monospace; font-size: 17px; font-weight: 500; fill: #94a3b8; text-anchor: middle; }
+      .text-code { font-family: 'Fira Code', monospace; font-size: 17px; fill: #cbd5e1; text-anchor: middle; }
+      .text-desc { font-family: 'Inter', system-ui, sans-serif; font-size: 17px; fill: #94a3b8; text-anchor: middle; }
       
       /* Semantic Colors - Professional Palette */
       .hl-class { fill: #94a3b8; font-weight: 600; } /* Neutral Slate for Logic/Classes */
@@ -97,47 +97,47 @@
 
   <!-- Global Header -->
   <g transform="translate(500, 38)">
-    <text class="text-title" style="font-size: 30px;">Preprocessing Pipeline</text>
-    <text y="28" class="text-subtitle" style="font-size: 20px;">Fitted on training data</text>
+    <text class="text-title" style="font-size: 29px;">Preprocessing Pipeline</text>
+    <text y="28" class="text-subtitle" style="font-size: 19px;">Fitted on training data</text>
   </g>
 
   <!-- Connections between stages -->
   <g id="data-connections">
     <!-- Input to Step 1 -->
-    <path d="M 500,150 L 500,174" class="base-line" />
-    <path d="M 500,150 L 500,174" class="flow-line" marker-end="url(#arrow-def)" />
+    <path d="M 500,150 L 500,182" class="base-line" />
+    <path d="M 500,150 L 500,182" class="flow-line" marker-end="url(#arrow-def)" />
 
     <!-- Step 1 to Step 2 -->
-    <path d="M 500,290 L 500,314" class="base-line" />
-    <path d="M 500,290 L 500,314" class="flow-line" marker-end="url(#arrow-def)" />
+    <path d="M 500,298 L 500,330" class="base-line" />
+    <path d="M 500,298 L 500,330" class="flow-line" marker-end="url(#arrow-def)" />
 
     <!-- Split into numerical and categorical imputation -->
-    <path d="M 500,430 C 500,450 295,450 295,470" class="base-line" />
-    <path d="M 500,430 C 500,450 705,450 705,470" class="base-line" />
-    <path d="M 500,430 C 500,450 295,450 295,470" class="flow-line flow-num" marker-end="url(#arrow-num)" />
-    <path d="M 500,430 C 500,450 705,450 705,470" class="flow-line" marker-end="url(#arrow-def)" />
+    <path d="M 500,446 C 500,472 295,472 295,498" class="base-line" />
+    <path d="M 500,446 C 500,472 705,472 705,498" class="base-line" />
+    <path d="M 500,446 C 500,472 295,472 295,498" class="flow-line flow-num" marker-end="url(#arrow-num)" />
+    <path d="M 500,446 C 500,472 705,472 705,498" class="flow-line" marker-end="url(#arrow-def)" />
 
     <!-- Merge before deriving features -->
-    <path d="M 295,578 C 295,598 500,598 500,618" class="base-line" />
-    <path d="M 705,578 C 705,598 500,598 500,618" class="base-line" />
-    <path d="M 295,578 C 295,598 500,598 500,618" class="flow-line flow-num" marker-end="url(#arrow-num)" />
-    <path d="M 705,578 C 705,598 500,598 500,618" class="flow-line" marker-end="url(#arrow-def)" />
+    <path d="M 295,606 C 295,632 500,632 500,658" class="base-line" />
+    <path d="M 705,606 C 705,632 500,632 500,658" class="base-line" />
+    <path d="M 295,606 C 295,632 500,632 500,658" class="flow-line flow-num" marker-end="url(#arrow-num)" />
+    <path d="M 705,606 C 705,632 500,632 500,658" class="flow-line" marker-end="url(#arrow-def)" />
 
     <!-- Split into scaling, encoding, and binary passthrough -->
-    <path d="M 500,738 C 500,758 200,758 200,778" class="base-line" />
-    <path d="M 500,738 L 500,778" class="base-line" />
-    <path d="M 500,738 C 500,758 800,758 800,778" class="base-line" />
-    <path d="M 500,738 C 500,758 200,758 200,778" class="flow-line flow-num" marker-end="url(#arrow-num)" />
-    <path d="M 500,738 L 500,778" class="flow-line flow-nom" marker-end="url(#arrow-nom)" />
-    <path d="M 500,738 C 500,758 800,758 800,778" class="flow-line flow-bin" marker-end="url(#arrow-bin)" />
+    <path d="M 500,778 C 500,804 200,804 200,830" class="base-line" />
+    <path d="M 500,778 L 500,830" class="base-line" />
+    <path d="M 500,778 C 500,804 800,804 800,830" class="base-line" />
+    <path d="M 500,778 C 500,804 200,804 200,830" class="flow-line flow-num" marker-end="url(#arrow-num)" />
+    <path d="M 500,778 L 500,830" class="flow-line flow-nom" marker-end="url(#arrow-nom)" />
+    <path d="M 500,778 C 500,804 800,804 800,830" class="flow-line flow-bin" marker-end="url(#arrow-bin)" />
 
     <!-- Merge into model-ready features -->
-    <path d="M 200,902 C 200,922 500,922 500,942" class="base-line" />
-    <path d="M 500,902 L 500,942" class="base-line" />
-    <path d="M 800,902 C 800,922 500,922 500,942" class="base-line" />
-    <path d="M 200,902 C 200,922 500,922 500,942" class="flow-line flow-num" marker-end="url(#arrow-num)" />
-    <path d="M 500,902 L 500,942" class="flow-line flow-nom" marker-end="url(#arrow-nom)" />
-    <path d="M 800,902 C 800,922 500,922 500,942" class="flow-line flow-bin" marker-end="url(#arrow-bin)" />
+    <path d="M 200,954 C 200,980 500,980 500,1006" class="base-line" />
+    <path d="M 500,954 L 500,1006" class="base-line" />
+    <path d="M 800,954 C 800,980 500,980 500,1006" class="base-line" />
+    <path d="M 200,954 C 200,980 500,980 500,1006" class="flow-line flow-num" marker-end="url(#arrow-num)" />
+    <path d="M 500,954 L 500,1006" class="flow-line flow-nom" marker-end="url(#arrow-nom)" />
+    <path d="M 800,954 C 800,980 500,980 500,1006" class="flow-line flow-bin" marker-end="url(#arrow-bin)" />
   </g>
 
   <!-- Input features -->
@@ -150,7 +150,7 @@
   </g>
 
   <!-- Step 1: Categorical label standardization -->
-  <g id="step-1" transform="translate(100, 174)">
+  <g id="step-1" transform="translate(100, 182)">
     <rect width="800" height="116" class="box-outer pulse-1" />
     <text x="400" y="29" class="text-title">1. Standardize categorical labels</text>
     <g transform="translate(20, 43)">
@@ -168,7 +168,7 @@
   </g>
 
   <!-- Step 2: Missing-value checks -->
-  <g id="step-2" transform="translate(100, 314)">
+  <g id="step-2" transform="translate(100, 330)">
     <rect width="800" height="116" class="box-outer pulse-2" />
     <text x="400" y="29" class="text-title">2. Check missing values</text>
     <g transform="translate(20, 43)">
@@ -184,7 +184,7 @@
   </g>
 
   <!-- Step 3: Imputation -->
-  <g id="step-3" transform="translate(80, 470)">
+  <g id="step-3" transform="translate(80, 498)">
     <rect width="840" height="108" class="box-outer pulse-3" />
     <text x="420" y="27" class="text-title">3. Impute missing values</text>
     <g transform="translate(20, 38)">
@@ -202,7 +202,7 @@
   </g>
 
   <!-- Step 4: Derived medical features -->
-  <g id="step-4" transform="translate(80, 618)">
+  <g id="step-4" transform="translate(80, 658)">
     <rect width="840" height="120" class="box-outer pulse-4" />
     <text x="420" y="27" class="text-title">4. Derive medical features</text>
     <text x="420" y="53" class="text-desc">Sum binary indicators into counts</text>
@@ -219,7 +219,7 @@
   </g>
 
   <!-- Step 5: Scaling and encoding -->
-  <g id="step-5" transform="translate(40, 778)">
+  <g id="step-5" transform="translate(40, 830)">
     <rect width="920" height="124" class="box-outer pulse-5" />
     <text x="460" y="27" class="text-title">5. Scale and encode features</text>
     <g transform="translate(20, 38)">
@@ -246,7 +246,7 @@
   </g>
 
   <!-- Output features -->
-  <g id="output-data" transform="translate(100, 942)">
+  <g id="output-data" transform="translate(100, 1006)">
     <rect width="800" height="44" class="box-outer pulse-out" style="fill: #1e293b;" />
     <text x="400" y="29" class="text-title">Model-ready features</text>
   </g>
