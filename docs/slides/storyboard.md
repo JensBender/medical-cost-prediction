@@ -252,7 +252,11 @@ absolute error and R-squared as supporting diagnostics.
 
 Outlier profiling revealed greater health burden and a higher likelihood of
 extreme costs. Outlier profiles were plausible, so I retained them to preserve
-valuable training information.”
+valuable training information.
+
+This distribution also informed a stratified data split. I used 80% training, 10%
+validation, and 10% test, stratified by out-of-pocket costs to preserve the
+proportions of zero-cost and high-cost cases across splits.”
 
 **Transition:** Before comparing models, explain how the data became model-ready.
 
@@ -274,12 +278,7 @@ above an underlined “Data preparation” link in the lower-left margin. Link o
 
 **Speaker notes — 1:00**
 
-“A data preparation script selects the variables and adult population, and
-standardizes MEPS missing-value codes. It also splits the data into 80% training,
-10% validation, and 10% test, stratified by costs to balance zero-cost and
-high-cost cases.
-
-I fitted this scikit-learn pipeline on the training data and applied it to
+“I fitted this scikit-learn pipeline on the training data and applied it to
 validation and test data. It standardizes categorical labels, checks and imputes
 missing values, derives medical features, scales numerical features, and
 one-hot encodes nominal features.
