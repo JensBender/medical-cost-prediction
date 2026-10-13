@@ -629,9 +629,8 @@ def build_presentation():
     text(preparation, "Tail grouping", "Finer percentile groups toward the expensive tail",
          218, 503.32, 990, 36, 25)
     text(preparation, "Split allocation",
-         [("Random split within each group: ", True),
-          "80% train, 10% validation, 10% test"],
-         72, 554.31, 1136, 38, 28)
+         "Random split within each group: 80% train, 10% validation, 10% test",
+         72, 554.31, 1136, 38, 25)
     preparation_return_link = text(
         preparation, "Return to preprocessing pipeline", "Back",
         72, 674, 800, 24, 18, color=SECONDARY, underline=True,

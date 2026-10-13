@@ -283,8 +283,8 @@ validation and test data. It standardizes categorical labels, checks and imputes
 missing values, derives medical features, scales numerical features, and
 one-hot encodes nominal features.
 
-The script saves the preprocessor inputs and model-ready datasets as Parquet
-files, and the fitted pipeline with joblib for reuse during prediction.”
+The fitted pipeline is saved with joblib for reuse during prediction. Both the
+preprocessor inputs and model-ready datasets are saved as Parquet files.”
 
 **Transition:** With the data prepared, compare the models and their usefulness
 for budgeting.
@@ -770,14 +770,16 @@ care also have higher median costs. These comparisons describe associations.”
 Place zero, lower, and extreme cost labels above the full-width group diagram,
 with uniform gaps and the finer-percentile-group explanation below it. Keep the
 preparation sentence and split allocation on one line each. Add a small “Back”
-link to the pipeline slide.
+link to the pipeline slide. Set the split allocation in regular dark blue text
+at 18.75 pt, matching the explanation beneath the diagram.
 
 **Speaker notes — 1:00 (optional)**
 
-“The data preparation script selects the variables and adult population.
+“A data preparation script selects the variables and adult population.
 It recovers implied values from survey skip patterns and standardizes the
 remaining MEPS missing-value codes. It also groups sparse marital and
-employment categories and derives a feature indicating a recent life transition.
+employment categories, such as ‘recently divorced’.
+A separate feature indicates whether a recent life transition occurred.
 
 A purely random split could leave rare high-cost cases unevenly distributed.
 So I stratified the split by out-of-pocket costs, using a separate group for
