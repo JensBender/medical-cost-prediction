@@ -838,6 +838,10 @@ For most specialist models, median absolute error was around $200, but mean
 absolute error was around $1,000, meaning that some predictions missed by much
 more than the typical one.
 
+Compared with Gemini 3 Flash, every specialist model had a lower median
+absolute error, showing the added value of specialized models over a
+general-purpose model for this task.
+
 For hyperparameter tuning, I selected Elastic Net for its strong median
 accuracy, Random Forest for the lowest mean absolute error, and XGBoost as a
 promising candidate for capturing nonlinear interactions.”
