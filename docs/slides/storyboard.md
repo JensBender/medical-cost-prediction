@@ -727,8 +727,9 @@ care also have higher median costs. These comparisons describe associations.”
 rendered from the [SVG source](../../assets/preprocessing_pipeline.svg),
 using the diagram's existing title and subtitle.
 
-**Visual:** Fit the diagram to the full slide height. Place a small “Back” link
-in the lower-left side margin, pointing to the model-selection slide.
+**Visual:** Fit the diagram to the full slide height and match its dark navy
+background. Use light gray for the slide number and the small “Back” link in
+the lower-left side margin, pointing to the model-selection slide.
 
 **Speaker notes — 0:40 (optional)**
 

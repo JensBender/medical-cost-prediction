@@ -6,7 +6,6 @@
       /* Core SVG styling */
       text { user-select: none; }
       .bg-main { fill: #020617; }
-      .grid-pattern { stroke: #1e293b; stroke-width: 0.5; stroke-opacity: 0.4; fill: none; }
       
       /* Box Styling */
       .box-outer { fill: #0f172a; stroke: #334155; stroke-width: 2; rx: 12px; }
@@ -65,11 +64,6 @@
       .pulse-out { animation: pulse-box 9s infinite; animation-delay: 7.5s; }
     </style>
 
-    <!-- Grid Pattern -->
-    <pattern id="bg-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" class="grid-pattern" />
-    </pattern>
-
     <!-- Drop Shadow Filter for Glows -->
     <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
       <feGaussianBlur stdDeviation="5" result="blur" />
@@ -93,7 +87,6 @@
 
   <!-- Background -->
   <rect width="100%" height="100%" class="bg-main" />
-  <rect width="100%" height="100%" fill="url(#bg-grid)" />
 
   <!-- Global Header -->
   <g transform="translate(500, 38)">

@@ -585,13 +585,19 @@ def build_presentation():
         if slide_id == "A7":
             relationships_appendix_link.click_action.target_slide = feature_relationships
     preprocessing = new_slide(presentation, storyboard, "A11")
+    preprocessing.background.fill.fore_color.rgb = RGBColor.from_string("020617")
+    for shape in preprocessing.shapes:
+        if shape.name == "Slide ID":
+            for paragraph in shape.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor.from_string("94A3B8")
     picture(preprocessing, SLIDES_DIR / "assets/preprocessing-pipeline.png",
             "Preprocessing pipeline fitted on training data: categorical input "
             "standardization, missing-value validation and imputation, health-burden "
             "feature derivation, scaling, and encoding.", 0, 0, 1280, 720)
     preprocessing_return_link = text(
         preprocessing, "Return to model selection", "Back",
-        20, 674, 100, 24, 18, color=SECONDARY, underline=True,
+        20, 674, 100, 24, 18, color="94A3B8", underline=True,
     )
     preprocessing_return_link.click_action.target_slide = selection
     return presentation
