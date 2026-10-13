@@ -385,9 +385,11 @@ def build_presentation():
             "Preprocessing pipeline fitted on training data: categorical input "
             "standardization, missing-value validation and imputation, health-burden "
             "feature derivation, scaling, and encoding.", 0, 0, 1280, 720)
+    text(preprocessing, "Preprocessing appendix label", "Appendix:",
+         20, 648, 200, 22, 18, color="94A3B8")
     preparation_appendix_link = text(
-        preprocessing, "Data preparation appendix link", "Appendix: Data preparation",
-        20, 674, 280, 24, 18, color="94A3B8", underline=True,
+        preprocessing, "Data preparation appendix link", "Data preparation",
+        20, 674, 200, 24, 18, color="94A3B8", underline=True,
     )
 
     selection = new_slide(presentation, storyboard, "6",

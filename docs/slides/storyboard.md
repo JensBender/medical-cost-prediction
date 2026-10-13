@@ -268,8 +268,9 @@ rendered from the [SVG source](../../assets/preprocessing_pipeline.svg),
 using the diagram's existing title and subtitle.
 
 **Visual:** Fit the diagram to the full slide height and match its dark navy
-background. Use light gray for the slide number and a small
-“Appendix: Data preparation” link in the lower-left margin, pointing to A11.
+background. Use light gray for the slide number and a small “Appendix:” label
+above an underlined “Data preparation” link in the lower-left margin. Link only
+“Data preparation” to A11.
 
 **Speaker notes — 1:00**
 
@@ -774,21 +775,16 @@ link to the pipeline slide.
 
 **Speaker notes — 1:00 (optional)**
 
-“The preparation script selects the required variables and adult population.
-It recovers implied values from survey skip patterns, converts remaining
-missing-value codes to missing values, and standardizes binary features to zero
-and one. It also groups sparse marital and employment categories and derives a
-feature indicating a recent life transition.
+“The data preparation script selects the variables and adult population.
+It recovers implied values from survey skip patterns and standardizes the
+remaining MEPS missing-value codes. It also groups sparse marital and
+employment categories and derives a feature indicating a recent life transition.
 
 A purely random split could leave rare high-cost cases unevenly distributed.
-I used a separate group for zero costs and six percentile groups for positive
-costs, with finer groups toward the expensive tail. The script randomly
-allocates respondents within these groups to 80% training, 10% validation, and
-10% test data. The diagram shows the grouping idea rather than dollar thresholds
-or exact group sizes.
-
-Only after splitting does the script fit the preprocessing pipeline on the
-training data.”
+So I stratified the split by out-of-pocket costs, using a separate group for
+zero costs and six percentile groups for positive costs, with finer groups
+toward the expensive tail. Within each group, the script randomly allocates
+people to 80% training, 10% validation, and 10% test data.”
 
 **Transition:** Return to the pipeline slide or continue with questions.
 
