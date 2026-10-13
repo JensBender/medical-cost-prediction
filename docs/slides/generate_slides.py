@@ -644,7 +644,7 @@ def build_presentation():
     preparation_return_link.click_action.target_slide = preprocessing
 
     baselines = new_slide(presentation, storyboard, "A12")
-    text(baselines, "A12 title", "Baseline models: selecting candidates for tuning",
+    text(baselines, "A12 title", "Baseline models",
          72, 48, 1136, 66, 44, bold=True)
     baseline_table = native_table(baselines, [
         ["Model", "MdAE", "Overfitting", "MAE", "R²"],
@@ -670,11 +670,9 @@ def build_presentation():
         for cell in baseline_table.rows[row].cells:
             for run in cell.text_frame.paragraphs[0].runs:
                 run.font.italic = True
-    text(baselines, "Selected models", "Selected for tuning: Elastic Net, "
-         "Random Forest, and XGBoost", 72, 596, 1136, 36, 25)
-    text(baselines, "Validation note", "Survey-weighted validation metrics. "
+    text(baselines, "Validation note", "Note: Survey-weighted validation metrics. "
          "Overfitting is the percentage change in MdAE from training to validation.",
-         72, 640, 1136, 24, 18, color=SECONDARY)
+         72, 602, 1136, 24, 18, color=SECONDARY)
     baseline_return_link = text(
         baselines, "Return to model selection", "Back",
         72, 674, 800, 24, 18, color=SECONDARY, underline=True,

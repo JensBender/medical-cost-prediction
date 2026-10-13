@@ -313,7 +313,7 @@ between lower- and higher-cost profiles.
 diagnostics in A17. Define the metrics here: “MdAE: median absolute error;
 MAE: mean absolute error.”
 
-**Appendix link:** [Baseline models (A12)](#a12--baseline-models-selecting-candidates-for-tuning).
+**Appendix link:** [Baseline models (A12)](#a12--baseline-models).
 
 **Speaker notes — 1:30**
 
@@ -805,7 +805,7 @@ allow 1:00.
 [stratification helper](../../src/stats.py);
 [EDA/preprocessing notebook](../../notebooks/1_eda_and_preprocessing.py).
 
-### A12 — Baseline models: selecting candidates for tuning
+### A12 — Baseline models
 
 **Question:** Which models were compared before tuning, and why were three selected?
 
@@ -822,28 +822,25 @@ allow 1:00.
 | Support Vector Machine | $291 | +190.7% | $1,027 | -0.03 |
 | *LLM (benchmark)* | *$518* | *N/A* | *$1,168* | ***0.04*** |
 
-Selected for tuning: Elastic Net, Random Forest, and XGBoost.
-
 **Visual:** Editable table matching the README's baseline comparison. Bold the
-three selected model names and the best values in each metric column. Add a
-small “Back” link to the model-selection slide.
+three selected model names and the best values in each metric column. Place the
+note beneath the table and add a small “Back” link to the model-selection slide.
 
-**Footnote:** “Survey-weighted validation metrics. Overfitting is the percentage
+**Footnote:** “Note: Survey-weighted validation metrics. Overfitting is the percentage
 change in MdAE from training to validation.”
 
 **Speaker notes — 1:00 (optional)**
 
-“I compared six model architectures with a population-median benchmark and
-Gemini 3 Flash. Elastic Net had the lowest median absolute error at $163,
-compared with $248 for the median benchmark and $518 for Gemini. Random Forest
-had the lowest mean absolute error. XGBoost's large training–validation gap
-motivated stronger regularization during tuning.
+“I evaluated six model architectures and compared their performance with a
+median benchmark and a large language model benchmark.
 
-I selected Elastic Net for its strong median accuracy, Random Forest for its
-lower mean error, and XGBoost for its ability to capture nonlinear interactions.
-These are validation results from the initial model configurations, not the
-final test results. The LLM comparison describes this model and prompting setup,
-not language models in general.”
+For most specialist models, median absolute error was around $200, but mean
+absolute error was around $1,000, meaning that some predictions missed by much
+more than the typical one.
+
+For hyperparameter tuning, I selected Elastic Net for its strong median
+accuracy, Random Forest for the lowest mean absolute error, and XGBoost as a
+promising candidate for capturing nonlinear interactions.”
 
 **Transition:** Return to the tuned-model comparison.
 
