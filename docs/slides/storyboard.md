@@ -303,18 +303,20 @@ between lower- and higher-cost profiles.
 
 **On the slide**
 
-| Tuned point-estimate model | Validation MdAE | Validation MAE |
-| --- | ---: | ---: |
-| Elastic Net | **$159** | $1,051 |
-| Random Forest | $228 | $964 |
-| XGBoost | $242 | **$954** |
+| Tuned model | MdAE | Overfitting | MAE | R² |
+| --- | ---: | ---: | ---: | ---: |
+| Elastic Net | **$159** | +7.9% | $1,051 | -0.13 |
+| Random Forest | $228 | **+3.8%** | $964 | -0.05 |
+| XGBoost | $242 | +6.2% | **$954** | **-0.02** |
 
 - Elastic Net's largest validation prediction was about **$217**
 - Subgroup and residual analysis motivated a model that also describes uncertainty
 
-**Display notes:** Comparison table with the $217 finding below it. Keep residual
-diagnostics in A18. Define the metrics here: “MdAE: median absolute error;
-MAE: mean absolute error.”
+**Footnote:** “Note: Survey-weighted validation metrics. Overfitting is the percentage
+change in MdAE from training to validation.”
+
+**Display notes:** Comparison table with its note immediately below, followed by
+the $217 finding and its implication. Keep residual diagnostics in A18.
 
 **Appendix link:** [Baseline models (A14)](#a14--baseline-models).
 

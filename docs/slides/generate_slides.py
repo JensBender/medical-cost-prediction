@@ -402,24 +402,22 @@ def build_presentation():
     selection = new_slide(presentation, storyboard, "6",
                           "Model selection: median error was not enough")
     model_table = native_table(selection, [
-        ["Tuned point-estimate model", "Validation MdAE", "Validation MAE"],
-        ["Elastic Net", "$159", "$1,051"],
-        ["Random Forest", "$228", "$964"],
-        ["XGBoost", "$242", "$954"],
-    ], 142, [520, 308, 308])
-    for row, column in ((1, 1), (3, 2)):
+        ["Tuned model", "MdAE", "Overfitting", "MAE", "R²"],
+        ["Elastic Net", "$159", "+7.9%", "$1,051", "-0.13"],
+        ["Random Forest", "$228", "+3.8%", "$964", "-0.05"],
+        ["XGBoost", "$242", "+6.2%", "$954", "-0.02"],
+    ], 142, [420, 160, 200, 180, 176])
+    for row, column in ((1, 1), (2, 2), (3, 3), (3, 4)):
         for run in model_table.cell(row, column).text_frame.paragraphs[0].runs:
             run.font.bold = True
+    text(selection, "Validation note", "Note: Survey-weighted validation metrics. "
+         "Overfitting is the percentage change in MdAE from training to validation.",
+         72, 402, 1136, 24, 18, color=SECONDARY)
     text(selection, "Prediction compression", "Elastic Net's largest validation "
-         "prediction was only about $217", 72, 424, 1136, 42, 29, bold=True)
+         "prediction was only about $217", 72, 456, 1136, 42, 29, bold=True)
     text(selection, "Tradeoff", "Good typical error, but limited separation across cost profiles.\n"
          "Residual and subgroup checks motivated richer budgeting outputs.",
-         72, 480, 1136, 86, 28)
-    text(selection, "Quantile decision", "Next step: XGBoost quantile regression",
-         72, 602, 1136, 40, 30, bold=True)
-    text(selection, "Metric definitions", "MdAE: median absolute error; "
-         "MAE: mean absolute error. Validation; 2023 USD.",
-         72, 648, 1136, 24, 18, color=SECONDARY)
+         72, 514, 1136, 86, 28)
     baseline_appendix_link = text(
         selection, "Baseline models appendix link", "Appendix: Baseline models",
         72, 674, 800, 24, 18, color=SECONDARY, underline=True,
