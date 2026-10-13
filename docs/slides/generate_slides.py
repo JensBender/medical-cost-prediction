@@ -26,7 +26,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 11)]
+SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 12)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -385,6 +385,10 @@ def build_presentation():
             "Preprocessing pipeline fitted on training data: categorical input "
             "standardization, missing-value validation and imputation, health-burden "
             "feature derivation, scaling, and encoding.", 0, 0, 1280, 720)
+    preparation_appendix_link = text(
+        preprocessing, "Data preparation appendix link", "Appendix: Data preparation",
+        20, 674, 280, 24, 18, color="94A3B8", underline=True,
+    )
 
     selection = new_slide(presentation, storyboard, "6",
                           "Model selection: median error was not enough")
@@ -596,6 +600,42 @@ def build_presentation():
         relationships_return_link.click_action.target_slide = distribution
         if slide_id == "A7":
             relationships_appendix_link.click_action.target_slide = feature_relationships
+    preparation = new_slide(presentation, storyboard, "A11")
+    text(preparation, "A11 title", "Data preparation",
+         72, 48, 1136, 66, 44, bold=True)
+    text(preparation, "Preparation heading", "Prepare MEPS data",
+         72, 148, 1136, 42, 30, bold=True)
+    text(preparation, "Preparation steps", "Select variables and adults, "
+         "standardize missing values, and group sparse categories.",
+         72, 195, 1136, 42, 28)
+    text(preparation, "Split heading", "Stratified split by out-of-pocket costs",
+         72, 283.31, 1136, 42, 30, bold=True)
+    text(preparation, "Split rationale", "Keep zero-cost and rare high-cost cases "
+         "represented across splits.", 72, 329.31, 1136, 42, 28)
+    text(preparation, "Zero-cost group label", "Zero costs",
+         72, 391.33, 140, 36, 25, alignment=PP_ALIGN.CENTER)
+    text(preparation, "Lower-cost groups", "Lower costs",
+         218, 391.33, 210, 36, 25)
+    text(preparation, "Extreme-cost groups", "Extreme costs",
+         995, 391.33, 213, 36, 25, alignment=PP_ALIGN.RIGHT)
+    rect(preparation, "Separate zero-cost group", 72, 435.33, 140, 54, INK)
+    group_x = 218
+    for index, width in enumerate((290, 240, 180, 126, 80, 44)):
+        rect(preparation, f"Positive-cost percentile group {index + 1}",
+             group_x, 435.33, width, 54, INK)
+        group_x += width + 6
+    text(preparation, "Tail grouping", "Finer percentile groups toward the expensive tail",
+         218, 503.32, 990, 36, 25)
+    text(preparation, "Split allocation",
+         [("Random split within each group: ", True),
+          "80% train, 10% validation, 10% test"],
+         72, 554.31, 1136, 38, 28)
+    preparation_return_link = text(
+        preparation, "Return to preprocessing pipeline", "Back",
+        72, 674, 800, 24, 18, color=SECONDARY, underline=True,
+    )
+    preparation_appendix_link.click_action.target_slide = preparation
+    preparation_return_link.click_action.target_slide = preprocessing
     return presentation
 
 

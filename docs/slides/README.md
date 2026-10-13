@@ -8,7 +8,8 @@ supporting information and slide IDs. Main slides display plain numbers, the
 cover is unnumbered, and appendix slides display A1, A2, etc. The storyboard
 uses 1–10 for the main slides. Titles can use one or two lines; content starts
 below the title with a consistent gap. The appendix includes U.S. healthcare costs,
-MEPS, outliers, and feature distributions and relationships. The main
+MEPS, outliers, feature distributions and relationships, and data preparation
+with the stratified split. The main
 preprocessing slide uses the diagram's dark navy background with a light gray
 slide ID.
 The remaining appendix slides are in storyboard form. Order and number appendix
@@ -68,7 +69,7 @@ Then add `--render`:
 ```
 
 The renderer reads the generated PowerPoint and writes `1.png` through `10.png`,
-`A1.png` through `A10.png` beside it. Rendering failures leave the PowerPoint file
+`A1.png` through `A11.png` beside it. Rendering failures leave the PowerPoint file
 available.
 Preview generation requires the bundled renderer; it is optional for someone
 cloning the repository. The bundled presentation validators can also inspect
