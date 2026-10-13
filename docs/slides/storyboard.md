@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: the ten-slide main presentation and twelve appendix slides are ready for
+Status: the ten-slide main presentation and fourteen appendix slides are ready for
 review. The remaining appendix slides are in storyboard form.
 
 ## Presentation context
@@ -13,7 +13,7 @@ review. The remaining appendix slides are in storyboard form.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The current
   allocation below totals 11:25, leaving room for transitions.
-- **Structure:** a cover, nine content slides, and twenty-five planned appendix slides.
+- **Structure:** a cover, nine content slides, and twenty-six planned appendix slides.
   Order and number appendix slides by their first reference in the main presentation.
   Place unreferenced slides with their related topic. Update numbering and links
   when the presentation order changes.
@@ -156,7 +156,10 @@ spending, with survey weights supporting population-level training and evaluatio
 
 **Visual:** Bullet list beside a [household survey illustration](assets/household-survey.png).
 
-**Appendix link:** [MEPS overview (A2)](#a2--meps-survey-overview).
+**Appendix links:** [MEPS overview (A2)](#a2--meps-survey-overview) and
+[Features (A3–A4)](#a3--preprocessor-input-features). Display as
+“Appendix: MEPS overview | Features” with a muted gray vertical bar separating
+the two underlined links.
 
 **Speaker notes — 2:00 (rehearsed)**
 
@@ -204,8 +207,8 @@ supplement household reports for selected services; not every payment is
 independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
-See A13 for feature examples, counts, and possible feature reduction, and A14 for
-input timing. Preprocessing is fitted on training data. The 80/10/10 split is
+See A3–A4 for preprocessor input features, counts, and possible feature reduction,
+and A15 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
 random within spending groups, with a separate zero-cost group and finer bins
 for high costs to reduce imbalances in rare, expensive cases. Discuss the split
 after the spending-distribution slide if asked.
@@ -231,9 +234,9 @@ and shift it right to leave a clear gap beside the text; no extra footnote.
 
 **Appendix links:** A compact block near the bottom left, with a small, muted
 “Appendix:” label and
-underlined links to [Outlier analysis (A3)](#a3--outliers-greater-health-burden-and-higher-cost-risk),
-[Distributions (A4–A6)](#a4--distributions-numerical-features), and
-[Feature–target relations (A7–A10)](#a7--featuretarget-relationships-correlations)
+underlined links to [Outlier analysis (A5)](#a5--outliers-greater-health-burden-and-higher-cost-risk),
+[Distributions (A6–A8)](#a6--distributions-numerical-features), and
+[Feature–target relations (A9–A12)](#a9--featuretarget-relationships-correlations)
 closely beneath it. Link to the first slide of each group, then advance through
 the group. Keep each link on one line and preserve the plot's current size.
 
@@ -274,7 +277,7 @@ using the diagram's existing title and subtitle.
 **Visual:** Fit the diagram to the full slide height and match its dark navy
 background. Use light gray for the slide number and a small “Appendix:” label
 above an underlined “Data preparation” link in the lower-left margin. Link only
-“Data preparation” to A11.
+“Data preparation” to A13.
 
 **Speaker notes — 1:00**
 
@@ -310,10 +313,10 @@ between lower- and higher-cost profiles.
 - Subgroup and residual analysis motivated a model that also describes uncertainty
 
 **Display notes:** Comparison table with the $217 finding below it. Keep residual
-diagnostics in A17. Define the metrics here: “MdAE: median absolute error;
+diagnostics in A18. Define the metrics here: “MdAE: median absolute error;
 MAE: mean absolute error.”
 
-**Appendix link:** [Baseline models (A12)](#a12--baseline-models).
+**Appendix link:** [Baseline models (A14)](#a14--baseline-models).
 
 **Speaker notes — 1:30**
 
@@ -425,7 +428,7 @@ and situations where the model is less reliable.
 
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
-Confidence intervals, widths, and scoring definitions are in A18 and A19.
+Confidence intervals, widths, and scoring definitions are in A19 and A20.
 
 ### 9 — Final model test audit: overall coverage hides subgroup gaps
 
@@ -442,7 +445,7 @@ validation steps.
 
 **Visual:** Bar chart of typical-range coverage: poor mental health 30.1%, low
 income 39.2%, overall 47.3%, and target 50%. Label results as point estimates;
-A20 adds subgroup counts and uncertainty.
+A21 adds subgroup counts and uncertainty.
 
 **Speaker notes — 1:00**
 
@@ -566,7 +569,85 @@ account for survey clustering in uncertainty estimates.
 [EDA notebook](../../notebooks/1_eda_and_preprocessing.py);
 [modeling helpers](../../src/modeling.py).
 
-### A3 — Outliers: greater health burden and higher cost risk
+### A3 — Preprocessor input features
+
+**Question:** What information is supplied to the preprocessing pipeline?
+
+**On the slide**
+
+| Feature | Type | Possible values |
+| --- | --- | --- |
+| Age | Numerical | 18–85 years (adult population) |
+| Sex | Binary | Male, female |
+| Region | Categorical | Northeast, Midwest, South, West |
+| Marital status | Categorical | Married, widowed, divorced, separated, never married |
+| Family income | Ordinal | Relative to poverty: poor/negative, near poor, low, middle, high |
+| Family size | Numerical | 1–14 related people living together |
+| Education | Categorical | None, GED, high school, bachelor's, master's, doctorate, other |
+| Employment status | Binary | Employed, not employed |
+| Insurance | Categorical | Any private, public only, uninsured |
+| Physical health | Numerical | 1 = Excellent, 2 = Very good, 3 = Good, 4 = Fair, 5 = Poor |
+| Mental health | Numerical | 1 = Excellent, 2 = Very good, 3 = Good, 4 = Fair, 5 = Poor |
+
+**Visual:** An editable table of 11 prepared inputs, with a “Back” link to the MEPS
+data slide. Continue to A4 for the remaining 16 yes/no features.
+
+**Speaker notes — 0:35 (optional)**
+
+“These are the 27 interpretable preprocessor input features, which SHAP also uses.
+They are prepared inputs rather than raw MEPS variables and have gone through the
+initial data preparation steps: marital and employment categories have been
+grouped, and a recent life transition feature has
+been derived. Physical and mental health are rated from one, excellent, to five,
+poor. The remaining features are shown on the next slide.”
+
+**Transition:** Continue to the yes/no inputs or return to the MEPS data slide.
+
+**Detail for questions:** The 26 survey inputs become 27 preprocessor inputs
+after adding a life-transition feature and 40 model-ready columns after
+transformation. These counts do not equal the number of questions on the planned
+form: related conditions can be grouped, and some values are derived. User testing
+will assess the burden; feature reduction is an option if fewer inputs would
+improve the experience. Refer to A15 for input timing.
+
+**Sources:** [README: feature details](../../README.md#feature-details);
+[input definitions](../../src/constants.py);
+[data preparation](../../scripts/preprocess.py);
+[product requirements: input form](../specs/product_requirements.md).
+
+### A4 — Preprocessor input features: yes/no
+
+**Question:** Which conditions, limitations, and other yes/no inputs are used?
+
+**On the slide**
+
+| Feature group | Features |
+| --- | --- |
+| Chronic conditions | High blood pressure, high cholesterol, diabetes, coronary heart disease, stroke, cancer, arthritis, asthma |
+| Limitations | ADL help: personal care, such as bathing or dressing<br>IADL help: daily tasks, such as managing bills or medication<br>Walking limitation, cognitive limitation, joint pain |
+| Other | Smoker<br>Usual source of care: regular doctor or clinic<br>Recent life transition (derived): marital or employment changes |
+
+**Visual:** An editable table with three groups: chronic conditions, limitations,
+and other. Include a “Back” link to the MEPS data slide. Keep explanations for
+ADL help, IADL help, usual source of care, and recent life transition.
+
+**Speaker notes — 0:35 (optional)**
+
+“These 16 binary features cover diagnosed chronic conditions, limitations, smoking,
+access to a regular doctor or clinic, and recent life transitions. The transition
+flag is derived from marital and employment transition codes during data
+preparation. ADL help refers to personal care, such as bathing or dressing. IADL
+help refers to daily tasks, such as managing bills or medication. Chronic condition
+and functional limitation counts are derived later, inside the preprocessing pipeline.”
+
+**Transition:** Return to the MEPS data slide.
+
+**Sources:** [README: feature details](../../README.md#feature-details);
+[input definitions](../../src/constants.py);
+[data preparation](../../scripts/preprocess.py);
+[medical feature derivation](../../src/transformers.py).
+
+### A5 — Outliers: greater health burden and higher cost risk
 
 **Question:** How were outliers identified, and why were they retained?
 
@@ -617,7 +698,7 @@ threshold is defined across all training respondents.
 **Sources:** [README: outlier analysis](../../README.md#outlier-analysis-details);
 [EDA notebook: detection and profiling](../../notebooks/1_eda_and_preprocessing.py).
 
-### A4 — Distributions: numerical features
+### A6 — Distributions: numerical features
 
 **Question:** How are the numerical features distributed?
 
@@ -640,12 +721,12 @@ available before imputation.”
 **Sources:** [README: distributions](../../README.md#distributions);
 [numerical distributions](../../figures/eda/numerical_distributions.png).
 
-### A5 — Distributions: categorical features
+### A7 — Distributions: categorical features
 
 **Question:** How are the categorical features distributed?
 
 **On the slide:** [Categorical distributions](../../figures/eda/categorical_distributions.png),
-using the figure's existing title and the same layout as A4.
+using the figure's existing title and the same layout as A6.
 
 **Speaker notes — 0:20 (optional)**
 
@@ -658,12 +739,12 @@ and the number of people it represents.”
 **Sources:** [README: distributions](../../README.md#distributions);
 [categorical distributions](../../figures/eda/categorical_distributions.png).
 
-### A6 — Distributions: binary features
+### A8 — Distributions: binary features
 
 **Question:** How common are the binary feature categories?
 
 **On the slide:** [Binary distributions](../../figures/eda/binary_distributions.png),
-using the figure's existing title and the same layout as A4.
+using the figure's existing title and the same layout as A6.
 
 **Speaker notes — 0:20 (optional)**
 
@@ -676,7 +757,7 @@ help distinguish common characteristics from less frequent ones.”
 **Sources:** [README: distributions](../../README.md#distributions);
 [binary distributions](../../figures/eda/binary_distributions.png).
 
-### A7 — Feature–target relationships: correlations
+### A9 — Feature–target relationships: correlations
 
 **Question:** Which features are associated with costs and with one another?
 
@@ -699,12 +780,12 @@ not causal effects or model feature importance.”
 **Sources:** [README: relationships](../../README.md#main-relationships);
 [correlation heatmap](../../figures/eda/correlation_heatmap.png).
 
-### A8 — Feature–target relationships: numerical features
+### A10 — Feature–target relationships: numerical features
 
 **Question:** How do costs vary with the numerical features?
 
 **On the slide:** [Numerical feature–target relationships](../../figures/eda/numerical_feature_target_relationships.png),
-using the figure's existing title and the same layout as A7.
+using the figure's existing title and the same layout as A9.
 
 **Speaker notes — 0:20 (optional)**
 
@@ -718,12 +799,12 @@ spread shows that these features alone do not determine a person's costs.”
 **Sources:** [README: numerical relationships](../../README.md#numerical-feature-target-relationships);
 [numerical relationships](../../figures/eda/numerical_feature_target_relationships.png).
 
-### A9 — Feature–target relationships: categorical features
+### A11 — Feature–target relationships: categorical features
 
 **Question:** How do cost distributions differ across categorical feature groups?
 
 **On the slide:** [Categorical feature–target relationships](../../figures/eda/categorical_feature_target_relationships.png),
-using the figure's existing title and the same layout as A7.
+using the figure's existing title and the same layout as A9.
 
 **Speaker notes — 0:20 (optional)**
 
@@ -737,12 +818,12 @@ out-of-pocket costs. The plots also show substantial variation within groups.”
 **Sources:** [README: categorical relationships](../../README.md#categorical-feature-target-relationships);
 [categorical relationships](../../figures/eda/categorical_feature_target_relationships.png).
 
-### A10 — Feature–target relationships: binary features
+### A12 — Feature–target relationships: binary features
 
 **Question:** How do costs differ between the two categories of each binary feature?
 
 **On the slide:** [Binary feature–target relationships](../../figures/eda/binary_feature_target_relationships.png),
-using the figure's existing title and the same layout as A7.
+using the figure's existing title and the same layout as A9.
 
 **Speaker notes — 0:20 (optional)**
 
@@ -756,7 +837,7 @@ care also have higher median costs. These comparisons describe associations.”
 **Sources:** [README: binary relationships](../../README.md#binary-feature-target-relationships);
 [binary relationships](../../figures/eda/binary_feature_target_relationships.png).
 
-### A11 — Data preparation
+### A13 — Data preparation
 
 **Question:** How was the raw survey data prepared and split for modeling?
 
@@ -805,7 +886,7 @@ allow 1:00.
 [stratification helper](../../src/stats.py);
 [EDA/preprocessing notebook](../../notebooks/1_eda_and_preprocessing.py).
 
-### A12 — Baseline models
+### A14 — Baseline models
 
 **Question:** Which models were compared before tuning, and why were three selected?
 
@@ -855,39 +936,7 @@ promising candidate for capturing nonlinear interactions.”
 [baseline training script](../../scripts/train_baseline.py);
 [LLM benchmark script](../../scripts/benchmark_llm.py).
 
-### A13 — Input features: what users provide
-
-**Question:** What information does the model use, and how much does it ask of users?
-
-**On the slide**
-
-| Input group | Examples |
-| --- | --- |
-| Demographics | Age, region, family size |
-| Socioeconomic information | Family income, education, employment status |
-| Insurance and access | Insurance status, usual source of care |
-| Health and lifestyle | Self-rated physical and mental health, smoking |
-| Conditions and limitations | Diabetes, arthritis, difficulty walking |
-
-- Examples from the 26 survey inputs; the full list is in the README
-- Inputs chosen for expected predictive value and answers users can provide
-  without medical records
-
-**Talking points:** The current model uses all 26 survey inputs, which become
-27 preprocessor inputs after adding a life-transition feature and 40 model-ready
-columns after transformation. These counts do not equal the number of questions
-on the planned form: related conditions can be grouped, and some values are
-derived. User testing will assess the burden; feature reduction is an option if
-fewer inputs would improve the experience. Refer to A14 for input timing.
-
-**Promote:** After 3 when input design is relevant to the audience; allow 0:45.
-Otherwise, use only for questions.
-
-**Sources:** [README: feature details](../../README.md#feature-details);
-[input definitions](../../src/constants.py);
-[product requirements: input form](../specs/product_requirements.md).
-
-### A14 — Feature timing: limits of next-year forecasting
+### A15 — Feature timing: limits of next-year forecasting
 
 **Question:** Is this truly a next-year forecast?
 
@@ -908,7 +957,7 @@ Do not claim the size or direction of the resulting performance change is known.
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
 
-### A15 — Model tuning: comparisons on a fixed validation split
+### A16 — Model tuning: comparisons on a fixed validation split
 
 **Question:** What alternatives and tuning procedure were used?
 
@@ -930,7 +979,7 @@ reuses the tuned point-model parameters rather than receiving its own search.
 **Sources:** [README: modeling](../../README.md);
 [XGBoost tuning script](../../scripts/tune_xgboost.py).
 
-### A16 — LLM benchmark: General versus Specific Intelligence
+### A17 — LLM benchmark: General versus Specific Intelligence
 
 **Question:** Why not ask a general-purpose language model for an estimate?
 
@@ -943,12 +992,12 @@ mix these with test-set results from the final quantile model.
 **Talking points:** This result describes one model and prompting setup, not all
 LLMs.
 
-**Promote:** Optional, after A15; allow 1:00.
+**Promote:** Optional, after A16; allow 1:00.
 
 **Sources:** [README: LLM benchmark](../../README.md);
 [LLM benchmark script](../../scripts/benchmark_llm.py).
 
-### A17 — Point-model diagnostics: residuals and prediction ranges
+### A18 — Point-model diagnostics: residuals and prediction ranges
 
 **Question:** Why did the lowest-MdAE model not meet the full product need?
 
@@ -968,7 +1017,7 @@ residuals and subgroup errors alongside it.
 **Sources:** [README: heteroscedasticity and subgroup analysis](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A18 — Final model test results: coverage, width, and release gates
+### A19 — Final model test results: coverage, width, and release gates
 
 **Question:** What does passing the project's gates mean?
 
@@ -993,7 +1042,7 @@ resamples rows and retains their weights.
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: bootstrap implementation](../../notebooks/2_modeling.py).
 
-### A19 — Final model test benchmarks: gains over simple estimates
+### A20 — Final model test benchmarks: gains over simple estimates
 
 **Question:** Why not give everyone a population or age-group estimate?
 
@@ -1021,7 +1070,7 @@ skill is not a percentage-point improvement in coverage.
 
 **Source:** [Modeling notebook: test baseline comparisons](../../notebooks/2_modeling.py).
 
-### A20 — Final model test audit: subgroup coverage gaps
+### A21 — Final model test audit: subgroup coverage gaps
 
 **Question:** Who receives less reliable ranges?
 
@@ -1044,7 +1093,7 @@ would be needed to address it.
 **Sources:** [README: final subgroup audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A21 — Final model test audit: actual versus predicted cost tiers
+### A22 — Final model test audit: actual versus predicted cost tiers
 
 **Question:** Does the safety cushion protect the largest spenders?
 
@@ -1066,7 +1115,7 @@ quantile is not catastrophe insurance or a hard spending cap.
 **Sources:** [README: final reliability audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A22 — SHAP explains how inputs shape the median estimate
+### A23 — SHAP explains how inputs shape the median estimate
 
 **Question:** Which inputs influence predictions, and what can users infer?
 
@@ -1086,7 +1135,7 @@ does not by itself mean higher or lower healthcare need.
 **Sources:** [README: feature importance](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json).
 
-### A23 — SHAP benchmarking: explanation quality and latency
+### A24 — SHAP benchmarking: explanation quality and latency
 
 **Question:** How was the SHAP configuration chosen?
 
@@ -1109,7 +1158,7 @@ claim. Complete request latency on target hardware remains unverified.
 [SHAP metadata](../../app/data/shap_metadata.json);
 [benchmark script](../../scripts/benchmark_shap.py).
 
-### A24 — Inference architecture: shared prediction and explanation code
+### A25 — Inference architecture: shared prediction and explanation code
 
 **Question:** How will training and serving stay consistent?
 
@@ -1132,7 +1181,7 @@ experiment is a DVC stage or that the full service is implemented.
 **Sources:** [DVC pipeline](../../dvc.yaml); [prediction code](../../src/prediction.py);
 [technical specifications](../specs/technical_specifications.md); [unit tests](../../tests/unit/).
 
-### A25 — Production monitoring: drift signals without observed outcomes
+### A26 — Production monitoring: drift signals without observed outcomes
 
 **Question:** How would the product be monitored without retaining user records?
 

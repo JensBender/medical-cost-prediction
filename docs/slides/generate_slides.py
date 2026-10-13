@@ -26,7 +26,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 13)]
+SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 15)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -325,8 +325,15 @@ def build_presentation():
             "Illustration of a household survey interview: a respondent shows an empty "
             "wallet beside bills, while an interviewer listens with a laptop.",
             868, 148, 340, 453.333)
-    appendix_link = text(data, "MEPS appendix link", "Appendix: MEPS overview",
-                         72, 674, 800, 24, 18, color=SECONDARY, underline=True)
+    text(data, "Data appendix label", "Appendix:",
+         72, 674, 90, 24, 18, color=SECONDARY)
+    appendix_link = text(data, "MEPS appendix link", "MEPS overview",
+                         168, 674, 135, 24, 18, color=SECONDARY, underline=True)
+    text(data, "Data appendix separator", "|", 314, 674, 12, 24, 18,
+         color=SECONDARY, alignment=PP_ALIGN.CENTER)
+    features_appendix_link = text(data, "Input features appendix link", "Features",
+                                  340, 674, 90, 24, 18,
+                                  color=SECONDARY, underline=True)
 
     distribution = new_slide(presentation, storyboard, "4")
     text(distribution, "4 title", "Out-of-pocket costs: 20% of adults account for ~80%",
@@ -531,8 +538,61 @@ def build_presentation():
     appendix_link.click_action.target_slide = meps_overview
     return_link.click_action.target_slide = data
 
+    feature_values = new_slide(presentation, storyboard, "A3")
+    text(feature_values, "A3 title", "Preprocessor input features",
+         72, 48, 1136, 66, 44, bold=True)
+    feature_values_table = native_table(feature_values, [
+        ["Feature", "Type", "Possible values"],
+        ["Age", "Numerical", "18\u201385 years (adult population)"],
+        ["Sex", "Binary", "Male, female"],
+        ["Region", "Categorical", "Northeast, Midwest, South, West"],
+        ["Marital status", "Categorical", "Married, widowed, divorced, separated, never married"],
+        ["Family income", "Ordinal", "Relative to poverty: poor/negative, near poor, low, middle, high"],
+        ["Family size", "Numerical", "1\u201314 related people living together"],
+        ["Education", "Categorical", "None, GED, high school, bachelor's, master's, doctorate, other"],
+        ["Employment status", "Binary", "Employed, not employed"],
+        ["Insurance", "Categorical", "Any private, public only, uninsured"],
+        ["Physical health", "Numerical", "1 = Excellent, 2 = Very good, 3 = Good, 4 = Fair, 5 = Poor"],
+        ["Mental health", "Numerical", "1 = Excellent, 2 = Very good, 3 = Good, 4 = Fair, 5 = Poor"],
+    ], 142, [270, 160, 706], row_height=42)
+
+    feature_answers = new_slide(presentation, storyboard, "A4")
+    text(feature_answers, "A4 title", "Preprocessor input features: yes/no",
+         72, 48, 1136, 66, 44, bold=True)
+    feature_answers_table = native_table(feature_answers, [
+        ["Feature group", "Features"],
+        ["Chronic conditions", "High blood pressure, high cholesterol, diabetes,\n"
+         "coronary heart disease, stroke, cancer, arthritis, asthma"],
+        ["Limitations", "ADL help: personal care, such as bathing or dressing\n"
+         "IADL help: daily tasks, such as managing bills or medication\n"
+         "Walking limitation, cognitive limitation, joint pain"],
+        ["Other", "Smoker\n"
+         "Usual source of care: regular doctor or clinic\n"
+         "Recent life transition (derived): marital or employment changes"],
+    ], 142, [280, 856], row_height=120)
+    for row, height in zip(feature_answers_table.rows, [48, 120, 156, 156]):
+        row.height = pixels(height)
+    for feature_table in (feature_values_table, feature_answers_table):
+        for row_index, row in enumerate(feature_table.rows):
+            for column_index, cell in enumerate(row.cells):
+                cell.margin_left = cell.margin_right = pixels(12)
+                cell.margin_top = cell.margin_bottom = pixels(6)
+                for paragraph in cell.text_frame.paragraphs:
+                    paragraph.space_before = paragraph.space_after = Pt(0)
+                    is_group = feature_table is feature_answers_table and column_index == 0
+                    style_font(paragraph.font, 24, bold=row_index == 0 or is_group)
+                    for run in paragraph.runs:
+                        style_font(run.font, 24, bold=row_index == 0 or is_group)
+    for feature_slide in (feature_values, feature_answers):
+        feature_return_link = text(
+            feature_slide, "Return to data slide", "Back",
+            72, 674, 800, 24, 18, color=SECONDARY, underline=True,
+        )
+        feature_return_link.click_action.target_slide = data
+    features_appendix_link.click_action.target_slide = feature_values
+
     outliers = new_slide(
-        presentation, storyboard, "A3",
+        presentation, storyboard, "A5",
         "Outliers: greater health burden and higher cost risk",
     )
     text(outliers, "Outlier detection",
@@ -568,11 +628,11 @@ def build_presentation():
     outlier_appendix_link.click_action.target_slide = outliers
     outlier_return_link.click_action.target_slide = distribution
     for slide_id, filename, description in [
-        ("A4", "numerical_distributions.png", "Population distributions of age, "
+        ("A6", "numerical_distributions.png", "Population distributions of age, "
          "family size, physical health, and mental health."),
-        ("A5", "categorical_distributions.png", "Population distributions of "
+        ("A7", "categorical_distributions.png", "Population distributions of "
          "region, marital status, employment, insurance, education, and family income."),
-        ("A6", "binary_distributions.png", "Population distributions of binary "
+        ("A8", "binary_distributions.png", "Population distributions of binary "
          "features, including chronic conditions, limitations, and access to care."),
     ]:
         feature_distributions = new_slide(presentation, storyboard, slide_id)
@@ -583,17 +643,17 @@ def build_presentation():
             20, 674, 100, 24, 18, color=SECONDARY, underline=True,
         )
         distribution_return_link.click_action.target_slide = distribution
-        if slide_id == "A4":
+        if slide_id == "A6":
             distributions_appendix_link.click_action.target_slide = feature_distributions
     for slide_id, filename, description in [
-        ("A7", "correlation_heatmap.png", "Population Spearman rank correlations "
+        ("A9", "correlation_heatmap.png", "Population Spearman rank correlations "
          "between out-of-pocket costs and numerical, ordinal, and binary features."),
-        ("A8", "numerical_feature_target_relationships.png", "Relationships between "
+        ("A10", "numerical_feature_target_relationships.png", "Relationships between "
          "out-of-pocket costs and age, family size, physical health, and mental health."),
-        ("A9", "categorical_feature_target_relationships.png", "Out-of-pocket cost "
+        ("A11", "categorical_feature_target_relationships.png", "Out-of-pocket cost "
          "distributions by region, marital status, employment, insurance, education, "
          "and family income."),
-        ("A10", "binary_feature_target_relationships.png", "Out-of-pocket cost "
+        ("A12", "binary_feature_target_relationships.png", "Out-of-pocket cost "
          "distributions by binary features, including chronic conditions, limitations, "
          "and access to care."),
     ]:
@@ -605,10 +665,10 @@ def build_presentation():
             20, 674, 100, 24, 18, color=SECONDARY, underline=True,
         )
         relationships_return_link.click_action.target_slide = distribution
-        if slide_id == "A7":
+        if slide_id == "A9":
             relationships_appendix_link.click_action.target_slide = feature_relationships
-    preparation = new_slide(presentation, storyboard, "A11")
-    text(preparation, "A11 title", "Data preparation",
+    preparation = new_slide(presentation, storyboard, "A13")
+    text(preparation, "A13 title", "Data preparation",
          72, 48, 1136, 66, 44, bold=True)
     text(preparation, "Preparation heading", "Prepare MEPS data",
          72, 148, 1136, 42, 30, bold=True)
@@ -643,8 +703,8 @@ def build_presentation():
     preparation_appendix_link.click_action.target_slide = preparation
     preparation_return_link.click_action.target_slide = preprocessing
 
-    baselines = new_slide(presentation, storyboard, "A12")
-    text(baselines, "A12 title", "Baseline models",
+    baselines = new_slide(presentation, storyboard, "A14")
+    text(baselines, "A14 title", "Baseline models",
          72, 48, 1136, 66, 44, bold=True)
     baseline_table = native_table(baselines, [
         ["Model", "MdAE", "Overfitting", "MAE", "R²"],
