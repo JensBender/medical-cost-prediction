@@ -26,7 +26,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 10)] + [f"A{number}" for number in range(1, 12)]
+SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 11)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -374,7 +374,19 @@ def build_presentation():
         72, 666, 240, 24, 18, color=SECONDARY, underline=True,
     )
 
-    selection = new_slide(presentation, storyboard, "5",
+    preprocessing = new_slide(presentation, storyboard, "5")
+    preprocessing.background.fill.fore_color.rgb = RGBColor.from_string("020617")
+    for shape in preprocessing.shapes:
+        if shape.name == "Slide ID":
+            for paragraph in shape.text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor.from_string("94A3B8")
+    picture(preprocessing, SLIDES_DIR / "assets/preprocessing-pipeline.png",
+            "Preprocessing pipeline fitted on training data: categorical input "
+            "standardization, missing-value validation and imputation, health-burden "
+            "feature derivation, scaling, and encoding.", 0, 0, 1280, 720)
+
+    selection = new_slide(presentation, storyboard, "6",
                           "Model selection: median error was not enough")
     model_table = native_table(selection, [
         ["Tuned point-estimate model", "Validation MdAE", "Validation MAE"],
@@ -395,7 +407,7 @@ def build_presentation():
     footnote(selection, "MdAE: median absolute error; MAE: mean absolute error. "
              "Validation; 2023 USD.")
 
-    quantiles = new_slide(presentation, storyboard, "6", "Quantile regression turns "
+    quantiles = new_slide(presentation, storyboard, "7", "Quantile regression turns "
                           "predictions\ninto budgeting ranges", two_lines=True)
     text(quantiles, "Objective", "XGBoost quantile objective · survey weights · "
          "log-transformed costs", 72, 190, 1136, 38, 27)
@@ -424,8 +436,8 @@ def build_presentation():
     footnote(quantiles, "Conceptual diagram, not a prediction for an individual. "
              "q50 is the predicted median.")
 
-    results = new_slide(presentation, storyboard, "7")
-    text(results, "7 title", [("Final model audit:", True),
+    results = new_slide(presentation, storyboard, "8")
+    text(results, "8 title", [("Final model audit:", True),
          " clearest gains in ranges and q90"], 72, 48, 1136, 66, 44)
     native_table(results, [
         ["Held-out test metric", "Result", "Release gate"],
@@ -449,7 +461,7 @@ def build_presentation():
          450, 562, 758, 38, 26)
     footnote(results, "Survey-weighted test metrics. Dollar amounts in 2023 USD.")
 
-    audit = new_slide(presentation, storyboard, "8", "Final model test audit: overall "
+    audit = new_slide(presentation, storyboard, "9", "Final model test audit: overall "
                       "coverage\nhides subgroup gaps", two_lines=True)
     text(audit, "Chart metric", "Typical-range coverage (q25–q75)",
          72, 190, 780, 38, 28, bold=True)
@@ -466,7 +478,7 @@ def build_presentation():
     footnote(audit, "Survey-weighted test point estimates; subgroup uncertainty matters. "
              "Source: modeling notebook.")
 
-    next_steps = new_slide(presentation, storyboard, "9", "Model evaluation is complete;\n"
+    next_steps = new_slide(presentation, storyboard, "10", "Model evaluation is complete;\n"
                            "app development comes next", two_lines=True)
     text(next_steps, "Implemented", "Implemented", 72, 190, 700, 38, 30, bold=True)
     text(next_steps, "Planned", "Planned", 895, 190, 313, 38, 30, bold=True)
@@ -584,22 +596,6 @@ def build_presentation():
         relationships_return_link.click_action.target_slide = distribution
         if slide_id == "A7":
             relationships_appendix_link.click_action.target_slide = feature_relationships
-    preprocessing = new_slide(presentation, storyboard, "A11")
-    preprocessing.background.fill.fore_color.rgb = RGBColor.from_string("020617")
-    for shape in preprocessing.shapes:
-        if shape.name == "Slide ID":
-            for paragraph in shape.text_frame.paragraphs:
-                for run in paragraph.runs:
-                    run.font.color.rgb = RGBColor.from_string("94A3B8")
-    picture(preprocessing, SLIDES_DIR / "assets/preprocessing-pipeline.png",
-            "Preprocessing pipeline fitted on training data: categorical input "
-            "standardization, missing-value validation and imputation, health-burden "
-            "feature derivation, scaling, and encoding.", 0, 0, 1280, 720)
-    preprocessing_return_link = text(
-        preprocessing, "Return to model selection", "Back",
-        20, 674, 100, 24, 18, color="94A3B8", underline=True,
-    )
-    preprocessing_return_link.click_action.target_slide = selection
     return presentation
 
 

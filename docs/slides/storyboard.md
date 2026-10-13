@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: the nine-slide main presentation and eleven appendix slides are ready for
+Status: the ten-slide main presentation and ten appendix slides are ready for
 review. The remaining appendix slides are in storyboard form.
 
 ## Presentation context
@@ -12,13 +12,13 @@ review. The remaining appendix slides are in storyboard form.
 - **Emphasis:** data science, with optional emphasis on ML engineering.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The current
-  allocation below totals 10:25, leaving room for transitions.
-- **Structure:** a cover, eight content slides, and twenty-four planned appendix slides.
+  allocation below totals 11:25, leaving room for transitions.
+- **Structure:** a cover, nine content slides, and twenty-three planned appendix slides.
   Order and number appendix slides by their first reference in the main presentation.
   Place unreferenced slides with their related topic. Update numbering and links
   when the presentation order changes.
-- **Slide numbering:** Display 2–9 on the main content slides, with the cover
-  unnumbered, and A1, A2, etc. in the appendix. Use 1–9 in the storyboard.
+- **Slide numbering:** Display 2–10 on the main content slides, with the cover
+  unnumbered, and A1, A2, etc. in the appendix. Use 1–10 in the storyboard.
 - **Title size:** Use 33 pt for all main content-slide titles, including two-line titles.
 - **Appendix navigation:** Add links where a specific follow-up is likely, using
   “Appendix: [topic]” at the bottom left and “Back” on the
@@ -66,12 +66,13 @@ The first three slide timings are rehearsed; the remaining timings are estimates
 | 2 | How much should I set aside for healthcare? | 0:45 | Establish the budgeting need and intended value |
 | 3 | MEPS links accessible inputs to observed spending | 2:00 | Explain the survey, project data, and population weights |
 | 4 | Out-of-pocket costs: 20% of adults account for ~80% | 1:00 | Show the data challenge that shaped modeling |
-| 5 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
-| 6 | Quantile regression turns predictions into budgeting ranges | 1:30 | Explain the final model and its outputs |
-| 7 | Final model audit: clearest gains in ranges and q90 | 1:30 | Present held-out evidence and baseline comparisons |
-| 8 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
-| 9 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
-| | **Total** | **10:25** | |
+| 5 | Preprocessing pipeline | 1:00 | Prepare model-ready inputs and preserve consistent transformations |
+| 6 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
+| 7 | Quantile regression turns predictions into budgeting ranges | 1:30 | Explain the final model and its outputs |
+| 8 | Final model audit: clearest gains in ranges and q90 | 1:30 | Present held-out evidence and baseline comparisons |
+| 9 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
+| 10 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
+| | **Total** | **11:25** | |
 
 ## Main slides
 
@@ -203,7 +204,7 @@ supplement household reports for selected services; not every payment is
 independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
-See A12 for feature examples, counts, and possible feature reduction, and A13 for
+See A11 for feature examples, counts, and possible feature reduction, and A12 for
 input timing. Preprocessing is fitted on training data. The 80/10/10 split is
 random within spending groups, with a separate zero-cost group and finer bins
 for high costs to reduce imbalances in rare, expensive cases. Discuss the split
@@ -253,13 +254,45 @@ Outlier profiling revealed greater health burden and a higher likelihood of
 extreme costs. Outlier profiles were plausible, so I retained them to preserve
 valuable training information.”
 
-**Transition:** This distribution explains why the validation leaderboard was
-only the start of model selection.
+**Transition:** Before comparing models, explain how the data became model-ready.
 
 **Sources:** [EDA notebook script: zero costs and cost concentration](../../notebooks/1_eda_and_preprocessing.py);
 [README: EDA and outlier analysis](../../README.md).
 
-### 5 — Model selection: median error was not enough
+### 5 — Preprocessing pipeline
+
+**Purpose:** Explain data preparation and the reusable preprocessing pipeline.
+
+**On the slide:** [Preprocessing pipeline PNG](assets/preprocessing-pipeline.png),
+rendered from the [SVG source](../../assets/preprocessing_pipeline.svg),
+using the diagram's existing title and subtitle.
+
+**Visual:** Fit the diagram to the full slide height and match its dark navy
+background. Use light gray for the slide number.
+
+**Speaker notes — 1:00**
+
+“A data preparation script selects the variables and adult population, and
+standardizes MEPS missing-value codes. It also splits the data into 80% training,
+10% validation, and 10% test, stratified by costs to balance zero-cost and
+high-cost cases.
+
+I fitted this scikit-learn pipeline on the training data and applied it to
+validation and test data. It standardizes categorical labels, checks and imputes
+missing values, derives medical features, scales numerical features, and
+one-hot encodes nominal features.
+
+The script saves the preprocessor inputs and model-ready datasets as Parquet
+files, and the fitted pipeline with joblib for reuse during prediction.”
+
+**Transition:** With the data prepared, compare the models and their usefulness
+for budgeting.
+
+**Sources:** [README: data preprocessing](../../README.md#-data-preprocessing);
+[preprocessing script](../../scripts/preprocess.py);
+[preprocessing pipeline](../../src/pipeline.py).
+
+### 6 — Model selection: median error was not enough
 
 **Takeaway:** The model with the best typical error offered limited separation
 between lower- and higher-cost profiles.
@@ -276,7 +309,7 @@ between lower- and higher-cost profiles.
 - Subgroup and residual analysis motivated a model that also describes uncertainty
 
 **Display notes:** Comparison table with the $217 finding below it. Keep residual
-diagnostics in A16. Define the metrics here: “MdAE: median absolute error;
+diagnostics in A15. Define the metrics here: “MdAE: median absolute error;
 MAE: mean absolute error.”
 
 **Speaker notes — 1:30**
@@ -302,7 +335,7 @@ medical event.”
 point-estimate models. Do not compare $159 here with the final model's $240 test
 result as if they came from the same evaluation.
 
-### 6 — Quantile regression turns predictions into budgeting ranges
+### 7 — Quantile regression turns predictions into budgeting ranges
 
 **Takeaway:** The final model estimates different parts of the spending
 distribution for each input profile.
@@ -340,7 +373,7 @@ not confidence intervals around an average, and q90 is not a maximum possible bi
 [quantile training script](../../scripts/train_xgboost_quantile.py);
 [prediction postprocessing](../../src/prediction.py).
 
-### 7 — Final model audit: clearest gains in ranges and q90
+### 8 — Final model audit: clearest gains in ranges and q90
 
 **Takeaway:** The final model meets the project's overall performance gates,
 with its strongest evidence of added value in interval and upper-quantile scores.
@@ -388,9 +421,9 @@ and situations where the model is less reliable.
 
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
-Confidence intervals, widths, and scoring definitions are in A17 and A18.
+Confidence intervals, widths, and scoring definitions are in A16 and A17.
 
-### 8 — Final model test audit: overall coverage hides subgroup gaps
+### 9 — Final model test audit: overall coverage hides subgroup gaps
 
 **Takeaway:** The model's limitations affect both interpretation and the next
 validation steps.
@@ -405,7 +438,7 @@ validation steps.
 
 **Visual:** Bar chart of typical-range coverage: poor mental health 30.1%, low
 income 39.2%, overall 47.3%, and target 50%. Label results as point estimates;
-A19 adds subgroup counts and uncertainty.
+A18 adds subgroup counts and uncertainty.
 
 **Speaker notes — 1:00**
 
@@ -426,7 +459,7 @@ to turn it into a usable product.
 [feature timing notes](../research/candidate_features.md);
 [preprocessing split](../../scripts/preprocess.py).
 
-### 9 — Model evaluation is complete; app development comes next
+### 10 — Model evaluation is complete; app development comes next
 
 **Takeaway:** The project has reusable ML components and an explicit plan for
 the remaining product and validation work.
@@ -719,32 +752,7 @@ care also have higher median costs. These comparisons describe associations.”
 **Sources:** [README: binary relationships](../../README.md#binary-feature-target-relationships);
 [binary relationships](../../figures/eda/binary_feature_target_relationships.png).
 
-### A11 — Preprocessing pipeline
-
-**Question:** How are inputs transformed into model-ready features?
-
-**On the slide:** [Preprocessing pipeline PNG](assets/preprocessing-pipeline.png),
-rendered from the [SVG source](../../assets/preprocessing_pipeline.svg),
-using the diagram's existing title and subtitle.
-
-**Visual:** Fit the diagram to the full slide height and match its dark navy
-background. Use light gray for the slide number and the small “Back” link in
-the lower-left side margin, pointing to the model-selection slide.
-
-**Speaker notes — 0:40 (optional)**
-
-“This pipeline standardizes and validates inputs, imputes missing numerical
-values with medians and categorical values with modes, derives chronic-condition
-and functional-limitation counts, and scales and encodes the features. I fitted
-it on the training data and applied it unchanged to validation and test data.
-The same fitted preprocessor will also be used during prediction.”
-
-**Transition:** Return to model selection or continue with questions.
-
-**Sources:** [README: data preprocessing](../../README.md#-data-preprocessing);
-[preprocessing pipeline](../../src/pipeline.py).
-
-### A12 — Input features: what users provide
+### A11 — Input features: what users provide
 
 **Question:** What information does the model use, and how much does it ask of users?
 
@@ -767,7 +775,7 @@ The same fitted preprocessor will also be used during prediction.”
 columns after transformation. These counts do not equal the number of questions
 on the planned form: related conditions can be grouped, and some values are
 derived. User testing will assess the burden; feature reduction is an option if
-fewer inputs would improve the experience. Refer to A13 for input timing.
+fewer inputs would improve the experience. Refer to A12 for input timing.
 
 **Promote:** After 3 when input design is relevant to the audience; allow 0:45.
 Otherwise, use only for questions.
@@ -776,7 +784,7 @@ Otherwise, use only for questions.
 [input definitions](../../src/constants.py);
 [product requirements: input form](../specs/product_requirements.md).
 
-### A13 — Feature timing: limits of next-year forecasting
+### A12 — Feature timing: limits of next-year forecasting
 
 **Question:** Is this truly a next-year forecast?
 
@@ -792,12 +800,12 @@ leakage. Feature availability at the intended prediction date is a separate
 issue. Audit every input against that date and evaluate on later-year data.
 Do not claim the size or direction of the resulting performance change is known.
 
-**Promote:** After 3 or 8 for forecasting and validation questions; allow 1:00.
+**Promote:** After 3 or 9 for forecasting and validation questions; allow 1:00.
 
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
 
-### A14 — Model tuning: comparisons on a fixed validation split
+### A13 — Model tuning: comparisons on a fixed validation split
 
 **Question:** What alternatives and tuning procedure were used?
 
@@ -814,12 +822,12 @@ nested pipeline and target-transform wrappers. This is not cross-validation.
 Repeated selection on one validation split has uncertainty. The quantile model
 reuses the tuned point-model parameters rather than receiving its own search.
 
-**Promote:** Before 5 for a longer modeling discussion; allow 1:30.
+**Promote:** Before 6 for a longer modeling discussion; allow 1:30.
 
 **Sources:** [README: modeling](../../README.md);
 [XGBoost tuning script](../../scripts/tune_xgboost.py).
 
-### A15 — LLM benchmark: General versus Specific Intelligence
+### A14 — LLM benchmark: General versus Specific Intelligence
 
 **Question:** Why not ask a general-purpose language model for an estimate?
 
@@ -832,12 +840,12 @@ mix these with test-set results from the final quantile model.
 **Talking points:** This result describes one model and prompting setup, not all
 LLMs.
 
-**Promote:** Optional, after A14; allow 1:00.
+**Promote:** Optional, after A13; allow 1:00.
 
 **Sources:** [README: LLM benchmark](../../README.md);
 [LLM benchmark script](../../scripts/benchmark_llm.py).
 
-### A16 — Point-model diagnostics: residuals and prediction ranges
+### A15 — Point-model diagnostics: residuals and prediction ranges
 
 **Question:** Why did the lowest-MdAE model not meet the full product need?
 
@@ -852,12 +860,12 @@ distribution. A lower MdAE alone does not establish useful risk separation.
 Wider prediction spread alone also does not establish accuracy; inspect
 residuals and subgroup errors alongside it.
 
-**Promote:** After 5; allow 1:00.
+**Promote:** After 6; allow 1:00.
 
 **Sources:** [README: heteroscedasticity and subgroup analysis](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A17 — Final model test results: coverage, width, and release gates
+### A16 — Final model test results: coverage, width, and release gates
 
 **Question:** What does passing the project's gates mean?
 
@@ -877,12 +885,12 @@ interval does not need to fall inside the gate under the reported decision
 rule. These are project criteria, not external certification. The notebook
 resamples rows and retains their weights.
 
-**Promote:** After 7 for evaluation depth; allow 1:00.
+**Promote:** After 8 for evaluation depth; allow 1:00.
 
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: bootstrap implementation](../../notebooks/2_modeling.py).
 
-### A18 — Final model test benchmarks: gains over simple estimates
+### A17 — Final model test benchmarks: gains over simple estimates
 
 **Question:** Why not give everyone a population or age-group estimate?
 
@@ -906,11 +914,11 @@ confidence intervals above zero for the three reductions shown, but the small
 MdAE improvement versus the population baseline remains uncertain. Positive
 skill is not a percentage-point improvement in coverage.
 
-**Promote:** After 7; allow 1:00.
+**Promote:** After 8; allow 1:00.
 
 **Source:** [Modeling notebook: test baseline comparisons](../../notebooks/2_modeling.py).
 
-### A19 — Final model test audit: subgroup coverage gaps
+### A18 — Final model test audit: subgroup coverage gaps
 
 **Question:** Who receives less reliable ranges?
 
@@ -928,12 +936,12 @@ of 30. Similar error patterns across models do not establish absence of bias.
 Planning notices communicate a limitation; further evaluation or recalibration
 would be needed to address it.
 
-**Promote:** After 8; allow 1:00.
+**Promote:** After 9; allow 1:00.
 
 **Sources:** [README: final subgroup audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A20 — Final model test audit: actual versus predicted cost tiers
+### A19 — Final model test audit: actual versus predicted cost tiers
 
 **Question:** Does the safety cushion protect the largest spenders?
 
@@ -950,12 +958,12 @@ Low coverage in the observed tail is a useful description of missed expensive
 years, not the same as conditional calibration by an available input. An upper
 quantile is not catastrophe insurance or a hard spending cap.
 
-**Promote:** After 8 when discussing tail risk; allow 1:00.
+**Promote:** After 9 when discussing tail risk; allow 1:00.
 
 **Sources:** [README: final reliability audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A21 — SHAP explains how inputs shape the median estimate
+### A20 — SHAP explains how inputs shape the median estimate
 
 **Question:** Which inputs influence predictions, and what can users infer?
 
@@ -970,12 +978,12 @@ inputs, including the effects of transformations and derived medical counts.
 Correlated inputs can share attribution. Higher or lower observed spending
 does not by itself mean higher or lower healthcare need.
 
-**Promote:** Before 9 for explainability depth; allow 1:00.
+**Promote:** Before 10 for explainability depth; allow 1:00.
 
 **Sources:** [README: feature importance](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json).
 
-### A22 — SHAP benchmarking: explanation quality and latency
+### A21 — SHAP benchmarking: explanation quality and latency
 
 **Question:** How was the SHAP configuration chosen?
 
@@ -992,13 +1000,13 @@ P95 summarizes subsequent explanation calls after a separately measured first
 call. It excludes the rest of the request and is not a deployed API latency
 claim. Complete request latency on target hardware remains unverified.
 
-**Promote:** Before 9 for ML engineering roles; allow 1:00.
+**Promote:** Before 10 for ML engineering roles; allow 1:00.
 
 **Sources:** [README: SHAP explanation details](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json);
 [benchmark script](../../scripts/benchmark_shap.py).
 
-### A23 — Inference architecture: shared prediction and explanation code
+### A22 — Inference architecture: shared prediction and explanation code
 
 **Question:** How will training and serving stay consistent?
 
@@ -1016,12 +1024,12 @@ prediction and explanation behavior. Integration, end-to-end behavior, and
 deployment performance still need verification. Do not imply that every
 experiment is a DVC stage or that the full service is implemented.
 
-**Promote:** Before 9 for ML engineering roles; allow 1:30.
+**Promote:** Before 10 for ML engineering roles; allow 1:30.
 
 **Sources:** [DVC pipeline](../../dvc.yaml); [prediction code](../../src/prediction.py);
 [technical specifications](../specs/technical_specifications.md); [unit tests](../../tests/unit/).
 
-### A24 — Production monitoring: drift signals without observed outcomes
+### A23 — Production monitoring: drift signals without observed outcomes
 
 **Question:** How would the product be monitored without retaining user records?
 
@@ -1037,7 +1045,7 @@ on later MEPS data is a separate route for assessing the model. Medical
 inflation adjusts the dollar scale; it cannot correct all changes in insurance,
 care use, or the population. These are planned operating choices.
 
-**Promote:** Before 9 for deployment and product discussion; allow 1:00.
+**Promote:** Before 10 for deployment and product discussion; allow 1:00.
 
 **Sources:** [Technical specifications: privacy-preserving monitoring](../specs/technical_specifications.md);
 [product requirements](../specs/product_requirements.md).
