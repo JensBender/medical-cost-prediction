@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: the ten-slide main presentation and fourteen appendix slides are ready for
+Status: the ten-slide main presentation and fifteen appendix slides are ready for
 review. The remaining appendix slides are in storyboard form.
 
 ## Presentation context
@@ -208,7 +208,7 @@ independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
 See A3–A4 for preprocessor input features, counts, and possible feature reduction,
-and A15 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
+and A16 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
 random within spending groups, with a separate zero-cost group and finer bins
 for high costs to reduce imbalances in rare, expensive cases. Discuss the split
 after the spending-distribution slide if asked.
@@ -318,7 +318,8 @@ change in MdAE from training to validation.”
 **Display notes:** Comparison table with its note immediately below, followed by
 the $217 finding and its implication. Keep residual diagnostics in A18.
 
-**Appendix link:** [Baseline models (A14)](#a14--baseline-models).
+**Appendix links:** [Baseline models (A14)](#a14--baseline-models) |
+[Hyperparameter tuning (A15)](#a15--hyperparameter-tuning).
 
 **Speaker notes — 1:30**
 
@@ -610,7 +611,7 @@ after adding a life-transition feature and 40 model-ready columns after
 transformation. These counts do not equal the number of questions on the planned
 form: related conditions can be grouped, and some values are derived. User testing
 will assess the burden; feature reduction is an option if fewer inputs would
-improve the experience. Refer to A15 for input timing.
+improve the experience. Refer to A16 for input timing.
 
 **Sources:** [README: feature details](../../README.md#feature-details);
 [input definitions](../../src/constants.py);
@@ -938,7 +939,66 @@ promising candidate for capturing nonlinear interactions.”
 [baseline training script](../../scripts/train_baseline.py);
 [LLM benchmark script](../../scripts/benchmark_llm.py).
 
-### A15 — Feature timing: limits of next-year forecasting
+### A15 — Hyperparameter tuning
+
+**Question:** How were the three models tuned and their configurations selected?
+
+**On the slide**
+
+- **Search:** 50 sampled configurations per model
+- **Training:** Survey weights and log1p(cost); predictions in dollars
+- **Selection:** Lowest survey-weighted MdAE on a fixed validation split
+
+| Model | Main parameters tuned |
+| --- | --- |
+| Elastic Net | Squared terms on/off, regularization strength, L1/L2 mix |
+| Random Forest | Tree count, depth, split / leaf size, feature / row sampling |
+| XGBoost | Tree count, depth, learning rate, child weight, sampling, L1/L2 penalties |
+
+**Footnote:** “Manual ParameterSampler loop routes survey weights through model
+wrappers; MLflow records trials.”
+
+**Display notes:** Search, training, and selection above the parameter table.
+Keep the detailed ranges in the speaker notes. Return link to model selection.
+
+**Speaker notes — about 1:30**
+
+I tuned Elastic Net, Random Forest, and XGBoost using 50 randomly sampled
+configurations per model. A manual ParameterSampler loop let me route survey
+weights through the nested pipeline and target-transform wrappers. MLflow
+recorded the parameters, training time, and metrics for each trial.
+
+All three models were trained on log1p-transformed costs to reduce the impact
+of the heavy tail, then their predictions were converted back to dollars.
+I selected each model's best configuration by its lowest survey-weighted
+median absolute error on the same validation split. This was a fixed-split
+search, not cross-validation; repeated selection on that split can make its
+results optimistic.
+
+For Elastic Net, I used second-degree polynomial features and tuned whether
+to include squared terms, regularization strength from 0.01 to 1.0, and the
+L1/L2 mix from 0 to 1.
+
+For Random Forest, I used absolute-error loss and tuned 200–400 trees, depth
+8–24, minimum split size 20–149, minimum leaf size 10–79, feature sampling
+using sqrt, log2, or 30%–70%, and row sampling from 60% to 100%.
+
+For XGBoost, I also used absolute-error loss and tuned 400–800 trees, depth
+3–9, learning rate 0.01–0.2, minimum child weight 1–19, row sampling
+60%–100%, feature sampling 50%–100%, and L1/L2 penalties from 0 to 5.
+The final quantile model reused these tuned XGBoost parameters rather than
+receiving a separate search.
+
+**Transition:** Return to the tuned model results to discuss the modeling decision.
+
+**Promote:** Before 6 for a longer modeling discussion; allow 1:30.
+
+**Sources:** [README: tuning methodology](../../README.md);
+[Elastic Net tuning script](../../scripts/tune_elastic_net.py);
+[Random Forest tuning script](../../scripts/tune_random_forest.py);
+[XGBoost tuning script](../../scripts/tune_xgboost.py).
+
+### A16 — Feature timing: limits of next-year forecasting
 
 **Question:** Is this truly a next-year forecast?
 
@@ -959,28 +1019,6 @@ Do not claim the size or direction of the resulting performance change is known.
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
 
-### A16 — Model tuning: comparisons on a fixed validation split
-
-**Question:** What alternatives and tuning procedure were used?
-
-**On the slide:** Compare linear regression, Elastic Net, decision tree, Random
-Forest, SVM, and XGBoost with a population-median benchmark. Tune Elastic Net,
-Random Forest, and XGBoost with 50 sampled configurations each. Select by
-survey-weighted validation MdAE.
-
-**Visual:** The compact baseline and tuned comparison from the README, clearly
-labeled “validation.”
-
-**Talking points:** A manual `ParameterSampler` loop routes weights through
-nested pipeline and target-transform wrappers. This is not cross-validation.
-Repeated selection on one validation split has uncertainty. The quantile model
-reuses the tuned point-model parameters rather than receiving its own search.
-
-**Promote:** Before 6 for a longer modeling discussion; allow 1:30.
-
-**Sources:** [README: modeling](../../README.md);
-[XGBoost tuning script](../../scripts/tune_xgboost.py).
-
 ### A17 — LLM benchmark: General versus Specific Intelligence
 
 **Question:** Why not ask a general-purpose language model for an estimate?
@@ -994,7 +1032,7 @@ mix these with test-set results from the final quantile model.
 **Talking points:** This result describes one model and prompting setup, not all
 LLMs.
 
-**Promote:** Optional, after A16; allow 1:00.
+**Promote:** Optional, after A15; allow 1:00.
 
 **Sources:** [README: LLM benchmark](../../README.md);
 [LLM benchmark script](../../scripts/benchmark_llm.py).

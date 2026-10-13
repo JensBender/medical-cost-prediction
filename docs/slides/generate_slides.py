@@ -26,7 +26,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 15)]
+SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 16)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -418,9 +418,17 @@ def build_presentation():
     text(selection, "Tradeoff", "Good typical error, but limited separation across cost profiles.\n"
          "Residual and subgroup checks motivated richer budgeting outputs.",
          72, 514, 1136, 86, 28)
+    text(selection, "Model selection appendix label", "Appendix:",
+         72, 674, 90, 24, 18, color=SECONDARY)
     baseline_appendix_link = text(
-        selection, "Baseline models appendix link", "Appendix: Baseline models",
-        72, 674, 800, 24, 18, color=SECONDARY, underline=True,
+        selection, "Baseline models appendix link", "Baseline models",
+        168, 674, 140, 24, 18, color=SECONDARY, underline=True,
+    )
+    text(selection, "Model selection appendix separator", "|", 321, 674, 12, 24, 18,
+         color=SECONDARY, alignment=PP_ALIGN.CENTER)
+    tuning_appendix_link = text(
+        selection, "Hyperparameter tuning appendix link", "Hyperparameter tuning",
+        347, 674, 210, 24, 18, color=SECONDARY, underline=True,
     )
 
     quantiles = new_slide(presentation, storyboard, "7", "Quantile regression turns "
@@ -737,6 +745,33 @@ def build_presentation():
     )
     baseline_appendix_link.click_action.target_slide = baselines
     baseline_return_link.click_action.target_slide = selection
+
+    tuning = new_slide(presentation, storyboard, "A15")
+    text(tuning, "A15 title", "Hyperparameter tuning",
+         72, 48, 1136, 66, 44, bold=True)
+    text(tuning, "Search strategy", [("Search:", True),
+         " 50 sampled configurations per model"], 72, 142, 1136, 42, 28)
+    text(tuning, "Training target", [("Training:", True),
+         " Survey weights and log1p(cost); predictions in dollars"],
+         72, 200, 1136, 42, 28)
+    text(tuning, "Configuration selection", [("Selection:", True),
+         " Lowest survey-weighted MdAE on a fixed validation split"],
+         72, 258, 1136, 42, 28)
+    native_table(tuning, [
+        ["Model", "Main parameters tuned"],
+        ["Elastic Net", "Squared terms on/off, regularization strength, L1/L2 mix"],
+        ["Random Forest", "Tree count, depth, split / leaf size, feature / row sampling"],
+        ["XGBoost", "Tree count, depth, learning rate, child weight, sampling, L1/L2 penalties"],
+    ], 326, [280, 856], row_height=82)
+    text(tuning, "Search implementation", "Manual ParameterSampler loop routes survey weights "
+         "through model wrappers; MLflow records trials.",
+         72, 638, 1136, 24, 18, color=SECONDARY)
+    tuning_return_link = text(
+        tuning, "Return to model selection", "Back",
+        72, 674, 800, 24, 18, color=SECONDARY, underline=True,
+    )
+    tuning_appendix_link.click_action.target_slide = tuning
+    tuning_return_link.click_action.target_slide = selection
     return presentation
 
 
