@@ -26,7 +26,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 12)]
+SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 13)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -410,8 +410,13 @@ def build_presentation():
          72, 480, 1136, 86, 28)
     text(selection, "Quantile decision", "Next step: XGBoost quantile regression",
          72, 602, 1136, 40, 30, bold=True)
-    footnote(selection, "MdAE: median absolute error; MAE: mean absolute error. "
-             "Validation; 2023 USD.")
+    text(selection, "Metric definitions", "MdAE: median absolute error; "
+         "MAE: mean absolute error. Validation; 2023 USD.",
+         72, 648, 1136, 24, 18, color=SECONDARY)
+    baseline_appendix_link = text(
+        selection, "Baseline models appendix link", "Appendix: Baseline models",
+        72, 674, 800, 24, 18, color=SECONDARY, underline=True,
+    )
 
     quantiles = new_slide(presentation, storyboard, "7", "Quantile regression turns "
                           "predictions\ninto budgeting ranges", two_lines=True)
@@ -637,6 +642,45 @@ def build_presentation():
     )
     preparation_appendix_link.click_action.target_slide = preparation
     preparation_return_link.click_action.target_slide = preprocessing
+
+    baselines = new_slide(presentation, storyboard, "A12")
+    text(baselines, "A12 title", "Baseline models: selecting candidates for tuning",
+         72, 48, 1136, 66, 44, bold=True)
+    baseline_table = native_table(baselines, [
+        ["Model", "MdAE", "Overfitting", "MAE", "R²"],
+        ["Elastic Net", "$163", "+6.6%", "$1,044", "-0.12"],
+        ["Linear Regression", "$219", "+4.8%", "$998", "-0.06"],
+        ["Random Forest", "$232", "+9.6%", "$958", "-0.04"],
+        ["Median (benchmark)", "$248", "0.0%", "$1,041", "-0.10"],
+        ["Decision Tree", "$271", "+1.5%", "$971", "-0.03"],
+        ["XGBoost", "$281", "+98.0%", "$961", "0.00"],
+        ["Support Vector Machine", "$291", "+190.7%", "$1,027", "-0.03"],
+        ["LLM (benchmark)", "$518", "N/A", "$1,168", "0.04"],
+    ], 142, [420, 160, 200, 180, 176], row_height=48)
+    for row in baseline_table.rows:
+        for cell in row.cells:
+            cell.margin_top = cell.margin_bottom = pixels(6)
+    for row in (1, 3, 6):
+        for run in baseline_table.cell(row, 0).text_frame.paragraphs[0].runs:
+            run.font.bold = True
+    for row, column in ((1, 1), (3, 3), (5, 2), (8, 4)):
+        for run in baseline_table.cell(row, column).text_frame.paragraphs[0].runs:
+            run.font.bold = True
+    for row in (4, 8):
+        for cell in baseline_table.rows[row].cells:
+            for run in cell.text_frame.paragraphs[0].runs:
+                run.font.italic = True
+    text(baselines, "Selected models", "Selected for tuning: Elastic Net, "
+         "Random Forest, and XGBoost", 72, 596, 1136, 36, 25)
+    text(baselines, "Validation note", "Survey-weighted validation metrics. "
+         "Overfitting is the percentage change in MdAE from training to validation.",
+         72, 640, 1136, 24, 18, color=SECONDARY)
+    baseline_return_link = text(
+        baselines, "Return to model selection", "Back",
+        72, 674, 800, 24, 18, color=SECONDARY, underline=True,
+    )
+    baseline_appendix_link.click_action.target_slide = baselines
+    baseline_return_link.click_action.target_slide = selection
     return presentation
 
 

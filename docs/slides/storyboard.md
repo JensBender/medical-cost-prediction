@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: the ten-slide main presentation and eleven appendix slides are ready for
+Status: the ten-slide main presentation and twelve appendix slides are ready for
 review. The remaining appendix slides are in storyboard form.
 
 ## Presentation context
@@ -13,7 +13,7 @@ review. The remaining appendix slides are in storyboard form.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The current
   allocation below totals 11:25, leaving room for transitions.
-- **Structure:** a cover, nine content slides, and twenty-four planned appendix slides.
+- **Structure:** a cover, nine content slides, and twenty-five planned appendix slides.
   Order and number appendix slides by their first reference in the main presentation.
   Place unreferenced slides with their related topic. Update numbering and links
   when the presentation order changes.
@@ -204,7 +204,7 @@ supplement household reports for selected services; not every payment is
 independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
-See A12 for feature examples, counts, and possible feature reduction, and A13 for
+See A13 for feature examples, counts, and possible feature reduction, and A14 for
 input timing. Preprocessing is fitted on training data. The 80/10/10 split is
 random within spending groups, with a separate zero-cost group and finer bins
 for high costs to reduce imbalances in rare, expensive cases. Discuss the split
@@ -310,13 +310,16 @@ between lower- and higher-cost profiles.
 - Subgroup and residual analysis motivated a model that also describes uncertainty
 
 **Display notes:** Comparison table with the $217 finding below it. Keep residual
-diagnostics in A16. Define the metrics here: “MdAE: median absolute error;
+diagnostics in A17. Define the metrics here: “MdAE: median absolute error;
 MAE: mean absolute error.”
+
+**Appendix link:** [Baseline models (A12)](#a12--baseline-models-selecting-candidates-for-tuning).
 
 **Speaker notes — 1:30**
 
-“Elastic Net was a strong result, not a failed baseline. After tuning, its
-weighted validation median absolute error was $159, lower than either tree
+“I compared six model architectures and selected Elastic Net, Random Forest,
+and XGBoost for tuning. Elastic Net was a strong result, not a failed baseline.
+After tuning, its weighted validation median absolute error was $159, lower than either tree
 model. But its predictions remained very compressed, with a maximum of about
 $217. Residual and subgroup analysis showed why that mattered: good aggregate
 median error did not imply useful separation across all health and cost
@@ -422,7 +425,7 @@ and situations where the model is less reliable.
 
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
-Confidence intervals, widths, and scoring definitions are in A17 and A18.
+Confidence intervals, widths, and scoring definitions are in A18 and A19.
 
 ### 9 — Final model test audit: overall coverage hides subgroup gaps
 
@@ -439,7 +442,7 @@ validation steps.
 
 **Visual:** Bar chart of typical-range coverage: poor mental health 30.1%, low
 income 39.2%, overall 47.3%, and target 50%. Label results as point estimates;
-A19 adds subgroup counts and uncertainty.
+A20 adds subgroup counts and uncertainty.
 
 **Speaker notes — 1:00**
 
@@ -802,7 +805,56 @@ allow 1:00.
 [stratification helper](../../src/stats.py);
 [EDA/preprocessing notebook](../../notebooks/1_eda_and_preprocessing.py).
 
-### A12 — Input features: what users provide
+### A12 — Baseline models: selecting candidates for tuning
+
+**Question:** Which models were compared before tuning, and why were three selected?
+
+**On the slide**
+
+| Model | MdAE | Overfitting | MAE | R² |
+| --- | ---: | ---: | ---: | ---: |
+| **Elastic Net** | **$163** | +6.6% | $1,044 | -0.12 |
+| Linear Regression | $219 | +4.8% | $998 | -0.06 |
+| **Random Forest** | $232 | +9.6% | **$958** | -0.04 |
+| *Median (benchmark)* | *$248* | *0.0%* | *$1,041* | *-0.10* |
+| Decision Tree | $271 | **+1.5%** | $971 | -0.03 |
+| **XGBoost** | $281 | +98.0% | $961 | 0.00 |
+| Support Vector Machine | $291 | +190.7% | $1,027 | -0.03 |
+| *LLM (benchmark)* | *$518* | *N/A* | *$1,168* | ***0.04*** |
+
+Selected for tuning: Elastic Net, Random Forest, and XGBoost.
+
+**Visual:** Editable table matching the README's baseline comparison. Bold the
+three selected model names and the best values in each metric column. Add a
+small “Back” link to the model-selection slide.
+
+**Footnote:** “Survey-weighted validation metrics. Overfitting is the percentage
+change in MdAE from training to validation.”
+
+**Speaker notes — 1:00 (optional)**
+
+“I compared six model architectures with a population-median benchmark and
+Gemini 3 Flash. Elastic Net had the lowest median absolute error at $163,
+compared with $248 for the median benchmark and $518 for Gemini. Random Forest
+had the lowest mean absolute error. XGBoost's large training–validation gap
+motivated stronger regularization during tuning.
+
+I selected Elastic Net for its strong median accuracy, Random Forest for its
+lower mean error, and XGBoost for its ability to capture nonlinear interactions.
+These are validation results from the initial model configurations, not the
+final test results. The LLM comparison describes this model and prompting setup,
+not language models in general.”
+
+**Transition:** Return to the tuned-model comparison.
+
+**Promote:** Before the model-selection slide for a longer presentation; allow 1:00.
+
+**Sources:** [README: baseline models](../../README.md#-baseline-models);
+[modeling notebook](../../notebooks/2_modeling.py);
+[baseline training script](../../scripts/train_baseline.py);
+[LLM benchmark script](../../scripts/benchmark_llm.py).
+
+### A13 — Input features: what users provide
 
 **Question:** What information does the model use, and how much does it ask of users?
 
@@ -825,7 +877,7 @@ allow 1:00.
 columns after transformation. These counts do not equal the number of questions
 on the planned form: related conditions can be grouped, and some values are
 derived. User testing will assess the burden; feature reduction is an option if
-fewer inputs would improve the experience. Refer to A13 for input timing.
+fewer inputs would improve the experience. Refer to A14 for input timing.
 
 **Promote:** After 3 when input design is relevant to the audience; allow 0:45.
 Otherwise, use only for questions.
@@ -834,7 +886,7 @@ Otherwise, use only for questions.
 [input definitions](../../src/constants.py);
 [product requirements: input form](../specs/product_requirements.md).
 
-### A13 — Feature timing: limits of next-year forecasting
+### A14 — Feature timing: limits of next-year forecasting
 
 **Question:** Is this truly a next-year forecast?
 
@@ -855,7 +907,7 @@ Do not claim the size or direction of the resulting performance change is known.
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
 
-### A14 — Model tuning: comparisons on a fixed validation split
+### A15 — Model tuning: comparisons on a fixed validation split
 
 **Question:** What alternatives and tuning procedure were used?
 
@@ -877,7 +929,7 @@ reuses the tuned point-model parameters rather than receiving its own search.
 **Sources:** [README: modeling](../../README.md);
 [XGBoost tuning script](../../scripts/tune_xgboost.py).
 
-### A15 — LLM benchmark: General versus Specific Intelligence
+### A16 — LLM benchmark: General versus Specific Intelligence
 
 **Question:** Why not ask a general-purpose language model for an estimate?
 
@@ -890,12 +942,12 @@ mix these with test-set results from the final quantile model.
 **Talking points:** This result describes one model and prompting setup, not all
 LLMs.
 
-**Promote:** Optional, after A14; allow 1:00.
+**Promote:** Optional, after A15; allow 1:00.
 
 **Sources:** [README: LLM benchmark](../../README.md);
 [LLM benchmark script](../../scripts/benchmark_llm.py).
 
-### A16 — Point-model diagnostics: residuals and prediction ranges
+### A17 — Point-model diagnostics: residuals and prediction ranges
 
 **Question:** Why did the lowest-MdAE model not meet the full product need?
 
@@ -915,7 +967,7 @@ residuals and subgroup errors alongside it.
 **Sources:** [README: heteroscedasticity and subgroup analysis](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A17 — Final model test results: coverage, width, and release gates
+### A18 — Final model test results: coverage, width, and release gates
 
 **Question:** What does passing the project's gates mean?
 
@@ -940,7 +992,7 @@ resamples rows and retains their weights.
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: bootstrap implementation](../../notebooks/2_modeling.py).
 
-### A18 — Final model test benchmarks: gains over simple estimates
+### A19 — Final model test benchmarks: gains over simple estimates
 
 **Question:** Why not give everyone a population or age-group estimate?
 
@@ -968,7 +1020,7 @@ skill is not a percentage-point improvement in coverage.
 
 **Source:** [Modeling notebook: test baseline comparisons](../../notebooks/2_modeling.py).
 
-### A19 — Final model test audit: subgroup coverage gaps
+### A20 — Final model test audit: subgroup coverage gaps
 
 **Question:** Who receives less reliable ranges?
 
@@ -991,7 +1043,7 @@ would be needed to address it.
 **Sources:** [README: final subgroup audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A20 — Final model test audit: actual versus predicted cost tiers
+### A21 — Final model test audit: actual versus predicted cost tiers
 
 **Question:** Does the safety cushion protect the largest spenders?
 
@@ -1013,7 +1065,7 @@ quantile is not catastrophe insurance or a hard spending cap.
 **Sources:** [README: final reliability audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A21 — SHAP explains how inputs shape the median estimate
+### A22 — SHAP explains how inputs shape the median estimate
 
 **Question:** Which inputs influence predictions, and what can users infer?
 
@@ -1033,7 +1085,7 @@ does not by itself mean higher or lower healthcare need.
 **Sources:** [README: feature importance](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json).
 
-### A22 — SHAP benchmarking: explanation quality and latency
+### A23 — SHAP benchmarking: explanation quality and latency
 
 **Question:** How was the SHAP configuration chosen?
 
@@ -1056,7 +1108,7 @@ claim. Complete request latency on target hardware remains unverified.
 [SHAP metadata](../../app/data/shap_metadata.json);
 [benchmark script](../../scripts/benchmark_shap.py).
 
-### A23 — Inference architecture: shared prediction and explanation code
+### A24 — Inference architecture: shared prediction and explanation code
 
 **Question:** How will training and serving stay consistent?
 
@@ -1079,7 +1131,7 @@ experiment is a DVC stage or that the full service is implemented.
 **Sources:** [DVC pipeline](../../dvc.yaml); [prediction code](../../src/prediction.py);
 [technical specifications](../specs/technical_specifications.md); [unit tests](../../tests/unit/).
 
-### A24 — Production monitoring: drift signals without observed outcomes
+### A25 — Production monitoring: drift signals without observed outcomes
 
 **Question:** How would the product be monitored without retaining user records?
 
