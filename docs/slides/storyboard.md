@@ -945,23 +945,42 @@ promising candidate for capturing nonlinear interactions.”
 
 **On the slide**
 
-- **Search:** 50 sampled configurations per model
-- **Training:** Survey weights and log1p(cost); predictions in dollars
-- **Selection:** Lowest survey-weighted MdAE on a fixed validation split
+Select the lowest weighted validation MdAE from 50 sampled configurations per model.
 
-| Model | Main parameters tuned |
-| --- | --- |
-| Elastic Net | Squared terms on/off, regularization strength, L1/L2 mix |
-| Random Forest | Tree count, depth, split / leaf size, feature / row sampling |
-| XGBoost | Tree count, depth, learning rate, child weight, sampling, L1/L2 penalties |
+**Elastic Net**
 
-**Footnote:** “Manual ParameterSampler loop routes survey weights through model
-wrappers; MLflow records trials.”
+- Squared terms: on/off
+- Regularization: 0.01–1.0
+- L1/L2 mix: 0–1
 
-**Display notes:** Search, training, and selection above the parameter table.
-Keep the detailed ranges in the speaker notes. Return link to model selection.
+**Random Forest**
 
-**Speaker notes — about 1:30**
+- Trees: 200, 300, 400
+- Depth: 8–24
+- Min. split size: 20–149
+- Min. leaf size: 10–79
+- Features: sqrt, log2, 30/50/70%
+- Row sampling: 60%–100%
+
+**XGBoost**
+
+- Trees: 400, 600, 800
+- Depth: 3–9
+- Learning rate: 0.01–0.2
+- Min. child weight: 1–19
+- Row sampling: 60%–100%
+- Feature sampling: 50%–100%
+- L1 penalty: 0–5
+- L2 penalty: 0–5
+
+**Display notes:** One opening sentence above three columns, with balanced gaps
+between the visible text. Use 24 pt bold model names and 18 pt regular text,
+with one parameter per line and no bullet markers.
+Separate parameter names and values with colons.
+Leave training, sampling distributions, and implementation details to the
+speaker notes. Return link to model selection.
+
+**Speaker notes — about 1:00**
 
 I tuned Elastic Net, Random Forest, and XGBoost using 50 randomly sampled
 configurations per model. A manual ParameterSampler loop let me route survey
@@ -971,27 +990,22 @@ recorded the parameters, training time, and metrics for each trial.
 All three models were trained on log1p-transformed costs to reduce the impact
 of the heavy tail, then their predictions were converted back to dollars.
 I selected each model's best configuration by its lowest survey-weighted
-median absolute error on the same validation split. This was a fixed-split
-search, not cross-validation; repeated selection on that split can make its
-results optimistic.
+median absolute error on a fixed validation split.
 
 For Elastic Net, I used second-degree polynomial features and tuned whether
-to include squared terms, regularization strength from 0.01 to 1.0, and the
-L1/L2 mix from 0 to 1.
+to include squared terms, regularization strength, and the L1/L2 mix.
 
-For Random Forest, I used absolute-error loss and tuned 200–400 trees, depth
-8–24, minimum split size 20–149, minimum leaf size 10–79, feature sampling
-using sqrt, log2, or 30%–70%, and row sampling from 60% to 100%.
+For Random Forest and XGBoost, I used absolute-error loss and tuned tree
+complexity and sampling. XGBoost also varied learning rate and L1/L2 penalties.
+Regularization strength in Elastic Net and learning rate in XGBoost were
+sampled on a logarithmic scale; the other continuous ranges were sampled uniformly.
 
-For XGBoost, I also used absolute-error loss and tuned 400–800 trees, depth
-3–9, learning rate 0.01–0.2, minimum child weight 1–19, row sampling
-60%–100%, feature sampling 50%–100%, and L1/L2 penalties from 0 to 5.
 The final quantile model reused these tuned XGBoost parameters rather than
 receiving a separate search.
 
 **Transition:** Return to the tuned model results to discuss the modeling decision.
 
-**Promote:** Before 6 for a longer modeling discussion; allow 1:30.
+**Promote:** Before 6 for a longer modeling discussion; allow 1:00.
 
 **Sources:** [README: tuning methodology](../../README.md);
 [Elastic Net tuning script](../../scripts/tune_elastic_net.py);

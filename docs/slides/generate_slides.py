@@ -749,23 +749,38 @@ def build_presentation():
     tuning = new_slide(presentation, storyboard, "A15")
     text(tuning, "A15 title", "Hyperparameter tuning",
          72, 48, 1136, 66, 44, bold=True)
-    text(tuning, "Search strategy", [("Search:", True),
-         " 50 sampled configurations per model"], 72, 142, 1136, 42, 28)
-    text(tuning, "Training target", [("Training:", True),
-         " Survey weights and log1p(cost); predictions in dollars"],
-         72, 200, 1136, 42, 28)
-    text(tuning, "Configuration selection", [("Selection:", True),
-         " Lowest survey-weighted MdAE on a fixed validation split"],
-         72, 258, 1136, 42, 28)
-    native_table(tuning, [
-        ["Model", "Main parameters tuned"],
-        ["Elastic Net", "Squared terms on/off, regularization strength, L1/L2 mix"],
-        ["Random Forest", "Tree count, depth, split / leaf size, feature / row sampling"],
-        ["XGBoost", "Tree count, depth, learning rate, child weight, sampling, L1/L2 penalties"],
-    ], 326, [280, 856], row_height=82)
-    text(tuning, "Search implementation", "Manual ParameterSampler loop routes survey weights "
-         "through model wrappers; MLflow records trials.",
-         72, 638, 1136, 24, 18, color=SECONDARY)
+    text(tuning, "Search and selection", "Select the lowest weighted validation MdAE "
+         "from 50 sampled configurations per model", 72, 142, 1136, 42, 28)
+    tuning_columns = [
+        ("Elastic Net", 72, 300, [
+            "Squared terms: on/off",
+            "Regularization: 0.01–1.0",
+            "L1/L2 mix: 0–1",
+        ]),
+        ("Random Forest", 428, 348, [
+            "Trees: 200, 300, 400",
+            "Depth: 8–24",
+            "Min. split size: 20–149",
+            "Min. leaf size: 10–79",
+            "Features: sqrt, log2, 30/50/70%",
+            "Row sampling: 60%–100%",
+        ]),
+        ("XGBoost", 860, 348, [
+            "Trees: 400, 600, 800",
+            "Depth: 3–9",
+            "Learning rate: 0.01–0.2",
+            "Min. child weight: 1–19",
+            "Row sampling: 60%–100%",
+            "Feature sampling: 50%–100%",
+            "L1 penalty: 0–5",
+            "L2 penalty: 0–5",
+        ]),
+    ]
+    for model, x, width, parameters in tuning_columns:
+        text(tuning, f"{model} heading", model, x, 222, width, 42, 32, bold=True)
+        for index, parameter in enumerate(parameters):
+            text(tuning, f"{model} parameter {index + 1}", parameter,
+                 x, 280 + index * 44, width, 34, 24)
     tuning_return_link = text(
         tuning, "Return to model selection", "Back",
         72, 674, 800, 24, 18, color=SECONDARY, underline=True,
