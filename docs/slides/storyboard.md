@@ -309,14 +309,15 @@ between lower- and higher-cost profiles.
 | Random Forest | $228 | **+3.8%** | $964 | -0.05 |
 | XGBoost | $242 | +6.2% | **$954** | **-0.02** |
 
-- Elastic Net's largest validation prediction was about **$217**
-- Subgroup and residual analysis motivated a model that also describes uncertainty
+- XGBoost's wider prediction range: up to ~$2,100 vs. Elastic Net ~$217
+- XGBoost: better subgroup performance (poor physical health; 4+ chronic conditions)
+- Point estimate models: a single number can leave people underprepared for an expensive year
 
 **Footnote:** “Note: Survey-weighted validation metrics. Overfitting is the percentage
 change in MdAE from training to validation.”
 
 **Display notes:** Comparison table with its note immediately below, followed by
-the $217 finding and its implication. Keep residual diagnostics in A18.
+three bullets in regular font. Keep residual diagnostics in A18.
 
 **Appendix links:** [Baseline models (A14)](#a14--baseline-models) |
 [Hyperparameter tuning (A15)](#a15--hyperparameter-tuning).

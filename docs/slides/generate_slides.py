@@ -413,11 +413,32 @@ def build_presentation():
     text(selection, "Validation note", "Note: Survey-weighted validation metrics. "
          "Overfitting is the percentage change in MdAE from training to validation.",
          72, 402, 1136, 24, 18, color=SECONDARY)
-    text(selection, "Prediction compression", "Elastic Net's largest validation "
-         "prediction was only about $217", 72, 456, 1136, 42, 29, bold=True)
-    text(selection, "Tradeoff", "Good typical error, but limited separation across cost profiles.\n"
-         "Residual and subgroup checks motivated richer budgeting outputs.",
-         72, 514, 1136, 86, 28)
+    selection_bullets = text(selection, "Model selection rationale", "",
+                             72, 456, 1136, 180, 26)
+    for index, value in enumerate([
+        "XGBoost's wider prediction range: up to ~$2,100 vs. Elastic Net ~$217",
+        "XGBoost: better subgroup performance (poor physical health; "
+        "4+ chronic conditions)",
+        "Point estimate models: a single number can leave people underprepared "
+        "for an expensive year",
+    ]):
+        paragraph = (selection_bullets.text_frame.paragraphs[0] if index == 0
+                     else selection_bullets.text_frame.add_paragraph())
+        paragraph.space_before = Pt(0)
+        paragraph.space_after = Pt(10)
+        style_font(paragraph.font, 26)
+        properties = paragraph._p.get_or_add_pPr()
+        properties.set("marL", str(Pt(18)))
+        properties.set("indent", str(-Pt(12)))
+        bullet_font = OxmlElement("a:buFont")
+        bullet_font.set("typeface", FONT)
+        bullet = OxmlElement("a:buChar")
+        bullet.set("char", "•")
+        properties.append(bullet_font)
+        properties.append(bullet)
+        run = paragraph.add_run()
+        run.text = value
+        style_font(run.font, 26)
     text(selection, "Model selection appendix label", "Appendix:",
          72, 674, 90, 24, 18, color=SECONDARY)
     baseline_appendix_link = text(
