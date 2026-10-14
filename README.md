@@ -150,7 +150,7 @@ Analyzed distributions and relationships to inform data preprocessing, feature e
 - **Target Variable:** Identified a zero-inflated (22.3%) and extremely right-skewed distribution where the top 20% of spenders drive 79.3% of costs (see Lorenz curve above).
 - **Survey Weights:** Verified survey weights represent ~260M adults and confirmed weighting is essential for population-level representativeness.
 - **Numerical Features:** Visualized distribution of age, family size, and self-reported health, informing robust median-based imputation for right-skewed and discrete features. [🔗 **See Histograms**](#numerical-distributions)
-- **Categorical Features:** Revealed 66% hold private insurance, suggesting costs will be driven by plan-specific cost-sharing. Identified oversampling of healthy and low socio-economic status individuals, confirming the importance of survey weights. [🔗 **See Bar Plots**](#categorical-distributions)
+- **Categorical Features:** Revealed that 66% of adults had private insurance. For this majority, out-of-pocket costs represent their personal share of care, including deductibles, copays, coinsurance, and uncovered services. Identified overrepresentation of people with low income and lower education, reinforcing the importance of survey weights. [🔗 **See Bar Plots**](#categorical-distributions)
 - **Binary Features:** Identified high prevalence of joint pain (45%), high blood pressure (32%), and high cholesterol (31%), while severe conditions such as cancer (11%), coronary heart disease (5%), and stroke (4%) are more sparse. [🔗 **See Bar Plots**](#binary-distributions)
 
 <a id="main-relationships"></a>**Relationships (Bivariate EDA)** 

@@ -776,16 +776,22 @@ the preprocessing pipeline using medians from the training data.
 **On the slide:** [Categorical distributions](../../figures/eda/categorical_distributions.png),
 using the figure's existing title and the same layout as A6.
 
-**Speaker notes — 0:20 (optional)**
+**Speaker notes — reference for questions**
 
-“These plots show region, marital status, employment, insurance, education,
-and family income. The bars give each category's estimated population share
-and the number of people it represents.”
+About 66% of adults had private insurance. For this majority, out-of-pocket
+costs represent their personal share of care, including deductibles, copays,
+coinsurance, and uncovered services.
+
+Compared with the weighted population estimates, the sample contains larger
+proportions of people with low income and lower education. This reinforces
+the importance of survey weights in data exploration, model training, and
+evaluation.
 
 **Transition:** Continue to binary distributions or return to the cost-distribution slide.
 
 **Sources:** [README: distributions](../../README.md#distributions);
-[categorical distributions](../../figures/eda/categorical_distributions.png).
+[categorical distributions](../../figures/eda/categorical_distributions.png);
+[EDA notebook: sample and population comparisons](../../notebooks/1_eda_and_preprocessing.py).
 
 ### A8 — Distributions: binary features
 
