@@ -749,8 +749,8 @@ def build_presentation():
     tuning = new_slide(presentation, storyboard, "A15")
     text(tuning, "A15 title", "Hyperparameter tuning",
          72, 48, 1136, 66, 44, bold=True)
-    text(tuning, "Search and selection", "Select the lowest weighted validation MdAE "
-         "from 50 sampled configurations per model", 72, 142, 1136, 42, 28)
+    text(tuning, "Search and selection", "50 configurations per model; "
+         "select the lowest weighted validation MdAE", 72, 142, 1136, 42, 28)
     tuning_columns = [
         ("Elastic Net", 72, 300, [
             "Squared terms: on/off",

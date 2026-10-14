@@ -945,7 +945,7 @@ promising candidate for capturing nonlinear interactions.”
 
 **On the slide**
 
-Select the lowest weighted validation MdAE from 50 sampled configurations per model.
+50 configurations per model; select the lowest weighted validation MdAE.
 
 **Elastic Net**
 
@@ -977,35 +977,32 @@ Select the lowest weighted validation MdAE from 50 sampled configurations per mo
 between the visible text. Use 24 pt bold model names and 18 pt regular text,
 with one parameter per line and no bullet markers.
 Separate parameter names and values with colons.
-Leave training, sampling distributions, and implementation details to the
-speaker notes. Return link to model selection.
+Leave the search rationale and implementation details to the speaker notes.
+Return link to model selection.
 
-**Speaker notes — about 1:00**
+**Speaker notes — about 1:15 (estimated)**
 
-I tuned Elastic Net, Random Forest, and XGBoost using 50 randomly sampled
-configurations per model. A manual ParameterSampler loop let me route survey
-weights through the nested pipeline and target-transform wrappers. MLflow
-recorded the parameters, training time, and metrics for each trial.
+I tested 50 configurations per model and selected the one with the lowest
+median absolute error on a fixed validation split. Survey weights were used
+during training and evaluation. All three models used log-transformed costs
+to reduce the impact of the heavy tail. I used a manual loop with
+ParameterSampler to pass survey weights correctly through the pipeline and
+target-transform wrapper. MLflow recorded each trial's parameters and results.
 
-All three models were trained on log1p-transformed costs to reduce the impact
-of the heavy tail, then their predictions were converted back to dollars.
-I selected each model's best configuration by its lowest survey-weighted
-median absolute error on a fixed validation split.
+The search focused on balancing flexibility with regularization. For Elastic
+Net, I explored nonlinear effects through polynomial features and varied the
+strength and mix of the penalties.
 
-For Elastic Net, I used second-degree polynomial features and tuned whether
-to include squared terms, regularization strength, and the L1/L2 mix.
+For Random Forest, I varied tree depth and required larger groups at splits
+and leaves to limit fitting to small, unusual groups. Row and feature
+sampling added diversity between trees.
 
-For Random Forest and XGBoost, I used absolute-error loss and tuned tree
-complexity and sampling. XGBoost also varied learning rate and L1/L2 penalties.
-Regularization strength in Elastic Net and learning rate in XGBoost were
-sampled on a logarithmic scale; the other continuous ranges were sampled uniformly.
-
-The final quantile model reused these tuned XGBoost parameters rather than
-receiving a separate search.
+For XGBoost, I explored more, shallower trees with smaller learning steps,
+alongside sampling and penalties to control overfitting.
 
 **Transition:** Return to the tuned model results to discuss the modeling decision.
 
-**Promote:** Before 6 for a longer modeling discussion; allow 1:00.
+**Promote:** Before 6 for a longer modeling discussion; allow 1:15.
 
 **Sources:** [README: tuning methodology](../../README.md);
 [Elastic Net tuning script](../../scripts/tune_elastic_net.py);
