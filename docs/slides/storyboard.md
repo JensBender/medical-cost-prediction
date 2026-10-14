@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: the ten-slide main presentation and fifteen appendix slides are ready for
+Status: the ten-slide main presentation and sixteen appendix slides are ready for
 review. The remaining appendix slides are in storyboard form.
 
 ## Presentation context
@@ -208,7 +208,7 @@ independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
 See A3–A4 for preprocessor input features, counts, and possible feature reduction,
-and A16 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
+and A17 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
 random within spending groups, with a separate zero-cost group and finer bins
 for high costs to reduce imbalances in rare, expensive cases. Discuss the split
 after the spending-distribution slide if asked.
@@ -309,18 +309,19 @@ between lower- and higher-cost profiles.
 | Random Forest | $228 | **+3.8%** | $964 | -0.05 |
 | XGBoost | $242 | +6.2% | **$954** | **-0.02** |
 
-- XGBoost's wider prediction range: up to ~$2,100 vs. Elastic Net ~$217
-- XGBoost: better subgroup performance (poor physical health; 4+ chronic conditions)
-- Point estimate models: a single number can leave people underprepared for an expensive year
+- XGBoost predicts a wider cost range: up to ~$2,100 vs. Elastic Net ~$217
+- XGBoost performs better in key subgroups: poor physical health; 4+ chronic conditions
+- Point estimates don’t show uncertainty: users can be underprepared for an expensive year
 
 **Footnote:** “Note: Survey-weighted validation metrics. Overfitting is the percentage
 change in MdAE from training to validation.”
 
 **Display notes:** Comparison table with its note immediately below, followed by
-three bullets in regular font. Keep residual diagnostics in A18.
+three bullets in regular font. Keep residual diagnostics in A16.
 
 **Appendix links:** [Baseline models (A14)](#a14--baseline-models) |
-[Hyperparameter tuning (A15)](#a15--hyperparameter-tuning).
+[Hyperparameter tuning (A15)](#a15--hyperparameter-tuning) |
+[Heteroscedasticity (A16)](#a16--heteroscedasticity).
 
 **Speaker notes — 1:30**
 
@@ -653,7 +654,7 @@ after adding a life-transition feature and 40 model-ready columns after
 transformation. These counts do not equal the number of questions on the planned
 form: related conditions can be grouped, and some values are derived. User testing
 will assess the burden; feature reduction is an option if fewer inputs would
-improve the experience. Refer to A16 for input timing.
+improve the experience. Refer to A17 for input timing.
 
 **Sources:** [README: feature details](../../README.md#feature-details);
 [input definitions](../../src/constants.py);
@@ -1079,7 +1080,38 @@ alongside sampling and penalties to control overfitting.
 [Random Forest tuning script](../../scripts/tune_random_forest.py);
 [XGBoost tuning script](../../scripts/tune_xgboost.py).
 
-### A16 — Feature timing: limits of next-year forecasting
+### A16 — Heteroscedasticity
+
+**Question:** What did the residual analysis reveal about the tuned models?
+
+**Visual:** Use the full [tuned-model residual figure](../../figures/evaluation/tuned_models_validation_heteroscedasticity.png)
+with all three subplots, fitted to the slide. Keep its existing title and add
+only the slide number and a small “Back” link to model selection in the left margin.
+
+**Speaker notes — reference for questions**
+
+Residuals are actual costs minus predicted costs, so positive residuals mean
+underprediction. The line shows the survey-weighted median residual within
+prediction groups; the shaded band shows the middle 50% of residuals.
+
+Elastic Net's predictions occupy a narrow range, with median underprediction
+increasing toward its higher predictions. Random Forest and XGBoost have
+median residuals closer to zero across much of their prediction ranges, but
+the spread remains wide and varies across predicted cost levels. A point
+estimate does not communicate this variation.
+
+The horizontal scales differ between models. The axes are zoomed to show
+the main patterns and omit some extreme predictions and residuals; the
+visible axis limits are not the models' maximum predictions.
+
+**Transition:** Return to model selection or continue with questions.
+
+**Promote:** After 6 for a longer modeling discussion; allow 1:00.
+
+**Sources:** [README: heteroscedasticity](../../README.md#tuned-models-heteroscedasticity);
+[modeling notebook](../../notebooks/2_modeling.py).
+
+### A17 — Feature timing: limits of next-year forecasting
 
 **Question:** Is this truly a next-year forecast?
 
@@ -1100,7 +1132,7 @@ Do not claim the size or direction of the resulting performance change is known.
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
 
-### A17 — LLM benchmark: General versus Specific Intelligence
+### A18 — LLM benchmark: General versus Specific Intelligence
 
 **Question:** Why not ask a general-purpose language model for an estimate?
 
@@ -1117,26 +1149,6 @@ LLMs.
 
 **Sources:** [README: LLM benchmark](../../README.md);
 [LLM benchmark script](../../scripts/benchmark_llm.py).
-
-### A18 — Point-model diagnostics: residuals and prediction ranges
-
-**Question:** Why did the lowest-MdAE model not meet the full product need?
-
-**On the slide:** Elastic Net's narrow prediction range; larger errors on
-expensive outcomes; differences across medical-complexity groups.
-
-**Visual:** [Tuned-model residual analysis](../../figures/evaluation/tuned_models_validation_heteroscedasticity.png).
-Use a readable crop or split the figure during design rather than shrinking it.
-
-**Talking points:** MdAE and MAE summarize different aspects of the error
-distribution. A lower MdAE alone does not establish useful risk separation.
-Wider prediction spread alone also does not establish accuracy; inspect
-residuals and subgroup errors alongside it.
-
-**Promote:** After 6; allow 1:00.
-
-**Sources:** [README: heteroscedasticity and subgroup analysis](../../README.md);
-[modeling notebook](../../notebooks/2_modeling.py).
 
 ### A19 — Final model test results: coverage, width, and release gates
 

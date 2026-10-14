@@ -26,7 +26,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 16)]
+SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 17)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -416,10 +416,10 @@ def build_presentation():
     selection_bullets = text(selection, "Model selection rationale", "",
                              72, 456, 1136, 180, 26)
     for index, value in enumerate([
-        "XGBoost's wider prediction range: up to ~$2,100 vs. Elastic Net ~$217",
-        "XGBoost: better subgroup performance (poor physical health; "
-        "4+ chronic conditions)",
-        "Point estimate models: a single number can leave people underprepared "
+        "XGBoost predicts a wider cost range: up to ~$2,100 vs. Elastic Net ~$217",
+        "XGBoost performs better in key subgroups: poor physical health; "
+        "4+ chronic conditions",
+        "Point estimates don’t show uncertainty: users can be underprepared "
         "for an expensive year",
     ]):
         paragraph = (selection_bullets.text_frame.paragraphs[0] if index == 0
@@ -445,11 +445,17 @@ def build_presentation():
         selection, "Baseline models appendix link", "Baseline models",
         168, 674, 140, 24, 18, color=SECONDARY, underline=True,
     )
-    text(selection, "Model selection appendix separator", "|", 321, 674, 12, 24, 18,
+    text(selection, "Model selection appendix separator", "|", 314, 674, 12, 24, 18,
          color=SECONDARY, alignment=PP_ALIGN.CENTER)
     tuning_appendix_link = text(
         selection, "Hyperparameter tuning appendix link", "Hyperparameter tuning",
-        347, 674, 210, 24, 18, color=SECONDARY, underline=True,
+        342, 674, 210, 24, 18, color=SECONDARY, underline=True,
+    )
+    text(selection, "Model diagnostics appendix separator", "|",
+         540, 674, 12, 24, 18, color=SECONDARY, alignment=PP_ALIGN.CENTER)
+    residuals_appendix_link = text(
+        selection, "Heteroscedasticity appendix link", "Heteroscedasticity",
+        568, 674, 190, 24, 18, color=SECONDARY, underline=True,
     )
 
     quantiles = new_slide(presentation, storyboard, "7", "Quantile regression turns "
@@ -808,6 +814,18 @@ def build_presentation():
     )
     tuning_appendix_link.click_action.target_slide = tuning
     tuning_return_link.click_action.target_slide = selection
+    residuals = new_slide(presentation, storyboard, "A16")
+    picture(residuals, WORKSPACE_DIR / "figures/evaluation/"
+            "tuned_models_validation_heteroscedasticity.png",
+            "Validation residuals versus predicted costs for tuned Elastic Net, "
+            "Random Forest, and XGBoost, with survey-weighted median residuals "
+            "and interquartile ranges.", 0, 0, 1280, 720)
+    residuals_return_link = text(
+        residuals, "Return to model selection", "Back",
+        20, 674, 100, 24, 18, color=SECONDARY, underline=True,
+    )
+    residuals_appendix_link.click_action.target_slide = residuals
+    residuals_return_link.click_action.target_slide = selection
     return presentation
 
 
