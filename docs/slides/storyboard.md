@@ -166,7 +166,7 @@ the two underlined links.
 “To do so, I used data from the Medical Expenditure Panel Survey, or MEPS.
 MEPS is a nationally representative survey and a leading data source for
 U.S. healthcare costs. Households complete five interviews over two years.
-To improve cost estimates, MEPS also collects medical and payment records
+To improve cost estimates, MEPS also collects payment records
 directly from providers and pharmacies.
 
 I chose out-of-pocket costs as the target because that is what people need to
@@ -679,7 +679,7 @@ Include a “Back” link.
 **Speaker notes — 1:15 (optional, estimated)**
 
 “To detect multivariate outliers, I used an Isolation Forest configured to flag 5%
-of respondents in the training data. I then compared survey-weighted out-of-pocket
+of people in the training data. I then compared survey-weighted out-of-pocket
 costs and feature distributions between inliers and outliers.
 
 Outliers were 3.9 times as likely as inliers to be among the top 1% of spenders.
@@ -696,7 +696,7 @@ costs, limiting the model's ability to learn patterns relevant to these groups.�
 **Transition:** Return to the cost-distribution slide or continue with questions.
 
 **Detail for questions:** Percentages and medians use survey weights. The top-1%
-threshold is defined across all training respondents.
+threshold is defined across all people in the training data.
 
 **Sources:** [README: outlier analysis](../../README.md#outlier-analysis-details);
 [EDA notebook: detection and profiling](../../notebooks/1_eda_and_preprocessing.py).
@@ -715,9 +715,9 @@ cost-distribution slide. Use the same layout for the next two distribution slide
 **Speaker notes — 0:20 (optional)**
 
 “These plots show the distributions of age, family size, and self-reported
-physical and mental health. Survey weights turn respondent counts into
-population estimates. The completeness labels show how much information was
-available before imputation.”
+physical and mental health. Survey weights make these distributions reflect
+the population rather than the sample. The completeness labels show how much
+information was available before imputation.”
 
 **Transition:** Continue to categorical distributions or return to the cost-distribution slide.
 
@@ -862,7 +862,7 @@ at 18.75 pt, matching the explanation beneath the diagram.
 
 **Speaker notes — 1:00 (optional)**
 
-“A data preparation script selects the variables and adult population.
+“I used a data preparation script to select the variables and adult population.
 It recovers implied values from survey skip patterns and standardizes the
 remaining MEPS missing-value codes. It also groups sparse marital and
 employment categories, such as ‘recently divorced’.
