@@ -867,6 +867,7 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=15, n_
     
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(6 * n_cols, 5 * n_rows), sharey=True, squeeze=False)
     axes_flat = axes.flatten()
+    residual_limits = []
 
     for i, (model_key, y_pred) in enumerate(predictions_dict.items()):
         ax = axes_flat[i]
@@ -920,8 +921,9 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=15, n_
         ax.fill_between(bin_centers, bin_q25, bin_q75, alpha=0.15, color=POP_COLOR, label="IQR (25th–75th)")
         
         # Formatting
-        ax.set_title(model_label, fontsize=14, fontweight="bold")
-        ax.set_xlabel("Predicted Cost")
+        ax.set_title(model_label.removesuffix(" (Tuned)"), fontsize=18, fontweight="bold")
+        ax.set_xlabel("Predicted Cost", fontsize=14)
+        ax.tick_params(axis="both", labelsize=12)
         
         # Predictions and residuals axis limits for "zoomed-in" view (ignoring extreme outliers)
         pred_max = weighted_quantile(y_pred, w, 0.99)
@@ -929,7 +931,7 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=15, n_
         res_min = weighted_quantile(residuals, w, 0.01)
 
         ax.set_xlim(0, pred_max * 1.01)
-        ax.set_ylim(res_min * 1.5, res_max * 1.3)
+        residual_limits.append((res_min * 1.5, res_max * 1.3))
         
         # Format ticks: -$500 instead of $-500
         currency_fmt = plt.FuncFormatter(lambda x, _: f"{'-' if x < 0 else ''}${abs(x):,.0f}")
@@ -937,18 +939,30 @@ def plot_residuals_vs_predicted(y_true, predictions_dict, weights, n_bins=15, n_
         
         # Only show y-label on the first column of each row
         if i % n_cols == 0:
-            ax.set_ylabel("Residual (Actual − Predicted)")
+            ax.set_ylabel("Residual (Actual − Predicted)", fontsize=14)
             ax.yaxis.set_major_formatter(currency_fmt)
-            ax.legend(loc="upper left", fontsize=9, frameon=True)
+            ax.legend(loc="upper left", fontsize=12, frameon=True)
             
         sns.despine(ax=ax)
     
+    # Use all models to set the common residual range, independent of plotting order.
+    axes_flat[0].set_ylim(
+        min(lower for lower, _ in residual_limits),
+        max(upper for _, upper in residual_limits)
+    )
+
     # Remove empty subplots if n_models < n_rows * n_cols
     for j in range(i + 1, n_rows * n_cols):
         fig.delaxes(axes_flat[j])
     
-    fig.suptitle("Heteroscedasticity: Residuals vs. Predicted", fontsize=18, fontweight="bold")
-    plt.tight_layout(rect=[0, 0, 1, 0.98], h_pad=2)
+    fig.suptitle("Tuned Models: Heteroscedasticity (Validation)", fontsize=22, fontweight="bold")
+    fig.text(
+        0.01, 0.01,
+        "Note: Survey-weighted medians and IQRs. X-axis ranges differ. "
+        "Axes are zoomed in to keep the main patterns readable.",
+        ha="left", fontsize=12, style="italic", color="#555555"
+    )
+    plt.tight_layout(rect=[0, 0.04, 1, 0.98], h_pad=2)
     
     if save_to_file:
         plt.savefig(save_to_file, bbox_inches="tight", dpi=200)

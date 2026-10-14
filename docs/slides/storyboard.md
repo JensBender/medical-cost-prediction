@@ -1085,14 +1085,16 @@ alongside sampling and penalties to control overfitting.
 **Question:** What did the residual analysis reveal about the tuned models?
 
 **Visual:** Use the full [tuned-model residual figure](../../figures/evaluation/tuned_models_validation_heteroscedasticity.png)
-with all three subplots, fitted to the slide. Keep its existing title and add
-only the slide number and a small “Back” link to model selection in the left margin.
+with all three subplots, fitted to the slide. Its title identifies the tuned
+models and validation data. Add only the slide number and a small “Back” link
+to model selection in the left margin.
 
 **Speaker notes — reference for questions**
 
-Residuals are actual costs minus predicted costs, so positive residuals mean
-underprediction. The line shows the survey-weighted median residual within
-prediction groups; the shaded band shows the middle 50% of residuals.
+The plots use validation data. Residuals are actual costs minus predicted
+costs, so positive residuals mean underprediction. The line shows the
+survey-weighted median residual within prediction groups; the shaded band
+shows the middle 50% of residuals.
 
 Elastic Net's predictions occupy a narrow range, with median underprediction
 increasing toward its higher predictions. Random Forest and XGBoost have
@@ -1100,9 +1102,10 @@ median residuals closer to zero across much of their prediction ranges, but
 the spread remains wide and varies across predicted cost levels. A point
 estimate does not communicate this variation.
 
-The horizontal scales differ between models. The axes are zoomed to show
-the main patterns and omit some extreme predictions and residuals; the
-visible axis limits are not the models' maximum predictions.
+The horizontal scales differ between models, while the residual scale is
+shared. Both axes are zoomed so extreme values do not compress the main
+patterns. Some extreme predictions and residuals fall outside the view;
+the visible axis limits are not the models' maximum predictions.
 
 **Transition:** Return to model selection or continue with questions.
 
