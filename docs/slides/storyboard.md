@@ -800,11 +800,9 @@ evaluation.
 **On the slide:** [Binary distributions](../../figures/eda/binary_distributions.png),
 using the figure's existing title and the same layout as A6.
 
-**Speaker notes — 0:20 (optional)**
+**Speaker notes — reference for questions**
 
-“Each panel shows the population shares for a binary feature. These include
-chronic conditions, functional limitations, and access to care. The percentages
-help distinguish common characteristics from less frequent ones.”
+Joint pain, high blood pressure, and high cholesterol are common. Severe conditions such as cancer, coronary heart disease, and stroke are less common.
 
 **Transition:** Return to the cost-distribution slide or continue with questions.
 
