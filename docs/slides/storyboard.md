@@ -323,18 +323,27 @@ the $217 finding and its implication. Keep residual diagnostics in A18.
 
 **Speaker notes — 1:30**
 
-“I compared six model architectures and selected Elastic Net, Random Forest,
-and XGBoost for tuning. Elastic Net was a strong result, not a failed baseline.
-After tuning, its weighted validation median absolute error was $159, lower than either tree
-model. But its predictions remained very compressed, with a maximum of about
-$217. Residual and subgroup analysis showed why that mattered: good aggregate
-median error did not imply useful separation across all health and cost
-profiles. XGBoost had a higher median error but lower mean absolute error,
-and the tree models performed better in several groups with greater medical
-complexity. I therefore moved to predicting several conditional quantiles.
-This changed what the model was asked to deliver. It did not establish that
-XGBoost is universally better, or that quantiles can predict every expensive
-medical event.”
+I compared six model architectures and selected Elastic Net, Random Forest,
+and XGBoost for tuning. This table shows their results after tuning.
+Elastic Net achieved the lowest median absolute error, while XGBoost had
+the lowest mean absolute error. Tuning also reduced XGBoost's
+training–validation gap from 98% to 6.2%.
+
+Elastic Net offered little separation between low- and high-cost profiles:
+its validation predictions never exceeded about $217, compared with about
+$2,100 for XGBoost. XGBoost also performed better than Elastic Net for people
+with poor physical health or four or more chronic conditions. These findings
+led me to select XGBoost.
+
+I had initially prioritized typical prediction accuracy using median absolute
+error. But residual analysis showed wide variation around predictions, with
+the spread changing across cost profiles. A single estimate could not
+communicate that uncertainty.
+
+For budgeting, this matters, because someone could plan around the central
+estimate and still be underprepared for a more expensive year. I therefore
+switched XGBoost's objective to quantile regression, providing budgeting
+ranges alongside the central estimate.
 
 **Transition:** Map the quantiles directly to the intended budgeting outputs.
 
