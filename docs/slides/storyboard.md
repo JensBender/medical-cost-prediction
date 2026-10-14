@@ -580,12 +580,12 @@ account for survey clustering in uncertainty estimates.
 
 | Feature | Type | Possible values |
 | --- | --- | --- |
-| Age | Numerical | 18–85 years (adult population) |
+| Age | Numerical | 18–85 years |
 | Sex | Binary | Male, female |
 | Region | Categorical | Northeast, Midwest, South, West |
 | Marital status | Categorical | Married, widowed, divorced, separated, never married |
 | Family income | Ordinal | Relative to poverty: poor/negative, near poor, low, middle, high |
-| Family size | Numerical | 1–14 related people living together |
+| Family size | Numerical | 1–14 |
 | Education | Categorical | None, GED, high school, bachelor's, master's, doctorate, other |
 | Employment status | Binary | Employed, not employed |
 | Insurance | Categorical | Any private, public only, uninsured |
@@ -595,14 +595,20 @@ account for survey clustering in uncertainty estimates.
 **Visual:** An editable table of 11 prepared inputs, with a “Back” link to the MEPS
 data slide. Continue to A4 for the remaining 16 yes/no features.
 
-**Speaker notes — 0:35 (optional)**
+**Speaker notes — reference for questions**
 
-“These are the 27 interpretable preprocessor input features, which SHAP also uses.
-They are prepared inputs rather than raw MEPS variables and have gone through the
-initial data preparation steps: marital and employment categories have been
-grouped, and a recent life transition feature has
-been derived. Physical and mental health are rated from one, excellent, to five,
-poor. The remaining features are shown on the next slide.”
+These are the interpretable preprocessor input features, which SHAP also uses.
+They have gone through initial data preparation, including grouping marital
+and employment categories, rather than being raw MEPS variables.
+
+Family income: MEPS collects information about annual income from sources such
+as wages, pensions, and benefits. Income is summed across family members, then
+divided by the poverty threshold for that family's size and composition to
+assign one of five income categories.
+
+Family size generally counts related people living in the same household.
+It can also include unmarried partners and college students living away
+from home.
 
 **Transition:** Continue to the yes/no inputs or return to the MEPS data slide.
 
@@ -616,7 +622,8 @@ improve the experience. Refer to A16 for input timing.
 **Sources:** [README: feature details](../../README.md#feature-details);
 [input definitions](../../src/constants.py);
 [data preparation](../../scripts/preprocess.py);
-[product requirements: input form](../specs/product_requirements.md).
+[product requirements: input form](../specs/product_requirements.md);
+[MEPS 2023: income construction and family definitions](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml).
 
 ### A4 — Preprocessor input features: yes/no
 

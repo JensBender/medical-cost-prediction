@@ -549,12 +549,12 @@ def build_presentation():
          72, 48, 1136, 66, 44, bold=True)
     feature_values_table = native_table(feature_values, [
         ["Feature", "Type", "Possible values"],
-        ["Age", "Numerical", "18\u201385 years (adult population)"],
+        ["Age", "Numerical", "18\u201385 years"],
         ["Sex", "Binary", "Male, female"],
         ["Region", "Categorical", "Northeast, Midwest, South, West"],
         ["Marital status", "Categorical", "Married, widowed, divorced, separated, never married"],
         ["Family income", "Ordinal", "Relative to poverty: poor/negative, near poor, low, middle, high"],
-        ["Family size", "Numerical", "1\u201314 related people living together"],
+        ["Family size", "Numerical", "1\u201314"],
         ["Education", "Categorical", "None, GED, high school, bachelor's, master's, doctorate, other"],
         ["Employment status", "Binary", "Employed, not employed"],
         ["Insurance", "Categorical", "Any private, public only, uninsured"],
