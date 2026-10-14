@@ -559,14 +559,24 @@ plan comparisons are outside scope.
 **On the slide:** [MEPS infographic](../../assets/infographic_meps_data.jpg)
 with a “Back” link.
 
-**Speaker notes — 1:00 (optional)**
+**Speaker notes — reference for questions**
 
-“MEPS includes household, medical provider, and employer insurance surveys.
-The project uses the 2023 full-year Household Component file, HC-251. Households
-are interviewed repeatedly, and provider information supplements or replaces
-reported spending where needed. The employer insurance survey is a separate
-component, not an extra set of linked inputs in this project. The overlapping
-panels shown here contribute observations to the same calendar-year file.”
+Employer survey: Collects information about employers' insurance offerings,
+premiums, and contributions. It is separate from the household data used here
+and does not supply this project's features or target.
+
+Provider data: Provider and pharmacy information supplements or replaces
+household-reported spending where needed. Those improvements are already
+incorporated into the released household file; I did not merge provider
+records myself.
+
+Overlapping panels: The 2023 file combines the second year of one household
+panel with the first year of another. Both contribute information about
+costs during 2023.
+
+Population covered: “Civilian noninstitutionalized” excludes active-duty
+military personnel and people living in institutions such as nursing homes
+or prisons. The project further restricts the data to adults.
 
 **Transition:** Return to the main data slide or continue with questions.
 
@@ -579,6 +589,9 @@ account for survey clustering in uncertainty estimates.
 
 **Sources:** [AHRQ: MEPS overview](https://www.ahrq.gov/data/meps.html);
 [MEPS medical provider component](https://meps.ahrq.gov/mepsweb/survey_comp/mpc.jsp);
+[MEPS employer insurance component](https://meps.ahrq.gov/mepsweb/survey_comp/Insurance.jsp);
+[MEPS 2023: consolidated household data](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml);
+[MEPS household panel design](https://meps.ahrq.gov/mepsweb/survey_comp/hc_data_collection.jsp);
 [EDA notebook](../../notebooks/1_eda_and_preprocessing.py);
 [modeling helpers](../../src/modeling.py).
 
