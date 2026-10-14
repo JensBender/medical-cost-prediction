@@ -518,15 +518,20 @@ Timings apply only when promoted into the main presentation.
 **On the slide:** [Healthcare-cost infographic](../../assets/infographic_healthcare_costs.png)
 with a “Back” link.
 
-**Speaker notes — 1:00 (optional)**
+**Speaker notes — reference for questions**
 
-“This is background for anyone unfamiliar with the U.S. healthcare system.
-Insurance may cover part of the bill, but people can still face deductibles,
-copays, and coinsurance. Those payments, plus uncovered services, are the costs
-the project aims to predict. Insurance premiums are excluded. HSA and FSA accounts
-offer tax benefits for eligible healthcare expenses, so choosing contributions
-is another reason to estimate costs ahead of time. The infographic is a simplified
-overview; actual payments depend on insurance coverage and the care received.”
+HSA: The account belongs to the individual and stays with them when they
+change jobs. Contributions require an HSA-eligible health plan and meeting
+other eligibility conditions.
+
+FSA: This is an employer benefit. Although generally “use it or lose it,”
+the employer may allow a limited carryover or a grace period. 
+
+Out-of-pocket maximum: This usually limits payments for covered, in-network
+care. In-network providers have an agreement with the insurer. Depending on
+the plan, care outside that network may cost more or may not be covered.
+Premiums, uncovered services, and out-of-network costs generally fall outside
+the maximum.
 
 **Transition:** Return to the problem statement slide or continue with questions.
 
@@ -540,7 +545,12 @@ plan comparisons are outside scope.
 **Sources:** [README: target variable](../../README.md);
 [product requirements: out of scope](../specs/product_requirements.md);
 [HealthCare.gov: HSA overview](https://www.healthcare.gov/high-deductible-health-plan/);
-[HealthCare.gov: FSA overview](https://www.healthcare.gov/have-job-based-coverage/flexible-spending-accounts/).
+[HealthCare.gov: FSA overview](https://www.healthcare.gov/have-job-based-coverage/flexible-spending-accounts/);
+[IRS: HSA ownership and eligibility](https://www.irs.gov/publications/p969);
+[HealthCare.gov: out-of-pocket maximum](https://www.healthcare.gov/glossary/out-of-pocket-maximum-limit/);
+[HealthCare.gov: provider networks](https://www.healthcare.gov/glossary/network/);
+[HealthCare.gov: PPO coverage outside the network](https://www.healthcare.gov/glossary/preferred-provider-organization-ppo/);
+[HealthCare.gov: HMO coverage outside the network](https://www.healthcare.gov/glossary/health-maintenance-organization-hmo/).
 
 ### A2 — MEPS survey overview
 
