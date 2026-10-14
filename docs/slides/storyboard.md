@@ -634,21 +634,29 @@ improve the experience. Refer to A16 for input timing.
 and other. Include a “Back” link to the MEPS data slide. Keep explanations for
 ADL help, IADL help, usual source of care, and recent life transition.
 
-**Speaker notes — 0:35 (optional)**
+**Speaker notes — reference for questions**
 
-“These 16 binary features cover diagnosed chronic conditions, limitations, smoking,
-access to a regular doctor or clinic, and recent life transitions. The transition
-flag is derived from marital and employment transition codes during data
-preparation. ADL help refers to personal care, such as bathing or dressing. IADL
-help refers to daily tasks, such as managing bills or medication. Chronic condition
-and functional limitation counts are derived later, inside the preprocessing pipeline.”
+Chronic conditions: MEPS asks about each condition separately during the
+household interview. For example, “Have you ever been told by a doctor or
+other health professional that you had high cholesterol?” The yes/no answers
+record diagnosis history, not severity or current treatment needs.
+
+Smoking: The feature records whether the person currently smokes cigarettes.
+It comes from the self-administered questionnaire, rather than the
+household interview. It does not describe smoking frequency or amount.
+
+Recent life transition: This flag is derived from marital and employment
+status. For example, “divorced” and “divorced during the survey round” are
+grouped as “divorced” in the marital-status feature. The latter also
+sets the recent life transition flag to yes.
 
 **Transition:** Return to the MEPS data slide.
 
 **Sources:** [README: feature details](../../README.md#feature-details);
 [input definitions](../../src/constants.py);
 [data preparation](../../scripts/preprocess.py);
-[medical feature derivation](../../src/transformers.py).
+[MEPS 2023: condition questions](https://meps.ahrq.gov/survey_comp/hc_survey/2023/PE_2023.htm);
+[MEPS 2023: household interviews and smoking questionnaire](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml).
 
 ### A5 — Outliers: greater health burden and higher cost risk
 
