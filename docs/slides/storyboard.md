@@ -862,12 +862,19 @@ have very different out-of-pocket costs, ranging from zero to high costs.
 **On the slide:** [Categorical feature–target relationships](../../figures/eda/categorical_feature_target_relationships.png),
 using the figure's existing title and the same layout as A9.
 
-**Speaker notes — 0:20 (optional)**
+**Speaker notes — reference for questions**
 
-“These plots compare cost distributions across categories. The dollar labels
-show group medians, while the vertical axes use a log scale. Higher income,
-higher education, and private insurance generally coincide with higher
-out-of-pocket costs. The plots also show substantial variation within groups.”
+The plots show log-transformed costs rather than dollar amounts, so very high
+costs do not dominate the plots. The dollar labels show group medians.
+
+People with higher income, higher education, or private insurance generally
+had higher out-of-pocket costs. But the plots also show substantial
+variation within groups. Even among people with high income, spending ranges
+from zero to very high costs.
+
+The uninsured group has a median of zero, but some people still face very high
+out-of-pocket costs. Low observed spending should not be interpreted as low
+healthcare need.
 
 **Transition:** Continue to the binary relationships or return to the cost-distribution slide.
 
@@ -881,12 +888,12 @@ out-of-pocket costs. The plots also show substantial variation within groups.”
 **On the slide:** [Binary feature–target relationships](../../figures/eda/binary_feature_target_relationships.png),
 using the figure's existing title and the same layout as A9.
 
-**Speaker notes — 0:20 (optional)**
+**Speaker notes — reference for questions**
 
-“These plots compare costs between the two groups for each binary feature.
-Arthritis shows a stronger rank association with costs, while cancer shows a
-larger difference in median spending. Women and people with a usual source of
-care also have higher median costs. These comparisons describe associations.”
+Arthritis was common and showed a stronger overall correlation with costs,
+while cancer was less common but showed a larger difference in median
+spending. Women and people with a usual source of care also had higher median
+spending.
 
 **Transition:** Return to the cost-distribution slide or continue with questions.
 
