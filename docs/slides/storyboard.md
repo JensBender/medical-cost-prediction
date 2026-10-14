@@ -750,17 +750,24 @@ using the figure's existing title.
 “Back” link in the unused lower-left side margin, pointing to the
 cost-distribution slide. Use the same layout for the next two distribution slides.
 
-**Speaker notes — 0:20 (optional)**
+**Speaker notes — reference for questions**
 
-“These plots show the distributions of age, family size, and self-reported
-physical and mental health. Survey weights make these distributions reflect
-the population rather than the sample. The completeness labels show how much
-information was available before imputation.”
+Family size is right-skewed, and health ratings are concentrated around
+excellent to good. These distributions supported median imputation because the
+median is less affected by extreme values than the mean.
+
+“Complete” shows the survey-weighted percentage with nonmissing information.
+Missing values can occur when people do not know an answer or decline to
+answer. The plots show the data before imputation, which is done later by
+the preprocessing pipeline using medians from the training data.
 
 **Transition:** Continue to categorical distributions or return to the cost-distribution slide.
 
 **Sources:** [README: distributions](../../README.md#distributions);
-[numerical distributions](../../figures/eda/numerical_distributions.png).
+[numerical distributions](../../figures/eda/numerical_distributions.png);
+[EDA notebook: distributions and completeness](../../notebooks/1_eda_and_preprocessing.py);
+[preprocessing pipeline](../../src/pipeline.py);
+[MEPS 2023: missing-value codes](https://meps.ahrq.gov/data_stats/download_data/pufs/h251/h251doc.shtml).
 
 ### A7 — Distributions: categorical features
 
