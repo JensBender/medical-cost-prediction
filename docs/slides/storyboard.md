@@ -377,6 +377,9 @@ the range or below q90. Width matters too: a range that covers almost anything
 would not help much with budgeting. These are prediction ranges for spending,
 not confidence intervals around an average, and q90 is not a maximum possible bill.”
 
+Log-transform reference: Costs are transformed as ln(1 + cost), also called
+log1p. Adding one makes the transformation defined for zero costs.
+
 **Transition:** Show whether the final model delivers those outputs on held-out data.
 
 **Sources:** [README: final model](../../README.md);
@@ -839,12 +842,13 @@ Family size has the strongest negative association at −0.22.
 **On the slide:** [Numerical feature–target relationships](../../figures/eda/numerical_feature_target_relationships.png),
 using the figure's existing title and the same layout as A9.
 
-**Speaker notes — 0:20 (optional)**
+**Speaker notes — reference for questions**
 
-“These plots compare costs with age, family size, and self-reported physical
-and mental health. Costs are shown on a log scale. Age has a positive rank
-association with costs, while family size has a negative association. The wide
-spread shows that these features alone do not determine a person's costs.”
+The plots show log-transformed costs rather than dollar amounts, so very high
+costs do not dominate the plots.
+
+People of similar ages or with the same self-reported health rating can still
+have very different out-of-pocket costs, ranging from zero to high costs.
 
 **Transition:** Continue to the categorical relationships or return to the cost-distribution slide.
 
