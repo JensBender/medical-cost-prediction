@@ -820,12 +820,12 @@ using the figure's existing title.
 “Back” link in the unused lower-left side margin, pointing to the
 cost-distribution slide. Use the same layout for the next three relationship slides.
 
-**Speaker notes — 0:20 (optional)**
+**Speaker notes — reference for questions**
 
-“This heatmap shows survey-weighted Spearman rank correlations. Age and family
-income have the strongest positive associations with costs among these features.
-It also shows relationships between features. These are individual associations,
-not causal effects or model feature importance.”
+This heatmap shows survey-weighted Spearman rank correlations. Age has the
+strongest positive association with out-of-pocket costs at 0.30, followed by
+family income, arthritis, high cholesterol, and joint pain.
+Family size has the strongest negative association at −0.22.
 
 **Transition:** Continue to the numerical relationships or return to the cost-distribution slide.
 
