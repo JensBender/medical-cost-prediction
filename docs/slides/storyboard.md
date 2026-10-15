@@ -1136,11 +1136,10 @@ Errors increased across actual and predicted cost tiers for all three
 models and were higher for privately insured adults than for publicly
 insured or uninsured adults.
 
-Although Elastic Net achieved the best overall median accuracy, Random
-Forest and XGBoost had roughly 35–50% lower median absolute errors for
-people with poor physical health or 4+ chronic conditions. These findings
-provided supporting evidence for a tree-based model, rather than showing
-that XGBoost was best across all groups or better than Random Forest.
+Elastic Net achieved the best overall median accuracy and had lower median
+absolute error across many subgroups. However, Random Forest and XGBoost
+had roughly 35–50% lower errors for people with poor physical health or
+four-plus chronic conditions.
 
 For questions: The metrics are survey-weighted validation median absolute
 errors. Sample sizes and actual median costs appear in the group labels.
@@ -1151,7 +1150,7 @@ necessarily contain the same people.
 
 **Promote:** After 6 for a longer discussion of model selection; allow 1:00.
 
-**Sources:** [README: subgroup reliability](../../README.md#tuned-models-reliability--fairness);
+**Sources:** [README: subgroup reliability](../../README.md#tuned-models-subgroup-reliability);
 [modeling notebook](../../notebooks/2_modeling.py).
 
 ### A18 — Feature timing: limits of next-year forecasting
