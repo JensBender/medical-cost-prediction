@@ -275,8 +275,8 @@ Conducted hyperparameter optimization for the three selected finalists using a c
 - **Heteroscedasticity:** Across all three models, errors were generally more spread out at higher predicted costs, with substantial underprediction of high-cost cases. Tree models generally kept median residuals closer to zero and produced a wider prediction range than Elastic Net, suggesting greater usefulness for budgeting higher costs. 🔗 [**See Heteroscedasticity Analysis**](#tuned-models-heteroscedasticity)
 
 <a id="main-fairness-audit"></a>**Model Reliability & Fairness**  
-To ensure responsible deployment, evaluated model reliability and fairness across subgroups using stratified error analysis (weighted MdAE) for all tuned models across 13 dimensions. The analysis included both protected demographic groups (e.g., sex, age, race/ethnicity) and vulnerable groups (e.g., mental health, family income, education levels).
-- **Reliability:** While Elastic Net performs best overall and excels in low-complexity segments, tree-based models (XGB/RF) perform better in high-complexity segments (uninsured, poor physical health, 4+ chronic conditions), reducing prediction error by ~50% compared to Elastic Net for these populations.
+Evaluated model reliability and fairness across 13 subgroup dimensions for all tuned models using stratified error analysis with survey-weighted validation median absolute error (MdAE). The analysis included both protected demographic groups (e.g., sex, age, race/ethnicity) and vulnerable groups (e.g., mental health, family income, education levels).
+- **Reliability:** Although Elastic Net achieved the best overall median accuracy, Random Forest and XGBoost had roughly 35–50% lower MdAE for people with poor physical health or 4+ chronic conditions.
 - **Fairness:** All tuned models show similar subgroup error patterns across protected and vulnerable groups. This suggests the main disparities are driven by healthcare cost variance, utilization patterns (e.g., reproductive care, age-related complexity), and feature limits rather than one model architecture introducing a distinct algorithmic bias. Furthermore, the models actually perform better for several marginalized groups (e.g., Hispanic, Black, low income, low education). 
 
 🔗 **[See Detailed Reliability & Fairness Analysis](#tuned-models-reliability--fairness)**
@@ -760,17 +760,15 @@ To reproduce the LLM benchmark:
 
 
 ### Tuned Models: Reliability & Fairness
-Performed stratified error analysis to evaluate model reliability across subgroups for all three tuned models (Elastic Net, Random Forest, XGBoost) and detect algorithmic bias. The audit uses weighted Median Absolute Error (MdAE) as the primary metric across 13 dimensions.
+Performed stratified error analysis to evaluate model reliability and fairness across subgroups for all three tuned models (Elastic Net, Random Forest, XGBoost) and detect algorithmic bias. The audit uses survey-weighted validation Median Absolute Error (MdAE) as the primary metric across 13 dimensions.
 
 **Reliability**  
-Reliability analysis examines whether models maintain consistent accuracy across subgroups like different cost tiers, health profiles, and insurance types. It identifies populations where one architecture outperforms others.
+Reliability analysis examines whether models maintain consistent predictive accuracy across subgroups, such as cost tiers and insurance types.
 
 ![Tuned Models: Subgroup Reliability (Validation)](figures/evaluation/tuned_models_validation_subgroup_reliability.png)
 **Key Insights:**
-- **Actual Costs:** Models converge at the Top 5% (~$9,500 MdAE), highlighting the data's noise limit. Elastic Net struggles with Zero Costs ($90 vs. ~$30 for tree models) due to linear assumptions.
-- **Predicted Costs:** Random Forest is the most precise for "Very High Spend" predictions ($751 MdAE vs. $1,095 for Elastic Net), proving better calibration for high-risk identification.
-- **Health & Chronic Conditions:** Error rises with clinical complexity. Tree models plateau around $500 MdAE for 4+ conditions, capturing the "cost saturation effect," while Elastic Net jumps to $799.
-- **Insurance:** Elastic Net produces 3–4× the error of tree models for the Uninsured ($95 vs. ~$30), failing to capture near-zero spending constraints.
+- **Errors Increase With Cost Tiers:** Across all three models, median absolute errors increased across actual and predicted cost tiers and were higher for privately insured adults than for publicly insured or uninsured adults.
+- **Tree Models Lead in Key Health Groups:** For people with poor physical health or 4+ chronic conditions, Random Forest and XGBoost had roughly 35–50% lower median absolute errors than Elastic Net.
 
 **Fairness**  
 Fairness analysis evaluates whether models produce systematically different prediction errors for protected demographic groups (sex, age, race/ethnicity) and vulnerable populations (family income, education, mental health, walking limitation). The goal is to verify that no model architecture introduces algorithmic bias and that error patterns are driven by data characteristics rather than model algorithm.
