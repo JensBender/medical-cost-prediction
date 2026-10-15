@@ -54,7 +54,8 @@
       <li><a href="#outlier-analysis-details">Outlier Analysis Details</a></li>      
       <li><a href="#llm-benchmarking-details">LLM Benchmarking Details</a></li>
       <li><a href="#tuned-models-heteroscedasticity">Tuned Models: Heteroscedasticity</a></li>
-      <li><a href="#tuned-models-reliability--fairness">Tuned Models: Reliability & Fairness</a></li>      
+      <li><a href="#tuned-models-subgroup-reliability">Tuned Models: Subgroup Reliability</a></li>
+      <li><a href="#tuned-models-subgroup-fairness">Tuned Models: Subgroup Fairness</a></li>
       <li><a href="#xgboost-quantile-regression-reliability--fairness">XGBoost Quantile Regression: Reliability & Fairness</a></li>      
       <li><a href="#shap-explanation-details">SHAP Explanation Details</a></li>
       <li><a href="#feature-importance-details">Feature Importance Details</a></li>
@@ -273,13 +274,8 @@ Conducted hyperparameter optimization for the three selected finalists using a c
 - **Tuned Champion:** Elastic Net remains the overall leader in median accuracy ($159 MdAE), confirming that regularized linear models are extremely competitive for typical cost profiles.
 - **Overfitting:** Tuning successfully brought the generalization gap below 10% for all three models. It lowered XGBoost's validation MdAE from $281 to $242 while narrowing its training–validation gap from +98.0% to +6.2%. 
 - **Heteroscedasticity:** Across all three models, errors were generally more spread out at higher predicted costs, with substantial underprediction of high-cost cases. Tree models generally kept median residuals closer to zero and produced a wider prediction range than Elastic Net, suggesting greater usefulness for budgeting higher costs. 🔗 [**See Heteroscedasticity Analysis**](#tuned-models-heteroscedasticity)
-
-<a id="main-fairness-audit"></a>**Model Reliability & Fairness**  
-Evaluated model reliability and fairness across 13 subgroup dimensions for all tuned models using stratified error analysis with survey-weighted validation median absolute error (MdAE). The analysis included both protected demographic groups (e.g., sex, age, race/ethnicity) and vulnerable groups (e.g., mental health, family income, education levels).
-- **Reliability:** Although Elastic Net achieved the best overall median accuracy, Random Forest and XGBoost had roughly 35–50% lower MdAE for people with poor physical health or 4+ chronic conditions.
-- **Fairness:** Subgroup error patterns were broadly similar across models, although disparity sizes differed. All three models had lower MdAE for Hispanic and Black adults than for White adults, and generally lower MdAE for lower-income and less-educated adults. No model consistently achieved the lowest error across all groups.
-
-🔗 **[See Detailed Reliability & Fairness Analysis](#tuned-models-reliability--fairness)**
+- <a id="main-fairness-audit"></a>**Subgroup Reliability:** Elastic Net achieved the best overall median accuracy and had lower MdAE across many subgroups. However, Random Forest and XGBoost had roughly 35–50% lower MdAE for people with poor physical health or 4+ chronic conditions. 🔗 [**See Reliability Details**](#tuned-models-subgroup-reliability)
+- **Subgroup Fairness:** Subgroup error patterns were broadly similar across models, although disparity sizes differed. All three models had lower MdAE for Hispanic and Black adults than for White adults, and generally lower MdAE for lower-income and less-educated adults. No model consistently achieved the lowest error across all groups. 🔗 [**See Fairness Details**](#tuned-models-subgroup-fairness)
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
 
@@ -759,19 +755,19 @@ To reproduce the LLM benchmark:
 <p align="right">(<a href="#️-hyperparameter-tuning">Back to Hyperparameter Tuning</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
-### Tuned Models: Reliability & Fairness
-Performed stratified error analysis to evaluate model reliability and fairness across subgroups for all three tuned models (Elastic Net, Random Forest, XGBoost) and detect algorithmic bias. The audit uses survey-weighted validation Median Absolute Error (MdAE) as the primary metric across 13 dimensions.
-
-**Reliability**  
-Reliability analysis examines whether models maintain consistent predictive accuracy across subgroups, such as cost tiers and insurance types.
+### Tuned Models: Subgroup Reliability
+Used stratified error analysis with survey-weighted validation MdAE to compare the three tuned models across actual and predicted cost tiers, physical health, insurance types, and chronic condition counts.
 
 ![Tuned Models: Subgroup Reliability (Validation)](figures/evaluation/tuned_models_validation_subgroup_reliability.png)
 **Key Insights:**
 - **Errors Increase With Cost Tiers:** Across all three models, median absolute errors increased across actual and predicted cost tiers and were higher for privately insured adults than for publicly insured or uninsured adults.
 - **Tree Models Lead in Key Health Groups:** For people with poor physical health or 4+ chronic conditions, Random Forest and XGBoost had roughly 35–50% lower median absolute errors than Elastic Net.
 
-**Fairness**  
-Fairness analysis evaluates whether models produce systematically different prediction errors for protected demographic groups (sex, age, race/ethnicity) and vulnerable populations (family income, education, mental health, walking limitation). Comparing these disparities across models can flag possible model-specific bias.
+<p align="right">(<a href="#main-fairness-audit">Back to Hyperparameter Tuning</a> | <a href="#readme-top">Back to Top</a>)</p>
+
+
+### Tuned Models: Subgroup Fairness
+Used stratified error analysis with survey-weighted validation MdAE to compare the three tuned models across protected demographic groups (sex, age, race/ethnicity) and vulnerable populations (family income, education, mental health, walking limitation). Comparing disparities across models can flag possible model-specific bias.
 
 ![Tuned Models: Subgroup Fairness - Protected Groups (Validation)](figures/evaluation/tuned_models_validation_subgroup_fairness_protected.png)
 ![Tuned Models: Subgroup Fairness - Vulnerable & Proxy Groups (Validation)](figures/evaluation/tuned_models_validation_subgroup_fairness_vulnerable_proxy.png)
