@@ -272,7 +272,7 @@ Conducted hyperparameter optimization for the three selected finalists using a c
 **Key Insights:**
 - **Tuned Champion:** Elastic Net remains the overall leader in median accuracy ($159 MdAE), confirming that regularized linear models are extremely competitive for typical cost profiles.
 - **Overfitting:** Tuning successfully brought the generalization gap below 10% for all three models. It lowered XGBoost's validation MdAE from $281 to $242 while narrowing its training–validation gap from +98.0% to +6.2%. 
-- **Heteroscedasticity:** All models exhibit "fan-shaped" error spread. While Elastic Net is the median accuracy leader, its limited prediction range ($217 max) prevents differentiating high spenders. Tree models produce a wider range of cost estimates that generally align with typical actual costs, though they still underestimate some very expensive years. 🔗 [**See Heteroscedasticity Analysis**](#tuned-models-heteroscedasticity)
+- **Heteroscedasticity:** Across all three models, errors were generally more spread out at higher predicted costs, with substantial underprediction of high-cost cases. Tree models generally kept median residuals closer to zero and produced a wider prediction range than Elastic Net, suggesting greater usefulness for budgeting higher costs. 🔗 [**See Heteroscedasticity Analysis**](#tuned-models-heteroscedasticity)
 
 <a id="main-fairness-audit"></a>**Model Reliability & Fairness**  
 To ensure responsible deployment, evaluated model reliability and fairness across subgroups using stratified error analysis (weighted MdAE) for all tuned models across 13 dimensions. The analysis included both protected demographic groups (e.g., sex, age, race/ethnicity) and vulnerable groups (e.g., mental health, family income, education levels).
@@ -752,10 +752,9 @@ To reproduce the LLM benchmark:
 ### Tuned Models: Heteroscedasticity
 ![Tuned Models: Heteroscedasticity (Validation)](figures/evaluation/tuned_models_validation_heteroscedasticity.png)
 **Key Insights:**
-- **Fan-Shaped Errors:** Error spread widens with predicted cost across all models, reflecting the inherent unpredictability of rare, expensive medical events. Residuals skew heavily upward, confirming systematic underprediction of extreme costs.
-- **Elastic Net's Limited Range:** With a max prediction of only $217, Elastic Net treats the population as uniformly low-risk; its median residual trends upwards with its predictions, confirming systematic underestimation.
-- **XGBoost Differentiates Best:** XGBoost predictions span up to $2,114 (~10× Elastic Net, ~1.7× Random Forest), demonstrating superior separation of low- and high-cost individuals.
-- **Tree Model Calibration:** RF and XGBoost maintain near-zero median residuals across most predictions, with an inverted-U uncertainty pattern: the IQR peaks at mid-range, then narrows at the highest predictions, indicating well-calibrated high-cost estimates.
+- **Residuals Are Heteroscedastic:** Errors were generally more spread out at higher predicted costs, with substantial underprediction of high-cost cases.
+- **Elastic Net Shows Increasing Underprediction:** Its median residual generally increased with predicted costs, while Random Forest and XGBoost generally kept median residuals closer to zero.
+- **Tree Models Produce a Wider Prediction Range:** Elastic Net's predictions never exceeded $217, compared with $1,273 for Random Forest and $2,114 for XGBoost, suggesting greater usefulness for budgeting higher costs.
 
 <p align="right">(<a href="#️-hyperparameter-tuning">Back to Hyperparameter Tuning</a> | <a href="#readme-top">Back to Top</a>)</p>
 
