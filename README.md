@@ -277,7 +277,7 @@ Conducted hyperparameter optimization for the three selected finalists using a c
 <a id="main-fairness-audit"></a>**Model Reliability & Fairness**  
 Evaluated model reliability and fairness across 13 subgroup dimensions for all tuned models using stratified error analysis with survey-weighted validation median absolute error (MdAE). The analysis included both protected demographic groups (e.g., sex, age, race/ethnicity) and vulnerable groups (e.g., mental health, family income, education levels).
 - **Reliability:** Although Elastic Net achieved the best overall median accuracy, Random Forest and XGBoost had roughly 35–50% lower MdAE for people with poor physical health or 4+ chronic conditions.
-- **Fairness:** All tuned models show similar subgroup error patterns across protected and vulnerable groups. This suggests the main disparities are driven by healthcare cost variance, utilization patterns (e.g., reproductive care, age-related complexity), and feature limits rather than one model architecture introducing a distinct algorithmic bias. Furthermore, the models actually perform better for several marginalized groups (e.g., Hispanic, Black, low income, low education). 
+- **Fairness:** Subgroup error patterns were broadly similar across models, although disparity sizes differed. All three models had lower MdAE for Hispanic and Black adults than for White adults, and generally lower MdAE for lower-income and less-educated adults. No model consistently achieved the lowest error across all groups.
 
 🔗 **[See Detailed Reliability & Fairness Analysis](#tuned-models-reliability--fairness)**
 
@@ -771,18 +771,13 @@ Reliability analysis examines whether models maintain consistent predictive accu
 - **Tree Models Lead in Key Health Groups:** For people with poor physical health or 4+ chronic conditions, Random Forest and XGBoost had roughly 35–50% lower median absolute errors than Elastic Net.
 
 **Fairness**  
-Fairness analysis evaluates whether models produce systematically different prediction errors for protected demographic groups (sex, age, race/ethnicity) and vulnerable populations (family income, education, mental health, walking limitation). The goal is to verify that no model architecture introduces algorithmic bias and that error patterns are driven by data characteristics rather than model algorithm.
+Fairness analysis evaluates whether models produce systematically different prediction errors for protected demographic groups (sex, age, race/ethnicity) and vulnerable populations (family income, education, mental health, walking limitation). Comparing these disparities across models can flag possible model-specific bias.
 
 ![Tuned Models: Subgroup Fairness - Protected Groups (Validation)](figures/evaluation/tuned_models_validation_subgroup_fairness_protected.png)
 ![Tuned Models: Subgroup Fairness - Vulnerable & Proxy Groups (Validation)](figures/evaluation/tuned_models_validation_subgroup_fairness_vulnerable_proxy.png)
 **Key Insights:**
-- **Sex:** Consistent Female/Male disparity (~1.5×) across architectures reflects utilization variance (e.g., reproductive care), not algorithmic bias.
-- **Age:** Error increases 4–6× for older compared to young adults, reflecting clinical complexity.
-- **Race/Ethnicity:** Error is highest for White populations and lower for several minority groups, avoiding disparate impact against minorities.
-- **Socioeconomic Status (Family Income/Education):** Models perform better for low compared with high education and family income. This is likely because higher socioeconomic groups have larger spending variance and more complex insurance cost-sharing structures.
-- **Walking/Mental Health:** Higher errors for populations with walking limitations and poor mental health. Elastic Net performs better without limitations and for excellent mental health, tree models perform better in case of high clinical complexity.
-- **Region:** Smallest disparity dimension, with slightly lower errors in South and West.
-- **Cross-Model Pattern:** Similar subgroup error patterns appear across model architectures, which makes a model-specific fairness failure less likely. The models achieve lower prediction error for several marginalized groups. 
+- **Errors Vary Across Groups:** Across all three models, MdAE increased with age and was generally higher for women, White adults, higher-income and more-educated adults, and people with poor mental health or walking limitations.
+- **Models Share Broad Error Patterns:** Subgroup disparities followed similar patterns across models, although their magnitude differed. Elastic Net had lower MdAE across many groups, while tree models performed better for people with walking limitations or poor mental health.
 
 <p align="right">(<a href="#main-fairness-audit">Back to Hyperparameter Tuning</a> | <a href="#readme-top">Back to Top</a>)</p>
 
