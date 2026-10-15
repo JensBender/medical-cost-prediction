@@ -1176,7 +1176,7 @@ display(
 # </div> 
 
 # %%
-def plot_subgroup_performance(df, column_labels, title, save_to_file=None):
+def plot_subgroup_performance(df, column_labels, title, save_to_file=None, col_wrap=2):
     """
     Visualizes stratified Median Absolute Error (MdAE) as a faceted bar plot grid.
     
@@ -1188,6 +1188,7 @@ def plot_subgroup_performance(df, column_labels, title, save_to_file=None):
         column_labels (list): List of display labels (e.g., from reliability_configs) to plot.
         title (str): Main title for the figure.
         save_to_file (str, optional): Full path and filename to save the plot.
+        col_wrap (int, optional): Number of subplot columns. Defaults to 2.
     """
     # Filter data to requested columns 
     plot_data = df[df["Column"].isin(column_labels)].copy()
@@ -1201,7 +1202,7 @@ def plot_subgroup_performance(df, column_labels, title, save_to_file=None):
         y="Group",
         hue="Model",
         col="Column",
-        col_wrap=2,
+        col_wrap=col_wrap,
         height=5,
         aspect=1.4,
         sharex=False,  # Independent x-axes to handle different error scales for each column
@@ -1272,8 +1273,8 @@ def plot_subgroup_performance(df, column_labels, title, save_to_file=None):
     g.fig.text(
         footnote_x, 
         0.01, 
-        "Note: n is the group sample size. Dollar amounts in group labels (e.g., $269) represent that group's actual median out-of-pocket cost.",
-        fontsize=10,
+        "Note: n is the group sample size. Dollar amounts in group labels represent that group's actual median out-of-pocket cost.",
+        fontsize=11,
         style="italic", 
         color="#555555",
         ha="left"
@@ -1293,6 +1294,15 @@ plot_subgroup_performance(
     reliability_labels,
     "Tuned Models: Subgroup Reliability (Validation)",
     save_to_file="../figures/evaluation/tuned_models_validation_subgroup_reliability.png"
+)
+
+# Wide layout for the presentation
+plot_subgroup_performance(
+    subgroup_df,
+    reliability_labels,
+    "Tuned Models: Subgroup Reliability (Validation)",
+    save_to_file="../docs/slides/assets/tuned_models_validation_subgroup_reliability.png",
+    col_wrap=3,
 )
 
 # %% [markdown]

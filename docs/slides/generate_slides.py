@@ -833,7 +833,7 @@ def build_presentation():
     residuals_appendix_link.click_action.target_slide = residuals
     residuals_return_link.click_action.target_slide = selection
     reliability = new_slide(presentation, storyboard, "A17")
-    picture(reliability, WORKSPACE_DIR / "figures/evaluation/"
+    picture(reliability, SLIDES_DIR / "assets/"
             "tuned_models_validation_subgroup_reliability.png",
             "Survey-weighted validation median absolute errors for tuned Elastic "
             "Net, Random Forest, and XGBoost across cost tiers, physical health, "

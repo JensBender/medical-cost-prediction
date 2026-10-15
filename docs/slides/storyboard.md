@@ -1126,9 +1126,9 @@ predictions from compressing the main pattern.
 
 **Question:** How did the tuned models compare across reliability subgroups?
 
-**Visual:** Use the full [tuned-model reliability figure](../../figures/evaluation/tuned_models_validation_subgroup_reliability.png),
-fitted to the slide without an additional title. Add the slide number and a
-small “Back” link to model selection in the left margin.
+**Visual:** Use the full [tuned-model reliability figure](assets/tuned_models_validation_subgroup_reliability.png)
+in three columns, fitted to the slide without an additional title. Add the slide
+number and a small “Back” link to model selection in the left margin.
 
 **Speaker notes — reference for questions**
 
