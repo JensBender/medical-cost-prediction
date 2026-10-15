@@ -1091,21 +1091,27 @@ to model selection in the left margin.
 
 **Speaker notes — reference for questions**
 
-The plots use validation data. Residuals are actual costs minus predicted
-costs, so positive residuals mean underprediction. The line shows the
-survey-weighted median residual within prediction groups; the shaded band
-shows the middle 50% of residuals.
+The plots show prediction errors, or residuals. Positive values mean
+underprediction, and negative values mean overprediction. I divided people
+into 15 groups with similar predicted costs. The line connects the median
+residual for each group, and the shaded band shows the middle 50% of
+residuals within each group.
 
-Elastic Net's predictions occupy a narrow range, with median underprediction
-increasing toward its higher predictions. Random Forest and XGBoost have
-median residuals closer to zero across much of their prediction ranges, but
-the spread remains wide and varies across predicted cost levels. A point
-estimate does not communicate this variation.
+Errors were generally more spread out at higher predicted costs. All three
+models also substantially underpredicted high-cost cases.
 
-The horizontal scales differ between models, while the residual scale is
-shared. Both axes are zoomed so extreme values do not compress the main
-patterns. Some extreme predictions and residuals fall outside the view;
-the visible axis limits are not the models' maximum predictions.
+Elastic Net's median residual generally increased with its predictions,
+showing increasing underprediction. Random Forest and XGBoost generally
+stayed closer to zero.
+
+The tree models also produced a wider prediction range. Elastic Net never
+predicted above about $217, compared with about $1,270 for Random Forest and
+$2,100 for XGBoost. Together, these findings made the tree models more
+promising for budgeting higher costs.
+
+For questions: The line and band exclude the highest 1% of
+predicted costs, and the x-axis is zoomed accordingly to keep extreme
+predictions from compressing the main pattern.
 
 **Transition:** Return to model selection or continue with questions.
 
