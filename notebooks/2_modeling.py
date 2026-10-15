@@ -1191,6 +1191,7 @@ def plot_subgroup_performance(df, column_labels, title, save_to_file=None):
     """
     # Filter data to requested columns 
     plot_data = df[df["Column"].isin(column_labels)].copy()
+    plot_data["Model"] = plot_data["Model"].str.replace(" (Tuned)", "", regex=False)
 
     # Create faceted bar plot grid with model as hue
     g = sns.catplot(
@@ -1212,19 +1213,18 @@ def plot_subgroup_performance(df, column_labels, title, save_to_file=None):
     # Calculate dynamic coordinates based on figure height (in inches) to ensure identical spacing across plots
     fig_height = g.fig.get_figheight()
     title_y = 1.0 - (0.18 / fig_height)
-    legend_y = 1.0 - (0.50 / fig_height)
     subplots_top = 1.0 - (1.3 / fig_height)
     subplots_bottom = 0.80 / fig_height
 
     # Customize title and spacing
-    g.set_titles("{col_name}", weight="bold", size=14)
-    g.fig.suptitle(title, fontsize=18, weight="bold", y=title_y)
+    g.set_titles("{col_name}", weight="bold", size=16)
+    main_title = g.fig.suptitle(title, fontsize=22, weight="bold", y=title_y)
     plt.subplots_adjust(top=subplots_top, bottom=subplots_bottom, hspace=0.25, wspace=0.25)
 
     # Apply custom formatting to each subplot
     for ax in g.axes.flat:
         ax.set_ylabel("")
-        ax.set_xlabel("Weighted MdAE")
+        ax.set_xlabel("Weighted MdAE", fontsize=14)
         ax.set_xticklabels([])  # Removes redundant x-tick labels (since bars are annotated)
         
         # Get y-tick labels and update them with Sample Size and Median Actual Cost
@@ -1236,7 +1236,8 @@ def plot_subgroup_performance(df, column_labels, title, save_to_file=None):
         new_labels = []
         for label in y_labels:
             subgroup_data = plot_data[(plot_data["Column"] == col_name) & (plot_data["Group"] == label)]
-            if not subgroup_data.empty:
+            # Predicted-cost groups differ by model, so shared group statistics would mislead.
+            if not subgroup_data.empty and col_name != "Out-of-Pocket Costs (Predicted)":
                 first_row = subgroup_data.iloc[0]
                 n = first_row["Sample Size"]
                 med = first_row["Median Actual Cost"]
@@ -1247,26 +1248,32 @@ def plot_subgroup_performance(df, column_labels, title, save_to_file=None):
         
         # Set ticks explicitly first to avoid matplotlib UserWarning
         ax.set_yticks(ax.get_yticks())
-        ax.set_yticklabels(new_labels, fontsize=9)
+        ax.set_yticklabels(new_labels, fontsize=10)
         
         for c in ax.containers:          
             value_labels = [f"${v:,.0f}" for v in c.datavalues]  # Formats value labels with thousand separator and no decimals
-            ax.bar_label(c, labels=value_labels, padding=3, fontsize=9)
+            ax.bar_label(c, labels=value_labels, padding=3, fontsize=10)
         ax.margins(x=0.15)
     
-    sns.move_legend(g, "upper center", bbox_to_anchor=(0.5, legend_y), ncol=3, frameon=True, title=None)
-    
-    # Add footnote
-    # Compute final layout, then align footnote with the first subplot's leftmost label
+    # Center the legend in the gap between the main title and subplot titles.
     g.fig.canvas.draw()
+    renderer = g.fig.canvas.get_renderer()
+    figure_coords = g.fig.transFigure.inverted()
+    title_bottom = main_title.get_window_extent(renderer).transformed(figure_coords).y0
+    subplot_top = max(ax.title.get_window_extent(renderer).transformed(figure_coords).y1
+                      for ax in g.axes.flat)
+    sns.move_legend(g, "center", bbox_to_anchor=(0.5, (title_bottom + subplot_top) / 2),
+                    ncol=3, frameon=True, title=None, fontsize=13)
+
+    # Align the footnote with the first subplot's leftmost label.
     footnote_x = g.axes.flat[0].get_tightbbox(g.fig.canvas.get_renderer()).transformed(g.fig.transFigure.inverted()).x0
 
     # Add footnote at the bottom, aligned with the leftmost label/title
     g.fig.text(
         footnote_x, 
         0.01, 
-        "Note: Dollar values in subgroup labels (e.g., $269) represent the actual median out-of-pocket costs of that subgroup.", 
-        fontsize=9, 
+        "Note: n is the group sample size. Dollar amounts in group labels (e.g., $269) represent that group's actual median out-of-pocket cost.",
+        fontsize=10,
         style="italic", 
         color="#555555",
         ha="left"
