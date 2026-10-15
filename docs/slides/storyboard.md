@@ -331,21 +331,22 @@ Elastic Net achieved the lowest median absolute error, while XGBoost had
 the lowest mean absolute error. Tuning also reduced XGBoost's
 training–validation gap from 98% to 6.2%.
 
-Elastic Net offered little separation between low- and high-cost profiles:
-its validation predictions never exceeded about $217, compared with about
-$2,100 for XGBoost. XGBoost also performed better than Elastic Net for people
-with poor physical health or four or more chronic conditions. These findings
-led me to select XGBoost.
+Elastic Net's validation predictions never exceeded about $217, compared
+with about $2,100 for XGBoost. XGBoost also performed better than Elastic Net
+in key subgroups, such as people with poor physical health or 4+
+chronic conditions. So I chose XGBoost as the more promising model for
+budgeting higher costs.
 
-I had initially prioritized typical prediction accuracy using median absolute
-error. But residual analysis showed wide variation around predictions, with
-the spread changing across cost profiles. A single estimate could not
-communicate that uncertainty.
+But even with a more useful central estimate, users still need to understand
+how much higher their costs could be. I had initially prioritized typical
+prediction accuracy using median absolute error. Residual analysis showed
+that errors were generally more spread out at higher predicted costs.
+A single estimate could not communicate that uncertainty.
 
 For budgeting, this matters, because someone could plan around the central
-estimate and still be underprepared for a more expensive year. I therefore
-switched XGBoost's objective to quantile regression, providing budgeting
-ranges alongside the central estimate.
+estimate and still be underprepared for a more expensive year. So I switched
+to quantile regression in XGBoost to give users budgeting ranges alongside
+the central estimate.
 
 **Transition:** Map the quantiles directly to the intended budgeting outputs.
 
