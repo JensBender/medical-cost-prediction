@@ -208,7 +208,7 @@ independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
 See A3–A4 for preprocessor input features, counts, and possible feature reduction,
-and A17 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
+and A18 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
 random within spending groups, with a separate zero-cost group and finer bins
 for high costs to reduce imbalances in rare, expensive cases. Discuss the split
 after the spending-distribution slide if asked.
@@ -321,7 +321,8 @@ three bullets in regular font. Keep residual diagnostics in A16.
 
 **Appendix links:** [Baseline models (A14)](#a14--baseline-models) |
 [Hyperparameter tuning (A15)](#a15--hyperparameter-tuning) |
-[Heteroscedasticity (A16)](#a16--heteroscedasticity).
+[Heteroscedasticity (A16)](#a16--heteroscedasticity) |
+[Subgroup reliability (A17)](#a17--subgroup-reliability).
 
 **Speaker notes — 1:30**
 
@@ -446,7 +447,7 @@ and situations where the model is less reliable.
 
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
-Confidence intervals, widths, and scoring definitions are in A19 and A20.
+Confidence intervals, widths, and scoring definitions are in A20 and A21.
 
 ### 9 — Final model test audit: overall coverage hides subgroup gaps
 
@@ -463,7 +464,7 @@ validation steps.
 
 **Visual:** Bar chart of typical-range coverage: poor mental health 30.1%, low
 income 39.2%, overall 47.3%, and target 50%. Label results as point estimates;
-A21 adds subgroup counts and uncertainty.
+A22 adds subgroup counts and uncertainty.
 
 **Speaker notes — 1:00**
 
@@ -655,7 +656,7 @@ after adding a life-transition feature and 40 model-ready columns after
 transformation. These counts do not equal the number of questions on the planned
 form: related conditions can be grouped, and some values are derived. User testing
 will assess the burden; feature reduction is an option if fewer inputs would
-improve the experience. Refer to A17 for input timing.
+improve the experience. Refer to A18 for input timing.
 
 **Sources:** [README: feature details](../../README.md#feature-details);
 [input definitions](../../src/constants.py);
@@ -1121,7 +1122,39 @@ predictions from compressing the main pattern.
 **Sources:** [README: heteroscedasticity](../../README.md#tuned-models-heteroscedasticity);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A17 — Feature timing: limits of next-year forecasting
+### A17 — Subgroup reliability
+
+**Question:** How did the tuned models compare across reliability subgroups?
+
+**Visual:** Use the full [tuned-model reliability figure](../../figures/evaluation/tuned_models_validation_subgroup_reliability.png),
+fitted to the slide without an additional title. Add the slide number and a
+small “Back” link to model selection in the left margin.
+
+**Speaker notes — reference for questions**
+
+Errors increased across actual and predicted cost tiers for all three
+models and were higher for privately insured adults than for publicly
+insured or uninsured adults.
+
+Although Elastic Net achieved the best overall median accuracy, Random
+Forest and XGBoost had roughly 35–50% lower median absolute errors for
+people with poor physical health or 4+ chronic conditions. These findings
+provided supporting evidence for a tree-based model, rather than showing
+that XGBoost was best across all groups or better than Random Forest.
+
+For questions: The metrics are survey-weighted validation median absolute
+errors. Sample sizes and actual median costs appear in the group labels.
+Predicted cost tiers are defined separately for each model, so they do not
+necessarily contain the same people.
+
+**Transition:** Return to model selection or continue with questions.
+
+**Promote:** After 6 for a longer discussion of model selection; allow 1:00.
+
+**Sources:** [README: subgroup reliability](../../README.md#tuned-models-reliability--fairness);
+[modeling notebook](../../notebooks/2_modeling.py).
+
+### A18 — Feature timing: limits of next-year forecasting
 
 **Question:** Is this truly a next-year forecast?
 
@@ -1142,7 +1175,7 @@ Do not claim the size or direction of the resulting performance change is known.
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
 
-### A18 — LLM benchmark: General versus Specific Intelligence
+### A19 — LLM benchmark: General versus Specific Intelligence
 
 **Question:** Why not ask a general-purpose language model for an estimate?
 
@@ -1160,7 +1193,7 @@ LLMs.
 **Sources:** [README: LLM benchmark](../../README.md);
 [LLM benchmark script](../../scripts/benchmark_llm.py).
 
-### A19 — Final model test results: coverage, width, and release gates
+### A20 — Final model test results: coverage, width, and release gates
 
 **Question:** What does passing the project's gates mean?
 
@@ -1185,7 +1218,7 @@ resamples rows and retains their weights.
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: bootstrap implementation](../../notebooks/2_modeling.py).
 
-### A20 — Final model test benchmarks: gains over simple estimates
+### A21 — Final model test benchmarks: gains over simple estimates
 
 **Question:** Why not give everyone a population or age-group estimate?
 
@@ -1213,7 +1246,7 @@ skill is not a percentage-point improvement in coverage.
 
 **Source:** [Modeling notebook: test baseline comparisons](../../notebooks/2_modeling.py).
 
-### A21 — Final model test audit: subgroup coverage gaps
+### A22 — Final model test audit: subgroup coverage gaps
 
 **Question:** Who receives less reliable ranges?
 
@@ -1236,7 +1269,7 @@ would be needed to address it.
 **Sources:** [README: final subgroup audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A22 — Final model test audit: actual versus predicted cost tiers
+### A23 — Final model test audit: actual versus predicted cost tiers
 
 **Question:** Does the safety cushion protect the largest spenders?
 
@@ -1258,7 +1291,7 @@ quantile is not catastrophe insurance or a hard spending cap.
 **Sources:** [README: final reliability audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A23 — SHAP explains how inputs shape the median estimate
+### A24 — SHAP explains how inputs shape the median estimate
 
 **Question:** Which inputs influence predictions, and what can users infer?
 
@@ -1278,7 +1311,7 @@ does not by itself mean higher or lower healthcare need.
 **Sources:** [README: feature importance](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json).
 
-### A24 — SHAP benchmarking: explanation quality and latency
+### A25 — SHAP benchmarking: explanation quality and latency
 
 **Question:** How was the SHAP configuration chosen?
 
@@ -1301,7 +1334,7 @@ claim. Complete request latency on target hardware remains unverified.
 [SHAP metadata](../../app/data/shap_metadata.json);
 [benchmark script](../../scripts/benchmark_shap.py).
 
-### A25 — Inference architecture: shared prediction and explanation code
+### A26 — Inference architecture: shared prediction and explanation code
 
 **Question:** How will training and serving stay consistent?
 
@@ -1324,7 +1357,7 @@ experiment is a DVC stage or that the full service is implemented.
 **Sources:** [DVC pipeline](../../dvc.yaml); [prediction code](../../src/prediction.py);
 [technical specifications](../specs/technical_specifications.md); [unit tests](../../tests/unit/).
 
-### A26 — Production monitoring: drift signals without observed outcomes
+### A27 — Production monitoring: drift signals without observed outcomes
 
 **Question:** How would the product be monitored without retaining user records?
 

@@ -26,7 +26,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 17)]
+SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 18)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -457,6 +457,12 @@ def build_presentation():
         selection, "Heteroscedasticity appendix link", "Heteroscedasticity",
         568, 674, 190, 24, 18, color=SECONDARY, underline=True,
     )
+    text(selection, "Subgroup reliability appendix separator", "|",
+         738, 674, 12, 24, 18, color=SECONDARY, alignment=PP_ALIGN.CENTER)
+    reliability_appendix_link = text(
+        selection, "Subgroup reliability appendix link", "Subgroup reliability",
+        766, 674, 205, 24, 18, color=SECONDARY, underline=True,
+    )
 
     quantiles = new_slide(presentation, storyboard, "7", "Quantile regression turns "
                           "predictions\ninto budgeting ranges", two_lines=True)
@@ -826,6 +832,18 @@ def build_presentation():
     )
     residuals_appendix_link.click_action.target_slide = residuals
     residuals_return_link.click_action.target_slide = selection
+    reliability = new_slide(presentation, storyboard, "A17")
+    picture(reliability, WORKSPACE_DIR / "figures/evaluation/"
+            "tuned_models_validation_subgroup_reliability.png",
+            "Survey-weighted validation median absolute errors for tuned Elastic "
+            "Net, Random Forest, and XGBoost across cost tiers, physical health, "
+            "insurance types, and chronic condition counts.", 0, 0, 1280, 720)
+    reliability_return_link = text(
+        reliability, "Return to model selection", "Back",
+        20, 674, 100, 24, 18, color=SECONDARY, underline=True,
+    )
+    reliability_appendix_link.click_action.target_slide = reliability
+    reliability_return_link.click_action.target_slide = selection
     return presentation
 
 
