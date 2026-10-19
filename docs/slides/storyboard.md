@@ -1,7 +1,7 @@
 # Medical cost prediction: presentation storyboard
 
-Status: the ten-slide main presentation and sixteen appendix slides are ready for
-review. The remaining appendix slides are in storyboard form.
+Status: ten main slides and seventeen appendix slides are generated. The remaining
+appendix slides are planned below.
 
 ## Presentation context
 
@@ -13,19 +13,13 @@ review. The remaining appendix slides are in storyboard form.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The current
   allocation below totals 11:25, leaving room for transitions.
-- **Structure:** a cover, nine content slides, and twenty-six planned appendix slides.
-  Order and number appendix slides by their first reference in the main presentation.
-  Place unreferenced slides with their related topic. Update numbering and links
-  when the presentation order changes.
+- **Structure:** a cover, nine content slides, and twenty-seven appendix topics.
+  Appendix slides follow their first reference in the main presentation;
+  unreferenced slides sit with their related topic.
 - **Slide numbering:** Display 2–10 on the main content slides, with the cover
   unnumbered, and A1, A2, etc. in the appendix. Use 1–10 in the storyboard.
-- **Title size:** Use 33 pt for all main content-slide titles, including two-line titles.
-- **Appendix navigation:** Add links where a specific follow-up is likely, using
-  “Appendix: [topic]” at the bottom left and “Back” on the
-  appendix slide. Use small, muted gray, underlined text and keep slide IDs at
-  the bottom right. Add other footnotes only when needed to interpret the slide.
-  On the cost-distribution slide, group EDA links in the left margin under
-  “Appendix:” to preserve the plot size.
+- **Appendix navigation:** Main slides link to relevant appendix topics;
+  appendix slides have a “Back” link to the referring main slide.
 - **Appendix speaker notes:** Leave main speaking points unlabelled. Use a standalone
   “For questions:” heading before reference material for follow-up questions.
 - **Purpose:** show how the project connects a user need to modeling choices,
@@ -159,9 +153,7 @@ spending, with survey weights supporting population-level training and evaluatio
 **Visual:** Bullet list beside a [household survey illustration](assets/household-survey.png).
 
 **Appendix links:** [MEPS overview (A2)](#a2--meps-survey-overview) and
-[Features (A3–A4)](#a3--preprocessor-input-features). Display as
-“Appendix: MEPS overview | Features” with a muted gray vertical bar separating
-the two underlined links.
+[Features (A3–A4)](#a3--preprocessor-input-features).
 
 **Speaker notes — 2:00 (rehearsed)**
 
@@ -228,19 +220,12 @@ parts of model performance.
 - **Primary metric:** MdAE
 - **Supporting:** MAE, R²
 
-**Visual:** Large [Lorenz curve](../../figures/eda/lorenz_curve.png) beneath the
-slide title, with the figure's own title cropped. A compact text box in the
-upper-left margin lists the primary and supporting metrics, using the same font
-size with bold headings. Align it with the top of the plot. Keep the plot large
-and shift it right to leave a clear gap beside the text; no extra footnote.
+**Visual:** Large [Lorenz curve](../../figures/eda/lorenz_curve.png) with the
+primary and supporting metrics in the left margin.
 
-**Appendix links:** A compact block near the bottom left, with a small, muted
-“Appendix:” label and
-underlined links to [Outlier analysis (A5)](#a5--outliers-greater-health-burden-and-higher-cost-risk),
+**Appendix links:** [Outlier analysis (A5)](#a5--outliers-greater-health-burden-and-higher-cost-risk),
 [Distributions (A6–A8)](#a6--distributions-numerical-features), and
-[Feature–target relations (A9–A12)](#a9--featuretarget-relationships-correlations)
-closely beneath it. Link to the first slide of each group, then advance through
-the group. Keep each link on one line and preserve the plot's current size.
+[Feature–target relations (A9–A12)](#a9--featuretarget-relationships-correlations).
 
 **Speaker notes — 1:00**
 
@@ -273,13 +258,11 @@ proportions of zero-cost and high-cost cases across splits.”
 **Purpose:** Explain data preparation and the reusable preprocessing pipeline.
 
 **On the slide:** [Preprocessing pipeline PNG](assets/preprocessing-pipeline.png),
-rendered from the [SVG source](../../assets/preprocessing_pipeline.svg),
-using the diagram's existing title and subtitle.
+rendered from the [SVG source](../../assets/preprocessing_pipeline.svg).
 
-**Visual:** Fit the diagram to the full slide height and match its dark navy
-background. Use light gray for the slide number and a small “Appendix:” label
-above an underlined “Data preparation” link in the lower-left margin. Link only
-“Data preparation” to A13.
+**Visual:** Full-slide diagram on a matching dark navy background.
+
+**Appendix link:** [Data preparation (A13)](#a13--data-preparation).
 
 **Speaker notes — 1:00**
 
@@ -318,8 +301,7 @@ between lower- and higher-cost profiles.
 **Footnote:** “Note: Survey-weighted validation metrics. Overfitting is the percentage
 change in MdAE from training to validation.”
 
-**Display notes:** Comparison table with its note immediately below, followed by
-three bullets in regular font. Keep residual diagnostics in A16.
+**Visual:** Comparison table followed by the three model-selection points.
 
 **Appendix links:** [Baseline models (A14)](#a14--baseline-models) |
 [Hyperparameter tuning (A15)](#a15--hyperparameter-tuning) |
@@ -533,8 +515,7 @@ Timings apply only when promoted into the main presentation.
 
 **Question:** What is out-of-pocket spending, and how does it relate to HSA/FSA planning?
 
-**On the slide:** [Healthcare-cost infographic](../../assets/infographic_healthcare_costs.png)
-with a “Back” link.
+**On the slide:** [Healthcare-cost infographic](../../assets/infographic_healthcare_costs.png).
 
 **Speaker notes**
 
@@ -576,8 +557,7 @@ plan comparisons are outside scope.
 
 **Question:** How does MEPS collect its data, and which component does this project use?
 
-**On the slide:** [MEPS infographic](../../assets/infographic_meps_data.jpg)
-with a “Back” link.
+**On the slide:** [MEPS infographic](../../assets/infographic_meps_data.jpg).
 
 **Speaker notes**
 
@@ -637,8 +617,7 @@ account for survey clustering in uncertainty estimates.
 | Physical health | Numerical | 1 = Excellent, 2 = Very good, 3 = Good, 4 = Fair, 5 = Poor |
 | Mental health | Numerical | 1 = Excellent, 2 = Very good, 3 = Good, 4 = Fair, 5 = Poor |
 
-**Visual:** An editable table of 11 prepared inputs, with a “Back” link to the MEPS
-data slide. Continue to A4 for the remaining 16 yes/no features.
+**Visual:** Feature table; the remaining 16 yes/no inputs continue on A4.
 
 **Speaker notes**
 
@@ -690,9 +669,7 @@ improve the experience. Refer to A18 for input timing.
 | Limitations | ADL help: personal care, such as bathing or dressing<br>IADL help: daily tasks, such as managing bills or medication<br>Walking limitation, cognitive limitation, joint pain |
 | Other | Smoker<br>Usual source of care: regular doctor or clinic<br>Recent life transition (derived): marital or employment changes |
 
-**Visual:** An editable table with three groups: chronic conditions, limitations,
-and other. Include a “Back” link to the MEPS data slide. Keep explanations for
-ADL help, IADL help, usual source of care, and recent life transition.
+**Visual:** Feature table grouped into chronic conditions, limitations, and other inputs.
 
 **Speaker notes**
 
@@ -730,9 +707,7 @@ sets the recent life transition flag to yes.
 - **Profiling:** Comparison table below.
 - **Treatment:** Retained all outliers as plausible, valuable training examples.
 
-**Visual:** Detection above a wide, editable table; treatment below it. Use
-“Profiling” as the first-column header, with no separate heading or footnote.
-Leave space between the three sections.
+**Visual:** Profiling table between the detection and treatment summaries.
 
 | Profiling | Inliers | Outliers |
 | --- | ---: | ---: |
@@ -743,8 +718,6 @@ Leave space between the three sections.
 | Private insurance | 68% | 32% |
 | Walking limitations | 9% | 75% |
 | Cognitive limitations | 3% | 61% |
-
-Include a “Back” link.
 
 **Speaker notes — 1:15 (optional, estimated)**
 
@@ -775,12 +748,7 @@ threshold is defined across all people in the training data.
 
 **Question:** How are the numerical features distributed?
 
-**On the slide:** [Numerical distributions](../../figures/eda/numerical_distributions.png),
-using the figure's existing title.
-
-**Visual:** Fit the unchanged image to the full slide height. Place a small
-“Back” link in the unused lower-left side margin, pointing to the
-cost-distribution slide. Use the same layout for the next two distribution slides.
+**On the slide:** [Numerical distributions](../../figures/eda/numerical_distributions.png).
 
 **Speaker notes**
 
@@ -807,8 +775,7 @@ the preprocessing pipeline using medians from the training data.
 
 **Question:** How are the categorical features distributed?
 
-**On the slide:** [Categorical distributions](../../figures/eda/categorical_distributions.png),
-using the figure's existing title and the same layout as A6.
+**On the slide:** [Categorical distributions](../../figures/eda/categorical_distributions.png).
 
 **Speaker notes**
 
@@ -831,8 +798,7 @@ evaluation.
 
 **Question:** How common are the binary feature categories?
 
-**On the slide:** [Binary distributions](../../figures/eda/binary_distributions.png),
-using the figure's existing title and the same layout as A6.
+**On the slide:** [Binary distributions](../../figures/eda/binary_distributions.png).
 
 **Speaker notes**
 
@@ -847,12 +813,7 @@ Joint pain, high blood pressure, and high cholesterol are common. Severe conditi
 
 **Question:** Which features are associated with costs and with one another?
 
-**On the slide:** [Correlation heatmap](../../figures/eda/correlation_heatmap.png),
-using the figure's existing title.
-
-**Visual:** Fit the unchanged image to the full slide height. Place a small
-“Back” link in the unused lower-left side margin, pointing to the
-cost-distribution slide. Use the same layout for the next three relationship slides.
+**On the slide:** [Correlation heatmap](../../figures/eda/correlation_heatmap.png).
 
 **Speaker notes**
 
@@ -870,8 +831,7 @@ Family size has the strongest negative association at −0.22.
 
 **Question:** How do costs vary with the numerical features?
 
-**On the slide:** [Numerical feature–target relationships](../../figures/eda/numerical_feature_target_relationships.png),
-using the figure's existing title and the same layout as A9.
+**On the slide:** [Numerical feature–target relationships](../../figures/eda/numerical_feature_target_relationships.png).
 
 **Speaker notes**
 
@@ -890,8 +850,7 @@ have very different out-of-pocket costs, ranging from zero to high costs.
 
 **Question:** How do cost distributions differ across categorical feature groups?
 
-**On the slide:** [Categorical feature–target relationships](../../figures/eda/categorical_feature_target_relationships.png),
-using the figure's existing title and the same layout as A9.
+**On the slide:** [Categorical feature–target relationships](../../figures/eda/categorical_feature_target_relationships.png).
 
 **Speaker notes**
 
@@ -916,8 +875,7 @@ healthcare need.
 
 **Question:** How do costs differ between the two categories of each binary feature?
 
-**On the slide:** [Binary feature–target relationships](../../figures/eda/binary_feature_target_relationships.png),
-using the figure's existing title and the same layout as A9.
+**On the slide:** [Binary feature–target relationships](../../figures/eda/binary_feature_target_relationships.png).
 
 **Speaker notes**
 
@@ -944,12 +902,8 @@ spending.
   toward the expensive tail. Randomly allocate within each group: 80% training,
   10% validation, and 10% test.
 
-**Visual:** A short preparation sentence above the stratified-split explanation.
-Place zero, lower, and extreme cost labels above the full-width group diagram,
-with uniform gaps and the finer-percentile-group explanation below it. Keep the
-preparation sentence and split allocation on one line each. Add a small “Back”
-link to the pipeline slide. Set the split allocation in regular dark blue text
-at 18.75 pt, matching the explanation beneath the diagram.
+**Visual:** Preparation summary above a diagram showing zero-cost and
+positive-cost groups, with finer groups toward the expensive tail.
 
 **Speaker notes — 1:00 (optional)**
 
@@ -997,9 +951,8 @@ allow 1:00.
 | Support Vector Machine | $291 | +190.7% | $1,027 | -0.03 |
 | *LLM (benchmark)* | *$518* | *N/A* | *$1,168* | ***0.04*** |
 
-**Visual:** Editable table matching the README's baseline comparison. Bold the
-three selected model names and the best values in each metric column. Place the
-note beneath the table and add a small “Back” link to the model-selection slide.
+**Visual:** Model comparison table highlighting the three tuning candidates
+and the best values in each metric column.
 
 **Footnote:** “Note: Survey-weighted validation metrics. Overfitting is the percentage
 change in MdAE from training to validation.”
@@ -1064,12 +1017,7 @@ promising candidate for capturing nonlinear interactions.”
 - L1 penalty: 0–5
 - L2 penalty: 0–5
 
-**Display notes:** One opening sentence above three columns, with balanced gaps
-between the visible text. Use 24 pt bold model names and 18 pt regular text,
-with one parameter per line and no bullet markers.
-Separate parameter names and values with colons.
-Leave the search rationale and implementation details to the speaker notes.
-Return link to model selection.
+**Visual:** Search objective above three columns of model-specific search spaces.
 
 **Speaker notes — about 1:15 (estimated)**
 
@@ -1104,10 +1052,7 @@ alongside sampling and penalties to control overfitting.
 
 **Question:** What did the residual analysis reveal about the tuned models?
 
-**Visual:** Use the full [tuned-model residual figure](../../figures/evaluation/tuned_models_validation_heteroscedasticity.png)
-with all three subplots, fitted to the slide. Its title identifies the tuned
-models and validation data. Add only the slide number and a small “Back” link
-to model selection in the left margin.
+**Visual:** Full-slide [tuned-model residual figure](../../figures/evaluation/tuned_models_validation_heteroscedasticity.png).
 
 **Speaker notes**
 
@@ -1146,9 +1091,7 @@ predictions from compressing the main pattern.
 
 **Question:** How did the tuned models compare across reliability subgroups?
 
-**Visual:** Use the full [tuned-model reliability figure](assets/tuned_models_validation_subgroup_reliability.png)
-in three columns, fitted to the slide without an additional title. Add the slide
-number and a small “Back” link to model selection in the left margin.
+**Visual:** Full-slide [tuned-model reliability figure](assets/tuned_models_validation_subgroup_reliability.png).
 
 **Speaker notes**
 
@@ -1405,8 +1348,7 @@ Adapt the content and slide selection to the audience, time, and setting,
 promoting appendix slides as needed. Create variants when requirements are known;
 keep local notes in `docs/slides/variants/`, referencing the shared slides.
 
-The storyboard holds content and spoken notes; the generator holds slide text
-and layout. Update both when content changes. See the [slides README](README.md)
-for generation, version retention, and restoring earlier presentations. Track
-the storyboard, generator, README, and required images. Keep exports, build files,
-previews, variant notes, and image prompts local, as defined in the root `.gitignore`.
+The storyboard holds content and speaker notes; the generator implements the
+slide text and layout. See the [slides README](README.md) for generation,
+version retention, and restoring earlier presentations. The root `.gitignore`
+defines which sources and assets are tracked.

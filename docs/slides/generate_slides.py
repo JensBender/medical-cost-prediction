@@ -313,9 +313,11 @@ def build_presentation():
     picture(problem, SLIDES_DIR / "assets/budget-planning.png",
             "Illustration of an adult considering a budget with a planner and calculator.",
             72, 120, 1136, 379)
+    text(problem, "Problem statement appendix label", "Appendix:",
+         72, 674, 90, 24, 18, color=SECONDARY)
     healthcare_appendix_link = text(
-        problem, "Healthcare costs appendix link", "Appendix: U.S. healthcare cost explainer",
-        72, 674, 800, 24, 18, color=SECONDARY, underline=True,
+        problem, "Healthcare costs appendix link", "U.S. healthcare cost explainer",
+        168, 674, 704, 24, 18, color=SECONDARY, underline=True,
     )
 
     data = new_slide(presentation, storyboard, "3",
