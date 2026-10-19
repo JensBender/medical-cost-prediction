@@ -325,10 +325,10 @@ XGBoost also performed better than Elastic Net in key subgroups, such as
 people with poor physical health. So I chose XGBoost as the more promising
 model for planning for a higher-cost year.
 
-But even with a more useful central estimate, users still need to understand
-how much higher their costs could be. I initially focused on typical prediction
-error, but residual analysis showed that errors were generally more spread out
-at higher predicted costs. A single estimate cannot communicate that uncertainty.
+But even a more useful central estimate doesn’t show how widely someone’s
+costs could vary. I initially focused on typical prediction error, but residual
+analysis showed that errors were generally more spread out at higher predicted
+costs. A single estimate cannot communicate that uncertainty.
 
 For budgeting, this matters because someone could plan around the central
 estimate and still be underprepared for a higher-cost year. So I decided to
