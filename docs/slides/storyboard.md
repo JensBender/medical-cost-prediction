@@ -312,27 +312,28 @@ change in MdAE from training to validation.”
 **Speaker notes — 1:30**
 
 I compared six model architectures and selected Elastic Net, Random Forest,
-and XGBoost for tuning. This table shows their results after tuning.
+and XGBoost for hyperparameter tuning. This table shows their results after
+tuning.
 Elastic Net achieved the lowest median absolute error, while XGBoost had
 the lowest mean absolute error.
 
 Elastic Net's validation predictions never exceeded about $217, and
-underprediction generally increased at higher predicted costs. XGBoost
-reached about $2,100 and generally kept median residuals closer to zero.
+underprediction generally increased at higher predicted costs. XGBoost's
+predictions, on the other hand, reached about $2,100, and its median residuals
+generally stayed closer to zero.
 XGBoost also performed better than Elastic Net in key subgroups, such as
-people with poor physical health or 4+ chronic conditions. So I chose
-XGBoost as the more promising model for planning for a higher-cost year.
+people with poor physical health. So I chose XGBoost as the more promising
+model for planning for a higher-cost year.
 
 But even with a more useful central estimate, users still need to understand
-how much higher their costs could be. I had initially prioritized typical
-prediction accuracy using median absolute error. Residual analysis showed
-that errors were generally more spread out at higher predicted costs.
-A single estimate could not communicate that uncertainty.
+how much higher their costs could be. I initially focused on typical prediction
+error, but residual analysis showed that errors were generally more spread out
+at higher predicted costs. A single estimate cannot communicate that uncertainty.
 
 For budgeting, this matters because someone could plan around the central
-estimate and still be underprepared for a higher-cost year. So I switched
-to quantile regression in XGBoost to give users budgeting ranges and a safety
-cushion alongside the central estimate.
+estimate and still be underprepared for a higher-cost year. So I decided to
+switch to quantile regression in XGBoost to give users budgeting ranges and
+a safety cushion alongside the central estimate.
 
 **Transition:** Map the quantiles directly to the intended budgeting outputs.
 
