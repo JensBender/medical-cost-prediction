@@ -26,6 +26,8 @@ review. The remaining appendix slides are in storyboard form.
   the bottom right. Add other footnotes only when needed to interpret the slide.
   On the cost-distribution slide, group EDA links in the left margin under
   “Appendix:” to preserve the plot size.
+- **Appendix speaker notes:** Leave main speaking points unlabelled. Use a standalone
+  “For questions:” heading before reference material for follow-up questions.
 - **Purpose:** show how the project connects a user need to modeling choices,
   evidence, limitations, and implementation decisions.
 - **Project status:** model training, selection, and evaluation for the MVP are
@@ -534,7 +536,9 @@ Timings apply only when promoted into the main presentation.
 **On the slide:** [Healthcare-cost infographic](../../assets/infographic_healthcare_costs.png)
 with a “Back” link.
 
-**Speaker notes — reference for questions**
+**Speaker notes**
+
+For questions:
 
 HSA: The account belongs to the individual and stays with them when they
 change jobs. Contributions require an HSA-eligible health plan and meeting
@@ -575,7 +579,9 @@ plan comparisons are outside scope.
 **On the slide:** [MEPS infographic](../../assets/infographic_meps_data.jpg)
 with a “Back” link.
 
-**Speaker notes — reference for questions**
+**Speaker notes**
+
+For questions:
 
 Employer survey: Collects information about employers' insurance offerings,
 premiums, and contributions. It is separate from the household data used here
@@ -634,11 +640,13 @@ account for survey clustering in uncertainty estimates.
 **Visual:** An editable table of 11 prepared inputs, with a “Back” link to the MEPS
 data slide. Continue to A4 for the remaining 16 yes/no features.
 
-**Speaker notes — reference for questions**
+**Speaker notes**
 
 These are the interpretable preprocessor input features, which SHAP also uses.
 They have gone through initial data preparation, including grouping marital
 and employment categories, rather than being raw MEPS variables.
+
+For questions:
 
 Family income: MEPS collects information about annual income from sources such
 as wages, pensions, and benefits. Income is summed across family members, then
@@ -680,7 +688,9 @@ improve the experience. Refer to A18 for input timing.
 and other. Include a “Back” link to the MEPS data slide. Keep explanations for
 ADL help, IADL help, usual source of care, and recent life transition.
 
-**Speaker notes — reference for questions**
+**Speaker notes**
+
+For questions:
 
 Chronic conditions: MEPS asks about each condition separately during the
 household interview. For example, “Have you ever been told by a doctor or
@@ -766,11 +776,13 @@ using the figure's existing title.
 “Back” link in the unused lower-left side margin, pointing to the
 cost-distribution slide. Use the same layout for the next two distribution slides.
 
-**Speaker notes — reference for questions**
+**Speaker notes**
 
 Family size is right-skewed, and health ratings are concentrated around
 excellent to good. These distributions supported median imputation because the
 median is less affected by extreme values than the mean.
+
+For questions:
 
 “Complete” shows the survey-weighted percentage with nonmissing information.
 Missing values can occur when people do not know an answer or decline to
@@ -792,7 +804,7 @@ the preprocessing pipeline using medians from the training data.
 **On the slide:** [Categorical distributions](../../figures/eda/categorical_distributions.png),
 using the figure's existing title and the same layout as A6.
 
-**Speaker notes — reference for questions**
+**Speaker notes**
 
 About 66% of adults had private insurance. For this majority, out-of-pocket
 costs represent their personal share of care, including deductibles, copays,
@@ -816,7 +828,7 @@ evaluation.
 **On the slide:** [Binary distributions](../../figures/eda/binary_distributions.png),
 using the figure's existing title and the same layout as A6.
 
-**Speaker notes — reference for questions**
+**Speaker notes**
 
 Joint pain, high blood pressure, and high cholesterol are common. Severe conditions such as cancer, coronary heart disease, and stroke are less common.
 
@@ -836,7 +848,7 @@ using the figure's existing title.
 “Back” link in the unused lower-left side margin, pointing to the
 cost-distribution slide. Use the same layout for the next three relationship slides.
 
-**Speaker notes — reference for questions**
+**Speaker notes**
 
 This heatmap shows survey-weighted Spearman rank correlations. Age has the
 strongest positive association with out-of-pocket costs at 0.30, followed by
@@ -855,7 +867,7 @@ Family size has the strongest negative association at −0.22.
 **On the slide:** [Numerical feature–target relationships](../../figures/eda/numerical_feature_target_relationships.png),
 using the figure's existing title and the same layout as A9.
 
-**Speaker notes — reference for questions**
+**Speaker notes**
 
 The plots show log-transformed costs rather than dollar amounts, so very high
 costs do not dominate the plots.
@@ -875,7 +887,7 @@ have very different out-of-pocket costs, ranging from zero to high costs.
 **On the slide:** [Categorical feature–target relationships](../../figures/eda/categorical_feature_target_relationships.png),
 using the figure's existing title and the same layout as A9.
 
-**Speaker notes — reference for questions**
+**Speaker notes**
 
 The plots show log-transformed costs rather than dollar amounts, so very high
 costs do not dominate the plots. The dollar labels show group medians.
@@ -901,7 +913,7 @@ healthcare need.
 **On the slide:** [Binary feature–target relationships](../../figures/eda/binary_feature_target_relationships.png),
 using the figure's existing title and the same layout as A9.
 
-**Speaker notes — reference for questions**
+**Speaker notes**
 
 Arthritis was common and showed a stronger overall correlation with costs,
 while cancer was less common but showed a larger difference in median
@@ -1091,7 +1103,7 @@ with all three subplots, fitted to the slide. Its title identifies the tuned
 models and validation data. Add only the slide number and a small “Back” link
 to model selection in the left margin.
 
-**Speaker notes — reference for questions**
+**Speaker notes**
 
 The plots show prediction errors, or residuals. Positive values mean
 underprediction, and negative values mean overprediction. I divided people
@@ -1111,7 +1123,9 @@ predicted above about $217, compared with about $1,270 for Random Forest and
 $2,100 for XGBoost. Together, these findings made the tree models more
 promising for budgeting higher costs.
 
-For questions: The line and band exclude the highest 1% of
+For questions:
+
+The line and band exclude the highest 1% of
 predicted costs, and the x-axis is zoomed accordingly to keep extreme
 predictions from compressing the main pattern.
 
@@ -1130,7 +1144,7 @@ predictions from compressing the main pattern.
 in three columns, fitted to the slide without an additional title. Add the slide
 number and a small “Back” link to model selection in the left margin.
 
-**Speaker notes — reference for questions**
+**Speaker notes**
 
 Errors increased across actual and predicted cost tiers for all three
 models and were higher for privately insured adults than for publicly
@@ -1141,7 +1155,9 @@ absolute error across many subgroups. However, Random Forest and XGBoost
 had roughly 35–50% lower errors for people with poor physical health or
 four-plus chronic conditions.
 
-For questions: The metrics are survey-weighted validation median absolute
+For questions:
+
+The metrics are survey-weighted validation median absolute
 errors. Sample sizes and actual median costs appear in the group labels.
 Predicted cost tiers are defined separately for each model, so they do not
 necessarily contain the same people.
