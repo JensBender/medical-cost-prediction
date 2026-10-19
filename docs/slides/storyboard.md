@@ -294,9 +294,10 @@ between lower- and higher-cost profiles.
 | Random Forest | $228 | **+3.8%** | $964 | -0.05 |
 | XGBoost | $242 | +6.2% | **$954** | **-0.02** |
 
-- XGBoost predicts a wider cost range: up to ~$2,100 vs. Elastic Net ~$217
-- XGBoost performs better in key subgroups: poor physical health; 4+ chronic conditions
-- Point estimates don’t show uncertainty: users can be underprepared for an expensive year
+- **Elastic Net:** Best median accuracy, but predictions never exceed ~$217.
+- **Choose XGBoost:** Predictions up to ~$2,100 and lower error in key health groups.
+- **Switch to quantile regression:** Errors generally widen at higher predicted costs,
+  so add budgeting ranges to communicate that uncertainty.
 
 **Footnote:** “Note: Survey-weighted validation metrics. Overfitting is the percentage
 change in MdAE from training to validation.”
@@ -313,8 +314,7 @@ change in MdAE from training to validation.”
 I compared six model architectures and selected Elastic Net, Random Forest,
 and XGBoost for tuning. This table shows their results after tuning.
 Elastic Net achieved the lowest median absolute error, while XGBoost had
-the lowest mean absolute error. Tuning also reduced XGBoost's
-training–validation gap from 98% to 6.2%.
+the lowest mean absolute error.
 
 Elastic Net's validation predictions never exceeded about $217, compared
 with about $2,100 for XGBoost. XGBoost also performed better than Elastic Net

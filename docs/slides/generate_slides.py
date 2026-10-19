@@ -417,12 +417,11 @@ def build_presentation():
          72, 402, 1136, 24, 18, color=SECONDARY)
     selection_bullets = text(selection, "Model selection rationale", "",
                              72, 456, 1136, 180, 26)
-    for index, value in enumerate([
-        "XGBoost predicts a wider cost range: up to ~$2,100 vs. Elastic Net ~$217",
-        "XGBoost performs better in key subgroups: poor physical health; "
-        "4+ chronic conditions",
-        "Point estimates don’t show uncertainty: users can be underprepared "
-        "for an expensive year",
+    for index, (label, value) in enumerate([
+        ("Elastic Net:", " Best median accuracy, but predictions never exceed ~$217."),
+        ("Choose XGBoost:", " Predictions up to ~$2,100 and lower error in key health groups."),
+        ("Switch to quantile regression:", " Errors generally widen at higher predicted "
+         "costs, so add budgeting ranges to communicate that uncertainty."),
     ]):
         paragraph = (selection_bullets.text_frame.paragraphs[0] if index == 0
                      else selection_bullets.text_frame.add_paragraph())
@@ -438,9 +437,10 @@ def build_presentation():
         bullet.set("char", "•")
         properties.append(bullet_font)
         properties.append(bullet)
-        run = paragraph.add_run()
-        run.text = value
-        style_font(run.font, 26)
+        for content, bold in ((label, True), (value, False)):
+            run = paragraph.add_run()
+            run.text = content
+            style_font(run.font, 26, bold=bold)
     text(selection, "Model selection appendix label", "Appendix:",
          72, 674, 90, 24, 18, color=SECONDARY)
     baseline_appendix_link = text(
