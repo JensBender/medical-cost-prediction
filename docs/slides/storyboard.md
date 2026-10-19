@@ -294,7 +294,7 @@ between lower- and higher-cost profiles.
 | Random Forest | $228 | **+3.8%** | $964 | -0.05 |
 | XGBoost | $242 | +6.2% | **$954** | **-0.02** |
 
-- **Elastic Net:** Best median accuracy, but predictions never exceed ~$217.
+- **Elastic Net:** Lowest MdAE, but predictions never exceed ~$217.
 - **Choose XGBoost:** Predictions up to ~$2,100 and lower error in key health groups.
 - **Switch to quantile regression:** Errors generally widen at higher predicted costs,
   so add budgeting ranges to communicate that uncertainty.
@@ -1099,8 +1099,8 @@ Errors increased across actual and predicted cost tiers for all three
 models and were higher for privately insured adults than for publicly
 insured or uninsured adults.
 
-Elastic Net achieved the best overall median accuracy and had lower median
-absolute error across many subgroups. However, Random Forest and XGBoost
+Elastic Net achieved the lowest overall median absolute error and had lower
+error across many subgroups. However, Random Forest and XGBoost
 had lower median absolute error in key health groups, such as people with
 poor physical health or four-plus chronic conditions.
 
