@@ -366,16 +366,18 @@ from q25 to q75.
 The plan-around estimate is the predicted median. It shows the midpoint of costs
 for people with a similar profile. The typical range runs from the 25th to the
 75th percentile and shows how much costs typically vary. The safety cushion is
-the 90th percentile, which provides a conservative planning estimate to help
+the 90th percentile, which provides a conservative estimate to help
 users budget for a higher-cost year.
 
-To evaluate these outputs, I check coverage: how often actual costs fall within
-the typical range or at or below the safety cushion. The typical range targets
-50% coverage, while the safety cushion targets 90%. Range width matters too:
-a range that includes almost everything would not help much with budgeting.
+To evaluate these outputs, I checked coverage and width. Coverage measures how
+often actual costs fall within the typical range or the safety cushion. Width
+matters too, because a very wide range could achieve high coverage but be too
+broad to be useful for budgeting. The typical range targets 50% coverage, while
+the safety cushion targets 90%. The goal is coverage close to these targets
+with ranges as narrow as possible.
 
-Finally, postprocessing clips negative predictions to zero and ensures higher
-percentiles never predict lower costs.”
+Finally, postprocessing clips negative predictions to zero and enforces quantile
+order, so that higher percentiles never predict lower costs.”
 
 For questions:
 

@@ -492,9 +492,9 @@ def build_presentation():
     text(quantiles, "Range label", "Typical range (q25–q75)", 200, 476, 540, 42, 30,
          bold=True, alignment=PP_ALIGN.CENTER)
     text(quantiles, "Coverage target", "Targets 50% coverage", 250, 522, 440, 40, 28,
-         alignment=PP_ALIGN.CENTER)
+         color=SECONDARY, alignment=PP_ALIGN.CENTER)
     text(quantiles, "Upper coverage target", "Targets 90% coverage", 848, 522, 360, 40, 28,
-         alignment=PP_ALIGN.CENTER)
+         color=SECONDARY, alignment=PP_ALIGN.CENTER)
 
     results = new_slide(presentation, storyboard, "8")
     text(results, "8 title", [("Final model audit:", True),
