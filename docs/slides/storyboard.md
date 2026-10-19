@@ -218,7 +218,7 @@ parts of model performance.
 - The highest-spending **20% accounts for 79.3%** of spending
 - The highest-spending **1% accounts for 20.6%** of spending
 - **Primary metric:** MdAE
-- **Supporting:** MAE, R²
+- **Supporting:** MAE
 
 **Visual:** Large [Lorenz curve](../../figures/eda/lorenz_curve.png) with the
 primary and supporting metrics in the left margin.
@@ -235,10 +235,10 @@ The highest-spending 20% account for almost 80% of costs, and the top 1% account
 for about 21%. High costs could reflect ongoing care or unexpected events such
 as hospitalization. Unexpected events make costs especially difficult to predict.
 
-Large errors on high-cost cases can strongly influence mean absolute error and
-R-squared. Therefore, I chose median absolute error as the primary evaluation
-metric to describe a typical prediction error, and complemented it with mean
-absolute error and R-squared as supporting diagnostics.
+Large errors on high-cost cases can strongly influence mean absolute error.
+Therefore, I chose median absolute error as the primary evaluation metric to
+describe a typical prediction error, and complemented it with mean absolute
+error as a supporting diagnostic.
 
 Outlier profiling revealed greater health burden and a higher likelihood of
 extreme costs. Outlier profiles were plausible, so I retained them to preserve
@@ -288,11 +288,11 @@ between lower- and higher-cost profiles.
 
 **On the slide**
 
-| Tuned model | MdAE | Overfitting | MAE | R² |
-| --- | ---: | ---: | ---: | ---: |
-| Elastic Net | **$159** | +7.9% | $1,051 | -0.13 |
-| Random Forest | $228 | **+3.8%** | $964 | -0.05 |
-| XGBoost | $242 | +6.2% | **$954** | **-0.02** |
+| Tuned model | MdAE | Overfitting | MAE |
+| --- | ---: | ---: | ---: |
+| Elastic Net | **$159** | +7.9% | $1,051 |
+| Random Forest | $228 | **+3.8%** | $964 |
+| XGBoost | $242 | +6.2% | **$954** |
 
 - **Elastic Net:** Lowest MdAE, but never predicts over ~$217 and increasingly underpredicts.
 - **Choose XGBoost:** Predicts up to ~$2,100 with less systematic underprediction.
@@ -941,16 +941,16 @@ allow 1:00.
 
 **On the slide**
 
-| Model | MdAE | Overfitting | MAE | R² |
-| --- | ---: | ---: | ---: | ---: |
-| **Elastic Net** | **$163** | +6.6% | $1,044 | -0.12 |
-| Linear Regression | $219 | +4.8% | $998 | -0.06 |
-| **Random Forest** | $232 | +9.6% | **$958** | -0.04 |
-| *Median (benchmark)* | *$248* | *0.0%* | *$1,041* | *-0.10* |
-| Decision Tree | $271 | **+1.5%** | $971 | -0.03 |
-| **XGBoost** | $281 | +98.0% | $961 | 0.00 |
-| Support Vector Machine | $291 | +190.7% | $1,027 | -0.03 |
-| *LLM (benchmark)* | *$518* | *N/A* | *$1,168* | ***0.04*** |
+| Model | MdAE | Overfitting | MAE |
+| --- | ---: | ---: | ---: |
+| **Elastic Net** | **$163** | +6.6% | $1,044 |
+| Linear Regression | $219 | +4.8% | $998 |
+| **Random Forest** | $232 | +9.6% | **$958** |
+| *Median (benchmark)* | *$248* | *0.0%* | *$1,041* |
+| Decision Tree | $271 | **+1.5%** | $971 |
+| **XGBoost** | $281 | +98.0% | $961 |
+| Support Vector Machine | $291 | +190.7% | $1,027 |
+| *LLM (benchmark)* | *$518* | *N/A* | *$1,168* |
 
 **Visual:** Model comparison table highlighting the three tuning candidates
 and the best values in each metric column.

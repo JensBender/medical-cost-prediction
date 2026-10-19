@@ -359,7 +359,7 @@ def build_presentation():
         "and the highest-spending 1% for 20.6%.",
     )
     metrics = text(distribution, "Evaluation metrics",
-                   "Primary metric\nMdAE\nSupporting\nMAE, R²",
+                   "Primary metric\nMdAE\nSupporting\nMAE",
                    75.8, 126.9, 184, 170, 24)
     for paragraph, heading, spacing in zip(
         metrics.text_frame.paragraphs, (True, False, True, False), (4, 18, 4, 0),
@@ -404,12 +404,12 @@ def build_presentation():
     selection = new_slide(presentation, storyboard, "6",
                           "Model selection: median error was not enough")
     model_table = native_table(selection, [
-        ["Tuned model", "MdAE", "Overfitting", "MAE", "R²"],
-        ["Elastic Net", "$159", "+7.9%", "$1,051", "-0.13"],
-        ["Random Forest", "$228", "+3.8%", "$964", "-0.05"],
-        ["XGBoost", "$242", "+6.2%", "$954", "-0.02"],
-    ], 142, [420, 160, 200, 180, 176])
-    for row, column in ((1, 1), (2, 2), (3, 3), (3, 4)):
+        ["Tuned model", "MdAE", "Overfitting", "MAE"],
+        ["Elastic Net", "$159", "+7.9%", "$1,051"],
+        ["Random Forest", "$228", "+3.8%", "$964"],
+        ["XGBoost", "$242", "+6.2%", "$954"],
+    ], 142, [420, 216, 250, 250])
+    for row, column in ((1, 1), (2, 2), (3, 3)):
         for run in model_table.cell(row, column).text_frame.paragraphs[0].runs:
             run.font.bold = True
     text(selection, "Validation note", "Note: Survey-weighted validation metrics. "
@@ -749,23 +749,23 @@ def build_presentation():
     text(baselines, "A14 title", "Baseline models",
          72, 48, 1136, 66, 44, bold=True)
     baseline_table = native_table(baselines, [
-        ["Model", "MdAE", "Overfitting", "MAE", "R²"],
-        ["Elastic Net", "$163", "+6.6%", "$1,044", "-0.12"],
-        ["Linear Regression", "$219", "+4.8%", "$998", "-0.06"],
-        ["Random Forest", "$232", "+9.6%", "$958", "-0.04"],
-        ["Median (benchmark)", "$248", "0.0%", "$1,041", "-0.10"],
-        ["Decision Tree", "$271", "+1.5%", "$971", "-0.03"],
-        ["XGBoost", "$281", "+98.0%", "$961", "0.00"],
-        ["Support Vector Machine", "$291", "+190.7%", "$1,027", "-0.03"],
-        ["LLM (benchmark)", "$518", "N/A", "$1,168", "0.04"],
-    ], 142, [420, 160, 200, 180, 176], row_height=48)
+        ["Model", "MdAE", "Overfitting", "MAE"],
+        ["Elastic Net", "$163", "+6.6%", "$1,044"],
+        ["Linear Regression", "$219", "+4.8%", "$998"],
+        ["Random Forest", "$232", "+9.6%", "$958"],
+        ["Median (benchmark)", "$248", "0.0%", "$1,041"],
+        ["Decision Tree", "$271", "+1.5%", "$971"],
+        ["XGBoost", "$281", "+98.0%", "$961"],
+        ["Support Vector Machine", "$291", "+190.7%", "$1,027"],
+        ["LLM (benchmark)", "$518", "N/A", "$1,168"],
+    ], 142, [420, 216, 250, 250], row_height=48)
     for row in baseline_table.rows:
         for cell in row.cells:
             cell.margin_top = cell.margin_bottom = pixels(6)
     for row in (1, 3, 6):
         for run in baseline_table.cell(row, 0).text_frame.paragraphs[0].runs:
             run.font.bold = True
-    for row, column in ((1, 1), (3, 3), (5, 2), (8, 4)):
+    for row, column in ((1, 1), (3, 3), (5, 2)):
         for run in baseline_table.cell(row, column).text_frame.paragraphs[0].runs:
             run.font.bold = True
     for row in (4, 8):

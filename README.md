@@ -213,21 +213,21 @@ Both versions include the target and survey weights, with respondent IDs preserv
 ## 🧠 Modeling
 Dedicated [**scripts**](scripts/) run model training, tuning, and benchmarks, saving fitted models and results for later analysis. **DVC** tracks the preprocessing, baseline model and final model training stages for reproducible reruns. **MLflow** records runs so their parameters and results can be reviewed and compared. The [**modeling notebook**](notebooks/2_modeling.ipynb) loads those saved outputs for evaluation, visualizations, and documenting decisions.
 
-Survey-weighted median absolute error (MdAE) is the primary evaluation metric because it reflects typical prediction error without letting rare, extreme costs dominate. Mean absolute error (MAE) and R² serve as supporting diagnostics because they are more sensitive to outliers in this heavy-tailed distribution.
+Survey-weighted median absolute error (MdAE) is the primary evaluation metric because it reflects typical prediction error without letting rare, extreme costs dominate. Mean absolute error (MAE) complements it by measuring the average size of errors, including large misses.
 
 ### 📏 Baseline Models  
 Evaluated a diverse set of baseline model architectures to identify candidates for hyperparameter tuning.
 
-| Model | MdAE | Overfitting | MAE | R² |
-| :--- | :--- | :--- | :--- | :--- |
-| **Elastic Net** | **$163** | +6.6% | $1,044 | -0.12 |
-| Linear Regression | $219 | +4.8% | $998 | -0.06 |
-| Random Forest | $232 | +9.6% | **$958** | -0.04 |
-| *Median (Benchmark)* | *$248* | *0.0%* | *$1,041* | *-0.10* |
-| Decision Tree | $271 | **+1.5%** | $971 | -0.03 |
-| XGBoost | $281 | +98.0% | $961 | 0.00 |
-| Support Vector Machine | $291 | +190.7% | $1,027 | -0.03 |
-| *LLM (Benchmark)* | *$518* | *N/A* | *$1,168* | **0.04** |
+| Model | MdAE | Overfitting | MAE |
+| :--- | :--- | :--- | :--- |
+| **Elastic Net** | **$163** | +6.6% | $1,044 |
+| Linear Regression | $219 | +4.8% | $998 |
+| Random Forest | $232 | +9.6% | **$958** |
+| *Median (Benchmark)* | *$248* | *0.0%* | *$1,041* |
+| Decision Tree | $271 | **+1.5%** | $971 |
+| XGBoost | $281 | +98.0% | $961 |
+| Support Vector Machine | $291 | +190.7% | $1,027 |
+| *LLM (Benchmark)* | *$518* | *N/A* | *$1,168* |
 
 <sub>*Note:* Survey-weighted validation metrics. Overfitting is the percentage change in MdAE from training to validation.</sub>
 
@@ -235,7 +235,7 @@ Evaluated a diverse set of baseline model architectures to identify candidates f
 - **Baseline Champion:** Elastic Net achieved the best median accuracy ($163 MdAE) with minimal overfitting (+6.6%).
 - **Overfitting:** XGBoost and SVM exhibited extreme overfitting (+98% to +191%) out-of-the-box. Their configurations did not generalize well, motivating stronger regularization during tuning.
 - **LLM Benchmark:** Compared performance of specialized ML models against a general intelligence LLM ("Why not just ask Gemini?"). Every specialist model showed better predictive performance than the general-purpose LLM (Gemini 3 Flash), with Elastic Net reducing MdAE from $518 to $163, a 3.2x improvement. This demonstrates added value of specialist ML models. 🔗 [**See LLM Benchmarking Details**](#llm-benchmarking-details)
-- **Typical vs. Large Errors:** For most models, MdAE is near $200 but MAE is near $1,000, showing that some predictions miss by far more than the typical one. R² is near zero or negative across all models, partly because it heavily penalizes misses on rare, high-cost outliers in this heavy-tailed distribution.
+- **Typical vs. Large Errors:** For most models, MdAE is near $200 but MAE is near $1,000, showing that some predictions miss by far more than the typical one.
 
 **Selected Finalists:**  
 1. **Elastic Net:** The baseline champion.
@@ -257,16 +257,16 @@ Conducted hyperparameter optimization for the three selected finalists using a c
   - **Random Forest:** `RandomForestRegressor` with `criterion="absolute_error"`. Tuned `n_estimators` (200–400), `max_depth` (8–25), `min_samples_split` (20–150), `min_samples_leaf` (10–80), `max_features` (sqrt/log2/30%–70%), and `max_samples` (60%–100%).
   - **XGBoost:** `XGBRegressor` with `objective="reg:absoluteerror"`. Tuned `n_estimators` (400–800), `max_depth` (3–10), `learning_rate` (log-uniform 0.01–0.2), `min_child_weight` (1–20), `subsample` (60%–100%), `colsample_bytree` (50%–100%), and L1/L2 penalties `reg_alpha`/`reg_lambda` (uniform 0–5).
 
-| Model | MdAE | Overfitting | MAE | R² |
-| :--- | :---: | :---: | :---: | :---: |
-| *Median (Benchmark)* | *$248* | *0.0%* | *$1,041* | *-0.10* |
-| *LLM (Benchmark)* | *$518* | *N/A* | *$1,168* | **0.04** |
-| Elastic Net (Baseline) | $163 | +6.6% | $1,044 | -0.12 |
-| **Elastic Net (Tuned)** | **$159** | +7.9% | $1,051 | -0.13 |
-| Random Forest (Baseline) | $232 | +9.6% | $958 | -0.04 |
-| Random Forest (Tuned) | $228 | **+3.8%** | $964 | -0.05 |
-| XGBoost (Baseline) | $281 | +98.0% | $961 | 0.00 |
-| XGBoost (Tuned) | $242 | +6.2% | **$954** | -0.02 |
+| Model | MdAE | Overfitting | MAE |
+| :--- | :---: | :---: | :---: |
+| *Median (Benchmark)* | *$248* | *0.0%* | *$1,041* |
+| *LLM (Benchmark)* | *$518* | *N/A* | *$1,168* |
+| Elastic Net (Baseline) | $163 | +6.6% | $1,044 |
+| **Elastic Net (Tuned)** | **$159** | +7.9% | $1,051 |
+| Random Forest (Baseline) | $232 | +9.6% | $958 |
+| Random Forest (Tuned) | $228 | **+3.8%** | $964 |
+| XGBoost (Baseline) | $281 | +98.0% | $961 |
+| XGBoost (Tuned) | $242 | +6.2% | **$954** |
 
 <sub>*Note:* Survey-weighted validation metrics. Overfitting is the percentage change in MdAE from training to validation.</sub>
 
