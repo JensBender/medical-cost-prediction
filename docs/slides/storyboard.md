@@ -1152,8 +1152,8 @@ insured or uninsured adults.
 
 Elastic Net achieved the best overall median accuracy and had lower median
 absolute error across many subgroups. However, Random Forest and XGBoost
-had roughly 35–50% lower errors for people with poor physical health or
-four-plus chronic conditions.
+had lower median absolute error in key health groups, such as people with
+poor physical health or four-plus chronic conditions.
 
 For questions:
 
