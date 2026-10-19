@@ -64,7 +64,7 @@ The first three slide timings are rehearsed; the remaining timings are estimates
 | 4 | Out-of-pocket costs: 20% of adults account for ~80% | 1:00 | Show the data challenge that shaped modeling |
 | 5 | Preprocessing pipeline | 1:00 | Prepare model-ready inputs and preserve consistent transformations |
 | 6 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
-| 7 | Quantile regression turns predictions into budgeting ranges | 1:30 | Explain the final model and its outputs |
+| 7 | Quantile regression: budgeting for uncertainty | 1:30 | Explain the final model and its outputs |
 | 8 | Final model audit: clearest gains in ranges and q90 | 1:30 | Present held-out evidence and baseline comparisons |
 | 9 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
 | 10 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
@@ -344,10 +344,10 @@ a safety cushion alongside the central estimate.
 point-estimate models. Do not compare $159 here with the final model's $240 test
 result as if they came from the same evaluation.
 
-### 7 — Quantile regression turns predictions into budgeting ranges
+### 7 — Quantile regression: budgeting for uncertainty
 
-**Takeaway:** The final model estimates different parts of the spending
-distribution for each input profile.
+**Takeaway:** Go beyond a typical estimate: show how costs could vary and
+provide a safety cushion for a higher-cost year.
 
 **On the slide**
 
@@ -357,33 +357,53 @@ distribution for each input profile.
 | Typical range | q25–q75 | Central range targeting 50% coverage |
 | Safety cushion | q90 | Upper planning reference targeting 90% coverage |
 
-- XGBoost with a quantile objective; survey-weighted training on log-transformed costs
-- Evaluate coverage **and** width, plus losses that penalize missed outcomes
-
-**Visual:** Cost axis with q25, q50, q75, and q90, labeled “conceptual.”
+**Visual:** Quantile markers on a cost axis, with a curved brace linking the typical range
+from q25 to q75.
 
 **Speaker notes — 1:30**
 
-“A conditional median describes the midpoint of spending for an input profile.
-The 25th and 75th percentiles describe a central range, and the 90th percentile
-provides an upper planning reference. The model learns all four quantiles using
-XGBoost's quantile objective. Training uses survey weights and log-transformed
-costs; predictions are returned to dollars and postprocessed so the quantiles
-are nonnegative and ordered. The final model reuses the tuned point-model
-hyperparameters, so a separate search for the quantile objective remains a
-possible improvement. Coverage asks how often observed spending falls inside
-the range or below q90. Width matters too: a range that covers almost anything
-would not help much with budgeting. These are prediction ranges for spending,
-not confidence intervals around an average, and q90 is not a maximum possible bill.”
+“Quantile regression gives users three outputs to help them budget for uncertainty.
+The plan-around estimate is the predicted median. It shows the midpoint of costs
+for people with a similar profile. The typical range runs from the 25th to the
+75th percentile and shows how much costs typically vary. The safety cushion is
+the 90th percentile, which provides a conservative planning estimate to help
+users budget for a higher-cost year.
 
-Log-transform reference: Costs are transformed as ln(1 + cost), also called
-log1p. Adding one makes the transformation defined for zero costs.
+To evaluate these outputs, I check coverage: how often actual costs fall within
+the typical range or at or below the safety cushion. The typical range targets
+50% coverage, while the safety cushion targets 90%. Range width matters too:
+a range that includes almost everything would not help much with budgeting.
+
+Finally, postprocessing clips negative predictions to zero and ensures higher
+percentiles never predict lower costs.”
+
+For questions:
+
+Safety cushion: Q90 targets 90% coverage, not a maximum bill. Q95 or q99 would
+suggest larger reserves, which may be less practical and discourage users from
+following the guidance. Q95/q99 estimates may also be less stable because they
+rely on sparser tail data.
+
+Hyperparameters: The model reuses the best tuned XGBoost point-estimate
+hyperparameters, switching the objective from absolute error to quantile error
+for q25, q50, q75, and q90.
+
+Training: Uses survey weights and log-transformed costs, ln(1 + cost), also called
+log1p. Adding one makes the log transformation defined for zero costs.
+Predictions are converted back to dollars before postprocessing.
+
+Postprocessing checks: On the test set, postprocessing had negligible impact.
+Clipping negative predictions affected 5.7% of the survey-weighted test
+population, by at most 41 cents. Enforcing quantile order affected 0.24%,
+by at most one cent.
 
 **Transition:** Show whether the final model delivers those outputs on held-out data.
 
 **Sources:** [README: final model](../../README.md);
 [quantile training script](../../scripts/train_xgboost_quantile.py);
-[prediction postprocessing](../../src/prediction.py).
+[prediction postprocessing](../../src/prediction.py);
+[modeling notebook: postprocessing checks](../../notebooks/2_modeling.ipynb);
+[scikit-learn: estimating extreme quantiles](https://scikit-learn.org/stable/auto_examples/linear_model/plot_quantile_regression.html).
 
 ### 8 — Final model audit: clearest gains in ranges and q90
 

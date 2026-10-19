@@ -467,34 +467,34 @@ def build_presentation():
         766, 674, 205, 24, 18, color=SECONDARY, underline=True,
     )
 
-    quantiles = new_slide(presentation, storyboard, "7", "Quantile regression turns "
-                          "predictions\ninto budgeting ranges", two_lines=True)
-    text(quantiles, "Objective", "XGBoost quantile objective · survey weights · "
-         "log-transformed costs", 72, 190, 1136, 38, 27)
-    text(quantiles, "Plan-around label", "Plan-around estimate", 238, 260, 320, 38, 27,
+    quantiles = new_slide(presentation, storyboard, "7",
+                          "Quantile regression: budgeting for uncertainty")
+    text(quantiles, "Plan-around label", "Plan-around estimate (q50)",
+         166, 230, 500, 42, 30,
          bold=True, alignment=PP_ALIGN.CENTER)
-    text(quantiles, "Safety label", "Safety cushion", 834, 260, 320, 38, 27,
+    text(quantiles, "Safety label", "Safety cushion (q90)", 848, 230, 360, 42, 30,
          bold=True, alignment=PP_ALIGN.CENTER)
     # This axis is conceptual; positions do not encode a person's dollar values.
-    rect(quantiles, "Cost axis", 122, 334, 1040, 2, INK)
-    rect(quantiles, "Typical range q25 to q75", 248, 318, 398, 34, PALE)
-    for x, label in ((248, "q25"), (398, "q50"), (646, "q75"), (994, "q90")):
-        rect(quantiles, f"Quantile marker {label}", x, 311, 3, 49, INK)
-        text(quantiles, label, label, x - 40, 373, 83, 38, 27, alignment=PP_ALIGN.CENTER)
-    text(quantiles, "Range label", "Typical range", 275, 427, 340, 38, 28,
+    rect(quantiles, "Cost axis", 100, 330, 1080, 2, INK)
+    rect(quantiles, "Typical range q25 to q75", 250, 308, 440, 44, PALE)
+    for x, label in ((250, "q25"), (416, "q50"), (690, "q75"), (1028, "q90")):
+        rect(quantiles, f"Quantile marker {label}", x, 300, 3, 60, INK)
+        text(quantiles, label, label, x - 45, 379, 93, 42, 30, alignment=PP_ALIGN.CENTER)
+    brace = quantiles.shapes.add_shape(
+        MSO_SHAPE.RIGHT_BRACE, pixels(459), pixels(226), pixels(22), pixels(440)
+    )
+    brace.name = "Typical range brace"
+    brace.rotation = 90
+    brace.fill.background()
+    brace.line.color.rgb = RGBColor.from_string(SECONDARY)
+    brace.line.width = Pt(1.2)
+    brace._element.spPr.append(OxmlElement("a:effectLst"))
+    text(quantiles, "Range label", "Typical range (q25–q75)", 200, 476, 540, 42, 30,
          bold=True, alignment=PP_ALIGN.CENTER)
-    text(quantiles, "Coverage target", "Targets 50% coverage", 258, 466, 380, 38, 26,
+    text(quantiles, "Coverage target", "Targets 50% coverage", 250, 522, 440, 40, 28,
          alignment=PP_ALIGN.CENTER)
-    text(quantiles, "Upper coverage target", "Targets 90% below q90", 821, 427, 387, 38, 26,
+    text(quantiles, "Upper coverage target", "Targets 90% coverage", 848, 522, 360, 40, 28,
          alignment=PP_ALIGN.CENTER)
-    text(quantiles, "Direction", "Higher annual spending →", 856, 496, 352, 38, 24,
-         alignment=PP_ALIGN.RIGHT)
-    text(quantiles, "Evaluation principle", "Useful ranges need both coverage and "
-         "reasonable width", 72, 566, 1136, 42, 30, bold=True)
-    text(quantiles, "Not a cap", "The safety cushion is an upper planning reference, "
-         "not a spending cap.", 72, 611, 1136, 36, 27)
-    footnote(quantiles, "Conceptual diagram, not a prediction for an individual. "
-             "q50 is the predicted median.")
 
     results = new_slide(presentation, storyboard, "8")
     text(results, "8 title", [("Final model audit:", True),
