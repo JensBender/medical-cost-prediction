@@ -629,7 +629,7 @@ account for survey clustering in uncertainty estimates.
 | Sex | Binary | Male, female |
 | Region | Categorical | Northeast, Midwest, South, West |
 | Marital status | Categorical | Married, widowed, divorced, separated, never married |
-| Family income | Ordinal | Relative to poverty: poor/negative, near poor, low, middle, high |
+| Family income | Numerical | 1 = Poor/Negative, 2 = Near Poor, 3 = Low, 4 = Middle, 5 = High |
 | Family size | Numerical | 1–14 |
 | Education | Categorical | None, GED, high school, bachelor's, master's, doctorate, other |
 | Employment status | Binary | Employed, not employed |
@@ -647,6 +647,12 @@ They have gone through initial data preparation, including grouping marital
 and employment categories, rather than being raw MEPS variables.
 
 For questions:
+
+Family income and physical and mental health ratings are conceptually ordinal.
+They already use ordered codes from 1 to 5, which the pipeline processes as
+numerical features with median imputation and standard scaling. An ordinal
+encoder preserving that order would only shift the codes to 0–4, giving the
+same standardized values without adding information.
 
 Family income: MEPS collects information about annual income from sources such
 as wages, pensions, and benefits. Income is summed across family members, then

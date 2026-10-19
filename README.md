@@ -632,15 +632,16 @@ The 26 features were selected from MEPS-HC 2023 based on the following criteria:
 Form completion in under 90 seconds is a soft goal. Feature reduction will be considered only if user testing shows that completing the form takes substantially longer and harms the user experience.
 
 **Features**
+
 | Label | Variable | Description | Data Type | Value Range |
 | :--- | :--- | :--- | :--- | :--- |
 | Age | `AGE23X` | Age as of Dec 31, 2023. | Numerical (Int) | 0–85 |
 | Sex | `SEX` | Biological sex. | Binary (Int) | 1=Male, 2=Female |
 | Region | `REGION23` | Census region. | Nominal (Int) | 1=Northeast, 2=Midwest, 3=South, 4=West |
 | Marital Status | `MARRY31X` | Status at beginning of year. | Nominal (Int) | 1=Married, 2=Widowed, 3=Divorced, 4=Separated, 5=Never Married |
-| Family Income | `POVCAT23` | Family income relative to poverty line. | Ordinal (Int) | 1=Poor/Negative, 2=Near Poor, 3=Low Income, 4=Middle Income, 5=High Income |
+| Family Income | `POVCAT23` | Family income relative to poverty line. | Numerical (Int) | 1=Poor/Negative, 2=Near Poor, 3=Low Income, 4=Middle Income, 5=High Income |
 | Family Size | `FAMSZE23` | Number of related persons residing together. | Numerical (Int) | 1–14 |
-| Education | `HIDEG` | Highest degree attained. | Ordinal (Int) | 1=No Degree, 2=GED, 3=HS Diploma, 4=Bachelor's, 5=Master's, 6=Doctorate, 7=Other |
+| Education | `HIDEG` | Highest degree attained. | Nominal (Int) | 1=No Degree, 2=GED, 3=HS Diploma, 4=Bachelor's, 5=Master's, 6=Doctorate, 7=Other |
 | Employment Status | `EMPST31` | Status at beginning of year. | Nominal (Int) | 1=Employed, 2=Job to Return To, 3=Job in Ref Period, 4=Not Employed |
 | Insurance | `INSCOV23` | Coverage status. | Nominal (Int) | 1=Any Private, 2=Public Only, 3=Uninsured |
 | Usual Source of Care | `HAVEUS42` | Regular doctor or clinic. | Binary (Int) | 1=Yes, 2=No |
@@ -660,6 +661,8 @@ Form completion in under 90 seconds is a soft goal. Feature reduction will be co
 | Cancer | `CANCERDX` | Diagnosed with cancer or malignancy. | Binary (Int) | 1=Yes, 2=No |
 | Arthritis | `ARTHDX` | Diagnosed with arthritis. | Binary (Int) | 1=Yes, 2=No |
 | Asthma | `ASTHDX` | Diagnosed with asthma. | Binary (Int) | 1=Yes, 2=No |
+
+<sub>*Note:* Value ranges show MEPS source codes. Family income and physical and mental health ratings are conceptually ordinal but labelled numerical here because the preprocessing pipeline retains their ordered 1–5 codes, imputes missing values with the training median, and standardizes them. No ordinal encoder is needed. Education is treated as nominal because its "Other" category has no fixed position in the order.</sub>
 
 <p align="right">(<a href="#main-features">Back to Features</a> | <a href="#readme-top">Back to Top</a>)</p>
 

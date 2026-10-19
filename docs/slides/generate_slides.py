@@ -586,7 +586,7 @@ def build_presentation():
         ["Sex", "Binary", "Male, female"],
         ["Region", "Categorical", "Northeast, Midwest, South, West"],
         ["Marital status", "Categorical", "Married, widowed, divorced, separated, never married"],
-        ["Family income", "Ordinal", "Relative to poverty: poor/negative, near poor, low, middle, high"],
+        ["Family income", "Numerical", "1 = Poor/Negative, 2 = Near Poor, 3 = Low, 4 = Middle, 5 = High"],
         ["Family size", "Numerical", "1\u201314"],
         ["Education", "Categorical", "None, GED, high school, bachelor's, master's, doctorate, other"],
         ["Employment status", "Binary", "Employed, not employed"],

@@ -35,12 +35,16 @@ To ensure consistency between the raw MEPS data, the ML pipeline, and the web ap
 | Semantic Type | Definition | Storage Type | Application Type | Preprocessing |
 | :--- | :--- | :--- | :--- | :--- |
 | **Numerical** | Continuous or discrete quantities | `int` / `float` | `int` / `float` | `StandardScaler` or Passthrough |
-| **Ordinal** | Categories with inherent order | `str` / `int` | `IntEnum` | `OrdinalEncoder` (preserves order) |
+| **Ordinal** | Categories with inherent order | `str` / `int` | `IntEnum` | Process as numerical: retain ordered numeric codes, median-impute, then standardize |
 | **Nominal** | Categories without order | `str` / `int` | `Enum` / `IntEnum` | `OneHotEncoder` |
 | **Binary** | Two-state categories (e.g., Yes/No) | `int` / `str` | `bool` | Binary Mapping (0/1) |
 | **ID** | Unique identifiers | `str` / `int` | `str` | Drop (excluded from features) |
 
-**Note:**  Most MEPS binary variables use `1` for "Yes" and `2` for "No". During preprocessing, map `1` → `1` (True) and `2` → `0` (False). 
+**Notes:**
+
+Most MEPS binary variables use `1` for "Yes" and `2` for "No". During preprocessing, map `1` → `1` (True) and `2` → `0` (False).
+
+The tables below describe semantic types. Family income (`POVCAT23`) and physical and mental health ratings (`RTHLTH31`, `MNHLTH31`) are ordinal, but the preprocessing pipeline processes them as numerical features: it retains their ordered 1–5 codes, imputes missing values with the training median, and standardizes them. No ordinal encoder is used: shifting those codes to 0–4 would give the same standardized values. Education (`HIDEG`) is treated as nominal because "Other" has no fixed position in the order.
 
 
 ## 1. Identifiers
@@ -73,7 +77,7 @@ To ensure consistency between the raw MEPS data, the ML pipeline, and the web ap
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **POVCAT23** | FAMILY INCOME AS % OF POVERTY LINE | Ordinal | Int | 1=Poor/Negative, 2=Near Poor, 3=Low Income, 4=Middle Income, 5=High Income | Derived variable. Usually no missing codes. |
 | **FAMSZE23** | TOTAL NUMBER OF PERSONS IN FAMILY | Numerical | Int | 1–14 | Count of related persons in the reporting unit. |
-| **HIDEG** | HIGHEST DEGREE WHEN FIRST ENTERED | Ordinal | Int | 1=No Degree, 2=GED, 3=HS Diploma, 4=Bachelor's, 5=Master's, 6=Doctorate, 7=Other, 8=Under 16 | Highest degree attained. Codes -1, -7, -8, -9 apply. 8 is Under 16. |
+| **HIDEG** | HIGHEST DEGREE WHEN FIRST ENTERED | Nominal | Int | 1=No Degree, 2=GED, 3=HS Diploma, 4=Bachelor's, 5=Master's, 6=Doctorate, 7=Other, 8=Under 16 | Highest degree attained. Codes -1, -7, -8, -9 apply. 8 is Under 16. |
 | **EMPST31** | EMPLOYMENT STATUS - R3/1 | Nominal | Int | 1=Employed, 2=Job to return to, 3=Job during ref period, 4=Not employed | Status at beginning of year. Codes -1, -7, -8, -9 apply. |
 
 ## 5. Insurance & Access
@@ -85,8 +89,8 @@ To ensure consistency between the raw MEPS data, the ML pipeline, and the web ap
 ## 6. Perceived Health & Lifestyle
 | Variable | Label | Semantic Type | Storage Type | Values | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **RTHLTH31** | PERCEIVED HEALTH STATUS - RD 3/1 | Numerical | Int | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor | Codes -1, -7, -8, -9 apply. |
-| **MNHLTH31** | PERCEIVED MENTAL HEALTH - RD 3/1 | Numerical | Int | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor | Codes -1, -7, -8, -9 apply. |
+| **RTHLTH31** | PERCEIVED HEALTH STATUS - RD 3/1 | Ordinal | Int | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor | Codes -1, -7, -8, -9 apply. |
+| **MNHLTH31** | PERCEIVED MENTAL HEALTH - RD 3/1 | Ordinal | Int | 1=Excellent, 2=Very Good, 3=Good, 4=Fair, 5=Poor | Codes -1, -7, -8, -9 apply. |
 | **ADSMOK42** | CURRENTLY SMOKE (>17) | Binary | Int | 1=Yes, 2=No | Asked of adults 18+. Codes -1, -7, -8, -9 apply. |
 
 ## 7. Limitations & Symptoms

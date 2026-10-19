@@ -48,6 +48,8 @@ Proxies for healthcare access, literacy, insurance quality, and ability to pay.
 | `HIDEG` | Education | Highest degree attained | Derived from years of education, high school diploma status, and degree type | No Degree, GED, HS Diploma, Bachelor's, Master's, Doctorate, Other | Correlates with health literacy and preventive care use. Treated as nominal as the "Other" category disrupts the ordinal hierarchy. [[4]](#ref4) |
 | `EMPST31` | Employment Status | Status at beginning of year | Derived from a series of questions covering current job, job to return to, and work earlier in the round | Employed, Job to Return to, Job During Ref Period, Not Employed | Strong proxy for insurance type and income |
 
+**Note:** Family income is conceptually ordinal. The preprocessing pipeline retains its ordered 1–5 codes and processes it as a numerical feature with median imputation and standard scaling. Recoding to 0–4 with an ordinal encoder would give the same standardized values. Education is treated as nominal and one-hot encoded because "Other" has no fixed position in the order.
+
 **UI Recommendation for POVCAT23:**
 The MEPS variable `POVCAT23` is not a single survey question but derived from multiple questions:
 1. **Detailed Income Questions:** An extensive series of questions asking for wages, salary, business income, social security, etc., for each family member.
@@ -89,6 +91,8 @@ Subjective indicators of overall health burden and behavioral risk factors that 
 | `RTHLTH31` | Physical Health | Self-rated physical health (1–5) | "In general, would you say your health is...?" | Excellent, Very good, Good, Fair, Poor | Strongest subjective predictor of utilization. [[5]](#ref5) |
 | `MNHLTH31` | Mental Health | Self-rated mental health | "In general, would you say your mental health is...?" | Excellent, Very good, Good, Fair, Poor | Significant cost multiplier via treatment adherence. [[5]](#ref5) |
 | `ADSMOK42` | Smoker | Currently smokes | "Do you currently smoke cigarettes?" | Yes, No | Stable behavioral risk factor. [[2]](#ref2) |
+
+**Note:** Physical and mental health ratings are conceptually ordinal. The preprocessing pipeline retains their ordered 1–5 codes and processes them as numerical features with median imputation and standard scaling, without an ordinal encoder.
 
 
 ### 5. Limitations & Symptoms

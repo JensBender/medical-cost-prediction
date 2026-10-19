@@ -137,7 +137,7 @@ The following MEPS variables were selected for the model. All candidates satisfy
 **Socioeconomic**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Family Income** | `POVCAT23` | Ordinal (Int) | Family income mapped to ordered categories relative to the poverty line. | ✅ Correlated with insurance type and ability to pay OOP. |
+| **Family Income** | `POVCAT23` | Numerical (Int) | Family income mapped to ordered categories relative to the poverty line. | ✅ Correlated with insurance type and ability to pay OOP. |
 | **Family Size** | `FAMSZE23` | Numerical (Int) | Number of related persons residing together (CPS definition). | ✅ Used to determine the applicable poverty threshold; captures household resource sharing. |
 | **Education** | `HIDEG` | Nominal (Int) | Highest degree attained. Maps UI labels to MEPS `HIDEG` categories. | ⚠️ Correlates with health literacy; treated as nominal due to 'Other' category. |
 | **Employment** | `EMPST31` | Nominal (Int) | Employment status at beginning of year. | ⚠️ Strong proxy for insurance type. |
@@ -232,6 +232,8 @@ Perform once before pipeline:
 
 **Feature Preprocessing**
 Missing numerical inputs use median imputation; nominal and binary inputs use mode imputation. Scaling and encoding use a `ColumnTransformer`.
+
+Family income (`POVCAT23`) and physical and mental health ratings (`RTHLTH31`, `MNHLTH31`) are conceptually ordinal but processed as numerical features. Their existing ordered 1–5 codes are retained, median-imputed, and standardized. An ordinal encoder preserving that order would only shift the codes to 0–4 and produce the same standardized values.
 
 | Feature Type | Example Columns | Transformer | Notes |
 | :--- | :--- | :--- | :--- |
