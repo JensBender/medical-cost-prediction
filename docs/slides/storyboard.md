@@ -446,10 +446,12 @@ On average, the typical range spanned about $900 between its lower and upper
 bounds. The safety cushion added about $2,000 above the plan-around estimate.
 Both average widths stayed below the release limits.
 
-Compared with population and age-group baselines, XGBoost's clearest added value
-was in the typical range and safety cushion. Plan-around estimates also improved
-quantile loss against both baselines, but their median absolute error remained
-close to the population baseline.”
+To assess added value, I compared XGBoost's quantile estimates with two simple
+baselines. The population baseline gives everyone the same estimates, while the
+age-group baseline gives everyone within the same age group the same estimates.
+XGBoost's clearest added value was in the typical range and safety cushion. For
+the plan-around estimate, median absolute error remained close to the population
+baseline.”
 
 For questions:
 
