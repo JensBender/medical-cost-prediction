@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: ten main slides and seventeen appendix slides are generated. The remaining
+Status: ten main slides and eighteen appendix slides are generated. The remaining
 appendix slides are planned below.
 
 ## Presentation context
@@ -202,7 +202,7 @@ independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
 See A3–A4 for preprocessor input features, counts, and possible feature reduction,
-and A18 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
+and A19 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
 random within spending groups, with a separate zero-cost group and finer bins
 for high costs to reduce imbalances in rare, expensive cases. Discuss the split
 after the spending-distribution slide if asked.
@@ -419,18 +419,17 @@ with its strongest evidence of added value in interval and upper-quantile scores
 | Typical range (q25–q75): mean width | **$912** [$875, $955] | < $1,500 |
 | Safety cushion (q50–q90): mean width | **$2,032** [$1,964, $2,108] | < $3,500 |
 
-Compared with the population baseline:
-
-| Budgeting estimate | Comparison result |
-| --- | --- |
-| Plan-around estimate (q50) | **≈$8** lower MdAE (improvement uncertain) |
-| Typical range (q25–q75) | **11.2%** interval skill score |
-| Safety cushion (q90) | **15.6%** quantile skill score |
-
-**Visual:** Results table above the baseline comparisons.
-
-**Footnote:** “Note: Survey-weighted test metrics. 95% percentile bootstrap confidence
+**Table note:** “Note: Survey-weighted test metrics. 95% percentile bootstrap confidence
 intervals from 1,000 resamples of test-set rows.”
+
+**Value over simple baselines**
+
+- **Typical range and safety cushion:** improved over population and age-group baselines.
+- **Plan-around estimate:** MdAE remained close to the population baseline.
+
+**Visual:** Results table above the baseline comparison summary.
+
+**Appendix link:** Baseline Comparison (A18).
 
 **Speaker notes — 1:30**
 
@@ -447,15 +446,10 @@ On average, the typical range spanned about $900 between its lower and upper
 bounds. The safety cushion added about $2,000 above the plan-around estimate.
 Both average widths stayed below the release limits.
 
-But a simple population estimate is competitive on plan-around
-MdAE: $248 versus $240. That is approximately $8 lower MdAE, using the rounded
-values shown. The bootstrap comparison does not establish a clear MdAE
-improvement. The stronger results are an 11.2% interval skill score and a
-15.6% quantile skill score at q90. These express the relative reduction in
-interval score and pinball loss compared with the baseline. The underlying
-scores assess width and misses, or the size and direction of errors, rather
-than coverage alone. The age-group comparison also supports gains on these
-measures.”
+Compared with population and age-group baselines, XGBoost's clearest added value
+was in the typical range and safety cushion. Plan-around estimates also improved
+quantile loss against both baselines, but their median absolute error remained
+close to the population baseline.”
 
 For questions:
 
@@ -470,7 +464,7 @@ and situations where the model is less reliable.
 
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
-Confidence intervals, widths, and scoring definitions are in A20 and A21.
+Detailed baseline comparisons and scoring definitions are in A18.
 
 ### 9 — Final model test audit: overall coverage hides subgroup gaps
 
@@ -688,7 +682,7 @@ after adding a life-transition feature and 40 model-ready columns after
 transformation. These counts do not equal the number of questions on the planned
 form: related conditions can be grouped, and some values are derived. User testing
 will assess the burden; feature reduction is an option if fewer inputs would
-improve the experience. Refer to A18 for input timing.
+improve the experience. Refer to A19 for input timing.
 
 **Sources:** [README: feature details](../../README.md#feature-details);
 [input definitions](../../src/constants.py);
@@ -1157,7 +1151,62 @@ necessarily contain the same people.
 **Sources:** [README: subgroup reliability](../../README.md#tuned-models-subgroup-reliability);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A18 — Feature timing: limits of next-year forecasting
+### A18 — Final model: baseline comparison
+
+**Question:** Does XGBoost improve on population and age-group estimates?
+
+**On the slide**
+
+Training quantiles: same estimates for everyone or within each age group.
+
+| Test comparison | Versus population baseline (95% CI) | Versus age-group baseline (95% CI) |
+| --- | --- | --- |
+| Plan-around estimate (q50): MdAE reduction | 3.4% [-12.7%, 13.1%] | 21.5% [10.1%, 30.1%] |
+| Plan-around estimate (q50): quantile skill score | 9.8% [7.8%, 11.9%] | 7.6% [5.9%, 9.6%] |
+| Typical range (q25–q75): interval skill score | 11.2% [8.6%, 13.8%] | 9.0% [6.9%, 11.3%] |
+| Safety cushion (q90): quantile skill score | 15.6% [10.8%, 21.1%] | 14.3% [9.7%, 19.0%] |
+
+**Table note:** Survey-weighted test metrics. Skill scores show percentage reductions
+in quantile or interval loss. 95% percentile bootstrap confidence intervals from
+1,000 paired resamples of test-set rows.
+
+**Visual:** Comparison table with a Back link to the final model audit.
+
+**Speaker notes — 0:45 (optional, estimated)**
+
+“XGBoost improved the typical range and safety cushion over both baselines, with
+the largest improvement for the safety cushion. Plan-around results were mixed:
+quantile loss improved against both baselines, while median absolute error
+remained close to the population baseline.”
+
+For questions:
+
+Baselines: Both use survey-weighted training quantiles. The population baseline
+gives everyone the same estimates. The age-group baseline gives everyone within
+the same age band the same estimates: 18–34, 35–49, 50–64, and 65+.
+
+Quantile skill: Percentage reduction in pinball loss. At q90, underprediction
+receives nine times the penalty of an equally large overprediction. At q50,
+quantile skill equals the percentage reduction in mean absolute error.
+
+Interval skill: Percentage reduction in the Winkler interval score, which
+rewards narrower ranges but adds a penalty when actual costs fall outside them.
+The farther outside, the larger the penalty.
+
+Uncertainty: The comparison uses 1,000 paired bootstrap resamples of test-set
+rows, keeping each person's actual cost, predictions, and survey weight together.
+The same sampled rows are used for all three approaches. The confidence interval
+for median absolute error reduction versus the population baseline includes
+zero, so that improvement remains uncertain.
+
+**Transition:** Return to the final model audit.
+
+**Promote:** After 8 for a longer presentation; allow 0:45.
+
+**Sources:** [README: baseline comparison](../../README.md#final-model-baseline-comparison);
+[modeling notebook: baseline comparison and paired bootstrap](../../notebooks/2_modeling.py).
+
+### A19 — Feature timing: limits of next-year forecasting
 
 **Question:** Is this truly a next-year forecast?
 
@@ -1178,7 +1227,7 @@ Do not claim the size or direction of the resulting performance change is known.
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
 
-### A19 — LLM benchmark: General versus Specific Intelligence
+### A20 — LLM benchmark: General versus Specific Intelligence
 
 **Question:** Why not ask a general-purpose language model for an estimate?
 
@@ -1196,7 +1245,7 @@ LLMs.
 **Sources:** [README: LLM benchmark](../../README.md);
 [LLM benchmark script](../../scripts/benchmark_llm.py).
 
-### A20 — Final model test results: coverage, width, and release gates
+### A21 — Final model test results: coverage, width, and release gates
 
 **Question:** What does passing the project's gates mean?
 
@@ -1220,34 +1269,6 @@ resamples rows and retains their weights.
 
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: bootstrap implementation](../../notebooks/2_modeling.py).
-
-### A21 — Final model test benchmarks: gains over simple estimates
-
-**Question:** Why not give everyone a population or age-group estimate?
-
-**On the slide**
-
-| Test comparison | Versus population baseline | Versus age-group baseline |
-| --- | ---: | ---: |
-| q50 MAE reduction | 9.8% | 7.6% |
-| Typical-range interval-score reduction | 11.2% | 9.0% |
-| q90 pinball-loss reduction | 15.6% | 14.3% |
-
-MdAE: XGBoost **$240**; population baseline **$248**; age-group baseline **$305**.
-
-**Visual:** Grouped comparison of the loss reductions, with paired-bootstrap
-intervals from the saved modeling notebook.
-
-**Talking points:** Benchmarks use training data. The interval score penalizes
-width and observations outside the range. At q90, pinball loss penalizes
-underprediction more heavily than overprediction. The notebook reports
-confidence intervals above zero for the three reductions shown, but the small
-MdAE improvement versus the population baseline remains uncertain. Positive
-skill is not a percentage-point improvement in coverage.
-
-**Promote:** After 8; allow 1:00.
-
-**Source:** [Modeling notebook: test baseline comparisons](../../notebooks/2_modeling.py).
 
 ### A22 — Final model test audit: subgroup coverage gaps
 

@@ -26,7 +26,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 18)]
+SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 19)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -517,22 +517,36 @@ def build_presentation():
         run = paragraph.add_run()
         run.text = f" [{interval}"
         style_font(run.font, 26)
-    text(results, "Baseline comparison", "Compared with the population baseline",
-         72, 488, 1000, 34, 26, bold=True)
-    text(results, "Plan-around comparison", "Plan-around estimate (q50)",
-         72, 532, 370, 34, 26)
-    text(results, "Median error improvement", [("≈$8", True),
-         " lower MdAE (improvement uncertain)"], 450, 532, 758, 34, 26)
-    text(results, "Typical range comparison", "Typical range (q25–q75)",
-         72, 573, 370, 34, 26)
-    text(results, "Interval score gain", [("11.2%", True), " interval skill score"],
-         450, 573, 758, 34, 26)
-    text(results, "Safety cushion comparison", "Safety cushion (q90)",
-         72, 614, 370, 34, 26)
-    text(results, "q90 loss gain", [("15.6%", True), " quantile skill score"],
-         450, 614, 758, 34, 26)
-    footnote(results, "Note: Survey-weighted test metrics. 95% percentile bootstrap "
-             "confidence intervals from 1,000 resamples of test-set rows.")
+    text(results, "Test metrics note", "Note: Survey-weighted test metrics. "
+         "95% percentile bootstrap confidence intervals from 1,000 resamples of "
+         "test-set rows.", 72, 486, 1136, 24, 18, color=SECONDARY)
+    text(results, "Baseline comparison", "Value over simple baselines",
+         72, 532, 1136, 34, 26, bold=True)
+    comparison_items = [
+        ("Typical range and safety cushion:",
+         " improved over population and age-group baselines."),
+        ("Plan-around estimate:",
+         " MdAE remained close to the population baseline."),
+    ]
+    for index, (label, detail) in enumerate(comparison_items):
+        bullet_shape = text(results, f"Baseline comparison {index + 1}",
+                            [(label, True), detail], 72, 578 + index * 42,
+                            1136, 36, 26)
+        properties = bullet_shape.text_frame.paragraphs[0]._p.get_or_add_pPr()
+        properties.set("marL", str(Pt(18)))
+        properties.set("indent", str(-Pt(12)))
+        bullet_font = OxmlElement("a:buFont")
+        bullet_font.set("typeface", FONT)
+        bullet = OxmlElement("a:buChar")
+        bullet.set("char", "•")
+        properties.append(bullet_font)
+        properties.append(bullet)
+    text(results, "Audit appendix label", "Appendix:",
+         72, 674, 88, 24, 18, color=SECONDARY)
+    comparison_appendix_link = text(
+        results, "Baseline comparison appendix link", "Baseline Comparison",
+        160, 674, 350, 24, 18, color=SECONDARY, underline=True,
+    )
 
     audit = new_slide(presentation, storyboard, "9", "Final model test audit: overall "
                       "coverage\nhides subgroup gaps", two_lines=True)
@@ -860,6 +874,45 @@ def build_presentation():
     )
     reliability_appendix_link.click_action.target_slide = reliability
     reliability_return_link.click_action.target_slide = selection
+
+    comparison = new_slide(presentation, storyboard, "A18")
+    text(comparison, "A18 title", "Final model: baseline comparison",
+         72, 48, 1136, 66, 44, bold=True)
+    text(comparison, "Baseline definitions", "Training quantiles: same estimates "
+         "for everyone or within each age group", 72, 136, 1136, 42, 26)
+    comparison_table = native_table(comparison, [
+        ["Test comparison", "Versus population\nbaseline (95% CI)",
+         "Versus age-group\nbaseline (95% CI)"],
+        ["Plan-around estimate (q50):\nMdAE reduction", "3.4% [-12.7%, 13.1%]",
+         "21.5% [10.1%, 30.1%]"],
+        ["Plan-around estimate (q50):\nquantile skill score", "9.8% [7.8%, 11.9%]",
+         "7.6% [5.9%, 9.6%]"],
+        ["Typical range (q25–q75):\ninterval skill score", "11.2% [8.6%, 13.8%]",
+         "9.0% [6.9%, 11.3%]"],
+        ["Safety cushion (q90):\nquantile skill score", "15.6% [10.8%, 21.1%]",
+         "14.3% [9.7%, 19.0%]"],
+    ], 180, [536, 300, 300], row_height=84)
+    comparison_table.rows[0].height = pixels(76)
+    for row_index, row in enumerate(comparison_table.rows):
+        for cell in row.cells:
+            for paragraph in cell.text_frame.paragraphs:
+                paragraph.space_before = paragraph.space_after = Pt(0)
+                style_font(paragraph.font, 23 if row_index == 0 else 26,
+                           bold=row_index == 0)
+                for run in paragraph.runs:
+                    style_font(run.font, 23 if row_index == 0 else 26,
+                               bold=row_index == 0)
+    text(comparison, "Comparison note", "Note: Survey-weighted test metrics. "
+         "Skill scores show percentage reductions in quantile or interval loss.\n"
+         "95% percentile bootstrap confidence intervals from 1,000 paired "
+         "resamples of test-set rows.",
+         72, 610, 1136, 48, 18, color=SECONDARY)
+    comparison_return_link = text(
+        comparison, "Return to final model audit", "Back",
+        72, 674, 100, 24, 18, color=SECONDARY, underline=True,
+    )
+    comparison_appendix_link.click_action.target_slide = comparison
+    comparison_return_link.click_action.target_slide = results
     return presentation
 
 
