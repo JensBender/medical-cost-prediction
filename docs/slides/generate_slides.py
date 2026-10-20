@@ -470,18 +470,18 @@ def build_presentation():
     quantiles = new_slide(presentation, storyboard, "7",
                           "Quantile regression: budgeting for uncertainty")
     text(quantiles, "Plan-around label", "Plan-around estimate (q50)",
-         166, 230, 500, 42, 30,
+         166, 204, 500, 42, 30,
          bold=True, alignment=PP_ALIGN.CENTER)
-    text(quantiles, "Safety label", "Safety cushion (q90)", 848, 230, 360, 42, 30,
+    text(quantiles, "Safety label", "Safety cushion (q90)", 848, 204, 360, 42, 30,
          bold=True, alignment=PP_ALIGN.CENTER)
     # This axis is conceptual; positions do not encode a person's dollar values.
-    rect(quantiles, "Cost axis", 100, 330, 1080, 2, INK)
-    rect(quantiles, "Typical range q25 to q75", 250, 308, 440, 44, PALE)
+    rect(quantiles, "Cost axis", 100, 304, 1080, 2, INK)
+    rect(quantiles, "Typical range q25 to q75", 250, 282, 440, 44, PALE)
     for x, label in ((250, "q25"), (416, "q50"), (690, "q75"), (1028, "q90")):
-        rect(quantiles, f"Quantile marker {label}", x, 300, 3, 60, INK)
-        text(quantiles, label, label, x - 45, 379, 93, 42, 30, alignment=PP_ALIGN.CENTER)
+        rect(quantiles, f"Quantile marker {label}", x, 274, 3, 60, INK)
+        text(quantiles, label, label, x - 45, 353, 93, 42, 30, alignment=PP_ALIGN.CENTER)
     brace = quantiles.shapes.add_shape(
-        MSO_SHAPE.RIGHT_BRACE, pixels(459), pixels(226), pixels(22), pixels(440)
+        MSO_SHAPE.RIGHT_BRACE, pixels(459), pixels(200), pixels(22), pixels(440)
     )
     brace.name = "Typical range brace"
     brace.rotation = 90
@@ -489,11 +489,11 @@ def build_presentation():
     brace.line.color.rgb = RGBColor.from_string(SECONDARY)
     brace.line.width = Pt(1.2)
     brace._element.spPr.append(OxmlElement("a:effectLst"))
-    text(quantiles, "Range label", "Typical range (q25–q75)", 200, 476, 540, 42, 30,
+    text(quantiles, "Range label", "Typical range (q25–q75)", 200, 450, 540, 42, 30,
          bold=True, alignment=PP_ALIGN.CENTER)
-    text(quantiles, "Coverage target", "Targets 50% coverage", 250, 522, 440, 40, 28,
+    text(quantiles, "Coverage target", "Targets 50% coverage", 250, 496, 440, 40, 28,
          color=SECONDARY, alignment=PP_ALIGN.CENTER)
-    text(quantiles, "Upper coverage target", "Targets 90% coverage", 848, 522, 360, 40, 28,
+    text(quantiles, "Upper coverage target", "Targets 90% coverage", 848, 496, 360, 40, 28,
          color=SECONDARY, alignment=PP_ALIGN.CENTER)
 
     results = new_slide(presentation, storyboard, "8")
