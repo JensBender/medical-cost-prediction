@@ -372,7 +372,7 @@ often actual costs fall within the typical range or the safety cushion. Width
 matters too, because a very wide range could achieve high coverage but be too
 broad to be useful for budgeting. The typical range targets 50% coverage, while
 the safety cushion targets 90%. The goal is coverage close to these targets
-with ranges as narrow as possible.”
+without making the ranges too wide.”
 
 For questions:
 
