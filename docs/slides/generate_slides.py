@@ -513,10 +513,10 @@ def build_presentation():
         paragraph.clear()
         run = paragraph.add_run()
         run.text = estimate
-        style_font(run.font, 32, color=TEAL, bold=True)
+        style_font(run.font, 26, bold=True)
         run = paragraph.add_run()
         run.text = f" [{interval}"
-        style_font(run.font, 23, color=SECONDARY)
+        style_font(run.font, 26)
     text(results, "Baseline comparison", "Compared with the population baseline",
          72, 488, 1000, 34, 26, bold=True)
     text(results, "Plan-around comparison", "Plan-around estimate (q50)",

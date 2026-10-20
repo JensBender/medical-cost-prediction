@@ -434,8 +434,9 @@ intervals from 1,000 resamples of test-set rows.”
 
 **Speaker notes — 1:30**
 
-“I defined release gates to make those goals measurable: acceptable deviations
-from the intended coverage and maximum average widths.
+“To make those goals measurable, I defined release gates, which are acceptable
+limits for prediction error, deviations from the coverage targets, and maximum
+average widths.
 
 The model passed all five gates. For about half of people, plan-around estimates
 were within $240 of actual costs. Coverage was close to the targets, and both
@@ -453,18 +454,11 @@ measures.”
 
 For questions:
 
-Coverage tolerance: The project allows deviations of five percentage points
-from the 50% and 90% targets: 45%–55% and 85%–95%, respectively.
-
-Confidence intervals: The gates apply to point estimates, not the entire
-confidence interval. Typical-range coverage passes at 47.3%, although its
-interval extends below the 45% threshold to 44.0%. The intervals describe
-uncertainty in evaluation metrics, not spending ranges for individual users.
-
-Width limits: The gates apply to survey-weighted mean widths, not every user's
-range. They limit the typical range to under $1,500 and the extra amount from
-the plan-around estimate to the safety cushion to under $3,500, to avoid overly
-broad budgeting guidance.
+Release gate rationale: Ideally, user feedback would inform thresholds based on
+budgeting needs and tolerance for errors. Without that feedback, I chose
+thresholds that seemed reasonable before examining the test results. They are
+not universal standards, but at least establish a measurable minimum
+performance level.
 
 **Transition:** Overall metrics still need to be checked against the groups
 and situations where the model is less reliable.
