@@ -313,17 +313,15 @@ change in MdAE from training to validation.”
 
 I compared six model architectures and selected Elastic Net, Random Forest,
 and XGBoost for hyperparameter tuning. This table shows their results after
-tuning.
-Elastic Net achieved the lowest median absolute error, while XGBoost had
-the lowest mean absolute error.
+tuning. Elastic Net achieved the lowest median absolute error. However, its
+validation predictions never exceeded about $217, and the higher its predicted
+costs, the more it tended to underestimate actual costs.
 
-Elastic Net's validation predictions never exceeded about $217, and
-underprediction generally increased at higher predicted costs. XGBoost's
-predictions, on the other hand, reached about $2,100, and its median residuals
-generally stayed closer to zero.
-XGBoost also performed better than Elastic Net in key subgroups, such as
-people with poor physical health. So I chose XGBoost as the more promising
-model for planning for a higher-cost year.
+XGBoost's predictions, on the other hand, reached about $2,100, and its median
+residuals generally stayed closer to zero. It also had the lowest mean absolute
+error and lower median error than Elastic Net in key subgroups, such as people
+with poor physical health. So I chose XGBoost as the more promising model for
+planning for a higher-cost year.
 
 But even a more useful central estimate doesn’t show how widely someone’s
 costs could vary. I initially focused on typical prediction error, but residual
