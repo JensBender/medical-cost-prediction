@@ -876,12 +876,14 @@ def build_presentation():
     reliability_return_link.click_action.target_slide = selection
 
     comparison = new_slide(presentation, storyboard, "A18")
-    text(comparison, "A18 title", "Final model: baseline comparison",
-         72, 48, 1136, 66, 44, bold=True)
-    text(comparison, "Baseline definitions", "Training quantiles: same estimates "
-         "for everyone or within each age group", 72, 136, 1136, 42, 26)
+    comparison_title = text(comparison, "A18 title", "XGBoost vs. baselines: clearest gains in ranges "
+         "and cushion", 72, 48, 1136, 58, 39.3333333333, bold=True)
+    comparison_title.text_frame.word_wrap = False
+    text(comparison, "Baseline definitions", "Compared XGBoost quantile estimates "
+         "with population and age-group baselines on the test set.\nBoth baselines "
+         "use survey-weighted training quantiles.", 72, 116, 1136, 70, 26)
     comparison_table = native_table(comparison, [
-        ["Test comparison", "Versus population\nbaseline (95% CI)",
+        ["Metric", "Versus population\nbaseline (95% CI)",
          "Versus age-group\nbaseline (95% CI)"],
         ["Plan-around estimate (q50):\nMdAE reduction", "3.4% [-12.7%, 13.1%]",
          "21.5% [10.1%, 30.1%]"],
@@ -891,10 +893,11 @@ def build_presentation():
          "9.0% [6.9%, 11.3%]"],
         ["Safety cushion (q90):\nquantile skill score", "15.6% [10.8%, 21.1%]",
          "14.3% [9.7%, 19.0%]"],
-    ], 180, [536, 300, 300], row_height=84)
-    comparison_table.rows[0].height = pixels(76)
+    ], 202, [536, 300, 300], row_height=76)
+    comparison_table.rows[0].height = pixels(68)
     for row_index, row in enumerate(comparison_table.rows):
         for cell in row.cells:
+            cell.margin_top = cell.margin_bottom = pixels(6)
             for paragraph in cell.text_frame.paragraphs:
                 paragraph.space_before = paragraph.space_after = Pt(0)
                 style_font(paragraph.font, 23 if row_index == 0 else 26,
@@ -902,11 +905,23 @@ def build_presentation():
                 for run in paragraph.runs:
                     style_font(run.font, 23 if row_index == 0 else 26,
                                bold=row_index == 0)
+    for row in list(comparison_table.rows)[1:]:
+        for cell in list(row.cells)[1:]:
+            paragraph = cell.text_frame.paragraphs[0]
+            estimate, interval = paragraph.text.split(" [", 1)
+            paragraph.clear()
+            run = paragraph.add_run()
+            run.text = estimate
+            style_font(run.font, 26, bold=True)
+            run = paragraph.add_run()
+            run.text = f" [{interval}"
+            style_font(run.font, 26)
     text(comparison, "Comparison note", "Note: Survey-weighted test metrics. "
-         "Skill scores show percentage reductions in quantile or interval loss.\n"
+         "Skill scores measure the percentage reduction in quantile or interval "
+         "loss compared with each baseline.\n"
          "95% percentile bootstrap confidence intervals from 1,000 paired "
          "resamples of test-set rows.",
-         72, 610, 1136, 48, 18, color=SECONDARY)
+         72, 594, 1136, 48, 18, color=SECONDARY)
     comparison_return_link = text(
         comparison, "Return to final model audit", "Back",
         72, 674, 100, 24, 18, color=SECONDARY, underline=True,

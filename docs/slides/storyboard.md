@@ -1151,24 +1151,25 @@ necessarily contain the same people.
 **Sources:** [README: subgroup reliability](../../README.md#tuned-models-subgroup-reliability);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A18 — Final model: baseline comparison
+### A18 — XGBoost vs. baselines: clearest gains in ranges and cushion
 
 **Question:** Does XGBoost improve on population and age-group estimates?
 
 **On the slide**
 
-Training quantiles: same estimates for everyone or within each age group.
+Compared XGBoost quantile estimates with population and age-group baselines on the test set.
+Both baselines use survey-weighted training quantiles.
 
-| Test comparison | Versus population baseline (95% CI) | Versus age-group baseline (95% CI) |
+| Metric | Versus population baseline (95% CI) | Versus age-group baseline (95% CI) |
 | --- | --- | --- |
-| Plan-around estimate (q50): MdAE reduction | 3.4% [-12.7%, 13.1%] | 21.5% [10.1%, 30.1%] |
-| Plan-around estimate (q50): quantile skill score | 9.8% [7.8%, 11.9%] | 7.6% [5.9%, 9.6%] |
-| Typical range (q25–q75): interval skill score | 11.2% [8.6%, 13.8%] | 9.0% [6.9%, 11.3%] |
-| Safety cushion (q90): quantile skill score | 15.6% [10.8%, 21.1%] | 14.3% [9.7%, 19.0%] |
+| Plan-around estimate (q50): MdAE reduction | **3.4%** [-12.7%, 13.1%] | **21.5%** [10.1%, 30.1%] |
+| Plan-around estimate (q50): quantile skill score | **9.8%** [7.8%, 11.9%] | **7.6%** [5.9%, 9.6%] |
+| Typical range (q25–q75): interval skill score | **11.2%** [8.6%, 13.8%] | **9.0%** [6.9%, 11.3%] |
+| Safety cushion (q90): quantile skill score | **15.6%** [10.8%, 21.1%] | **14.3%** [9.7%, 19.0%] |
 
-**Table note:** Survey-weighted test metrics. Skill scores show percentage reductions
-in quantile or interval loss. 95% percentile bootstrap confidence intervals from
-1,000 paired resamples of test-set rows.
+**Table note:** Survey-weighted test metrics. Skill scores measure the percentage
+reduction in quantile or interval loss compared with each baseline. 95% percentile
+bootstrap confidence intervals from 1,000 paired resamples of test-set rows.
 
 **Visual:** Comparison table with a Back link to the final model audit.
 
