@@ -372,10 +372,7 @@ often actual costs fall within the typical range or the safety cushion. Width
 matters too, because a very wide range could achieve high coverage but be too
 broad to be useful for budgeting. The typical range targets 50% coverage, while
 the safety cushion targets 90%. The goal is coverage close to these targets
-with ranges as narrow as possible.
-
-Finally, postprocessing clips negative predictions to zero and enforces quantile
-order, so that higher percentiles never predict lower costs.”
+with ranges as narrow as possible.”
 
 For questions:
 
@@ -392,7 +389,9 @@ Training: Uses survey weights and log-transformed costs, ln(1 + cost), also call
 log1p. Adding one makes the log transformation defined for zero costs.
 Predictions are converted back to dollars before postprocessing.
 
-Postprocessing checks: On the test set, postprocessing had negligible impact.
+Postprocessing: Clips negative predictions to zero and enforces quantile order,
+so higher percentiles never predict lower costs. On the test set, postprocessing
+had negligible impact.
 Clipping negative predictions affected 5.7% of the survey-weighted test
 population, by at most 41 cents. Enforcing quantile order affected 0.24%,
 by at most one cent.
