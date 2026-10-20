@@ -796,6 +796,8 @@ Compared XGBoost with population and age-group baselines on the same test set. B
 
 <sub>*Note:* Survey-weighted test metrics. Skill scores measure the percentage reduction in quantile or interval loss compared with each baseline. 95% percentile bootstrap confidence intervals from 1,000 paired resamples of test-set rows.</sub>
 
+**Insights:** XGBoost improved the typical range and safety cushion over both baselines, with the largest improvement for the safety cushion. Plan-around results were mixed: quantile loss improved against both baselines, while MdAE remained close to the population baseline.
+
 <p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
