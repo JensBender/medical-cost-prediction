@@ -499,27 +499,40 @@ def build_presentation():
     results = new_slide(presentation, storyboard, "8")
     text(results, "8 title", [("Final model audit:", True),
          " clearest gains in ranges and q90"], 72, 48, 1136, 66, 44)
-    native_table(results, [
-        ["Held-out test metric", "Result", "Release gate"],
-        ["Plan-around estimate (q50): MdAE", "$240", "< $500"],
-        ["Typical range (q25–q75): coverage", "47.3%", "45%–55%"],
-        ["Safety cushion (q90): coverage", "91.0%", "85%–95%"],
-    ], 142, [520, 210, 406], row_height=68, result_column=True)
+    results_table = native_table(results, [
+        ["Test metric", "Estimate (95% CI)", "Release gate"],
+        ["Plan-around estimate (q50): MdAE", "$240 [$215, $279]", "< $500"],
+        ["Typical range (q25–q75): coverage", "47.3% [44.0%, 50.6%]", "45%–55%"],
+        ["Safety cushion (q90): coverage", "91.0% [89.2%, 92.6%]", "85%–95%"],
+        ["Typical range (q25–q75): mean width", "$912 [$875, $955]", "< $1,500"],
+        ["Safety cushion (q50–q90): mean width", "$2,032 [$1,964, $2,108]", "< $3,500"],
+    ], 136, [568, 336, 232], row_height=58, result_column=True)
+    for row in list(results_table.rows)[1:]:
+        paragraph = row.cells[1].text_frame.paragraphs[0]
+        estimate, interval = paragraph.text.split(" [", 1)
+        paragraph.clear()
+        run = paragraph.add_run()
+        run.text = estimate
+        style_font(run.font, 32, color=TEAL, bold=True)
+        run = paragraph.add_run()
+        run.text = f" [{interval}"
+        style_font(run.font, 23, color=SECONDARY)
     text(results, "Baseline comparison", "Compared with the population baseline",
-         72, 419, 1000, 34, 26, bold=True)
+         72, 488, 1000, 34, 26, bold=True)
     text(results, "Plan-around comparison", "Plan-around estimate (q50)",
-         72, 464, 370, 38, 26)
+         72, 532, 370, 34, 26)
     text(results, "Median error improvement", [("≈$8", True),
-         " lower MdAE (improvement uncertain)"], 450, 464, 758, 38, 26)
+         " lower MdAE (improvement uncertain)"], 450, 532, 758, 34, 26)
     text(results, "Typical range comparison", "Typical range (q25–q75)",
-         72, 513, 370, 38, 26)
+         72, 573, 370, 34, 26)
     text(results, "Interval score gain", [("11.2%", True), " interval skill score"],
-         450, 513, 758, 38, 26)
+         450, 573, 758, 34, 26)
     text(results, "Safety cushion comparison", "Safety cushion (q90)",
-         72, 562, 370, 38, 26)
+         72, 614, 370, 34, 26)
     text(results, "q90 loss gain", [("15.6%", True), " quantile skill score"],
-         450, 562, 758, 38, 26)
-    footnote(results, "Survey-weighted test metrics.")
+         450, 614, 758, 34, 26)
+    footnote(results, "Note: Survey-weighted test metrics. 95% percentile bootstrap "
+             "confidence intervals from 1,000 resamples of test-set rows.")
 
     audit = new_slide(presentation, storyboard, "9", "Final model test audit: overall "
                       "coverage\nhides subgroup gaps", two_lines=True)

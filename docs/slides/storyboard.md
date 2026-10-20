@@ -411,11 +411,13 @@ with its strongest evidence of added value in interval and upper-quantile scores
 
 **On the slide**
 
-| Held-out test metric | Result | Release gate |
+| Test metric | Estimate (95% CI) | Release gate |
 | --- | ---: | --- |
-| Plan-around estimate (q50): MdAE | **$240** | < $500 |
-| Typical range (q25–q75): coverage | **47.3%** | 45%–55% |
-| Safety cushion (q90): coverage | **91.0%** | 85%–95% |
+| Plan-around estimate (q50): MdAE | **$240** [$215, $279] | < $500 |
+| Typical range (q25–q75): coverage | **47.3%** [44.0%, 50.6%] | 45%–55% |
+| Safety cushion (q90): coverage | **91.0%** [89.2%, 92.6%] | 85%–95% |
+| Typical range (q25–q75): mean width | **$912** [$875, $955] | < $1,500 |
+| Safety cushion (q50–q90): mean width | **$2,032** [$1,964, $2,108] | < $3,500 |
 
 Compared with the population baseline:
 
@@ -427,17 +429,19 @@ Compared with the population baseline:
 
 **Visual:** Results table above the baseline comparisons.
 
-**Footnote:** “Survey-weighted test metrics.”
+**Footnote:** “Note: Survey-weighted test metrics. 95% percentile bootstrap confidence
+intervals from 1,000 resamples of test-set rows.”
 
 **Speaker notes — 1:30**
 
-“On the test set, the median absolute error is $240. This means roughly half of
-the weighted test population has an absolute error no larger than that amount;
-it is not the mean error. The typical range covers 47.3% of spending outcomes,
-close to its 50% target, and q90 covers 91%. Mean range widths are $912 for
-q25 to q75 and $2,032 for q50 to q90, and the model meets all five project
-performance gates. Release gates are minimum requirements; the product targets
-are more ambitious goals. But a simple population estimate is competitive on plan-around
+“I defined release gates to make those goals measurable: acceptable deviations
+from the intended coverage and maximum average widths.
+
+The model passed all five gates. For about half of people, plan-around estimates
+were within $240 of actual costs. Coverage was close to the targets, and both
+widths stayed within the limits.
+
+But a simple population estimate is competitive on plan-around
 MdAE: $248 versus $240. That is approximately $8 lower MdAE, using the rounded
 values shown. The bootstrap comparison does not establish a clear MdAE
 improvement. The stronger results are an 11.2% interval skill score and a
@@ -446,6 +450,21 @@ interval score and pinball loss compared with the baseline. The underlying
 scores assess width and misses, or the size and direction of errors, rather
 than coverage alone. The age-group comparison also supports gains on these
 measures.”
+
+For questions:
+
+Coverage tolerance: The project allows deviations of five percentage points
+from the 50% and 90% targets: 45%–55% and 85%–95%, respectively.
+
+Confidence intervals: The gates apply to point estimates, not the entire
+confidence interval. Typical-range coverage passes at 47.3%, although its
+interval extends below the 45% threshold to 44.0%. The intervals describe
+uncertainty in evaluation metrics, not spending ranges for individual users.
+
+Width limits: The gates apply to survey-weighted mean widths, not every user's
+range. They limit the typical range to under $1,500 and the extra amount from
+the plan-around estimate to the safety cushion to under $3,500, to avoid overly
+broad budgeting guidance.
 
 **Transition:** Overall metrics still need to be checked against the groups
 and situations where the model is less reliable.
@@ -1185,7 +1204,7 @@ LLMs.
 **On the slide:** All results are survey-weighted test estimates. Dollar amounts
 are in 2023 USD; intervals below are approximate 95% bootstrap confidence intervals.
 
-| Metric | Estimate [95% CI] | Project gate |
+| Metric | Estimate (95% CI) | Project gate |
 | --- | --- | --- |
 | q50 MdAE | $240 [$215, $279] | < $500 |
 | q25–q75 coverage | 47.3% [44.0%, 50.6%] | 45%–55% |

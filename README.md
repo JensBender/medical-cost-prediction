@@ -303,8 +303,8 @@ Release gates are the minimum test-set performance needed to launch. Product tar
 | Plan-around estimate (`q50`): MdAE | $240 [$215, $279] | < $500 | < $350 | Pass |
 | Typical range (`q25`–`q75`): coverage | 47.3% [44.0%, 50.6%] | 45%-55% | 50% | Pass |
 | Safety cushion (`q90`): coverage | 91.0% [89.2%, 92.6%] | 85%-95% | 90% | Pass |
-| Typical-range width (`q25`-`q75`) | $912 [$875, $955] | < $1,500 | < $1,000 | Pass |
-| Safety-cushion width (`q50`-`q90`) | $2,032 [$1,964, $2,108] | < $3,500 | < $2,500 | Pass |
+| Typical range (`q25`–`q75`): mean width | $912 [$875, $955] | < $1,500 | < $1,000 | Pass |
+| Safety cushion (`q50`–`q90`): mean width | $2,032 [$1,964, $2,108] | < $3,500 | < $2,500 | Pass |
 
 <sub>*Note:* Survey-weighted test metrics. 95% percentile bootstrap confidence intervals from 1,000 resamples of test-set rows.</sub>
 
