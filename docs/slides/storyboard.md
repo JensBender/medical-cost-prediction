@@ -427,7 +427,7 @@ Compared with the population baseline:
 
 **Visual:** Results table above the baseline comparisons.
 
-**Footnote:** “Survey-weighted test metrics; dollar amounts in 2023 USD.”
+**Footnote:** “Survey-weighted test metrics.”
 
 **Speaker notes — 1:30**
 

@@ -519,7 +519,7 @@ def build_presentation():
          72, 562, 370, 38, 26)
     text(results, "q90 loss gain", [("15.6%", True), " quantile skill score"],
          450, 562, 758, 38, 26)
-    footnote(results, "Survey-weighted test metrics. Dollar amounts in 2023 USD.")
+    footnote(results, "Survey-weighted test metrics.")
 
     audit = new_slide(presentation, storyboard, "9", "Final model test audit: overall "
                       "coverage\nhides subgroup gaps", two_lines=True)

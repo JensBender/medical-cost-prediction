@@ -295,16 +295,18 @@ The final model reuses the hyperparameters from the best tuned XGBoost point-est
 - **Typical range** (`q25`–`q75`): The interquartile range (how much costs typically vary).
 - **Safety cushion** (`q90`): The 90th percentile (a conservative upper bound to help budget for a bad year).
 
-**Release Gate Metrics (Test)**  
+**Release Gate Metrics**  
 Release gates are the minimum test-set performance needed to launch. Product targets are more ambitious goals for how well model predictions support budgeting. Unlike the earlier point-estimate metrics, they assess not only plan-around error (MdAE) but also whether the typical range and safety cushion cover the intended share of actual costs without being too wide.
 
 | Metric | Estimate (95% CI) | Release Gate | Product Target | Status |
 | :--- | ---: | ---: | ---: | :---: |
-| Plan-around MdAE (`q50`) | $240 [$215, $279] | < $500 | < $350 | Pass |
-| Typical-range coverage (`q25`-`q75`) | 47.3% [44.0%, 50.6%] | 45%-55% | 50% | Pass |
-| Safety-cushion coverage (`q90`) | 91.0% [89.2%, 92.6%] | 85%-95% | 90% | Pass |
+| Plan-around estimate (`q50`): MdAE | $240 [$215, $279] | < $500 | < $350 | Pass |
+| Typical range (`q25`–`q75`): coverage | 47.3% [44.0%, 50.6%] | 45%-55% | 50% | Pass |
+| Safety cushion (`q90`): coverage | 91.0% [89.2%, 92.6%] | 85%-95% | 90% | Pass |
 | Typical-range width (`q25`-`q75`) | $912 [$875, $955] | < $1,500 | < $1,000 | Pass |
 | Safety-cushion width (`q50`-`q90`) | $2,032 [$1,964, $2,108] | < $3,500 | < $2,500 | Pass |
+
+<sub>*Note:* Survey-weighted test metrics. 95% percentile bootstrap confidence intervals from 1,000 resamples of test-set rows.</sub>
 
 **Launch Decision**
 - **Decision:** Launch XGBoost quantile regression as the MVP model. It passes every release gate on the test set. Plan-around estimates are within $240 of actual costs for about half of the test population.
