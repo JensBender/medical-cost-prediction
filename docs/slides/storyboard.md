@@ -65,7 +65,7 @@ The first three slide timings are rehearsed; the remaining timings are estimates
 | 5 | Preprocessing pipeline | 1:00 | Prepare model-ready inputs and preserve consistent transformations |
 | 6 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
 | 7 | Quantile regression: budgeting for uncertainty | 1:30 | Explain the final model and its estimates |
-| 8 | Final model audit: clearest gains in ranges and q90 | 1:30 | Present held-out evidence and baseline comparisons |
+| 8 | XGBoost quantile audit: all release gates passed | 1:30 | Present held-out evidence and baseline comparisons |
 | 9 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
 | 10 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
 | | **Total** | **11:25** | |
@@ -404,7 +404,7 @@ by at most one cent.
 [modeling notebook: postprocessing checks](../../notebooks/2_modeling.ipynb);
 [scikit-learn: estimating extreme quantiles](https://scikit-learn.org/stable/auto_examples/linear_model/plot_quantile_regression.html).
 
-### 8 — Final model audit: clearest gains in ranges and q90
+### 8 — XGBoost quantile audit: all release gates passed
 
 **Takeaway:** The final model meets the project's overall performance gates,
 with its strongest evidence of added value in interval and upper-quantile scores.
@@ -429,7 +429,7 @@ intervals from 1,000 resamples of test-set rows.”
 
 **Visual:** Results table above the baseline comparison summary.
 
-**Appendix link:** Baseline Comparison (A18).
+**Appendix link:** XGBoost vs. baselines (A18).
 
 **Speaker notes — 1:30**
 

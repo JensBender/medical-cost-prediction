@@ -497,8 +497,8 @@ def build_presentation():
          color=SECONDARY, alignment=PP_ALIGN.CENTER)
 
     results = new_slide(presentation, storyboard, "8")
-    text(results, "8 title", [("Final model audit:", True),
-         " clearest gains in ranges and q90"], 72, 48, 1136, 66, 44)
+    text(results, "8 title", "XGBoost quantile audit: all release gates passed",
+         72, 48, 1136, 66, 44, bold=True)
     results_table = native_table(results, [
         ["Test metric", "Estimate (95% CI)", "Release gate"],
         ["Plan-around estimate (q50): MdAE", "$240 [$215, $279]", "< $500"],
@@ -544,7 +544,7 @@ def build_presentation():
     text(results, "Audit appendix label", "Appendix:",
          72, 674, 88, 24, 18, color=SECONDARY)
     comparison_appendix_link = text(
-        results, "Baseline comparison appendix link", "Baseline Comparison",
+        results, "Baseline comparison appendix link", "XGBoost vs. baselines",
         160, 674, 350, 24, 18, color=SECONDARY, underline=True,
     )
 
