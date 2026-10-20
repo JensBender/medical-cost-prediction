@@ -13,7 +13,7 @@ appendix slides are planned below.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The current
   allocation below totals 11:25, leaving room for transitions.
-- **Structure:** a cover, nine content slides, and twenty-seven appendix topics.
+- **Structure:** a cover, nine content slides, and twenty-three appendix topics.
   Appendix slides follow their first reference in the main presentation;
   unreferenced slides sit with their related topic.
 - **Slide numbering:** Display 2–10 on the main content slides, with the cover
@@ -483,7 +483,7 @@ validation steps.
 
 **Visual:** Bar chart of typical-range coverage: poor mental health 30.1%, low
 income 39.2%, overall 47.3%, and target 50%. Label results as point estimates;
-A22 adds subgroup counts and uncertainty.
+A20 adds subgroup counts and uncertainty.
 
 **Speaker notes — 1:00**
 
@@ -544,6 +544,7 @@ uncertainty, and subgroup reliability each reveal something different.”
 ## Appendix slides
 
 Each appendix item is an optional slide with a specific question to answer.
+The remaining planned topics will be reviewed after the main slides are finalized.
 Timings apply only when promoted into the main presentation.
 
 ### A1 — U.S. healthcare costs: out-of-pocket spending and HSA/FSA planning
@@ -1230,50 +1231,7 @@ Do not claim the size or direction of the resulting performance change is known.
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
 
-### A20 — LLM benchmark: General versus Specific Intelligence
-
-**Question:** Why not ask a general-purpose language model for an estimate?
-
-**On the slide:** The documented Gemini 3 Flash benchmark has validation MdAE
-of **$518**, versus **$163** for baseline Elastic Net.
-
-**Visual:** Two bars labeled with model, metric, and validation split. Do not
-mix these with test-set results from the final quantile model.
-
-**Talking points:** This result describes one model and prompting setup, not all
-LLMs.
-
-**Promote:** Optional, after A15; allow 1:00.
-
-**Sources:** [README: LLM benchmark](../../README.md);
-[LLM benchmark script](../../scripts/benchmark_llm.py).
-
-### A21 — Final model test results: coverage, width, and release gates
-
-**Question:** What does passing the project's gates mean?
-
-**On the slide:** All results are survey-weighted test estimates. Dollar amounts
-are in 2023 USD; intervals below are approximate 95% bootstrap confidence intervals.
-
-| Metric | Estimate (95% CI) | Project gate |
-| --- | --- | --- |
-| q50 MdAE | $240 [$215, $279] | < $500 |
-| q25–q75 coverage | 47.3% [44.0%, 50.6%] | 45%–55% |
-| q90 coverage | 91.0% [89.2%, 92.6%] | 85%–95% |
-| Mean q25–q75 width | $912 [$875, $955] | < $1,500 |
-| Mean q50–q90 width | $2,032 [$1,964, $2,108] | < $3,500 |
-
-**Talking points:** Point estimates pass the gates. The entire confidence
-interval does not need to fall inside the gate under the reported decision
-rule. These are project criteria, not external certification. The notebook
-resamples rows and retains their weights.
-
-**Promote:** After 8 for evaluation depth; allow 1:00.
-
-**Sources:** [README: release gates](../../README.md);
-[modeling notebook: bootstrap implementation](../../notebooks/2_modeling.py).
-
-### A22 — Final model test audit: subgroup coverage gaps
+### A20 — Final model test audit: subgroup coverage gaps
 
 **Question:** Who receives less reliable ranges?
 
@@ -1296,7 +1254,7 @@ would be needed to address it.
 **Sources:** [README: final subgroup audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A23 — Final model test audit: actual versus predicted cost tiers
+### A21 — Final model test audit: actual versus predicted cost tiers
 
 **Question:** Does the safety cushion protect the largest spenders?
 
@@ -1318,7 +1276,7 @@ quantile is not catastrophe insurance or a hard spending cap.
 **Sources:** [README: final reliability audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A24 — SHAP explains how inputs shape the median estimate
+### A22 — SHAP explains how inputs shape the median estimate
 
 **Question:** Which inputs influence predictions, and what can users infer?
 
@@ -1338,7 +1296,7 @@ does not by itself mean higher or lower healthcare need.
 **Sources:** [README: feature importance](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json).
 
-### A25 — SHAP benchmarking: explanation quality and latency
+### A23 — SHAP benchmarking: explanation quality and latency
 
 **Question:** How was the SHAP configuration chosen?
 
@@ -1360,50 +1318,6 @@ claim. Complete request latency on target hardware remains unverified.
 **Sources:** [README: SHAP explanation details](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json);
 [benchmark script](../../scripts/benchmark_shap.py).
-
-### A26 — Inference architecture: shared prediction and explanation code
-
-**Question:** How will training and serving stay consistent?
-
-**On the slide:** DVC stages produce fitted preprocessing and model artifacts.
-Shared prediction code applies the fitted preprocessor, predicts quantiles, and
-enforces ordered nonnegative outputs. The planned service handles user-input
-mapping, inflation adjustment, notices, and response formatting.
-
-**Visual:** An architecture diagram separating implemented modules from planned
-FastAPI/Gradio integration. Show explanations calling the same q50 inference path.
-
-**Talking points:** Keep UI concerns at the interface. DVC records stage
-dependencies; MLflow records experiments. Existing unit tests cover core
-prediction and explanation behavior. Integration, end-to-end behavior, and
-deployment performance still need verification. Do not imply that every
-experiment is a DVC stage or that the full service is implemented.
-
-**Promote:** Before 10 for ML engineering roles; allow 1:30.
-
-**Sources:** [DVC pipeline](../../dvc.yaml); [prediction code](../../src/prediction.py);
-[technical specifications](../specs/technical_specifications.md); [unit tests](../../tests/unit/).
-
-### A27 — Production monitoring: drift signals without observed outcomes
-
-**Question:** How would the product be monitored without retaining user records?
-
-**On the slide:** Planned aggregate counters track app health, input and output
-distributions, and warning rates. Individual inputs and predictions are not
-retained. Actual annual spending is unavailable by default.
-
-**Visual:** A table separating observable signals from unavailable outcomes.
-
-**Talking points:** Drift can trigger investigation, but it does not measure
-MdAE or interval coverage. Those require observed outcomes. Periodic evaluation
-on later MEPS data is a separate route for assessing the model. Medical
-inflation adjusts the dollar scale; it cannot correct all changes in insurance,
-care use, or the population. These are planned operating choices.
-
-**Promote:** Before 10 for deployment and product discussion; allow 1:00.
-
-**Sources:** [Technical specifications: privacy-preserving monitoring](../specs/technical_specifications.md);
-[product requirements](../specs/product_requirements.md).
 
 ## Adaptation and file organization
 
