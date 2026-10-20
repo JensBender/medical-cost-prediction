@@ -39,7 +39,7 @@ appendix slides are planned below.
 The key modeling tradeoff was accepting a higher validation median absolute
 error than Elastic Net to provide useful uncertainty ranges. Better point-estimate
 performance by tree models in several medically complex subgroups also supported
-the choice of XGBoost. Model selection considered which outputs and performance
+the choice of XGBoost. Model selection considered which estimates and performance
 criteria served the intended budgeting use case.
 
 ## Source material
@@ -64,7 +64,7 @@ The first three slide timings are rehearsed; the remaining timings are estimates
 | 4 | Out-of-pocket costs: 20% of adults account for ~80% | 1:00 | Show the data challenge that shaped modeling |
 | 5 | Preprocessing pipeline | 1:00 | Prepare model-ready inputs and preserve consistent transformations |
 | 6 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
-| 7 | Quantile regression: budgeting for uncertainty | 1:30 | Explain the final model and its outputs |
+| 7 | Quantile regression: budgeting for uncertainty | 1:30 | Explain the final model and its estimates |
 | 8 | Final model audit: clearest gains in ranges and q90 | 1:30 | Present held-out evidence and baseline comparisons |
 | 9 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
 | 10 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
@@ -330,10 +330,9 @@ costs. A single estimate cannot communicate that uncertainty.
 
 For budgeting, this matters because someone could plan around the central
 estimate and still be underprepared for a higher-cost year. So I decided to
-switch to quantile regression in XGBoost to give users budgeting ranges and
-a safety cushion alongside the central estimate.
+switch to quantile regression in XGBoost.
 
-**Transition:** Map the quantiles directly to the intended budgeting outputs.
+**Transition:** Map the quantiles directly to the intended budgeting estimates.
 
 **Sources:** [README: hyperparameter tuning and model decision](../../README.md);
 [modeling notebook script](../../notebooks/2_modeling.py).
@@ -349,7 +348,7 @@ provide a safety cushion for a higher-cost year.
 
 **On the slide**
 
-| Output | Model quantity | Intended meaning |
+| Estimate | Model quantity | Intended meaning |
 | --- | --- | --- |
 | Plan-around estimate | q50 | Predicted median spending |
 | Typical range | q25–q75 | Central range targeting 50% coverage |
@@ -360,14 +359,15 @@ from q25 to q75.
 
 **Speaker notes — 1:30**
 
-“Quantile regression gives users three outputs to help them budget for uncertainty.
+“Quantile regression allowed me to give users three estimates based on four
+predicted quantiles to help them budget for uncertainty.
 The plan-around estimate is the predicted median. It shows the midpoint of costs
 for people with a similar profile. The typical range runs from the 25th to the
 75th percentile and shows how much costs typically vary. The safety cushion is
 the 90th percentile, which provides a conservative estimate to help
 users budget for a higher-cost year.
 
-To evaluate these outputs, I checked coverage and width. Coverage measures how
+To evaluate these estimates, I checked coverage and width. Coverage measures how
 often actual costs fall within the typical range or the safety cushion. Width
 matters too, because a very wide range could achieve high coverage but be too
 broad to be useful for budgeting. The typical range targets 50% coverage, while
@@ -397,7 +397,7 @@ Clipping negative predictions affected 5.7% of the survey-weighted test
 population, by at most 41 cents. Enforcing quantile order affected 0.24%,
 by at most one cent.
 
-**Transition:** Show whether the final model delivers those outputs on held-out data.
+**Transition:** Show whether the final model delivers those estimates on held-out data.
 
 **Sources:** [README: final model](../../README.md);
 [quantile training script](../../scripts/train_xgboost_quantile.py);
@@ -420,7 +420,7 @@ with its strongest evidence of added value in interval and upper-quantile scores
 
 Compared with the population baseline:
 
-| Budgeting output | Comparison result |
+| Budgeting estimate | Comparison result |
 | --- | --- |
 | Plan-around estimate (q50) | **≈$8** lower MdAE (improvement uncertain) |
 | Typical range (q25–q75) | **11.2%** interval skill score |
@@ -505,7 +505,7 @@ the remaining product and validation work.
 | Model evaluation and application data artifacts | User evaluation and aggregate monitoring |
 
 - Next validation priority: feature timing and performance on a later survey year
-- Main lesson: evaluate the outputs needed for the user decision
+- Main lesson: evaluate the estimates needed for the user decision
 
 **Visual:** Workflow from training artifacts through shared inference to the
 application, distinguishing implemented and planned components.
@@ -519,7 +519,7 @@ planned. The next delivery work is to connect those components and measure
 complete request latency, while the next modeling validation is to review input
 timing and test on a later survey year. User testing also needs to establish
 whether people understand and can use these ranges. My main lesson is that
-model selection depends on the decision the output supports: typical error,
+model selection depends on the decision the estimate supports: typical error,
 uncertainty, and subgroup reliability each reveal something different.”
 
 **Close:** Invite questions with the results and limitations still easy to revisit.

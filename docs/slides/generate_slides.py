@@ -557,7 +557,7 @@ def build_presentation():
          bold=True)
     text(next_steps, "Validation work", "Check feature timing and performance on a later "
          "survey year", 72, 520, 1136, 38, 28)
-    text(next_steps, "Closing lesson", "Evaluate the outputs needed for the user decision",
+    text(next_steps, "Closing lesson", "Evaluate the estimates needed for the user decision",
          72, 605, 1136, 44, 32, bold=True)
 
     healthcare_overview = new_slide(presentation, storyboard, "A1")
