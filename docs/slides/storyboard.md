@@ -438,9 +438,14 @@ intervals from 1,000 resamples of test-set rows.”
 limits for prediction error, deviations from the coverage targets, and maximum
 average widths.
 
-The model passed all five gates. For about half of people, plan-around estimates
-were within $240 of actual costs. Coverage was close to the targets, and both
-widths stayed within the limits.
+The model passed all five release gates. For about half of people, plan-around
+estimates were within $240 of actual costs. The typical range covered close to
+half of actual outcomes, while the safety cushion covered about 90%, close to
+their intended targets.
+
+On average, the typical range spanned about $900 between its lower and upper
+bounds. The safety cushion added about $2,000 above the plan-around estimate.
+Both average widths stayed below the release limits.
 
 But a simple population estimate is competitive on plan-around
 MdAE: $248 versus $240. That is approximately $8 lower MdAE, using the rounded
