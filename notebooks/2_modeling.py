@@ -2718,6 +2718,17 @@ def plot_quantile_subgroup_performance(
     # Add footnote
     # Compute final layout, then align footnote with the first subplot's leftmost label
     fig.canvas.draw()
+    if include_plan_around:
+        # Reserve space for group labels and move dimension labels partway inward.
+        label_space = 0.25 / fig.get_figwidth()
+        for ax in axes[:, 0]:
+            label_anchor = ax.yaxis.label.get_transform().transform(ax.yaxis.label.get_position())
+            label_anchor = fig.transFigure.inverted().transform(label_anchor)
+            label_anchor[0] += 0.15 / fig.get_figwidth()
+            position = ax.get_position()
+            ax.set_position([position.x0 + label_space, position.y0, position.width - label_space, position.height])
+            ax.yaxis.set_label_coords(*label_anchor, transform=fig.transFigure)
+        fig.canvas.draw()
     footnote_x = axes[0, 0].get_tightbbox(fig.canvas.get_renderer()).transformed(fig.transFigure.inverted()).x0
 
     # Add footnote at the bottom, aligned with the leftmost label/title
