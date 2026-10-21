@@ -802,12 +802,12 @@ Compared XGBoost with population and age-group baselines on the same test set. B
 
 
 ### Final Model: Subgroup Reliability & Fairness
-Evaluated the XGBoost quantile model on the held-out test set using survey-weighted coverage and mean width metrics for the typical range (`q25`–`q75`) and safety cushion (`q90`). The analysis examines whether these estimates provide the intended coverage without becoming too wide across reliability and fairness subgroups.
+Evaluated the XGBoost quantile model on the held-out test set using survey-weighted metrics across reliability and fairness subgroups. The analysis measures plan-around prediction errors with MdAE and assesses coverage and mean width for the typical range and safety cushion.
 
-Subgroup coverage review bands are wider than the overall release gates: 40%–60% for the typical range and 80%–97% for the safety cushion. For groups with at least 30 test cases, coverage outside these bands flags a need for further investigation rather than an automatic release failure.
+Subgroups are flagged for review when typical-range coverage falls outside 40%–60% or safety-cushion coverage falls outside 80%–97%. These review criteria are less strict than the overall release gates. They flag results for further investigation without automatically blocking release.
 
 **Reliability**  
-Reliability analysis examines test set coverage and mean width across cost tiers, health profiles, and insurance types. It identifies where the model's prediction intervals are too narrow (undercoverage) or too wide (impractical for budgeting).
+Reliability analysis examines test-set plan-around MdAE, coverage, and mean width across cost tiers, health profiles, and insurance types. It identifies where prediction errors are high, coverage falls short, or ranges may be too wide for practical budgeting.
 
 ![XGBoost Quantile Regression: Subgroup Reliability (Test)](figures/evaluation/xgb_quantile_test_subgroup_reliability.png)
 **Key Insights:**
@@ -817,7 +817,7 @@ Reliability analysis examines test set coverage and mean width across cost tiers
 - **Subgroup Reliability:** Physical health, chronic conditions, private insurance, and public insurance groups remain within subgroup review bands. Uninsured users are the main watchlist group: typical-range coverage is low at 34.7%, while safety-cushion coverage is conservative at 96.3%.
 
 **Fairness**  
-Fairness analysis evaluates whether the model's prediction intervals provide equal coverage and practical mean widths across protected and vulnerable demographic groups on the unseen test set.
+Fairness analysis examines differences in plan-around MdAE, coverage, and mean width across protected and vulnerable demographic groups on the unseen test set.
 
 ![XGBoost Quantile Regression: Subgroup Fairness (Test)](figures/evaluation/xgb_quantile_test_subgroup_fairness.png)
 **Key Insights:**
