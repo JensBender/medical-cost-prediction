@@ -2370,9 +2370,9 @@ actual_cost_bin_map = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 4}
 predicted_cost_bin_map = {0: 1, 1: 1, 2: 2, 3: 3, 4: 4, 5: 4, 6: 4}
 
 quantile_reliability_configs = [
-    {"col": "ACTUAL_COSTS", "label": "Out-of-Pocket Costs (Actual)", "category_map": COST_BIN_LABELS},
-    {"col": "PREDICTED_MEDIAN_COSTS", "label": "Out-of-Pocket Costs (Plan Around, q50)", "category_map": COST_BIN_LABELS},
-    {"col": "PREDICTED_CUSHION_COSTS", "label": "Out-of-Pocket Costs (Safety Cushion, q90)", "category_map": COST_BIN_LABELS},
+    {"col": "ACTUAL_COSTS", "label": "Actual Costs", "category_map": COST_BIN_LABELS},
+    {"col": "PREDICTED_MEDIAN_COSTS", "label": "Predicted Costs (q50)", "category_map": COST_BIN_LABELS},
+    {"col": "PREDICTED_CUSHION_COSTS", "label": "Predicted Costs (q90)", "category_map": COST_BIN_LABELS},
     {"col": "RTHLTH31", "label": DISPLAY_LABELS["RTHLTH31"], "category_map": CATEGORY_LABELS_EDA["RTHLTH31"]},
     {"col": "INSCOV23", "label": DISPLAY_LABELS["INSCOV23"], "category_map": CATEGORY_LABELS_EDA["INSCOV23"]},
     {"col": "CHRONIC_COUNT_GRP", "label": DISPLAY_LABELS["CHRONIC_COUNT"], "category_map": None}
@@ -2544,7 +2544,9 @@ display(
 # </div>
 
 # %%
-def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=None, include_plan_around=False):
+def plot_quantile_subgroup_performance(
+    df, column_labels, title, save_to_file=None, include_plan_around=False, data_split="validation"
+):
     """
     Visualizes quantile regression performance across subgroups.
 
@@ -2558,6 +2560,7 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
         title (str): Main figure title.
         save_to_file (str, optional): Full path and filename to save the plot.
         include_plan_around (bool): Add a column for plan-around median absolute error.
+        data_split (str): Data split named in the plot note.
     """
     plot_data = df[df["Column"].isin(column_labels)].copy()
     n_rows = len(column_labels)
@@ -2715,9 +2718,10 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
     fig.text(
         footnote_x, 
         0.01, 
-        "Note: Coverage measures the share of actual costs within q25–q75 (typical range) or at or below q90 (safety cushion). "
-        "Mean width summarizes q75 − q25 or q90 − q50, respectively.\n"
-        "Estimates use survey weights; n is the group sample size; dollar amounts in group labels show the group’s actual median cost.",
+        f"Note: Survey-weighted {data_split} metrics. "
+        "Coverage measures the share of actual costs within q25–q75 (typical range) or at or below q90 (safety cushion). "
+        "Mean width measures the distance from q25 to q75 (typical range) or q50 to q90 (safety cushion).\n"
+        "n is the group sample size. Dollar amounts in group labels represent that group’s actual median out-of-pocket cost.",
         fontsize=9, 
         style="italic", 
         color="#555555",
@@ -3802,6 +3806,7 @@ plot_quantile_subgroup_performance(
     "XGBoost Quantile Regression: Subgroup Reliability (Test)",
     save_to_file="../figures/evaluation/xgb_quantile_test_subgroup_reliability.png",
     include_plan_around=True,
+    data_split="test",
 )
 
 plot_quantile_subgroup_performance(
@@ -3810,6 +3815,7 @@ plot_quantile_subgroup_performance(
     "XGBoost Quantile Regression: Subgroup Fairness (Test)",
     save_to_file="../figures/evaluation/xgb_quantile_test_subgroup_fairness.png",
     include_plan_around=True,
+    data_split="test",
 )
 
 plot_quantile_subgroup_predictions(
