@@ -2540,23 +2540,24 @@ display(
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>XGBoost Quantile Regression: Subgroup Reliability and Fairness</strong> <br>
-#     📌 Visualize coverage and mean interval width side-by-side for each stratification column. Coverage measures calibration; mean width measures practical usefulness. Both are needed to determine whether the typical range and safety cushion are reliable for subgroup-level budgeting.
+#     📌 Visualize plan-around median absolute error, coverage, and mean interval width side-by-side for each stratification column. Together, these metrics describe central-estimate accuracy, coverage, and how broad the budgeting ranges are for each subgroup.
 # </div>
 
 # %%
-def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=None):
+def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=None, include_plan_around=False):
     """
     Visualizes quantile regression performance across subgroups.
 
-    Each subplot row is one stratification column. The left panel shows coverage for 
-    the typical range (q25-q75) and safety cushion (q90). The right panel shows
-    the survey-weighted mean widths in USD.
+    Each subplot row is one stratification column. Coverage and mean width panels
+    show the typical range and safety cushion. An optional first panel shows
+    plan-around median absolute error (q50). All metrics use survey weights.
 
     Args:
         df (pd.DataFrame): Stratified error analysis dataframe of quantile regression.
         column_labels (list): Ordered list of column labels to include.
         title (str): Main figure title.
         save_to_file (str, optional): Full path and filename to save the plot.
+        include_plan_around (bool): Add a column for plan-around median absolute error.
     """
     plot_data = df[df["Column"].isin(column_labels)].copy()
     n_rows = len(column_labels)
@@ -2565,10 +2566,10 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
 
     fig, axes = plt.subplots(
         n_rows,
-        2,
-        figsize=(16, 4 * n_rows),
+        3 if include_plan_around else 2,
+        figsize=(20 if include_plan_around else 16, 4 * n_rows),
         squeeze=False,  # Guarantees axes is always a 2D array
-        gridspec_kw={"width_ratios": [1.0, 1.15]}  # Right panel 15% wider than left panel
+        gridspec_kw={"width_ratios": [0.85, 1.0, 1.15] if include_plan_around else [1.0, 1.15]}
     )
 
     bar_height = 0.36
@@ -2583,10 +2584,32 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
         col_data = plot_data[plot_data["Column"] == column_label].copy()
         y_pos = np.arange(len(col_data))
 
-        coverage_ax = axes[row_idx, 0]
-        width_ax = axes[row_idx, 1]
+        coverage_ax = axes[row_idx, -2]
+        width_ax = axes[row_idx, -1]
+        label_ax = axes[row_idx, 0]
 
-        # Coverage (left panel)
+        if include_plan_around:
+            error_ax = axes[row_idx, 0]
+            error_values = col_data["Plan Around MdAE (q50)"]
+            error_bars = error_ax.barh(
+                y_pos,
+                error_values,
+                height=2 * bar_height,
+                color="#64748B",
+                label="Plan Around (q50)",
+            )
+            error_ax.bar_label(
+                error_bars,
+                labels=[f"${v:,.0f}" for v in error_values],
+                padding=3,
+                fontsize=8,
+            )
+            error_ax.set_xlim(0, max(1, error_values.max() * 1.2))
+            error_ax.xaxis.set_major_locator(plt.MaxNLocator(nbins=4))
+            error_ax.xaxis.set_major_formatter(currency_fmt)
+            error_ax.set_title("Plan-Around MdAE (q50)", fontsize=12, fontweight="bold")
+
+        # Coverage
         coverage_ax.axvspan(0.40, 0.60, color=TYPICAL_RANGE_COLOR, alpha=0.12, zorder=0)
         coverage_ax.axvspan(0.80, 0.97, color=SAFETY_CUSHION_COLOR, alpha=0.10, zorder=0)
         coverage_ax.axvline(0.50, color=TYPICAL_RANGE_COLOR, linestyle="--", linewidth=1, alpha=0.8)
@@ -2656,25 +2679,24 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
         width_ax.set_title("Mean Width", fontsize=12, fontweight="bold")
 
         # Shared row formatting
-        coverage_ax.set_yticks(y_pos)
         yticklabels = [
             f"{str(g).split(' (')[0]}\nn={n:,} | ${med:,.0f}"
             for g, n, med in zip(col_data["Group"], col_data["Sample Size"], col_data["Median Actual Cost"])
         ]
-        coverage_ax.set_yticklabels(yticklabels, fontsize=9)
-        width_ax.set_yticks(y_pos)
-        width_ax.set_yticklabels([])
-        coverage_ax.invert_yaxis()
-        width_ax.invert_yaxis()
-        coverage_ax.set_ylabel(column_label, fontsize=11, fontweight="bold", labelpad=12)
-        width_ax.set_ylabel("")
+        label_ax.set_ylabel(column_label, fontsize=11, fontweight="bold", labelpad=12)
 
-        for ax in [coverage_ax, width_ax]:
+        for ax in axes[row_idx]:
+            ax.set_yticks(y_pos)
+            ax.set_yticklabels(yticklabels if ax is label_ax else [], fontsize=9)
+            ax.invert_yaxis()
             ax.grid(axis="x", alpha=0.20)
             sns.despine(ax=ax, left=True)
 
-    handles, labels = axes[0, 0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1), ncol=2, frameon=True)
+    handles, labels = axes[0, -2].get_legend_handles_labels()
+    if include_plan_around:
+        error_handles, error_labels = axes[0, 0].get_legend_handles_labels()
+        handles, labels = error_handles + handles, error_labels + labels
+    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1), ncol=len(labels), frameon=True)
     fig.suptitle(title, fontsize=18, fontweight="bold", y=1.015)
     
     plt.tight_layout(rect=[0, 0.03, 1, 1], h_pad=2.0, w_pad=1.4)
@@ -2707,14 +2729,16 @@ quantile_reliability_labels = [c["label"] for c in quantile_reliability_configs]
 plot_quantile_subgroup_performance(
     quantile_subgroup_df,
     quantile_reliability_labels,
-    "XGBoost Quantile Regression: Subgroup Reliability (Validation)"
+    "XGBoost Quantile Regression: Subgroup Reliability (Validation)",
+    include_plan_around=True,
 )
 
 quantile_fairness_labels = [c["label"] for c in quantile_fairness_configs]
 plot_quantile_subgroup_performance(
     quantile_subgroup_df,
     quantile_fairness_labels,
-    "XGBoost Quantile Regression: Subgroup Fairness (Validation)"
+    "XGBoost Quantile Regression: Subgroup Fairness (Validation)",
+    include_plan_around=True,
 )
 
 # %% [markdown]
@@ -3771,14 +3795,16 @@ plot_quantile_subgroup_performance(
     test_quantile_subgroup_df,
     quantile_reliability_labels,
     "XGBoost Quantile Regression: Subgroup Reliability (Test)",
-    save_to_file="../figures/evaluation/xgb_quantile_test_subgroup_reliability.png"
+    save_to_file="../figures/evaluation/xgb_quantile_test_subgroup_reliability.png",
+    include_plan_around=True,
 )
 
 plot_quantile_subgroup_performance(
     test_quantile_subgroup_df,
     quantile_fairness_labels,
     "XGBoost Quantile Regression: Subgroup Fairness (Test)",
-    save_to_file="../figures/evaluation/xgb_quantile_test_subgroup_fairness.png"
+    save_to_file="../figures/evaluation/xgb_quantile_test_subgroup_fairness.png",
+    include_plan_around=True,
 )
 
 plot_quantile_subgroup_predictions(
