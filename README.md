@@ -57,7 +57,7 @@
       <li><a href="#tuned-models-subgroup-reliability">Tuned Models: Subgroup Reliability</a></li>
       <li><a href="#tuned-models-subgroup-fairness">Tuned Models: Subgroup Fairness</a></li>
       <li><a href="#final-model-value-over-simple-baselines">Final Model: Value Over Simple Baselines</a></li>
-      <li><a href="#final-model-reliability--fairness">Final Model: Reliability & Fairness</a></li>
+      <li><a href="#final-model-subgroup-reliability--fairness">Final Model: Subgroup Reliability & Fairness</a></li>
       <li><a href="#shap-explanation-details">SHAP Explanation Details</a></li>
       <li><a href="#feature-importance-details">Feature Importance Details</a></li>
     </ul>
@@ -312,7 +312,7 @@ Release gates are the minimum test-set performance needed to launch. Product tar
 **Launch Decision**
 - **Decision:** Launch XGBoost quantile regression as the MVP model. It passes every release gate on the test set. For about half of people, plan-around estimates were within $240 of actual costs. Both the typical range and safety cushion achieved coverage close to their targets while staying within the width limits.
 - **Value Over Simple Baselines:** Compared XGBoost’s plan-around estimate, typical range, and safety cushion with two simple baselines. The population baseline gives everyone the same estimates, while the age-group baseline gives everyone within the same age group the same estimates. Both use population quantiles from the training data. XGBoost improved on both, most clearly for the typical range and safety cushion. 🔗 [**See Comparison Details**](#final-model-value-over-simple-baselines)
-- **Reliability & Fairness Audit:** The final subgroup audit supports launch. Predicted-risk tiers remain usable and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed. Typical-range undercoverage appears for uninsured users, users with a doctorate degree, poor mental health, and low income. 🔗 [**See Reliability & Fairness Details**](#final-model-reliability--fairness)
+- **Reliability & Fairness Audit:** The final subgroup audit supports launch. Predicted-risk tiers remain usable and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed. Typical-range undercoverage appears for uninsured users, users with a doctorate degree, poor mental health, and low income. 🔗 [**See Reliability & Fairness Details**](#final-model-subgroup-reliability--fairness)
 - **Launch Conditions:** Include prediction explanations, medical inflation adjustment, a scope disclaimer, planning notices for higher-uncertainty cases (such as high predicted costs or uninsured users, as in the example below), and privacy-preserving aggregate monitoring. Show the median cost for U.S. adults and for the user's age group alongside their plan-around estimate, so users can see how it compares with typical spending.
 
 **Prediction Explanations (SHAP)**  
@@ -801,8 +801,10 @@ Compared XGBoost with population and age-group baselines on the same test set. B
 <p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
-### Final Model: Reliability & Fairness
-Extended the stratified error analysis to evaluate the final XGBoost Quantile Regression model on the untouched test set. Unlike the tuned model analysis (which uses point-estimate MdAE), this audit evaluates the quality of **prediction intervals** using coverage and width metrics. The audit checks the **typical range** (`q25`-`q75`) and **safety cushion** (`q90`) across the same reliability and fairness subgroups. Overall coverage uses release gates (45%-55% for the typical range; 85%-95% for the safety cushion), while subgroup review bands are wider diagnostic ranges (40%-60% and 80%-97%) for groups with sufficient sample size (`n >= 30`). Groups outside these bands are flagged for review.
+### Final Model: Subgroup Reliability & Fairness
+Evaluated the XGBoost quantile model on the held-out test set using survey-weighted coverage and width metrics for the typical range (`q25`–`q75`) and safety cushion (`q90`). The analysis examines whether these estimates provide the intended coverage without becoming too wide across reliability and fairness subgroups.
+
+Subgroup coverage review bands are wider than the overall release gates: 40%–60% for the typical range and 80%–97% for the safety cushion. For groups with at least 30 test cases, coverage outside these bands flags a need for further investigation rather than an automatic release failure.
 
 **Reliability**  
 Reliability analysis examines test set coverage and interval width across cost tiers, health profiles, and insurance types. It identifies where the model's prediction intervals are too narrow (undercoverage) or too wide (impractical for budgeting).
