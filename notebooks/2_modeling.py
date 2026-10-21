@@ -2564,15 +2564,20 @@ def plot_quantile_subgroup_performance(
     """
     plot_data = df[df["Column"].isin(column_labels)].copy()
     n_rows = len(column_labels)
+    row_heights = [0.8 + 0.6 * (plot_data["Column"] == label).sum() for label in column_labels]
+    legend_gap_inches = 0.15
     max_width = plot_data[["Typical Range Mean Width (q25–q75)", "Safety Cushion Mean Width (q50–q90)"]].max().max()
     width_axis_max = np.ceil(max_width / 500) * 500
 
     fig, axes = plt.subplots(
         n_rows,
         3 if include_plan_around else 2,
-        figsize=(20 if include_plan_around else 16, 4 * n_rows),
+        figsize=(20 if include_plan_around else 16, sum(row_heights) + 0.15 * (n_rows - 1) + legend_gap_inches),
         squeeze=False,  # Guarantees axes is always a 2D array
-        gridspec_kw={"width_ratios": [0.85, 1.0, 1.15] if include_plan_around else [1.0, 1.15]}
+        gridspec_kw={
+            "width_ratios": [0.85, 1.0, 1.15] if include_plan_around else [1.0, 1.15],
+            "height_ratios": row_heights,
+        }
     )
 
     bar_height = 0.36
@@ -2686,7 +2691,7 @@ def plot_quantile_subgroup_performance(
             f"{str(g).split(' (')[0]}\nn={n:,} | ${med:,.0f}"
             for g, n, med in zip(col_data["Group"], col_data["Sample Size"], col_data["Median Actual Cost"])
         ]
-        label_ax.set_ylabel(column_label, fontsize=13, fontweight="bold", labelpad=12)
+        label_ax.set_ylabel(column_label, fontsize=15, fontweight="bold", labelpad=12)
 
         for ax in axes[row_idx]:
             ax.set_yticks(y_pos)
@@ -2708,7 +2713,7 @@ def plot_quantile_subgroup_performance(
     title_y = 1 + 30 / (72 * fig.get_figheight())
     fig.suptitle(title, fontsize=22, fontweight="bold", y=title_y)
     
-    plt.tight_layout(rect=[0, 0.03, 1, 1], h_pad=2.0, w_pad=1.4)
+    plt.tight_layout(rect=[0, 0.03, 1, 1 - legend_gap_inches / fig.get_figheight()], h_pad=3.0, w_pad=1.4)
 
     # Add footnote
     # Compute final layout, then align footnote with the first subplot's leftmost label
@@ -2722,7 +2727,8 @@ def plot_quantile_subgroup_performance(
         f"Note: Survey-weighted {data_split} metrics. "
         "Coverage measures the share of actual costs within q25–q75 (typical range) or at or below q90 (safety cushion). "
         "Mean width measures the distance from q25 to q75 (typical range) or q50 to q90 (safety cushion).\n"
-        "n is the group sample size. Dollar amounts in group labels represent that group’s actual median out-of-pocket cost.",
+        "n is the group sample size. Dollar amounts in group labels represent that group’s actual median out-of-pocket cost. "
+        "Shading marks subgroup review bands. Dashed lines mark 50% and 90% targets.",
         fontsize=11,
         style="italic", 
         color="#555555",
