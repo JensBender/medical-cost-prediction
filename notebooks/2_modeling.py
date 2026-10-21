@@ -2594,9 +2594,9 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
             error_bars = error_ax.barh(
                 y_pos,
                 error_values,
-                height=2 * bar_height,
+                height=bar_height,
                 color="#64748B",
-                label="Plan Around (q50)",
+                label="Plan Around",
             )
             error_ax.bar_label(
                 error_bars,
@@ -2607,7 +2607,7 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
             error_ax.set_xlim(0, max(1, error_values.max() * 1.2))
             error_ax.xaxis.set_major_locator(plt.MaxNLocator(nbins=4))
             error_ax.xaxis.set_major_formatter(currency_fmt)
-            error_ax.set_title("Plan-Around MdAE (q50)", fontsize=12, fontweight="bold")
+            error_ax.set_title("MdAE", fontsize=12, fontweight="bold")
 
         # Coverage
         coverage_ax.axvspan(0.40, 0.60, color=TYPICAL_RANGE_COLOR, alpha=0.12, zorder=0)
@@ -2692,12 +2692,17 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
             ax.grid(axis="x", alpha=0.20)
             sns.despine(ax=ax, left=True)
 
+        if include_plan_around:
+            error_ax.set_ylim(coverage_ax.get_ylim())
+
     handles, labels = axes[0, -2].get_legend_handles_labels()
     if include_plan_around:
         error_handles, error_labels = axes[0, 0].get_legend_handles_labels()
         handles, labels = error_handles + handles, error_labels + labels
     fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1), ncol=len(labels), frameon=True)
-    fig.suptitle(title, fontsize=18, fontweight="bold", y=1.015)
+    # Keep title-to-legend spacing fixed as the number of subplot rows changes.
+    title_y = 1 + 26 / (72 * fig.get_figheight())
+    fig.suptitle(title, fontsize=18, fontweight="bold", y=title_y)
     
     plt.tight_layout(rect=[0, 0.03, 1, 1], h_pad=2.0, w_pad=1.4)
 
