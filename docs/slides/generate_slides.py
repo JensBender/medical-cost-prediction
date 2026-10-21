@@ -544,7 +544,7 @@ def build_presentation():
     text(results, "Audit appendix label", "Appendix:",
          72, 674, 88, 24, 18, color=SECONDARY)
     comparison_appendix_link = text(
-        results, "Baseline comparison appendix link", "XGBoost vs. baselines",
+        results, "Baseline comparison appendix link", "Value over simple baselines",
         160, 674, 350, 24, 18, color=SECONDARY, underline=True,
     )
 
@@ -876,12 +876,12 @@ def build_presentation():
     reliability_return_link.click_action.target_slide = selection
 
     comparison = new_slide(presentation, storyboard, "A18")
-    comparison_title = text(comparison, "A18 title", "XGBoost vs. baselines: clearest gains in ranges "
-         "and cushion", 72, 48, 1136, 58, 39.3333333333, bold=True)
-    comparison_title.text_frame.word_wrap = False
-    text(comparison, "Baseline definitions", "Compared XGBoost quantile estimates "
-         "with population and age-group baselines on the test set.\nBoth baselines "
-         "use survey-weighted training quantiles.", 72, 116, 1136, 70, 26)
+    text(comparison, "A18 title", "XGBoost quantile: value over simple baselines",
+         72, 48, 1136, 66, 44, bold=True)
+    text(comparison, "Baseline comparison introduction", "Compared XGBoost with "
+         "population and age-group baselines based on training quantiles.\n"
+         "The clearest gains were in the typical range and safety cushion.",
+         72, 116, 1136, 70, 26)
     comparison_table = native_table(comparison, [
         ["Metric", "Versus population\nbaseline (95% CI)",
          "Versus age-group\nbaseline (95% CI)"],

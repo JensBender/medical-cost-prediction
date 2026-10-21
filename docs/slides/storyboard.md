@@ -429,7 +429,7 @@ intervals from 1,000 resamples of test-set rows.”
 
 **Visual:** Results table above the baseline comparison summary.
 
-**Appendix link:** XGBoost vs. baselines (A18).
+**Appendix link:** Value over simple baselines (A18).
 
 **Speaker notes — 1:30**
 
@@ -1154,14 +1154,14 @@ necessarily contain the same people.
 **Sources:** [README: subgroup reliability](../../README.md#tuned-models-subgroup-reliability);
 [modeling notebook](../../notebooks/2_modeling.py).
 
-### A18 — XGBoost vs. baselines: clearest gains in ranges and cushion
+### A18 — XGBoost quantile: value over simple baselines
 
 **Question:** Does XGBoost improve on population and age-group estimates?
 
 **On the slide**
 
-Compared XGBoost quantile estimates with population and age-group baselines on the test set.
-Both baselines use survey-weighted training quantiles.
+Compared XGBoost with population and age-group baselines based on training quantiles.
+The clearest gains were in the typical range and safety cushion.
 
 | Metric | Versus population baseline (95% CI) | Versus age-group baseline (95% CI) |
 | --- | --- | --- |
@@ -1207,7 +1207,7 @@ zero, so that improvement remains uncertain.
 
 **Promote:** After 8 for a longer presentation; allow 0:45.
 
-**Sources:** [README: baseline comparison](../../README.md#final-model-baseline-comparison);
+**Sources:** [README: baseline comparison](../../README.md#final-model-value-over-simple-baselines);
 [modeling notebook: baseline comparison and paired bootstrap](../../notebooks/2_modeling.py).
 
 ### A19 — Feature timing: limits of next-year forecasting

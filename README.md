@@ -56,7 +56,7 @@
       <li><a href="#tuned-models-heteroscedasticity">Tuned Models: Heteroscedasticity</a></li>
       <li><a href="#tuned-models-subgroup-reliability">Tuned Models: Subgroup Reliability</a></li>
       <li><a href="#tuned-models-subgroup-fairness">Tuned Models: Subgroup Fairness</a></li>
-      <li><a href="#final-model-baseline-comparison">Final Model: Baseline Comparison</a></li>
+      <li><a href="#final-model-value-over-simple-baselines">Final Model: Value Over Simple Baselines</a></li>
       <li><a href="#final-model-reliability--fairness">Final Model: Reliability & Fairness</a></li>
       <li><a href="#shap-explanation-details">SHAP Explanation Details</a></li>
       <li><a href="#feature-importance-details">Feature Importance Details</a></li>
@@ -311,7 +311,7 @@ Release gates are the minimum test-set performance needed to launch. Product tar
 
 **Launch Decision**
 - **Decision:** Launch XGBoost quantile regression as the MVP model. It passes every release gate on the test set. For about half of people, plan-around estimates were within $240 of actual costs. Both the typical range and safety cushion achieved coverage close to their targets while staying within the width limits.
-- **Value Over Simple Baselines:** Compared XGBoost’s plan-around estimate, typical range, and safety cushion with two simple baselines. The population baseline gives everyone the same estimates, while the age-group baseline gives everyone within the same age group the same estimates. Both use population quantiles from the training data. XGBoost improved on both, most clearly for the typical range and safety cushion. 🔗 [**See Baseline Comparison Details**](#final-model-baseline-comparison)
+- **Value Over Simple Baselines:** Compared XGBoost’s plan-around estimate, typical range, and safety cushion with two simple baselines. The population baseline gives everyone the same estimates, while the age-group baseline gives everyone within the same age group the same estimates. Both use population quantiles from the training data. XGBoost improved on both, most clearly for the typical range and safety cushion. 🔗 [**See Comparison Details**](#final-model-value-over-simple-baselines)
 - **Reliability & Fairness Audit:** The final subgroup audit supports launch. Predicted-risk tiers remain usable and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed. Typical-range undercoverage appears for uninsured users, users with a doctorate degree, poor mental health, and low income. 🔗 [**See Reliability & Fairness Details**](#final-model-reliability--fairness)
 - **Launch Conditions:** Include prediction explanations, medical inflation adjustment, a scope disclaimer, planning notices for higher-uncertainty cases (such as high predicted costs or uninsured users, as in the example below), and privacy-preserving aggregate monitoring. Show the median cost for U.S. adults and for the user's age group alongside their plan-around estimate, so users can see how it compares with typical spending.
 
@@ -784,7 +784,7 @@ Used stratified error analysis with survey-weighted validation MdAE to compare t
 <p align="right">(<a href="#main-fairness-audit">Back to Hyperparameter Tuning</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
-### Final Model: Baseline Comparison
+### Final Model: Value Over Simple Baselines
 Compared XGBoost with population and age-group baselines on the same test set. Both baselines use survey-weighted training quantiles (`q25`, `q50`, `q75`, and `q90`). The population baseline gives everyone the same estimates. The age-group baseline uses separate estimates for ages 18–34, 35–49, 50–64, and 65+.
 
 | Metric | Versus Population Baseline (95% CI) | Versus Age-Group Baseline (95% CI) |
