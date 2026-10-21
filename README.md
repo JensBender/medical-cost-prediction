@@ -310,7 +310,7 @@ Release gates are the minimum test-set performance needed to launch. Product tar
 <sub>*Note:* Survey-weighted test metrics. 95% percentile bootstrap confidence intervals from 1,000 resamples of test-set rows.</sub>
 
 **Launch Decision**
-- **Decision:** Launch XGBoost quantile regression as the MVP model. It passes every release gate on the test set. For about half of people, plan-around estimates were within $240 of actual costs. Both the typical range and safety cushion achieved coverage close to their targets while staying within the width limits.
+- **Decision:** Launch XGBoost quantile regression as the MVP model. It passes every release gate on the test set. For about half of people, plan-around estimates were within $240 of actual costs. Both the typical range and safety cushion achieved coverage close to their targets while staying within the mean width limits.
 - **Value Over Simple Baselines:** Compared XGBoost’s plan-around estimate, typical range, and safety cushion with two simple baselines. The population baseline gives everyone the same estimates, while the age-group baseline gives everyone within the same age group the same estimates. Both use population quantiles from the training data. XGBoost improved on both, most clearly for the typical range and safety cushion. 🔗 [**See Comparison Details**](#final-model-value-over-simple-baselines)
 - **Reliability & Fairness Audit:** The final subgroup audit supports launch. Predicted-risk tiers remain usable and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed. Typical-range undercoverage appears for uninsured users, users with a doctorate degree, poor mental health, and low income. 🔗 [**See Reliability & Fairness Details**](#final-model-subgroup-reliability--fairness)
 - **Launch Conditions:** Include prediction explanations, medical inflation adjustment, a scope disclaimer, planning notices for higher-uncertainty cases (such as high predicted costs or uninsured users, as in the example below), and privacy-preserving aggregate monitoring. Show the median cost for U.S. adults and for the user's age group alongside their plan-around estimate, so users can see how it compares with typical spending.
@@ -802,28 +802,28 @@ Compared XGBoost with population and age-group baselines on the same test set. B
 
 
 ### Final Model: Subgroup Reliability & Fairness
-Evaluated the XGBoost quantile model on the held-out test set using survey-weighted coverage and width metrics for the typical range (`q25`–`q75`) and safety cushion (`q90`). The analysis examines whether these estimates provide the intended coverage without becoming too wide across reliability and fairness subgroups.
+Evaluated the XGBoost quantile model on the held-out test set using survey-weighted coverage and mean width metrics for the typical range (`q25`–`q75`) and safety cushion (`q90`). The analysis examines whether these estimates provide the intended coverage without becoming too wide across reliability and fairness subgroups.
 
 Subgroup coverage review bands are wider than the overall release gates: 40%–60% for the typical range and 80%–97% for the safety cushion. For groups with at least 30 test cases, coverage outside these bands flags a need for further investigation rather than an automatic release failure.
 
 **Reliability**  
-Reliability analysis examines test set coverage and interval width across cost tiers, health profiles, and insurance types. It identifies where the model's prediction intervals are too narrow (undercoverage) or too wide (impractical for budgeting).
+Reliability analysis examines test set coverage and mean width across cost tiers, health profiles, and insurance types. It identifies where the model's prediction intervals are too narrow (undercoverage) or too wide (impractical for budgeting).
 
 ![XGBoost Quantile Regression: Subgroup Reliability (Test)](figures/evaluation/xgb_quantile_test_subgroup_reliability.png)
 **Key Insights:**
 - **Actual Cost Tiers:** Rare high-cost years remain the biggest predictability caveat. Actual High spenders have 12.4% typical-range coverage and 59.0% safety-cushion coverage; actual Very High spenders have 0.0% and 6.7%, respectively. Zero- and low-cost actual groups are heavily overprotected by the safety cushion (100.0% and 99.9%).
 - **Predicted Cost Tiers:** Deployable risk tiers behave much better because they are known at prediction time. Predicted plan-around cost tiers keep typical-range coverage inside the subgroup review band (42.6%-54.6%), and predicted safety-cushion tiers keep `q90` coverage inside the review band (85.6%-93.4%).
-- **Risk Communication:** Safety-cushion widths increase monotonically with predicted risk, from $1,125 in the predicted `q90` Low tier to $5,582 in the predicted `q90` Very High tier. This supports communicating wider uncertainty bands for higher-risk users.
+- **Risk Communication:** Mean safety-cushion widths increase monotonically with predicted risk, from $1,125 in the predicted `q90` Low tier to $5,582 in the predicted `q90` Very High tier. This supports communicating wider uncertainty bands for higher-risk users.
 - **Subgroup Reliability:** Physical health, chronic conditions, private insurance, and public insurance groups remain within subgroup review bands. Uninsured users are the main watchlist group: typical-range coverage is low at 34.7%, while safety-cushion coverage is conservative at 96.3%.
 
 **Fairness**  
-Fairness analysis evaluates whether the model's prediction intervals provide equal coverage and practical widths across protected and vulnerable demographic groups on the unseen test set.
+Fairness analysis evaluates whether the model's prediction intervals provide equal coverage and practical mean widths across protected and vulnerable demographic groups on the unseen test set.
 
 ![XGBoost Quantile Regression: Subgroup Fairness (Test)](figures/evaluation/xgb_quantile_test_subgroup_fairness.png)
 **Key Insights:**
 - **Protected Groups:** Sex, age, race/ethnicity, region, and walking limitation groups do not show systematic undercoverage on the final test audit.
 - **Coverage Limitations:** Poor mental health has low typical-range coverage (30.1%), as do low income (39.2%) and doctorate degree holders (34.7%). Near-poor income users show safety-cushion overcoverage (97.7%). These are reporting caveats and candidates for future validation on newer MEPS datasets, not evidence of broad demographic fairness failure.
-- **Prediction Usefulness:** Several low-cost groups have wide prediction intervals despite in-band coverage, including good physical health, good mental health, Asian respondents, and the West region. This is a practical-budgeting caveat rather than a safety failure.
+- **Prediction Usefulness:** Several low-cost groups have large mean widths despite in-band coverage, including good physical health, good mental health, Asian respondents, and the West region. This is a practical-budgeting caveat rather than a safety failure.
 - **Planning Notice:** Show a planning note for predicted `q90` in the top 20%, uninsured users, and subgroups with typical-range undercoverage. Name high predicted costs and uninsured in the planning note, but use neutral generic wording to avoid stigmatization for poor mental health, low income, and doctorate degree subgroups: "Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." Near-poor income shows safety-cushion overcoverage, so it should not trigger safety-cushion guidance by itself.
 - **Audit Verdict:** The subgroup audit supports launch. Predicted-risk tiers remain usable for deployment, and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed.
 

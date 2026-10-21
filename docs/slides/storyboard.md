@@ -367,8 +367,8 @@ for people with a similar profile. The typical range runs from the 25th to the
 the 90th percentile, which provides a conservative estimate to help
 users budget for a higher-cost year.
 
-To evaluate these estimates, I checked coverage and width. Coverage measures how
-often actual costs fall within the typical range or the safety cushion. Width
+To evaluate these estimates, I checked coverage and mean width. Coverage measures
+how often actual costs fall within the typical range or the safety cushion. Width
 matters too, because a very wide range could achieve high coverage but be too
 broad to be useful for budgeting. The typical range targets 50% coverage, while
 the safety cushion targets 90%. The goal is coverage close to these targets
@@ -435,7 +435,7 @@ intervals from 1,000 resamples of test-set rows.”
 
 “To make those goals measurable, I defined release gates, which are acceptable
 limits for prediction error, deviations from the coverage targets, and maximum
-average widths.
+mean widths.
 
 The model passed all five release gates. For about half of people, plan-around
 estimates were within $240 of actual costs. The typical range covered close to
@@ -444,7 +444,7 @@ their intended targets.
 
 On average, the typical range spanned about $900 between its lower and upper
 bounds. The safety cushion added about $2,000 above the plan-around estimate.
-Both average widths stayed below the release limits.
+Both mean widths stayed below the release limits.
 
 To assess added value, I compared XGBoost's quantile estimates with two simple
 baselines. The population baseline gives everyone the same estimates, while the

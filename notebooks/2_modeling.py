@@ -1461,7 +1461,7 @@ plot_subgroup_performance(
 #         <li><b>XGBoost differentiates best:</b> Predictions span up to \$2,114 (10× Elastic Net's \$217 and 1.7× Random Forest's \$1,273). A model that better separates low-cost from high-cost individuals is more likely to produce useful quantile ranges.</li>
 #         <li><b>Native multi-quantile support:</b> XGBoost's <code>reg:quantileerror</code> objective trains all four quantiles (0.25, 0.50, 0.75, 0.90) in a single model via the <code>quantile_alpha</code> parameter. Elastic Net would require <code>sklearn.linear_model.QuantileRegressor</code> (separate model per quantile) and Random Forest would require the external <code>quantile-forest</code> package, both adding complexity without changing the conclusion.</li>
 #         <li><b>Deployment efficiency:</b> A single multi-quantile XGBoost model produces one <code>.joblib</code> artifact instead of 4 separate model files.</li>
-#         <li><b>Metrics to confirm before release:</b> Evaluate q50 MdAE, pinball loss for each quantile, interval coverage, interval width, and subgroup performance on the untouched test set. Coverage alone is not enough: intervals also need to be narrow enough to help users make decisions.</li>
+#         <li><b>Metrics to confirm before release:</b> Evaluate q50 MdAE, pinball loss for each quantile, interval coverage, mean interval width, and subgroup performance on the untouched test set. Coverage alone is not enough: intervals also need to be narrow enough to help users make decisions.</li>
 #     </ul>
 # <strong>2. Calibration: Conformalized Quantile Regression (CQR)</strong> <br>
 # Raw quantile regression has no coverage guarantee. The predicted "Typical Range" (q25–q75) might actually contain only 40% or 60% of real outcomes, not the intended 50%. CQR adds a calibration step that adjusts the intervals to provide a finite-sample coverage guarantee.
@@ -1655,8 +1655,8 @@ def generate_quantile_metric_bootstrap_samples(
         - q50 MAE
         - q50 R²
         - q25-q75 interval coverage
-        - q25-q75 average interval width
-        - q50-q90 average safety cushion width
+        - q25-q75 mean interval width
+        - q50-q90 mean safety cushion width
 
     Args:
         y_true (array-like): Actual costs.
@@ -1877,10 +1877,10 @@ plt.show()
 #         <li><b>Safety cushion coverage (q90):</b> Release gate = 85–95%; product target = 90%.</li>
 #     </ul>
 #     <b>Interval Width</b> <br>
-#     Interval width measures sharpness: how specific the predicted dollar range is. Coverage without reasonable width is not enough, because a model can meet coverage targets by returning overly broad ranges. Typical range width is q75 - q25. Safety cushion width is q90 - q50, measuring how much extra budget the safety cushion adds above the plan-around estimate. Reported widths are weighted averages across users, not the range for any single individual. 
+#     Interval width measures sharpness: how specific the predicted dollar range is. Coverage without reasonable width is not enough, because a model can meet coverage targets by returning overly broad ranges. Typical range width is q75 - q25. Safety cushion width is q90 - q50, measuring how much extra budget the safety cushion adds above the plan-around estimate. Reported mean widths are survey-weighted averages across users, not the range for any single individual.
 #     <ul style="margin-top:8px">
-#         <li><b>Typical range width (q25–q75):</b> Release gate &lt; \$1,500; product target &lt; \$1,000.</li>
-#         <li><b>Safety cushion width (q50–q90):</b> Release gate &lt; \$3,500; product target &lt; \$2,500.</li>
+#         <li><b>Typical range mean width (q25–q75):</b> Release gate &lt; \$1,500; product target &lt; \$1,000.</li>
+#         <li><b>Safety cushion mean width (q50–q90):</b> Release gate &lt; \$3,500; product target &lt; \$2,500.</li>
 #     </ul>
 # </div>
 #
@@ -1956,11 +1956,11 @@ PRODUCT_METRIC_GATES_AND_TARGETS = {
         "Release Gate": "85%–95%",
         "Product Target": "90%",
     },
-    "Typical Range Width": {
+    "Typical Range Mean Width": {
         "Release Gate": f"< {DOLLAR}1,500",
         "Product Target": f"< {DOLLAR}1,000",
     },
-    "Safety Cushion Width": {
+    "Safety Cushion Mean Width": {
         "Release Gate": f"< {DOLLAR}3,500",
         "Product Target": f"< {DOLLAR}2,500",
     },
@@ -2005,14 +2005,14 @@ product_metric_specs = [
         "Format": "percent",
     },
     {
-        "Metric": "Typical Range Width",
+        "Metric": "Typical Range Mean Width",
         "Training": metrics["train_q25_q75_width"],
         "Validation": metrics["val_q25_q75_width"],
         "Samples": val_quantile_metric_bootstrap_samples["q25_q75_width"],
         "Format": "currency_0",
     },
     {
-        "Metric": "Safety Cushion Width",
+        "Metric": "Safety Cushion Mean Width",
         "Training": metrics["train_q50_q90_width"],
         "Validation": metrics["val_q50_q90_width"],
         "Samples": val_quantile_metric_bootstrap_samples["q50_q90_width"],
@@ -2240,8 +2240,8 @@ display(
 #     💡 <b>Insights:</b> 
 #     <ul>
 #         <li><strong>Good Interval Calibration:</strong> The model achieves 48.6% coverage for the typical range (Target: 50%) and 88.7% for the safety cushion (Target: 90%). Their approximate 95% bootstrap CIs ([45.2%, 51.6%] and [86.7%, 90.6%]) fall within the product release tolerances (45%–55% and 85%–95%), supporting release readiness pending final holdout test confirmation.</li>
-#         <li><strong>Excellent Generalization:</strong> The training values for MdAE (\$229.14), MAE (\$957.21), typical range width (\$917), and safety cushion width (\$2,019) all fall within the validation 95% bootstrap confidence intervals. This shows that the model generalizes exceptionally well and shows no significant overfitting.</li>
-#         <li><strong>Manageable Typical Range Width for Budgeting:</strong> An average typical range width of \$891 (95% CI: [\$851, \$929]) provides users with a narrow, manageable window for standard HSA/FSA planning, while the \$1,980 safety cushion width (95% CI: [\$1,904, \$2,057]) offers a stable, realistic buffer for emergency fund planning.</li>
+#         <li><strong>Excellent Generalization:</strong> The training values for MdAE (\$229.14), MAE (\$957.21), typical range mean width (\$917), and safety cushion mean width (\$2,019) all fall within the validation 95% bootstrap confidence intervals. This shows that the model generalizes exceptionally well and shows no significant overfitting.</li>
+#         <li><strong>Manageable Typical Range Mean Width for Budgeting:</strong> A typical range mean width of \$891 (95% CI: [\$851, \$929]) provides users with a narrow, manageable window for standard HSA/FSA planning, while the \$1,980 safety cushion mean width (95% CI: [\$1,904, \$2,057]) offers a stable, realistic buffer for emergency fund planning.</li>
 #         <li><strong>Typical Range Adds Value:</strong> The Winkler interval score for the q25–q75 typical range improves from \$3,707 for the naive population interval to \$3,376 for XGBoost. This corresponds to an 8.9% interval skill score. This confirms the typical range is not just well calibrated, it is more useful than showing every user the same generic range.</li>
 #         <li><strong>MdAE vs. MAE:</strong> The large gap between MdAE (\$244.54) and MAE (\$954.70) reinforces that while the model is very precise for the "typical" user, rare high-cost outliers continue to drive the mean error, further justifying a "plan around + safety cushion" approach over simple point estimates.</li>
 #         <li><strong>CQR Not Needed at Validation Stage:</strong> Conformalized quantile regression is not triggered because validation coverage falls within product tolerances. Revisit CQR if holdout test coverage falls outside release targets or if the q25 conservative bias worsens.</li>
@@ -2294,10 +2294,10 @@ plot_residuals_vs_predicted(
 #         <li><b>Quantile-specific predicted cost groups:</b> Replace the point-estimate <code>Predicted Costs</code> grouping with <code>Predicted Plan Around Costs</code> based on q50, and add <code>Predicted Safety Cushion Costs</code> based on q90 to audit the "plan up to" amount directly.</li>
 #         <li><b>Reliability groups:</b> Actual cost tier, predicted plan-around cost tier (q50), predicted safety-cushion cost tier (q90), physical health, insurance status, and chronic condition count.</li>
 #         <li><b>Fairness audit groups:</b> Sex, age group, race/ethnicity, mental health, family income, education, region, and walking limitation.</li>
-#         <li><b>Metrics by group:</b> Plan-around MdAE (q50), typical range coverage/width (q25-q75), and safety cushion coverage/width (q90 and q50-q90).</li>
+#         <li><b>Metrics by group:</b> Plan-around MdAE (q50), typical range coverage/mean width (q25-q75), and safety cushion coverage/mean width (q90 and q50-q90).</li>
 #         <li><b>Context columns:</b> Include sample size and weighted median actual cost to distinguish unfair or unreliable model behavior from genuinely higher-cost, higher-variance population segments.</li>
 #         <li><b>Subgroup review bands:</b> Overall coverage targets are release gates; subgroup review bands are diagnostic ranges, not pass/fail gates. For subgroups with sufficient sample size (n ≥ 30), q25–q75 coverage should generally stay within 40–60%, and q90 coverage should generally stay within 80–97%. Subgroups with n &lt; 30 are flagged as review-only because their coverage estimates are less stable.</li>
-#         <li><b>Width review guideline:</b> Wider intervals are acceptable for genuinely higher-risk groups, but concerning for low-risk groups if they do not improve coverage or reflect clearly higher actual costs.</li>
+#         <li><b>Mean width review guideline:</b> Wider intervals are acceptable for genuinely higher-risk groups, but concerning for low-risk groups if they do not improve coverage or reflect clearly higher actual costs.</li>
 #         <li><b>Diagnostic flags:</b> Add diagnostic quality-control flags to identify groups that may need manual review before deployment. These flags are not automatic failure criteria; they highlight groups where the plan-around estimate, typical range, or safety cushion may be unreliable or insufficiently useful.</li>
 #         <li><b>Interpretation principle:</b> Coverage alone is not enough. A useful interval must be calibrated and narrow enough to support budgeting decisions; a wide interval is acceptable only when it reflects real uncertainty for a higher-risk user group.</li>
 #     </ul>
@@ -2313,7 +2313,7 @@ plot_residuals_vs_predicted(
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Small Sample</code></td>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;">Subgroup sample size &lt; 30</td>
-#                 <td style="padding:8px; border:1px solid #d0e7fa;">Coverage and width metrics for this subgroup are less stable and should be treated as review-only subgroup metrics.</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">Coverage and mean width metrics for this subgroup are less stable and should be treated as review-only subgroup metrics.</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Typical Range Undercoverage</code></td>
@@ -2337,12 +2337,12 @@ plot_residuals_vs_predicted(
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Wide Low-Cost Typical Range</code></td>
-#                 <td style="padding:8px; border:1px solid #d0e7fa;">Low median actual cost and q25–q75 width &gt; overall average</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">Low median actual cost and q25–q75 mean width &gt; overall mean</td>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;">Low-cost users may receive a typical range that is too broad to be actionable.</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;"><code>Wide Low-Cost Cushion</code></td>
-#                 <td style="padding:8px; border:1px solid #d0e7fa;">Low median actual cost and q50–q90 width &gt; overall average</td>
+#                 <td style="padding:8px; border:1px solid #d0e7fa;">Low median actual cost and q50–q90 mean width &gt; overall mean</td>
 #                 <td style="padding:8px; border:1px solid #d0e7fa;">Low-cost users may be encouraged to over-budget without clear justification.</td>
 #             </tr>
 #         </tbody>
@@ -2441,9 +2441,9 @@ def create_quantile_subgroup_df(analysis_df, y_true, weights, y_pred_quantiles, 
                 "Predicted Safety Cushion (q90)": np.average(q90_group, weights=w_group),
                 "Plan Around MdAE (q50)": weighted_median_absolute_error(y_group, q50_group, sample_weight=w_group),
                 "Typical Range Coverage (q25–q75)": np.average((y_group >= q25_group) & (y_group <= q75_group), weights=w_group),
-                "Typical Range Width (q25–q75)": np.average(q75_group - q25_group, weights=w_group),
+                "Typical Range Mean Width (q25–q75)": np.average(q75_group - q25_group, weights=w_group),
                 "Safety Cushion Coverage (q90)": np.average(y_group <= q90_group, weights=w_group),
-                "Safety Cushion Width (q50–q90)": np.average(q90_group - q50_group, weights=w_group),
+                "Safety Cushion Mean Width (q50–q90)": np.average(q90_group - q50_group, weights=w_group),
             })
 
     subgroup_df = pd.DataFrame(stratified_results)
@@ -2472,9 +2472,9 @@ def create_quantile_subgroup_df(analysis_df, y_true, weights, y_pred_quantiles, 
             flags.append("High Plan-Around Error")
 
         is_low_cost_group = subgroup["Median Actual Cost"] <= overall_median_actual_cost
-        if is_low_cost_group and subgroup["Typical Range Width (q25–q75)"] > overall_range_width:
+        if is_low_cost_group and subgroup["Typical Range Mean Width (q25–q75)"] > overall_range_width:
             flags.append("Wide Low-Cost Typical-Range")
-        if is_low_cost_group and subgroup["Safety Cushion Width (q50–q90)"] > overall_cushion_width:
+        if is_low_cost_group and subgroup["Safety Cushion Mean Width (q50–q90)"] > overall_cushion_width:
             flags.append("Wide Low-Cost Safety-Cushion")
 
         return ", ".join(flags) if flags else "None"
@@ -2520,9 +2520,9 @@ display_columns = [
     "Median Actual Cost",
     "Plan Around MdAE (q50)",
     "Typical Range Coverage (q25–q75)",
-    "Typical Range Width (q25–q75)",
+    "Typical Range Mean Width (q25–q75)",
     "Safety Cushion Coverage (q90)",
-    "Safety Cushion Width (q50–q90)",
+    "Safety Cushion Mean Width (q50–q90)",
     "Reliability Flags",
 ]
 
@@ -2532,7 +2532,7 @@ display(
     .hide()
     .pipe(add_table_caption, "XGBoost Quantile Regression: Stratified Error Analysis (Validation)")
     .format("{:,}", subset=["Sample Size"])
-    .format("${:,.2f}", subset=["Median Actual Cost", "Plan Around MdAE (q50)", "Typical Range Width (q25–q75)", "Safety Cushion Width (q50–q90)"])
+    .format("${:,.2f}", subset=["Median Actual Cost", "Plan Around MdAE (q50)", "Typical Range Mean Width (q25–q75)", "Safety Cushion Mean Width (q50–q90)"])
     .format("{:.1%}", subset=["Typical Range Coverage (q25–q75)", "Safety Cushion Coverage (q90)"])
     .apply(lambda row: ["background-color: #fff3cd" if row["Reliability Flags"] != "None" else "" for _ in row], axis=1)
 )
@@ -2540,7 +2540,7 @@ display(
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>XGBoost Quantile Regression: Subgroup Reliability and Fairness</strong> <br>
-#     📌 Visualize coverage and interval width side-by-side for each stratification column. Coverage measures calibration; width measures practical usefulness. Both are needed to determine whether the typical range and safety cushion are reliable for subgroup-level budgeting.
+#     📌 Visualize coverage and mean interval width side-by-side for each stratification column. Coverage measures calibration; mean width measures practical usefulness. Both are needed to determine whether the typical range and safety cushion are reliable for subgroup-level budgeting.
 # </div>
 
 # %%
@@ -2550,7 +2550,7 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
 
     Each subplot row is one stratification column. The left panel shows coverage for 
     the typical range (q25-q75) and safety cushion (q90). The right panel shows
-    the corresponding range widths in USD.
+    the survey-weighted mean widths in USD.
 
     Args:
         df (pd.DataFrame): Stratified error analysis dataframe of quantile regression.
@@ -2560,7 +2560,7 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
     """
     plot_data = df[df["Column"].isin(column_labels)].copy()
     n_rows = len(column_labels)
-    max_width = plot_data[["Typical Range Width (q25–q75)", "Safety Cushion Width (q50–q90)"]].max().max()
+    max_width = plot_data[["Typical Range Mean Width (q25–q75)", "Safety Cushion Mean Width (q50–q90)"]].max().max()
     width_axis_max = np.ceil(max_width / 500) * 500
 
     fig, axes = plt.subplots(
@@ -2597,14 +2597,14 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
             col_data["Typical Range Coverage (q25–q75)"],
             height=bar_height,
             color=colors["Range"],
-            label="Typical Range (q25–q75)"
+            label="Typical Range"
         )
         coverage_bars_cushion = coverage_ax.barh(
             y_pos + bar_height / 2,
             col_data["Safety Cushion Coverage (q90)"],
             height=bar_height,
             color=colors["Cushion"],
-            label="Safety Cushion (q90)"
+            label="Safety Cushion"
         )
 
         coverage_ax.bar_label(
@@ -2623,37 +2623,37 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
         coverage_ax.xaxis.set_major_formatter(percent_fmt)
         coverage_ax.set_title("Coverage", fontsize=12, fontweight="bold")
 
-        # Width (right panel)
+        # Mean width (right panel)
         width_bars_range = width_ax.barh(
             y_pos - bar_height / 2,
-            col_data["Typical Range Width (q25–q75)"],
+            col_data["Typical Range Mean Width (q25–q75)"],
             height=bar_height,
             color=colors["Range"],
-            label="Typical Range (q25–q75)"
+            label="Typical Range"
         )
         width_bars_cushion = width_ax.barh(
             y_pos + bar_height / 2,
-            col_data["Safety Cushion Width (q50–q90)"],
+            col_data["Safety Cushion Mean Width (q50–q90)"],
             height=bar_height,
             color=colors["Cushion"],
-            label="Safety Cushion (q50–q90)"
+            label="Safety Cushion"
         )
 
         width_ax.bar_label(
             width_bars_range,
-            labels=[f"${v:,.0f}" for v in col_data["Typical Range Width (q25–q75)"]],
+            labels=[f"${v:,.0f}" for v in col_data["Typical Range Mean Width (q25–q75)"]],
             padding=3,
             fontsize=8
         )
         width_ax.bar_label(
             width_bars_cushion,
-            labels=[f"${v:,.0f}" for v in col_data["Safety Cushion Width (q50–q90)"]],
+            labels=[f"${v:,.0f}" for v in col_data["Safety Cushion Mean Width (q50–q90)"]],
             padding=3,
             fontsize=8
         )
         width_ax.xaxis.set_major_formatter(currency_fmt)
         width_ax.set_xlim(0, width_axis_max)
-        width_ax.set_title("Width", fontsize=12, fontweight="bold")
+        width_ax.set_title("Mean Width", fontsize=12, fontweight="bold")
 
         # Shared row formatting
         coverage_ax.set_yticks(y_pos)
@@ -2677,7 +2677,7 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
     fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1), ncol=2, frameon=True)
     fig.suptitle(title, fontsize=18, fontweight="bold", y=1.015)
     
-    plt.tight_layout(rect=[0, 0.02, 1, 1], h_pad=2.0, w_pad=1.4)
+    plt.tight_layout(rect=[0, 0.03, 1, 1], h_pad=2.0, w_pad=1.4)
 
     # Add footnote
     # Compute final layout, then align footnote with the first subplot's leftmost label
@@ -2688,7 +2688,9 @@ def plot_quantile_subgroup_performance(df, column_labels, title, save_to_file=No
     fig.text(
         footnote_x, 
         0.01, 
-        "Note: Dollar values in subgroup labels (e.g., $269) represent the actual median out-of-pocket costs of that subgroup.", 
+        "Note: Coverage measures the share of actual costs within q25–q75 (typical range) or at or below q90 (safety cushion). "
+        "Mean width summarizes q75 − q25 or q90 − q50, respectively.\n"
+        "Estimates use survey weights; n is the group sample size; dollar amounts in group labels show the group’s actual median cost.",
         fontsize=9, 
         style="italic", 
         color="#555555",
@@ -2705,16 +2707,14 @@ quantile_reliability_labels = [c["label"] for c in quantile_reliability_configs]
 plot_quantile_subgroup_performance(
     quantile_subgroup_df,
     quantile_reliability_labels,
-    "XGBoost Quantile Regression: Subgroup Reliability (Validation)",
-    save_to_file="../figures/evaluation/xgb_quantile_validation_subgroup_reliability.png"
+    "XGBoost Quantile Regression: Subgroup Reliability (Validation)"
 )
 
 quantile_fairness_labels = [c["label"] for c in quantile_fairness_configs]
 plot_quantile_subgroup_performance(
     quantile_subgroup_df,
     quantile_fairness_labels,
-    "XGBoost Quantile Regression: Subgroup Fairness (Validation)",
-    save_to_file="../figures/evaluation/xgb_quantile_validation_subgroup_fairness.png"
+    "XGBoost Quantile Regression: Subgroup Fairness (Validation)"
 )
 
 # %% [markdown]
@@ -2725,7 +2725,7 @@ plot_quantile_subgroup_performance(
 #         <li><strong>Predicted Cost Tiers:</strong> When stratified by predicted plan-around (q50) or predicted cushion (q90), all groups are well-calibrated, remaining within subgroup review bands (typical range: 41.4%–58.2%; safety cushion: 86.5%–91.4%). This confirms that the model's own confidence segmentation is well-calibrated regardless of predicted spend level.</li>
 #         <li><strong>Insurance:</strong> Private (49.0% / 90.8%) and public (51.2% / 89.2%) insurance groups are well-calibrated. However, the uninsured group has a typical range coverage of only 34.9% (below the lower 40% review-band boundary), indicating that predicted ranges are too narrow for the uninsured. This is likely because uninsured costs are more volatile and harder to predict from available features.</li>
 #         <li><strong>Sex, Age, Race:</strong> Coverages are well within subgroup review bands (Typical: 44.7%–56.9%; Safety Cushion: 85.0%–95.2%). No demographic group is flagged for systematic calibration bias against protected subgroups.</li>
-#         <li><strong>Width:</strong> Prediction interval widths scale proportionally with group risk: older cohorts (65+: \$1,408 typical range width), individuals with walking limitations (\$1,614), and groups with poorer health status receive wider intervals, aligning with their higher median costs and cost variance.</li>
+#         <li><strong>Mean Width:</strong> Mean prediction interval widths scale proportionally with group risk: older cohorts (65+: \$1,408 typical range mean width), individuals with walking limitations (\$1,614), and groups with poorer health status receive wider intervals, aligning with their higher median costs and cost variance.</li>
 #         <li><strong>Education:</strong> Doctorate degree holders fall below the lower 80% safety-cushion review-band boundary (78.1%, n=53). This group may contain higher cost variance not fully captured by available features.</li>
 #         <li><strong>Mental Health:</strong> Individuals with 'Poor' perceived mental health (n=29) show typical range undercoverage (37.8%) and cushion undercoverage (71.7%). However, with n < 30, this group triggers the Small Sample flag and its metrics should be treated as review-only subgroup metrics rather than definitive evidence of miscalibration.</li>
 #     </ul>
@@ -2734,7 +2734,7 @@ plot_quantile_subgroup_performance(
 # %% [markdown]
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
 #     <strong>XGBoost Quantile Regression: Predicted Costs by Subgroup</strong> <br>
-#     📌 Visualize predicted out-of-pocket costs by subgroup. Unlike the coverage/width audit above, this diagnostic shows where the model places each subgroup on the dollar costs scale: plan-around estimate (q50), typical range (q25-q75), and safety cushion (q90). Use this to inspect risk separation and whether uncertainty grows in clinically plausible places.
+#     📌 Visualize predicted out-of-pocket costs by subgroup. Unlike the coverage/mean width audit above, this diagnostic shows where the model places each subgroup on the dollar costs scale: plan-around estimate (q50), typical range (q25-q75), and safety cushion (q90). Use this to inspect risk separation and whether uncertainty grows in clinically plausible places.
 # </div>
 
 # %%
@@ -3036,7 +3036,7 @@ plot_quantile_subgroup_predictions(
 #     💡 <b>Insights:</b> 
 #     <ul>
 #         <li><strong>Plan-Around Estimate:</strong> The model successfully separates risk across all subgroups. Plan-around estimates (q50) increase for higher-risk groups: age 18-34 (\$131 q50) → 65+ (\$560), 0 chronic conditions (\$128) → 4+ (\$724), Excellent physical health (\$253) → Poor (\$587). This confirms that the quantile model learns meaningful risk patterns.</li>
-#         <li><strong>Typical Range:</strong> Typical prediction range widths increase substantially for high-risk vs. low-risk groups. Walking limitation: No (width \$802) vs. Yes (\$1,608). Physical health: Excellent (\$676) vs. Poor (\$1,357). This shows the model widens its prediction intervals for groups with high cost variance.</li>
+#         <li><strong>Typical Range:</strong> Mean typical prediction range widths increase substantially for high-risk vs. low-risk groups. Walking limitation: No (mean width \$802) vs. Yes (\$1,608). Physical health: Excellent (\$676) vs. Poor (\$1,357). This shows the model widens its prediction intervals for groups with high cost variance.</li>
 #         <li><strong>Safety Cushion:</strong> For most demographic groups (sex, age, race), the safety cushion (q90) provides a buffer of roughly \$1,400–\$3,000 above the plan-around estimate. This represents a meaningful safety boundary for budgeting without encouraging excessive over-allocation.</li>
 #         <li><strong>Chronic Conditions:</strong> Each additional condition raises both the plan-around and the safety cushion. From 0 conditions (q50=\$128, q90=\$1,530) through 4+ conditions (q50=\$724, q90=\$4,090), the plan-around scales ~5.7× while the safety cushion scales ~2.7×, reflecting higher expected costs and greater cost uncertainty.</li>
 #         <li><strong>Underestimating High Costs:</strong> Even for the highest predicted cost tier, the safety cushion tops out around \$6,250, whereas the actual Very High Spend group has a median of \$10,086. The model's predicted range compresses for extreme actual spenders: high-spend and very-high-spend actual cost groups receive near-identical predictions (q50 \$570 vs. \$674), confirming that the model cannot distinguish high from extreme costs.</li>
@@ -3376,7 +3376,7 @@ display(
 #
 #
 # <div style="background-color:#fff6e4; padding:15px; border-width:3px; border-color:#f5ecda; border-style:solid; border-radius:6px">
-#     📌 Evaluate final model q50 accuracy, product coverage, interval width, and Winkler interval score on the untouched test set.
+#     📌 Evaluate final model q50 accuracy, product coverage, mean interval width, and Winkler interval score on the untouched test set.
 # </div>
 
 # %%
@@ -3388,9 +3388,9 @@ def get_test_metric_status(metric, value):
         return "Pass" if 0.45 <= value <= 0.55 else "Review"
     if metric == "Safety Cushion Coverage (q90)":
         return "Pass" if 0.85 <= value <= 0.95 else "Review"
-    if metric == "Typical Range Width":
+    if metric == "Typical Range Mean Width":
         return "Pass" if value < 1500 else "Review"
-    if metric == "Safety Cushion Width":
+    if metric == "Safety Cushion Mean Width":
         return "Pass" if value < 3500 else "Review"
     return "Diagnostic"
 
@@ -3427,13 +3427,13 @@ test_product_metric_specs = [
         "Format": "percent",
     },
     {
-        "Metric": "Typical Range Width",
+        "Metric": "Typical Range Mean Width",
         "Test": np.average(y_test_pred_q75 - y_test_pred_q25, weights=w_test),
         "Samples": test_quantile_metric_bootstrap_samples["q25_q75_width"],
         "Format": "currency_0",
     },
     {
-        "Metric": "Safety Cushion Width",
+        "Metric": "Safety Cushion Mean Width",
         "Test": np.average(y_test_pred_q90 - y_test_pred_q50, weights=w_test),
         "Samples": test_quantile_metric_bootstrap_samples["q50_q90_width"],
         "Format": "currency_0",
@@ -3541,7 +3541,7 @@ display(
 #     💡 <b>Insights:</b> The final model passes all product-facing release gates on the holdout test set. 
 #     <ul>
 #         <li><b>Plan Around:</b> The q50 estimate achieves MdAE = &#36;239.5, comfortably below both the release gate and product target.</li>
-#         <li><b>Typical Range and Safety Cushion:</b> Coverage remains within release gates. Interval widths meet the product targets. This suggests the model is calibrated without making the ranges overly broad.</li>
+#         <li><b>Typical Range and Safety Cushion:</b> Coverage remains within release gates. Mean interval widths meet the product targets. This suggests the model is calibrated without making the ranges overly broad.</li>
 #         <li><b>Value Compared with Simple Baselines:</b> The next section compares these results with population and age-group estimates, including uncertainty in the measured improvements.</li>
 #         <li><b>Remaining Risk:</b> The model struggles with the rare high-cost cases, reflected by the large MAE-vs-MdAE gap and near-zero R².</li>
 #     </ul>
@@ -3620,7 +3620,7 @@ def summarize_baseline_comparison(y_true, predictions, weights):
         ),
         "Plan around: mean absolute error": mean_absolute_error(y_true, q50, sample_weight=weights),
         "Typical range: coverage": np.average((y_true >= q25) & (y_true <= q75), weights=weights),
-        "Typical range: average width": np.average(q75 - q25, weights=weights),
+        "Typical range: mean width": np.average(q75 - q25, weights=weights),
         "Typical range: Winkler score": interval_score(y_true, q25, q75, alpha=0.50, sample_weight=weights),
         "Safety cushion: q90 coverage": np.average(y_true <= q90, weights=weights),
         "Safety cushion: q90 pinball loss": mean_pinball_loss(y_true, q90, alpha=0.90, sample_weight=weights),
@@ -3636,7 +3636,7 @@ baseline_metric_labels = {
     "Plan around: median absolute error": "Plan around (q50): MdAE",
     "Plan around: mean absolute error": "Plan around (q50): MAE",
     "Typical range: coverage": "Typical range (q25–q75): coverage",
-    "Typical range: average width": "Typical range (q25–q75): average width",
+    "Typical range: mean width": "Typical range (q25–q75): mean width",
     "Typical range: Winkler score": "Typical range (q25–q75): Winkler score",
     "Safety cushion: q90 coverage": "Safety cushion (q90): coverage",
     "Safety cushion: q90 pinball loss": "Safety cushion (q90): pinball loss",
@@ -3719,9 +3719,9 @@ display(
 #     <ul style="margin-top:8px">
 #         <li><b>Reliability groups:</b> actual cost tier, predicted plan-around cost tier (q50), predicted safety-cushion cost tier (q90), physical health, insurance status, and chronic condition count.</li>
 #         <li><b>Fairness audit groups:</b> sex, age group, race/ethnicity, mental health, family income, education, region, and walking limitation.</li>
-#         <li><b>Metrics by group:</b> plan-around MdAE (q50), typical range coverage/width (q25-q75), and safety cushion coverage/width (q90 and q50-q90).</li>
+#         <li><b>Metrics by group:</b> plan-around MdAE (q50), typical range coverage/mean width (q25-q75), and safety cushion coverage/mean width (q90 and q50-q90).</li>
 #         <li><b>Subgroup review bands:</b> Release gates apply to overall test coverage (45-55% for typical range, 85-95% for safety cushion). Subgroup review bands are diagnostic ranges, not additional pass/fail gates. For subgroups with sufficient sample size (n ≥ 30), typical range coverage should generally stay within 40-60%, and safety cushion coverage should generally stay within 80-97%. Small subgroups (n &lt; 30) are labeled review-only because their estimates are less stable.</li>
-#         <li><b>Diagnostic flags:</b> Flag high plan-around error for subgroups with q50 MdAE above 3× the overall q50 MdAE. For low-cost subgroups (median actual cost ≤ overall median), flag typical range or safety cushion widths above the overall average as potentially too broad for practical budgeting. These flags point to calibration, usefulness, or sampling issues that need review; they do not by themselves imply model unfairness or a release failure.</li>
+#         <li><b>Diagnostic flags:</b> Flag high plan-around error for subgroups with q50 MdAE above 3× the overall q50 MdAE. For low-cost subgroups (median actual cost ≤ overall median), flag typical range or safety cushion mean widths above the overall mean as potentially too broad for practical budgeting. These flags point to calibration, usefulness, or sampling issues that need review; they do not by themselves imply model unfairness or a release failure.</li>
 #         <li><b>Interpretation:</b> Use diagnostic flags to qualify reporting, document caveats, and inform product planning notices or scope disclaimers. Because this is the locked test set, flagged subgroups should not drive another tuning loop; follow-up changes should be evaluated in a new validation cycle.</li>
 #     </ul>
 # </div>
@@ -3761,7 +3761,7 @@ display(
     .hide()
     .pipe(add_table_caption, "XGBoost Quantile Regression: Stratified Error Analysis (Test)")
     .format("{:,}", subset=["Sample Size"])
-    .format("${:,.2f}", subset=["Median Actual Cost", "Plan Around MdAE (q50)", "Typical Range Width (q25–q75)", "Safety Cushion Width (q50–q90)"])
+    .format("${:,.2f}", subset=["Median Actual Cost", "Plan Around MdAE (q50)", "Typical Range Mean Width (q25–q75)", "Safety Cushion Mean Width (q50–q90)"])
     .format("{:.1%}", subset=["Typical Range Coverage (q25–q75)", "Safety Cushion Coverage (q90)"])
     .apply(lambda row: ["background-color: #fff3cd" if row["Reliability Flags"] != "None" else "" for _ in row], axis=1)
 )
@@ -3798,10 +3798,10 @@ plot_quantile_subgroup_predictions(
 #     💡 <b>Insights:</b> The final subgroup audit supports launch. There is no broad demographic fairness failure and predicted-risk tiers remain usable for deployment. There are some caveats, the main one being unreliable predictions of rare actual tail costs, which are only visible after the year is observed.
 #     <ul>
 #         <li><strong>Actual Cost Tiers:</strong> The biggest caveat is predictability of high actual costs. Actual High spenders have 12.4% typical-range coverage and 59.0% safety-cushion coverage; actual Very High spenders have 0.0% and 6.7%, respectively. Zero- and low-cost actual groups are heavily overprotected by the safety cushion (100.0% and 99.9%). This is an expected limitation of zero-inflated, heavy-tailed medical costs.</li>
-#         <li><strong>Predicted Cost Tiers:</strong> The deployable risk tiers are much better behaved because they are known at prediction time. Predicted plan-around cost tiers keep typical-range coverage inside the subgroup review band (42.6%-54.6%), and predicted safety-cushion tiers keep q90 coverage inside the subgroup review band (85.6%-93.4%). Widths also increase monotonically with predicted risk, from a \$1,125 safety-cushion width in the predicted q90 Low tier to \$5,582 in the predicted q90 Very High tier, which supports using predicted-risk bands to communicate prediction uncertainty to the user.</li>
+#         <li><strong>Predicted Cost Tiers:</strong> The deployable risk tiers are much better behaved because they are known at prediction time. Predicted plan-around cost tiers keep typical-range coverage inside the subgroup review band (42.6%-54.6%), and predicted safety-cushion tiers keep q90 coverage inside the subgroup review band (85.6%-93.4%). Mean widths also increase monotonically with predicted risk, from a \$1,125 safety-cushion mean width in the predicted q90 Low tier to \$5,582 in the predicted q90 Very High tier, which supports using predicted-risk bands to communicate prediction uncertainty to the user.</li>
 #         <li><strong>Subgroup Reliability:</strong> Physical health, chronic conditions, private insurance, and public insurance groups remain within subgroup review bands. Uninsured users are the main coverage watchlist group: typical-range coverage is low at 34.7%, while safety-cushion coverage is conservative at 96.3%. The safety cushion is not under-warning, but the typical range may be too narrow or shifted for uninsured users, so the app should show an uninsured uncertainty note.</li>
 #         <li><strong>Subgroup Fairness:</strong> Sex, age, race/ethnicity, region, and walking limitation groups do not show systematic undercoverage. Subgroups to watch are poor mental health (30.1% typical-range coverage), low income (39.2%), doctorate degree (34.7%), and near poor income (97.7% safety-cushion overcoverage). These should qualify reporting and future MEPS validation, not trigger test-set-driven model retuning.</li>
-#         <li><strong>Prediction Usefulness:</strong> Several low-cost groups have wide prediction intervals despite in-band coverage, including good physical health, good mental health, Asian respondents, and the West region. This is a practical-budgeting caveat rather than a safety failure, because the model often protects users in these subgroups from underestimation, but some low-cost users may receive ranges that are less specific than desired.</li>
+#         <li><strong>Prediction Usefulness:</strong> Several low-cost groups have large mean widths despite in-band coverage, including good physical health, good mental health, Asian respondents, and the West region. This is a practical-budgeting caveat rather than a safety failure, because the model often protects users in these subgroups from underestimation, but some low-cost users may receive ranges that are less specific than desired.</li>
 #     </ul>
 #     <p style="margin-top:12px"><strong>Caveats and Recommended Actions</strong> <br> 
 #         The main user-facing response to typical-range undercoverage is a planning note that tells users to treat the plan-around amount and typical range as starting points and plan closer to the safety cushion. Use this same generic note for all affected profiles:</p>
@@ -3857,8 +3857,8 @@ plot_quantile_subgroup_predictions(
 # | Plan-around MdAE (q50) | `$240` [`$215`, `$279`] | < `$500` | < `$350` | Pass |
 # | Typical-range coverage (q25-q75) | 47.3% [44.0%, 50.6%] | 45%-55% | 50% | Pass |
 # | Safety-cushion coverage (q90) | 91.0% [89.2%, 92.6%] | 85%-95% | 90% | Pass |
-# | Typical-range width (q25-q75) | `$912` [`$875`, `$955`] | < `$1,500` | < `$1,000` | Pass |
-# | Safety-cushion width (q50-q90) | `$2,032` [`$1,964`, `$2,108`] | < `$3,500` | < `$2,500` | Pass |
+# | Typical-range mean width (q25-q75) | `$912` [`$875`, `$955`] | < `$1,500` | < `$1,000` | Pass |
+# | Safety-cushion mean width (q50-q90) | `$2,032` [`$1,964`, `$2,108`] | < `$3,500` | < `$2,500` | Pass |
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">

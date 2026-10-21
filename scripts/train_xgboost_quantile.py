@@ -13,7 +13,7 @@ Workflow:
   4.  Model Configuration: Load tuned hyperparameters and adapt them for quantile regression.
   5.  Training: Fit the multi-quantile model on log-transformed targets.
   6.  Predictions: Generate and post-process predictions (non-negative, monotonic).
-  7.  Evaluation: Compute median accuracy, interval coverage, and interval width metrics.
+  7.  Evaluation: Compute median accuracy, interval coverage, and mean interval width metrics.
   8.  Model Persistence: Save the fitted model, evaluation metrics, hyperparameters, and
       predicted values.
 
@@ -184,9 +184,9 @@ def main():
         val_q25_q75_coverage = np.average((y_val >= y_val_pred_q25) & (y_val <= y_val_pred_q75), weights=w_val)
         val_q90_coverage = np.average(y_val <= y_val_pred_q90, weights=w_val)
 
-        # Evaluate interval precision
+        # Evaluate survey-weighted mean widths
         train_q25_q75_width = np.average(y_train_pred_q75 - y_train_pred_q25, weights=w_train)
-        train_q50_q90_width = np.average(y_train_pred_q90 - y_train_pred_q50, weights=w_train)  # "Safety Cushion" width
+        train_q50_q90_width = np.average(y_train_pred_q90 - y_train_pred_q50, weights=w_train)  # Safety cushion mean width
         val_q25_q75_width = np.average(y_val_pred_q75 - y_val_pred_q25, weights=w_val)
         val_q50_q90_width = np.average(y_val_pred_q90 - y_val_pred_q50, weights=w_val)
 
@@ -195,8 +195,8 @@ def main():
         print(f"  Median R2         ->  Train: {train_q50_r2:10.2f} | Val: {val_q50_r2:10.2f}")
         print(f"  q25-q75 coverage  ->  Train: {train_q25_q75_coverage:10.1%} | Val: {val_q25_q75_coverage:10.1%}")
         print(f"  q90 coverage      ->  Train: {train_q90_coverage:10.1%} | Val: {val_q90_coverage:10.1%}")
-        print(f"  Avg Range Width   ->  Train: {f'${train_q25_q75_width:,.0f}':>10} | Val: {f'${val_q25_q75_width:,.0f}':>10}")
-        print(f"  Avg Cushion Width ->  Train: {f'${train_q50_q90_width:,.0f}':>10} | Val: {f'${val_q50_q90_width:,.0f}':>10}")
+        print(f"  Mean Range Width  ->  Train: {f'${train_q25_q75_width:,.0f}':>10} | Val: {f'${val_q25_q75_width:,.0f}':>10}")
+        print(f"  Mean Cushion Width ->  Train: {f'${train_q50_q90_width:,.0f}':>10} | Val: {f'${val_q50_q90_width:,.0f}':>10}")
 
         # Log metrics to MLflow
         mlflow.log_metrics({
