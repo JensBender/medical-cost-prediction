@@ -823,6 +823,10 @@ Fairness analysis compares performance across protected demographic groups and v
 - **Plan-around error was generally larger and budgeting ranges wider** for women, older adults, White adults, and people with poorer mental health, higher income, university degrees, or walking limitations.
 - **Coverage remained broadly close to its targets for most subgroups.** However, typical-range undercoverage affected people with poor mental health, low income, or doctorate degrees. Across these groups, typical misses were larger above the typical range (several hundred to over $1,000) than below it (under $35). This led to adding a planning notice encouraging users to consider planning closer to the safety cushion.
 
+**Mean Width Across Both Analyses:** The widest budgeting ranges generally occurred in groups with larger prediction errors, with no clear evidence that the ranges were unnecessarily wide.
+
+**Audit Conclusion:** Together with the passed overall release gates, these findings support the planned MVP release with documented limitations and targeted planning notices. The main subgroup limitations are underprediction of very high actual costs and typical-range undercoverage in specific groups.
+
 <p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
 
 
