@@ -28,7 +28,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 20)]
+SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 21)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -547,14 +547,17 @@ def build_presentation():
          72, 674, 88, 24, 18, color=SECONDARY)
     audit_appendix_links = text(
         results, "Audit appendix links",
-        ["Value over simple baselines", "  |  ", "Subgroup reliability"],
-        160, 674, 700, 24, 18, color=SECONDARY,
+        ["Value over simple baselines", "  |  ", "Subgroup reliability",
+         "  |  ", "Subgroup fairness"],
+        160, 674, 960, 24, 18, color=SECONDARY,
     )
-    comparison_appendix_link, _, final_reliability_appendix_link = (
+    (comparison_appendix_link, _, final_reliability_appendix_link,
+     _, final_fairness_appendix_link) = (
         audit_appendix_links.text_frame.paragraphs[0].runs
     )
     comparison_appendix_link.font.underline = True
     final_reliability_appendix_link.font.underline = True
+    final_fairness_appendix_link.font.underline = True
 
     audit = new_slide(presentation, storyboard, "9", "Final model test audit: overall "
                       "coverage\nhides subgroup gaps", two_lines=True)
@@ -948,15 +951,33 @@ def build_presentation():
         final_reliability, "Return to final model audit", "Back",
         20, 674, 100, 24, 18, color=SECONDARY, underline=True,
     )
+    final_fairness = new_slide(presentation, storyboard, "A20")
+    final_fairness_plot = picture(final_fairness, SLIDES_DIR / "assets/"
+            "xgb_quantile_test_subgroup_fairness.png",
+            "Survey-weighted test median absolute error, coverage, and mean width "
+            "for XGBoost quantile regression across mental health, family income, "
+            "and education groups.", 32, 0, 1216, 704)
+    final_fairness_plot.top = pixels(16)
+    final_fairness_return_link = text(
+        final_fairness, "Return to final model audit", "Back",
+        20, 684, 100, 18, 14, color=SECONDARY, underline=True,
+    )
+    fairness_slide_id = next(shape for shape in final_fairness.shapes if shape.name == "Slide ID")
+    fairness_slide_id.top = pixels(684)
+    fairness_slide_id.height = pixels(18)
+    for run in fairness_slide_id.text_frame.paragraphs[0].runs:
+        style_font(run.font, 14, color=SECONDARY)
     for run, target in (
         (comparison_appendix_link, comparison),
         (final_reliability_appendix_link, final_reliability),
+        (final_fairness_appendix_link, final_fairness),
     ):
         hyperlink = OxmlElement("a:hlinkClick")
         hyperlink.set(qn("r:id"), results.part.relate_to(target.part, RT.SLIDE))
         hyperlink.set("action", "ppaction://hlinksldjump")
         run._r.get_or_add_rPr().append(hyperlink)
     final_reliability_return_link.click_action.target_slide = results
+    final_fairness_return_link.click_action.target_slide = results
     return presentation
 
 

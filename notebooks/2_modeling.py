@@ -2545,7 +2545,8 @@ display(
 
 # %%
 def plot_quantile_subgroup_performance(
-    df, column_labels, title, save_to_file=None, include_plan_around=False, data_split="validation"
+    df, column_labels, title, save_to_file=None, include_plan_around=False,
+    data_split="validation", presentation_layout=False
 ):
     """
     Visualizes quantile regression performance across subgroups.
@@ -2562,11 +2563,13 @@ def plot_quantile_subgroup_performance(
         save_to_file (str, optional): Full path and filename to save the plot.
         include_plan_around (bool): Add a column for plan-around median absolute error.
         data_split (str): Data split named in the plot note.
+        presentation_layout (bool): Use slide spacing and show column headings once.
     """
     plot_data = df[df["Column"].isin(column_labels)].copy()
     n_rows = len(column_labels)
     row_heights = [0.8 + 0.6 * (plot_data["Column"] == label).sum() for label in column_labels]
-    legend_gap_inches = 0.15
+    row_height_scale = 0.78 if presentation_layout else 1.0
+    legend_gap_inches = 0.05 if presentation_layout else 0.15
     max_width = plot_data[["Typical Range Mean Width (q25–q75)", "Safety Cushion Mean Width (q50–q90)"]].max().max()
     width_axis_max = np.ceil(max_width / 500) * 500
 
@@ -2578,7 +2581,7 @@ def plot_quantile_subgroup_performance(
     fig, axes = plt.subplots(
         n_rows,
         3 if include_plan_around else 2,
-        figsize=(20 if include_plan_around else 16, sum(row_heights) + 0.15 * (n_rows - 1) + legend_gap_inches),
+        figsize=(20 if include_plan_around else 16, row_height_scale * sum(row_heights) + 0.15 * (n_rows - 1) + legend_gap_inches),
         squeeze=False,  # Guarantees axes is always a 2D array
         gridspec_kw={
             "width_ratios": [0.85, 1.0, 1.15] if include_plan_around else [1.0, 1.15],
@@ -2710,6 +2713,8 @@ def plot_quantile_subgroup_performance(
             ax.set_yticks(y_pos)
             ax.set_yticklabels(yticklabels if ax is label_ax else [], fontsize=12)
             ax.tick_params(axis="x", labelsize=11)
+            if presentation_layout and row_idx > 0:
+                ax.set_title("")
             ax.invert_yaxis()
             ax.grid(axis="x", alpha=0.20)
             sns.despine(ax=ax, left=True)
@@ -2727,8 +2732,8 @@ def plot_quantile_subgroup_performance(
     fig.suptitle(title, fontsize=22, fontweight="bold", y=title_y)
     
     # Reserve enough space for the note on shorter figures.
-    footnote_space = max(0.03, 0.6 / fig.get_figheight())
-    plt.tight_layout(rect=[0, footnote_space, 1, 1 - legend_gap_inches / fig.get_figheight()], h_pad=3.0, w_pad=1.4)
+    footnote_space = max(0.03, (0.45 if presentation_layout else 0.6) / fig.get_figheight())
+    plt.tight_layout(rect=[0, footnote_space, 1, 1 - legend_gap_inches / fig.get_figheight()], h_pad=2.0 if presentation_layout else 3.0, w_pad=1.4)
 
     # Add footnote
     # Compute final layout, then align footnote with the first subplot's leftmost label
@@ -3913,6 +3918,18 @@ plot_quantile_subgroup_performance(
     save_to_file="../docs/slides/assets/xgb_quantile_test_subgroup_reliability.png",
     include_plan_around=True,
     data_split="test",
+)
+
+# %%
+# Selected fairness features for the presentation
+plot_quantile_subgroup_performance(
+    test_quantile_subgroup_df,
+    [DISPLAY_LABELS[col] for col in ["MNHLTH31", "POVCAT23", "HIDEG"]],
+    "XGBoost Quantile Regression: Subgroup Fairness (Test)",
+    save_to_file="../docs/slides/assets/xgb_quantile_test_subgroup_fairness.png",
+    include_plan_around=True,
+    data_split="test",
+    presentation_layout=True,
 )
 
 # %%

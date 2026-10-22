@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: ten main slides and nineteen appendix slides are generated. The remaining
+Status: ten main slides and twenty appendix slides are generated. The remaining
 appendix slides are planned below.
 
 ## Presentation context
@@ -202,7 +202,7 @@ independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
 See A3–A4 for preprocessor input features, counts, and possible feature reduction,
-and A20 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
+and A21 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
 random within spending groups, with a separate zero-cost group and finer bins
 for high costs to reduce imbalances in rare, expensive cases. Discuss the split
 after the spending-distribution slide if asked.
@@ -429,7 +429,7 @@ intervals from 1,000 resamples of test-set rows.”
 
 **Visual:** Results table above the baseline comparison summary.
 
-**Appendix links:** Value over simple baselines (A18) | Subgroup reliability (A19).
+**Appendix links:** Value over simple baselines (A18) | Subgroup reliability (A19) | Subgroup fairness (A20).
 
 **Speaker notes — 1:30**
 
@@ -488,7 +488,7 @@ validation steps.
 
 **Visual:** Bar chart of typical-range coverage: poor mental health 30.1%, low
 income 39.2%, overall 47.3%, and target 50%. Label results as point estimates;
-A21 adds subgroup counts and uncertainty.
+A20 adds the detailed subgroup metrics.
 
 **Speaker notes — 1:00**
 
@@ -690,7 +690,7 @@ after adding a life-transition feature and 40 model-ready columns after
 transformation. These counts do not equal the number of questions on the planned
 form: related conditions can be grouped, and some values are derived. User testing
 will assess the burden; feature reduction is an option if fewer inputs would
-improve the experience. Refer to A20 for input timing.
+improve the experience. Refer to A21 for input timing.
 
 **Sources:** [README: feature details](../../README.md#feature-details);
 [input definitions](../../src/constants.py);
@@ -1258,7 +1258,50 @@ is separate from the test-set percentile groups shown in the figure.
 **Sources:** [README: final subgroup audit](../../README.md#final-model-subgroup-reliability--fairness);
 [modeling notebook: test subgroup analysis](../../notebooks/2_modeling.py).
 
-### A20 — Feature timing: limits of next-year forecasting
+### A20 — XGBoost quantile: subgroup fairness
+
+**Question:** Which fairness subgroups showed typical-range undercoverage?
+
+**Visual:** Full-slide [test subgroup fairness figure](assets/xgb_quantile_test_subgroup_fairness.png),
+showing mental health, family income, and education. Each row shows plan-around
+MdAE, coverage, and mean width. The figure contains its own title and metric notes.
+
+**Backlink:** XGBoost quantile audit (slide 8).
+
+**Speaker notes — 0:45**
+
+“Coverage was broadly close to its targets for most groups shown here. However,
+the typical range undercovered people with poor mental health, low income, or
+a doctorate degree.
+
+Across these groups, typical misses were larger above the typical range,
+several hundred to over $1,000, than below it, under $35. These findings led to
+adding a planning notice for these groups that suggests users plan closer to
+the safety cushion.”
+
+For questions:
+
+Miss size: These amounts are survey-weighted median distances from the nearest
+range boundary among people whose actual costs fell outside that boundary.
+They describe typical misses, not the largest errors.
+
+Group size: Poor mental health and doctorate groups contain 34 and 46 test
+cases, respectively, so their estimates carry more uncertainty.
+
+Review criteria: Coverage outside 40%–60% for the typical range or 80%–97% for
+the safety cushion is flagged for review. Near-poor adults also showed slight
+safety-cushion overcoverage. A flag alone does not establish unfairness or mean
+the model should not be released.
+
+Planning notice: The trigger uses the provided mental health, family income,
+or education input. The notice uses neutral wording without naming the group.
+
+**Transition:** Return to the overall audit and the example prediction output.
+
+**Sources:** [README: final subgroup audit](../../README.md#final-model-subgroup-reliability--fairness);
+[modeling notebook: test subgroup analysis](../../notebooks/2_modeling.py).
+
+### A21 — Feature timing: limits of next-year forecasting
 
 **Question:** Is this truly a next-year forecast?
 
@@ -1278,29 +1321,6 @@ Do not claim the size or direction of the resulting performance change is known.
 
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
-
-### A21 — Final model test audit: subgroup coverage gaps
-
-**Question:** Who receives less reliable ranges?
-
-**On the slide:** Typical-range test coverage is **30.1%** for poor mental health,
-**39.2%** for low income, and **34.7%** for doctorate degree holders. The target
-is 50%; uninsured users are also on the undercoverage watchlist.
-
-**Visual:** Selected rows from [test subgroup fairness](../../figures/evaluation/xgb_quantile_test_subgroup_fairness.png)
-and [test subgroup reliability](../../figures/evaluation/xgb_quantile_test_subgroup_reliability.png).
-Retain sample sizes and uncertainty intervals where shown.
-
-**Talking points:** Smaller subgroups carry greater uncertainty. The audit uses
-wider diagnostic review bands than the overall gates and a minimum raw count
-of 30. Similar error patterns across models do not establish absence of bias.
-Planning notices communicate a limitation; further evaluation or recalibration
-would be needed to address it.
-
-**Promote:** After 9; allow 1:00.
-
-**Sources:** [README: final subgroup audit](../../README.md);
-[modeling notebook](../../notebooks/2_modeling.py).
 
 ### A22 — SHAP explains how inputs shape the median estimate
 
