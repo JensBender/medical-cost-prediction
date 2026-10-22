@@ -3847,6 +3847,42 @@ display(pd.Series({
     "Weighted share with Q25 at most $1 (%)": np.average(missed_zero_q25.le(1), weights=missed_zero_weights) * 100,
 }, name="Uninsured zero-cost outcomes below Q25").to_frame().style.format("{:.2f}"))
 
+# %% [markdown]
+# Examine whether flagged fairness groups miss the typical range below q25 or
+# above q75. Dollar amounts show survey-weighted median distances from the
+# relevant bound, calculated separately among outcomes on each side.
+
+# %%
+fairness_coverage_breakdown = []
+for column, value, group in [
+    ("MNHLTH31", 5, "Poor mental health"),
+    ("POVCAT23", 3, "Low income"),
+    ("HIDEG", 6, "Doctorate"),
+    ("POVCAT23", 2, "Near poor"),
+]:
+    mask = df_test_analysis[column].eq(value)
+    actual = y_test_audit[mask]
+    weights = w_test_audit[mask]
+    q25 = y_test_pred_q25_audit[mask]
+    q75 = y_test_pred_q75_audit[mask]
+    q90 = y_test_pred_q90_audit[mask]
+    below = actual.lt(q25)
+    above = actual.gt(q75)
+    fairness_coverage_breakdown.append({
+        "Group": group,
+        "Sample size": int(mask.sum()),
+        "Below Q25 (%)": np.average(below, weights=weights) * 100,
+        "Within Q25-Q75 (%)": np.average(~below & ~above, weights=weights) * 100,
+        "Above Q75 (%)": np.average(above, weights=weights) * 100,
+        "Safety-cushion coverage (%)": np.average(actual.le(q90), weights=weights) * 100,
+        "Median lower-bound miss ($)": weighted_quantile((q25 - actual)[below], weights[below], 0.5) if below.any() else np.nan,
+        "Median upper-bound miss ($)": weighted_quantile((actual - q75)[above], weights[above], 0.5) if above.any() else np.nan,
+    })
+fairness_coverage_breakdown = pd.DataFrame(fairness_coverage_breakdown).set_index("Group")
+display(fairness_coverage_breakdown.style.format({
+    column: "{:.1f}" for column in fairness_coverage_breakdown.columns if column != "Sample size"
+}))
+
 # %%
 plot_quantile_subgroup_performance(
     test_quantile_subgroup_df,

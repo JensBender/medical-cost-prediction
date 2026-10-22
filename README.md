@@ -820,10 +820,8 @@ Fairness analysis compares performance across protected demographic groups and v
 
 ![XGBoost Quantile Regression: Subgroup Fairness (Test)](figures/evaluation/xgb_quantile_test_subgroup_fairness.png)
 **Key Insights:**
-- **Protected Groups:** Sex, age, race/ethnicity, region, and walking limitation groups do not show systematic undercoverage on the final test audit.
-- **Coverage Limitations:** Poor mental health has low typical-range coverage (30.1%), as do low income (39.2%) and doctorate degree holders (34.7%). Near-poor income users show safety-cushion overcoverage (97.7%). These are reporting caveats and candidates for future validation on newer MEPS datasets, not evidence of broad demographic fairness failure.
-- **Prediction Usefulness:** Several low-cost groups have large mean widths despite in-band coverage, including good physical health, good mental health, Asian respondents, and the West region. This is a practical-budgeting caveat rather than a safety failure.
-- **Audit Verdict:** The subgroup audit supports launch. Predicted-risk tiers remain usable for deployment, and there is no broad demographic fairness failure. The main limitation is rare actual tail spending that is only visible after the year is observed.
+- **Plan-around error was generally larger and budgeting ranges wider** for women, older adults, White adults, and people with poorer mental health, higher income, university degrees, or walking limitations.
+- **Coverage remained broadly close to its targets for most subgroups.** However, typical-range undercoverage affected people with poor mental health, low income, or doctorate degrees. Across these groups, typical misses were larger above the typical range (several hundred to over $1,000) than below it (under $35).
 
 <p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
 
