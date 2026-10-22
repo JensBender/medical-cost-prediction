@@ -505,13 +505,11 @@ The FastAPI layer exposes the prediction service through REST endpoints. It owns
     The prediction service must support both single and batch prediction. Explanation generation should be optional for batch prediction because permutation SHAP is substantially more expensive than prediction alone. The Gradio app requests an explanation for its single prediction. Batch API requests should default to predictions without explanations and enforce a limit on the number of rows that can be explained in one request.
 
 #### Prediction Warning Flags
-`warning_flags` are API values. Planning notices are user-facing copy rendered from one or more warning flags. Generate `warning_flags` before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. The app can use subgroup diagnostics to decide when to show a note, but the rendered note should name the reason only when it is informative and unlikely to stigmatize.
+`warning_flags` are API values. Planning notices are user-facing copy rendered from one or more warning flags. Generate `warning_flags` before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. The rendered note should name the reason only when it is informative and unlikely to stigmatize.
 
 | Flag | Trigger | Mitigating Action | Planning Notice Text |
 | :--- | :--- | :--- | :--- |
 | `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) is in the top 20% (cutoff from validation set) | Explain higher-cost-year exposure and present q90 as a conservative planning reference | "This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." |
-| `UNINSURED_UNCERTAINTY` | Uninsured (`INSCOV23 = 3`) | Explain that out-of-pocket costs can be harder to predict for uninsured users and present q90 as the conservative planning reference | "Because you are uninsured, out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." |
-| `TYPICAL_RANGE_UNDERCOVERAGE` | Subgroups with typical-range undercoverage (low income, poor mental health, doctorate degree) and risk of stigmatizing | Communicate prediction uncertainty without naming the subgroup | "Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion." |
 | `MISSING_OPTIONAL_INPUTS` | User skipped one or more optional inputs | Explain that typical values were used (imputed) and that more complete inputs may make the estimate more tailored | "Some optional answers were skipped, so the estimate used typical values. Adding those details may make the estimate more tailored to your situation." |
 | `PUBLIC_INSURANCE_POLICY_CHANGE` | Public-only insurance (`INSCOV23 = 2`) | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs for some public insurance users | "This estimate is based on 2023 survey data. Recent public insurance policy changes, especially Medicare prescription drug cost caps, may lower actual costs for some users compared with this estimate." |
 
@@ -521,8 +519,8 @@ The UI should avoid stacking several full planning notice paragraphs below the p
 1.  Show the prediction block first: plan-around estimate (`q50`), typical range (`q25-q75`), and safety cushion (`q90`).
 2.  If no `warning_flags` are present, show no planning notice panel.
 3.  If one or more flags are present, show one compact **Planning note** panel below the prediction block.
-4.  In the panel, combine triggered messages in this priority order: `HIGH_PREDICTED_UNCERTAINTY`, `UNINSURED_UNCERTAINTY`, `TYPICAL_RANGE_UNDERCOVERAGE`, `PUBLIC_INSURANCE_POLICY_CHANGE`, `MISSING_OPTIONAL_INPUTS`.
-5.  Avoid repeating the same idea. If both `HIGH_PREDICTED_UNCERTAINTY` and `UNINSURED_UNCERTAINTY` trigger, mention the safety cushion once.
+4.  In the panel, combine triggered messages in this priority order: `HIGH_PREDICTED_UNCERTAINTY`, `PUBLIC_INSURANCE_POLICY_CHANGE`, `MISSING_OPTIONAL_INPUTS`.
+5.  Avoid repeating the same idea when combining messages.
 6.  Keep the always-on scope disclaimer outside this panel, in a quieter "About this estimate" or footer area.
 
 Required deployment metadata is stored in
@@ -747,7 +745,7 @@ Bucket edges should be fixed before launch, documented with the model version, a
 | Predicted q50 | $0-$49, $50-$149, $150-$299, $300-$599, $600-$999, $1,000-$1,499, $1,500+ |
 | q25-q75 width | $0-$249, $250-$499, $500-$999, $1,000-$1,499, $1,500-$2,499, $2,500+ |
 | Predicted q90 | $0-$499, $500-$999, $1,000-$1,999, $2,000-$3,499, $3,500-$4,999, $5,000+ |
-| Warning flags | One bucket per user-facing flag: `HIGH_PREDICTED_UNCERTAINTY`, `UNINSURED_UNCERTAINTY`, `TYPICAL_RANGE_UNDERCOVERAGE`, `MISSING_OPTIONAL_INPUTS`, `PUBLIC_INSURANCE_POLICY_CHANGE` |
+| Warning flags | One bucket per user-facing flag: `HIGH_PREDICTED_UNCERTAINTY`, `MISSING_OPTIONAL_INPUTS`, `PUBLIC_INSURANCE_POLICY_CHANGE` |
 | Missingness | Per optional field: present, missing |
 
 **Small-cell and cross-tab rules**

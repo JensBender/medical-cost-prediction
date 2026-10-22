@@ -47,7 +47,7 @@ The **Medical Cost Planner** is a consumer-facing web application that uses mach
 | User skips optional inputs | Imputation applied (median/mode); prediction proceeds; missing-input note displayed |
 | High predicted uncertainty | Dynamic high-uncertainty guidance displayed when predicted tail risk or interval width crosses model-version thresholds |
 | Predicted cost = $0 | Valid result; display "minimal expected costs" messaging |
-| Uninsured user | Note that OOP ≈ total cost and that the safety cushion is more useful than the typical range when costs are volatile |
+| Uninsured user | Note that OOP ≈ total cost |
 | Server error / timeout | Display friendly error message; suggest retry |
 
 
@@ -139,7 +139,7 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **FR-03** | **Cost Range** | Generate 25th–75th percentile range (typical range) and 90th percentile (budget-safe estimate) to communicate prediction uncertainty. Never output a single point estimate. |
 | **FR-04** | **Cost Drivers** | Compute SHAP values for the plan-around estimate to explain which input features moved the model estimate higher or lower. Display the five largest contributions as inflation-adjusted dollar impacts. |
 | **FR-05** | **Comparison Benchmarks** | Compare user's prediction to (1) the typical American and (2) the typical person in their age group. Pre-compute weighted median benchmarks from the MEPS training set. |
-| **FR-06** | **Prediction Notice Policy** | Generate actionable planning notices for high predicted uncertainty (derive thresholds from validation set), uninsured users, typical-range undercoverage watchlist profiles, missing optional inputs, and public insurance policy changes. |
+| **FR-06** | **Prediction Notice Policy** | Generate actionable planning notices for high predicted uncertainty (derive thresholds from validation set), missing optional inputs, and public insurance policy changes. |
 
 ### Result Display
 | ID | Component | Description | UI Element | Example |
@@ -152,13 +152,11 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **UI-06** | **Permanent Footer** | Always-visible disclaimer at the bottom of the page. Covers legal liability and data aging limitations. | `gr.Markdown` | *"Not intended as medical, financial, or legal advice. Based on 2023 U.S. national survey data."* |
 
 ### Prediction Notice Policy
-Planning notices must be concise, neutral, and tied to a concrete user action. The app can use subgroup diagnostics to decide when to show a note, but the user-facing reason should be named only when it is informative and unlikely to stigmatize. Name high predicted costs and uninsured status in the planning note. For low income, poor mental health, and doctorate degree (subgroups with typical-range undercoverage), show only the generic planning note and do not name the subgroup to avoid stigmatization. Do not trigger safety-cushion guidance for subgroups with  safety-cushion overcoverage (i.e., near-poor income).
+Planning notices must be concise, neutral, and tied to a concrete user action. The user-facing reason should be named only when it is informative and unlikely to stigmatize. Name high predicted costs in the planning note.
 
 | Warning Flag | Trigger | User-Facing Guidance |
 | :--- | :--- | :--- |
 | `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) falls in the top 20% (threshold derived from validation data); use predicted `q90` costs, not predicted `q50`, because the safety cushion is the user-facing signal for potential higher cost years | Explain that the estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict |
-| `UNINSURED_UNCERTAINTY` | Uninsured | Explain that out-of-pocket costs can be harder to predict for uninsured users |
-| `TYPICAL_RANGE_UNDERCOVERAGE` | Subgroups with typical-range undercoverage (low income, poor mental health, doctorate degree) and risk of stigmatizing when planning notice calls out the subgroup | Show the generic planning note without naming the subgroup |
 | `MISSING_OPTIONAL_INPUTS` | One or more optional inputs are skipped and imputed | Explain that typical training values were used and that more complete inputs may make the estimate more tailored |
 | `PUBLIC_INSURANCE_POLICY_CHANGE` | User selects public-only coverage | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs compared with estimates based on 2023 survey data |
 
