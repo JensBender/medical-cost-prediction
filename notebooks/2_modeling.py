@@ -2726,7 +2726,9 @@ def plot_quantile_subgroup_performance(
     title_y = 1 + 30 / (72 * fig.get_figheight())
     fig.suptitle(title, fontsize=22, fontweight="bold", y=title_y)
     
-    plt.tight_layout(rect=[0, 0.03, 1, 1 - legend_gap_inches / fig.get_figheight()], h_pad=3.0, w_pad=1.4)
+    # Reserve enough space for the note on shorter figures.
+    footnote_space = max(0.03, 0.6 / fig.get_figheight())
+    plt.tight_layout(rect=[0, footnote_space, 1, 1 - legend_gap_inches / fig.get_figheight()], h_pad=3.0, w_pad=1.4)
 
     # Add footnote
     # Compute final layout, then align footnote with the first subplot's leftmost label
@@ -3902,6 +3904,18 @@ plot_quantile_subgroup_performance(
     data_split="test",
 )
 
+# %%
+# Selected cost tiers for the presentation
+plot_quantile_subgroup_performance(
+    test_quantile_subgroup_df,
+    ["Actual Costs", "Predicted Costs (q90)"],
+    "XGBoost Quantile Regression: Subgroup Reliability (Test)",
+    save_to_file="../docs/slides/assets/xgb_quantile_test_subgroup_reliability.png",
+    include_plan_around=True,
+    data_split="test",
+)
+
+# %%
 plot_quantile_subgroup_predictions(
     test_quantile_subgroup_df,
     quantile_reliability_labels,

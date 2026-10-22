@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: ten main slides and eighteen appendix slides are generated. The remaining
+Status: ten main slides and nineteen appendix slides are generated. The remaining
 appendix slides are planned below.
 
 ## Presentation context
@@ -202,7 +202,7 @@ independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
 See A3–A4 for preprocessor input features, counts, and possible feature reduction,
-and A19 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
+and A20 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
 random within spending groups, with a separate zero-cost group and finer bins
 for high costs to reduce imbalances in rare, expensive cases. Discuss the split
 after the spending-distribution slide if asked.
@@ -429,7 +429,7 @@ intervals from 1,000 resamples of test-set rows.”
 
 **Visual:** Results table above the baseline comparison summary.
 
-**Appendix link:** Value over simple baselines (A18).
+**Appendix links:** Value over simple baselines (A18) | Subgroup reliability (A19).
 
 **Speaker notes — 1:30**
 
@@ -451,7 +451,12 @@ baselines. The population baseline gives everyone the same estimates, while the
 age-group baseline gives everyone within the same age group the same estimates.
 XGBoost's clearest added value was in the typical range and safety cushion. For
 the plan-around estimate, median absolute error remained close to the population
-baseline.”
+baseline.
+
+Subgroup reliability and fairness checks showed coverage broadly close to its
+targets for most groups, but substantial underprediction of very high actual
+costs and typical-range undercoverage in some groups. These findings led to
+targeted planning notices.”
 
 For questions:
 
@@ -483,7 +488,7 @@ validation steps.
 
 **Visual:** Bar chart of typical-range coverage: poor mental health 30.1%, low
 income 39.2%, overall 47.3%, and target 50%. Label results as point estimates;
-A20 adds subgroup counts and uncertainty.
+A21 adds subgroup counts and uncertainty.
 
 **Speaker notes — 1:00**
 
@@ -685,7 +690,7 @@ after adding a life-transition feature and 40 model-ready columns after
 transformation. These counts do not equal the number of questions on the planned
 form: related conditions can be grouped, and some values are derived. User testing
 will assess the burden; feature reduction is an option if fewer inputs would
-improve the experience. Refer to A19 for input timing.
+improve the experience. Refer to A20 for input timing.
 
 **Sources:** [README: feature details](../../README.md#feature-details);
 [input definitions](../../src/constants.py);
@@ -1210,7 +1215,50 @@ zero, so that improvement remains uncertain.
 **Sources:** [README: baseline comparison](../../README.md#final-model-value-over-simple-baselines);
 [modeling notebook: baseline comparison and paired bootstrap](../../notebooks/2_modeling.py).
 
-### A19 — Feature timing: limits of next-year forecasting
+### A19 — XGBoost quantile: subgroup reliability
+
+**Question:** How does performance differ across actual and predicted cost tiers?
+
+**Visual:** Full-slide [test subgroup reliability figure](assets/xgb_quantile_test_subgroup_reliability.png),
+showing actual costs and predicted Q90 costs. Each row shows plan-around MdAE,
+coverage, and mean width. The figure contains its own title and metric notes.
+
+**Backlink:** XGBoost quantile audit (slide 8).
+
+**Speaker notes — 0:45**
+
+“Very high actual spending remained the largest prediction weakness. Plan-around
+error exceeded $7,000, typical-range coverage was zero, and safety-cushion
+coverage was only about 7%, with actual costs mostly exceeding those estimates.
+
+Across predicted Q90 cost tiers, higher costs came with larger plan-around
+errors and wider budgeting ranges, while coverage stayed broadly close to its
+targets. Since actual spending is unknown at prediction time, I used predicted
+Q90 as a proxy for triggering a planning notice that suggests users plan closer
+to the safety cushion.”
+
+For questions:
+
+Cost tiers: Actual zero costs form a separate group. The positive costs are
+grouped using sample percentiles: the lower half, 50th–80th, 80th–95th, and top
+5%. Predicted Q90 tiers use their own positive-cost percentiles, with zero
+predictions merged into the lowest group. These groups are calculated within
+the test set; the metrics within them use survey weights.
+
+Interpretation: Actual cost groups are known only after spending occurs.
+Selecting groups by actual outcomes changes the question, so their coverage
+does not have the same interpretation as coverage across predicted cost groups.
+
+Planning notice: The trigger is Q90 at or above $3,525 in 2023 dollars, the
+survey-weighted 80th percentile of validation Q90 predictions. This fixed cutoff
+is separate from the test-set percentile groups shown in the figure.
+
+**Transition:** Return to the overall audit and the example prediction output.
+
+**Sources:** [README: final subgroup audit](../../README.md#final-model-subgroup-reliability--fairness);
+[modeling notebook: test subgroup analysis](../../notebooks/2_modeling.py).
+
+### A20 — Feature timing: limits of next-year forecasting
 
 **Question:** Is this truly a next-year forecast?
 
@@ -1231,7 +1279,7 @@ Do not claim the size or direction of the resulting performance change is known.
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
 
-### A20 — Final model test audit: subgroup coverage gaps
+### A21 — Final model test audit: subgroup coverage gaps
 
 **Question:** Who receives less reliable ranges?
 
@@ -1252,28 +1300,6 @@ would be needed to address it.
 **Promote:** After 9; allow 1:00.
 
 **Sources:** [README: final subgroup audit](../../README.md);
-[modeling notebook](../../notebooks/2_modeling.py).
-
-### A21 — Final model test audit: actual versus predicted cost tiers
-
-**Question:** Does the safety cushion protect the largest spenders?
-
-**On the slide:** q90 covers **91.0% overall**, but only **6.7%** in the audit's
-actual “Very High” spending group. Actual cost groups are retrospective;
-predicted cost groups are available at inference.
-
-**Visual:** The actual-versus-predicted cost-tier section of
-[test reliability](../../figures/evaluation/xgb_quantile_test_subgroup_reliability.png).
-Preserve the notebook's group definitions in the figure or footnote.
-
-**Talking points:** Selecting a subgroup using the outcome changes the question.
-Low coverage in the observed tail is a useful description of missed expensive
-years, not the same as conditional calibration by an available input. An upper
-quantile is not catastrophe insurance or a hard spending cap.
-
-**Promote:** After 9 when discussing tail risk; allow 1:00.
-
-**Sources:** [README: final reliability audit](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py).
 
 ### A22 — SHAP explains how inputs shape the median estimate

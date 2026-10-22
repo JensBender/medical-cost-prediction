@@ -20,13 +20,15 @@ from pptx.enum.chart import (
 )
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, MSO_AUTO_SIZE, PP_ALIGN
+from pptx.opc.constants import RELATIONSHIP_TYPE as RT
+from pptx.oxml.ns import qn
 from pptx.oxml.xmlchemy import OxmlElement
 from pptx.util import Inches, Pt
 
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 19)]
+SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 20)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -543,10 +545,16 @@ def build_presentation():
         properties.append(bullet)
     text(results, "Audit appendix label", "Appendix:",
          72, 674, 88, 24, 18, color=SECONDARY)
-    comparison_appendix_link = text(
-        results, "Baseline comparison appendix link", "Value over simple baselines",
-        160, 674, 350, 24, 18, color=SECONDARY, underline=True,
+    audit_appendix_links = text(
+        results, "Audit appendix links",
+        ["Value over simple baselines", "  |  ", "Subgroup reliability"],
+        160, 674, 700, 24, 18, color=SECONDARY,
     )
+    comparison_appendix_link, _, final_reliability_appendix_link = (
+        audit_appendix_links.text_frame.paragraphs[0].runs
+    )
+    comparison_appendix_link.font.underline = True
+    final_reliability_appendix_link.font.underline = True
 
     audit = new_slide(presentation, storyboard, "9", "Final model test audit: overall "
                       "coverage\nhides subgroup gaps", two_lines=True)
@@ -863,11 +871,12 @@ def build_presentation():
     residuals_appendix_link.click_action.target_slide = residuals
     residuals_return_link.click_action.target_slide = selection
     reliability = new_slide(presentation, storyboard, "A17")
-    picture(reliability, SLIDES_DIR / "assets/"
+    reliability_plot = picture(reliability, SLIDES_DIR / "assets/"
             "tuned_models_validation_subgroup_reliability.png",
             "Survey-weighted validation median absolute errors for tuned Elastic "
             "Net, Random Forest, and XGBoost across cost tiers, physical health, "
             "insurance types, and chronic condition counts.", 0, 0, 1280, 720)
+    reliability_plot.top = pixels(32)
     reliability_return_link = text(
         reliability, "Return to model selection", "Back",
         20, 674, 100, 24, 18, color=SECONDARY, underline=True,
@@ -926,8 +935,28 @@ def build_presentation():
         comparison, "Return to final model audit", "Back",
         72, 674, 100, 24, 18, color=SECONDARY, underline=True,
     )
-    comparison_appendix_link.click_action.target_slide = comparison
     comparison_return_link.click_action.target_slide = results
+
+    final_reliability = new_slide(presentation, storyboard, "A19")
+    final_reliability_plot = picture(final_reliability, SLIDES_DIR / "assets/"
+            "xgb_quantile_test_subgroup_reliability.png",
+            "Survey-weighted test median absolute error, coverage, and mean width "
+            "for XGBoost quantile regression across actual-cost and predicted-Q90 tiers.",
+            0, 0, 1280, 660)
+    final_reliability_plot.top = pixels(32)
+    final_reliability_return_link = text(
+        final_reliability, "Return to final model audit", "Back",
+        20, 674, 100, 24, 18, color=SECONDARY, underline=True,
+    )
+    for run, target in (
+        (comparison_appendix_link, comparison),
+        (final_reliability_appendix_link, final_reliability),
+    ):
+        hyperlink = OxmlElement("a:hlinkClick")
+        hyperlink.set(qn("r:id"), results.part.relate_to(target.part, RT.SLIDE))
+        hyperlink.set("action", "ppaction://hlinksldjump")
+        run._r.get_or_add_rPr().append(hyperlink)
+    final_reliability_return_link.click_action.target_slide = results
     return presentation
 
 
