@@ -809,8 +809,8 @@ Reliability analysis compares performance across actual and predicted cost tiers
 
 ![XGBoost Quantile Regression: Subgroup Reliability (Test)](figures/evaluation/xgb_quantile_test_subgroup_reliability.png)
 **Key Insights:**
-- **Actual Cost Tiers:** Rare high-cost years remain the biggest predictability caveat. Actual High spenders have 12.4% typical-range coverage and 59.0% safety-cushion coverage; actual Very High spenders have 0.0% and 6.7%, respectively. Zero- and low-cost actual groups are heavily overprotected by the safety cushion (100.0% and 99.9%).
-- **Predicted Cost Tiers:** Deployable risk tiers behave much better because they are known at prediction time. Predicted plan-around cost tiers keep typical-range coverage inside the subgroup review band (42.6%-54.6%), and predicted safety-cushion tiers keep `q90` coverage inside the review band (85.6%-93.4%).
+- **Very high actual spending remains the largest prediction weakness:** Plan-around MdAE exceeded $7,000. Typical-range coverage was 0% and safety-cushion coverage only 6.7%: actual costs exceeded the typical range for everyone in this group and the safety cushion for most.
+- **Higher predicted costs came with larger errors and wider budgeting ranges:** Coverage remained broadly close to the 50% and 90% targets across all Q50- and Q90-based cost tiers.
 - **Risk Communication:** Mean safety-cushion widths increase monotonically with predicted risk, from $1,125 in the predicted `q90` Low tier to $5,582 in the predicted `q90` Very High tier. This supports communicating wider uncertainty bands for higher-risk users.
 - **Subgroup Reliability:** Physical health, chronic conditions, private insurance, and public insurance groups remain within subgroup review bands. Uninsured users are the main watchlist group: typical-range coverage is low at 34.7%, while safety-cushion coverage is conservative at 96.3%.
 
