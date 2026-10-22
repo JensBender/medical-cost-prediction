@@ -330,7 +330,7 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.
 >
 > **Planning note**  
-> Costs for profiles like yours can vary a lot from year to year. This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion.
+> Costs for profiles like yours can vary a lot from year to year. This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, consider planning closer to the safety cushion.
 >
 > <details>
 > <summary><strong>Which answers shaped your estimate?</strong> <i>(click to expand)</i></summary>
@@ -821,7 +821,7 @@ Fairness analysis compares performance across protected demographic groups and v
 ![XGBoost Quantile Regression: Subgroup Fairness (Test)](figures/evaluation/xgb_quantile_test_subgroup_fairness.png)
 **Key Insights:**
 - **Plan-around error was generally larger and budgeting ranges wider** for women, older adults, White adults, and people with poorer mental health, higher income, university degrees, or walking limitations.
-- **Coverage remained broadly close to its targets for most subgroups.** However, typical-range undercoverage affected people with poor mental health, low income, or doctorate degrees. Across these groups, typical misses were larger above the typical range (several hundred to over $1,000) than below it (under $35).
+- **Coverage remained broadly close to its targets for most subgroups.** However, typical-range undercoverage affected people with poor mental health, low income, or doctorate degrees. Across these groups, typical misses were larger above the typical range (several hundred to over $1,000) than below it (under $35). This led to adding a planning notice encouraging users to consider planning closer to the safety cushion.
 
 <p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
 

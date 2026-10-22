@@ -3925,9 +3925,9 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Prediction Usefulness:</strong> Several low-cost groups have large mean widths despite in-band coverage, including good physical health, good mental health, Asian respondents, and the West region. This is a practical-budgeting caveat rather than a safety failure, because the model often protects users in these subgroups from underestimation, but some low-cost users may receive ranges that are less specific than desired.</li>
 #     </ul>
 #     <p style="margin-top:12px"><strong>Caveats and Recommended Actions</strong> <br> 
-#         Use the following planning note for high predicted costs:</p>
+#         Use the following planning note for high predicted costs, poor mental health, low income, or doctorate holders. For the latter three groups, larger dollar misses above the typical range motivate the guidance. Keep their subgroup membership out of the user-facing text:</p>
 #     <p style="margin-top:8px; padding:10px; background-color:#f4fbf4; border-left:4px solid #6aa56a;">
-#         "Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion."
+#         "Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, consider planning closer to the safety cushion."
 #     </p>
 #     <table style="width:100%; border-collapse:collapse; margin-top:8px; font-size:0.92em;">
 #         <thead>
@@ -3942,6 +3942,11 @@ plot_quantile_subgroup_predictions(
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Rare actual high-cost years remain hard to predict.</td>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Actual high and very-high spenders, which are not knowable at prediction time.</td>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Keep the rare-high-cost limitation in the always-on disclaimer. Also show planning note for <code>HIGH_PREDICTED_UNCERTAINTY</code> when predicted q90 is in the top 20%: "This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict."</td>
+#             </tr>
+#             <tr>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Typical-range undercoverage in three groups has larger median misses above the range than below it.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Poor mental health, low income, and doctorate holders.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Use <code>TYPICAL_RANGE_UNDERCOVERAGE</code> for these specific provided inputs. Show the neutral planning note without naming the subgroup, and combine it with any high-predicted-cost notice.</td>
 #             </tr>
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Safety-cushion overcoverage means q90 may be more conservative than needed.</td>
@@ -3983,7 +3988,7 @@ plot_quantile_subgroup_predictions(
 #         <li><b>Baseline Comparison:</b> XGBoost adds value compared with population and age-group baselines. Against the age-group baseline, it reduces MAE by 7.6%, typical-range interval score by 9.0%, and q90 loss by 14.3%.</li>
 #         <li><b>Calibration:</b> Do not add conformalized quantile regression for the MVP. Test calibration passes the predefined gates. Any calibration change should be evaluated in a new validation cycle, preferably against a later MEPS year when available.</li>
 #         <li><b>Prediction Output:</b> Show q50 as the plan-around estimate, q25-q75 as the typical range, and q90 as the safety cushion. Do not present a single point estimate.</li>
-#         <li><b>Launch Conditions:</b> Ship only with range-based predictions, the scope disclaimer, 2023-to-current-dollar adjustment, conditional planning notices to communicate prediction uncertainty for high predicted costs, and privacy-preserving aggregate monitoring.</li>
+#         <li><b>Launch Conditions:</b> Ship only with range-based predictions, the scope disclaimer, 2023-to-current-dollar adjustment, conditional planning notices for high predicted costs, poor mental health, low income, or doctorate holders, and privacy-preserving aggregate monitoring.</li>
 #         <li><b>Scope Disclaimer:</b> Explain that the model uses 2023 MEPS individual out-of-pocket spending. It excludes premiums, over-the-counter costs, family totals, and procedure prices. It can miss rare high-cost years, especially for users whose realized costs land in the extreme tail.</li>
 #         <li><b>Monitoring:</b> Track aggregate app health, completion rate, input drift, prediction drift, missingness, q50 distribution, q25-q75 width, q90 safety cushion, and high-uncertainty flags. Broad slices such as insurance status, family income, mental health, and chronic-condition count can explain shifts, but they cannot measure calibration without observed annual costs.</li>
 #         <li><b>Post-Launch Learning:</b> Do not calibrate on app user data. True calibration requires observed annual out-of-pocket costs, and collecting linked follow-up outcomes would conflict with the anonymous, zero-retention product requirement. If outcome collection becomes a product goal, treat it as a separate opt-in study with consent, retention limits, data minimization, and a privacy review.</li>
@@ -4049,7 +4054,7 @@ plot_quantile_subgroup_predictions(
 #                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span>
 #                 <br><br>
 #                 <b>Planning note</b><br>
-#                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary a lot from year to year. This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, plan closer to the safety cushion.</span>
+#                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary a lot from year to year. This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, consider planning closer to the safety cushion.</span>
 #                 <br><br>
 #                 <details style="margin-bottom:8px;">
 #                 <summary style="cursor:pointer;"><strong>Which answers shaped your estimate?</strong> <i>(click to expand)</i></summary>
