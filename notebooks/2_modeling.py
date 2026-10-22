@@ -2552,7 +2552,8 @@ def plot_quantile_subgroup_performance(
 
     Each subplot row is one stratification column. Coverage and mean width panels
     show the typical range and safety cushion. An optional first panel shows
-    plan-around median absolute error (q50). All metrics use survey weights.
+    plan-around median absolute error (q50), with a shared scale except for
+    actual cost tiers, which use a wider scale. All metrics use survey weights.
 
     Args:
         df (pd.DataFrame): Stratified error analysis dataframe of quantile regression.
@@ -2568,6 +2569,11 @@ def plot_quantile_subgroup_performance(
     legend_gap_inches = 0.15
     max_width = plot_data[["Typical Range Mean Width (q25–q75)", "Safety Cushion Mean Width (q50–q90)"]].max().max()
     width_axis_max = np.ceil(max_width / 500) * 500
+
+    if include_plan_around:
+        comparable_errors = plot_data.loc[plot_data["Column"] != "Actual Costs", "Plan Around MdAE (q50)"]
+        max_error = comparable_errors.max() if not comparable_errors.empty else plot_data["Plan Around MdAE (q50)"].max()
+        error_axis_max = max(100, np.ceil(max_error * 1.2 / 100) * 100)
 
     fig, axes = plt.subplots(
         n_rows,
@@ -2612,7 +2618,14 @@ def plot_quantile_subgroup_performance(
                 padding=3,
                 fontsize=11,
             )
-            error_ax.set_xlim(0, max(1, error_values.max() * 1.2))
+            if column_label == "Actual Costs":
+                error_ax.set_xlim(0, max(100, np.ceil(error_values.max() * 1.2 / 100) * 100))
+                error_ax.text(
+                    0.98, 0.98, "Wider scale", transform=error_ax.transAxes,
+                    ha="right", va="top", fontsize=11, color="#555555",
+                )
+            else:
+                error_ax.set_xlim(0, error_axis_max)
             error_ax.xaxis.set_major_locator(plt.MaxNLocator(nbins=4))
             error_ax.xaxis.set_major_formatter(currency_fmt)
             error_ax.set_title("MdAE", fontsize=15, fontweight="bold")
