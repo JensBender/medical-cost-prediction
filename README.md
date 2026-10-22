@@ -811,7 +811,7 @@ Reliability analysis compares performance across actual and predicted cost tiers
 **Key Insights:**
 - **Very high actual spending remains the largest prediction weakness:** Plan-around MdAE exceeded $7,000. Typical-range coverage was 0% and safety-cushion coverage only 6.7%: actual costs exceeded the typical range for everyone in this group and the safety cushion for most.
 - **Higher predicted costs came with larger errors and wider budgeting ranges:** Coverage remained broadly close to the 50% and 90% targets across all Q50- and Q90-based cost tiers.
-- **Risk Communication:** Mean safety-cushion widths increase monotonically with predicted risk, from $1,125 in the predicted `q90` Low tier to $5,582 in the predicted `q90` Very High tier. This supports communicating wider uncertainty bands for higher-risk users.
+- **Planning Notice for Higher Predicted Costs:** Large prediction errors at higher costs informed the decision to include a planning notice with the prediction output. Since actual spending is unknown at prediction time, predicted Q90 costs serve as a reasonable proxy for identifying users who may face high costs. The notice triggers when a user's Q90 prediction is at or above $3,525 in 2023 dollars (the survey-weighted 80th percentile of validation Q90 predictions). The notice encourages users to consider budgeting closer to the safety cushion.
 - **Subgroup Reliability:** Physical health, chronic conditions, private insurance, and public insurance groups remain within subgroup review bands. Uninsured users are the main watchlist group: typical-range coverage is low at 34.7%, while safety-cushion coverage is conservative at 96.3%.
 
 **Fairness**  
