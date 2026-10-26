@@ -360,7 +360,7 @@ Profile with higher cost risk: 69 years, arthritis
 > <br>
 >
 > **About this estimate**  
-> This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. New diagnoses, accidents, hospitalizations, and plan-specific billing details can make actual costs higher.
+> This is a planning estimate of annual out-of-pocket costs for one adult, not a specific medical bill. It uses 2023 U.S. survey data, adjusted to current dollars. Premiums and over-the-counter costs are excluded. New diagnoses, accidents, hospital stays, or your insurance plan’s rules can make actual costs higher.
 
 **Medical Inflation Adjustment**  
 The planned app will adjust all user-facing dollar amounts (plan-around estimate, typical range, safety cushion, national and age-group benchmarks, SHAP dollar impacts) from 2023 to current dollars using a medical inflation factor. The [medical inflation update script](scripts/update_medical_inflation.py) calculates and saves the factor from the [U.S. Bureau of Labor Statistics Medical Care Consumer Price Index](https://data.bls.gov/timeseries/CUUR0000SAM), which tracks changes in medical care prices over time.

@@ -495,11 +495,11 @@ risk of underbudgeting, consider planning closer to the safety cushion.
 - **Which answers shaped your estimate?** (Click to expand)
 - **How you compare to others** (Click to expand)
 
-**About this estimate:** This is a planning estimate, not a bill estimate. It is
-based on 2023 national survey data and adjusted to current dollars. It does not
-include premiums, over-the-counter costs, family totals, or procedure prices.
-New diagnoses, accidents, hospitalizations, and plan-specific billing details
-can make actual costs higher.
+**About this estimate:** This is a planning estimate of annual out-of-pocket
+costs for one adult, not a specific medical bill. It uses 2023 U.S. survey data,
+adjusted to current dollars. Premiums and over-the-counter costs are excluded.
+New diagnoses, accidents, hospital stays, or your insurance plan’s rules can
+make actual costs higher.
 
 **Visual:** The title has a smaller, muted gray parenthetical for the higher-cost
 risk profile, age, and chronic conditions. A thin border encloses the

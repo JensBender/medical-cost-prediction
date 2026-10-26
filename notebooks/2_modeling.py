@@ -4078,7 +4078,7 @@ plot_quantile_subgroup_predictions(
 #                 </details>
 #                 <br>
 #                 <b>About this estimate</b><br>
-#                 <span style="font-size:0.85em; color:#555;">This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. New diagnoses, accidents, hospitalizations, and plan-specific billing details can make actual costs higher.</span>
+#                 <span style="font-size:0.85em; color:#555;">This is a planning estimate of annual out-of-pocket costs for one adult, not a specific medical bill. It uses 2023 U.S. survey data, adjusted to current dollars. Premiums and over-the-counter costs are excluded. New diagnoses, accidents, hospital stays, or your insurance plan’s rules can make actual costs higher.</span>
 #             </td>
 #             <td style="background-color:#fcfcfc; border:1px solid #ddd; padding:15px; vertical-align:top; border-radius:4px;">
 #                 <b>Your Estimated Out-of-Pocket Costs for Next Year</b>
@@ -4118,7 +4118,7 @@ plot_quantile_subgroup_predictions(
 #                 </details>
 #                 <br>
 #                 <b>About this estimate</b><br>
-#                 <span style="font-size:0.85em; color:#555;">This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. New diagnoses, accidents, hospitalizations, and plan-specific billing details can make actual costs higher.</span>
+#                 <span style="font-size:0.85em; color:#555;">This is a planning estimate of annual out-of-pocket costs for one adult, not a specific medical bill. It uses 2023 U.S. survey data, adjusted to current dollars. Premiums and over-the-counter costs are excluded. New diagnoses, accidents, hospital stays, or your insurance plan’s rules can make actual costs higher.</span>
 #             </td>
 #         </tr>
 #     </table>

@@ -617,11 +617,11 @@ def build_presentation():
         expand_link.click_action.target_slide = expanded
     text(example, "About this estimate", [
         ("About this estimate:", True),
-        " This is a planning estimate, not a bill estimate. It is based on 2023 "
-        "national survey data and adjusted to current dollars. It does not include "
-        "premiums, over-the-counter costs, family totals, or procedure prices. New "
-        "diagnoses, accidents, hospitalizations, and plan-specific billing details "
-        "can make actual costs higher.",
+        " This is a planning estimate of annual out-of-pocket costs for one adult, "
+        "not a specific medical bill. It uses 2023 U.S. survey data, adjusted to "
+        "current dollars. Premiums and over-the-counter costs are excluded. New "
+        "diagnoses, accidents, hospital stays, or your insurance plan’s rules can "
+        "make actual costs higher.",
     ], 72, 594, 1136, 66, 18, color=SECONDARY)
 
     rect(expanded, "Output divider", 72, 248, 1136, 1, RULE)
