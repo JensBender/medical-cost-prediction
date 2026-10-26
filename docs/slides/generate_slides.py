@@ -533,17 +533,15 @@ def build_presentation():
     text(results, "Test metrics note", "Note: Survey-weighted test metrics. "
          "95% percentile bootstrap confidence intervals from 1,000 resamples of "
          "test-set rows.", 72, 486, 1136, 24, 18, color=SECONDARY)
-    text(results, "Baseline comparison", "Value over simple baselines",
-         72, 532, 1136, 34, 26, bold=True)
-    comparison_items = [
-        ("Typical range and safety cushion:",
-         " improved over population and age-group baselines."),
-        ("Plan-around estimate:",
-         " MdAE remained close to the population baseline."),
+    audit_summary_items = [
+        ("Value over population and age-group baselines:",
+         " better typical range and safety cushion."),
+        ("Subgroup reliability and fairness:",
+         " add planning notices for groups at risk of underbudgeting."),
     ]
-    for index, (label, detail) in enumerate(comparison_items):
-        bullet_shape = text(results, f"Baseline comparison {index + 1}",
-                            [(label, True), detail], 72, 578 + index * 42,
+    for index, (label, detail) in enumerate(audit_summary_items):
+        bullet_shape = text(results, f"Audit summary {index + 1}",
+                            [(label, True), detail], 72, 542 + index * 58,
                             1136, 36, 26)
         properties = bullet_shape.text_frame.paragraphs[0]._p.get_or_add_pPr()
         properties.set("marL", str(Pt(18)))

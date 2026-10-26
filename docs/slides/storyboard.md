@@ -422,12 +422,10 @@ with its strongest evidence of added value in interval and upper-quantile scores
 **Table note:** “Note: Survey-weighted test metrics. 95% percentile bootstrap confidence
 intervals from 1,000 resamples of test-set rows.”
 
-**Value over simple baselines**
+- **Value over population and age-group baselines:** better typical range and safety cushion.
+- **Subgroup reliability and fairness:** add planning notices for groups at risk of underbudgeting.
 
-- **Typical range and safety cushion:** improved over population and age-group baselines.
-- **Plan-around estimate:** MdAE remained close to the population baseline.
-
-**Visual:** Results table above the baseline comparison summary.
+**Visual:** Results table above the baseline comparison and subgroup summary.
 
 **Appendix links:** Value over simple baselines (A18) | Subgroup reliability (A19) | Subgroup fairness (A20).
 
