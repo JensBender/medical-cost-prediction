@@ -509,10 +509,11 @@ The FastAPI layer exposes the prediction service through REST endpoints. It owns
 
 | Flag | Trigger | Mitigating Action | Planning Notice Text |
 | :--- | :--- | :--- | :--- |
-| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) is in the top 20% (cutoff from validation set) | Explain higher-cost-year exposure and present q90 as a conservative planning reference | "This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, consider planning closer to the safety cushion." |
-| `TYPICAL_RANGE_UNDERCOVERAGE` | Provided inputs indicate poor mental health (`MNHLTH31 = 5`), low income (`POVCAT23 = 3`), or a doctorate (`HIDEG = 6`); check before imputation | Communicate the observed risk of costs above the typical range without naming the subgroup | "Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, consider planning closer to the safety cushion." |
+| `UNDERBUDGETING_RISK` | Pre-inflation predicted `q90` meets or exceeds the fixed validation-derived high-cost cutoff, or supplied answers indicate poor mental health (`MNHLTH31 = 5`), low income (`POVCAT23 = 3`), or a doctorate (`HIDEG = 6`); check subgroup inputs before imputation | Suggest planning closer to the safety cushion without naming the subgroup | "Costs for profiles like yours can vary a lot. To reduce the risk of underbudgeting, consider planning closer to the safety cushion." |
 | `MISSING_OPTIONAL_INPUTS` | User skipped one or more optional inputs | Explain that typical values were used (imputed) and that more complete inputs may make the estimate more tailored | "Some optional answers were skipped, so the estimate used typical values. Adding those details may make the estimate more tailored to your situation." |
 | `PUBLIC_INSURANCE_POLICY_CHANGE` | Public-only insurance (`INSCOV23 = 2`) | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs for some public insurance users | "This estimate is based on 2023 survey data. Recent public insurance policy changes, especially Medicare prescription drug cost caps, may lower actual costs for some users compared with this estimate." |
+
+`UNDERBUDGETING_RISK` is a rule for offering additional planning guidance, not a measured probability of underbudgeting. High predicted Q90 is a proxy for potential higher costs; the three subgroup conditions reflect observed typical-range undercoverage with larger dollar misses above the range than below it.
 
 #### Planning Notice Rendering Rules
 The UI should avoid stacking several full planning notice paragraphs below the prediction. Render planning notices as follows:
@@ -520,8 +521,8 @@ The UI should avoid stacking several full planning notice paragraphs below the p
 1.  Show the prediction block first: plan-around estimate (`q50`), typical range (`q25-q75`), and safety cushion (`q90`).
 2.  If no `warning_flags` are present, show no planning notice panel.
 3.  If one or more flags are present, show one compact **Planning note** panel below the prediction block.
-4.  In the panel, combine triggered messages in this priority order: `HIGH_PREDICTED_UNCERTAINTY`, `TYPICAL_RANGE_UNDERCOVERAGE`, `PUBLIC_INSURANCE_POLICY_CHANGE`, `MISSING_OPTIONAL_INPUTS`.
-5.  Avoid repeating the same idea when combining messages. If both `HIGH_PREDICTED_UNCERTAINTY` and `TYPICAL_RANGE_UNDERCOVERAGE` trigger, mention the safety cushion once.
+4.  In the panel, combine triggered messages in this priority order: `UNDERBUDGETING_RISK`, `PUBLIC_INSURANCE_POLICY_CHANGE`, `MISSING_OPTIONAL_INPUTS`.
+5.  Return `UNDERBUDGETING_RISK` once and show its notice once, even if several of its conditions apply.
 6.  Keep the always-on scope disclaimer outside this panel, in a quieter "About this estimate" or footer area.
 
 Required deployment metadata is stored in
@@ -542,8 +543,7 @@ The schema is:
 }
 ```
 
-The `0.0` cutoff is a placeholder, the actual value for model deployment is in `app/data/prediction_metadata.json`. Trigger `HIGH_PREDICTED_UNCERTAINTY` when
-the pre-inflation predicted `q90` is greater than or equal to this fixed cutoff.
+The `0.0` cutoff is a placeholder; the deployment value is in `app/data/prediction_metadata.json`. The Q90 cutoff is stored under `high_predicted_uncertainty` in that artifact. Set `UNDERBUDGETING_RISK` when the pre-inflation predicted `q90` is greater than or equal to this fixed cutoff, or supplied inputs meet any of the three subgroup conditions above. Missing subgroup inputs do not satisfy those conditions; do not infer them from imputed values.
 
 ### Model Explainability (SHAP)
 
@@ -746,7 +746,7 @@ Bucket edges should be fixed before launch, documented with the model version, a
 | Predicted q50 | $0-$49, $50-$149, $150-$299, $300-$599, $600-$999, $1,000-$1,499, $1,500+ |
 | q25-q75 width | $0-$249, $250-$499, $500-$999, $1,000-$1,499, $1,500-$2,499, $2,500+ |
 | Predicted q90 | $0-$499, $500-$999, $1,000-$1,999, $2,000-$3,499, $3,500-$4,999, $5,000+ |
-| Warning flags | One bucket per user-facing flag: `HIGH_PREDICTED_UNCERTAINTY`, `TYPICAL_RANGE_UNDERCOVERAGE`, `MISSING_OPTIONAL_INPUTS`, `PUBLIC_INSURANCE_POLICY_CHANGE` |
+| Warning flags | One bucket per user-facing flag: `UNDERBUDGETING_RISK`, `MISSING_OPTIONAL_INPUTS`, `PUBLIC_INSURANCE_POLICY_CHANGE` |
 | Missingness | Per optional field: present, missing |
 
 **Small-cell and cross-tab rules**

@@ -148,7 +148,7 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **UI-02** | **Cost Drivers** | The five answers with the largest absolute SHAP contributions to the plan-around estimate, shown in current dollars. | `gr.Markdown` | **These five answers contributed most to your plan-around estimate:** "Age: 68, +$480; Diabetes: Yes, +$370; Physical health: Good, -$90" |
 | **UI-03** | **Comparison Benchmarks** | Bar chart comparing the user with national and age-group benchmarks. | `gr.Plot` | "Typical American: $248 vs. Typical for ages 35-49: $170"<br> |
 | **UI-04** | **Limitations Notice** | Always-on guidance to help users interpret their prediction and understand the rare-tail limitation. | `gr.Markdown` | "**About this estimate**<br>This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. New diagnoses, accidents, hospitalizations, and plan-specific billing details can make actual costs higher." |
-| **UI-05** | **Planning Notice** | Dynamic planning notice displayed only when it is actionable and based on the current prediction or selected user inputs. | `gr.Markdown` | "**Planning note**<br>Costs for profiles like yours can vary a lot from year to year. The plan-around amount and typical range are useful starting points, but for budgeting decisions, consider planning closer to the safety cushion." |
+| **UI-05** | **Planning Notice** | Dynamic planning notice displayed only when it is actionable and based on the current prediction or selected user inputs. | `gr.Markdown` | "**Planning note**<br>Costs for profiles like yours can vary a lot. To reduce the risk of underbudgeting, consider planning closer to the safety cushion." |
 | **UI-06** | **Permanent Footer** | Always-visible disclaimer at the bottom of the page. Covers legal liability and data aging limitations. | `gr.Markdown` | *"Not intended as medical, financial, or legal advice. Based on 2023 U.S. national survey data."* |
 
 ### Prediction Notice Policy
@@ -157,18 +157,17 @@ Planning notices explain relevant prediction limitations and suggest a practical
 - **High predicted costs:** Actual high spenders showed substantial underprediction. Since actual costs are unknown at prediction time, predicted Q90 is used as a proxy for identifying users who may face high costs.
 - **Poor mental health, low income, or doctorate holders:** These groups showed typical-range undercoverage, with much larger typical misses above the range than below it. This makes underbudgeting the more consequential concern and motivates additional planning guidance.
 
-Notices use neutral wording about the estimates without naming these subgroups.
+Either condition sets `UNDERBUDGETING_RISK` and shows the shared planning notice.
 
 | Warning Flag | Trigger | User-Facing Guidance |
 | :--- | :--- | :--- |
-| `HIGH_PREDICTED_UNCERTAINTY` | Predicted safety cushion (`q90`) falls in the top 20% (threshold derived from validation data); use predicted `q90` costs, not predicted `q50`, because the safety cushion is the user-facing signal for potential higher cost years | Explain that the estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict |
-| `TYPICAL_RANGE_UNDERCOVERAGE` | User reports poor mental health, low income, or a doctorate degree | Show the neutral planning note encouraging consideration of the safety cushion, without naming the subgroup |
+| `UNDERBUDGETING_RISK` | Predicted safety cushion (`q90`) meets or exceeds the fixed validation-derived high-cost cutoff, or supplied answers indicate poor mental health, low income, or a doctorate degree | Show a notice suggesting planning closer to the safety cushion. Do not name the subgroup, to avoid stigmatization. |
 | `MISSING_OPTIONAL_INPUTS` | One or more optional inputs are skipped and imputed | Explain that typical training values were used and that more complete inputs may make the estimate more tailored |
 | `PUBLIC_INSURANCE_POLICY_CHANGE` | User selects public-only coverage | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs compared with estimates based on 2023 survey data |
 
-The always-on limitations notice remains the primary way to communicate that rare high-cost events cannot always be identified from pre-year user inputs. The dynamic high-uncertainty flag should be based on predicted cost tiers because actual cost tiers are unknown at prediction time.
+The always-on limitations notice remains the primary way to communicate that rare high-cost events cannot always be identified from pre-year user inputs.
 
-Planning notices should render as one compact panel below the prediction block, not as multiple stacked paragraphs. If several flags trigger, combine them in priority order and avoid repeating the same safety-cushion guidance. Keep the always-on scope disclaimer separate and quieter.
+Show each triggered notice once in a single compact panel below the estimates. Keep the always-on scope disclaimer separate.
 
 ## Non-Functional Requirements
 
@@ -216,7 +215,7 @@ For technical implementation details such as data preprocessing, machine learnin
 ## Risk Assessment & Mitigation
 | Risk | Example | Mitigation Strategy |
 | :--- | :--- | :--- |
-| **Outlier Prediction** | Model predicts extreme costs ($100k+) for a standard user. | Consider implementing display guardrails such as a model-version cap plus `HIGH_PREDICTED_UNCERTAINTY`, so the user sees a planning notice rather than a falsely precise extreme number. |
+| **Outlier Prediction** | Model predicts extreme costs ($100k+) for a standard user. | Consider implementing display guardrails such as a model-version cap plus `UNDERBUDGETING_RISK`, so the user sees a planning notice rather than a falsely precise extreme number. |
 | **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a fairness audit, document subgroup caveats, and provide user-facing planning notices based on the current prediction or selected user inputs. |
 | **Data Aging** | 2023 data becomes outdated. | Display permanent footer (UI-06) and limitations notice (UI-04). Use the medical-cost inflation adjustment in FR-02 to keep displayed estimates in current dollars. |
 | **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Covered by permanent footer (UI-06). For Medicare/Medicaid users, show the `PUBLIC_INSURANCE_POLICY_CHANGE` planning notice. |

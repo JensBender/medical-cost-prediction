@@ -489,10 +489,8 @@ Plan around gives you an estimate of your typical costs. The typical range shows
 how much those costs usually vary. The safety cushion helps you budget for a
 higher-cost year. Costs can still be higher.
 
-**Planning note:** This estimate falls in a higher-cost range, where
-out-of-pocket costs can be harder to predict. The plan-around amount and
-typical range are useful starting points, but for budgeting decisions,
-consider planning closer to the safety cushion.
+**Planning note:** Costs for profiles like yours can vary a lot. To reduce the
+risk of underbudgeting, consider planning closer to the safety cushion.
 
 - **Which answers shaped your estimate?** (Click to expand)
 - **How you compare to others** (Click to expand)
@@ -521,9 +519,10 @@ Users can expand the explanations and comparisons.”
 
 For questions:
 
-Example: Test case 2817769101 has arthritis and high blood pressure. Only the
-high-q90 notice triggers. The modeling notebook reproduces its predictions
-and SHAP values.
+Example: Test case 2817769101 has arthritis and high blood pressure. High
+predicted q90 triggers `UNDERBUDGETING_RISK`. The same flag and notice apply
+when supplied answers indicate poor mental health, low income, or a doctorate
+degree. The modeling notebook reproduces the predictions and SHAP values.
 
 Scope: Estimates cover annual out-of-pocket costs for an individual. They
 exclude insurance premiums, over-the-counter medicines, family totals, and

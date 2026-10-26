@@ -330,7 +330,7 @@ Higher-cost risk: 69 years, arthritis and high blood pressure
 > Plan around gives you an estimate of your typical costs. The typical range shows how much those costs usually vary. The safety cushion helps you budget for a higher-cost year. Costs can still be higher.
 >
 > **Planning note**  
-> This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, consider planning closer to the safety cushion.
+> Costs for profiles like yours can vary a lot. To reduce the risk of underbudgeting, consider planning closer to the safety cushion.
 >
 > <details>
 > <summary><strong>Which answers shaped your estimate?</strong> <i>(click to expand)</i></summary>

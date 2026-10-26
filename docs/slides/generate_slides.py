@@ -602,11 +602,9 @@ def build_presentation():
          72, 310, 1136, 76, 22)
     text(example, "Planning note heading", "Planning note",
          72, 378, 1136, 32, 24, bold=True)
-    text(example, "Planning note", "This estimate falls in a higher-cost range, where "
-         "out-of-pocket costs can be harder to predict. The plan-around amount and "
-         "typical range are useful starting points, but for budgeting decisions, "
-         "consider planning closer "
-         "to the safety cushion.", 72, 414, 1136, 82, 22)
+    text(example, "Planning note", "Costs for profiles like yours can vary a lot. "
+         "To reduce the risk of underbudgeting, consider planning closer to the "
+         "safety cushion.", 72, 414, 1136, 82, 22)
     for index, label in enumerate((
         "Which answers shaped your estimate?", "How you compare to others",
     )):
