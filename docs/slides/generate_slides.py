@@ -29,7 +29,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 11)] + [f"A{number}" for number in range(1, 21)]
+SLIDE_IDS = [str(number) for number in range(1, 12)] + [f"A{number}" for number in range(1, 21)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -568,24 +568,97 @@ def build_presentation():
     final_reliability_appendix_link.font.underline = True
     final_fairness_appendix_link.font.underline = True
 
-    audit = new_slide(presentation, storyboard, "9", "Final model test audit: overall "
-                      "coverage\nhides subgroup gaps", two_lines=True)
-    text(audit, "Chart metric", "Typical-range coverage (q25–q75)",
-         72, 190, 780, 38, 28, bold=True)
-    native_chart(audit, ["Target", "Overall", "Low income", "Poor mental health"],
-                 [0.5, 0.473, 0.392, 0.301], "Coverage", 72, 242, 740, 326,
-                 horizontal=True, color=TEAL, gap_width=85)
-    text(audit, "Rare events label", "Rare expensive years", 860, 246, 348, 38, 28, bold=True)
-    text(audit, "Rare events detail", "Remain difficult\nto anticipate", 860, 287, 348, 80, 28)
-    text(audit, "Timing label", "Future-year use", 860, 392, 348, 38, 28, bold=True)
-    text(audit, "Timing detail", "Still needs feature-timing\nand later-year validation",
-         860, 433, 348, 116, 28)
-    text(audit, "Safeguard limitation", "Scope wording and planning notices communicate limits;\n"
-         "they do not fix calibration.", 72, 588, 1136, 74, 28, bold=True)
-    footnote(audit, "Survey-weighted test point estimates; subgroup uncertainty matters. "
-             "Source: modeling notebook.")
+    example = new_slide(presentation, storyboard, "9", "Example prediction output")
+    expanded = new_slide(presentation, storyboard, "10", "Example prediction output")
+    for slide, slide_id in ((example, "9"), (expanded, "10")):
+        next(shape for shape in slide.shapes if shape.name == f"{slide_id} title").width = pixels(568)
+        text(slide, "Example profile", "(high-cost profile: 68 years, uninsured, "
+             "multiple chronic conditions)", 642, 70, 578, 28, 19, color=SECONDARY)
+        example_border = slide.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE, pixels(48), pixels(118), pixels(1184), pixels(550),
+        )
+        example_border.name = "Prediction output border"
+        example_border.fill.background()
+        example_border.line.color.rgb = RGBColor.from_string(RULE)
+        example_border.line.width = Pt(1)
+        example_border._element.spPr.append(OxmlElement("a:effectLst"))
+    text(example, "Output heading", "Your estimated out-of-pocket costs for next year",
+         72, 132, 1136, 38, 28, bold=True)
+    for slide, label_y, value_y, value_size in (
+        (example, 190, 228, 42),
+        (expanded, 150, 186, 34),
+    ):
+        for label, value, x, width in (
+            ("Plan around", "$1,350", 72, 320),
+            ("Typical range", "$520–$2,400", 464, 352),
+            ("Safety cushion", "$5,200", 888, 320),
+        ):
+            text(slide, f"{label} label", label, x, label_y, width, 32, 24, bold=True)
+            text(slide, f"{label} value", value, x, value_y, width, 54, value_size,
+                 color=TEAL, bold=True)
+    rect(example, "Output divider", 72, 292, 1136, 1, RULE)
+    text(example, "Output interpretation", "Use the plan-around number as a reasonable "
+         "midpoint for budgeting. The typical range shows where about half of people "
+         "with similar profiles fall. The safety cushion gives extra room for a higher-cost year.",
+         72, 310, 1136, 76, 22)
+    text(example, "Planning note heading", "Planning note",
+         72, 378, 1136, 32, 24, bold=True)
+    text(example, "Planning note", "Costs for profiles like yours can vary a lot from "
+         "year to year. This estimate falls in a higher-cost range, where out-of-pocket "
+         "costs can be harder to predict. The plan-around amount and typical range are "
+         "useful starting points, but for budgeting decisions, consider planning closer "
+         "to the safety cushion.", 72, 414, 1136, 82, 22)
+    for index, label in enumerate((
+        "Which answers shaped your estimate?", "How you compare to others",
+    )):
+        expand_link = text(example, f"Expand details {index + 1}",
+                           [(label, True), " (Click to expand)"],
+                           72, 510 + index * 42, 1136, 32, 24)
+        label_run, hint_run = expand_link.text_frame.paragraphs[0].runs
+        label_run.font.underline = True
+        hint_run.font.color.rgb = RGBColor.from_string(SECONDARY)
+        expand_link.click_action.target_slide = expanded
+    text(example, "About this estimate", [
+        ("About this estimate:", True),
+        " This is a planning estimate, not a bill estimate. It is based on 2023 "
+        "national survey data and adjusted to current dollars. It does not include "
+        "premiums, over-the-counter costs, family totals, or procedure prices. New "
+        "diagnoses, accidents, hospitalizations, and plan-specific billing details "
+        "can make actual costs higher.",
+    ], 72, 594, 1136, 66, 18, color=SECONDARY)
 
-    next_steps = new_slide(presentation, storyboard, "10", "Model evaluation is complete;\n"
+    rect(expanded, "Output divider", 72, 248, 1136, 1, RULE)
+    text(expanded, "Comparison heading", "How you compare to others",
+         672, 280, 536, 36, 26, bold=True)
+    for index, (label, value) in enumerate((
+        ("Your plan-around estimate", "$1,350"),
+        ("U.S. adult median", "$268"),
+        ("Age 65+ median", "$657"),
+    )):
+        text(expanded, f"Comparison {index + 1} label", label,
+             672, 350 + index * 50, 374, 36, 26)
+        text(expanded, f"Comparison {index + 1} value", value,
+             1056, 350 + index * 50, 152, 36, 26, bold=True,
+             alignment=PP_ALIGN.RIGHT)
+
+    text(expanded, "SHAP heading", "Which answers shaped your estimate?",
+         72, 280, 536, 36, 26, bold=True)
+    text(expanded, "SHAP explanation", "Contributions to the plan-around estimate",
+         72, 320, 536, 28, 20, color=SECONDARY)
+    for index, (label, value) in enumerate((
+        ("Age: 68", "+$480"),
+        ("Diabetes: Yes", "+$370"),
+        ("Insurance: Uninsured", "+$310"),
+        ("High blood pressure: Yes", "+$180"),
+        ("Physical health: Good", "−$90"),
+    )):
+        text(expanded, f"SHAP {index + 1} answer", label,
+             72, 370 + index * 50, 396, 36, 26)
+        text(expanded, f"SHAP {index + 1} contribution", value,
+             480, 370 + index * 50, 128, 36, 26, color=TEAL, bold=True,
+             alignment=PP_ALIGN.RIGHT)
+
+    next_steps = new_slide(presentation, storyboard, "11", "Model evaluation is complete;\n"
                            "app development comes next", two_lines=True)
     text(next_steps, "Implemented", "Implemented", 72, 190, 700, 38, 30, bold=True)
     text(next_steps, "Planned", "Planned", 895, 190, 313, 38, 30, bold=True)

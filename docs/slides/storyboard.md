@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: ten main slides and twenty appendix slides are generated. The remaining
+Status: eleven main slides and twenty appendix slides are generated. The remaining
 appendix slides are planned below.
 
 ## Presentation context
@@ -13,11 +13,11 @@ appendix slides are planned below.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The current
   allocation below totals 11:25, leaving room for transitions.
-- **Structure:** a cover, nine content slides, and twenty-three appendix topics.
+- **Structure:** a cover, ten content slides, and twenty-three appendix topics.
   Appendix slides follow their first reference in the main presentation;
   unreferenced slides sit with their related topic.
-- **Slide numbering:** Display 2–10 on the main content slides, with the cover
-  unnumbered, and A1, A2, etc. in the appendix. Use 1–10 in the storyboard.
+- **Slide numbering:** Display 2–11 on the main content slides, with the cover
+  unnumbered, and A1, A2, etc. in the appendix. Use 1–11 in the storyboard.
 - **Appendix navigation:** Main slides link to relevant appendix topics;
   appendix slides have a “Back” link to the referring main slide.
 - **Appendix speaker notes:** Leave main speaking points unlabelled. Use a standalone
@@ -66,8 +66,9 @@ The first three slide timings are rehearsed; the remaining timings are estimates
 | 6 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
 | 7 | Quantile regression: budgeting for uncertainty | 1:30 | Explain the final model and its estimates |
 | 8 | XGBoost quantile audit: all release gates passed | 1:30 | Present held-out evidence and baseline comparisons |
-| 9 | Final model test audit: overall coverage hides subgroup gaps | 1:00 | Demonstrate critical evaluation and limits |
-| 10 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
+| 9 | Example prediction output (high-cost profile) | 0:35 | Show the main estimates and planning guidance |
+| 10 | Example prediction output (high-cost profile) | 0:25 | Show expanded explanations and comparisons |
+| 11 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
 | | **Total** | **11:25** | |
 
 ## Main slides
@@ -463,50 +464,140 @@ thresholds that seemed reasonable before examining the test results. They are
 not universal standards, but at least establish a measurable minimum
 performance level.
 
-**Transition:** Overall metrics still need to be checked against the groups
-and situations where the model is less reliable.
+**Transition:** Show how the findings translate into a user-facing prediction output.
 
 **Sources:** [README: release gates](../../README.md);
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
 Detailed baseline comparisons and scoring definitions are in A18.
 
-### 9 — Final model test audit: overall coverage hides subgroup gaps
+### 9 — Example prediction output (high-cost profile)
 
-**Takeaway:** The model's limitations affect both interpretation and the next
-validation steps.
+**Takeaway:** The estimates and planning notice help users prepare for a
+higher-cost year, with explanations and comparisons available to expand.
 
 **On the slide**
 
-- Rare high-cost years remain difficult to anticipate
-- Typical ranges undercover some groups, including uninsured users and people
-  reporting poor mental health
-- One-year holdout performance does not establish prospective performance
-- Subgroup audits inform safeguards; they do not prove absence of bias
+**Title detail:** (high-cost profile: 68 years, uninsured, multiple chronic conditions)
 
-**Visual:** Bar chart of typical-range coverage: poor mental health 30.1%, low
-income 39.2%, overall 47.3%, and target 50%. Label results as point estimates;
-A20 adds the detailed subgroup metrics.
+**Your estimated out-of-pocket costs for next year**
 
-**Speaker notes — 1:00**
+| Plan around | Typical range | Safety cushion |
+| --- | --- | --- |
+| $1,350 | $520–$2,400 | $5,200 |
 
-“Overall coverage can hide important differences. The typical range misses too
-often for several groups, including uninsured users and people reporting poor
-mental health. Rare actual high-cost outcomes remain particularly difficult,
-and those actual cost tiers are only known after the year ends. They are useful
-diagnostics, but cannot be used to route users at prediction time. There is also
-a temporal limitation: the holdout comes from 2023, and some inputs summarize
+Use the plan-around number as a reasonable midpoint for budgeting. The typical
+range shows where about half of people with similar profiles fall. The safety
+cushion gives extra room for a higher-cost year.
+
+**Planning note:** Costs for profiles like yours can vary a lot from year to
+year. This estimate falls in a higher-cost range, where out-of-pocket costs can
+be harder to predict. The plan-around amount and typical range are useful
+starting points, but for budgeting decisions, consider planning closer to the
+safety cushion.
+
+- **Which answers shaped your estimate?** (Click to expand)
+- **How you compare to others** (Click to expand)
+
+**About this estimate:** This is a planning estimate, not a bill estimate. It is
+based on 2023 national survey data and adjusted to current dollars. It does not
+include premiums, over-the-counter costs, family totals, or procedure prices.
+New diagnoses, accidents, hospitalizations, and plan-specific billing details
+can make actual costs higher.
+
+**Visual:** The title has a smaller, muted gray parenthetical for the high-cost
+profile, age, insurance, and chronic conditions. A thin border encloses the
+user-facing content, separating it from the title and slide footer. Three
+prominent estimates sit above the interpretation text and planning notice.
+The two collapsed section labels link to slide 10. The scope and inflation note
+sits at the bottom inside the border, leaving the slide footer clear.
+
+**Speaker notes — 0:35**
+
+“Here is an illustrative output for a 68-year-old with multiple chronic
+conditions. The estimates provide a central amount, a typical range, and extra
+room for a higher-cost year. This higher-cost profile receives a notice
+suggesting planning closer to the safety cushion. The scope note explains the
+exclusions, and the planned app will adjust amounts for medical inflation.
+Users can expand the explanations and comparisons.”
+
+For questions:
+
+Illustration: These values reproduce the README's illustrative example. They
+are not a saved prediction and SHAP explanation for a fully specified profile.
+
+Scope: Estimates cover annual out-of-pocket costs for an individual. They
+exclude insurance premiums, over-the-counter medicines, family totals, and
+procedure prices.
+
+Inflation: The example uses 2023 dollars. The planned app will adjust predictions,
+population and age-group comparisons, and SHAP dollar contributions using the
+medical inflation factor.
+
+Next-year use: The test split comes from 2023, and some inputs summarize
 information collected during that year. The planned next-year use case needs
-further validation. Clear scope wording and planning notices can communicate
-these limitations, but they do not fix calibration.”
+feature-timing checks and later-year validation. Scope wording and planning
+notices communicate limitations but do not fix calibration.
 
-**Transition:** Close with what has been implemented and the next checks needed
-to turn it into a usable product.
+**Transition:** Open the explanations and comparisons.
 
-**Sources:** [README: final subgroup audit](../../README.md);
-[feature timing notes](../research/candidate_features.md);
-[preprocessing split](../../scripts/preprocess.py).
+**Sources:** [README: example prediction output](../../README.md);
+[SHAP explanation module](../../src/explainability.py);
+[medical inflation adjustment](../../scripts/update_medical_inflation.py);
+[feature timing notes](../research/candidate_features.md).
 
-### 10 — Model evaluation is complete; app development comes next
+### 10 — Example prediction output (high-cost profile)
+
+**Takeaway:** SHAP explains which answers moved the plan-around estimate, while
+population and age-group medians provide context.
+
+**On the slide**
+
+**Title detail:** (high-cost profile: 68 years, uninsured, multiple chronic conditions)
+
+| Plan around | Typical range | Safety cushion |
+| --- | --- | --- |
+| $1,350 | $520–$2,400 | $5,200 |
+
+**Which answers shaped your estimate?**
+
+Contributions to the plan-around estimate:
+
+| Your answer | Contribution |
+| --- | ---: |
+| Age: 68 | +$480 |
+| Diabetes: Yes | +$370 |
+| Insurance: Uninsured | +$310 |
+| High blood pressure: Yes | +$180 |
+| Physical health: Good | −$90 |
+
+**How you compare to others**
+
+| Comparison | Annual costs |
+| --- | ---: |
+| Your plan-around estimate | $1,350 |
+| U.S. adult median | $268 |
+| Age 65+ median | $657 |
+
+**Visual:** The title, muted profile text, and border match slide 9. The three
+estimates remain at the top as a reference. All five SHAP contributions appear
+on the left, with the comparisons on the right. The footer leaves room for the
+planned SHAP appendix link.
+
+**Speaker notes — 0:25**
+
+“These five contributions show how the person's answers moved the plan-around
+estimate up or down. I use SHAP to calculate them through the full prediction
+pipeline. They explain the plan-around estimate, not the typical range or
+safety cushion. The population and age-group medians help users put their
+estimate in context.”
+
+**Transition:** Close with the implemented components and remaining application
+and validation work.
+
+**Sources:** [README: example prediction output](../../README.md);
+[SHAP explanation module](../../src/explainability.py).
+
+### 11 — Model evaluation is complete; app development comes next
 
 **Takeaway:** The project has reusable ML components and an explicit plan for
 the remaining product and validation work.
@@ -1334,7 +1425,7 @@ inputs, including the effects of transformations and derived medical counts.
 Correlated inputs can share attribution. Higher or lower observed spending
 does not by itself mean higher or lower healthcare need.
 
-**Promote:** Before 10 for explainability depth; allow 1:00.
+**Promote:** Before 11 for explainability depth; allow 1:00.
 
 **Sources:** [README: feature importance](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json).
@@ -1356,7 +1447,7 @@ P95 summarizes subsequent explanation calls after a separately measured first
 call. It excludes the rest of the request and is not a deployed API latency
 claim. Complete request latency on target hardware remains unverified.
 
-**Promote:** Before 10 for ML engineering roles; allow 1:00.
+**Promote:** Before 11 for ML engineering roles; allow 1:00.
 
 **Sources:** [README: SHAP explanation details](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json);
