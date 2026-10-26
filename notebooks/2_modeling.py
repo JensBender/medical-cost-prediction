@@ -2272,7 +2272,6 @@ plot_residuals_vs_predicted(
     }, 
     w_val,
     n_cols=2,
-    save_to_file="../figures/evaluation/xgb_quantile_validation_heteroscedasticity.png"
 )
 
 
@@ -4730,6 +4729,124 @@ display(
 #     </ul>
 #     <em>Note: These are local contributions relative to the SHAP background and depend on the person's other answers. They are not comparisons with specific alternative answers. They explain predicted, not actual, costs and should not be interpreted causally. For example, they do not show how changing public to private insurance or stopping to smoke would change a person's costs.</em>
 # </div>
+
+# %% [markdown]
+# <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
+#     <h2 style="margin:0px">Example Prediction Output</h2>
+# </div>
+#
+# <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
+#     ℹ️ Use a fixed test-set case for the README and presentation example: an 80-year-old with five chronic conditions. The case illustrates a higher-cost-risk profile that triggers both the high-q90 and low-income planning notices. Adjust dollar amounts using the latest medical inflation factor persisted in <a href="../app/data/medical_inflation.json"><code>app/data/medical_inflation.json</code></a>.
+# </div>
+
+# %%
+PREDICTION_EXAMPLE_ID = "2816287101"  # Selected among adults aged 80+ with 5+ conditions, low income, and high predicted q90
+output_input = X_test_preprocessor_input.loc[[PREDICTION_EXAMPLE_ID]]
+output_row = output_input.iloc[0]
+output_quantiles_2023 = pd.Series(
+    predictor.predict_quantiles(output_input)[0],
+    index=["q25", "q50", "q75", "q90"],
+)
+output_shap = calculate_shap_explanation(
+    explainer,
+    output_input,
+    max_evals=shap_metadata["explainer_contract"]["max_evals"],
+    random_state=RANDOM_STATE,
+)
+
+output_inflation = load_metrics(
+    "../app/data/medical_inflation.json", verbose=False,
+)
+output_factor = output_inflation["medical_cost_inflation_factor"]
+output_price_column = f"{output_inflation['target_period']} USD"
+output_quantiles = output_quantiles_2023 * output_factor
+output_condition_count = int(
+    output_row[MedicalFeatureDeriver.CHRONIC_CONDITION_FEATURES].sum()
+)
+output_notice_metadata = load_metrics(
+    "../app/data/prediction_metadata.json", verbose=False,
+)
+output_notice_flags = {
+    "HIGH_PREDICTED_UNCERTAINTY": bool(
+        output_quantiles_2023["q90"] >= output_notice_metadata[
+            "high_predicted_uncertainty"
+        ]["cutoff_2023_dollars"]
+    ),
+    "TYPICAL_RANGE_UNDERCOVERAGE": bool(
+        output_row["MNHLTH31"] == 5
+        or output_row["POVCAT23"] == 3
+        or output_row["HIDEG"] == 6
+    ),
+}
+print(
+    f"Test case {PREDICTION_EXAMPLE_ID}: {int(output_row['AGE23X'])} years, "
+    f"{output_condition_count} chronic conditions."
+)
+
+output_estimates = pd.DataFrame({
+    "Estimate": ["Plan around", "Typical range", "Safety cushion"],
+    output_price_column: [
+        f"{DOLLAR}{output_quantiles['q50']:,.0f}",
+        f"{DOLLAR}{output_quantiles['q25']:,.0f}–{DOLLAR}{output_quantiles['q75']:,.0f}",
+        f"{DOLLAR}{output_quantiles['q90']:,.0f}",
+    ],
+})
+display(
+    output_estimates.style
+    .pipe(add_table_caption, "Example Prediction Output")
+    .hide()
+)
+print("Planning notice triggers:", ", ".join(
+    flag for flag, triggered in output_notice_flags.items() if triggered
+))
+
+# %%
+output_shap_table = pd.DataFrame({
+    "Feature": [DISPLAY_LABELS.get(feature, feature) for feature in SHAP_INPUT_FEATURES],
+    "Input Value": [
+        format_shap_input(feature, output_row[feature])
+        for feature in SHAP_INPUT_FEATURES
+    ],
+    output_price_column: output_shap.values[0] * output_factor,
+}).sort_values(output_price_column, key=lambda values: values.abs(), ascending=False).head(5)
+display(
+    output_shap_table.style
+    .pipe(add_table_caption, "Which Answers Shaped the Plan-Around Estimate?")
+    .format({
+        output_price_column: lambda value: f"{'-' if value < 0 else '+'}{DOLLAR}{abs(value):,.0f}",
+    })
+    .hide()
+)
+
+# %%
+output_benchmarks = load_metrics(
+    "../app/data/cost_benchmarks.json", verbose=False,
+)
+output_age_group = str(pd.cut(
+    [output_row["AGE23X"]], bins=age_bins, labels=age_labels, right=False,
+)[0])
+output_age_benchmark = next(
+    group["median_cost"]
+    for group in output_benchmarks["age_groups"]
+    if group["label"] == output_age_group
+)
+output_comparisons = pd.DataFrame({
+    "Comparison": [
+        "Your plan-around estimate", "U.S. adult median",
+        f"Age {output_age_group} median",
+    ],
+    output_price_column: [
+        output_quantiles["q50"],
+        output_benchmarks["national"]["median_cost"] * output_factor,
+        output_age_benchmark * output_factor,
+    ],
+})
+display(
+    output_comparisons.style
+    .pipe(add_table_caption, "How You Compare to Others")
+    .format({output_price_column: "${:,.0f}"})
+    .hide()
+)
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
