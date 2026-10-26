@@ -292,12 +292,12 @@ While the tuned Elastic Net achieves the best point-estimate MdAE, heteroscedast
 The final model reuses the hyperparameters from the best tuned XGBoost point-estimate model, switching only the objective from `reg:absoluteerror` to `reg:quantileerror` with four quantile levels (`q25`, `q50`, `q75`, `q90`). Predictions are postprocessed to enforce non-negativity and monotonicity (`q25 ≤ q50 ≤ q75 ≤ q90`).
 
 **User-Facing Outputs:**
-- **Plan-around estimate** (`q50`): The median prediction (what users should budget for).
+- **Plan-around estimate** (`q50`): The median prediction (the typical costs for people with a similar profile).
 - **Typical range** (`q25`–`q75`): The interquartile range (how much costs typically vary).
-- **Safety cushion** (`q90`): The 90th percentile (a conservative upper bound to help budget for a bad year).
+- **Safety cushion** (`q90`): The 90th percentile (a conservative estimate to help budget for a higher-cost year).
 
 **Release Gate Metrics**  
-Release gates are the minimum test-set performance needed to launch. Product targets are more ambitious goals for how well model predictions support budgeting. Unlike the earlier point-estimate metrics, they assess not only plan-around error (MdAE) but also whether the typical range and safety cushion cover the intended share of actual costs without being too wide.
+Release gates are pass/fail criteria that define the minimum test-set performance required before launch. Product targets are more ambitious goals for making the estimates more useful for budgeting. Unlike the earlier point-estimate metrics, they assess not only plan-around error (MdAE) but also whether the typical range and safety cushion cover the intended share of actual costs without being too wide.
 
 | Metric | Estimate (95% CI) | Release Gate | Product Target | Status |
 | :--- | ---: | ---: | ---: | :---: |

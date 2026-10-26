@@ -350,7 +350,7 @@ provide a safety cushion for a higher-cost year.
 
 | Estimate | Model quantity | Intended meaning |
 | --- | --- | --- |
-| Plan-around estimate | q50 | Predicted median spending |
+| Plan-around estimate | q50 | Predicted median cost |
 | Typical range | q25–q75 | Central range targeting 50% coverage |
 | Safety cushion | q90 | Upper planning reference targeting 90% coverage |
 
@@ -361,7 +361,7 @@ from q25 to q75.
 
 “Quantile regression allowed me to give users three estimates based on four
 predicted quantiles to help them budget for uncertainty.
-The plan-around estimate is the predicted median. It shows the midpoint of costs
+The plan-around estimate is the predicted median. It represents the typical costs
 for people with a similar profile. The typical range runs from the 25th to the
 75th percentile and shows how much costs typically vary. The safety cushion is
 the 90th percentile, which provides a conservative estimate to help
