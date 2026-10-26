@@ -29,7 +29,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 12)] + [f"A{number}" for number in range(1, 21)]
+SLIDE_IDS = [str(number) for number in range(1, 12)] + [f"A{number}" for number in range(1, 22)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -682,6 +682,11 @@ def build_presentation():
                 run.text = value
                 style_font(run.font, size, bold=row_index == 0)
 
+    text(expanded, "SHAP appendix label", "Appendix:",
+         72, 674, 86, 24, 18, color=SECONDARY)
+    shap_details_link = text(expanded, "SHAP details appendix link", "SHAP details",
+                             160, 674, 160, 24, 18, color=SECONDARY, underline=True)
+
     next_steps = new_slide(presentation, storyboard, "11", "Model evaluation is complete;\n"
                            "app development comes next", two_lines=True)
     text(next_steps, "Implemented", "Implemented", 72, 190, 700, 38, 30, bold=True)
@@ -1084,6 +1089,38 @@ def build_presentation():
         run._r.get_or_add_rPr().append(hyperlink)
     final_reliability_return_link.click_action.target_slide = results
     final_fairness_return_link.click_action.target_slide = results
+
+    shap_details = new_slide(presentation, storyboard, "A21",
+                             "SHAP shows how user answers shape predictions")
+    text(shap_details, "Interpretable inputs", "SHAP assigns dollar contributions to "
+         "27 interpretable inputs before encoding and scaling. This keeps explanations "
+         "tied to users’ answers.", 72, 148, 1136, 84, 28)
+    text(shap_details, "Explained prediction", [
+        ("Explained prediction:", True),
+        " The plan-around estimate (q50), through preprocessing, quantile prediction, "
+        "conversion back to dollars, and postprocessing.",
+    ], 72, 260, 1136, 96, 26)
+    for name, heading, description, x, width in (
+        ("Baseline", "Starting point", "Average prediction for\na reference group", 72, 300),
+        ("Contributions", "All 27 contributions", "How each input moves\nthe estimate up or down", 448, 360),
+        ("Prediction", "Plan around", "Predicted typical costs\nfor this profile", 896, 312),
+    ):
+        text(shap_details, f"{name} heading", heading,
+             x, 394, width, 40, 30, bold=True, alignment=PP_ALIGN.CENTER)
+        text(shap_details, f"{name} description", description,
+             x, 446, width, 80, 24, color=SECONDARY, alignment=PP_ALIGN.CENTER)
+    text(shap_details, "Add contributions", "+", 384, 390, 56, 52, 42,
+         alignment=PP_ALIGN.CENTER)
+    text(shap_details, "Reconstruct prediction", "=", 824, 390, 56, 52, 42,
+         alignment=PP_ALIGN.CENTER)
+    text(shap_details, "Displayed contributions", "The app displays the five largest "
+         "contributions, positive or negative.", 72, 560, 1136, 40, 26)
+    text(shap_details, "Interpretation limit", "Contributions describe the model’s "
+         "prediction, not causal effects.", 72, 618, 1136, 30, 20, color=SECONDARY)
+    shap_details_return_link = text(shap_details, "Return to example prediction", "Back",
+                                    72, 674, 100, 24, 18, color=SECONDARY, underline=True)
+    shap_details_link.click_action.target_slide = shap_details
+    shap_details_return_link.click_action.target_slide = expanded
     return presentation
 
 

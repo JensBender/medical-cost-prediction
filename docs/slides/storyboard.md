@@ -203,7 +203,7 @@ independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
 See A3–A4 for preprocessor input features, counts, and possible feature reduction,
-and A21 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
+and A22 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
 random within spending groups, with a separate zero-cost group and finer bins
 for high costs to reduce imbalances in rare, expensive cases. Discuss the split
 after the spending-distribution slide if asked.
@@ -572,6 +572,8 @@ population and age-group medians provide context.
 | Typical American | $268 |
 | Typical for ages 65+ | $657 |
 
+**Appendix link:** [SHAP details (A21)](#a21--shap-shows-how-user-answers-shape-predictions).
+
 **Visual:** The title, muted profile text, and border match slide 9. The three
 estimates remain at the top as a reference, with space separating them from
 the explanations and comparisons. Both tables align at the top below their
@@ -581,7 +583,7 @@ rows give each answer more space. Table headers and rows use the same font
 size. The headerless comparison table on the right also uses horizontal row
 separators. Contributions and comparison amounts use regular dark blue text;
 teal highlights the three main estimates. The footer leaves room for the
-planned SHAP appendix link.
+SHAP details appendix link to A21.
 
 **Speaker notes — 0:25**
 
@@ -778,7 +780,7 @@ after adding a life-transition feature and 40 model-ready columns after
 transformation. These counts do not equal the number of questions on the planned
 form: related conditions can be grouped, and some values are derived. User testing
 will assess the burden; feature reduction is an option if fewer inputs would
-improve the experience. Refer to A21 for input timing.
+improve the experience. Refer to A22 for input timing.
 
 **Sources:** [README: feature details](../../README.md#feature-details);
 [input definitions](../../src/constants.py);
@@ -1389,7 +1391,75 @@ or education input. The note uses neutral wording without naming the group.
 **Sources:** [README: final subgroup audit](../../README.md#final-model-subgroup-reliability--fairness);
 [modeling notebook: test subgroup analysis](../../notebooks/2_modeling.py).
 
-### A21 — Feature timing: limits of next-year forecasting
+### A21 — SHAP shows how user answers shape predictions
+
+**Question:** How can the app explain contributions from the person’s answers?
+
+**On the slide**
+
+SHAP assigns dollar contributions to 27 interpretable inputs before encoding and
+scaling. This keeps explanations tied to users’ answers.
+
+**Explained prediction:** The plan-around estimate (q50), through preprocessing,
+quantile prediction, conversion back to dollars, and postprocessing.
+
+**Starting point + All 27 contributions = Plan around**
+
+- **Starting point:** Average prediction for a reference group.
+- **All 27 contributions:** How each input moves the estimate up or down.
+- **Plan around:** Predicted typical costs for this profile.
+
+The app displays the five largest contributions, positive or negative.
+
+*Contributions describe the model’s prediction, not causal effects.*
+
+**Visual:** The slide leads with interpretable user inputs and identifies the
+prediction process being explained. A horizontal equation connects the reference
+starting point, all input contributions, and the plan-around estimate. A backlink
+returns to slide 10.
+
+**Speaker notes**
+
+“SHAP shows which answers moved this person’s prediction up or down from a
+reference starting point. I apply it to the full prediction process, so the
+contributions stay tied to interpretable inputs such as age and arthritis,
+rather than encoded or scaled columns. I focus on the plan-around estimate to
+keep the explanation simple for users. The starting point plus all 27
+contributions reproduces the prediction; the app shows the five largest.”
+
+For questions:
+
+Starting point: This is the average model prediction across 225 reference
+training rows sampled using survey weights. It is not the population median
+shown in the comparison beside the example.
+
+Pipeline: SHAP receives the 27 inputs before preprocessing. Each evaluation
+includes imputation, derived medical counts, scaling and encoding, quantile
+prediction, the inverse log transformation back to dollars, and postprocessing.
+The same inflation factor then adjusts the starting point, contributions, and
+prediction for display.
+
+Method: The project uses permutation SHAP, which measures prediction changes
+while substituting reference values for some inputs.
+
+Interpretation: Contributions depend on the other answers and reference data;
+correlated inputs can share attribution. These explanations cover q50, not the
+typical range or safety cushion. They do not show how changing an input would
+affect actual costs.
+
+Display: The five displayed contributions do not reproduce the prediction on
+their own. The starting point and the remaining 22 contributions also matter.
+
+Native importance: XGBoost’s built-in importance summarizes training gains for
+model-ready features. It does not explain an individual plan-around prediction.
+
+**Transition:** Return to the example prediction output.
+
+**Sources:** [README: SHAP explanation details](../../README.md#shap-explanation-details);
+[SHAP explanation module](../../src/explainability.py);
+[SHAP metadata](../../app/data/shap_metadata.json).
+
+### A22 — Feature timing: limits of next-year forecasting
 
 **Question:** Is this truly a next-year forecast?
 
@@ -1409,26 +1479,6 @@ Do not claim the size or direction of the resulting performance change is known.
 
 **Sources:** [input feature timing](../research/candidate_features.md);
 [technical specifications: input selection](../specs/technical_specifications.md).
-
-### A22 — SHAP explains how inputs shape the median estimate
-
-**Question:** Which inputs influence predictions, and what can users infer?
-
-**On the slide:** Insurance and family income have the largest average absolute
-SHAP contributions. Explanations concern postprocessed q50 in dollars, through
-the full inference function. They do not explain q90 or causal effects.
-
-**Visual:** [Test SHAP feature importance](../../figures/evaluation/shap_feature_importance.png).
-
-**Talking points:** Permutation SHAP operates on 27 interpretable preprocessor
-inputs, including the effects of transformations and derived medical counts.
-Correlated inputs can share attribution. Higher or lower observed spending
-does not by itself mean higher or lower healthcare need.
-
-**Promote:** Before 11 for explainability depth; allow 1:00.
-
-**Sources:** [README: feature importance](../../README.md);
-[SHAP metadata](../../app/data/shap_metadata.json).
 
 ### A23 — SHAP benchmarking: explanation quality and latency
 
