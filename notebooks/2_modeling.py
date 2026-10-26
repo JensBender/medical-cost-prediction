@@ -1418,7 +1418,8 @@ plot_subgroup_performance(
 # </table>
 # Recommendation: Display q50 as "Plan around", q25-q75 as the "Typical range", and q90 as the "Safety cushion". By using this approach, the typical range will be different for a low-risk user (with plan-around cost < \$1,000) compared to a high-risk user (plan-around cost ≥ \$1,000). For example, a low-risk user may see a tight range like \$50 – \$450, while a high-risk user sees a wider range like \$1,100 – \$7,200, accurately reflecting their higher financial risk. For high-risk users, display a note on possible out-of-pocket insurance maximum. 
 # <br><br>
-#     <strong>Example Prediction Text</strong> (shown to app users)
+#     <strong>Illustrative Prediction Outputs</strong><br>
+#     These hypothetical profiles illustrate how the estimates could be presented to users. The dollar amounts are illustrative.
 # <table style="width:100%; border-spacing: 10px 0px; border-collapse: separate; margin-top: 10px;">
 #     <tr>
 #         <td style="width: 50%; padding: 0 10px; vertical-align: bottom;">
@@ -1435,16 +1436,16 @@ plot_subgroup_performance(
 #             <b>Your Estimated Out-of-Pocket Costs for Next Year</b><br><br>
 #             💰 <b>Plan around:</b> \$180<br>
 #             📊 <b>Typical range:</b> \$50 – \$450<br>
-#             🛡️ <b>Safety cushion:</b> plan up to \$900<br><br>
-#             <span style="font-size: 0.85em; color: #555;">People with answers like yours often spend about \$180. Many spend between \$50 and \$450. If you want a cushion for a higher-cost year, planning up to \$900 would cover most similar cases.</span>
+#             🛡️ <b>Safety cushion:</b> \$900<br><br>
+#             <span style="font-size: 0.85em; color: #555;">Plan around gives you an estimate of your typical costs. The typical range shows how much those costs usually vary. The safety cushion helps you budget for a higher-cost year. Costs can still be higher.</span>
 #         </td>
 #         <td style="background-color: #fcfcfc; border: 1px solid #ddd; padding: 15px; vertical-align: top; border-radius: 4px;">
 #             <b>Your Estimated Out-of-Pocket Costs for Next Year</b><br><br>
 #             💰 <b>Plan around:</b> \$2,850<br>
 #             📊 <b>Typical range:</b> \$1,100 – \$7,200<br>
-#             🛡️ <b>Safety cushion:</b> plan up to \$9,500<br><br>
+#             🛡️ <b>Safety cushion:</b> \$9,500<br><br>
 #             <span style="font-size: 0.85em; color: #555;">
-#                 People with answers like yours often spend about \$2,850, but costs can change a lot from year to year. Many similar people spend between \$1,100 and \$7,200. If you want a cushion for a higher-cost year, planning up to \$9,500 would cover most similar cases. If you have insurance, check your plan's out-of-pocket maximum for covered in-network care; you likely won't need to set aside more than that yearly limit.
+#                 Plan around gives you an estimate of your typical costs. The typical range shows how much those costs usually vary. The safety cushion helps you budget for a higher-cost year. Costs can still be higher.
 #             </span>
 #         </td>
 #     </tr>
@@ -2290,7 +2291,7 @@ plot_residuals_vs_predicted(
 #     Stratified error analysis for quantile regression extends the point-estimate stratified analysis from a single error metric to a comprehensive audit of central accuracy, interval calibration, and prediction uncertainty. The goal is to confirm that the model's plan-around estimate (q50), typical range (q25-q75), and safety cushion (q90) remain reliable and actionable across important user segments.
 #     <ul style="margin-top:8px">
 #         <li><b>Reuse stratification:</b> Keep the same reliability and fairness audit groups used for point-estimate models.</li>
-#         <li><b>Quantile-specific predicted cost groups:</b> Replace the point-estimate <code>Predicted Costs</code> grouping with <code>Predicted Plan Around Costs</code> based on q50, and add <code>Predicted Safety Cushion Costs</code> based on q90 to audit the "plan up to" amount directly.</li>
+#         <li><b>Quantile-specific predicted cost groups:</b> Replace the point-estimate <code>Predicted Costs</code> grouping with <code>Predicted Plan Around Costs</code> based on q50, and add <code>Predicted Safety Cushion Costs</code> based on q90 to audit the safety-cushion estimate directly.</li>
 #         <li><b>Reliability groups:</b> Actual cost tier, predicted plan-around cost tier (q50), predicted safety-cushion cost tier (q90), physical health, insurance status, and chronic condition count.</li>
 #         <li><b>Fairness audit groups:</b> Sex, age group, race/ethnicity, mental health, family income, education, region, and walking limitation.</li>
 #         <li><b>Metrics by group:</b> Plan-around MdAE (q50), typical range coverage/mean width (q25-q75), and safety cushion coverage/mean width (q90 and q50-q90).</li>
@@ -4026,7 +4027,8 @@ plot_quantile_subgroup_predictions(
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     <b>Example Prediction Output</b>
+#     <b>Illustrative Prediction Outputs</b><br>
+#     These mockups show the intended prediction output, including explanations and planning notices. The estimates and SHAP contributions are illustrative; a <a href="#test-set-prediction-example">reproducible test-set example</a> follows in the model explainability section.
 #     <table style="width:100%; border-spacing:10px 0px; border-collapse:separate; margin-top:10px; font-size:0.92em;">
 #         <tr>
 #             <td style="width:50%; padding:0 10px; vertical-align:bottom;">
@@ -4043,8 +4045,8 @@ plot_quantile_subgroup_predictions(
 #                 <b>Your Estimated Out-of-Pocket Costs for Next Year</b><br><br>
 #                 💰 <b>Plan around:</b> \$420<br>
 #                 📊 <b>Typical range:</b> \$120 – \$980<br>
-#                 🛡️ <b>Safety cushion:</b> budget up to \$1,850<br><br>
-#                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span>
+#                 🛡️ <b>Safety cushion:</b> \$1,850<br><br>
+#                 <span style="font-size:0.85em; color:#555;">Plan around gives you an estimate of your typical costs. The typical range shows how much those costs usually vary. The safety cushion helps you budget for a higher-cost year. Costs can still be higher.</span>
 #                 <br><br>
 #                 <details style="margin-bottom:8px;">
 #                 <summary style="cursor:pointer;"><strong>Which answers shaped your estimate?</strong> <i>(click to expand)</i></summary>
@@ -4080,8 +4082,8 @@ plot_quantile_subgroup_predictions(
 #                 <br><br>
 #                 💰 <b>Plan around:</b> \$1,350<br>
 #                 📊 <b>Typical range:</b> \$520 – \$2,400<br>
-#                 🛡️ <b>Safety cushion:</b> budget up to \$5,200<br><br>
-#                 <span style="font-size:0.85em; color:#555;">Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.</span>
+#                 🛡️ <b>Safety cushion:</b> \$5,200<br><br>
+#                 <span style="font-size:0.85em; color:#555;">Plan around gives you an estimate of your typical costs. The typical range shows how much those costs usually vary. The safety cushion helps you budget for a higher-cost year. Costs can still be higher.</span>
 #                 <br><br>
 #                 <b>Planning note</b><br>
 #                 <span style="font-size:0.85em; color:#555;">Costs for profiles like yours can vary a lot from year to year. This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, consider planning closer to the safety cushion.</span>
@@ -4732,7 +4734,7 @@ display(
 
 # %% [markdown]
 # <div style="background-color:#3d7ab3; color:white; padding:12px; border-radius:6px;">
-#     <h2 style="margin:0px">Example Prediction Output</h2>
+#     <h2 id="test-set-prediction-example" style="margin:0px">Test-Set Prediction Example</h2>
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
@@ -4793,12 +4795,15 @@ output_estimates = pd.DataFrame({
 })
 display(
     output_estimates.style
-    .pipe(add_table_caption, "Example Prediction Output")
+    .pipe(add_table_caption, "Test-Set Prediction Example")
     .hide()
 )
 print("Planning notice triggers:", ", ".join(
     flag for flag, triggered in output_notice_flags.items() if triggered
 ))
+
+# %% [markdown]
+# Plan around gives you an estimate of your typical costs. The typical range shows how much those costs usually vary. The safety cushion helps you budget for a higher-cost year. Costs can still be higher.
 
 # %%
 output_shap_table = pd.DataFrame({

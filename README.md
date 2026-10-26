@@ -325,9 +325,9 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 >
 > - 💰 **Plan around:** $1,350
 > - 📊 **Typical range:** $520-$2,400
-> - 🛡️ **Safety cushion:** budget up to $5,200
+> - 🛡️ **Safety cushion:** $5,200
 >
-> Use the plan-around number as a reasonable midpoint for budgeting. The typical range shows where about half of people with similar profiles fall. The safety cushion gives extra room for a higher-cost year.
+> Plan around gives you an estimate of your typical costs. The typical range shows how much those costs usually vary. The safety cushion helps you budget for a higher-cost year. Costs can still be higher.
 >
 > **Planning note**  
 > Costs for profiles like yours can vary a lot from year to year. This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, consider planning closer to the safety cushion.

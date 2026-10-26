@@ -485,9 +485,9 @@ higher-cost year, with explanations and comparisons available to expand.
 | --- | --- | --- |
 | $1,350 | $520–$2,400 | $5,200 |
 
-Use the plan-around number as a reasonable midpoint for budgeting. The typical
-range shows where about half of people with similar profiles fall. The safety
-cushion gives extra room for a higher-cost year.
+Plan around gives you an estimate of your typical costs. The typical range shows
+how much those costs usually vary. The safety cushion helps you budget for a
+higher-cost year. Costs can still be higher.
 
 **Planning note:** Costs for profiles like yours can vary a lot from year to
 year. This estimate falls in a higher-cost range, where out-of-pocket costs can

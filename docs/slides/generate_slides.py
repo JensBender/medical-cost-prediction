@@ -597,9 +597,9 @@ def build_presentation():
             text(slide, f"{label} value", value, x, value_y, width, 54, value_size,
                  color=TEAL, bold=True)
     rect(example, "Output divider", 72, 292, 1136, 1, RULE)
-    text(example, "Output interpretation", "Use the plan-around number as a reasonable "
-         "midpoint for budgeting. The typical range shows where about half of people "
-         "with similar profiles fall. The safety cushion gives extra room for a higher-cost year.",
+    text(example, "Output interpretation", "Plan around gives you an estimate of your "
+         "typical costs. The typical range shows how much those costs usually vary. "
+         "The safety cushion helps you budget for a higher-cost year. Costs can still be higher.",
          72, 310, 1136, 76, 22)
     text(example, "Planning note heading", "Planning note",
          72, 378, 1136, 32, 24, bold=True)
