@@ -572,7 +572,7 @@ def build_presentation():
     expanded = new_slide(presentation, storyboard, "10", "Example prediction output")
     for slide, slide_id in ((example, "9"), (expanded, "10")):
         next(shape for shape in slide.shapes if shape.name == f"{slide_id} title").width = pixels(568)
-        text(slide, "Example profile", "(higher cost risk, 69 years, arthritis)", 642, 63, 578, 34, 24, color=SECONDARY)
+        text(slide, "Example profile", "(higher cost risk, 69 years, arthritis)", 642, 66, 578, 36, 26, color=SECONDARY)
         example_border = slide.shapes.add_shape(
             MSO_SHAPE.RECTANGLE, pixels(48), pixels(118), pixels(1184), pixels(550),
         )
@@ -595,11 +595,10 @@ def build_presentation():
             text(slide, f"{label} label", label, x, label_y, width, 32, 24, bold=True)
             text(slide, f"{label} value", value, x, value_y, width, 54, value_size,
                  color=TEAL, bold=True)
-    rect(example, "Output divider", 72, 292, 1136, 1, RULE)
     text(example, "Output interpretation", "Plan around gives you an estimate of your "
          "typical costs. The typical range shows how much those costs usually vary. "
          "The safety cushion helps you budget for a higher-cost year. Costs can still be higher.",
-         72, 310, 1136, 76, 22)
+         72, 294, 1136, 76, 22)
     text(example, "Planning note heading", "Planning note",
          72, 378, 1136, 32, 24, bold=True)
     text(example, "Planning note", "Costs for profiles like yours can vary a lot. "
@@ -624,15 +623,14 @@ def build_presentation():
         "make actual costs higher.",
     ], 72, 578, 1136, 80, 20, color=SECONDARY)
 
-    rect(expanded, "Output divider", 72, 248, 1136, 1, RULE)
     text(expanded, "Comparison heading", "How you compare to others",
-         672, 280, 536, 36, 26, bold=True)
+         672, 256, 536, 36, 26, bold=True)
     comparison_rows = [
         ("Your plan-around estimate", "$895"),
-        ("U.S. adult median", "$268"),
-        ("Age 65+ median", "$657"),
+        ("Typical American", "$268"),
+        ("Typical for ages 65+", "$657"),
     ]
-    comparison_table = native_table(expanded, comparison_rows, 342, [384, 152], row_height=50)
+    comparison_table = native_table(expanded, comparison_rows, 300, [384, 152], row_height=50)
     expanded.shapes[-1].name = "Cost comparison table"
     expanded.shapes[-1].left = pixels(672)
     comparison_table.rows[0].height = pixels(50)
@@ -654,9 +652,9 @@ def build_presentation():
                 style_font(run.font, 26)
 
     text(expanded, "SHAP heading", "Which answers shaped your estimate?",
-         72, 280, 536, 36, 26, bold=True)
+         72, 256, 536, 36, 26, bold=True)
     text(expanded, "SHAP explanation", "These answers made the largest contributions "
-         "to your plan-around estimate:", 72, 320, 536, 52, 20, color=SECONDARY)
+         "to your plan-around estimate:", 72, 296, 536, 52, 20, color=SECONDARY)
     shap_rows = [
         ("Your answer", "Contribution"),
         ("Arthritis: Yes", "↑ +$124"),
@@ -665,7 +663,7 @@ def build_presentation():
         ("Age: 69", "↑ +$92"),
         ("Insurance: Any private", "↑ +$80"),
     ]
-    shap_table = native_table(expanded, shap_rows, 392, [370, 166], row_height=44)
+    shap_table = native_table(expanded, shap_rows, 368, [370, 166], row_height=50)
     expanded.shapes[-1].name = "SHAP contributions table"
     shap_table.rows[0].height = pixels(40)
     for row_index, row_values in enumerate(shap_rows):

@@ -501,11 +501,12 @@ adjusted to current dollars. Premiums and over-the-counter costs are excluded.
 New diagnoses, accidents, hospital stays, or your insurance plan’s rules can
 make actual costs higher.
 
-**Visual:** The title has a muted gray profile description in 18-point type,
-visually centered alongside it. The description summarizes the cost risk, age,
+**Visual:** The title has a muted gray profile description in 19.5-point type,
+aligned with its text baseline. The description summarizes the cost risk, age,
 and arthritis. A thin border encloses the
 user-facing content, separating it from the title and slide footer. Three
-prominent estimates sit above the interpretation text and planning note.
+prominent estimates sit above the interpretation text and planning note, without
+a divider below the estimates. The interpretation sits close to the estimates.
 The two collapsed section labels sit below the planning note and link to slide
 10. The larger scope and inflation note sits at the bottom inside the border,
 leaving the slide footer clear.
@@ -575,14 +576,17 @@ These answers made the largest contributions to your plan-around estimate:
 | Comparison | Annual costs |
 | --- | ---: |
 | Your plan-around estimate | $895 |
-| U.S. adult median | $268 |
-| Age 65+ median | $657 |
+| Typical American | $268 |
+| Typical for ages 65+ | $657 |
 
 **Visual:** The title, muted profile text, and border match slide 9. The three
-estimates remain at the top as a reference. All five SHAP contributions appear
+estimates remain at the top as a reference, without a divider underneath. The
+explanations and comparisons sit closer to the estimates. All five SHAP contributions appear
 in a table on the left with horizontal rules, bold feature names, and regular
-answer values. Table headers and rows use the same font size. The comparisons
-appear in a headerless table on the right, with horizontal row separators. Contributions and comparison amounts use regular dark blue text;
+answer values. Taller rows give each answer more space. Table headers and rows
+use the same font size. The comparisons
+appear in a headerless table close to its heading on the right, with horizontal
+row separators. Contributions and comparison amounts use regular dark blue text;
 teal highlights the three main estimates. The footer leaves room for the planned
 SHAP appendix link.
 
