@@ -312,14 +312,14 @@ Release gates are pass/fail criteria that define the minimum test-set performanc
 **Launch Decision**
 - **Decision:** Launch XGBoost quantile regression as the MVP model. It passes every release gate on the test set. For about half of people, plan-around estimates were within $240 of actual costs. Both the typical range and safety cushion achieved coverage close to their targets while staying within the mean width limits.
 - **Value Over Simple Baselines:** Compared XGBoost’s plan-around estimate, typical range, and safety cushion with two simple baselines. The population baseline gives everyone the same estimates, while the age-group baseline gives everyone within the same age group the same estimates. Both use population quantiles from the training data. XGBoost improved on both, most clearly for the typical range and safety cushion. 🔗 [**See Comparison Details**](#final-model-value-over-simple-baselines)
-- **Subgroup Reliability & Fairness:** Coverage remained broadly close to its targets for most subgroups. The main limitation was underprediction of very high actual costs. Typical-range undercoverage also affected groups including people with poor mental health, low income, or doctorate degrees. Added planning notices for subgroups at risk of underbudgeting, suggesting users plan closer to the safety cushion. 🔗 [**See Reliability & Fairness Details**](#final-model-subgroup-reliability--fairness)
-- **Launch Conditions:** Include prediction explanations, medical inflation adjustment, a scope disclaimer, planning notices for higher-uncertainty cases (such as high predicted costs, as in the example below), and privacy-preserving aggregate monitoring. Show the median cost for U.S. adults and for the user's age group alongside their plan-around estimate, so users can see how it compares with typical spending.
+- **Subgroup Reliability & Fairness:** Coverage remained broadly close to its targets for most subgroups. The main limitation was underprediction of very high actual costs. Typical-range undercoverage also affected groups including people with poor mental health, low income, or doctorate degrees. Added planning notes for subgroups at risk of underbudgeting, suggesting users plan closer to the safety cushion. 🔗 [**See Reliability & Fairness Details**](#final-model-subgroup-reliability--fairness)
+- **Launch Conditions:** Include prediction explanations, medical inflation adjustment, a scope disclaimer, planning notes for higher-uncertainty cases (such as high predicted costs, as in the example below), and privacy-preserving aggregate monitoring. Show the median cost for U.S. adults and for the user's age group alongside their plan-around estimate, so users can see how it compares with typical spending.
 
 **Prediction Explanations (SHAP)**  
 SHAP explains how a user's answers contribute to their plan-around estimate (`q50`). The planned app will highlight the five largest contributions and show their dollar amounts, so users can see which answers moved the estimate up or down. 🔗 [**See SHAP Explanation Details**](#shap-explanation-details)
 
 **Example Prediction Output**  
-Higher-cost risk: 69 years, arthritis and high blood pressure
+Profile with higher cost risk: 69 years, arthritis
 >
 > **Your Estimated Out-of-Pocket Costs for Next Year**
 >
@@ -813,7 +813,7 @@ Reliability analysis compares performance across actual and predicted cost tiers
 - **Health Burden:** Poorer physical health or more chronic conditions generally came with larger plan-around error and wider budgeting ranges, while coverage remained broadly close to its targets.
 - **Insurance:** Privately insured adults had larger plan-around error and wider budgeting ranges than publicly insured or uninsured adults. Uninsured adults showed typical-range undercoverage (34.7%), partly because lower bounds were above zero for some uninsured adults with zero actual costs. However, these lower bounds often missed zero by only a small amount.
 
-**Product Decision:** Large prediction errors at higher costs led to adding a planning notice that suggests users plan closer to the safety cushion. Since actual spending is unknown at prediction time, predicted Q90 costs serve as a reasonable proxy for identifying users who may face high costs. The notice triggers when a user's Q90 prediction is at or above $3,525 (the survey-weighted 80th percentile of validation Q90 predictions in 2023 dollars).
+**Product Decision:** Large prediction errors at higher costs led to adding a planning note that suggests users plan closer to the safety cushion. Since actual spending is unknown at prediction time, predicted Q90 costs serve as a reasonable proxy for identifying users who may face high costs. The planning note triggers when a user's Q90 prediction is at or above $3,525 (the survey-weighted 80th percentile of validation Q90 predictions in 2023 dollars).
 
 **Fairness**  
 Fairness analysis compares performance across protected demographic groups and vulnerable populations. It highlights disparities that may need further investigation.
@@ -823,9 +823,9 @@ Fairness analysis compares performance across protected demographic groups and v
 - **Prediction Errors and Ranges Varied Across Groups:** Plan-around errors were generally larger and budgeting ranges wider for women, older adults, White adults, and people with poorer mental health, higher income, university degrees, or walking limitations.
 - **Coverage Was Close to Targets for Most Groups:** The main exceptions were typical-range undercoverage for people with poor mental health, low income, or doctorate degrees. Across these groups, typical misses were larger above the typical range (several hundred to over $1,000) than below it (under $35).
 
-**Product Decision:** These larger misses led to a planning notice suggesting users with poor mental health, low income, or a doctorate degree plan closer to the safety cushion.
+**Product Decision:** These larger misses led to a planning note suggesting users with poor mental health, low income, or a doctorate degree plan closer to the safety cushion.
 
-**Audit Conclusion:** Across both analyses, the widest budgeting ranges generally occurred in groups with larger prediction errors, with no clear evidence that they were unnecessarily wide. Underprediction of very high actual costs and typical-range undercoverage in specific groups remain the main subgroup limitations and informed the targeted planning notices.
+**Audit Conclusion:** Across both analyses, the widest budgeting ranges generally occurred in groups with larger prediction errors, with no clear evidence that they were unnecessarily wide. Underprediction of very high actual costs and typical-range undercoverage in specific groups remain the main subgroup limitations and informed the targeted planning notes.
 
 <p align="right">(<a href="#-final-model">Back to Final Model</a> | <a href="#readme-top">Back to Top</a>)</p>
 

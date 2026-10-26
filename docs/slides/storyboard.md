@@ -66,8 +66,8 @@ The first three slide timings are rehearsed; the remaining timings are estimates
 | 6 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
 | 7 | Quantile regression: budgeting for uncertainty | 1:30 | Explain the final model and its estimates |
 | 8 | XGBoost quantile audit: all release gates passed | 1:30 | Present held-out evidence and baseline comparisons |
-| 9 | Example prediction output (high-cost profile) | 0:35 | Show the main estimates and planning guidance |
-| 10 | Example prediction output (high-cost profile) | 0:25 | Show expanded explanations and comparisons |
+| 9 | Example prediction output (profile with higher cost risk) | 0:35 | Show the main estimates and planning guidance |
+| 10 | Example prediction output (profile with higher cost risk) | 0:25 | Show expanded explanations and comparisons |
 | 11 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
 | | **Total** | **11:25** | |
 
@@ -424,7 +424,7 @@ with its strongest evidence of added value in interval and upper-quantile scores
 intervals from 1,000 resamples of test-set rows.”
 
 - **Value over population and age-group baselines:** better typical range and safety cushion.
-- **Subgroup reliability and fairness:** add planning notices for groups at risk of underbudgeting.
+- **Subgroup reliability and fairness:** add planning notes for groups at risk of underbudgeting.
 
 **Visual:** Results table above the baseline comparison and subgroup summary.
 
@@ -453,7 +453,7 @@ baseline.
 Subgroup reliability and fairness checks showed coverage close to its targets
 for most groups. The main limitation was underprediction of very high actual
 costs. Typical-range undercoverage also affected people with poor mental health,
-low income, or a doctorate degree. I added planning notices for groups at risk
+low income, or a doctorate degree. I added planning notes for groups at risk
 of underbudgeting, suggesting they plan closer to the safety cushion.”
 
 For questions:
@@ -470,14 +470,14 @@ performance level.
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
 Detailed baseline comparisons and scoring definitions are in A18.
 
-### 9 — Example prediction output (higher-cost risk)
+### 9 — Example prediction output (profile with higher cost risk)
 
-**Takeaway:** The estimates and planning notice help users prepare for a
+**Takeaway:** The estimates and planning note help users prepare for a
 higher-cost year, with explanations and comparisons available to expand.
 
 **On the slide**
 
-**Title detail:** (higher-cost risk: 69 years, 2 chronic conditions)
+**Title detail:** (profile with higher cost risk: 69 years, arthritis)
 
 **Your estimated out-of-pocket costs for next year**
 
@@ -504,15 +504,14 @@ can make actual costs higher.
 **Visual:** The title has a smaller, muted gray parenthetical for the higher-cost
 risk profile, age, and chronic conditions. A thin border encloses the
 user-facing content, separating it from the title and slide footer. Three
-prominent estimates sit above the interpretation text and planning notice.
+prominent estimates sit above the interpretation text and planning note.
 The two collapsed section labels link to slide 10. The scope and inflation note
 sits at the bottom inside the border, leaving the slide footer clear.
 
 **Speaker notes — 0:35**
 
-“Here is an actual test-set example for a 69-year-old with arthritis and
-high blood pressure. The estimates provide a central amount, a typical range,
-and extra room for a higher-cost year. This higher-cost profile receives a notice
+“Here is an actual test-set example for a 69-year-old with arthritis. The estimates provide a central amount, a typical range,
+and extra room for a higher-cost year. This higher-cost profile receives a planning note
 suggesting planning closer to the safety cushion. The scope note explains the
 exclusions, and these amounts are adjusted for medical inflation.
 Users can expand the explanations and comparisons.”
@@ -520,7 +519,7 @@ Users can expand the explanations and comparisons.”
 For questions:
 
 Example: Test case 2817769101 has arthritis and high blood pressure. High
-predicted q90 triggers `UNDERBUDGETING_RISK`. The same flag and notice apply
+predicted q90 triggers `UNDERBUDGETING_RISK`. The same flag and note apply
 when supplied answers indicate poor mental health, low income, or a doctorate
 degree. The modeling notebook reproduces the predictions and SHAP values.
 
@@ -544,14 +543,14 @@ notices communicate limitations but do not fix calibration.
 [medical inflation adjustment](../../scripts/update_medical_inflation.py);
 [feature timing notes](../research/candidate_features.md).
 
-### 10 — Example prediction output (higher-cost risk)
+### 10 — Example prediction output (profile with higher cost risk)
 
 **Takeaway:** SHAP explains which answers moved the plan-around estimate, while
 population and age-group medians provide context.
 
 **On the slide**
 
-**Title detail:** (higher-cost risk: 69 years, 2 chronic conditions)
+**Title detail:** (profile with higher cost risk: 69 years, arthritis)
 
 | Plan around | Typical range | Safety cushion |
 | --- | --- | --- |
@@ -1321,7 +1320,7 @@ coverage was only about 7%, with actual costs mostly exceeding those estimates.
 Across predicted Q90 cost tiers, higher costs came with larger plan-around
 errors and wider budgeting ranges, while coverage stayed broadly close to its
 targets. Since actual spending is unknown at prediction time, I used predicted
-Q90 as a proxy for triggering a planning notice that suggests users plan closer
+Q90 as a proxy for triggering a planning note that suggests users plan closer
 to the safety cushion.”
 
 For questions:
@@ -1336,7 +1335,7 @@ Interpretation: Actual cost groups are known only after spending occurs.
 Selecting groups by actual outcomes changes the question, so their coverage
 does not have the same interpretation as coverage across predicted cost groups.
 
-Planning notice: The trigger is Q90 at or above $3,525 in 2023 dollars, the
+Planning note: The trigger is Q90 at or above $3,525 in 2023 dollars, the
 survey-weighted 80th percentile of validation Q90 predictions. This fixed cutoff
 is separate from the test-set percentile groups shown in the figure.
 
@@ -1363,7 +1362,7 @@ a doctorate degree.
 
 Across these groups, typical misses were larger above the typical range,
 several hundred to over $1,000, than below it, under $35. These findings led to
-adding a planning notice for these groups that suggests users plan closer to
+adding a planning note for these groups that suggests users plan closer to
 the safety cushion.”
 
 For questions:
@@ -1380,8 +1379,8 @@ the safety cushion is flagged for review. Near-poor adults also showed slight
 safety-cushion overcoverage. A flag alone does not establish unfairness or mean
 the model should not be released.
 
-Planning notice: The trigger uses the provided mental health, family income,
-or education input. The notice uses neutral wording without naming the group.
+Planning note: The trigger uses the provided mental health, family income,
+or education input. The note uses neutral wording without naming the group.
 
 **Transition:** Return to the overall audit and the example prediction output.
 

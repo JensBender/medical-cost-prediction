@@ -505,9 +505,9 @@ The FastAPI layer exposes the prediction service through REST endpoints. It owns
     The prediction service must support both single and batch prediction. Explanation generation should be optional for batch prediction because permutation SHAP is substantially more expensive than prediction alone. The Gradio app requests an explanation for its single prediction. Batch API requests should default to predictions without explanations and enforce a limit on the number of rows that can be explained in one request.
 
 #### Prediction Warning Flags
-`warning_flags` are API values. Planning notices are user-facing copy rendered from one or more warning flags. Generate `warning_flags` before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. The rendered note should name the reason only when it is informative and unlikely to stigmatize.
+`warning_flags` are API values. Planning notes are user-facing copy rendered from one or more warning flags. Generate `warning_flags` before inflation adjustment. Threshold-based flags should use fixed thresholds derived from validation data. The rendered note should name the reason only when it is informative and unlikely to stigmatize.
 
-| Flag | Trigger | Mitigating Action | Planning Notice Text |
+| Flag | Trigger | Mitigating Action | Planning Note Text |
 | :--- | :--- | :--- | :--- |
 | `UNDERBUDGETING_RISK` | Pre-inflation predicted `q90` meets or exceeds the fixed validation-derived high-cost cutoff, or supplied answers indicate poor mental health (`MNHLTH31 = 5`), low income (`POVCAT23 = 3`), or a doctorate (`HIDEG = 6`); check subgroup inputs before imputation | Suggest planning closer to the safety cushion without naming the subgroup | "Costs for profiles like yours can vary a lot. To reduce the risk of underbudgeting, consider planning closer to the safety cushion." |
 | `MISSING_OPTIONAL_INPUTS` | User skipped one or more optional inputs | Explain that typical values were used (imputed) and that more complete inputs may make the estimate more tailored | "Some optional answers were skipped, so the estimate used typical values. Adding those details may make the estimate more tailored to your situation." |
@@ -515,14 +515,14 @@ The FastAPI layer exposes the prediction service through REST endpoints. It owns
 
 `UNDERBUDGETING_RISK` is a rule for offering additional planning guidance, not a measured probability of underbudgeting. High predicted Q90 is a proxy for potential higher costs; the three subgroup conditions reflect observed typical-range undercoverage with larger dollar misses above the range than below it.
 
-#### Planning Notice Rendering Rules
-The UI should avoid stacking several full planning notice paragraphs below the prediction. Render planning notices as follows:
+#### Planning Note Rendering Rules
+The UI should avoid stacking several full planning note paragraphs below the prediction. Render planning notes as follows:
 
 1.  Show the prediction block first: plan-around estimate (`q50`), typical range (`q25-q75`), and safety cushion (`q90`).
-2.  If no `warning_flags` are present, show no planning notice panel.
+2.  If no `warning_flags` are present, show no planning note panel.
 3.  If one or more flags are present, show one compact **Planning note** panel below the prediction block.
 4.  In the panel, combine triggered messages in this priority order: `UNDERBUDGETING_RISK`, `PUBLIC_INSURANCE_POLICY_CHANGE`, `MISSING_OPTIONAL_INPUTS`.
-5.  Return `UNDERBUDGETING_RISK` once and show its notice once, even if several of its conditions apply.
+5.  Return `UNDERBUDGETING_RISK` once and show its note once, even if several of its conditions apply.
 6.  Keep the always-on scope disclaimer outside this panel, in a quieter "About this estimate" or footer area.
 
 Required deployment metadata is stored in

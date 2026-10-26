@@ -1416,18 +1416,18 @@ plot_subgroup_performance(
 #         </tr>
 #     </tbody>
 # </table>
-# Recommendation: Display q50 as "Plan around", q25-q75 as the "Typical range", and q90 as the "Safety cushion". By using this approach, the typical range will be different for a low-risk user (with plan-around cost < \$1,000) compared to a high-risk user (plan-around cost ≥ \$1,000). For example, a low-risk user may see a tight range like \$50 – \$450, while a high-risk user sees a wider range like \$1,100 – \$7,200, accurately reflecting their higher financial risk. For high-risk users, display a note on possible out-of-pocket insurance maximum. 
+# Recommendation: Display q50 as "Plan around", q25-q75 as the "Typical range", and q90 as the "Safety cushion". Show the shared planning note when predicted q90 meets or exceeds the fixed validation-derived high-cost cutoff, or supplied answers indicate poor mental health, low income, or a doctorate degree. Missing optional inputs or public-only insurance can trigger other planning notes even when predicted costs are lower.
 # <br><br>
 #     <strong>Illustrative Prediction Outputs</strong><br>
 #     These hypothetical profiles illustrate how the estimates could be presented to users. The dollar amounts are illustrative.
 # <table style="width:100%; border-spacing: 10px 0px; border-collapse: separate; margin-top: 10px;">
 #     <tr>
 #         <td style="width: 50%; padding: 0 10px; vertical-align: bottom;">
-#             <strong>Low Cost Profile</strong><br>
+#             <strong>Lower-Cost Profile</strong><br>
 #             <i>28-year-old with no chronic conditions</i>
 #         </td>
 #         <td style="width: 50%; padding: 0 10px; vertical-align: bottom;">
-#             <strong>High Cost Profile</strong><br>
+#             <strong>Higher-Cost Profile</strong><br>
 #             <i>68-year-old with multiple chronic conditions</i>
 #         </td>
 #     </tr>
@@ -1447,6 +1447,9 @@ plot_subgroup_performance(
 #             <span style="font-size: 0.85em; color: #555;">
 #                 Plan around gives you an estimate of your typical costs. The typical range shows how much those costs usually vary. The safety cushion helps you budget for a higher-cost year. Costs can still be higher.
 #             </span>
+#             <br><br>
+#             <b>Planning note</b><br>
+#             <span style="font-size: 0.85em; color: #555;">Costs for profiles like yours can vary a lot. To reduce the risk of underbudgeting, consider planning closer to the safety cushion.</span>
 #         </td>
 #     </tr>
 # </table>
@@ -3793,7 +3796,7 @@ display(
 #         <li><b>Metrics by group:</b> plan-around MdAE (q50), typical range coverage/mean width (q25-q75), and safety cushion coverage/mean width (q90 and q50-q90).</li>
 #         <li><b>Subgroup review bands:</b> Release gates apply to overall test coverage (45-55% for typical range, 85-95% for safety cushion). Subgroup review bands are diagnostic ranges, not additional pass/fail gates. For subgroups with sufficient sample size (n ≥ 30), typical range coverage should generally stay within 40-60%, and safety cushion coverage should generally stay within 80-97%. Small subgroups (n &lt; 30) are labeled review-only because their estimates are less stable.</li>
 #         <li><b>Diagnostic flags:</b> Flag high plan-around error for subgroups with q50 MdAE above 3× the overall q50 MdAE. For low-cost subgroups (median actual cost ≤ overall median), flag typical range or safety cushion mean widths above the overall mean as potentially too broad for practical budgeting. These flags highlight potential issues that need review. A flag alone does not mean the model is unfair or should not be released. Interpret flags together with the subgroup's actual costs, sample size, and other metrics. A low median cost does not necessarily mean that a narrow prediction range is appropriate.</li>
-#         <li><b>Interpretation:</b> Use diagnostic flags to qualify reporting, document caveats, and inform product planning notices or scope disclaimers. Because this is the locked test set, flagged subgroups should not drive another tuning loop; follow-up changes should be evaluated in a new validation cycle.</li>
+#         <li><b>Interpretation:</b> Use diagnostic flags to qualify reporting, document caveats, and inform product planning notes or scope disclaimers. Because this is the locked test set, flagged subgroups should not drive another tuning loop; follow-up changes should be evaluated in a new validation cycle.</li>
 #     </ul>
 # </div>
 
@@ -3956,7 +3959,7 @@ plot_quantile_subgroup_predictions(
 #         <li><strong>Prediction Usefulness:</strong> Several low-cost groups have large mean widths despite in-band coverage, including good physical health, good mental health, Asian respondents, and the West region. This is a practical-budgeting caveat rather than a safety failure, because the model often protects users in these subgroups from underestimation, but some low-cost users may receive ranges that are less specific than desired.</li>
 #     </ul>
 #     <p style="margin-top:12px"><strong>Caveats and Recommended Actions</strong> <br> 
-#         Use one <code>UNDERBUDGETING_RISK</code> notice for high predicted q90, poor mental health, low income, or a doctorate degree. For the latter three groups, larger dollar misses above the typical range motivate this guidance. Do not name the subgroup in the notice, to avoid stigmatization:</p>
+#         Use one <code>UNDERBUDGETING_RISK</code> planning note for high predicted q90, poor mental health, low income, or a doctorate degree. For the latter three groups, larger dollar misses above the typical range motivate this guidance. Do not name the subgroup in the note, to avoid stigmatization:</p>
 #     <p style="margin-top:8px; padding:10px; background-color:#f4fbf4; border-left:4px solid #6aa56a;">
 #         "Costs for profiles like yours can vary a lot. To reduce the risk of underbudgeting, consider planning closer to the safety cushion."
 #     </p>
@@ -3965,7 +3968,7 @@ plot_quantile_subgroup_predictions(
 #             <tr style="background-color:#e0f0e0;">
 #                 <th style="padding:8px; border:1px solid #d6e8d6; text-align:left;">Finding</th>
 #                 <th style="padding:8px; border:1px solid #d6e8d6; text-align:left;">Affected Profiles</th>
-#                 <th style="padding:8px; border:1px solid #d6e8d6; text-align:left;">Planning Notice Policy</th>
+#                 <th style="padding:8px; border:1px solid #d6e8d6; text-align:left;">Planning Note Policy</th>
 #             </tr>
 #         </thead>
 #         <tbody>
@@ -3987,7 +3990,7 @@ plot_quantile_subgroup_predictions(
 #             <tr>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Some low-cost groups receive wide intervals despite acceptable coverage.</td>
 #                 <td style="padding:8px; border:1px solid #d6e8d6;">Good physical health, good mental health, Asian respondents, and the West region.</td>
-#                 <td style="padding:8px; border:1px solid #d6e8d6;">Do not add a separate planning notice for wide intervals. The wide range already communicates uncertainty. Treat this as a usefulness caveat and revisit in future MEPS years.</td>
+#                 <td style="padding:8px; border:1px solid #d6e8d6;">Do not add a separate planning note for wide intervals. The wide range already communicates uncertainty. Treat this as a usefulness caveat and revisit in future MEPS years.</td>
 #             </tr>
 #         </tbody>
 #     </table>
@@ -4019,7 +4022,7 @@ plot_quantile_subgroup_predictions(
 #         <li><b>Baseline Comparison:</b> XGBoost adds value compared with population and age-group baselines. Against the age-group baseline, it reduces MAE by 7.6%, typical-range interval score by 9.0%, and q90 loss by 14.3%.</li>
 #         <li><b>Calibration:</b> Do not add conformalized quantile regression for the MVP. Test calibration passes the predefined gates. Any calibration change should be evaluated in a new validation cycle, preferably against a later MEPS year when available.</li>
 #         <li><b>Prediction Output:</b> Show q50 as the plan-around estimate, q25-q75 as the typical range, and q90 as the safety cushion. Do not present a single point estimate.</li>
-#         <li><b>Launch Conditions:</b> Ship only with range-based predictions, the scope disclaimer, 2023-to-current-dollar adjustment, conditional planning notices for high predicted costs, poor mental health, low income, or doctorate holders, and privacy-preserving aggregate monitoring.</li>
+#         <li><b>Launch Conditions:</b> Ship only with range-based predictions, the scope disclaimer, 2023-to-current-dollar adjustment, conditional planning notes for high predicted costs, poor mental health, low income, or doctorate holders, and privacy-preserving aggregate monitoring.</li>
 #         <li><b>Scope Disclaimer:</b> Explain that the model uses 2023 MEPS individual out-of-pocket spending. It excludes premiums, over-the-counter costs, family totals, and procedure prices. It can miss rare high-cost years, especially for users whose realized costs land in the extreme tail.</li>
 #         <li><b>Monitoring:</b> Track aggregate app health, completion rate, input drift, prediction drift, missingness, q50 distribution, q25-q75 width, q90 safety cushion, and underbudgeting-risk flags. Broad slices such as insurance status, family income, mental health, and chronic-condition count can explain shifts, but they cannot measure calibration without observed annual costs.</li>
 #         <li><b>Post-Launch Learning:</b> Do not calibrate on app user data. True calibration requires observed annual out-of-pocket costs, and collecting linked follow-up outcomes would conflict with the anonymous, zero-retention product requirement. If outcome collection becomes a product goal, treat it as a separate opt-in study with consent, retention limits, data minimization, and a privacy review.</li>
@@ -4028,15 +4031,15 @@ plot_quantile_subgroup_predictions(
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
 #     <b>Illustrative Prediction Outputs</b><br>
-#     These mockups show the intended prediction output, including explanations and planning notices. The estimates and SHAP contributions are illustrative; a <a href="#test-set-prediction-example">reproducible test-set example</a> follows in the model explainability section.
+#     These mockups show the intended prediction output, including explanations and planning notes. The estimates and SHAP contributions are illustrative; a <a href="#test-set-prediction-example">reproducible test-set example</a> follows in the model explainability section.
 #     <table style="width:100%; border-spacing:10px 0px; border-collapse:separate; margin-top:10px; font-size:0.92em;">
 #         <tr>
 #             <td style="width:50%; padding:0 10px; vertical-align:bottom;">
-#                 <strong>Low Cost Profile</strong><br>
+#                 <strong>Lower-Cost Profile</strong><br>
 #                 <i>28-year-old with no chronic conditions</i>
 #             </td>
 #             <td style="width:50%; padding:0 10px; vertical-align:bottom;">
-#                 <strong>High Cost Profile</strong><br>
+#                 <strong>Higher-Cost Profile</strong><br>
 #                 <i>68-year-old, uninsured, and with multiple chronic conditions</i>
 #             </td>
 #         </tr>
@@ -4738,7 +4741,7 @@ display(
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Use a fixed test-set case for the README and presentation example: a 69-year-old with arthritis and high blood pressure. The case illustrates a higher-cost-risk profile that triggers the underbudgeting-risk notice through its high predicted q90. Adjust dollar amounts using the latest medical inflation factor persisted in <a href="../app/data/medical_inflation.json"><code>app/data/medical_inflation.json</code></a>.
+#     ℹ️ Use a fixed test-set case for the README and presentation example: a profile with higher cost risk (69 years, arthritis). Its high predicted q90 triggers the underbudgeting-risk planning note. Adjust dollar amounts using the latest medical inflation factor persisted in <a href="../app/data/medical_inflation.json"><code>app/data/medical_inflation.json</code></a>.
 # </div>
 
 # %%
@@ -4796,7 +4799,7 @@ display(
     .pipe(add_table_caption, "Test-Set Prediction Example")
     .hide()
 )
-print("Planning notice triggers:", ", ".join(
+print("Planning note triggers:", ", ".join(
     flag for flag, triggered in output_notice_flags.items() if triggered
 ))
 

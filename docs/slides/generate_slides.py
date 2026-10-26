@@ -537,7 +537,7 @@ def build_presentation():
         ("Value over population and age-group baselines:",
          " better typical range and safety cushion."),
         ("Subgroup reliability and fairness:",
-         " add planning notices for groups at risk of underbudgeting."),
+         " add planning notes for groups at risk of underbudgeting."),
     ]
     for index, (label, detail) in enumerate(audit_summary_items):
         bullet_shape = text(results, f"Audit summary {index + 1}",
@@ -572,7 +572,7 @@ def build_presentation():
     expanded = new_slide(presentation, storyboard, "10", "Example prediction output")
     for slide, slide_id in ((example, "9"), (expanded, "10")):
         next(shape for shape in slide.shapes if shape.name == f"{slide_id} title").width = pixels(568)
-        text(slide, "Example profile", "(higher-cost risk: 69 years, 2 chronic conditions)", 642, 70, 578, 28, 19, color=SECONDARY)
+        text(slide, "Example profile", "(profile with higher cost risk: 69 years, arthritis)", 642, 70, 578, 28, 19, color=SECONDARY)
         example_border = slide.shapes.add_shape(
             MSO_SHAPE.RECTANGLE, pixels(48), pixels(118), pixels(1184), pixels(550),
         )

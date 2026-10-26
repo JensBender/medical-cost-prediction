@@ -139,7 +139,7 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **FR-03** | **Cost Range** | Generate 25th–75th percentile range (typical range) and 90th percentile (budget-safe estimate) to communicate prediction uncertainty. Never output a single point estimate. |
 | **FR-04** | **Cost Drivers** | Compute SHAP values for the plan-around estimate to explain which input features moved the model estimate higher or lower. Display the five largest contributions as inflation-adjusted dollar impacts. |
 | **FR-05** | **Comparison Benchmarks** | Compare user's prediction to (1) the typical American and (2) the typical person in their age group. Pre-compute weighted median benchmarks from the MEPS training set. |
-| **FR-06** | **Prediction Notice Policy** | Generate actionable planning notices for risks of substantial underbudgeting identified through predicted costs or subgroup evaluation, missing optional inputs, and public insurance policy changes. |
+| **FR-06** | **Planning Note Policy** | Generate actionable planning notes for risks of substantial underbudgeting identified through predicted costs or subgroup evaluation, missing optional inputs, and public insurance policy changes. |
 
 ### Result Display
 | ID | Component | Description | UI Element | Example |
@@ -148,26 +148,26 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 | **UI-02** | **Cost Drivers** | The five answers with the largest absolute SHAP contributions to the plan-around estimate, shown in current dollars. | `gr.Markdown` | **These five answers contributed most to your plan-around estimate:** "Age: 68, +$480; Diabetes: Yes, +$370; Physical health: Good, -$90" |
 | **UI-03** | **Comparison Benchmarks** | Bar chart comparing the user with national and age-group benchmarks. | `gr.Plot` | "Typical American: $248 vs. Typical for ages 35-49: $170"<br> |
 | **UI-04** | **Limitations Notice** | Always-on guidance to help users interpret their prediction and understand the rare-tail limitation. | `gr.Markdown` | "**About this estimate**<br>This is a planning estimate, not a bill estimate. It is based on 2023 national survey data and adjusted to current dollars. It does not include premiums, over-the-counter costs, family totals, or procedure prices. New diagnoses, accidents, hospitalizations, and plan-specific billing details can make actual costs higher." |
-| **UI-05** | **Planning Notice** | Dynamic planning notice displayed only when it is actionable and based on the current prediction or selected user inputs. | `gr.Markdown` | "**Planning note**<br>Costs for profiles like yours can vary a lot. To reduce the risk of underbudgeting, consider planning closer to the safety cushion." |
+| **UI-05** | **Planning Note** | Dynamic planning note displayed only when it is actionable and based on the current prediction or selected user inputs. | `gr.Markdown` | "**Planning note**<br>Costs for profiles like yours can vary a lot. To reduce the risk of underbudgeting, consider planning closer to the safety cushion." |
 | **UI-06** | **Permanent Footer** | Always-visible disclaimer at the bottom of the page. Covers legal liability and data aging limitations. | `gr.Markdown` | *"Not intended as medical, financial, or legal advice. Based on 2023 U.S. national survey data."* |
 
-### Prediction Notice Policy
-Planning notices explain relevant prediction limitations and suggest a practical action. Guidance to consider planning closer to the safety cushion is shown for:
+### Planning Note Policy
+Planning notes explain relevant prediction limitations and suggest a practical action. Guidance to consider planning closer to the safety cushion is shown for:
 
 - **High predicted costs:** Actual high spenders showed substantial underprediction. Since actual costs are unknown at prediction time, predicted Q90 is used as a proxy for identifying users who may face high costs.
 - **Poor mental health, low income, or doctorate holders:** These groups showed typical-range undercoverage, with much larger typical misses above the range than below it. This makes underbudgeting the more consequential concern and motivates additional planning guidance.
 
-Either condition sets `UNDERBUDGETING_RISK` and shows the shared planning notice.
+Either condition sets `UNDERBUDGETING_RISK` and shows the shared planning note.
 
 | Warning Flag | Trigger | User-Facing Guidance |
 | :--- | :--- | :--- |
-| `UNDERBUDGETING_RISK` | Predicted safety cushion (`q90`) meets or exceeds the fixed validation-derived high-cost cutoff, or supplied answers indicate poor mental health, low income, or a doctorate degree | Show a notice suggesting planning closer to the safety cushion. Do not name the subgroup, to avoid stigmatization. |
+| `UNDERBUDGETING_RISK` | Predicted safety cushion (`q90`) meets or exceeds the fixed validation-derived high-cost cutoff, or supplied answers indicate poor mental health, low income, or a doctorate degree | Show a note suggesting planning closer to the safety cushion. Do not name the subgroup, to avoid stigmatization. |
 | `MISSING_OPTIONAL_INPUTS` | One or more optional inputs are skipped and imputed | Explain that typical training values were used and that more complete inputs may make the estimate more tailored |
 | `PUBLIC_INSURANCE_POLICY_CHANGE` | User selects public-only coverage | Explain that policy changes after 2023, especially Medicare drug-cost caps, may lower actual costs compared with estimates based on 2023 survey data |
 
 The always-on limitations notice remains the primary way to communicate that rare high-cost events cannot always be identified from pre-year user inputs.
 
-Show each triggered notice once in a single compact panel below the estimates. Keep the always-on scope disclaimer separate.
+Show each triggered note once in a single compact panel below the estimates. Keep the always-on scope disclaimer separate.
 
 ## Non-Functional Requirements
 
@@ -215,10 +215,10 @@ For technical implementation details such as data preprocessing, machine learnin
 ## Risk Assessment & Mitigation
 | Risk | Example | Mitigation Strategy |
 | :--- | :--- | :--- |
-| **Outlier Prediction** | Model predicts extreme costs ($100k+) for a standard user. | Consider implementing display guardrails such as a model-version cap plus `UNDERBUDGETING_RISK`, so the user sees a planning notice rather than a falsely precise extreme number. |
-| **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a fairness audit, document subgroup caveats, and provide user-facing planning notices based on the current prediction or selected user inputs. |
+| **Outlier Prediction** | Model predicts extreme costs ($100k+) for a standard user. | Consider implementing display guardrails such as a model-version cap plus `UNDERBUDGETING_RISK`, so the user sees a planning note rather than a falsely precise extreme number. |
+| **Bias/Fairness** | Model consistently under-predicts needs for low-income users due to historical access barriers. | Perform a fairness audit, document subgroup caveats, and provide user-facing planning notes based on the current prediction or selected user inputs. |
 | **Data Aging** | 2023 data becomes outdated. | Display permanent footer (UI-06) and limitations notice (UI-04). Use the medical-cost inflation adjustment in FR-02 to keep displayed estimates in current dollars. |
-| **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Covered by permanent footer (UI-06). For Medicare/Medicaid users, show the `PUBLIC_INSURANCE_POLICY_CHANGE` planning notice. |
+| **Policy Changes** | Policy changes enacted after 2023 data collection (e.g., Medicare Part D $2k cap, ACA marketplace adjustments) create systemic over/under-prediction for specific insurance groups. | Covered by permanent footer (UI-06). For Medicare/Medicaid users, show the `PUBLIC_INSURANCE_POLICY_CHANGE` planning note. |
 | **Unobserved Outcomes** | App users usually will not return one year later with reliable actual out-of-pocket spending, and collecting linked follow-up outcomes would weaken the anonymous, zero-retention privacy promise. | Do not claim production calibration from default app telemetry. Use aggregate drift monitoring only to detect shifts in usage and predictions. Evaluate true calibration by testing the deployed model on future MEPS survey years when available, or through a separately approved opt-in study. |
 
 
@@ -261,7 +261,7 @@ Since the collection of the 2023 MEPS data, key policy changes have been enacted
 **1. Inflation Reduction Act (IRA) - Medicare Part D**
 *   **2025 Change**: Annual out-of-pocket cap of **$2,000** for prescription drugs for Medicare Part D beneficiaries.
 *   **Impact**: Model may over-predict costs for Medicare users with high prescription spending, as 2023 training data includes seniors who spent >$2,000 on drugs.
-*   **Mitigation**: Display the `PUBLIC_INSURANCE_POLICY_CHANGE` planning notice for "Public (Medicare/Medicaid)" users: *"Recent public insurance policy changes, especially Medicare prescription drug cost caps, may lower actual costs for some users compared with this estimate."*
+*   **Mitigation**: Display the `PUBLIC_INSURANCE_POLICY_CHANGE` planning note for "Public (Medicare/Medicaid)" users: *"Recent public insurance policy changes, especially Medicare prescription drug cost caps, may lower actual costs for some users compared with this estimate."*
 
 **2. ACA Marketplace Adjustments**
 *   **Cost Sharing Limits**: For 2025, the maximum out-of-pocket limit is **$9,200** (individual) for ACA marketplace plans.
