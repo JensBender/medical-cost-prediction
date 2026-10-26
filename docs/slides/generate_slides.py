@@ -12,6 +12,7 @@ import re
 import subprocess
 
 from PIL import Image
+from lxml import etree
 from pptx import Presentation
 from pptx.chart.data import CategoryChartData
 from pptx.dml.color import RGBColor
@@ -294,6 +295,16 @@ def build_presentation():
     presentation = Presentation()
     presentation.slide_width = pixels(1280)
     presentation.slide_height = pixels(720)
+
+    # Match hyperlink theme colors to the appendix links.
+    theme_part = presentation.slide_master.part.part_related_by(RT.THEME)
+    theme = etree.fromstring(theme_part.blob)
+    color_scheme = theme.find(".//" + qn("a:clrScheme"))
+    for color_name in ("a:hlink", "a:folHlink"):
+        color_scheme.find(qn(color_name) + "/" + qn("a:srgbClr")).set("val", SECONDARY)
+    theme_part._blob = etree.tostring(
+        theme, xml_declaration=True, encoding="UTF-8", standalone=True,
+    )
 
     cover = new_slide(presentation, storyboard, "1")
     picture(cover, WORKSPACE_DIR / "assets/header.png",

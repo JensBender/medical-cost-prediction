@@ -321,7 +321,7 @@ XGBoost's predictions, on the other hand, reached about $2,100, and its median
 residuals generally stayed closer to zero. It also had the lowest mean absolute
 error and lower median error than Elastic Net in key subgroups, such as people
 with poor physical health. So I chose XGBoost as the more promising model for
-planning for a higher-cost year.
+planning for higher-cost years.
 
 But even a more useful central estimate doesn’t show how widely someone’s
 costs could vary. I initially focused on typical prediction error, but residual
@@ -433,18 +433,16 @@ intervals from 1,000 resamples of test-set rows.”
 
 **Speaker notes — 1:30**
 
-“To make those goals measurable, I defined release gates, which are acceptable
-limits for prediction error, deviations from the coverage targets, and maximum
-mean widths.
+“To make those goals measurable, I defined release gates, which are pass-fail
+criteria for the minimum test-set performance required to launch.
 
-The model passed all five release gates. For about half of people, plan-around
+The model passed all release gates. For about half of people, plan-around
 estimates were within $240 of actual costs. The typical range covered close to
 half of actual outcomes, while the safety cushion covered about 90%, close to
 their intended targets.
 
-On average, the typical range spanned about $900 between its lower and upper
-bounds. The safety cushion added about $2,000 above the plan-around estimate.
-Both mean widths stayed below the release limits.
+On average, the typical range spanned about $900, and the safety cushion added
+about $2,000 above the plan-around estimate. Both stayed below the release limits.
 
 To assess added value, I compared XGBoost's quantile estimates with two simple
 baselines. The population baseline gives everyone the same estimates, while the
@@ -453,10 +451,11 @@ XGBoost's clearest added value was in the typical range and safety cushion. For
 the plan-around estimate, median absolute error remained close to the population
 baseline.
 
-Subgroup reliability and fairness checks showed coverage broadly close to its
-targets for most groups, but substantial underprediction of very high actual
-costs and typical-range undercoverage in some groups. These findings led to
-targeted planning notices.”
+Subgroup reliability and fairness checks showed coverage close to its targets
+for most groups. The main limitation was underprediction of very high actual
+costs. Typical-range undercoverage also affected people with poor mental health,
+low income, or a doctorate degree. I added planning notices for groups at risk
+of underbudgeting, suggesting they plan closer to the safety cushion.”
 
 For questions:
 
