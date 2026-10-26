@@ -820,10 +820,10 @@ Fairness analysis compares performance across protected demographic groups and v
 
 ![XGBoost Quantile Regression: Subgroup Fairness (Test)](figures/evaluation/xgb_quantile_test_subgroup_fairness.png)
 **Key Insights:**
-- **Plan-around error was generally larger and budgeting ranges wider** for women, older adults, White adults, and people with poorer mental health, higher income, university degrees, or walking limitations.
-- **Coverage remained broadly close to its targets for most subgroups.** However, typical-range undercoverage affected people with poor mental health, low income, or doctorate degrees. Across these groups, typical misses were larger above the typical range (several hundred to over $1,000) than below it (under $35).
+- **Prediction Errors and Ranges Varied Across Groups:** Plan-around errors were generally larger and budgeting ranges wider for women, older adults, White adults, and people with poorer mental health, higher income, university degrees, or walking limitations.
+- **Coverage Was Close to Targets for Most Groups:** The main exceptions were typical-range undercoverage for people with poor mental health, low income, or doctorate degrees. Across these groups, typical misses were larger above the typical range (several hundred to over $1,000) than below it (under $35).
 
-**Product Decision:** These larger misses above the typical range led to adding a planning notice that suggests users plan closer to the safety cushion. The notice triggers for users with poor mental health, low income, or a doctorate degree.
+**Product Decision:** These larger misses led to a planning notice suggesting users with poor mental health, low income, or a doctorate degree plan closer to the safety cushion.
 
 **Audit Conclusion:** Across both analyses, the widest budgeting ranges generally occurred in groups with larger prediction errors, with no clear evidence that they were unnecessarily wide. Underprediction of very high actual costs and typical-range undercoverage in specific groups remain the main subgroup limitations and informed the targeted planning notices.
 
