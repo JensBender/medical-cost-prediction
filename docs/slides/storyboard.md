@@ -477,7 +477,7 @@ higher-cost year, with explanations and comparisons available to expand.
 
 **On the slide**
 
-**Title detail:** (profile with higher cost risk: 69 years, arthritis)
+**Title detail:** (higher cost risk, 69 years, arthritis)
 
 **Your estimated out-of-pocket costs for next year**
 
@@ -492,8 +492,8 @@ higher-cost year. Costs can still be higher.
 **Planning note:** Costs for profiles like yours can vary a lot. To reduce the
 risk of underbudgeting, consider planning closer to the safety cushion.
 
-- **Which answers shaped your estimate?** (Click to expand)
-- **How you compare to others** (Click to expand)
+- **Which answers shaped your estimate?** (click to expand)
+- **How you compare to others** (click to expand)
 
 **About this estimate:** This is a planning estimate of annual out-of-pocket
 costs for one adult, not a specific medical bill. It uses 2023 U.S. survey data,
@@ -501,12 +501,14 @@ adjusted to current dollars. Premiums and over-the-counter costs are excluded.
 New diagnoses, accidents, hospital stays, or your insurance plan’s rules can
 make actual costs higher.
 
-**Visual:** The title has a smaller, muted gray parenthetical for the higher-cost
-risk profile, age, and chronic conditions. A thin border encloses the
+**Visual:** The title has a muted gray profile description in 18-point type,
+visually centered alongside it. The description summarizes the cost risk, age,
+and arthritis. A thin border encloses the
 user-facing content, separating it from the title and slide footer. Three
 prominent estimates sit above the interpretation text and planning note.
-The two collapsed section labels link to slide 10. The scope and inflation note
-sits at the bottom inside the border, leaving the slide footer clear.
+The two collapsed section labels sit below the planning note and link to slide
+10. The larger scope and inflation note sits at the bottom inside the border,
+leaving the slide footer clear.
 
 **Speaker notes — 0:35**
 
@@ -550,7 +552,7 @@ population and age-group medians provide context.
 
 **On the slide**
 
-**Title detail:** (profile with higher cost risk: 69 years, arthritis)
+**Title detail:** (higher cost risk, 69 years, arthritis)
 
 | Plan around | Typical range | Safety cushion |
 | --- | --- | --- |
@@ -558,15 +560,15 @@ population and age-group medians provide context.
 
 **Which answers shaped your estimate?**
 
-Contributions to the plan-around estimate:
+These answers made the largest contributions to your plan-around estimate:
 
 | Your answer | Contribution |
 | --- | ---: |
-| Arthritis: Yes | +$124 |
-| Joint pain: Yes | +$110 |
-| High blood pressure: Yes | +$94 |
-| Age: 69 | +$92 |
-| Insurance: Any private | +$80 |
+| **Arthritis:** Yes | ↑ +$124 |
+| **Joint pain:** Yes | ↑ +$110 |
+| **High blood pressure:** Yes | ↑ +$94 |
+| **Age:** 69 | ↑ +$92 |
+| **Insurance:** Any private | ↑ +$80 |
 
 **How you compare to others**
 
@@ -578,8 +580,11 @@ Contributions to the plan-around estimate:
 
 **Visual:** The title, muted profile text, and border match slide 9. The three
 estimates remain at the top as a reference. All five SHAP contributions appear
-on the left, with the comparisons on the right. The footer leaves room for the
-planned SHAP appendix link.
+in a table on the left with horizontal rules, bold feature names, and regular
+answer values. Table headers and rows use the same font size. The comparisons
+appear in a headerless table on the right, with horizontal row separators. Contributions and comparison amounts use regular dark blue text;
+teal highlights the three main estimates. The footer leaves room for the planned
+SHAP appendix link.
 
 **Speaker notes — 0:25**
 

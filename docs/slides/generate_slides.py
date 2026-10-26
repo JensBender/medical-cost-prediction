@@ -572,7 +572,7 @@ def build_presentation():
     expanded = new_slide(presentation, storyboard, "10", "Example prediction output")
     for slide, slide_id in ((example, "9"), (expanded, "10")):
         next(shape for shape in slide.shapes if shape.name == f"{slide_id} title").width = pixels(568)
-        text(slide, "Example profile", "(profile with higher cost risk: 69 years, arthritis)", 642, 70, 578, 28, 19, color=SECONDARY)
+        text(slide, "Example profile", "(higher cost risk, 69 years, arthritis)", 642, 63, 578, 34, 24, color=SECONDARY)
         example_border = slide.shapes.add_shape(
             MSO_SHAPE.RECTANGLE, pixels(48), pixels(118), pixels(1184), pixels(550),
         )
@@ -604,13 +604,13 @@ def build_presentation():
          72, 378, 1136, 32, 24, bold=True)
     text(example, "Planning note", "Costs for profiles like yours can vary a lot. "
          "To reduce the risk of underbudgeting, consider planning closer to the "
-         "safety cushion.", 72, 414, 1136, 82, 22)
+         "safety cushion.", 72, 414, 1136, 56, 22)
     for index, label in enumerate((
         "Which answers shaped your estimate?", "How you compare to others",
     )):
         expand_link = text(example, f"Expand details {index + 1}",
-                           [(label, True), " (Click to expand)"],
-                           72, 510 + index * 42, 1136, 32, 24)
+                           [(label, True), " (click to expand)"],
+                           72, 486 + index * 42, 1136, 32, 24)
         label_run, hint_run = expand_link.text_frame.paragraphs[0].runs
         label_run.font.underline = True
         hint_run.font.color.rgb = RGBColor.from_string(SECONDARY)
@@ -622,38 +622,77 @@ def build_presentation():
         "current dollars. Premiums and over-the-counter costs are excluded. New "
         "diagnoses, accidents, hospital stays, or your insurance plan’s rules can "
         "make actual costs higher.",
-    ], 72, 594, 1136, 66, 18, color=SECONDARY)
+    ], 72, 578, 1136, 80, 20, color=SECONDARY)
 
     rect(expanded, "Output divider", 72, 248, 1136, 1, RULE)
     text(expanded, "Comparison heading", "How you compare to others",
          672, 280, 536, 36, 26, bold=True)
-    for index, (label, value) in enumerate((
+    comparison_rows = [
         ("Your plan-around estimate", "$895"),
         ("U.S. adult median", "$268"),
         ("Age 65+ median", "$657"),
-    )):
-        text(expanded, f"Comparison {index + 1} label", label,
-             672, 350 + index * 50, 374, 36, 26)
-        text(expanded, f"Comparison {index + 1} value", value,
-             1056, 350 + index * 50, 152, 36, 26, bold=True,
-             alignment=PP_ALIGN.RIGHT)
+    ]
+    comparison_table = native_table(expanded, comparison_rows, 342, [384, 152], row_height=50)
+    expanded.shapes[-1].name = "Cost comparison table"
+    expanded.shapes[-1].left = pixels(672)
+    comparison_table.rows[0].height = pixels(50)
+    for row_index, row_values in enumerate(comparison_rows):
+        for column_index, value in enumerate(row_values):
+            cell = comparison_table.cell(row_index, column_index)
+            cell.fill.fore_color.rgb = RGBColor.from_string(BACKGROUND)
+            cell.margin_left = cell.margin_right = 0
+            cell.margin_top = cell.margin_bottom = pixels(4)
+            for edge in ("lnL", "lnR", "lnT"):
+                line = cell._tc.get_or_add_tcPr().find(qn(f"a:{edge}"))
+                for child in list(line):
+                    line.remove(child)
+                line.append(OxmlElement("a:noFill"))
+            paragraph = cell.text_frame.paragraphs[0]
+            paragraph.alignment = PP_ALIGN.RIGHT if column_index else PP_ALIGN.LEFT
+            style_font(paragraph.font, 26)
+            for run in paragraph.runs:
+                style_font(run.font, 26)
 
     text(expanded, "SHAP heading", "Which answers shaped your estimate?",
          72, 280, 536, 36, 26, bold=True)
-    text(expanded, "SHAP explanation", "Contributions to the plan-around estimate",
-         72, 320, 536, 28, 20, color=SECONDARY)
-    for index, (label, value) in enumerate((
-        ("Arthritis: Yes", "+$124"),
-        ("Joint pain: Yes", "+$110"),
-        ("High blood pressure: Yes", "+$94"),
-        ("Age: 69", "+$92"),
-        ("Insurance: Any private", "+$80"),
-    )):
-        text(expanded, f"SHAP {index + 1} answer", label,
-             72, 370 + index * 50, 396, 36, 26)
-        text(expanded, f"SHAP {index + 1} contribution", value,
-             480, 370 + index * 50, 128, 36, 26, color=TEAL, bold=True,
-             alignment=PP_ALIGN.RIGHT)
+    text(expanded, "SHAP explanation", "These answers made the largest contributions "
+         "to your plan-around estimate:", 72, 320, 536, 52, 20, color=SECONDARY)
+    shap_rows = [
+        ("Your answer", "Contribution"),
+        ("Arthritis: Yes", "↑ +$124"),
+        ("Joint pain: Yes", "↑ +$110"),
+        ("High blood pressure: Yes", "↑ +$94"),
+        ("Age: 69", "↑ +$92"),
+        ("Insurance: Any private", "↑ +$80"),
+    ]
+    shap_table = native_table(expanded, shap_rows, 392, [370, 166], row_height=44)
+    expanded.shapes[-1].name = "SHAP contributions table"
+    shap_table.rows[0].height = pixels(40)
+    for row_index, row_values in enumerate(shap_rows):
+        for column_index, value in enumerate(row_values):
+            cell = shap_table.cell(row_index, column_index)
+            cell.fill.fore_color.rgb = RGBColor.from_string(BACKGROUND)
+            cell.margin_left = cell.margin_right = 0
+            cell.margin_top = cell.margin_bottom = pixels(4)
+            for edge in ("lnL", "lnR", "lnT"):
+                line = cell._tc.get_or_add_tcPr().find(qn(f"a:{edge}"))
+                for child in list(line):
+                    line.remove(child)
+                line.append(OxmlElement("a:noFill"))
+            paragraph = cell.text_frame.paragraphs[0]
+            paragraph.clear()
+            paragraph.alignment = PP_ALIGN.RIGHT if column_index else PP_ALIGN.LEFT
+            size = 26
+            if row_index and column_index == 0:
+                feature, answer = value.split(":", 1)
+                for content, is_bold in ((feature + ":", True), (answer, False)):
+                    run = paragraph.add_run()
+                    run.text = content
+                    style_font(run.font, size, bold=is_bold)
+            else:
+                run = paragraph.add_run()
+                run.text = value
+                style_font(run.font, size, bold=row_index == 0)
 
     next_steps = new_slide(presentation, storyboard, "11", "Model evaluation is complete;\n"
                            "app development comes next", two_lines=True)
