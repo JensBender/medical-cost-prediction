@@ -574,7 +574,8 @@ def build_presentation():
         next(shape for shape in slide.shapes if shape.name == f"{slide_id} title").width = pixels(568)
         text(slide, "Example profile", "(higher cost risk, 69 years, arthritis)", 642, 66, 578, 36, 26, color=SECONDARY)
         example_border = slide.shapes.add_shape(
-            MSO_SHAPE.RECTANGLE, pixels(48), pixels(118), pixels(1184), pixels(550),
+            MSO_SHAPE.RECTANGLE, pixels(48), pixels(118), pixels(1184),
+            pixels(510 if slide_id == "9" else 550),
         )
         example_border.name = "Prediction output border"
         example_border.fill.background()
@@ -609,28 +610,19 @@ def build_presentation():
     )):
         expand_link = text(example, f"Expand details {index + 1}",
                            [(label, True), " (click to expand)"],
-                           72, 486 + index * 42, 1136, 32, 24)
+                           72, 510 + index * 54, 1136, 32, 24)
         label_run, hint_run = expand_link.text_frame.paragraphs[0].runs
         label_run.font.underline = True
         hint_run.font.color.rgb = RGBColor.from_string(SECONDARY)
         expand_link.click_action.target_slide = expanded
-    text(example, "About this estimate", [
-        ("About this estimate:", True),
-        " This is a planning estimate of annual out-of-pocket costs for one adult, "
-        "not a specific medical bill. It uses 2023 U.S. survey data, adjusted to "
-        "current dollars. Premiums and over-the-counter costs are excluded. New "
-        "diagnoses, accidents, hospital stays, or your insurance plan’s rules can "
-        "make actual costs higher.",
-    ], 72, 578, 1136, 80, 20, color=SECONDARY)
-
     text(expanded, "Comparison heading", "How you compare to others",
-         672, 256, 536, 36, 26, bold=True)
+         672, 272, 536, 36, 26, bold=True)
     comparison_rows = [
         ("Your plan-around estimate", "$895"),
         ("Typical American", "$268"),
         ("Typical for ages 65+", "$657"),
     ]
-    comparison_table = native_table(expanded, comparison_rows, 300, [384, 152], row_height=50)
+    comparison_table = native_table(expanded, comparison_rows, 316, [384, 152], row_height=50)
     expanded.shapes[-1].name = "Cost comparison table"
     expanded.shapes[-1].left = pixels(672)
     comparison_table.rows[0].height = pixels(50)
@@ -652,9 +644,7 @@ def build_presentation():
                 style_font(run.font, 26)
 
     text(expanded, "SHAP heading", "Which answers shaped your estimate?",
-         72, 256, 536, 36, 26, bold=True)
-    text(expanded, "SHAP explanation", "These answers made the largest contributions "
-         "to your plan-around estimate:", 72, 296, 536, 52, 20, color=SECONDARY)
+         72, 272, 536, 36, 26, bold=True)
     shap_rows = [
         ("Your answer", "Contribution"),
         ("Arthritis: Yes", "↑ +$124"),
@@ -663,7 +653,7 @@ def build_presentation():
         ("Age: 69", "↑ +$92"),
         ("Insurance: Any private", "↑ +$80"),
     ]
-    shap_table = native_table(expanded, shap_rows, 368, [370, 166], row_height=50)
+    shap_table = native_table(expanded, shap_rows, 316, [370, 166], row_height=56)
     expanded.shapes[-1].name = "SHAP contributions table"
     shap_table.rows[0].height = pixels(40)
     for row_index, row_values in enumerate(shap_rows):
