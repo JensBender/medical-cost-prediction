@@ -319,18 +319,18 @@ Release gates are pass/fail criteria that define the minimum test-set performanc
 SHAP explains how a user's answers contribute to their plan-around estimate (`q50`). The planned app will highlight the five largest contributions and show their dollar amounts, so users can see which answers moved the estimate up or down. 🔗 [**See SHAP Explanation Details**](#shap-explanation-details)
 
 **Example Prediction Output**  
-High cost profile: 68-year-old, uninsured, multiple chronic conditions
+Higher-cost risk: 69 years, arthritis and high blood pressure
 >
 > **Your Estimated Out-of-Pocket Costs for Next Year**
 >
-> - 💰 **Plan around:** $1,350
-> - 📊 **Typical range:** $520-$2,400
-> - 🛡️ **Safety cushion:** $5,200
+> - 💰 **Plan around:** $895
+> - 📊 **Typical range:** $400–$2,025
+> - 🛡️ **Safety cushion:** $3,852
 >
 > Plan around gives you an estimate of your typical costs. The typical range shows how much those costs usually vary. The safety cushion helps you budget for a higher-cost year. Costs can still be higher.
 >
 > **Planning note**  
-> Costs for profiles like yours can vary a lot from year to year. This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, consider planning closer to the safety cushion.
+> This estimate falls in a higher-cost range, where out-of-pocket costs can be harder to predict. The plan-around amount and typical range are useful starting points, but for budgeting decisions, consider planning closer to the safety cushion.
 >
 > <details>
 > <summary><strong>Which answers shaped your estimate?</strong> <i>(click to expand)</i></summary>
@@ -338,11 +338,11 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > <table>
 > <thead><tr><th>Your answer</th><th align="right">Contribution</th></tr></thead>
 > <tbody>
-> <tr><td><strong>Age:</strong> 68</td><td align="right">↑ +$480</td></tr>
-> <tr><td><strong>Diabetes:</strong> Yes</td><td align="right">↑ +$370</td></tr>
-> <tr><td><strong>Insurance:</strong> Uninsured</td><td align="right">↑ +$310</td></tr>
-> <tr><td><strong>High blood pressure:</strong> Yes</td><td align="right">↑ +$180</td></tr>
-> <tr><td><strong>Physical health:</strong> Good</td><td align="right">↓ −$90</td></tr>
+> <tr><td><strong>Arthritis:</strong> Yes</td><td align="right">↑ +$124</td></tr>
+> <tr><td><strong>Joint pain:</strong> Yes</td><td align="right">↑ +$110</td></tr>
+> <tr><td><strong>High blood pressure:</strong> Yes</td><td align="right">↑ +$94</td></tr>
+> <tr><td><strong>Age:</strong> 69</td><td align="right">↑ +$92</td></tr>
+> <tr><td><strong>Insurance:</strong> Any private</td><td align="right">↑ +$80</td></tr>
 > </tbody>
 > </table>
 > </details>
@@ -351,7 +351,7 @@ High cost profile: 68-year-old, uninsured, multiple chronic conditions
 > <summary><strong>How you compare to others</strong> <i>(click to expand)</i></summary>
 > <table>
 > <tbody>
-> <tr><td>Your plan-around estimate</td><td align="right">$1,350</td></tr>
+> <tr><td>Your plan-around estimate</td><td align="right">$895</td></tr>
 > <tr><td>Typical American</td><td align="right">$268</td></tr>
 > <tr><td>Typical for ages 65+</td><td align="right">$657</td></tr>
 > </tbody>

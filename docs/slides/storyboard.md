@@ -470,30 +470,29 @@ performance level.
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
 Detailed baseline comparisons and scoring definitions are in A18.
 
-### 9 — Example prediction output (high-cost profile)
+### 9 — Example prediction output (higher-cost risk)
 
 **Takeaway:** The estimates and planning notice help users prepare for a
 higher-cost year, with explanations and comparisons available to expand.
 
 **On the slide**
 
-**Title detail:** (high-cost profile: 68 years, uninsured, multiple chronic conditions)
+**Title detail:** (higher-cost risk: 69 years, 2 chronic conditions)
 
 **Your estimated out-of-pocket costs for next year**
 
 | Plan around | Typical range | Safety cushion |
 | --- | --- | --- |
-| $1,350 | $520–$2,400 | $5,200 |
+| $895 | $400–$2,025 | $3,852 |
 
 Plan around gives you an estimate of your typical costs. The typical range shows
 how much those costs usually vary. The safety cushion helps you budget for a
 higher-cost year. Costs can still be higher.
 
-**Planning note:** Costs for profiles like yours can vary a lot from year to
-year. This estimate falls in a higher-cost range, where out-of-pocket costs can
-be harder to predict. The plan-around amount and typical range are useful
-starting points, but for budgeting decisions, consider planning closer to the
-safety cushion.
+**Planning note:** This estimate falls in a higher-cost range, where
+out-of-pocket costs can be harder to predict. The plan-around amount and
+typical range are useful starting points, but for budgeting decisions,
+consider planning closer to the safety cushion.
 
 - **Which answers shaped your estimate?** (Click to expand)
 - **How you compare to others** (Click to expand)
@@ -504,8 +503,8 @@ include premiums, over-the-counter costs, family totals, or procedure prices.
 New diagnoses, accidents, hospitalizations, and plan-specific billing details
 can make actual costs higher.
 
-**Visual:** The title has a smaller, muted gray parenthetical for the high-cost
-profile, age, insurance, and chronic conditions. A thin border encloses the
+**Visual:** The title has a smaller, muted gray parenthetical for the higher-cost
+risk profile, age, and chronic conditions. A thin border encloses the
 user-facing content, separating it from the title and slide footer. Three
 prominent estimates sit above the interpretation text and planning notice.
 The two collapsed section labels link to slide 10. The scope and inflation note
@@ -513,25 +512,26 @@ sits at the bottom inside the border, leaving the slide footer clear.
 
 **Speaker notes — 0:35**
 
-“Here is an illustrative output for a 68-year-old with multiple chronic
-conditions. The estimates provide a central amount, a typical range, and extra
-room for a higher-cost year. This higher-cost profile receives a notice
+“Here is an actual test-set example for a 69-year-old with arthritis and
+high blood pressure. The estimates provide a central amount, a typical range,
+and extra room for a higher-cost year. This higher-cost profile receives a notice
 suggesting planning closer to the safety cushion. The scope note explains the
-exclusions, and the planned app will adjust amounts for medical inflation.
+exclusions, and these amounts are adjusted for medical inflation.
 Users can expand the explanations and comparisons.”
 
 For questions:
 
-Illustration: These values reproduce the README's illustrative example. They
-are not a saved prediction and SHAP explanation for a fully specified profile.
+Example: Test case 2817769101 has arthritis and high blood pressure. Only the
+high-q90 notice triggers. The modeling notebook reproduces its predictions
+and SHAP values.
 
 Scope: Estimates cover annual out-of-pocket costs for an individual. They
 exclude insurance premiums, over-the-counter medicines, family totals, and
 procedure prices.
 
-Inflation: The example uses 2023 dollars. The planned app will adjust predictions,
-population and age-group comparisons, and SHAP dollar contributions using the
-medical inflation factor.
+Inflation: Predictions, population and age-group comparisons, and SHAP dollar
+contributions are adjusted to May 2026 dollars using the persisted medical
+inflation factor of 1.080415.
 
 Next-year use: The test split comes from 2023, and some inputs summarize
 information collected during that year. The planned next-year use case needs
@@ -545,18 +545,18 @@ notices communicate limitations but do not fix calibration.
 [medical inflation adjustment](../../scripts/update_medical_inflation.py);
 [feature timing notes](../research/candidate_features.md).
 
-### 10 — Example prediction output (high-cost profile)
+### 10 — Example prediction output (higher-cost risk)
 
 **Takeaway:** SHAP explains which answers moved the plan-around estimate, while
 population and age-group medians provide context.
 
 **On the slide**
 
-**Title detail:** (high-cost profile: 68 years, uninsured, multiple chronic conditions)
+**Title detail:** (higher-cost risk: 69 years, 2 chronic conditions)
 
 | Plan around | Typical range | Safety cushion |
 | --- | --- | --- |
-| $1,350 | $520–$2,400 | $5,200 |
+| $895 | $400–$2,025 | $3,852 |
 
 **Which answers shaped your estimate?**
 
@@ -564,17 +564,17 @@ Contributions to the plan-around estimate:
 
 | Your answer | Contribution |
 | --- | ---: |
-| Age: 68 | +$480 |
-| Diabetes: Yes | +$370 |
-| Insurance: Uninsured | +$310 |
-| High blood pressure: Yes | +$180 |
-| Physical health: Good | −$90 |
+| Arthritis: Yes | +$124 |
+| Joint pain: Yes | +$110 |
+| High blood pressure: Yes | +$94 |
+| Age: 69 | +$92 |
+| Insurance: Any private | +$80 |
 
 **How you compare to others**
 
 | Comparison | Annual costs |
 | --- | ---: |
-| Your plan-around estimate | $1,350 |
+| Your plan-around estimate | $895 |
 | U.S. adult median | $268 |
 | Age 65+ median | $657 |
 

@@ -572,8 +572,7 @@ def build_presentation():
     expanded = new_slide(presentation, storyboard, "10", "Example prediction output")
     for slide, slide_id in ((example, "9"), (expanded, "10")):
         next(shape for shape in slide.shapes if shape.name == f"{slide_id} title").width = pixels(568)
-        text(slide, "Example profile", "(high-cost profile: 68 years, uninsured, "
-             "multiple chronic conditions)", 642, 70, 578, 28, 19, color=SECONDARY)
+        text(slide, "Example profile", "(higher-cost risk: 69 years, 2 chronic conditions)", 642, 70, 578, 28, 19, color=SECONDARY)
         example_border = slide.shapes.add_shape(
             MSO_SHAPE.RECTANGLE, pixels(48), pixels(118), pixels(1184), pixels(550),
         )
@@ -589,9 +588,9 @@ def build_presentation():
         (expanded, 150, 186, 34),
     ):
         for label, value, x, width in (
-            ("Plan around", "$1,350", 72, 320),
-            ("Typical range", "$520–$2,400", 464, 352),
-            ("Safety cushion", "$5,200", 888, 320),
+            ("Plan around", "$895", 72, 320),
+            ("Typical range", "$400–$2,025", 464, 352),
+            ("Safety cushion", "$3,852", 888, 320),
         ):
             text(slide, f"{label} label", label, x, label_y, width, 32, 24, bold=True)
             text(slide, f"{label} value", value, x, value_y, width, 54, value_size,
@@ -603,10 +602,10 @@ def build_presentation():
          72, 310, 1136, 76, 22)
     text(example, "Planning note heading", "Planning note",
          72, 378, 1136, 32, 24, bold=True)
-    text(example, "Planning note", "Costs for profiles like yours can vary a lot from "
-         "year to year. This estimate falls in a higher-cost range, where out-of-pocket "
-         "costs can be harder to predict. The plan-around amount and typical range are "
-         "useful starting points, but for budgeting decisions, consider planning closer "
+    text(example, "Planning note", "This estimate falls in a higher-cost range, where "
+         "out-of-pocket costs can be harder to predict. The plan-around amount and "
+         "typical range are useful starting points, but for budgeting decisions, "
+         "consider planning closer "
          "to the safety cushion.", 72, 414, 1136, 82, 22)
     for index, label in enumerate((
         "Which answers shaped your estimate?", "How you compare to others",
@@ -631,7 +630,7 @@ def build_presentation():
     text(expanded, "Comparison heading", "How you compare to others",
          672, 280, 536, 36, 26, bold=True)
     for index, (label, value) in enumerate((
-        ("Your plan-around estimate", "$1,350"),
+        ("Your plan-around estimate", "$895"),
         ("U.S. adult median", "$268"),
         ("Age 65+ median", "$657"),
     )):
@@ -646,11 +645,11 @@ def build_presentation():
     text(expanded, "SHAP explanation", "Contributions to the plan-around estimate",
          72, 320, 536, 28, 20, color=SECONDARY)
     for index, (label, value) in enumerate((
-        ("Age: 68", "+$480"),
-        ("Diabetes: Yes", "+$370"),
-        ("Insurance: Uninsured", "+$310"),
-        ("High blood pressure: Yes", "+$180"),
-        ("Physical health: Good", "−$90"),
+        ("Arthritis: Yes", "+$124"),
+        ("Joint pain: Yes", "+$110"),
+        ("High blood pressure: Yes", "+$94"),
+        ("Age: 69", "+$92"),
+        ("Insurance: Any private", "+$80"),
     )):
         text(expanded, f"SHAP {index + 1} answer", label,
              72, 370 + index * 50, 396, 36, 26)
