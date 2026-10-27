@@ -511,15 +511,16 @@ Her estimates are relatively high, with a plan-around estimate of about $900
 and a safety cushion over $3,800.
 
 Brief explanations below help her understand the estimates. She also receives
-a planning note because her high cost estimates come with greater uncertainty.
+a planning note because high cost estimates come with greater uncertainty.
 To reduce the risk of underbudgeting, it suggests she plan closer to the safety
 cushion.
 
 Since the model uses data from 2023, the app will adjust the estimates for medical
-inflation. The figures shown here are already inflation-adjusted for the current
-year.
+inflation using data from the Bureau of Labor Statistics API. The numbers shown
+here are already inflation-adjusted for the current year.
 
-She can expand the explanations and comparisons.”
+She can also click to see which answers shaped her estimate and how it compares
+with others.”
 
 For questions:
 
