@@ -601,14 +601,18 @@ SHAP details appendix link to A21.
 
 “I use SHAP to explain how her answers contributed to her plan-around estimate
 and show her the five largest dollar contributions, so she can see which answers
-moved her estimate up or down and by how much. She can also see how her estimate
-compares with typical costs for U.S. adults and people in her age group.”
+moved her estimate up or down and by how much. SHAP explains the full prediction
+pipeline, including preprocessing and postprocessing, so that these contributions
+correspond to her original answers rather than model-ready features.
+
+She can also see how her plan-around estimate compares with typical costs for
+U.S. adults and people in her age group. These comparison benchmarks are based on
+actual out-of-pocket costs, summarized as medians for all adults and various age
+groups. They use the training data and are survey-weighted and inflation-adjusted.”
 
 For questions:
 
-Cost comparisons: Based on actual out-of-pocket costs from the training data,
-using survey-weighted, inflation-adjusted medians for all adults and four age
-groups: 18–34, 35–49, 50–64, and 65+.
+Age groups: 18–34, 35–49, 50–64, and 65+.
 
 **Transition:** Close with the implemented components and remaining application
 and validation work.
