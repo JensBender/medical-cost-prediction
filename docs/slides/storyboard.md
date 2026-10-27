@@ -364,7 +364,7 @@ from q25 to q75.
 predicted quantiles to help them budget for uncertainty.
 The plan-around estimate is the predicted median. It represents the typical costs
 for people with a similar profile. The typical range runs from the 25th to the
-75th percentile and shows how much costs typically vary. The safety cushion is
+75th percentile and shows how much costs usually vary. The safety cushion is
 the 90th percentile, which provides a conservative estimate to help
 users budget for a higher-cost year.
 
@@ -446,15 +446,14 @@ about $2,000 above the plan-around estimate. Both stayed below the release limit
 To assess added value, I compared XGBoost's quantile estimates with two simple
 baselines. The population baseline gives everyone the same estimates, while the
 age-group baseline gives everyone within the same age group the same estimates.
-XGBoost's clearest added value was in the typical range and safety cushion. For
-the plan-around estimate, median absolute error remained close to the population
-baseline.
+XGBoost's clearest added value was in the typical range and safety cushion.
 
 Subgroup reliability and fairness checks showed coverage close to its targets
 for most groups. The main limitation was underprediction of very high actual
 costs. Typical-range undercoverage also affected people with poor mental health,
-low income, or a doctorate degree. I added planning notes for groups at risk
-of underbudgeting, suggesting they plan closer to the safety cushion.”
+low income, or a doctorate degree. These findings motivated adding planning notes
+for subgroups at risk of underbudgeting, suggesting users plan closer to the
+safety cushion.”
 
 For questions:
 
