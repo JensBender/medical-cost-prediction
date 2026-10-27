@@ -506,27 +506,31 @@ The app’s full scope disclaimer is omitted from the slide.
 
 **Speaker notes — 0:35**
 
-“Here is an actual test-set example for a 69-year-old with arthritis. The
-estimates provide a central amount, a typical range, and extra room for a
-higher-cost year. This high cost profile receives a planning note suggesting
-planning closer to the safety cushion. The app will also explain the estimate’s
-scope, exclusions, and medical inflation adjustment. Users can expand the
-explanations and comparisons.”
+“Here is an example prediction output for a 69-year-old woman with arthritis.
+Her estimates are relatively high, with a plan-around estimate of about $900
+and a safety cushion over $3,800.
+
+Brief explanations below help her understand the estimates. She also receives
+a planning note because her high cost estimates come with greater uncertainty.
+To reduce the risk of underbudgeting, it suggests she plan closer to the safety
+cushion. 
+
+Since the model uses data from 2023, I adjust the dollar amounts using the U.S.
+medical-care consumer price index. Her figures are already adjusted to
+May 2026 dollars.”
+
+She can expand the explanations and comparisons.
 
 For questions:
 
-Example: Test case 2817769101 has arthritis and high blood pressure. High
-predicted q90 triggers `UNDERBUDGETING_RISK`. The same flag and note apply
-when supplied answers indicate poor mental health, low income, or a doctorate
-degree. The modeling notebook reproduces the predictions and SHAP values.
+Planning note: Shown to users at risk of underbudgeting, based on subgroup
+reliability and fairness findings. It is triggered by a high safety cushion
+estimate, poor mental health, low income, or a doctorate degree.
 
-Scope: Estimates cover annual out-of-pocket costs for an individual. They
-exclude insurance premiums, over-the-counter medicines, family totals, and
-procedure prices.
-
-Inflation: Predictions, population and age-group comparisons, and SHAP dollar
-contributions are adjusted to May 2026 dollars using the persisted medical
-inflation factor of 1.080415.
+Inflation: The adjustment uses the Bureau of Labor Statistics medical-care
+consumer price index for May 2026 divided by its 2023 annual average, giving
+a factor of 1.080415 (about an 8% increase). The same factor adjusts predictions,
+population and age-group comparisons, and SHAP dollar contributions.
 
 Next-year use: The test split comes from 2023, and some inputs summarize
 information collected during that year. The planned next-year use case needs
@@ -587,11 +591,11 @@ SHAP details appendix link to A21.
 
 **Speaker notes — 0:25**
 
-“These five contributions show how the person's answers moved the plan-around
-estimate up or down. I use SHAP to calculate them through the full prediction
-pipeline. They explain the plan-around estimate, not the typical range or
-safety cushion. The population and age-group medians help users put their
-estimate in context.”
+“She can expand this section to see the five answers that contributed most to
+her plan-around estimate. SHAP shows how those answers moved her estimate up or
+down. These contributions explain her plan-around estimate only. The comparisons
+alongside it help her see how her estimate compares with typical costs for U.S.
+adults and people her age.”
 
 **Transition:** Close with the implemented components and remaining application
 and validation work.
