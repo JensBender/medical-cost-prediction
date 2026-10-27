@@ -1443,12 +1443,22 @@ returns to slide 10.
 
 **Speaker notes**
 
-“SHAP shows which answers moved this person’s prediction up or down from a
-reference starting point. I apply it to the full prediction process, so the
-contributions stay tied to interpretable inputs such as age and arthritis,
-rather than encoded or scaled columns. I focus on the plan-around estimate to
-keep the explanation simple for users. The starting point plus all 27
-contributions reproduces the prediction; the app shows the five largest.”
+“SHAP is a method for explaining the model prediction for a single person. It uses a
+reference sample called background data, drawn from the training data using
+survey weights to approximate the U.S. adult population. The starting point is
+the model’s average plan-around estimate for that background data. The
+contributions show how each of her 27 answers moves the prediction up or down.
+Together, they take it from that starting point to her personal estimate.
+
+Here, I explain the plan-around estimate only, not the typical range or safety
+cushion. SHAP explains the full inference process: preprocessing, quantile
+prediction, converting log-transformed costs back to dollars, and postprocessing.
+Postprocessing clips negative predictions to zero and keeps quantiles in order,
+so higher percentiles never predict lower costs.
+
+This lets me explain her original answers rather than encoded model-ready
+features. The app shows the five largest dollar contributions. These explain the
+model’s prediction, not causal effects.”
 
 For questions:
 
