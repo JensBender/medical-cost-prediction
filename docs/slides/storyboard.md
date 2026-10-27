@@ -230,24 +230,25 @@ primary and supporting metrics in the left margin.
 
 **Speaker notes — 1:00**
 
-“Out-of-pocket costs present two challenges: about 22% of adults have no costs
-for the entire year, while costs are heavily concentrated among the top spenders.
-The highest-spending 20% account for almost 80% of costs, and the top 1% account
-for about 21%. High costs could reflect ongoing care or unexpected events such
-as hospitalization. Unexpected events make costs especially difficult to predict.
+“Out-of-pocket costs present two challenges: costs are heavily concentrated among
+the top spenders with the highest-spending 20% accounting for almost 80% of costs.
+On the other hand, about 22% of adults have no costs for the entire year. High costs
+could reflect ongoing care or unexpected events such as hospitalization.
+Unexpected events make costs especially difficult to predict.
 
-Large errors on high-cost cases can strongly influence mean absolute error.
-Therefore, I chose median absolute error as the primary evaluation metric to
+Large errors on high-cost cases can strongly influence evaluation metrics such as
+the mean absolute error.
+Therefore, I chose median absolute error as the primary metric to
 describe a typical prediction error, and complemented it with mean absolute
 error as a supporting diagnostic.
 
 Outlier profiling revealed greater health burden and a higher likelihood of
-extreme costs. Outlier profiles were plausible, so I retained them to preserve
-valuable training information.
+extreme costs. However, outlier profiles were plausible, so I retained them to
+preserve valuable training information.
 
 This distribution also informed a stratified data split. I used 80% training, 10%
 validation, and 10% test, stratified by out-of-pocket costs to preserve the
-proportions of zero-cost and high-cost cases across splits.”
+proportions of zero-cost and high-cost cases across all splits.”
 
 **Transition:** Before comparing models, explain how the data became model-ready.
 
