@@ -612,7 +612,8 @@ groups. They use the training data and are survey-weighted and inflation-adjuste
 
 For questions:
 
-Age groups: 18–34, 35–49, 50–64, and 65+.
+Age groups: 18–34, 35–49, 50–64, and 65+. I chose broad age groups used in
+public health reporting, with over 2,500 training samples in each group.
 
 **Transition:** Close with the implemented components and remaining application
 and validation work.
