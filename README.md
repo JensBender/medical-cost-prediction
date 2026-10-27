@@ -336,7 +336,6 @@ High cost profile: 69 years, arthritis
 > <summary><strong>Which answers shaped your estimate?</strong> <i>(click to expand)</i></summary>
 > <p>These answers made the largest contributions to your plan-around estimate:</p>
 > <table>
-> <thead><tr><th>Your answer</th><th align="right">Contribution</th></tr></thead>
 > <tbody>
 > <tr><td><strong>Arthritis:</strong> Yes</td><td align="right">↑ +$124</td></tr>
 > <tr><td><strong>Joint pain:</strong> Yes</td><td align="right">↑ +$110</td></tr>

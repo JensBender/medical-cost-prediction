@@ -4055,7 +4055,6 @@ plot_quantile_subgroup_predictions(
 #                 <summary style="cursor:pointer;"><strong>Which answers shaped your estimate?</strong> <i>(click to expand)</i></summary>
 #                 <p style="font-size:0.85em; color:#555; margin-bottom:6px;">These answers made the largest contributions to your plan-around estimate:</p>
 #                 <table style="width:100%; border-collapse:collapse; font-size:0.85em;">
-#                     <thead><tr><th style="text-align:left; padding:4px;">Your answer</th><th style="text-align:right; padding:4px;">Contribution</th></tr></thead>
 #                     <tbody>
 #                         <tr><td style="padding:4px;"><strong>Age:</strong> 28</td><td style="text-align:right; padding:4px;"><strong>↓ −\$210</strong></td></tr>
 #                         <tr><td style="padding:4px;"><strong>Physical health:</strong> Very Good</td><td style="text-align:right; padding:4px;"><strong>↓ −\$130</strong></td></tr>
@@ -4095,7 +4094,6 @@ plot_quantile_subgroup_predictions(
 #                 <summary style="cursor:pointer;"><strong>Which answers shaped your estimate?</strong> <i>(click to expand)</i></summary>
 #                 <p style="font-size:0.85em; color:#555; margin-bottom:6px;">These answers made the largest contributions to your plan-around estimate:</p>
 #                 <table style="width:100%; border-collapse:collapse; font-size:0.85em;">
-#                     <thead><tr><th style="text-align:left; padding:4px;">Your answer</th><th style="text-align:right; padding:4px;">Contribution</th></tr></thead>
 #                     <tbody>
 #                         <tr><td style="padding:4px;"><strong>Age:</strong> 68</td><td style="text-align:right; padding:4px;"><strong>↑ +\$480</strong></td></tr>
 #                         <tr><td style="padding:4px;"><strong>Diabetes:</strong> Yes</td><td style="text-align:right; padding:4px;"><strong>↑ +\$370</strong></td></tr>
