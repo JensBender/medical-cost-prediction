@@ -513,13 +513,13 @@ and a safety cushion over $3,800.
 Brief explanations below help her understand the estimates. She also receives
 a planning note because her high cost estimates come with greater uncertainty.
 To reduce the risk of underbudgeting, it suggests she plan closer to the safety
-cushion. 
+cushion.
 
-Since the model uses data from 2023, I adjust the dollar amounts using the U.S.
-medical-care consumer price index. Her figures are already adjusted to
-May 2026 dollars.”
+Since the model uses data from 2023, the app will adjust the estimates for medical
+inflation. The figures shown here are already inflation-adjusted for the current
+year.
 
-She can expand the explanations and comparisons.
+She can expand the explanations and comparisons.”
 
 For questions:
 
@@ -527,10 +527,13 @@ Planning note: Shown to users at risk of underbudgeting, based on subgroup
 reliability and fairness findings. It is triggered by a high safety cushion
 estimate, poor mental health, low income, or a doctorate degree.
 
-Inflation: The adjustment uses the Bureau of Labor Statistics medical-care
-consumer price index for May 2026 divided by its 2023 annual average, giving
-a factor of 1.080415 (about an 8% increase). The same factor adjusts predictions,
-population and age-group comparisons, and SHAP dollar contributions.
+Inflation: I use data from the Bureau of Labor Statistics, specifically the
+Medical Care Consumer Price Index, which tracks changes in U.S. medical-care
+prices. Before deployment, I run a script that fetches the price
+index for the latest available month from the Bureau of Labor Statistics API
+and divides it by the 2023 annual average. The app will use that factor to adjust
+all displayed dollar amounts, including predictions, population and age-group
+comparisons, and SHAP contributions.
 
 Next-year use: The test split comes from 2023, and some inputs summarize
 information collected during that year. The planned next-year use case needs
