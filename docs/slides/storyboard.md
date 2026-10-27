@@ -66,8 +66,8 @@ The first three slide timings are rehearsed; the remaining timings are estimates
 | 6 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
 | 7 | Quantile regression: budgeting for uncertainty | 1:30 | Explain the final model and its estimates |
 | 8 | XGBoost quantile audit: all release gates passed | 1:30 | Present held-out evidence and baseline comparisons |
-| 9 | Example prediction output (profile with higher cost risk) | 0:35 | Show the main estimates and planning guidance |
-| 10 | Example prediction output (profile with higher cost risk) | 0:25 | Show expanded explanations and comparisons |
+| 9 | Example prediction output (high cost profile) | 0:35 | Show the main estimates and planning guidance |
+| 10 | Example prediction output (high cost profile) | 0:25 | Show expanded explanations and comparisons |
 | 11 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
 | | **Total** | **11:25** | |
 
@@ -469,14 +469,14 @@ performance level.
 [modeling notebook: test comparison with simple baselines](../../notebooks/2_modeling.py).
 Detailed baseline comparisons and scoring definitions are in A18.
 
-### 9 — Example prediction output (profile with higher cost risk)
+### 9 — Example prediction output (high cost profile)
 
 **Takeaway:** The estimates and planning note help users prepare for a
 higher-cost year, with explanations and comparisons available to expand.
 
 **On the slide**
 
-**Title detail:** (higher cost risk, 69 years, arthritis)
+**Title detail:** (high cost profile: 69 years, arthritis)
 
 **Your estimated out-of-pocket costs for next year**
 
@@ -501,14 +501,14 @@ user-facing content, separating it from the title and slide footer. Three
 prominent estimates sit above the interpretation text and planning note, without
 a divider below the estimates. The interpretation sits close to the estimates.
 The two collapsed section labels are spaced apart below the planning note and
-link to slide 10. The output frame ends below these links. The app’s full scope disclaimer
-is omitted from the slide.
+link to slide 10. The output frame has the same size and position as on slide 10.
+The app’s full scope disclaimer is omitted from the slide.
 
 **Speaker notes — 0:35**
 
 “Here is an actual test-set example for a 69-year-old with arthritis. The
 estimates provide a central amount, a typical range, and extra room for a
-higher-cost year. This higher-cost profile receives a planning note suggesting
+higher-cost year. This high cost profile receives a planning note suggesting
 planning closer to the safety cushion. The app will also explain the estimate’s
 scope, exclusions, and medical inflation adjustment. Users can expand the
 explanations and comparisons.”
@@ -540,14 +540,14 @@ notices communicate limitations but do not fix calibration.
 [medical inflation adjustment](../../scripts/update_medical_inflation.py);
 [feature timing notes](../research/candidate_features.md).
 
-### 10 — Example prediction output (profile with higher cost risk)
+### 10 — Example prediction output (high cost profile)
 
 **Takeaway:** SHAP explains which answers moved the plan-around estimate, while
 population and age-group medians provide context.
 
 **On the slide**
 
-**Title detail:** (higher cost risk, 69 years, arthritis)
+**Title detail:** (high cost profile: 69 years, arthritis)
 
 | Plan around | Typical range | Safety cushion |
 | --- | --- | --- |
@@ -576,11 +576,12 @@ population and age-group medians provide context.
 **Visual:** The title, muted profile text, and border match slide 9. The three
 estimates remain at the top as a reference, with space separating them from
 the explanations and comparisons. Both tables align at the top below their
-headings. All five SHAP contributions appear on the left
-with horizontal rules, bold feature names, and regular answer values. Taller
-rows give each answer more space. Table headers and rows use the same font
-size. The headerless comparison table on the right also uses horizontal row
-separators. Contributions and comparison amounts use regular dark blue text;
+headings. All five SHAP contributions appear on the left with bold feature names
+and regular answer values. Both tables omit visible column headers and rules,
+using row spacing to separate entries. Narrower tables bring amounts closer to
+their labels and leave a wider gap between the two blocks. Both output frames
+end above the footer with matching bottom edges. Contributions and comparison
+amounts use regular dark blue text;
 teal highlights the three main estimates. The footer leaves room for the
 SHAP details appendix link to A21.
 

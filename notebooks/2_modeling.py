@@ -4741,7 +4741,7 @@ display(
 # </div>
 #
 # <div style="background-color:#e8f4fd; padding:15px; border:3px solid #d0e7fa; border-radius:6px;">
-#     ℹ️ Use a fixed test-set case for the README and presentation example: a profile with higher cost risk (69 years, arthritis). Its high predicted q90 triggers the underbudgeting-risk planning note. Adjust dollar amounts using the latest medical inflation factor persisted in <a href="../app/data/medical_inflation.json"><code>app/data/medical_inflation.json</code></a>.
+#     ℹ️ Use a fixed test-set case for the README and presentation example: a high cost profile (69 years, arthritis). Its high predicted q90 triggers the underbudgeting-risk planning note. Adjust dollar amounts using the latest medical inflation factor persisted in <a href="../app/data/medical_inflation.json"><code>app/data/medical_inflation.json</code></a>.
 # </div>
 
 # %%

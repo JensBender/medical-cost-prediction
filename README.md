@@ -319,7 +319,7 @@ Release gates are pass/fail criteria that define the minimum test-set performanc
 SHAP explains how a user's answers contribute to their plan-around estimate (`q50`). The planned app will highlight the five largest contributions and show their dollar amounts, so users can see which answers moved the estimate up or down. 🔗 [**See SHAP Explanation Details**](#shap-explanation-details)
 
 **Example Prediction Output**  
-Profile with higher cost risk: 69 years, arthritis
+High cost profile: 69 years, arthritis
 >
 > **Your Estimated Out-of-Pocket Costs for Next Year**
 >

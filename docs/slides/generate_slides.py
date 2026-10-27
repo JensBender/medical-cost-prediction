@@ -572,10 +572,9 @@ def build_presentation():
     expanded = new_slide(presentation, storyboard, "10", "Example prediction output")
     for slide, slide_id in ((example, "9"), (expanded, "10")):
         next(shape for shape in slide.shapes if shape.name == f"{slide_id} title").width = pixels(568)
-        text(slide, "Example profile", "(higher cost risk, 69 years, arthritis)", 642, 66, 578, 36, 26, color=SECONDARY)
+        text(slide, "Example profile", "(high cost profile: 69 years, arthritis)", 642, 66, 578, 36, 26, color=SECONDARY)
         example_border = slide.shapes.add_shape(
-            MSO_SHAPE.RECTANGLE, pixels(48), pixels(118), pixels(1184),
-            pixels(510 if slide_id == "9" else 550),
+            MSO_SHAPE.RECTANGLE, pixels(48), pixels(118), pixels(1184), pixels(520),
         )
         example_border.name = "Prediction output border"
         example_border.fill.background()
@@ -616,23 +615,23 @@ def build_presentation():
         hint_run.font.color.rgb = RGBColor.from_string(SECONDARY)
         expand_link.click_action.target_slide = expanded
     text(expanded, "Comparison heading", "How you compare to others",
-         672, 272, 536, 36, 26, bold=True)
+         720, 272, 488, 36, 26, bold=True)
     comparison_rows = [
         ("Your plan-around estimate", "$895"),
         ("Typical American", "$268"),
         ("Typical for ages 65+", "$657"),
     ]
-    comparison_table = native_table(expanded, comparison_rows, 316, [384, 152], row_height=50)
+    comparison_table = native_table(expanded, comparison_rows, 316, [350, 138], row_height=46)
     expanded.shapes[-1].name = "Cost comparison table"
-    expanded.shapes[-1].left = pixels(672)
-    comparison_table.rows[0].height = pixels(50)
+    expanded.shapes[-1].left = pixels(720)
+    comparison_table.rows[0].height = pixels(46)
     for row_index, row_values in enumerate(comparison_rows):
         for column_index, value in enumerate(row_values):
             cell = comparison_table.cell(row_index, column_index)
             cell.fill.fore_color.rgb = RGBColor.from_string(BACKGROUND)
             cell.margin_left = cell.margin_right = 0
             cell.margin_top = cell.margin_bottom = pixels(4)
-            for edge in ("lnL", "lnR", "lnT"):
+            for edge in ("lnL", "lnR", "lnT", "lnB"):
                 line = cell._tc.get_or_add_tcPr().find(qn(f"a:{edge}"))
                 for child in list(line):
                     line.remove(child)
@@ -646,23 +645,22 @@ def build_presentation():
     text(expanded, "SHAP heading", "Which answers shaped your estimate?",
          72, 272, 536, 36, 26, bold=True)
     shap_rows = [
-        ("Your answer", "Contribution"),
         ("Arthritis: Yes", "↑ +$124"),
         ("Joint pain: Yes", "↑ +$110"),
         ("High blood pressure: Yes", "↑ +$94"),
         ("Age: 69", "↑ +$92"),
         ("Insurance: Any private", "↑ +$80"),
     ]
-    shap_table = native_table(expanded, shap_rows, 316, [370, 166], row_height=56)
+    shap_table = native_table(expanded, shap_rows, 316, [350, 138], row_height=52)
     expanded.shapes[-1].name = "SHAP contributions table"
-    shap_table.rows[0].height = pixels(40)
+    shap_table.rows[0].height = pixels(52)
     for row_index, row_values in enumerate(shap_rows):
         for column_index, value in enumerate(row_values):
             cell = shap_table.cell(row_index, column_index)
             cell.fill.fore_color.rgb = RGBColor.from_string(BACKGROUND)
             cell.margin_left = cell.margin_right = 0
             cell.margin_top = cell.margin_bottom = pixels(4)
-            for edge in ("lnL", "lnR", "lnT"):
+            for edge in ("lnL", "lnR", "lnT", "lnB"):
                 line = cell._tc.get_or_add_tcPr().find(qn(f"a:{edge}"))
                 for child in list(line):
                     line.remove(child)
@@ -671,7 +669,7 @@ def build_presentation():
             paragraph.clear()
             paragraph.alignment = PP_ALIGN.RIGHT if column_index else PP_ALIGN.LEFT
             size = 26
-            if row_index and column_index == 0:
+            if column_index == 0:
                 feature, answer = value.split(":", 1)
                 for content, is_bold in ((feature + ":", True), (answer, False)):
                     run = paragraph.add_run()
@@ -680,7 +678,7 @@ def build_presentation():
             else:
                 run = paragraph.add_run()
                 run.text = value
-                style_font(run.font, size, bold=row_index == 0)
+                style_font(run.font, size)
 
     text(expanded, "SHAP appendix label", "Appendix:",
          72, 674, 86, 24, 18, color=SECONDARY)
