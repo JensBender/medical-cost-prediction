@@ -524,9 +524,9 @@ a planning note because high cost estimates come with greater uncertainty.
 To reduce the risk of underbudgeting, it suggests she plan closer to the safety
 cushion.
 
-Since the model uses data from 2023, the app will adjust the estimates for medical
-inflation using data from the Bureau of Labor Statistics API. The numbers shown
-here are already inflation-adjusted for the current year.
+Since the model uses data from 2023, I adjust the estimates for medical inflation
+using data from the Bureau of Labor Statistics API. The numbers shown here are
+already inflation-adjusted for the current year.
 
 She can also click to see which answers shaped her estimate and how it compares
 with others.”
@@ -599,17 +599,23 @@ SHAP details appendix link to A21.
 
 **Speaker notes — 0:25**
 
-“She can expand this section to see the five answers that contributed most to
-her plan-around estimate. SHAP shows how those answers moved her estimate up or
-down. These contributions explain her plan-around estimate only. The comparisons
-alongside it help her see how her estimate compares with typical costs for U.S.
-adults and people her age.”
+“I use SHAP to explain how her answers contributed to her plan-around estimate
+and show her the five largest dollar contributions, so she can see which answers
+moved her estimate up or down and by how much. She can also see how her estimate
+compares with typical costs for U.S. adults and people in her age group.”
+
+For questions:
+
+Cost comparisons: Based on actual out-of-pocket costs from the training data,
+using survey-weighted, inflation-adjusted medians for all adults and four age
+groups: 18–34, 35–49, 50–64, and 65+.
 
 **Transition:** Close with the implemented components and remaining application
 and validation work.
 
 **Sources:** [README: example prediction output](../../README.md);
-[SHAP explanation module](../../src/explainability.py).
+[SHAP explanation module](../../src/explainability.py);
+[cost benchmark calculation](../../scripts/build_app_artifacts.py).
 
 ### 11 — Model evaluation is complete; app development comes next
 
