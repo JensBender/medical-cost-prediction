@@ -321,17 +321,16 @@ costs, the more it tended to underestimate actual costs.
 
 XGBoost's predictions, on the other hand, reached about $2,100, and its median
 residuals generally stayed closer to zero. It also had the lowest mean absolute
-error and lower median error than Elastic Net in key subgroups, such as people
-with poor physical health. So I chose XGBoost as the more promising model for
-planning for higher-cost years.
+error. So I chose XGBoost as the more promising model for planning for higher-cost
+years.
 
 But even a more useful central estimate doesn’t show how widely someone’s
 costs could vary. I initially focused on typical prediction error, but residual
 analysis showed that errors were generally more spread out at higher predicted
 costs. A single estimate cannot communicate that uncertainty.
 
-For budgeting, this matters because someone could plan around the central
-estimate and still be underprepared for a higher-cost year. So I decided to
+This matters because someone who budgets using only the central estimate could
+be underprepared for a higher-cost year. So I decided to
 switch to quantile regression in XGBoost.
 
 **Transition:** Map the quantiles directly to the intended budgeting estimates.
