@@ -182,6 +182,15 @@ nonresponse. I use them in data exploration, model training, and evaluation so t
 results reflect the population rather than the sample’s composition. Otherwise,
 oversampled groups would have disproportionate influence.”
 
+For questions:
+
+Data leakage risk: I prioritized measurements taken early in the year, typically
+around February or March, although some households were interviewed later. This
+is less concerning for relatively stable features such as sex, age, education,
+and chronic conditions. Insurance status, family income, and self-rated health
+are more exposed to this risk. Its impact on next-year forecasting performance
+is difficult to quantify and would require a separate analysis.
+
 **Transition:** Show why the spending distribution makes this task difficult.
 
 **Sources:** [README: data and preprocessing](../../README.md);
@@ -535,11 +544,6 @@ index for the latest available month from the Bureau of Labor Statistics API
 and divides it by the 2023 annual average. The app will use that factor to adjust
 all displayed dollar amounts, including predictions, population and age-group
 comparisons, and SHAP contributions.
-
-Next-year use: The test split comes from 2023, and some inputs summarize
-information collected during that year. The planned next-year use case needs
-feature-timing checks and later-year validation. Scope wording and planning
-notices communicate limitations but do not fix calibration.
 
 **Transition:** Open the explanations and comparisons.
 
