@@ -1457,11 +1457,14 @@ I use permutation SHAP to explain the full prediction pipeline using her origina
 inner XGBoost model using its model-ready features after preprocessing, but those
 are harder to relate back to her answers.
 
-Permutation SHAP compares predictions using different combinations of her answers
-and answers from the background data. It uses the changes in those predictions
-to calculate the contributions. Explaining just one person can require thousands
-of these predictions, making it much more computationally expensive than
-producing the estimate alone.
+For her single plan-around estimate, permutation SHAP runs thousands of extra
+predictions on modified versions of her answers. It replaces selected answers
+with answers from the background data and averages the resulting predictions
+across all background data samples. By comparing these average predictions as
+her own answers are added or removed, it estimates each answer’s contribution
+to her prediction. The same answer can contribute a different amount for someone
+else. For her, joint pain moved the estimate up by $110, but for another person
+it moved it up by only $13.
 
 The contributions explain the model’s prediction, not causal effects.”
 
