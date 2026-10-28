@@ -1469,7 +1469,10 @@ This lets me use SHAP as a product feature to help users understand their
 estimates. SHAP can also be used for feature importance analysis by averaging
 feature contributions across all people.
 
-The contributions explain the model’s prediction, not causal effects.”
+SHAP has several limitations: it explains predicted costs, not actual costs.
+Its contributions should not be interpreted as causal effects. Correlated
+features can make individual contributions harder to interpret, and the results
+depend on the choice of background data.”
 
 For questions:
 
