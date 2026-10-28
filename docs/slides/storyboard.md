@@ -1427,13 +1427,11 @@ estimate provides the starting point.
 **Feature contributions:** Show how each of the 27 answers moves the
 plan-around estimate up or down from the starting point.
 
-**Why permutation SHAP:** Explains the full prediction pipeline using the
-original answers before preprocessing.
+**Why permutation SHAP:** Explains the full prediction pipeline using answers
+before preprocessing.
 
-**Limitations:** Predicted costs, not actual costs. No causal interpretation.
-Background dependent. Correlated features.
-
-**Which answers shaped your estimate?**
+**Limitations:** No causal interpretation, background dependence, correlated
+features, predicted rather than actual costs.
 
 | | |
 |---|---:|
@@ -1444,8 +1442,10 @@ Background dependent. Correlated features.
 | **Insurance:** Any private | ↑ +$80 |
 
 **Visual:** Four text sections with bold headers on the left. On the right,
-repeat the heading and five contribution rows from slide 10, slightly smaller,
-without table headers or borders. A backlink returns to slide 10.
+repeat the five contribution rows from slide 10, slightly smaller, inside a
+thin light gray border matching the example output slides. Align the border
+with the top of the left text. Omit the repeated heading, table headers, and row
+borders. A backlink returns to slide 10.
 
 **Speaker notes**
 

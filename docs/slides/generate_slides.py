@@ -1097,21 +1097,27 @@ def build_presentation():
          "estimate provides the starting point.", 148, 144),
         ("Feature contributions", "Show how each of the 27 answers moves the "
          "plan-around estimate up or down from the starting point.", 308, 104),
-        ("Why permutation SHAP", "Explains the full prediction pipeline using the "
-         "original answers before preprocessing.", 428, 104),
-        ("Limitations", "Predicted costs, not actual costs. No causal interpretation. "
-         "Background dependent. Correlated features.", 548, 104),
+        ("Why permutation SHAP", "Explains the full prediction pipeline using "
+         "answers before preprocessing.", 428, 104),
+        ("Limitations", "No causal interpretation, background dependence, "
+         "correlated features, predicted rather than actual costs.", 548, 104),
     ):
         text(shap_details, heading, [(f"{heading}:", True), f" {description}"],
              72, y, 680, height, 28)
-    text(shap_details, "SHAP heading", "Which answers shaped your estimate?",
-         808, 148, 400, 72, 26, bold=True)
+    shap_example_border = shap_details.shapes.add_shape(
+        MSO_SHAPE.RECTANGLE, pixels(784), pixels(148), pixels(448), pixels(308),
+    )
+    shap_example_border.name = "SHAP example border"
+    shap_example_border.fill.background()
+    shap_example_border.line.color.rgb = RGBColor.from_string(RULE)
+    shap_example_border.line.width = Pt(1)
+    shap_example_border._element.spPr.append(OxmlElement("a:effectLst"))
     shap_example = deepcopy(next(shape for shape in expanded.shapes
                                 if shape.name == "SHAP contributions table")._element)
     shap_details.shapes._spTree.insert_element_before(shap_example, "p:extLst")
     shap_example_shape = shap_details.shapes[-1]
     shap_example_shape.left = pixels(808)
-    shap_example_shape.top = pixels(236)
+    shap_example_shape.top = pixels(172)
     shap_example_shape.width = pixels(400)
     shap_example_shape.table.columns[0].width = pixels(292)
     shap_example_shape.table.columns[1].width = pixels(108)
