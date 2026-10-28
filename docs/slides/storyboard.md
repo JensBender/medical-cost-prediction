@@ -1447,18 +1447,23 @@ returns to slide 10.
 reference sample called background data, drawn from the training data using
 survey weights to approximate the U.S. adult population. The starting point is
 the model’s average plan-around estimate for that background data. The
-contributions show how each of her 27 answers moves the prediction up or down.
+contributions show how each of her 27 answers moves the prediction up or down,
+and the app shows her the top five.
 The starting point plus all 27 feature contributions equals her plan-around
 estimate.
 
-SHAP explains the full inference process: preprocessing, quantile
-prediction, converting log-transformed costs back to dollars, and postprocessing.
-Postprocessing clips negative predictions to zero and keeps quantiles in order,
-so higher percentiles never predict lower costs.
+I use permutation SHAP to explain the full prediction pipeline using her original
+27 answers. You could also use SHAP’s tree explainer, which would instead explain the
+inner XGBoost model using its model-ready features after preprocessing, but those
+are harder to relate back to her answers.
 
-This lets me explain her original answers rather than encoded model-ready
-features. The app shows the five largest dollar contributions. These explain the
-model’s prediction, not causal effects.”
+Permutation SHAP compares predictions using different combinations of her answers
+and answers from the background data. It uses the changes in those predictions
+to calculate the contributions. Explaining just one person can require thousands
+of these predictions, making it much more computationally expensive than
+producing the estimate alone.
+
+The contributions explain the model’s prediction, not causal effects.”
 
 For questions:
 
