@@ -1414,32 +1414,38 @@ or education input. The note uses neutral wording without naming the group.
 **Sources:** [README: final subgroup audit](../../README.md#final-model-subgroup-reliability--fairness);
 [modeling notebook: test subgroup analysis](../../notebooks/2_modeling.py).
 
-### A21 — SHAP shows how user answers shape predictions
+### A21 — SHAP explains how answers shape predictions
 
 **Question:** How can the app explain contributions from the person’s answers?
 
 **On the slide**
 
-SHAP assigns dollar contributions to 27 interpretable inputs before encoding and
-scaling. This keeps explanations tied to users’ answers.
+**Background data:** A reference sample drawn from training data using survey
+weights to approximate the U.S. adult population. Its average plan-around
+estimate provides the starting point.
 
-**Explained prediction:** The plan-around estimate (q50), through preprocessing,
-quantile prediction, conversion back to dollars, and postprocessing.
+**Feature contributions:** Show how each of the 27 answers moves the
+plan-around estimate up or down from the starting point.
 
-**Starting point + All 27 contributions = Plan around**
+**Why permutation SHAP:** Explains the full prediction pipeline using the
+original answers before preprocessing.
 
-- **Starting point:** Average prediction for a reference group.
-- **All 27 contributions:** How each input moves the estimate up or down.
-- **Plan around:** Predicted typical costs for this profile.
+**Limitations:** Predicted costs, not actual costs. No causal interpretation.
+Background dependent. Correlated features.
 
-The app displays the five largest contributions, positive or negative.
+**Which answers shaped your estimate?**
 
-*Contributions describe the model’s prediction, not causal effects.*
+| | |
+|---|---:|
+| **Arthritis:** Yes | ↑ +$124 |
+| **Joint pain:** Yes | ↑ +$110 |
+| **High blood pressure:** Yes | ↑ +$94 |
+| **Age:** 69 | ↑ +$92 |
+| **Insurance:** Any private | ↑ +$80 |
 
-**Visual:** The slide leads with interpretable user inputs and identifies the
-prediction process being explained. A horizontal equation connects the reference
-starting point, all input contributions, and the plan-around estimate. A backlink
-returns to slide 10.
+**Visual:** Four text sections with bold headers on the left. On the right,
+repeat the heading and five contribution rows from slide 10, slightly smaller,
+without table headers or borders. A backlink returns to slide 10.
 
 **Speaker notes**
 

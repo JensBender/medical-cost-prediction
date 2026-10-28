@@ -5,6 +5,7 @@ bundled presentation renderer supplied by ChatGPT or Codex.
 """
 
 import argparse
+from copy import deepcopy
 import json
 import os
 from pathlib import Path
@@ -1089,32 +1090,37 @@ def build_presentation():
     final_fairness_return_link.click_action.target_slide = results
 
     shap_details = new_slide(presentation, storyboard, "A21",
-                             "SHAP shows how user answers shape predictions")
-    text(shap_details, "Interpretable inputs", "SHAP assigns dollar contributions to "
-         "27 interpretable inputs before encoding and scaling. This keeps explanations "
-         "tied to users’ answers.", 72, 148, 1136, 84, 28)
-    text(shap_details, "Explained prediction", [
-        ("Explained prediction:", True),
-        " The plan-around estimate (q50), through preprocessing, quantile prediction, "
-        "conversion back to dollars, and postprocessing.",
-    ], 72, 260, 1136, 96, 26)
-    for name, heading, description, x, width in (
-        ("Baseline", "Starting point", "Average prediction for\na reference group", 72, 300),
-        ("Contributions", "All 27 contributions", "How each input moves\nthe estimate up or down", 448, 360),
-        ("Prediction", "Plan around", "Predicted typical costs\nfor this profile", 896, 312),
+                             "SHAP explains how answers shape predictions")
+    for heading, description, y, height in (
+        ("Background data", "A reference sample drawn from training data using survey "
+         "weights to approximate the U.S. adult population. Its average plan-around "
+         "estimate provides the starting point.", 148, 144),
+        ("Feature contributions", "Show how each of the 27 answers moves the "
+         "plan-around estimate up or down from the starting point.", 308, 104),
+        ("Why permutation SHAP", "Explains the full prediction pipeline using the "
+         "original answers before preprocessing.", 428, 104),
+        ("Limitations", "Predicted costs, not actual costs. No causal interpretation. "
+         "Background dependent. Correlated features.", 548, 104),
     ):
-        text(shap_details, f"{name} heading", heading,
-             x, 394, width, 40, 30, bold=True, alignment=PP_ALIGN.CENTER)
-        text(shap_details, f"{name} description", description,
-             x, 446, width, 80, 24, color=SECONDARY, alignment=PP_ALIGN.CENTER)
-    text(shap_details, "Add contributions", "+", 384, 390, 56, 52, 42,
-         alignment=PP_ALIGN.CENTER)
-    text(shap_details, "Reconstruct prediction", "=", 824, 390, 56, 52, 42,
-         alignment=PP_ALIGN.CENTER)
-    text(shap_details, "Displayed contributions", "The app displays the five largest "
-         "contributions, positive or negative.", 72, 560, 1136, 40, 26)
-    text(shap_details, "Interpretation limit", "Contributions describe the model’s "
-         "prediction, not causal effects.", 72, 618, 1136, 30, 20, color=SECONDARY)
+        text(shap_details, heading, [(f"{heading}:", True), f" {description}"],
+             72, y, 680, height, 28)
+    text(shap_details, "SHAP heading", "Which answers shaped your estimate?",
+         808, 148, 400, 72, 26, bold=True)
+    shap_example = deepcopy(next(shape for shape in expanded.shapes
+                                if shape.name == "SHAP contributions table")._element)
+    shap_details.shapes._spTree.insert_element_before(shap_example, "p:extLst")
+    shap_example_shape = shap_details.shapes[-1]
+    shap_example_shape.left = pixels(808)
+    shap_example_shape.top = pixels(236)
+    shap_example_shape.width = pixels(400)
+    shap_example_shape.table.columns[0].width = pixels(292)
+    shap_example_shape.table.columns[1].width = pixels(108)
+    for row in shap_example_shape.table.rows:
+        for cell in row.cells:
+            for paragraph in cell.text_frame.paragraphs:
+                style_font(paragraph.font, 24)
+                for run in paragraph.runs:
+                    style_font(run.font, 24, bold=bool(run.font.bold))
     shap_details_return_link = text(shap_details, "Return to example prediction", "Back",
                                     72, 674, 100, 24, 18, color=SECONDARY, underline=True)
     shap_details_link.click_action.target_slide = shap_details
