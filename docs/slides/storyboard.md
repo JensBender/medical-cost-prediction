@@ -1448,10 +1448,10 @@ reference sample called background data, drawn from the training data using
 survey weights to approximate the U.S. adult population. The starting point is
 the model’s average plan-around estimate for that background data. The
 contributions show how each of her 27 answers moves the prediction up or down.
-Together, they take it from that starting point to her personal estimate.
+The starting point plus all 27 feature contributions equals her plan-around
+estimate.
 
-Here, I explain the plan-around estimate only, not the typical range or safety
-cushion. SHAP explains the full inference process: preprocessing, quantile
+SHAP explains the full inference process: preprocessing, quantile
 prediction, converting log-transformed costs back to dollars, and postprocessing.
 Postprocessing clips negative predictions to zero and keeps quantiles in order,
 so higher percentiles never predict lower costs.
@@ -1462,9 +1462,9 @@ model’s prediction, not causal effects.”
 
 For questions:
 
-Starting point: This is the average model prediction across 225 reference
-training rows sampled using survey weights. It is not the population median
-shown in the comparison beside the example.
+Why explain plan around: I expect most users to rely mainly on the plan-around
+estimate for budgeting. SHAP could also explain the safety cushion, but showing
+both sets of contributions could be overwhelming.
 
 Pipeline: SHAP receives the 27 inputs before preprocessing. Each evaluation
 includes imputation, derived medical counts, scaling and encoding, quantile
@@ -1479,12 +1479,6 @@ Interpretation: Contributions depend on the other answers and reference data;
 correlated inputs can share attribution. These explanations cover q50, not the
 typical range or safety cushion. They do not show how changing an input would
 affect actual costs.
-
-Display: The five displayed contributions do not reproduce the prediction on
-their own. The starting point and the remaining 22 contributions also matter.
-
-Native importance: XGBoost’s built-in importance summarizes training gains for
-model-ready features. It does not explain an individual plan-around prediction.
 
 **Transition:** Return to the example prediction output.
 
