@@ -1092,20 +1092,19 @@ def build_presentation():
     shap_details = new_slide(presentation, storyboard, "A21",
                              "SHAP explains how answers shape predictions")
     for heading, description, y, height in (
-        ("Background data", "A reference sample drawn from training data using survey "
-         "weights to approximate the U.S. adult population. Its average plan-around "
-         "estimate provides the starting point.", 148, 144),
+        ("Background data", "A reference sample drawn from training data. Its average "
+         "plan-around estimate provides the starting point.", 148, 112),
         ("Feature contributions", "Show how each of the 27 answers moves the "
-         "plan-around estimate up or down from the starting point.", 308, 104),
+         "plan-around estimate up or down.", 276, 80),
         ("Why permutation SHAP", "Explains the full prediction pipeline using "
-         "answers before preprocessing.", 428, 104),
-        ("Limitations", "No causal interpretation, background dependence, "
-         "correlated features, predicted rather than actual costs.", 548, 104),
+         "answers before preprocessing.", 372, 80),
+        ("Limitations", "No causal interpretation, background data dependence, "
+         "correlated features, predicted rather than actual costs.", 468, 112),
     ):
         text(shap_details, heading, [(f"{heading}:", True), f" {description}"],
              72, y, 680, height, 28)
     shap_example_border = shap_details.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE, pixels(784), pixels(148), pixels(448), pixels(308),
+        MSO_SHAPE.RECTANGLE, pixels(784), pixels(148), pixels(448), pixels(276),
     )
     shap_example_border.name = "SHAP example border"
     shap_example_border.fill.background()
@@ -1117,7 +1116,7 @@ def build_presentation():
     shap_details.shapes._spTree.insert_element_before(shap_example, "p:extLst")
     shap_example_shape = shap_details.shapes[-1]
     shap_example_shape.left = pixels(808)
-    shap_example_shape.top = pixels(172)
+    shap_example_shape.top = pixels(156)
     shap_example_shape.width = pixels(400)
     shap_example_shape.table.columns[0].width = pixels(292)
     shap_example_shape.table.columns[1].width = pixels(108)
