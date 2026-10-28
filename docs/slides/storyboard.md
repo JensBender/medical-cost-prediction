@@ -1443,19 +1443,18 @@ returns to slide 10.
 
 **Speaker notes**
 
-“SHAP is a method for explaining the model prediction for a single person. It uses a
-reference sample called background data, drawn from the training data using
-survey weights to approximate the U.S. adult population. The starting point is
-the model’s average plan-around estimate for that background data. The
-contributions show how each of her 27 answers moves the prediction up or down,
-and the app shows her the top five.
-The starting point plus all 27 feature contributions equals her plan-around
-estimate.
+“SHapley Additive exPlanations, or SHAP, is a method for explaining the model
+prediction for a single person. It uses a reference sample called background
+data, drawn from the training data using survey weights to approximate the U.S.
+adult population. The starting point is the model’s average plan-around estimate
+for that background data. The contributions show how each of her 27 answers
+moves the prediction up or down, and the app shows her the top five. The starting
+point plus all 27 feature contributions equals her plan-around estimate.
 
 I use permutation SHAP to explain the full prediction pipeline using her original
-27 answers. You could also use SHAP’s tree explainer, which would instead explain the
-inner XGBoost model using its model-ready features after preprocessing, but those
-are harder to relate back to her answers.
+27 answers. You could also use SHAP’s tree explainer, which would instead explain
+the inner XGBoost model using its model-ready features after preprocessing, but
+those are harder to relate back to her answers.
 
 For her single plan-around estimate, permutation SHAP runs thousands of extra
 predictions on modified versions of her answers. It replaces selected answers
@@ -1466,6 +1465,10 @@ to her prediction. The same answer can contribute a different amount for someone
 else. For her, joint pain moved the estimate up by $110, but for another person
 it moved it up by only $13.
 
+This lets me use SHAP as a product feature to help users understand their
+estimates. SHAP can also be used for feature importance analysis by averaging
+feature contributions across all people.
+
 The contributions explain the model’s prediction, not causal effects.”
 
 For questions:
@@ -1473,20 +1476,6 @@ For questions:
 Why explain plan around: I expect most users to rely mainly on the plan-around
 estimate for budgeting. SHAP could also explain the safety cushion, but showing
 both sets of contributions could be overwhelming.
-
-Pipeline: SHAP receives the 27 inputs before preprocessing. Each evaluation
-includes imputation, derived medical counts, scaling and encoding, quantile
-prediction, the inverse log transformation back to dollars, and postprocessing.
-The same inflation factor then adjusts the starting point, contributions, and
-prediction for display.
-
-Method: The project uses permutation SHAP, which measures prediction changes
-while substituting reference values for some inputs.
-
-Interpretation: Contributions depend on the other answers and reference data;
-correlated inputs can share attribution. These explanations cover q50, not the
-typical range or safety cushion. They do not show how changing an input would
-affect actual costs.
 
 **Transition:** Return to the example prediction output.
 
