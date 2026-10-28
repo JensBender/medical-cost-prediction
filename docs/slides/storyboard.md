@@ -211,11 +211,11 @@ supplement household reports for selected services; not every payment is
 independently verified. MEPS edits inconsistent reports and imputes missing
 expenditures before aggregating the annual total.
 
-See A3–A4 for preprocessor input features, counts, and possible feature reduction,
-and A22 for input timing. Preprocessing is fitted on training data. The 80/10/10 split is
-random within spending groups, with a separate zero-cost group and finer bins
-for high costs to reduce imbalances in rare, expensive cases. Discuss the split
-after the spending-distribution slide if asked.
+See A3–A4 for preprocessor input features, counts, and possible feature reduction.
+Preprocessing is fitted on training data. The 80/10/10 split is random within
+spending groups, with a separate zero-cost group and finer bins for high costs
+to reduce imbalances in rare, expensive cases. Discuss the split after the
+spending-distribution slide if asked.
 
 ### 4 — Out-of-pocket costs: 20% of adults account for ~80%
 
@@ -803,7 +803,7 @@ after adding a life-transition feature and 40 model-ready columns after
 transformation. These counts do not equal the number of questions on the planned
 form: related conditions can be grouped, and some values are derived. User testing
 will assess the burden; feature reduction is an option if fewer inputs would
-improve the experience. Refer to A22 for input timing.
+improve the experience.
 
 **Sources:** [README: feature details](../../README.md#feature-details);
 [input definitions](../../src/constants.py);
@@ -1492,28 +1492,7 @@ model-ready features. It does not explain an individual plan-around prediction.
 [SHAP explanation module](../../src/explainability.py);
 [SHAP metadata](../../app/data/shap_metadata.json).
 
-### A22 — Feature timing: limits of next-year forecasting
-
-**Question:** Is this truly a next-year forecast?
-
-**On the slide:** Early-round health measures reduce reliance on later-year
-information, but interviews occur during the cost year. Variables such as
-`INSCOV23` summarize the full year. Current evaluation uses a within-year split.
-
-**Visual:** A timeline separating survey collection, the 2023 spending target,
-and the planned prospective application.
-
-**Talking points:** Training-fitted preprocessing addresses one source of
-leakage. Feature availability at the intended prediction date is a separate
-issue. Audit every input against that date and evaluate on later-year data.
-Do not claim the size or direction of the resulting performance change is known.
-
-**Promote:** After 3 or 9 for forecasting and validation questions; allow 1:00.
-
-**Sources:** [input feature timing](../research/candidate_features.md);
-[technical specifications: input selection](../specs/technical_specifications.md).
-
-### A23 — SHAP benchmarking: explanation quality and latency
+### A22 — SHAP benchmarking: explanation quality and latency
 
 **Question:** How was the SHAP configuration chosen?
 
