@@ -1095,18 +1095,27 @@ def build_presentation():
         ("Background data", "A reference sample drawn from training data. Its average "
          "plan-around estimate provides the starting point.", 148, 112),
         ("Feature contributions", "Show how each of the 27 answers moves the "
-         "plan-around estimate up or down.", 276, 80),
+         "plan-around estimate up or down.", 264, 112),
         ("Why permutation SHAP", "Explains the full prediction pipeline using "
-         "answers before preprocessing.", 372, 80),
+         "answers before preprocessing.", 380, 112),
         ("Limitations", "Predicted rather than actual costs,\n"
          "no causal interpretation, correlated features,\n"
-         "background data dependence.", 468, 112),
+         "background data dependence.", 496, 112),
     ):
         lines = description.split("\n")
         section = text(shap_details, heading, [(f"{heading}:", True), f" {lines[0]}"],
                        72, y, 680, height, 28)
+        paragraph = section.text_frame.paragraphs[0]
+        properties = paragraph._p.get_or_add_pPr()
+        properties.set("marL", str(pixels(24)))
+        properties.set("indent", str(-pixels(16)))
+        bullet_font = OxmlElement("a:buFont")
+        bullet_font.set("typeface", FONT)
+        bullet = OxmlElement("a:buChar")
+        bullet.set("char", "•")
+        properties.append(bullet_font)
+        properties.append(bullet)
         for line in lines[1:]:
-            paragraph = section.text_frame.paragraphs[0]
             paragraph.add_line_break()
             run = paragraph.add_run()
             run.text = line
