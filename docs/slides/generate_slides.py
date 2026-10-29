@@ -1098,11 +1098,19 @@ def build_presentation():
          "plan-around estimate up or down.", 276, 80),
         ("Why permutation SHAP", "Explains the full prediction pipeline using "
          "answers before preprocessing.", 372, 80),
-        ("Limitations", "No causal interpretation, background data dependence, "
-         "correlated features, predicted rather than actual costs.", 468, 112),
+        ("Limitations", "Predicted rather than actual costs,\n"
+         "no causal interpretation, correlated features,\n"
+         "background data dependence.", 468, 112),
     ):
-        text(shap_details, heading, [(f"{heading}:", True), f" {description}"],
-             72, y, 680, height, 28)
+        lines = description.split("\n")
+        section = text(shap_details, heading, [(f"{heading}:", True), f" {lines[0]}"],
+                       72, y, 680, height, 28)
+        for line in lines[1:]:
+            paragraph = section.text_frame.paragraphs[0]
+            paragraph.add_line_break()
+            run = paragraph.add_run()
+            run.text = line
+            style_font(run.font, 28)
     shap_example_border = shap_details.shapes.add_shape(
         MSO_SHAPE.RECTANGLE, pixels(784), pixels(148), pixels(448), pixels(276),
     )

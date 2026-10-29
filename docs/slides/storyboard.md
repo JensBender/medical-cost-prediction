@@ -603,12 +603,14 @@ SHAP details appendix link to A21.
 and show her the five largest dollar contributions, so she can see which answers
 moved her estimate up or down and by how much. SHAP explains the full prediction
 pipeline, including preprocessing and postprocessing, so that these contributions
-correspond to her original answers rather than model-ready features.
+correspond to her original answers rather than model-ready features after
+preprocessing.
 
 She can also see how her plan-around estimate compares with typical costs for
 U.S. adults and people in her age group. These comparison benchmarks are based on
-actual out-of-pocket costs, summarized as medians for all adults and various age
-groups. They use the training data and are survey-weighted and inflation-adjusted.”
+actual out-of-pocket costs, summarized as the median for all adults and for
+various age groups. They use the training data and are survey-weighted and
+inflation-adjusted.”
 
 For questions:
 
@@ -1429,8 +1431,9 @@ plan-around estimate up or down.
 **Why permutation SHAP:** Explains the full prediction pipeline using answers
 before preprocessing.
 
-**Limitations:** No causal interpretation, background data dependence, correlated
-features, predicted rather than actual costs.
+**Limitations:** Predicted rather than actual costs,<br>
+no causal interpretation, correlated features,<br>
+background data dependence.
 
 | | |
 |---|---:|
@@ -1462,10 +1465,11 @@ I use permutation SHAP to explain the full prediction pipeline using her origina
 the inner XGBoost model using its model-ready features after preprocessing, but
 those are harder to relate back to her answers.
 
-For her single plan-around estimate, permutation SHAP runs thousands of extra
-predictions on modified versions of her answers. It replaces selected answers
-with answers from the background data and averages the resulting predictions
-across all background data samples. By comparing these average predictions as
+The way permutation SHAP works is that, for her single plan-around estimate,
+it runs thousands of extra predictions on modified versions of her answers.
+It replaces selected answers with answers from the background data and averages
+the resulting predictions across all background data samples. By comparing these
+average predictions as
 her own answers are added or removed, it estimates each answer’s contribution
 to her prediction. The same answer can contribute a different amount for someone
 else. For her, joint pain moved the estimate up by $110, but for another person
