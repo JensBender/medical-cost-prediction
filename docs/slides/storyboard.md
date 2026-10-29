@@ -1669,7 +1669,8 @@ the bottom corners, outside the image’s horizontal bounds.
 how much contributions vary within each category. "Any Private" insurance
 generally moves estimates up, while "Public Only" and "Uninsured" move them down.
 Education up to high school generally moves estimates down, while a bachelor’s
-degree or higher generally moves them up.”
+degree or higher generally moves them up. You can also see that insurance tends
+to move estimates by much larger amounts than, for example, marital status.”
 
 **Transition:** Return to the example prediction output.
 
