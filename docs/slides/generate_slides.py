@@ -1160,18 +1160,18 @@ def build_presentation():
             style_font(run.font, 36, bold=True)
     for heading, description, y, height, level in (
         ("Configurations", "Tested 50–300 background data rows and 1–12 permutation rounds "
-         "against a larger reference configuration (500 rows, 24 rounds).", 148, 76, 0),
-        ("Winner", "225 background rows and 1 permutation round.", 232, 40, 0),
-        ("Quality checks", "Passed.", 284, 40, 0),
+         "against a larger reference configuration (500 rows, 24 rounds).", 148, 112, 0),
+        ("Winner", "225 background rows and 1 permutation round.", 260, 40, 0),
+        ("Quality checks", "Passed.", 312, 40, 0),
         ("Background validation", "8.8% difference from full training data (limit: 10%).",
-         328, 40, 1),
+         356, 76, 1),
         ("Explanation stability", "Minimum 4 of 5 top features matched the reference "
          "configuration. Median absolute contribution difference was $6.47 (limit: $25).",
-         372, 76, 1),
-        ("SHAP explanation latency", "P95 was 0.20 seconds.", 460, 40, 0),
+         436, 112, 1),
+        ("SHAP explanation latency", "P95 was 0.20 seconds.", 552, 40, 0),
     ):
         section = text(shap_benchmark, heading, [(f"{heading}:", True), f" {description}"],
-                       72 + 32 * level, y, 1136 - 32 * level, height, 28)
+                       72 + 32 * level, y, 804 - 32 * level, height, 28)
         paragraph = section.text_frame.paragraphs[0]
         paragraph.level = level
         properties = paragraph._p.get_or_add_pPr()
@@ -1183,6 +1183,9 @@ def build_presentation():
         bullet.set("char", "◦" if level else "•")
         properties.append(bullet_font)
         properties.append(bullet)
+    picture(shap_benchmark, SLIDES_DIR / "assets/shap-benchmarking.png",
+            "Illustrated homage to Lloyd Shapley adjusting two knobs while holding "
+            "a stopwatch, with a PASS card on the test bench.", 928, 148, 280, 373.333)
     shap_benchmark_link = text(
         shap_details, "SHAP benchmarking appendix link", "SHAP benchmarking",
         190, 674, 300, 24, 18, color=SECONDARY, underline=True,

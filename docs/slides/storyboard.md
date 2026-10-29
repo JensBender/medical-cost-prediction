@@ -1515,8 +1515,15 @@ with bold headers. Combine tested and reference configurations in one bullet,
 followed by the winner, quality checks, and latency. Background validation and
 explanation stability are indented sub-bullets under quality checks. Keep bullet
 spacing compact, with slightly tighter spacing within the quality-check group.
-Allow two lines for configurations and explanation stability. Timing scope and deployment
-testing details remain in the speaker notes. Link here from A21.
+Use slide 3’s layout: text in the left column and a vertical
+[illustrated homage to Lloyd Shapley](assets/shap-benchmarking.png) in the right column,
+aligned with the top of the text. Keep the image smaller than slide 3’s to give
+the text column more width and reduce the illustration’s prominence.
+Shapley holds a stopwatch at a test bench with two knobs and a PASS card.
+Keep the transparent background and allow the bullets to wrap within the left
+column without changing their wording or font size.
+Timing scope and deployment testing details remain in the speaker notes.
+Link here from A21.
 
 **Backlink:** SHAP explanation details (A21).
 
@@ -1579,7 +1586,8 @@ output.
 
 **Sources:** [README: SHAP explanation details](../../README.md);
 [SHAP metadata](../../app/data/shap_metadata.json);
-[benchmark script](../../scripts/benchmark_shap.py).
+[benchmark script](../../scripts/benchmark_shap.py);
+[Lloyd Shapley portrait reference (Princeton)](https://gradschool.princeton.edu/sites/g/files/toruqf8531/files/styles/3x4_750w_1000h/public/2026-01/2012-eco-shapley-official-portrait.jpg?itok=t9pDrUXv).
 
 ## Adaptation and file organization
 
