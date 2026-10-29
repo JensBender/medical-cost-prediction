@@ -1511,7 +1511,10 @@ boundary stated explicitly.
 
 **Speaker notes**
 
-“A larger background sample can better represent the population, and more
+“I ran SHAP benchmarking experiments to choose the background sample size and
+number of permutation rounds.
+
+A larger background sample can better represent the population, and more
 permutation rounds can make contributions more stable. But both require
 additional predictions, which increases latency.
 
@@ -1520,8 +1523,8 @@ SHAP explanations under one second.
 
 I tested background sizes between 50 and 300 rows and 1 to 12 permutation rounds.
 I compared their explanations with a larger reference configuration and selected
-the fastest setup that passed the quality checks, which was 225 background rows
-and one permutation round.
+the fastest configuration that passed the quality checks, which was 225
+background rows and one permutation round.
 
 95% of SHAP calculations finished within 0.2 seconds, but complete
 prediction-request timing still needs to be tested on the deployment hardware.”
@@ -1542,10 +1545,10 @@ same sign. They all did.
 Subsequent-call latency: The first explanation call is timed separately.
 Subsequent calls better represent normal operation once the explainer is ready.
 
-Core SHAP explanation latency: The repeated
-predictions needed to calculate SHAP contributions (measured locally). It excludes the separate
-prediction that produces the displayed cost estimates, other server work,
-network transfer, and interface rendering.
+Core SHAP explanation latency: Measures the time to calculate SHAP contributions
+on local hardware. It excludes the separate prediction that produces the
+displayed cost estimates, other server work, network transfer, and interface
+rendering.
 
 P50 and P95: 50% of SHAP calculations finished within 0.17 seconds,
 and 95% within 0.20 seconds.
