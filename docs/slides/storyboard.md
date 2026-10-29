@@ -1469,9 +1469,11 @@ The way permutation SHAP works is that, for her single plan-around estimate,
 it runs thousands of extra predictions on modified versions of her answers.
 It replaces selected answers with answers from the background data and averages
 the resulting predictions across all background data samples. By comparing these
-average predictions as
-her own answers are added or removed, it estimates each answer’s contribution
-to her prediction. The same answer can contribute a different amount for someone
+average predictions as her own answers are added or removed, it estimates each
+answer’s contribution to her prediction. One permutation round adds and removes
+all her answers in a randomly chosen order. More rounds repeat this with different
+orders and average the contributions, which can make them more stable but takes
+longer. The same answer can contribute a different amount for someone
 else. For her, joint pain moved the estimate up by $110, but for another person
 it moved it up by only $13.
 
@@ -1507,11 +1509,51 @@ median matched contribution difference **$6.47**; P95 core SHAP latency **0.20 s
 **Visual:** One compact quality-versus-latency summary, with the measurement
 boundary stated explicitly.
 
-**Talking points:** The reference uses 500 background rows and 24 rounds.
-The benchmark also checks material sign reversals and prediction reconstruction.
-P95 summarizes subsequent explanation calls after a separately measured first
-call. It excludes the rest of the request and is not a deployed API latency
-claim. Complete request latency on target hardware remains unverified.
+**Speaker notes**
+
+“A larger background sample can better represent the population, and more
+permutation rounds can make contributions more stable. But both require
+additional predictions, which increases latency.
+
+To avoid making users wait too long, I targeted prediction requests including
+SHAP explanations under one second.
+
+I tested background sizes between 50 and 300 rows and 1 to 12 permutation rounds.
+I compared their explanations with a larger reference configuration and selected
+the fastest setup that passed the quality checks, which was 225 background rows
+and one permutation round.
+
+95% of SHAP calculations finished within 0.2 seconds, but complete prediction-request
+timing still needs to be tested on the deployment hardware.”
+
+For questions:
+
+Reference: 500 background rows and 24 permutation rounds.
+
+Background validation: The background’s average plan-around estimate must differ
+by at most 10% from the survey-weighted average prediction across the full
+training data. The selected background differed by 8.8%.
+
+Explanation stability: At least four of the top five features must match the
+reference. Matched reference contributions of at least $25 in size must keep the
+same sign. The median absolute difference between matched top-five contributions
+must be at most $25.
+
+Final test results: The selected configuration passed all quality checks on 100
+held-out test cases. Every case matched at least four of the reference’s top five
+features, all matched reference contributions of at least $25 kept the same sign,
+and the median contribution difference was $6.47. The starting point plus all 27
+contributions also reproduced the prediction to floating-point precision.
+
+Latency: The first explanation call is timed separately. P95 summarizes subsequent
+calls. This is separate from a full application cold start. Median core SHAP
+calculation time was 0.17 seconds and P95 was 0.20 seconds. This includes predictions and SHAP contributions, but
+excludes other server work, network transfer, and interface rendering. The
+under-one-second target applies to complete server-side prediction requests
+including SHAP, not just the explanation calculation.
+
+**Transition:** Return to SHAP explanation details or the example prediction
+output.
 
 **Promote:** Before 11 for ML engineering roles; allow 1:00.
 
