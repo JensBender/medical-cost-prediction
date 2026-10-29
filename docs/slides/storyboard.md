@@ -1498,25 +1498,28 @@ both sets of contributions could be overwhelming.
 [SHAP explanation module](../../src/explainability.py);
 [SHAP metadata](../../app/data/shap_metadata.json).
 
-### A22 — SHAP benchmarking: 225 background rows, 1 permutation round
+### A22 — SHAP benchmarking: fastest configuration passing quality checks
 
 **Question:** How was the SHAP configuration chosen?
 
 **On the slide**
 
-- **Goal:** Find the fastest configuration that passes quality checks.
-- **Tested configurations:** 50–300 background data rows and 1–12 permutation rounds.
-- **Reference configuration:** 500 background data rows and 24 permutation rounds.
-- **Background validation:** 8.8% difference from full training data (limit: 10%).
-- **Explanation stability:** Minimum 4 of 5 top features matched the reference
-  configuration. Median absolute contribution difference was $6.47 (limit: $25).
+- **Configurations:** Tested 50–300 background data rows and 1–12 permutation
+  rounds against a larger reference configuration (500 rows, 24 rounds).
+- **Winner:** 225 background rows and 1 permutation round.
+- **Quality checks:** Passed.
+  - **Background validation:** 8.8% difference from full training data (limit: 10%).
+  - **Explanation stability:** Minimum 4 of 5 top features matched the reference
+    configuration. Median absolute contribution difference was $6.47 (limit: $25).
 - **SHAP explanation latency:** P95 was 0.20 seconds.
 
-**Visual:** The title names the selected configuration on one line. Six text
-sections with bold headers use the full content width. Place the reference
-directly below the tested configurations and allow two lines for explanation
-stability. Timing scope and deployment testing details remain in the speaker
-notes. Link here from A21.
+**Visual:** The title states the selection goal on one line. Use native bullets
+with bold headers. Combine tested and reference configurations in one bullet,
+followed by the winner, quality checks, and latency. Background validation and
+explanation stability are indented sub-bullets under quality checks. Keep bullet
+spacing compact, with slightly tighter spacing within the quality-check group.
+Allow two lines for configurations and explanation stability. Timing scope and deployment
+testing details remain in the speaker notes. Link here from A21.
 
 **Backlink:** SHAP explanation details (A21).
 

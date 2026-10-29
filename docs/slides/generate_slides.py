@@ -1141,28 +1141,39 @@ def build_presentation():
 
     shap_benchmark = new_slide(
         presentation, storyboard, "A22",
-        "SHAP benchmarking: 225 background rows, 1 permutation round",
+        "SHAP benchmarking: fastest configuration passing quality checks",
     )
     benchmark_title = next(shape for shape in shap_benchmark.shapes
                            if shape.name == "A22 title")
+    benchmark_title.width = pixels(1160)
     for paragraph in benchmark_title.text_frame.paragraphs:
         for run in paragraph.runs:
             style_font(run.font, 36, bold=True)
-    for heading, description, y, height in (
-        ("Goal", "Find the fastest configuration that passes quality checks.", 148, 64),
-        ("Tested configurations", "50–300 background data rows and 1–12 permutation rounds.",
-         220, 64),
-        ("Reference configuration", "500 background data rows and 24 permutation rounds.",
-         292, 64),
+    for heading, description, y, height, level in (
+        ("Configurations", "Tested 50–300 background data rows and 1–12 permutation rounds "
+         "against a larger reference configuration (500 rows, 24 rounds).", 148, 76, 0),
+        ("Winner", "225 background rows and 1 permutation round.", 232, 40, 0),
+        ("Quality checks", "Passed.", 284, 40, 0),
         ("Background validation", "8.8% difference from full training data (limit: 10%).",
-         364, 64),
+         328, 40, 1),
         ("Explanation stability", "Minimum 4 of 5 top features matched the reference "
          "configuration. Median absolute contribution difference was $6.47 (limit: $25).",
-         436, 104),
-        ("SHAP explanation latency", "P95 was 0.20 seconds.", 556, 64),
+         372, 76, 1),
+        ("SHAP explanation latency", "P95 was 0.20 seconds.", 460, 40, 0),
     ):
-        text(shap_benchmark, heading, [(f"{heading}:", True), f" {description}"],
-             72, y, 1136, height, 28)
+        section = text(shap_benchmark, heading, [(f"{heading}:", True), f" {description}"],
+                       72 + 32 * level, y, 1136 - 32 * level, height, 28)
+        paragraph = section.text_frame.paragraphs[0]
+        paragraph.level = level
+        properties = paragraph._p.get_or_add_pPr()
+        properties.set("marL", str(pixels(24)))
+        properties.set("indent", str(-pixels(16)))
+        bullet_font = OxmlElement("a:buFont")
+        bullet_font.set("typeface", FONT)
+        bullet = OxmlElement("a:buChar")
+        bullet.set("char", "◦" if level else "•")
+        properties.append(bullet_font)
+        properties.append(bullet)
     shap_benchmark_link = text(
         shap_details, "SHAP benchmarking appendix link", "SHAP benchmarking",
         190, 674, 300, 24, 18, color=SECONDARY, underline=True,
