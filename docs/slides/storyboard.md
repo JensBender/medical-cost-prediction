@@ -505,8 +505,12 @@ risk of underbudgeting, consider planning closer to the safety cushion.
 
 **Visual:** The title has a muted gray profile description in 19.5-point type,
 aligned with its text baseline. The description summarizes the cost risk, age,
-and arthritis. A thin border encloses the
-user-facing content, separating it from the title and slide footer. Three
+and arthritis. A close-up illustration of the woman with a wry expression, a
+pharmacy bag on the left, and a large medical bill on the right sits inside the
+bottom-right area of the content frame, with its bottom edge meeting the border.
+Repeat it at the same size and position on slide 10 to identify the same example
+user. A thin border encloses the user-facing content, separating it from the
+title and slide footer. Three
 prominent estimates sit above the interpretation text and planning note, without
 a divider below the estimates. The interpretation sits close to the estimates.
 The two collapsed section labels are spaced apart below the planning note and
@@ -583,9 +587,11 @@ population and age-group medians provide context.
 | Typical American | $268 |
 | Typical for ages 65+ | $657 |
 
-**Appendix link:** [SHAP details (A21)](#a21--shap-shows-how-user-answers-shape-predictions).
+**Appendix links:** [SHAP details (A21)](#a21--shap-explains-how-answers-shape-predictions)
+and [SHAP benchmarking (A22)](#a22--shap-benchmarking-fastest-configuration-passing-quality-checks).
 
-**Visual:** The title, muted profile text, and border match slide 9. The three
+**Visual:** The title, muted profile text, example-user illustration inside the
+bottom-right corner of the content frame, and border match slide 9. The three
 estimates remain at the top as a reference, with space separating them from
 the explanations and comparisons. Both tables align at the top below their
 headings. All five SHAP contributions appear on the left with bold feature names
@@ -1445,7 +1451,9 @@ repeat the five contribution rows from slide 10, slightly smaller, inside a
 thin light gray border matching the example output slides. Align the border
 with the top of the left text and keep top and bottom padding small. Match A22’s
 compact bullet spacing. Omit the repeated heading, table headers, and row
-borders. A backlink returns to slide 10.
+borders. Place the example-user illustration beneath the contribution table,
+matching its horizontal position on slides 9 and 10, with its bottom roughly
+aligned with the left-hand text. A backlink returns to slide 10.
 
 **Speaker notes**
 
@@ -1524,9 +1532,9 @@ data” and “Permutation rounds” and a PASS card.
 Keep the transparent background and allow the bullets to wrap within the left
 column without changing their wording or font size.
 Timing scope and deployment testing details remain in the speaker notes.
-Link here from A21.
+Link here from slide 10.
 
-**Backlink:** SHAP explanation details (A21).
+**Backlink:** Example prediction output (slide 10).
 
 **Speaker notes**
 

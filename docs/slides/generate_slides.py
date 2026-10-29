@@ -574,6 +574,10 @@ def build_presentation():
     for slide, slide_id in ((example, "9"), (expanded, "10")):
         next(shape for shape in slide.shapes if shape.name == f"{slide_id} title").width = pixels(568)
         text(slide, "Example profile", "(high cost profile: 69 years, arthritis)", 642, 66, 578, 36, 26, color=SECONDARY)
+        picture(slide, SLIDES_DIR / "assets/example-user.png",
+                "Close-up illustration of the example user reacting wryly to a medical "
+                "bill on the right, with a pharmacy bag on the left.",
+                992.428, 496.668, 139.956, 139.956)
         example_border = slide.shapes.add_shape(
             MSO_SHAPE.RECTANGLE, pixels(48), pixels(118), pixels(1184), pixels(520),
         )
@@ -684,7 +688,13 @@ def build_presentation():
     text(expanded, "SHAP appendix label", "Appendix:",
          72, 674, 86, 24, 18, color=SECONDARY)
     shap_details_link = text(expanded, "SHAP details appendix link", "SHAP details",
-                             160, 674, 160, 24, 18, color=SECONDARY, underline=True)
+                             160, 674, 112, 24, 18, color=SECONDARY, underline=True)
+    text(expanded, "SHAP appendix separator", "|", 280, 674, 12, 24, 18,
+         color=SECONDARY, alignment=PP_ALIGN.CENTER)
+    shap_benchmark_link = text(
+        expanded, "SHAP benchmarking appendix link", "SHAP benchmarking",
+        306, 674, 300, 24, 18, color=SECONDARY, underline=True,
+    )
 
     next_steps = new_slide(presentation, storyboard, "11", "Model evaluation is complete;\n"
                            "app development comes next", two_lines=True)
@@ -1143,6 +1153,9 @@ def build_presentation():
                 style_font(paragraph.font, 24)
                 for run in paragraph.runs:
                     style_font(run.font, 24, bold=bool(run.font.bold))
+    picture(shap_details, SLIDES_DIR / "assets/example-user.png",
+            "The same example user shown on slides 9 and 10, holding a medical bill "
+            "and pharmacy bag.", 992.428, 456, 140, 140)
     shap_details_return_link = text(shap_details, "Return to example prediction", "Back",
                                     72, 674, 100, 24, 18, color=SECONDARY, underline=True)
     shap_details_link.click_action.target_slide = shap_details
@@ -1187,16 +1200,12 @@ def build_presentation():
             "Illustrated homage to Lloyd Shapley adjusting two knobs while holding "
             "a stopwatch, with labelled background data and permutation rounds knobs "
             "and a PASS card on the test bench.", 928, 148, 280, 444)
-    shap_benchmark_link = text(
-        shap_details, "SHAP benchmarking appendix link", "SHAP benchmarking",
-        190, 674, 300, 24, 18, color=SECONDARY, underline=True,
-    )
     shap_benchmark_link.click_action.target_slide = shap_benchmark
     shap_benchmark_return_link = text(
-        shap_benchmark, "Return to SHAP explanation details", "Back",
+        shap_benchmark, "Return to example prediction", "Back",
         72, 674, 100, 24, 18, color=SECONDARY, underline=True,
     )
-    shap_benchmark_return_link.click_action.target_slide = shap_details
+    shap_benchmark_return_link.click_action.target_slide = expanded
     return presentation
 
 
