@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: eleven main slides and twenty-four appendix slides are generated.
+Status: eleven main slides and twenty-five appendix slides are generated.
 
 ## Presentation context
 
@@ -12,7 +12,7 @@ Status: eleven main slides and twenty-four appendix slides are generated.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The current
   allocation below totals 11:25, leaving room for transitions.
-- **Structure:** a cover, ten content slides, and twenty-four appendix slides.
+- **Structure:** a cover, ten content slides, and twenty-five appendix slides.
   Appendix slides follow their first reference in the main presentation;
   unreferenced slides sit with their related topic.
 - **Slide numbering:** Display 2–11 on the main content slides, with the cover
@@ -1650,6 +1650,31 @@ but the plot does not show which categories move estimates up or down.”
 
 **Sources:** [README: contribution distributions](../../README.md);
 [SHAP contribution distributions plot](../../figures/evaluation/shap_contribution_distributions.png).
+
+### A25 — SHAP contributions by category
+
+**Question:** Which categories tend to move plan-around estimates up or down?
+
+**Visual:** Show the [SHAP contributions by category plot](../../figures/evaluation/shap_categorical_contributions.png)
+at full slide height, centered horizontally and preserving its aspect ratio,
+matching A23 and A24. Use the figure’s own title and footnote, with no separate
+slide title or added body text. Place the Back link and appendix slide number in
+the bottom corners, outside the image’s horizontal bounds.
+
+**Backlink:** Example prediction output (slide 10).
+
+**Speaker notes**
+
+“This interval plot shows which categories tend to move estimates up or down and
+how much contributions vary within each category. "Any Private" insurance
+generally moves estimates up, while "Public Only" and "Uninsured" move them down.
+Education up to high school generally moves estimates down, while a bachelor’s
+degree or higher generally moves them up.”
+
+**Transition:** Return to the example prediction output.
+
+**Sources:** [README: contributions by category](../../README.md#shap-contributions-by-category);
+[SHAP contributions by category plot](../../figures/evaluation/shap_categorical_contributions.png).
 
 ## Adaptation and file organization
 
