@@ -30,7 +30,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 12)] + [f"A{number}" for number in range(1, 22)]
+SLIDE_IDS = [str(number) for number in range(1, 12)] + [f"A{number}" for number in range(1, 23)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -1138,6 +1138,41 @@ def build_presentation():
                                     72, 674, 100, 24, 18, color=SECONDARY, underline=True)
     shap_details_link.click_action.target_slide = shap_details
     shap_details_return_link.click_action.target_slide = expanded
+
+    shap_benchmark = new_slide(
+        presentation, storyboard, "A22",
+        "SHAP benchmarking: 225 background rows, 1 permutation round",
+    )
+    benchmark_title = next(shape for shape in shap_benchmark.shapes
+                           if shape.name == "A22 title")
+    for paragraph in benchmark_title.text_frame.paragraphs:
+        for run in paragraph.runs:
+            style_font(run.font, 36, bold=True)
+    for heading, description, y, height in (
+        ("Goal", "Find the fastest configuration that passes quality checks.", 148, 64),
+        ("Tested configurations", "50–300 background data rows and 1–12 permutation rounds.",
+         220, 64),
+        ("Reference configuration", "500 background data rows and 24 permutation rounds.",
+         292, 64),
+        ("Background validation", "8.8% difference from full training data (limit: 10%).",
+         364, 64),
+        ("Explanation stability", "Minimum 4 of 5 top features matched the reference "
+         "configuration. Median absolute contribution difference was $6.47 (limit: $25).",
+         436, 104),
+        ("SHAP explanation latency", "P95 was 0.20 seconds.", 556, 64),
+    ):
+        text(shap_benchmark, heading, [(f"{heading}:", True), f" {description}"],
+             72, y, 1136, height, 28)
+    shap_benchmark_link = text(
+        shap_details, "SHAP benchmarking appendix link", "SHAP benchmarking",
+        190, 674, 300, 24, 18, color=SECONDARY, underline=True,
+    )
+    shap_benchmark_link.click_action.target_slide = shap_benchmark
+    shap_benchmark_return_link = text(
+        shap_benchmark, "Return to SHAP explanation details", "Back",
+        72, 674, 100, 24, 18, color=SECONDARY, underline=True,
+    )
+    shap_benchmark_return_link.click_action.target_slide = shap_details
     return presentation
 
 

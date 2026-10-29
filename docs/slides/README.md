@@ -10,7 +10,8 @@ uses 1–11 for the main slides. Titles can use one or two lines; content starts
 below the title with a consistent gap. The appendix includes U.S. healthcare costs,
 MEPS, preprocessor input features, outliers, feature distributions and
 relationships, and data preparation with the stratified split, plus baseline
-model comparisons, hyperparameter tuning, and SHAP explanation details. The main preprocessing slide uses the diagram's dark navy
+model comparisons, hyperparameter tuning, SHAP explanation details, and SHAP
+benchmarking. The main preprocessing slide uses the diagram's dark navy
 background with a light gray slide ID.
 The remaining appendix slides are in storyboard form. Order and number appendix
 slides by their first reference in the main presentation. Place unreferenced
@@ -69,7 +70,7 @@ Then add `--render`:
 ```
 
 The renderer reads the generated PowerPoint and writes `1.png` through `11.png`,
-`A1.png` through `A21.png` beside it. Rendering failures leave the PowerPoint file
+`A1.png` through `A22.png` beside it. Rendering failures leave the PowerPoint file
 available.
 Preview generation requires the bundled renderer; it is optional for someone
 cloning the repository. The bundled presentation validators can also inspect

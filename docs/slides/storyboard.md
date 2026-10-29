@@ -1498,16 +1498,27 @@ both sets of contributions could be overwhelming.
 [SHAP explanation module](../../src/explainability.py);
 [SHAP metadata](../../app/data/shap_metadata.json).
 
-### A22 — SHAP benchmarking: explanation quality and latency
+### A22 — SHAP benchmarking: 225 background rows, 1 permutation round
 
 **Question:** How was the SHAP configuration chosen?
 
-**On the slide:** 225 background rows; one permutation round. On 100 held-out
-test rows, every row matched at least four of the reference's top five features;
-median matched contribution difference **$6.47**; P95 core SHAP latency **0.20 s**.
+**On the slide**
 
-**Visual:** One compact quality-versus-latency summary, with the measurement
-boundary stated explicitly.
+- **Goal:** Find the fastest configuration that passes quality checks.
+- **Tested configurations:** 50–300 background data rows and 1–12 permutation rounds.
+- **Reference configuration:** 500 background data rows and 24 permutation rounds.
+- **Background validation:** 8.8% difference from full training data (limit: 10%).
+- **Explanation stability:** Minimum 4 of 5 top features matched the reference
+  configuration. Median absolute contribution difference was $6.47 (limit: $25).
+- **SHAP explanation latency:** P95 was 0.20 seconds.
+
+**Visual:** The title names the selected configuration on one line. Six text
+sections with bold headers use the full content width. Place the reference
+directly below the tested configurations and allow two lines for explanation
+stability. Timing scope and deployment testing details remain in the speaker
+notes. Link here from A21.
+
+**Backlink:** SHAP explanation details (A21).
 
 **Speaker notes**
 
