@@ -10,9 +10,9 @@ uses 1–11 for the main slides. Titles can use one or two lines; content starts
 below the title with a consistent gap. The appendix includes U.S. healthcare costs,
 MEPS, preprocessor input features, outliers, feature distributions and
 relationships, and data preparation with the stratified split, plus baseline
-model comparisons, hyperparameter tuning, SHAP explanation details, and SHAP
-benchmarking. The main preprocessing slide uses the diagram's dark navy
-background with a light gray slide ID.
+model comparisons, hyperparameter tuning, SHAP explanation details, SHAP
+benchmarking, and overall SHAP feature importance. The main preprocessing slide
+uses the diagram's dark navy background with a light gray slide ID.
 The remaining appendix slides are in storyboard form. Order and number appendix
 slides by their first reference in the main presentation. Place unreferenced
 slides with their related topic.
@@ -36,8 +36,10 @@ The script writes `medical-cost-planner-v4.pptx` under
 model artifacts, or survey data. It uses `storyboard.md`, the images in `assets/`,
 and the project images `../../assets/header.png`,
 `../../assets/infographic_meps_data.jpg`,
-`../../assets/infographic_healthcare_costs.png`, and
-`../../figures/eda/lorenz_curve.png`. All these inputs are tracked by Git.
+`../../assets/infographic_healthcare_costs.png`,
+`../../figures/eda/lorenz_curve.png`, and
+`../../figures/evaluation/shap_feature_importance.png`. All these inputs are
+tracked by Git.
 
 The preprocessing slide uses the tracked `assets/preprocessing-pipeline.png`.
 Its editable source is `../../assets/preprocessing_pipeline.svg`. When changing
@@ -70,7 +72,7 @@ Then add `--render`:
 ```
 
 The renderer reads the generated PowerPoint and writes `1.png` through `11.png`,
-`A1.png` through `A22.png` beside it. Rendering failures leave the PowerPoint file
+`A1.png` through `A23.png` beside it. Rendering failures leave the PowerPoint file
 available.
 Preview generation requires the bundled renderer; it is optional for someone
 cloning the repository. The bundled presentation validators can also inspect

@@ -30,7 +30,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 12)] + [f"A{number}" for number in range(1, 23)]
+SLIDE_IDS = [str(number) for number in range(1, 12)] + [f"A{number}" for number in range(1, 24)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -693,7 +693,13 @@ def build_presentation():
          color=SECONDARY, alignment=PP_ALIGN.CENTER)
     shap_benchmark_link = text(
         expanded, "SHAP benchmarking appendix link", "SHAP benchmarking",
-        306, 674, 300, 24, 18, color=SECONDARY, underline=True,
+        306, 674, 174, 24, 18, color=SECONDARY, underline=True,
+    )
+    text(expanded, "Feature importance appendix separator", "|", 488, 674, 12, 24, 18,
+         color=SECONDARY, alignment=PP_ALIGN.CENTER)
+    feature_importance_link = text(
+        expanded, "Feature importance appendix link", "Feature importance",
+        514, 674, 220, 24, 18, color=SECONDARY, underline=True,
     )
 
     next_steps = new_slide(presentation, storyboard, "11", "Model evaluation is complete;\n"
@@ -1206,6 +1212,18 @@ def build_presentation():
         72, 674, 100, 24, 18, color=SECONDARY, underline=True,
     )
     shap_benchmark_return_link.click_action.target_slide = expanded
+
+    shap_importance = new_slide(presentation, storyboard, "A23")
+    picture(shap_importance, WORKSPACE_DIR / "figures/evaluation/shap_feature_importance.png",
+            "SHAP feature importance: top 15 features on the test set, ranked by "
+            "survey-weighted mean absolute contribution to plan-around estimates.",
+            0, 0, 1280, 720)
+    feature_importance_return_link = text(
+        shap_importance, "Return to example prediction", "Back",
+        20, 674, 100, 24, 18, color=SECONDARY, underline=True,
+    )
+    feature_importance_link.click_action.target_slide = shap_importance
+    feature_importance_return_link.click_action.target_slide = expanded
     return presentation
 
 

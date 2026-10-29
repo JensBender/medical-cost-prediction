@@ -1,7 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: eleven main slides and twenty appendix slides are generated. The remaining
-appendix slides are planned below.
+Status: eleven main slides and twenty-three appendix slides are generated.
 
 ## Presentation context
 
@@ -13,7 +12,7 @@ appendix slides are planned below.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The current
   allocation below totals 11:25, leaving room for transitions.
-- **Structure:** a cover, ten content slides, and twenty-three appendix topics.
+- **Structure:** a cover, ten content slides, and twenty-three appendix slides.
   Appendix slides follow their first reference in the main presentation;
   unreferenced slides sit with their related topic.
 - **Slide numbering:** Display 2–11 on the main content slides, with the cover
@@ -588,7 +587,8 @@ population and age-group medians provide context.
 | Typical for ages 65+ | $657 |
 
 **Appendix links:** [SHAP details (A21)](#a21--shap-explains-how-answers-shape-predictions)
-and [SHAP benchmarking (A22)](#a22--shap-benchmarking-fastest-configuration-passing-quality-checks).
+| [SHAP benchmarking (A22)](#a22--shap-benchmarking-fastest-configuration-passing-quality-checks)
+| [Feature importance (A23)](#a23--shap-feature-importance-overall-importance).
 
 **Visual:** The title, muted profile text, example-user illustration inside the
 bottom-right corner of the content frame, and border match slide 9. The three
@@ -1597,6 +1597,33 @@ output.
 [SHAP metadata](../../app/data/shap_metadata.json);
 [benchmark script](../../scripts/benchmark_shap.py);
 [Lloyd Shapley portrait reference (Princeton)](https://gradschool.princeton.edu/sites/g/files/toruqf8531/files/styles/3x4_750w_1000h/public/2026-01/2012-eco-shapley-official-portrait.jpg?itok=t9pDrUXv).
+
+### A23 — SHAP feature importance: overall importance
+
+**Question:** Which inputs contribute most to the model’s plan-around estimates?
+
+**Visual:** Show the [overall SHAP importance plot](../../figures/evaluation/shap_feature_importance.png)
+at full slide height, centered horizontally and preserving its aspect ratio.
+Use the figure’s own title and footnote, with no separate slide title or added
+body text. Place the Back link and appendix slide number in the bottom corners,
+outside the image’s horizontal bounds.
+The Feature importance link on slide 10 opens this slide.
+
+**Backlink:** Example prediction output (slide 10).
+
+**Speaker notes**
+
+“This plot ranks features by the average size of their SHAP contributions,
+regardless of direction. Insurance’s $93 means its contribution to plan-around
+estimates averaged $93 in size, moving estimates up for some people and down for
+others. Family Income follows at $78, and the top 15 features account for 92.5%
+of total importance.”
+
+**Transition:** Return to the example prediction output.
+
+**Sources:** [README: feature importance](../../README.md);
+[modeling notebook](../../notebooks/2_modeling.py);
+[overall SHAP importance plot](../../figures/evaluation/shap_feature_importance.png).
 
 ## Adaptation and file organization
 
