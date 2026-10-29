@@ -1185,7 +1185,8 @@ def build_presentation():
         properties.append(bullet)
     picture(shap_benchmark, SLIDES_DIR / "assets/shap-benchmarking.png",
             "Illustrated homage to Lloyd Shapley adjusting two knobs while holding "
-            "a stopwatch, with a PASS card on the test bench.", 928, 148, 280, 373.333)
+            "a stopwatch, with labelled background data and permutation rounds knobs "
+            "and a PASS card on the test bench.", 928, 148, 280, 444)
     shap_benchmark_link = text(
         shap_details, "SHAP benchmarking appendix link", "SHAP benchmarking",
         190, 674, 300, 24, 18, color=SECONDARY, underline=True,

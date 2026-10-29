@@ -1517,9 +1517,10 @@ explanation stability are indented sub-bullets under quality checks. Keep bullet
 spacing compact, with slightly tighter spacing within the quality-check group.
 Use slide 3’s layout: text in the left column and a vertical
 [illustrated homage to Lloyd Shapley](assets/shap-benchmarking.png) in the right column,
-aligned with the top of the text. Keep the image smaller than slide 3’s to give
-the text column more width and reduce the illustration’s prominence.
-Shapley holds a stopwatch at a test bench with two knobs and a PASS card.
+aligned with the top of the text and extending to its bottom. Keep the image
+narrower than slide 3’s to give the text column more width.
+Shapley holds a stopwatch at a test bench with two knobs labelled “Background
+data” and “Permutation rounds” and a PASS card.
 Keep the transparent background and allow the bullets to wrap within the left
 column without changing their wording or font size.
 Timing scope and deployment testing details remain in the speaker notes.
