@@ -1523,8 +1523,8 @@ I compared their explanations with a larger reference configuration and selected
 the fastest setup that passed the quality checks, which was 225 background rows
 and one permutation round.
 
-95% of SHAP calculations finished within 0.2 seconds, but complete prediction-request
-timing still needs to be tested on the deployment hardware.”
+95% of SHAP calculations finished within 0.2 seconds, but complete
+prediction-request timing still needs to be tested on the deployment hardware.”
 
 For questions:
 
@@ -1534,23 +1534,29 @@ Background validation: The background’s average plan-around estimate must diff
 by at most 10% from the survey-weighted average prediction across the full
 training data. The selected background differed by 8.8%.
 
-Explanation stability: At least four of the top five features must match the
-reference. Matched reference contributions of at least $25 in size must keep the
-same sign. The median absolute difference between matched top-five contributions
-must be at most $25.
+Explanation stability: At least four of the top five features matched the
+reference. The median absolute contribution difference had to be at most $25.
+It was $6.47. Reference contributions of at least $25 in size had to keep the
+same sign. They all did.
 
-Final test results: The selected configuration passed all quality checks on 100
-held-out test cases. Every case matched at least four of the reference’s top five
-features, all matched reference contributions of at least $25 kept the same sign,
-and the median contribution difference was $6.47. The starting point plus all 27
-contributions also reproduced the prediction to floating-point precision.
+Subsequent-call latency: The first explanation call is timed separately.
+Subsequent calls better represent normal operation once the explainer is ready.
 
-Latency: The first explanation call is timed separately. P95 summarizes subsequent
-calls. This is separate from a full application cold start. Median core SHAP
-calculation time was 0.17 seconds and P95 was 0.20 seconds. This includes predictions and SHAP contributions, but
-excludes other server work, network transfer, and interface rendering. The
-under-one-second target applies to complete server-side prediction requests
-including SHAP, not just the explanation calculation.
+Core SHAP explanation latency: The repeated
+predictions needed to calculate SHAP contributions (measured locally). It excludes the separate
+prediction that produces the displayed cost estimates, other server work,
+network transfer, and interface rendering.
+
+P50 and P95: 50% of SHAP calculations finished within 0.17 seconds,
+and 95% within 0.20 seconds.
+
+Prediction-request latency target: P95 under one second on deployment hardware,
+including input validation, cost prediction, SHAP, and preparing the response.
+It excludes network transfer and interface rendering. The reported 0.20 seconds
+measures only core SHAP calculation on local hardware.
+
+User-perceived latency target: Approximately three seconds from clicking Predict
+until results appear, including network transfer and interface rendering.
 
 **Transition:** Return to SHAP explanation details or the example prediction
 output.
