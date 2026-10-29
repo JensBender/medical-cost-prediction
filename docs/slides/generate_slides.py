@@ -30,7 +30,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 12)] + [f"A{number}" for number in range(1, 24)]
+SLIDE_IDS = [str(number) for number in range(1, 12)] + [f"A{number}" for number in range(1, 25)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -1224,6 +1224,17 @@ def build_presentation():
     )
     feature_importance_link.click_action.target_slide = shap_importance
     feature_importance_return_link.click_action.target_slide = expanded
+
+    shap_distributions = new_slide(presentation, storyboard, "A24")
+    picture(shap_distributions, WORKSPACE_DIR / "figures/evaluation/shap_contribution_distributions.png",
+            "SHAP contribution distributions: top 15 features on the test set, "
+            "showing the direction and size of contributions to plan-around estimates.",
+            0, 0, 1280, 720)
+    shap_distributions_return_link = text(
+        shap_distributions, "Return to example prediction", "Back",
+        20, 674, 100, 24, 18, color=SECONDARY, underline=True,
+    )
+    shap_distributions_return_link.click_action.target_slide = expanded
     return presentation
 
 

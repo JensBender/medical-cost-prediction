@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: eleven main slides and twenty-three appendix slides are generated.
+Status: eleven main slides and twenty-four appendix slides are generated.
 
 ## Presentation context
 
@@ -12,7 +12,7 @@ Status: eleven main slides and twenty-three appendix slides are generated.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The current
   allocation below totals 11:25, leaving room for transitions.
-- **Structure:** a cover, ten content slides, and twenty-three appendix slides.
+- **Structure:** a cover, ten content slides, and twenty-four appendix slides.
   Appendix slides follow their first reference in the main presentation;
   unreferenced slides sit with their related topic.
 - **Slide numbering:** Display 2–11 on the main content slides, with the cover
@@ -1624,6 +1624,32 @@ of total importance.”
 **Sources:** [README: feature importance](../../README.md);
 [modeling notebook](../../notebooks/2_modeling.py);
 [overall SHAP importance plot](../../figures/evaluation/shap_feature_importance.png).
+
+### A24 — SHAP contribution distributions
+
+**Question:** How do feature contributions vary in direction and size across people?
+
+**Visual:** Show the [SHAP contribution distributions plot](../../figures/evaluation/shap_contribution_distributions.png)
+at full slide height, centered horizontally and preserving its aspect ratio,
+matching A23. Use the figure’s own title and footnote, with no separate slide
+title or added body text. Place the Back link and appendix slide number in the
+bottom corners, outside the image’s horizontal bounds.
+
+**Backlink:** Example prediction output (slide 10).
+
+**Speaker notes**
+
+“This beeswarm plot shows whether each feature moves the plan-around estimate up
+or down and how much that varies between people. Older age, higher family income,
+and medical conditions or limitations generally move estimates up; younger age,
+lower income, and the absence of medical conditions or limitations generally move
+them down. Insurance and Education show large contributions in both directions,
+but the plot does not show which categories move estimates up or down.”
+
+**Transition:** Return to the example prediction output.
+
+**Sources:** [README: contribution distributions](../../README.md);
+[SHAP contribution distributions plot](../../figures/evaluation/shap_contribution_distributions.png).
 
 ## Adaptation and file organization
 
