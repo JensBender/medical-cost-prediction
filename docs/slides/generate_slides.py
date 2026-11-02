@@ -725,51 +725,49 @@ def build_presentation():
          72, 605, 1136, 44, 32, bold=True)
 
     closing = new_slide(presentation, storyboard, "12")
-    text(closing, "Closing takeaway", "Medical cost planning needs more\n"
-         "than a single cost estimate.", 72, 88, 1136, 144, 48, bold=True)
+    text(closing, "Closing takeaway", "Medical cost planning needs\n"
+         "more than a single cost estimate.", 72, 88, 770, 144, 48, bold=True)
+    picture(closing, SLIDES_DIR / "assets/example-user-planning.png",
+            "The example user smiles beside a computer showing Medical Cost "
+            "Planner with three abstract estimate graphics.",
+            900, 72, 320, 540)
     text(closing, "Questions", "Thank you. Questions?", 72, 278, 800, 48, 34)
-    text(closing, "Presenter", "Jens Bender", 72, 382, 760, 42, 30, bold=True)
+    text(closing, "Presenter", "Jens Bender", 308, 380.901, 480, 42, 30, bold=True)
     repository_url = "https://github.com/JensBender/medical-cost-prediction"
     repository_link = text(
         closing, "Project repository", "github.com/JensBender/medical-cost-prediction",
-        72, 442, 790, 34, 24, color=SECONDARY, underline=True,
+        308, 436.913, 540, 34, 24, color=SECONDARY, underline=True,
     )
     repository_link.click_action.hyperlink.address = repository_url
     linkedin_link = text(
         closing, "LinkedIn profile", "linkedin.com/in/jensbender",
-        72, 488, 790, 34, 24, color=SECONDARY, underline=True,
+        308, 482.910, 540, 34, 24, color=SECONDARY, underline=True,
     )
     linkedin_link.click_action.hyperlink.address = "https://linkedin.com/in/jensbender"
     repository_qr = picture(
         closing, SLIDES_DIR / "assets/project-github-qr.png",
         "QR code linking to the Medical Cost Planner GitHub repository.",
-        920, 350, 260, 260,
+        72, 366, 220, 220,
     )
     repository_qr.click_action.hyperlink.address = repository_url
     text(closing, "QR code label", "GitHub repository",
-         904, 614, 292, 30, 20, color=SECONDARY, alignment=PP_ALIGN.CENTER)
+         60, 582, 244, 30, 20, color=SECONDARY, alignment=PP_ALIGN.CENTER)
     data_credit = text(
         closing, "Data credit",
-        [("Data: ", False), ("Medical Expenditure Panel Survey (MEPS) 2023", False),
-         (" by the ", False), ("Agency for Healthcare Research and Quality (AHRQ)", False)],
-        72, 655, 1050, 22, 16, color=SECONDARY,
+        [("Data: ", False), ("MEPS 2023", False), (" by ", False), ("AHRQ", False),
+         ("  |  ", False), ("Medical Care series", False), (" by ", False),
+         ("BLS", False)],
+        72, 674, 1070, 24, 18, color=SECONDARY,
     )
     data_runs = data_credit.text_frame.paragraphs[0].runs
     data_runs[1].hyperlink.address = (
         "https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251"
     )
     data_runs[3].hyperlink.address = "https://www.ahrq.gov/"
-    data_runs[1].font.underline = data_runs[3].font.underline = True
-    inflation_credit = text(
-        closing, "Inflation data credit",
-        [("Medical inflation data: ", False), ("U.S. Bureau of Labor Statistics", False),
-         (", ", False), ("CPI-U Medical Care series", False)],
-        72, 679, 1050, 22, 16, color=SECONDARY,
-    )
-    inflation_runs = inflation_credit.text_frame.paragraphs[0].runs
-    inflation_runs[1].hyperlink.address = "https://www.bls.gov/cpi/"
-    inflation_runs[3].hyperlink.address = "https://data.bls.gov/timeseries/CUUR0000SAM"
-    inflation_runs[1].font.underline = inflation_runs[3].font.underline = True
+    data_runs[5].hyperlink.address = "https://data.bls.gov/timeseries/CUUR0000SAM"
+    data_runs[7].hyperlink.address = "https://www.bls.gov/cpi/"
+    for run_index in (1, 3, 5, 7):
+        data_runs[run_index].font.underline = True
 
     healthcare_overview = new_slide(presentation, storyboard, "A1")
     picture(healthcare_overview, WORKSPACE_DIR / "assets/infographic_healthcare_costs.png",

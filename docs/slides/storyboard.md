@@ -679,15 +679,24 @@ uncertainty, and subgroup reliability each reveal something different.”
 - [github.com/JensBender/medical-cost-prediction](https://github.com/JensBender/medical-cost-prediction)
 - [linkedin.com/in/jensbender](https://linkedin.com/in/jensbender)
 - QR code to the GitHub repository, labelled “GitHub repository”.
-- **Data credit:** [Medical Expenditure Panel Survey (MEPS) 2023](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251)
-  by the [Agency for Healthcare Research and Quality (AHRQ)](https://www.ahrq.gov/).
-- **Medical inflation data:** [U.S. Bureau of Labor Statistics](https://www.bls.gov/cpi/),
-  [CPI-U Medical Care series](https://data.bls.gov/timeseries/CUUR0000SAM).
+- **Data:** [MEPS 2023](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251)
+  by [AHRQ](https://www.ahrq.gov/) |
+  [Medical Care series](https://data.bls.gov/timeseries/CUUR0000SAM)
+  by [BLS](https://www.bls.gov/cpi/).
 
 **Visual:** Keep the white background and dark blue text. Make the takeaway the
-largest text, over two lines near the top. Put the thank-you line, presenter
-name, and readable contact links below on the left. Place the repository QR code
-on the right with its label underneath. Keep data credits small at the bottom,
+largest text, over two lines near the top left, breaking after “needs”. Put the
+thank-you line below it. Use a portrait-format
+[illustration of the example user](assets/example-user-planning.png) in the right third,
+about 320 by 540 pixels. She has a warm, relieved smile and sits beside a computer.
+Its screen shows “Medical Cost Planner” and three abstract estimate graphics.
+Match her earlier
+illustration’s style and teal palette, and preserve the transparent background.
+Group the repository QR code at the lower left with the presenter name and
+readable contact links close beside it. Align the name visually with the top
+of the QR code’s black pattern.
+Place the QR code’s label close underneath it, leaving a clear gap before the
+single-line data credit at the bottom,
 with clickable links to the dataset, agencies, and inflation series.
 Use one QR code and no technology badges. Keep this slide visible for questions.
 

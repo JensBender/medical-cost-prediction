@@ -17,7 +17,9 @@ native feature importance.
 The main preprocessing slide uses the diagram's dark navy background with a light
 gray slide ID.
 The closing slide shows the main takeaway, contact links, and a QR code to the
-project repository. Its tracked image is `assets/project-github-qr.png`.
+project repository. Its tracked images are `assets/project-github-qr.png` and
+`assets/example-user-planning.png`, a portrait illustration of the example user beside a
+computer showing the planned app with three abstract estimate graphics.
 The remaining appendix slides are in storyboard form. Order and number appendix
 slides by their first reference in the main presentation. Place unreferenced
 slides with their related topic.
