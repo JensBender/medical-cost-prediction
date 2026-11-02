@@ -1613,10 +1613,11 @@ The Feature importance link on slide 10 opens this slide.
 **Speaker notes**
 
 “This plot ranks features by the average size of their SHAP contributions,
-regardless of direction. Insurance’s $93 means its contribution to plan-around
-estimates averaged $93 in size, moving estimates up for some people and down for
-others. Family Income follows at $78, and the top 15 features account for 92.5%
-of total importance.”
+regardless of direction. The $93 for insurance means its contribution to the
+plan-around estimate averaged $93 in size, moving estimates up for some people
+and down for others. Family income moved estimates by $78 on average, followed
+by family size and age at $60 each. The top 15 features combined account for
+around 93% of total importance.”
 
 **Transition:** Return to the example prediction output.
 
