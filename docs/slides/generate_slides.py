@@ -30,7 +30,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 12)] + [f"A{number}" for number in range(1, 28)]
+SLIDE_IDS = [str(number) for number in range(1, 13)] + [f"A{number}" for number in range(1, 28)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -723,6 +723,53 @@ def build_presentation():
          "survey year", 72, 520, 1136, 38, 28)
     text(next_steps, "Closing lesson", "Evaluate the estimates needed for the user decision",
          72, 605, 1136, 44, 32, bold=True)
+
+    closing = new_slide(presentation, storyboard, "12")
+    text(closing, "Closing takeaway", "Medical cost planning needs more\n"
+         "than a single cost estimate.", 72, 88, 1136, 144, 48, bold=True)
+    text(closing, "Questions", "Thank you. Questions?", 72, 278, 800, 48, 34)
+    text(closing, "Presenter", "Jens Bender", 72, 382, 760, 42, 30, bold=True)
+    repository_url = "https://github.com/JensBender/medical-cost-prediction"
+    repository_link = text(
+        closing, "Project repository", "github.com/JensBender/medical-cost-prediction",
+        72, 442, 790, 34, 24, color=SECONDARY, underline=True,
+    )
+    repository_link.click_action.hyperlink.address = repository_url
+    linkedin_link = text(
+        closing, "LinkedIn profile", "linkedin.com/in/jensbender",
+        72, 488, 790, 34, 24, color=SECONDARY, underline=True,
+    )
+    linkedin_link.click_action.hyperlink.address = "https://linkedin.com/in/jensbender"
+    repository_qr = picture(
+        closing, SLIDES_DIR / "assets/project-github-qr.png",
+        "QR code linking to the Medical Cost Planner GitHub repository.",
+        920, 350, 260, 260,
+    )
+    repository_qr.click_action.hyperlink.address = repository_url
+    text(closing, "QR code label", "GitHub repository",
+         904, 614, 292, 30, 20, color=SECONDARY, alignment=PP_ALIGN.CENTER)
+    data_credit = text(
+        closing, "Data credit",
+        [("Data: ", False), ("Medical Expenditure Panel Survey (MEPS) 2023", False),
+         (" by the ", False), ("Agency for Healthcare Research and Quality (AHRQ)", False)],
+        72, 655, 1050, 22, 16, color=SECONDARY,
+    )
+    data_runs = data_credit.text_frame.paragraphs[0].runs
+    data_runs[1].hyperlink.address = (
+        "https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251"
+    )
+    data_runs[3].hyperlink.address = "https://www.ahrq.gov/"
+    data_runs[1].font.underline = data_runs[3].font.underline = True
+    inflation_credit = text(
+        closing, "Inflation data credit",
+        [("Medical inflation data: ", False), ("U.S. Bureau of Labor Statistics", False),
+         (", ", False), ("CPI-U Medical Care series", False)],
+        72, 679, 1050, 22, 16, color=SECONDARY,
+    )
+    inflation_runs = inflation_credit.text_frame.paragraphs[0].runs
+    inflation_runs[1].hyperlink.address = "https://www.bls.gov/cpi/"
+    inflation_runs[3].hyperlink.address = "https://data.bls.gov/timeseries/CUUR0000SAM"
+    inflation_runs[1].font.underline = inflation_runs[3].font.underline = True
 
     healthcare_overview = new_slide(presentation, storyboard, "A1")
     picture(healthcare_overview, WORKSPACE_DIR / "assets/infographic_healthcare_costs.png",

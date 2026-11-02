@@ -1,12 +1,12 @@
 # Presentation files
 
 `storyboard.md` holds the content and speaker notes. The main presentation
-contains slides 1–11, using the approved problem-statement and model-audit design.
+contains slides 1–12, using the approved problem-statement and model-audit design.
 Most slides use a white background, dark blue text, and teal for model results
 in comparisons. Gray is reserved for
 supporting information and slide IDs. Main slides display plain numbers, the
 cover is unnumbered, and appendix slides display A1, A2, etc. The storyboard
-uses 1–11 for the main slides. Titles can use one or two lines; content starts
+uses 1–12 for the main slides. Titles can use one or two lines; content starts
 below the title with a consistent gap. The appendix includes U.S. healthcare costs,
 MEPS, preprocessor input features, outliers, feature distributions and
 relationships, and data preparation with the stratified split, plus baseline
@@ -16,6 +16,8 @@ contributions by category, contributions across ordered values, and XGBoost
 native feature importance.
 The main preprocessing slide uses the diagram's dark navy background with a light
 gray slide ID.
+The closing slide shows the main takeaway, contact links, and a QR code to the
+project repository. Its tracked image is `assets/project-github-qr.png`.
 The remaining appendix slides are in storyboard form. Order and number appendix
 slides by their first reference in the main presentation. Place unreferenced
 slides with their related topic.
@@ -78,7 +80,7 @@ Then add `--render`:
 .\.venv-train\Scripts\python docs/slides/generate_slides.py v5 --render
 ```
 
-The renderer reads the generated PowerPoint and writes `1.png` through `11.png`,
+The renderer reads the generated PowerPoint and writes `1.png` through `12.png`,
 `A1.png` through `A27.png` beside it. Rendering failures leave the PowerPoint file
 available.
 Preview generation requires the bundled renderer; it is optional for someone

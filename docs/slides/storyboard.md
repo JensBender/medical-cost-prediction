@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: eleven main slides and twenty-seven appendix slides are generated.
+Status: twelve main slides and twenty-seven appendix slides are generated.
 
 ## Presentation context
 
@@ -11,12 +11,12 @@ Status: eleven main slides and twenty-seven appendix slides are generated.
 - **Emphasis:** data science, with optional emphasis on ML engineering.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The current
-  allocation below totals 11:25, leaving room for transitions.
-- **Structure:** a cover, ten content slides, and twenty-seven appendix slides.
+  allocation below totals 12:00, before transitions.
+- **Structure:** a cover, eleven content slides, and twenty-seven appendix slides.
   Appendix slides follow their first reference in the main presentation;
   unreferenced slides sit with their related topic.
-- **Slide numbering:** Display 2–11 on the main content slides, with the cover
-  unnumbered, and A1, A2, etc. in the appendix. Use 1–11 in the storyboard.
+- **Slide numbering:** Display 2–12 on the main content slides, with the cover
+  unnumbered, and A1, A2, etc. in the appendix. Use 1–12 in the storyboard.
 - **Appendix navigation:** Main slides link to relevant appendix topics;
   appendix slides have a “Back” link to the referring main slide.
 - **Appendix speaker notes:** Leave main speaking points unlabelled. Use a standalone
@@ -68,7 +68,8 @@ The first three slide timings are rehearsed; the remaining timings are estimates
 | 9 | Example prediction output (high cost profile) | 0:35 | Show the main estimates and planning guidance |
 | 10 | Example prediction output (high cost profile) | 0:25 | Show expanded explanations and comparisons |
 | 11 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
-| | **Total** | **11:25** | |
+| 12 | Medical cost planning needs more than a single cost estimate | 0:35 | Close with the main lesson and invite questions |
+| | **Total** | **12:00** | |
 
 ## Main slides
 
@@ -660,11 +661,52 @@ whether people understand and can use these ranges. My main lesson is that
 model selection depends on the decision the estimate supports: typical error,
 uncertainty, and subgroup reliability each reveal something different.”
 
-**Close:** Invite questions with the results and limitations still easy to revisit.
+**Transition:** Close with the main takeaway and personal lesson.
 
 **Sources:** [DVC stages](../../dvc.yaml); [prediction module](../../src/prediction.py);
 [explanation module](../../src/explainability.py);
 [unit tests](../../tests/unit/); [technical specifications](../specs/technical_specifications.md).
+
+### 12 — Medical cost planning needs more than a single cost estimate
+
+**Takeaway:** Evaluate models for the decisions their predictions support.
+
+**On the slide**
+
+- **Headline:** Medical cost planning needs more than a single cost estimate.
+- Thank you. Questions?
+- Jens Bender
+- [github.com/JensBender/medical-cost-prediction](https://github.com/JensBender/medical-cost-prediction)
+- [linkedin.com/in/jensbender](https://linkedin.com/in/jensbender)
+- QR code to the GitHub repository, labelled “GitHub repository”.
+- **Data credit:** [Medical Expenditure Panel Survey (MEPS) 2023](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251)
+  by the [Agency for Healthcare Research and Quality (AHRQ)](https://www.ahrq.gov/).
+- **Medical inflation data:** [U.S. Bureau of Labor Statistics](https://www.bls.gov/cpi/),
+  [CPI-U Medical Care series](https://data.bls.gov/timeseries/CUUR0000SAM).
+
+**Visual:** Keep the white background and dark blue text. Make the takeaway the
+largest text, over two lines near the top. Put the thank-you line, presenter
+name, and readable contact links below on the left. Place the repository QR code
+on the right with its label underneath. Keep data credits small at the bottom,
+with clickable links to the dataset, agencies, and inflation series.
+Use one QR code and no technology badges. Keep this slide visible for questions.
+
+**Speaker notes — 0:35**
+
+“Medical cost planning needs more than a single cost estimate. People also need
+to understand how costs could vary and which answers shaped their estimate.
+
+My main lesson was to evaluate models for the decisions their predictions
+support. This project taught me to look beyond test-set metrics and think through
+what makes a useful product for the end user.
+
+Thank you for your attention. You can find the code and full analysis on GitHub.
+I’m happy to take questions.”
+
+**Close:** Leave the takeaway and repository QR code visible during questions.
+
+**Sources:** [Project repository](https://github.com/JensBender/medical-cost-prediction);
+[README: credits](../../README.md#-credits).
 
 ## Appendix slides
 
