@@ -11,8 +11,8 @@ below the title with a consistent gap. The appendix includes U.S. healthcare cos
 MEPS, preprocessor input features, outliers, feature distributions and
 relationships, and data preparation with the stratified split, plus baseline
 model comparisons, hyperparameter tuning, SHAP explanation details, SHAP
-benchmarking, overall SHAP feature importance, contribution distributions, and
-contributions by category.
+benchmarking, overall SHAP feature importance, contribution distributions,
+contributions by category, and contributions across ordered values.
 The main preprocessing slide uses the diagram's dark navy background with a light
 gray slide ID.
 The remaining appendix slides are in storyboard form. Order and number appendix
@@ -41,8 +41,9 @@ and the project images `../../assets/header.png`,
 `../../assets/infographic_healthcare_costs.png`,
 `../../figures/eda/lorenz_curve.png`,
 `../../figures/evaluation/shap_feature_importance.png`,
-`../../figures/evaluation/shap_contribution_distributions.png`, and
-`../../figures/evaluation/shap_categorical_contributions.png`. All these inputs
+`../../figures/evaluation/shap_contribution_distributions.png`,
+`../../figures/evaluation/shap_categorical_contributions.png`, and
+`../../figures/evaluation/shap_ordered_feature_contributions.png`. All these inputs
 are tracked by Git.
 
 The preprocessing slide uses the tracked `assets/preprocessing-pipeline.png`.
@@ -76,7 +77,7 @@ Then add `--render`:
 ```
 
 The renderer reads the generated PowerPoint and writes `1.png` through `11.png`,
-`A1.png` through `A25.png` beside it. Rendering failures leave the PowerPoint file
+`A1.png` through `A26.png` beside it. Rendering failures leave the PowerPoint file
 available.
 Preview generation requires the bundled renderer; it is optional for someone
 cloning the repository. The bundled presentation validators can also inspect

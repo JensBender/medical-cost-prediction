@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: eleven main slides and twenty-five appendix slides are generated.
+Status: eleven main slides and twenty-six appendix slides are generated.
 
 ## Presentation context
 
@@ -12,7 +12,7 @@ Status: eleven main slides and twenty-five appendix slides are generated.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The current
   allocation below totals 11:25, leaving room for transitions.
-- **Structure:** a cover, ten content slides, and twenty-five appendix slides.
+- **Structure:** a cover, ten content slides, and twenty-six appendix slides.
   Appendix slides follow their first reference in the main presentation;
   unreferenced slides sit with their related topic.
 - **Slide numbering:** Display 2–11 on the main content slides, with the cover
@@ -1675,6 +1675,31 @@ to move estimates by much larger amounts than, for example, marital status.”
 
 **Sources:** [README: contributions by category](../../README.md#shap-contributions-by-category);
 [SHAP contributions by category plot](../../figures/evaluation/shap_categorical_contributions.png).
+
+### A26 — SHAP contributions across ordered values
+
+**Question:** How do contributions change across numerical and ordinal features?
+
+**Visual:** Show the [SHAP contributions across ordered values plot](../../figures/evaluation/shap_ordered_feature_contributions.png)
+at full slide height, centered horizontally and preserving its aspect ratio,
+matching A23–A25. Use the figure’s own title and footnote, with no separate slide
+title or added body text. Place the Back link and appendix slide number in the
+bottom corners, outside the image’s horizontal bounds.
+
+**Backlink:** Example prediction output (slide 10).
+
+**Speaker notes**
+
+“These plots show how contributions change across numerical and ordinal features.
+Age generally moves estimates down at younger ages and up from around age 60,
+with greater variation among older adults. High family income generally moves
+estimates up, while middle and low incomes generally move them down. Family sizes
+of one or two move estimates up, while three or more move them down.”
+
+**Transition:** Return to the example prediction output.
+
+**Sources:** [README: contributions across ordered values](../../README.md#shap-contributions-across-ordered-values);
+[SHAP contributions across ordered values plot](../../figures/evaluation/shap_ordered_feature_contributions.png).
 
 ## Adaptation and file organization
 

@@ -30,7 +30,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 12)] + [f"A{number}" for number in range(1, 26)]
+SLIDE_IDS = [str(number) for number in range(1, 12)] + [f"A{number}" for number in range(1, 27)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -1246,6 +1246,17 @@ def build_presentation():
         20, 674, 100, 24, 18, color=SECONDARY, underline=True,
     )
     shap_categories_return_link.click_action.target_slide = expanded
+
+    shap_ordered = new_slide(presentation, storyboard, "A26")
+    picture(shap_ordered, WORKSPACE_DIR / "figures/evaluation/shap_ordered_feature_contributions.png",
+            "SHAP contributions across ordered values on the test set for age, "
+            "family income, and family size.",
+            0, 0, 1280, 720)
+    shap_ordered_return_link = text(
+        shap_ordered, "Return to example prediction", "Back",
+        20, 674, 100, 24, 18, color=SECONDARY, underline=True,
+    )
+    shap_ordered_return_link.click_action.target_slide = expanded
     return presentation
 
 
