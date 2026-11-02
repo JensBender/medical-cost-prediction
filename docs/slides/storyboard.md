@@ -1456,10 +1456,10 @@ aligned with the left-hand text. A backlink returns to slide 10.
 
 **Speaker notes**
 
-“SHapley Additive exPlanations, or SHAP, is a method for explaining the model
-prediction for a single person. It uses a reference sample called background
-data, drawn from the training data using survey weights to approximate the U.S.
-adult population. The starting point is the model’s average plan-around estimate
+“Shapley Additive Explanations, or SHAP, is a method that can be used to explain
+a model’s prediction for a single person. It uses a reference sample called
+background data, drawn from the training data using survey weights to approximate
+the U.S. adult population. The starting point is the model’s average plan-around estimate
 for that background data. The contributions show how each of her 27 answers
 moves the prediction up or down, and the app shows her the top five. The starting
 point plus all 27 feature contributions equals her plan-around estimate.
