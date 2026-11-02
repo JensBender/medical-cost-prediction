@@ -1715,13 +1715,31 @@ bottom corners, outside the image’s horizontal bounds.
 
 **Speaker notes**
 
-“XGBoost native feature importance ranks model-ready features by total gain: the
-summed improvement in the training objective across splits for all four quantiles
-(q25, q50, q75, q90). Chronic Conditions Count ranks first (18.6%), followed by
-Family Income and Insurance (15.0% each). SHAP uses preprocessor input features,
-so Chronic Conditions Count is derived later during preprocessing and has no
-SHAP score. The top-15 lists share 12 features, but measure different things.
-Prioritize SHAP for interpreting the product’s plan-around estimates.”
+“So far, we’ve looked at SHAP feature importance, which shows how the 27 inputs
+before preprocessing contributed to the plan-around estimate using the test data.
+By contrast, XGBoost’s native feature importance shows how the 40 model-ready
+features after preprocessing were used during training. It covers all four
+quantiles rather than just the plan-around estimate.
+
+For this plot, I combined one-hot encoded columns belonging to the same feature,
+leaving 29 feature groups:
+the 27 original inputs plus Chronic Conditions Count and Limitations Count,
+which are derived during preprocessing.
+
+I ranked them by total gain, which sums the improvements in the training
+objective from all splits using each feature. I chose total gain because it captures
+both how often a feature was used and how valuable those splits were, rather
+than looking only at split counts or the average gain per split.
+
+Chronic conditions count ranks first, accounting for almost 19% of total gain,
+followed by family income and insurance at 15% each. Chronic Conditions Count
+has no separate score in our SHAP ranking because it is derived later during preprocessing.
+
+Comparing the two lists of the top 15 features, you can see that they share 12.
+But they answer different questions. SHAP is better suited to interpret the
+product’s plan-around estimate because it links the prediction to the user’s
+original answers. Native importance shows which features contributed most during
+training across all four quantiles.”
 
 **Transition:** Return to the example prediction output.
 
