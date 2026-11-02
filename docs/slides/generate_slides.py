@@ -30,7 +30,7 @@ from pptx.util import Inches, Pt
 
 SLIDES_DIR = Path(__file__).resolve().parent
 WORKSPACE_DIR = SLIDES_DIR.parent.parent
-SLIDE_IDS = [str(number) for number in range(1, 12)] + [f"A{number}" for number in range(1, 27)]
+SLIDE_IDS = [str(number) for number in range(1, 12)] + [f"A{number}" for number in range(1, 28)]
 FONT = "Arial"
 BACKGROUND = "FFFFFF"
 INK = "163846"
@@ -1257,6 +1257,17 @@ def build_presentation():
         20, 674, 100, 24, 18, color=SECONDARY, underline=True,
     )
     shap_ordered_return_link.click_action.target_slide = expanded
+
+    xgb_importance = new_slide(presentation, storyboard, "A27")
+    picture(xgb_importance, WORKSPACE_DIR / "figures/evaluation/xgb_quantile_consolidated_feature_importance.png",
+            "XGBoost native feature importance: top 15 features ranked by total "
+            "gain across all four quantiles on the training data.",
+            0, 0, 1280, 720)
+    xgb_importance_return_link = text(
+        xgb_importance, "Return to example prediction", "Back",
+        20, 674, 100, 24, 18, color=SECONDARY, underline=True,
+    )
+    xgb_importance_return_link.click_action.target_slide = expanded
     return presentation
 
 

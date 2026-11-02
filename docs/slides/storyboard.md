@@ -1,6 +1,6 @@
 # Medical cost prediction: presentation storyboard
 
-Status: eleven main slides and twenty-six appendix slides are generated.
+Status: eleven main slides and twenty-seven appendix slides are generated.
 
 ## Presentation context
 
@@ -12,7 +12,7 @@ Status: eleven main slides and twenty-six appendix slides are generated.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. The current
   allocation below totals 11:25, leaving room for transitions.
-- **Structure:** a cover, ten content slides, and twenty-six appendix slides.
+- **Structure:** a cover, ten content slides, and twenty-seven appendix slides.
   Appendix slides follow their first reference in the main presentation;
   unreferenced slides sit with their related topic.
 - **Slide numbering:** Display 2–11 on the main content slides, with the cover
@@ -1700,6 +1700,33 @@ of one or two move estimates up, while three or more move them down.”
 
 **Sources:** [README: contributions across ordered values](../../README.md#shap-contributions-across-ordered-values);
 [SHAP contributions across ordered values plot](../../figures/evaluation/shap_ordered_feature_contributions.png).
+
+### A27 — XGBoost native feature importance
+
+**Question:** Which features does XGBoost rely on most during training?
+
+**Visual:** Show the [XGBoost native feature importance plot](../../figures/evaluation/xgb_quantile_consolidated_feature_importance.png)
+at full slide height, centered horizontally and preserving its aspect ratio,
+matching A23–A26. Use the figure’s own title and footnote, with no separate slide
+title or added body text. Place the Back link and appendix slide number in the
+bottom corners, outside the image’s horizontal bounds.
+
+**Backlink:** Example prediction output (slide 10).
+
+**Speaker notes**
+
+“XGBoost native feature importance ranks model-ready features by total gain: the
+summed improvement in the training objective across splits for all four quantiles
+(q25, q50, q75, q90). Chronic Conditions Count ranks first (18.6%), followed by
+Family Income and Insurance (15.0% each). SHAP uses preprocessor input features,
+so Chronic Conditions Count is derived later during preprocessing and has no
+SHAP score. The top-15 lists share 12 features, but measure different things.
+Prioritize SHAP for interpreting the product’s plan-around estimates.”
+
+**Transition:** Return to the example prediction output.
+
+**Sources:** [README: XGBoost native importance](../../README.md#xgboost-native-feature-importance);
+[XGBoost native feature importance plot](../../figures/evaluation/xgb_quantile_consolidated_feature_importance.png).
 
 ## Adaptation and file organization
 
