@@ -608,9 +608,8 @@ SHAP details appendix link to A21.
 “I use SHAP to explain how her answers contributed to her plan-around estimate
 and show her the five largest dollar contributions, so she can see which answers
 moved her estimate up or down and by how much. SHAP explains the full prediction
-pipeline, including preprocessing and postprocessing, so that these contributions
-correspond to her original answers rather than model-ready features after
-preprocessing.
+pipeline, so these contributions correspond to her original answers rather than
+model-ready features after preprocessing.
 
 She can also see how her plan-around estimate compares with typical costs for
 U.S. adults and people in her age group. These comparison benchmarks are based on
@@ -1557,8 +1556,6 @@ background rows and one permutation round.
 prediction-request timing still needs to be tested on the deployment hardware.”
 
 For questions:
-
-Reference: 500 background rows and 24 permutation rounds.
 
 Background validation: The background’s average plan-around estimate must differ
 by at most 10% from the survey-weighted average prediction across the full
