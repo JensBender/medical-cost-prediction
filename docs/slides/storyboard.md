@@ -1552,7 +1552,8 @@ I compared their explanations with a larger reference configuration and selected
 the fastest configuration that passed the quality checks, which was 225
 background rows and one permutation round.
 
-95% of SHAP calculations finished within 0.2 seconds, but complete
+It passed the background validation and explanation stability checks, and 95%
+of SHAP calculations finished within 0.2 seconds. However, complete
 prediction-request timing still needs to be tested on the deployment hardware.”
 
 For questions:
@@ -1561,10 +1562,11 @@ Background validation: The background’s average plan-around estimate must diff
 by at most 10% from the survey-weighted average prediction across the full
 training data. The selected background differed by 8.8%.
 
-Explanation stability: At least four of the top five features matched the
-reference. The median absolute contribution difference had to be at most $25.
-It was $6.47. Reference contributions of at least $25 in size had to keep the
-same sign. They all did.
+Explanation stability: At least four of the top five features appeared in both
+the candidate and reference configurations. Across these matched features, the
+median absolute contribution difference had to be at most $25. It was $6.47.
+Matched reference contributions of at least $25 in size had to keep the same
+sign. They all did.
 
 Subsequent-call latency: The first explanation call is timed separately.
 Subsequent calls better represent normal operation once the explainer is ready.
