@@ -704,17 +704,35 @@ def build_presentation():
 
     next_steps = new_slide(presentation, storyboard, "11",
                            "Next step: an API and web interface")
-    text(next_steps, "In place heading", "In place", 72, 168, 1136, 40, 32, bold=True)
-    text(next_steps, "In place", "Trained model and preprocessing pipeline, SHAP explanations,\n"
-         "cost comparisons, and inflation adjustment.", 72, 216, 1136, 86, 30)
-    text(next_steps, "Deployment heading", "Planned deployment",
-         72, 330, 1136, 40, 32, bold=True)
-    text(next_steps, "Planned deployment", "FastAPI with a Gradio web interface on Hugging Face Spaces.\n"
-         "Model and preprocessing artifacts on Hugging Face Hub.", 72, 378, 1136, 86, 30)
-    text(next_steps, "Future work heading", "With more time",
-         72, 510, 1136, 40, 32, bold=True)
-    text(next_steps, "Future work", "Evaluate on newer MEPS data and test with real users.",
-         72, 558, 1136, 78, 30)
+    for name, content, y, height, level in (
+        ("Implemented heading", "Implemented", 148, 38, 0),
+        ("Trained model", "Trained model", 190, 36, 1),
+        ("Preprocessing pipeline", "Preprocessing pipeline", 222, 36, 1),
+        ("SHAP explanations", "SHAP explanations", 254, 36, 1),
+        ("Cost comparisons", "Cost comparisons", 286, 36, 1),
+        ("Inflation adjustment", "Inflation adjustment", 318, 36, 1),
+        ("Deployment heading", "Planned deployment", 370, 38, 0),
+        ("Application deployment", "FastAPI with a Gradio UI on Hugging Face Spaces",
+         412, 36, 1),
+        ("Model deployment", "Model and preprocessing artifacts on Hugging Face Hub",
+         444, 36, 1),
+        ("Future work heading", "Future work", 496, 38, 0),
+        ("Newer data evaluation", "Evaluate on newer MEPS data", 538, 36, 1),
+        ("User testing", "Test with real users", 570, 36, 1),
+    ):
+        section = text(next_steps, name, content, 72 + 32 * level, y,
+                       804 - 32 * level, height, 28 if level else 30, bold=not level)
+        paragraph = section.text_frame.paragraphs[0]
+        paragraph.level = level
+        properties = paragraph._p.get_or_add_pPr()
+        properties.set("marL", str(pixels(24)))
+        properties.set("indent", str(-pixels(16)))
+        bullet_font = OxmlElement("a:buFont")
+        bullet_font.set("typeface", FONT)
+        bullet = OxmlElement("a:buChar")
+        bullet.set("char", "◦" if level else "•")
+        properties.append(bullet_font)
+        properties.append(bullet)
 
     closing = new_slide(presentation, storyboard, "12")
     text(closing, "Closing takeaway", "Medical cost planning needs\n"

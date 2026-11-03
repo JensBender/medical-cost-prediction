@@ -637,15 +637,24 @@ them available through an API and web interface.
 
 **On the slide**
 
-- **In place:** Trained model and preprocessing pipeline, SHAP explanations,
-  cost comparisons, and inflation adjustment.
-- **Planned deployment:** FastAPI with a Gradio web interface on Hugging Face
-  Spaces. Model and preprocessing artifacts on Hugging Face Hub.
-- **With more time:** Evaluate on newer MEPS data and test with real users.
+- **Implemented**
+  - Trained model
+  - Preprocessing pipeline
+  - SHAP explanations
+  - Cost comparisons
+  - Inflation adjustment
+- **Planned deployment**
+  - FastAPI with a Gradio UI on Hugging Face Spaces
+  - Model and preprocessing artifacts on Hugging Face Hub
+- **Future work**
+  - Evaluate on newer MEPS data
+  - Test with real users
 
-**Visual:** Three vertically stacked, left-aligned text blocks with bold
-headings. Keep a clear gap between blocks and separate the application hosting
-and model hosting into two lines within the deployment block.
+**Visual:** Three vertically stacked bullet groups with bold main bullets and
+indented sub-bullets. Keep the text in the left column, leaving room for a
+future illustration on the right. List the trained model and preprocessing
+pipeline separately. Keep deployment bullets on one line each and use the same
+gap between bullet groups.
 
 **Speaker notes — 1:00**
 
