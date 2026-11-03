@@ -651,15 +651,13 @@ application, distinguishing implemented and planned components.
 
 **Speaker notes — 1:00**
 
-“The project goes beyond a notebook: scripts handle preprocessing and training,
-DVC tracks stages, MLflow records experiments, and shared modules provide
-prediction and SHAP explanations. The FastAPI and Gradio application is still
-planned. The next delivery work is to connect those components and measure
-complete request latency, while the next modeling validation is to review input
-timing and test on a later survey year. User testing also needs to establish
-whether people understand and can use these ranges. My main lesson is that
-model selection depends on the decision the estimate supports: typical error,
-uncertainty, and subgroup reliability each reveal something different.”
+“The modeling and evaluation work is complete, and the components for
+predictions, explanations, cost comparisons, and inflation adjustment are in
+place. The next step is to make these predictions publicly available through
+an API and a web interface.
+
+With more time, I would evaluate the model on newer MEPS data, test the product
+with real users, and investigate the remaining prediction weaknesses.”
 
 **Transition:** Close with the main takeaway and personal lesson.
 
