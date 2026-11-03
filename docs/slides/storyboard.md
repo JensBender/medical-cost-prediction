@@ -721,7 +721,8 @@ I’m happy to take questions.”
 
 Each appendix item is an optional slide with a specific question to answer.
 The remaining planned topics will be reviewed after the main slides are finalized.
-Timings apply only when promoted into the main presentation.
+Rehearsed timings are recorded where available; other timings are estimates
+for optional use.
 
 ### A1 — U.S. healthcare costs: out-of-pocket spending and HSA/FSA planning
 
@@ -1505,7 +1506,7 @@ borders. Place the example-user illustration beneath the contribution table,
 matching its horizontal position on slides 9 and 10, with its bottom roughly
 aligned with the left-hand text. A backlink returns to slide 10.
 
-**Speaker notes**
+**Speaker notes — 2:30 (rehearsed)**
 
 “Shapley Additive Explanations, or SHAP, is a method that can be used to explain
 a model’s prediction for a single person. It uses a reference sample called
@@ -1586,7 +1587,7 @@ Link here from slide 10.
 
 **Backlink:** Example prediction output (slide 10).
 
-**Speaker notes**
+**Speaker notes — 1:05 (rehearsed)**
 
 “I ran SHAP benchmarking experiments to choose the background sample size and
 number of permutation rounds.
@@ -1661,7 +1662,7 @@ The Feature importance link on slide 10 opens this slide.
 
 **Backlink:** Example prediction output (slide 10).
 
-**Speaker notes**
+**Speaker notes — 0:35 (rehearsed)**
 
 “This plot ranks features by the average size of their SHAP contributions,
 regardless of direction. The $93 for insurance means its contribution to the
@@ -1688,7 +1689,7 @@ bottom corners, outside the image’s horizontal bounds.
 
 **Backlink:** Example prediction output (slide 10).
 
-**Speaker notes**
+**Speaker notes — 0:35 (rehearsed)**
 
 “This beeswarm plot shows whether each feature moves the plan-around estimate up
 or down and how much that varies between people. Older age, higher family income,
@@ -1714,7 +1715,7 @@ the bottom corners, outside the image’s horizontal bounds.
 
 **Backlink:** Example prediction output (slide 10).
 
-**Speaker notes**
+**Speaker notes — 0:32 (rehearsed)**
 
 “This interval plot shows which categories tend to move estimates up or down and
 how much contributions vary within each category. "Any Private" insurance
@@ -1740,7 +1741,7 @@ bottom corners, outside the image’s horizontal bounds.
 
 **Backlink:** Example prediction output (slide 10).
 
-**Speaker notes**
+**Speaker notes — 0:30 (rehearsed)**
 
 “These plots show how contributions change across numerical and ordinal features.
 Age generally moves estimates down at younger ages and up from around age 60,
@@ -1765,7 +1766,7 @@ bottom corners, outside the image’s horizontal bounds.
 
 **Backlink:** Example prediction output (slide 10).
 
-**Speaker notes**
+**Speaker notes — 1:45 (rehearsed)**
 
 “So far, we’ve looked at SHAP feature importance, which shows how the 27 inputs
 before preprocessing contributed to the plan-around estimate using the test data.
