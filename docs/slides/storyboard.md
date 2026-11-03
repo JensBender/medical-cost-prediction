@@ -705,11 +705,14 @@ Use one QR code and no technology badges. Keep this slide visible for questions.
 **Speaker notes — 0:35**
 
 “Medical cost planning needs more than a single cost estimate. People also need
-to understand how costs could vary and which answers shaped their estimate.
+to understand how much next year’s costs could vary, so they can better
+prepare for a higher-cost year. The Medical Cost Planner also helps users
+understand which answers shaped their estimate and how it compares with typical
+costs for other people.
 
-My main lesson was to evaluate models for the decisions their predictions
-support. This project taught me to look beyond test-set metrics and think through
-what makes a useful product for the end user.
+For me personally, this project taught me to look beyond optimizing model
+metrics and think more about what makes a useful product for the end user.
+In this case, that means helping people budget under uncertainty.
 
 Thank you for your attention. You can find the code and full analysis on GitHub.
 I’m happy to take questions.”
