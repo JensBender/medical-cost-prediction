@@ -67,7 +67,7 @@ The first three slide timings are rehearsed; the remaining timings are estimates
 | 8 | XGBoost quantile audit: all release gates passed | 1:30 | Present held-out evidence and baseline comparisons |
 | 9 | Example prediction output (high cost profile) | 0:35 | Show the main estimates and planning guidance |
 | 10 | Example prediction output (high cost profile) | 0:25 | Show expanded explanations and comparisons |
-| 11 | Model evaluation is complete; app development comes next | 1:00 | Show engineering work and close with priorities |
+| 11 | Next step: an API and web interface | 1:00 | Summarize completed components, planned deployment, and potential future work |
 | 12 | Medical cost planning needs more than a single cost estimate | 0:35 | Close with the main lesson and invite questions |
 | | **Total** | **12:00** | |
 
@@ -630,24 +630,22 @@ and validation work.
 [SHAP explanation module](../../src/explainability.py);
 [cost benchmark calculation](../../scripts/build_app_artifacts.py).
 
-### 11 — Model evaluation is complete; app development comes next
+### 11 — Next step: an API and web interface
 
-**Takeaway:** The project has reusable ML components and an explicit plan for
-the remaining product and validation work.
+**Takeaway:** The prediction components are in place; the next step is to make
+them available through an API and web interface.
 
 **On the slide**
 
-| Implemented | Planned |
-| --- | --- |
-| DVC stages and MLflow experiment tracking | FastAPI/Gradio application |
-| Shared prediction and SHAP modules; unit tests | Complete request-latency and integration checks |
-| Model evaluation and application data artifacts | User evaluation and aggregate monitoring |
+- **In place:** Trained model and preprocessing pipeline, SHAP explanations,
+  cost comparisons, and inflation adjustment.
+- **Planned deployment:** FastAPI with a Gradio web interface on Hugging Face
+  Spaces. Model and preprocessing artifacts on Hugging Face Hub.
+- **With more time:** Evaluate on newer MEPS data and test with real users.
 
-- Next validation priority: feature timing and performance on a later survey year
-- Main lesson: evaluate the estimates needed for the user decision
-
-**Visual:** Workflow from training artifacts through shared inference to the
-application, distinguishing implemented and planned components.
+**Visual:** Three vertically stacked, left-aligned text blocks with bold
+headings. Keep a clear gap between blocks and separate the application hosting
+and model hosting into two lines within the deployment block.
 
 **Speaker notes — 1:00**
 
@@ -656,8 +654,8 @@ predictions, explanations, cost comparisons, and inflation adjustment are in
 place. The next step is to make these predictions publicly available through
 an API and a web interface.
 
-With more time, I would evaluate the model on newer MEPS data, test the product
-with real users, and investigate the remaining prediction weaknesses.”
+With more time, I would evaluate the model on newer MEPS data and test the
+product with real users.”
 
 **Transition:** Close with the main takeaway and personal lesson.
 

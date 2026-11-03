@@ -702,27 +702,19 @@ def build_presentation():
         514, 674, 220, 24, 18, color=SECONDARY, underline=True,
     )
 
-    next_steps = new_slide(presentation, storyboard, "11", "Model evaluation is complete;\n"
-                           "app development comes next", two_lines=True)
-    text(next_steps, "Implemented", "Implemented", 72, 190, 700, 38, 30, bold=True)
-    text(next_steps, "Planned", "Planned", 895, 190, 313, 38, 30, bold=True)
-    text(next_steps, "Training heading", "Training artifacts", 72, 265, 330, 38, 29, bold=True)
-    text(next_steps, "Training tools", "DVC stages\nMLflow experiments\nEvaluation artifacts",
-         72, 310, 330, 127, 27)
-    text(next_steps, "Training to inference", "→", 418, 295, 64, 58, 42)
-    text(next_steps, "Shared heading", "Shared inference", 510, 265, 320, 38, 29, bold=True)
-    text(next_steps, "Inference modules", "Prediction and SHAP\nReusable modules\nUnit tests",
-         510, 310, 320, 127, 27)
-    text(next_steps, "Inference to app", "→", 822, 295, 64, 58, 42)
-    text(next_steps, "App heading", "FastAPI / Gradio", 895, 265, 313, 38, 29, bold=True)
-    text(next_steps, "Remaining app work", "Integration and latency\nUser evaluation\n"
-         "Aggregate monitoring", 895, 310, 313, 127, 27)
-    text(next_steps, "Validation heading", "Next validation priority", 72, 478, 1136, 38, 28,
-         bold=True)
-    text(next_steps, "Validation work", "Check feature timing and performance on a later "
-         "survey year", 72, 520, 1136, 38, 28)
-    text(next_steps, "Closing lesson", "Evaluate the estimates needed for the user decision",
-         72, 605, 1136, 44, 32, bold=True)
+    next_steps = new_slide(presentation, storyboard, "11",
+                           "Next step: an API and web interface")
+    text(next_steps, "In place heading", "In place", 72, 168, 1136, 40, 32, bold=True)
+    text(next_steps, "In place", "Trained model and preprocessing pipeline, SHAP explanations,\n"
+         "cost comparisons, and inflation adjustment.", 72, 216, 1136, 86, 30)
+    text(next_steps, "Deployment heading", "Planned deployment",
+         72, 330, 1136, 40, 32, bold=True)
+    text(next_steps, "Planned deployment", "FastAPI with a Gradio web interface on Hugging Face Spaces.\n"
+         "Model and preprocessing artifacts on Hugging Face Hub.", 72, 378, 1136, 86, 30)
+    text(next_steps, "Future work heading", "With more time",
+         72, 510, 1136, 40, 32, bold=True)
+    text(next_steps, "Future work", "Evaluate on newer MEPS data and test with real users.",
+         72, 558, 1136, 78, 30)
 
     closing = new_slide(presentation, storyboard, "12")
     text(closing, "Closing takeaway", "Medical cost planning needs\n"
