@@ -324,7 +324,7 @@ def build_presentation():
     text(problem, "Aim label", "The aim", 652, 520, 556, 36, 30, bold=True)
     text(problem, "Intended estimate", "A useful ballpark estimate from questions "
          "people can answer from memory.", 652, 560, 556, 72, 30)
-    picture(problem, SLIDES_DIR / "assets/budget-planning.png",
+    picture(problem, SLIDES_DIR / "assets/budget-planning.jpg",
             "Illustration of an adult considering a budget with a planner and calculator.",
             72, 120, 1136, 379)
     text(problem, "Problem statement appendix label", "Appendix:",

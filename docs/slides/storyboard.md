@@ -109,7 +109,7 @@ spending to plan their budget and HSA/FSA contributions.
 - **The aim:** A useful ballpark estimate from questions people can answer from
   memory.
 
-**Visual:** Wide [budgeting illustration](assets/budget-planning.png) above
+**Visual:** Wide [budgeting illustration](assets/budget-planning.jpg) above
 two columns: challenge and aim.
 
 **Appendix link:** [U.S. healthcare cost explainer (A1)](#a1--us-healthcare-costs-out-of-pocket-spending-and-hsafsa-planning).
