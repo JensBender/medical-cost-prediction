@@ -16,6 +16,8 @@ contributions by category, contributions across ordered values, and XGBoost
 native feature importance.
 The main preprocessing slide uses the diagram's dark navy background with a light
 gray slide ID.
+The next-steps slide uses `assets/planned-deployment.png`, showing the planner
+on a laptop connected to a cloud-hosting symbol.
 The closing slide shows the main takeaway, contact links, and a QR code to the
 project repository. Its tracked images are `assets/project-github-qr.png` and
 `assets/example-user-planning.png`, a portrait illustration of the example user beside a

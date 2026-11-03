@@ -641,20 +641,23 @@ them available through an API and web interface.
   - Trained model
   - Preprocessing pipeline
   - SHAP explanations
-  - Cost comparisons
-  - Inflation adjustment
+  - Cost comparisons and inflation adjustment
 - **Planned deployment**
   - FastAPI with a Gradio UI on Hugging Face Spaces
   - Model and preprocessing artifacts on Hugging Face Hub
 - **Future work**
   - Evaluate on newer MEPS data
-  - Test with real users
+  - Test usability and understanding
 
 **Visual:** Three vertically stacked bullet groups with bold main bullets and
-indented sub-bullets. Keep the text in the left column, leaving room for a
-future illustration on the right. List the trained model and preprocessing
-pipeline separately. Keep deployment bullets on one line each and use the same
-gap between bullet groups.
+indented sub-bullets. Keep the text in the left column and place the
+[deployment illustration](assets/planned-deployment.png) on the right, with the
+cloud centered above the laptop. Use tight image framing and position
+it higher and closer to the text, preserving its aspect ratio. Use 22.5 pt
+sub-bullets and 24 pt main bullets. List the trained model and preprocessing
+pipeline separately. Break each deployment bullet after “on”, with
+continuation lines aligned to the bullet text. Use the same gap between bullet
+groups.
 
 **Speaker notes — 1:00**
 
