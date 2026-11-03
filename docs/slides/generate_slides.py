@@ -731,17 +731,17 @@ def build_presentation():
             "The example user smiles beside a computer showing Medical Cost "
             "Planner with three abstract estimate graphics.",
             900, 72, 320, 540)
-    text(closing, "Questions", "Thank you. Questions?", 72, 278, 800, 48, 34)
-    text(closing, "Presenter", "Jens Bender", 308, 380.901, 480, 42, 30, bold=True)
+    text(closing, "Questions", "Thank you. Let’s discuss.", 72, 278, 800, 48, 34)
+    text(closing, "Presenter", "Jens Bender", 380, 380.901, 480, 42, 30, bold=True)
     repository_url = "https://github.com/JensBender/medical-cost-prediction"
     repository_link = text(
-        closing, "Project repository", "github.com/JensBender/medical-cost-prediction",
-        308, 436.913, 540, 34, 24, color=SECONDARY, underline=True,
+        closing, "GitHub profile", "github.com/JensBender",
+        380, 436.913, 540, 34, 24, color=SECONDARY, underline=True,
     )
-    repository_link.click_action.hyperlink.address = repository_url
+    repository_link.click_action.hyperlink.address = "https://github.com/JensBender"
     linkedin_link = text(
         closing, "LinkedIn profile", "linkedin.com/in/jensbender",
-        308, 482.910, 540, 34, 24, color=SECONDARY, underline=True,
+        380, 482.910, 540, 34, 24, color=SECONDARY, underline=True,
     )
     linkedin_link.click_action.hyperlink.address = "https://linkedin.com/in/jensbender"
     repository_qr = picture(
@@ -750,13 +750,13 @@ def build_presentation():
         72, 366, 220, 220,
     )
     repository_qr.click_action.hyperlink.address = repository_url
-    text(closing, "QR code label", "GitHub repository",
+    text(closing, "QR code label", "Project on GitHub",
          60, 582, 244, 30, 20, color=SECONDARY, alignment=PP_ALIGN.CENTER)
     data_credit = text(
         closing, "Data credit",
         [("Data: ", False), ("MEPS 2023", False), (" by ", False), ("AHRQ", False),
          ("  |  ", False), ("Medical Care series", False), (" by ", False),
-         ("BLS", False)],
+         ("Bureau of Labor Statistics", False)],
         72, 674, 1070, 24, 18, color=SECONDARY,
     )
     data_runs = data_credit.text_frame.paragraphs[0].runs

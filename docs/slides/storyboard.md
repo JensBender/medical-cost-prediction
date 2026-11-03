@@ -674,15 +674,15 @@ uncertainty, and subgroup reliability each reveal something different.”
 **On the slide**
 
 - **Headline:** Medical cost planning needs more than a single cost estimate.
-- Thank you. Questions?
+- Thank you. Let’s discuss.
 - Jens Bender
-- [github.com/JensBender/medical-cost-prediction](https://github.com/JensBender/medical-cost-prediction)
+- [github.com/JensBender](https://github.com/JensBender)
 - [linkedin.com/in/jensbender](https://linkedin.com/in/jensbender)
-- QR code to the GitHub repository, labelled “GitHub repository”.
+- QR code to the GitHub repository, labelled “Project on GitHub”.
 - **Data:** [MEPS 2023](https://meps.ahrq.gov/data_stats/download_data_files_detail.jsp?cboPufNumber=HC-251)
   by [AHRQ](https://www.ahrq.gov/) |
   [Medical Care series](https://data.bls.gov/timeseries/CUUR0000SAM)
-  by [BLS](https://www.bls.gov/cpi/).
+  by [Bureau of Labor Statistics](https://www.bls.gov/cpi/).
 
 **Visual:** Keep the white background and dark blue text. Make the takeaway the
 largest text, over two lines near the top left, breaking after “needs”. Put the
@@ -692,8 +692,10 @@ about 320 by 540 pixels. She has a warm, relieved smile and sits beside a comput
 Its screen shows “Medical Cost Planner” and three abstract estimate graphics.
 Match her earlier
 illustration’s style and teal palette, and preserve the transparent background.
-Group the repository QR code at the lower left with the presenter name and
-readable contact links close beside it. Align the name visually with the top
+Place the repository QR code at the lower left. Keep the presenter name and
+contact links closer to the QR code than to the image, with a clear horizontal
+gap after the QR code and left-aligned text within the contact block.
+Align the name visually with the top
 of the QR code’s black pattern.
 Place the QR code’s label close underneath it, leaving a clear gap before the
 single-line data credit at the bottom,
