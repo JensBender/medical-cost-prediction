@@ -747,7 +747,8 @@ def build_presentation():
          "more than a single cost estimate.", 72, 88, 770, 144, 48, bold=True)
     picture(closing, SLIDES_DIR / "assets/example-user-planning.png",
             "The example user smiles beside a computer showing Medical Cost "
-            "Planner with three abstract estimate graphics.",
+            "Planner in a Hugging Face Spaces page with Gradio-style controls "
+            "and three abstract estimate graphics.",
             900, 72, 320, 540)
     text(closing, "Questions", "Thank you. Let’s discuss.", 72, 278, 800, 48, 34)
     text(closing, "Presenter", "Jens Bender", 380, 380.901, 480, 42, 30, bold=True)

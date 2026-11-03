@@ -697,7 +697,9 @@ largest text, over two lines near the top left, breaking after “needs”. Put 
 thank-you line below it. Use a portrait-format
 [illustration of the example user](assets/example-user-planning.png) in the right third,
 about 320 by 540 pixels. She has a warm, relieved smile and sits beside a computer.
-Its screen shows “Medical Cost Planner” and three abstract estimate graphics.
+Its screen matches the deployment illustration on slide 11: a Hugging Face
+Spaces page with “Medical Cost Planner”, Gradio-style controls, and three
+abstract estimate graphics.
 Match her earlier
 illustration’s style and teal palette, and preserve the transparent background.
 Place the repository QR code at the lower left. Keep the presenter name and
