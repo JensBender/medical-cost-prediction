@@ -598,7 +598,9 @@ She can also see how her plan-around estimate compares with typical costs for
 U.S. adults and people in her age group. These comparison benchmarks are based on
 actual out-of-pocket costs, summarized as the median for all adults and for
 various age groups. They use the training data and are survey-weighted and
-inflation-adjusted.”
+inflation-adjusted.
+
+That is the planned user experience.”
 
 For questions:
 
@@ -638,13 +640,12 @@ breaks after “on”, with its continuation aligned to the bullet text.
 
 **Speaker notes — 0:25 (rehearsed)**
 
-“The modeling and evaluation work is complete, and the components for
-predictions, explanations, cost comparisons, and inflation adjustment are in
-place. The next step is to make these predictions publicly available through
-an API and a web interface.
+“The modeling and evaluation work is complete, and the underlying prediction
+components are in place. The next step is to make the predictions publicly
+available through an API and a web interface.
 
 With more time, I would evaluate the model on newer MEPS data and test the
-product with real users.”
+product’s usability and how well users understand the cost estimates.”
 
 **Transition:** Close with the main takeaway and personal lesson.
 
