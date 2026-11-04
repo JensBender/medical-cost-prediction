@@ -673,14 +673,15 @@ product’s usability and how well users understand the cost estimates.”
   by [Bureau of Labor Statistics](https://www.bls.gov/cpi/).
 
 **Visual:** The takeaway uses the standard title position and font size on one
-line across the slide width. The thank-you line is centered vertically between
-the title and the QR code. A transparent
+line across the slide width. The thank-you line aligns visually with the top of
+the example user's head. A transparent
 [image of the example user](assets/example-user-planning.png)
 sits below the title on the right, with its right edge aligned to the end of the
 title text and room for the contact block to its left.
 Her appearance matches slide 2, with a warm smile;
 the computer screen matches slide 11's planned app interface.
-The project QR code sits at the lower left with its label underneath. The
+The project QR code sits below the thank-you line on the left, with its label
+underneath and clear space above the footer. The
 left-aligned contact block sits closer to the QR code than to the image, with
 the name aligned visually to the top of the QR pattern. Linked data credits
 run along the bottom. Keep this slide visible during questions.

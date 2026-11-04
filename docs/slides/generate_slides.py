@@ -764,27 +764,27 @@ def build_presentation():
             "Planner in a Hugging Face Spaces page with Gradio-style controls "
             "and three abstract estimate graphics.",
             894, 178, 280, 468)
-    text(closing, "Questions", "Thank you. Let’s discuss.", 72, 216, 800, 54, 38)
-    text(closing, "Presenter", "Jens Bender", 380, 380.901, 480, 42, 30, bold=True)
+    text(closing, "Questions", "Thank you. Let’s discuss.", 72, 170, 800, 54, 38)
+    text(closing, "Presenter", "Jens Bender", 380, 334.901, 480, 42, 30, bold=True)
     repository_url = "https://github.com/JensBender/medical-cost-prediction"
     repository_link = text(
         closing, "GitHub profile", "github.com/JensBender",
-        380, 436.913, 540, 34, 24, color=SECONDARY, underline=True,
+        380, 390.913, 540, 34, 24, color=SECONDARY, underline=True,
     )
     repository_link.click_action.hyperlink.address = "https://github.com/JensBender"
     linkedin_link = text(
         closing, "LinkedIn profile", "linkedin.com/in/jensbender",
-        380, 482.910, 540, 34, 24, color=SECONDARY, underline=True,
+        380, 436.910, 540, 34, 24, color=SECONDARY, underline=True,
     )
     linkedin_link.click_action.hyperlink.address = "https://linkedin.com/in/jensbender"
     repository_qr = picture(
         closing, SLIDES_DIR / "assets/project-github-qr.png",
         "QR code linking to the Medical Cost Planner GitHub repository.",
-        72, 366, 220, 220,
+        72, 320, 220, 220,
     )
     repository_qr.click_action.hyperlink.address = repository_url
     text(closing, "QR code label", "Project on GitHub",
-         60, 582, 244, 30, 20, color=SECONDARY, alignment=PP_ALIGN.CENTER)
+         60, 536, 244, 30, 20, color=SECONDARY, alignment=PP_ALIGN.CENTER)
     data_credit = text(
         closing, "Data credit",
         [("Data: ", False), ("MEPS 2023", False), (" by ", False), ("AHRQ", False),
