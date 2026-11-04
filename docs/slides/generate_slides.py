@@ -706,16 +706,16 @@ def build_presentation():
                            "Next step: an API and web interface")
     for name, content, y, height, level in (
         ("Implemented heading", "Implemented", 132, 40, 0),
-        ("Trained model", "Trained model", 174, 38, 1),
-        ("Preprocessing pipeline", "Preprocessing pipeline", 208, 38, 1),
-        ("SHAP explanations", "SHAP explanations", 242, 38, 1),
+        ("Trained model and preprocessing pipeline", "Trained model and preprocessing pipeline",
+         174, 38, 1),
+        ("SHAP explanations", "SHAP explanations", 208, 38, 1),
         ("Cost comparisons and inflation adjustment", "Cost comparisons and inflation adjustment",
-         276, 38, 1),
+         242, 38, 1),
         ("Deployment heading", "Planned deployment", 332, 40, 0),
-        ("Application deployment", "FastAPI with a Gradio UI on\nHugging Face Spaces",
-         374, 72, 1),
+        ("Application deployment", "API and web UI on Hugging Face Spaces",
+         374, 38, 1),
         ("Model deployment", "Model and preprocessing artifacts on\nHugging Face Hub",
-         446, 72, 1),
+         410, 72, 1),
         ("Future work heading", "Future work", 536, 40, 0),
         ("Newer data evaluation", "Evaluate on newer MEPS data", 578, 38, 1),
         ("User testing", "Test usability and understanding", 612, 38, 1),
@@ -736,6 +736,19 @@ def build_presentation():
                 properties.append(bullet)
             else:
                 properties.append(OxmlElement("a:buNone"))
+
+    for badge_names, y in (
+        (("xgboost", "shap", "dvc", "mlflow"), 286),
+        (("fastapi", "gradio", "hugging-face"), 488),
+    ):
+        badge_x = 128
+        for badge_name in badge_names:
+            badge_path = SLIDES_DIR / f"assets/badge-{badge_name}.png"
+            with Image.open(badge_path) as badge_image:
+                badge_width = 32 * badge_image.width / badge_image.height
+            picture(next_steps, badge_path, f"{badge_name} technology badge.",
+                    badge_x, y, badge_width, 32)
+            badge_x += badge_width + 8
 
     picture(next_steps, SLIDES_DIR / "assets/planned-deployment.png",
             "Planned deployment: a laptop showing Medical Cost Planner in a "

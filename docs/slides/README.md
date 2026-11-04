@@ -29,6 +29,10 @@ the storyboard and tracked images in `assets/`, `../../assets/`, and
 `../../figures/`. Generating the PowerPoint does not load model artifacts or
 survey data and does not require the ChatGPT or Codex runtime.
 
+Slide 11 uses tracked `assets/badge-*.png` files rendered from the Shields.io
+badge URLs in the project README and the [profile README](https://github.com/JensBender/JensBender).
+Badge images are embedded locally; generating slides needs no network access.
+
 The preprocessing slide uses the tracked `assets/preprocessing-pipeline.png`.
 Its editable source is `../../assets/preprocessing_pipeline.svg`. When changing
 the SVG, regenerate the PNG and include both files in the same commit. The slide

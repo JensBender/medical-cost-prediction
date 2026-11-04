@@ -622,21 +622,23 @@ them available through an API and web interface.
 **On the slide**
 
 - **Implemented**
-  - Trained model
-  - Preprocessing pipeline
+  - Trained model and preprocessing pipeline
   - SHAP explanations
   - Cost comparisons and inflation adjustment
+  - Badges: XGBoost, SHAP, DVC, MLflow
 - **Planned deployment**
-  - FastAPI with a Gradio UI on Hugging Face Spaces
+  - API and web UI on Hugging Face Spaces
   - Model and preprocessing artifacts on Hugging Face Hub
+  - Badges: FastAPI, Gradio, Hugging Face
 - **Future work**
   - Evaluate on newer MEPS data
   - Test usability and understanding
 
 **Visual:** Three bullet groups with bold headings and indented sub-bullets on
-the left. The [deployment illustration](assets/planned-deployment.png) sits on
-the right, with the cloud centered above the laptop. Each deployment bullet
-breaks after “on”, with its continuation aligned to the bullet text.
+the left, with a compact badge row below each of the first two groups. Badge
+rows align with the sub-bullet text. The [deployment illustration](assets/planned-deployment.png)
+sits on the right, with the cloud centered above the laptop. The model-hosting
+bullet breaks after “on”, with its continuation aligned to the bullet text.
 
 **Speaker notes — 0:25 (rehearsed)**
 
