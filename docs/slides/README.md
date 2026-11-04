@@ -1,35 +1,18 @@
 # Presentation files
 
-`storyboard.md` holds the content and speaker notes. The main presentation
-contains slides 1–12, using the approved problem-statement and model-audit design.
-Most slides use a white background, dark blue text, and teal for model results
-in comparisons. Gray is reserved for
-supporting information and slide IDs. Main slides display plain numbers, the
-cover is unnumbered, and appendix slides display A1, A2, etc. The storyboard
-uses 1–12 for the main slides. Titles can use one or two lines; content starts
-below the title with a consistent gap. The appendix includes U.S. healthcare costs,
-MEPS, preprocessor input features, outliers, feature distributions and
-relationships, and data preparation with the stratified split, plus baseline
-model comparisons, hyperparameter tuning, SHAP explanation details, SHAP
-benchmarking, overall SHAP feature importance, contribution distributions,
-contributions by category, contributions across ordered values, and XGBoost
-native feature importance.
-The main preprocessing slide uses the diagram's dark navy background with a light
-gray slide ID.
-The next-steps slide uses `assets/planned-deployment.png`, showing the planner
-on a laptop connected to a cloud-hosting symbol.
-The closing slide shows the main takeaway, contact links, and a QR code to the
-project repository. Its tracked images are `assets/project-github-qr.png` and
-`assets/example-user-planning.png`, a portrait illustration of the example user beside a
-computer showing the planned Hugging Face Spaces app with Gradio-style controls
-and three abstract estimate graphics.
-The remaining appendix slides are in storyboard form. Order and number appendix
-slides by their first reference in the main presentation. Place unreferenced
-slides with their related topic.
+`storyboard.md` holds the slide content, speaker notes, timings, and sources.
+`generate_slides.py` implements the slide text and layout and creates an editable
+PowerPoint with optional PNG previews. Update both files when changing slide
+content; speaker-note changes only need the storyboard.
 
-`generate_slides.py` creates an editable PowerPoint, with optional PNG previews.
-Speaker notes come from the storyboard; slide copy and layout are in the Python
-script. After agreeing on content changes, update both where needed.
+The deck contains 12 main slides and 27 appendix slides. The cover is unnumbered;
+the remaining main slides display 2–12, and appendix slides display A1–A27.
+Main slides link to related appendix topics, which link back to the referring
+main slide. The storyboard lists the topics and presentation order.
+
+Most slides use a white background, dark blue text, teal highlights, and muted
+gray supporting information. The preprocessing slide uses the diagram's dark
+navy background.
 
 ## Generate a revision
 
@@ -41,19 +24,10 @@ Python generator from the repository root:
 .\.venv-train\Scripts\python docs/slides/generate_slides.py v4
 ```
 
-The script writes `medical-cost-planner-v4.pptx` under
-`exports/v4/`. PowerPoint generation needs no ChatGPT or Codex runtime,
-model artifacts, or survey data. It uses `storyboard.md`, the images in `assets/`,
-and the project images `../../assets/header.png`,
-`../../assets/infographic_meps_data.jpg`,
-`../../assets/infographic_healthcare_costs.png`,
-`../../figures/eda/lorenz_curve.png`,
-`../../figures/evaluation/shap_feature_importance.png`,
-`../../figures/evaluation/shap_contribution_distributions.png`,
-`../../figures/evaluation/shap_categorical_contributions.png`,
-`../../figures/evaluation/shap_ordered_feature_contributions.png`, and
-`../../figures/evaluation/xgb_quantile_consolidated_feature_importance.png`. All these inputs
-are tracked by Git.
+The script writes `medical-cost-planner-v4.pptx` under `exports/v4/`. It uses
+the storyboard and tracked images in `assets/`, `../../assets/`, and
+`../../figures/`. Generating the PowerPoint does not load model artifacts or
+survey data and does not require the ChatGPT or Codex runtime.
 
 The preprocessing slide uses the tracked `assets/preprocessing-pipeline.png`.
 Its editable source is `../../assets/preprocessing_pipeline.svg`. When changing
@@ -67,8 +41,7 @@ export and the previous complete export after validation and preview review.
 Remove older draft exports and obsolete build files; preserve named presentation
 milestones. The Python generator does not perform this cleanup automatically.
 To recreate an older version, restore the generator, storyboard, and images
-from the same Git commit. The earlier JavaScript generator is available in Git
-history for versions created with it.
+from the same Git commit.
 
 ## Optional PNG previews
 

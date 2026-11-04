@@ -35,11 +35,10 @@ Status: twelve main slides and twenty-seven appendix slides are generated.
 > shaped model selection: XGBoost quantile regression provides a plan-around
 > estimate, typical range, and safety cushion.
 
-The key modeling tradeoff was accepting a higher validation median absolute
-error than Elastic Net to provide useful uncertainty ranges. Better point-estimate
-performance by tree models in several medically complex subgroups also supported
-the choice of XGBoost. Model selection considered which estimates and performance
-criteria served the intended budgeting use case.
+Model selection prioritized usefulness for budgeting over the lowest validation
+median absolute error. XGBoost showed less systematic underprediction than
+Elastic Net and a wider prediction range. Quantile regression then added
+uncertainty ranges.
 
 ## Source material
 
@@ -55,7 +54,7 @@ criteria served the intended budgeting use case.
 
 All main-slide timings are rehearsed.
 
-| ID | Proposed slide title | Time | Purpose |
+| ID | Slide title | Time | Purpose |
 | --- | --- | ---: | --- |
 | 1 | Medical cost prediction for annual budgeting | 0:10 | Cover and brief orientation |
 | 2 | How much should I set aside for healthcare? | 0:45 | Establish the budgeting need and intended value |
@@ -501,19 +500,11 @@ risk of underbudgeting, consider planning closer to the safety cushion.
 - **Which answers shaped your estimate?** (click to expand)
 - **How you compare to others** (click to expand)
 
-**Visual:** The title has a muted gray profile description in 19.5-point type,
-aligned with its text baseline. The description summarizes the cost risk, age,
-and arthritis. A close-up illustration of the woman with a wry expression, a
-pharmacy bag on the left, and a large medical bill on the right sits inside the
-bottom-right area of the content frame, with its bottom edge meeting the border.
-Repeat it at the same size and position on slide 10 to identify the same example
-user. A thin border encloses the user-facing content, separating it from the
-title and slide footer. Three
-prominent estimates sit above the interpretation text and planning note, without
-a divider below the estimates. The interpretation sits close to the estimates.
-The two collapsed section labels are spaced apart below the planning note and
-link to slide 10. The output frame has the same size and position as on slide 10.
-The app’s full scope disclaimer is omitted from the slide.
+**Visual:** A bordered output frame contains the three estimates, explainer,
+planning note, and collapsed links to slide 10. The title includes a muted gray
+profile description. The example-user image meets the frame's bottom border at
+the right; its size and position match slide 10. The full app disclaimer is
+omitted.
 
 **Speaker notes — 0:50 (rehearsed)**
 
@@ -569,7 +560,7 @@ population and age-group medians provide context.
 
 **Which answers shaped your estimate?**
 
-| Your answer | Contribution |
+| | |
 | --- | ---: |
 | **Arthritis:** Yes | ↑ +$124 |
 | **Joint pain:** Yes | ↑ +$110 |
@@ -579,7 +570,7 @@ population and age-group medians provide context.
 
 **How you compare to others**
 
-| Comparison | Annual costs |
+| | |
 | --- | ---: |
 | Your plan-around estimate | $895 |
 | Typical American | $268 |
@@ -589,18 +580,11 @@ population and age-group medians provide context.
 | [SHAP benchmarking (A22)](#a22--shap-benchmarking-fastest-configuration-passing-quality-checks)
 | [Feature importance (A23)](#a23--shap-feature-importance-overall-importance).
 
-**Visual:** The title, muted profile text, example-user illustration inside the
-bottom-right corner of the content frame, and border match slide 9. The three
-estimates remain at the top as a reference, with space separating them from
-the explanations and comparisons. Both tables align at the top below their
-headings. All five SHAP contributions appear on the left with bold feature names
-and regular answer values. Both tables omit visible column headers and rules,
-using row spacing to separate entries. Narrower tables bring amounts closer to
-their labels and leave a wider gap between the two blocks. Both output frames
-end above the footer with matching bottom edges. Contributions and comparison
-amounts use regular dark blue text;
-teal highlights the three main estimates. The footer leaves room for the
-SHAP details appendix link to A21.
+**Visual:** Match slide 9's title, profile description, example-user image, and
+border. Below the three estimates, place SHAP contributions on the left and
+cost comparisons on the right, aligned beneath their headings. Tables have no
+visible headers or rules. Feature names are bold; answers and amounts use
+regular dark blue text. Teal highlights the three main estimates.
 
 **Speaker notes — 0:45 (rehearsed)**
 
@@ -647,15 +631,10 @@ them available through an API and web interface.
   - Evaluate on newer MEPS data
   - Test usability and understanding
 
-**Visual:** Three vertically stacked bullet groups with bold main bullets and
-indented sub-bullets. Keep the text in the left column and place the
-[deployment illustration](assets/planned-deployment.png) on the right, with the
-cloud centered above the laptop. Use tight image framing and position
-it higher and closer to the text, preserving its aspect ratio. Use 22.5 pt
-sub-bullets and 24 pt main bullets. List the trained model and preprocessing
-pipeline separately. Break each deployment bullet after “on”, with
-continuation lines aligned to the bullet text. Use the same gap between bullet
-groups.
+**Visual:** Three bullet groups with bold headings and indented sub-bullets on
+the left. The [deployment illustration](assets/planned-deployment.png) sits on
+the right, with the cloud centered above the laptop. Each deployment bullet
+breaks after “on”, with its continuation aligned to the bullet text.
 
 **Speaker notes — 0:25 (rehearsed)**
 
@@ -690,25 +669,14 @@ product with real users.”
   [Medical Care series](https://data.bls.gov/timeseries/CUUR0000SAM)
   by [Bureau of Labor Statistics](https://www.bls.gov/cpi/).
 
-**Visual:** Keep the white background and dark blue text. Make the takeaway the
-largest text, over two lines near the top left, breaking after “needs”. Put the
-thank-you line below it. Use a portrait-format
-[illustration of the example user](assets/example-user-planning.png) in the right third,
-about 320 by 540 pixels. She has a warm, relieved smile and sits beside a computer.
-Its screen matches the deployment illustration on slide 11: a Hugging Face
-Spaces page with “Medical Cost Planner”, Gradio-style controls, and three
-abstract estimate graphics.
-Match her earlier
-illustration’s style and teal palette, and preserve the transparent background.
-Place the repository QR code at the lower left. Keep the presenter name and
-contact links closer to the QR code than to the image, with a clear horizontal
-gap after the QR code and left-aligned text within the contact block.
-Align the name visually with the top
-of the QR code’s black pattern.
-Place the QR code’s label close underneath it, leaving a clear gap before the
-single-line data credit at the bottom,
-with clickable links to the dataset, agencies, and inflation series.
-Use one QR code and no technology badges. Keep this slide visible for questions.
+**Visual:** The takeaway spans two lines at the top left, breaking after “needs”,
+with the thank-you line below. A transparent [image of the example user](assets/example-user-planning.png)
+occupies the right third. Her appearance matches slide 2, with a warm smile;
+the computer screen matches slide 11's planned app interface.
+The project QR code sits at the lower left with its label underneath. The
+left-aligned contact block sits closer to the QR code than to the image, with
+the name aligned visually to the top of the QR pattern. Linked data credits
+run along the bottom. Keep this slide visible during questions.
 
 **Speaker notes — 0:40 (rehearsed)**
 
@@ -732,10 +700,13 @@ I’m happy to take questions.”
 
 ## Appendix slides
 
-Each appendix item is an optional slide with a specific question to answer.
-The remaining planned topics will be reviewed after the main slides are finalized.
-Rehearsed timings are recorded where available; other timings are estimates
-for optional use.
+Each appendix slide answers a specific follow-up question. Rehearsed timings
+are recorded where available; other timings are estimates for optional use.
+
+A23–A27 use full-slide plots, centered horizontally with their aspect ratios
+preserved. The figures supply their own titles and footnotes. Back links to
+slide 10 and appendix slide numbers sit in the bottom corners outside the
+images' horizontal bounds.
 
 ### A1 — U.S. healthcare costs: out-of-pocket spending and HSA/FSA planning
 
@@ -1510,14 +1481,10 @@ or education input. The note uses neutral wording without naming the group.
 | **Age:** 69 | ↑ +$92 |
 | **Insurance:** Any private | ↑ +$80 |
 
-**Visual:** Four native bullets with bold headers on the left. On the right,
-repeat the five contribution rows from slide 10, slightly smaller, inside a
-thin light gray border matching the example output slides. Align the border
-with the top of the left text and keep top and bottom padding small. Match A22’s
-compact bullet spacing. Omit the repeated heading, table headers, and row
-borders. Place the example-user illustration beneath the contribution table,
-matching its horizontal position on slides 9 and 10, with its bottom roughly
-aligned with the left-hand text. A backlink returns to slide 10.
+**Visual:** Four compact bullets on the left. The five contributions from slide
+10 appear in a bordered block at the top right, without a repeated heading,
+column headers, or row rules. The example-user image sits below, matching its
+horizontal position on slides 9 and 10. The Back link returns to slide 10.
 
 **Speaker notes — 2:30 (rehearsed)**
 
@@ -1582,21 +1549,12 @@ both sets of contributions could be overwhelming.
     configuration. Median absolute contribution difference was $6.47 (limit: $25).
 - **SHAP explanation latency:** P95 was 0.20 seconds.
 
-**Visual:** The title states the selection goal on one line. Use native bullets
-with bold headers. Combine tested and reference configurations in one bullet,
-followed by the winner, quality checks, and latency. Background validation and
-explanation stability are indented sub-bullets under quality checks. Keep bullet
-spacing compact, with slightly tighter spacing within the quality-check group.
-Use slide 3’s layout: text in the left column and a vertical
-[illustrated homage to Lloyd Shapley](assets/shap-benchmarking.png) in the right column,
-aligned with the top of the text and extending to its bottom. Keep the image
-narrower than slide 3’s to give the text column more width.
-Shapley holds a stopwatch at a test bench with two knobs labelled “Background
-data” and “Permutation rounds” and a PASS card.
-Keep the transparent background and allow the bullets to wrap within the left
-column without changing their wording or font size.
-Timing scope and deployment testing details remain in the speaker notes.
-Link here from slide 10.
+**Visual:** Compact bullets with bold headers on the left; background validation
+and explanation stability are indented under quality checks. A vertical
+[illustrated homage to Lloyd Shapley](assets/shap-benchmarking.png) sits on the
+right, aligned with the text. His test bench has knobs labelled “Background
+data” and “Permutation rounds” and a PASS card. Timing scope and deployment
+testing details remain in the speaker notes.
 
 **Backlink:** Example prediction output (slide 10).
 
@@ -1666,11 +1624,7 @@ output.
 
 **Question:** Which inputs contribute most to the model’s plan-around estimates?
 
-**Visual:** Show the [overall SHAP importance plot](../../figures/evaluation/shap_feature_importance.png)
-at full slide height, centered horizontally and preserving its aspect ratio.
-Use the figure’s own title and footnote, with no separate slide title or added
-body text. Place the Back link and appendix slide number in the bottom corners,
-outside the image’s horizontal bounds.
+**Visual:** [Overall SHAP importance plot](../../figures/evaluation/shap_feature_importance.png).
 The Feature importance link on slide 10 opens this slide.
 
 **Backlink:** Example prediction output (slide 10).
@@ -1694,11 +1648,7 @@ around 93% of total importance.”
 
 **Question:** How do feature contributions vary in direction and size across people?
 
-**Visual:** Show the [SHAP contribution distributions plot](../../figures/evaluation/shap_contribution_distributions.png)
-at full slide height, centered horizontally and preserving its aspect ratio,
-matching A23. Use the figure’s own title and footnote, with no separate slide
-title or added body text. Place the Back link and appendix slide number in the
-bottom corners, outside the image’s horizontal bounds.
+**Visual:** [SHAP contribution distributions plot](../../figures/evaluation/shap_contribution_distributions.png).
 
 **Backlink:** Example prediction output (slide 10).
 
@@ -1720,11 +1670,7 @@ but the plot does not show which categories move estimates up or down.”
 
 **Question:** Which categories tend to move plan-around estimates up or down?
 
-**Visual:** Show the [SHAP contributions by category plot](../../figures/evaluation/shap_categorical_contributions.png)
-at full slide height, centered horizontally and preserving its aspect ratio,
-matching A23 and A24. Use the figure’s own title and footnote, with no separate
-slide title or added body text. Place the Back link and appendix slide number in
-the bottom corners, outside the image’s horizontal bounds.
+**Visual:** [SHAP contributions by category plot](../../figures/evaluation/shap_categorical_contributions.png).
 
 **Backlink:** Example prediction output (slide 10).
 
@@ -1746,11 +1692,7 @@ to move estimates by much larger amounts than, for example, marital status.”
 
 **Question:** How do contributions change across numerical and ordinal features?
 
-**Visual:** Show the [SHAP contributions across ordered values plot](../../figures/evaluation/shap_ordered_feature_contributions.png)
-at full slide height, centered horizontally and preserving its aspect ratio,
-matching A23–A25. Use the figure’s own title and footnote, with no separate slide
-title or added body text. Place the Back link and appendix slide number in the
-bottom corners, outside the image’s horizontal bounds.
+**Visual:** [SHAP contributions across ordered values plot](../../figures/evaluation/shap_ordered_feature_contributions.png).
 
 **Backlink:** Example prediction output (slide 10).
 
@@ -1771,11 +1713,7 @@ of one or two move estimates up, while three or more move them down.”
 
 **Question:** Which features does XGBoost rely on most during training?
 
-**Visual:** Show the [XGBoost native feature importance plot](../../figures/evaluation/xgb_quantile_consolidated_feature_importance.png)
-at full slide height, centered horizontally and preserving its aspect ratio,
-matching A23–A26. Use the figure’s own title and footnote, with no separate slide
-title or added body text. Place the Back link and appendix slide number in the
-bottom corners, outside the image’s horizontal bounds.
+**Visual:** [XGBoost native feature importance plot](../../figures/evaluation/xgb_quantile_consolidated_feature_importance.png).
 
 **Backlink:** Example prediction output (slide 10).
 
@@ -1815,8 +1753,7 @@ training across all four quantiles.”
 ## Adaptation and file organization
 
 Adapt the content and slide selection to the audience, time, and setting,
-promoting appendix slides as needed. Create variants when requirements are known;
-keep local notes in `docs/slides/variants/`, referencing the shared slides.
+promoting appendix slides as needed. Create variants when requirements are known.
 
 The storyboard holds content and speaker notes; the generator implements the
 slide text and layout. See the [slides README](README.md) for generation,
