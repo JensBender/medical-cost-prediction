@@ -706,16 +706,16 @@ def build_presentation():
                            "Next step: an API and web interface")
     for name, content, y, height, level in (
         ("Implemented heading", "Implemented", 132, 40, 0),
-        ("Trained model and preprocessing pipeline", "Trained model and preprocessing pipeline",
+        ("Preprocessing pipeline and trained model", "Preprocessing pipeline and trained model",
          174, 38, 1),
         ("SHAP explanations", "SHAP explanations", 208, 38, 1),
         ("Cost comparisons and inflation adjustment", "Cost comparisons and inflation adjustment",
          242, 38, 1),
-        ("Deployment heading", "Planned deployment", 332, 40, 0),
+        ("Deployment heading", "Planned deployment", 370, 40, 0),
         ("Application deployment", "API and web UI on Hugging Face Spaces",
-         374, 38, 1),
-        ("Model deployment", "Model and preprocessing artifacts on\nHugging Face Hub",
-         410, 72, 1),
+         412, 38, 1),
+        ("Model deployment", "Model and pipeline on Hugging Face Hub",
+         446, 38, 1),
         ("Future work heading", "Future work", 536, 40, 0),
         ("Newer data evaluation", "Evaluate on newer MEPS data", 578, 38, 1),
         ("User testing", "Test usability and understanding", 612, 38, 1),
@@ -738,8 +738,9 @@ def build_presentation():
                 properties.append(OxmlElement("a:buNone"))
 
     for badge_names, y in (
-        (("xgboost", "shap", "dvc", "mlflow"), 286),
-        (("fastapi", "gradio", "hugging-face"), 488),
+        (("python", "pandas", "matplotlib", "scikit-learn"), 286),
+        (("xgboost", "shap", "dvc", "mlflow"), 324),
+        (("fastapi", "gradio", "hugging-face", "pytest"), 490),
     ):
         badge_x = 128
         for badge_name in badge_names:
@@ -748,12 +749,12 @@ def build_presentation():
                 badge_width = 32 * badge_image.width / badge_image.height
             picture(next_steps, badge_path, f"{badge_name} technology badge.",
                     badge_x, y, badge_width, 32)
-            badge_x += badge_width + 8
+            badge_x += badge_width + 4
 
     picture(next_steps, SLIDES_DIR / "assets/planned-deployment.png",
             "Planned deployment: a laptop showing Medical Cost Planner in a "
             "Hugging Face Spaces page with Gradio-style controls, connected to "
-            "a cloud-hosting symbol centered above the laptop.", 816, 116, 376, 528)
+            "a cloud-hosting symbol centered above the laptop.", 829, 134, 350, 492)
 
     closing = new_slide(presentation, storyboard, "12")
     text(closing, "Closing takeaway", "Medical cost planning needs more than one estimate",
