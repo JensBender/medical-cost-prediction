@@ -10,8 +10,8 @@ Status: twelve main slides and twenty-seven appendix slides are generated.
   survey weights, quantiles, and evaluation metrics when introducing them.
 - **Emphasis:** data science, with optional emphasis on ML engineering.
 - **Language:** English.
-- **Length:** 10–12 minutes of speaking, excluding questions. The current
-  allocation below totals 12:00, before transitions.
+- **Length:** 10–12 minutes of speaking, excluding questions. Recorded slide
+  timings total 10:40.
 - **Structure:** a cover, eleven content slides, and twenty-seven appendix slides.
   Appendix slides follow their first reference in the main presentation;
   unreferenced slides sit with their related topic.
@@ -53,23 +53,23 @@ criteria served the intended budgeting use case.
 
 ## Main presentation at a glance
 
-The first three slide timings are rehearsed; the remaining timings are estimates.
+All main-slide timings are rehearsed.
 
 | ID | Proposed slide title | Time | Purpose |
 | --- | --- | ---: | --- |
 | 1 | Medical cost prediction for annual budgeting | 0:10 | Cover and brief orientation |
 | 2 | How much should I set aside for healthcare? | 0:45 | Establish the budgeting need and intended value |
-| 3 | MEPS links accessible inputs to observed spending | 2:00 | Explain the survey, project data, and population weights |
-| 4 | Out-of-pocket costs: 20% of adults account for ~80% | 1:00 | Show the data challenge that shaped modeling |
-| 5 | Preprocessing pipeline | 1:00 | Prepare model-ready inputs and preserve consistent transformations |
-| 6 | Model selection: median error was not enough | 1:30 | Explain the key model-selection tradeoff |
-| 7 | Quantile regression: budgeting for uncertainty | 1:30 | Explain the final model and its estimates |
-| 8 | XGBoost quantile audit: all release gates passed | 1:30 | Present held-out evidence and baseline comparisons |
-| 9 | Example prediction output (high cost profile) | 0:35 | Show the main estimates and planning guidance |
-| 10 | Example prediction output (high cost profile) | 0:25 | Show expanded explanations and comparisons |
-| 11 | Next step: an API and web interface | 1:00 | Summarize completed components, planned deployment, and potential future work |
-| 12 | Medical cost planning needs more than a single cost estimate | 0:35 | Close with the main lesson and invite questions |
-| | **Total** | **12:00** | |
+| 3 | MEPS links accessible inputs to observed spending | 1:40 | Explain the survey, project data, and population weights |
+| 4 | Out-of-pocket costs: 20% of adults account for ~80% | 1:15 | Show the data challenge that shaped modeling |
+| 5 | Preprocessing pipeline | 0:30 | Prepare model-ready inputs and preserve consistent transformations |
+| 6 | Model selection: median error was not enough | 1:15 | Explain the key model-selection tradeoff |
+| 7 | Quantile regression: budgeting for uncertainty | 1:00 | Explain the final model and its estimates |
+| 8 | XGBoost quantile audit: all release gates passed | 1:25 | Present held-out evidence and baseline comparisons |
+| 9 | Example prediction output (high cost profile) | 0:50 | Show the main estimates and planning guidance |
+| 10 | Example prediction output (high cost profile) | 0:45 | Show expanded explanations and comparisons |
+| 11 | Next step: an API and web interface | 0:25 | Summarize completed components, planned deployment, and potential future work |
+| 12 | Medical cost planning needs more than a single cost estimate | 0:40 | Close with the main lesson and invite questions |
+| | **Total** | **10:40** | |
 
 ## Main slides
 
@@ -156,7 +156,7 @@ spending, with survey weights supporting population-level training and evaluatio
 **Appendix links:** [MEPS overview (A2)](#a2--meps-survey-overview) and
 [Features (A3–A4)](#a3--preprocessor-input-features).
 
-**Speaker notes — 2:00 (rehearsed)**
+**Speaker notes — 1:40 (rehearsed)**
 
 “To do so, I used data from the Medical Expenditure Panel Survey, or MEPS.
 MEPS is a nationally representative survey and a leading data source for
@@ -237,7 +237,7 @@ primary and supporting metrics in the left margin.
 [Distributions (A6–A8)](#a6--distributions-numerical-features), and
 [Feature–target relations (A9–A12)](#a9--featuretarget-relationships-correlations).
 
-**Speaker notes — 1:00**
+**Speaker notes — 1:15 (rehearsed)**
 
 “Out-of-pocket costs present two challenges: costs are heavily concentrated among
 the top spenders with the highest-spending 20% accounting for almost 80% of costs.
@@ -275,7 +275,7 @@ rendered from the [SVG source](../../assets/preprocessing_pipeline.svg).
 
 **Appendix link:** [Data preparation (A13)](#a13--data-preparation).
 
-**Speaker notes — 1:00**
+**Speaker notes — 0:30 (rehearsed)**
 
 “I fitted this scikit-learn pipeline on the training data and applied it to
 validation and test data. It standardizes categorical labels, checks and imputes
@@ -320,7 +320,7 @@ change in MdAE from training to validation.”
 [Heteroscedasticity (A16)](#a16--heteroscedasticity) |
 [Subgroup reliability (A17)](#a17--subgroup-reliability).
 
-**Speaker notes — 1:30**
+**Speaker notes — 1:15 (rehearsed)**
 
 I compared six model architectures and selected Elastic Net, Random Forest,
 and XGBoost for hyperparameter tuning. This table shows their results after
@@ -367,7 +367,7 @@ provide a safety cushion for a higher-cost year.
 **Visual:** Quantile markers on a cost axis, with a curved brace linking the typical range
 from q25 to q75.
 
-**Speaker notes — 1:30**
+**Speaker notes — 1:00 (rehearsed)**
 
 “Quantile regression allowed me to give users three estimates based on four
 predicted quantiles to help them budget for uncertainty.
@@ -439,7 +439,7 @@ intervals from 1,000 resamples of test-set rows.”
 
 **Appendix links:** Value over simple baselines (A18) | Subgroup reliability (A19) | Subgroup fairness (A20).
 
-**Speaker notes — 1:30**
+**Speaker notes — 1:25 (rehearsed)**
 
 “To make those goals measurable, I defined release gates, which are pass-fail
 criteria for the minimum test-set performance required to launch.
@@ -517,7 +517,7 @@ The two collapsed section labels are spaced apart below the planning note and
 link to slide 10. The output frame has the same size and position as on slide 10.
 The app’s full scope disclaimer is omitted from the slide.
 
-**Speaker notes — 0:35**
+**Speaker notes — 0:50 (rehearsed)**
 
 “Here is an example prediction output for a 69-year-old woman with arthritis.
 Her estimates are relatively high, with a plan-around estimate of about $900
@@ -604,7 +604,7 @@ amounts use regular dark blue text;
 teal highlights the three main estimates. The footer leaves room for the
 SHAP details appendix link to A21.
 
-**Speaker notes — 0:25**
+**Speaker notes — 0:45 (rehearsed)**
 
 “I use SHAP to explain how her answers contributed to her plan-around estimate
 and show her the five largest dollar contributions, so she can see which answers
@@ -659,7 +659,7 @@ pipeline separately. Break each deployment bullet after “on”, with
 continuation lines aligned to the bullet text. Use the same gap between bullet
 groups.
 
-**Speaker notes — 1:00**
+**Speaker notes — 0:25 (rehearsed)**
 
 “The modeling and evaluation work is complete, and the components for
 predictions, explanations, cost comparisons, and inflation adjustment are in
@@ -712,7 +712,7 @@ single-line data credit at the bottom,
 with clickable links to the dataset, agencies, and inflation series.
 Use one QR code and no technology badges. Keep this slide visible for questions.
 
-**Speaker notes — 0:35**
+**Speaker notes — 0:40 (rehearsed)**
 
 “Medical cost planning needs more than a single cost estimate. People also need
 to understand how much next year’s costs could vary, so they can better
