@@ -458,11 +458,9 @@ age-group baseline gives everyone within the same age group the same estimates.
 XGBoost's clearest added value was in the typical range and safety cushion.
 
 Subgroup reliability and fairness checks showed coverage close to its targets
-for most groups. The main limitation was underprediction of very high actual
-costs. Typical-range undercoverage also affected people with poor mental health,
-low income, or a doctorate degree. These findings motivated adding planning notes
-for subgroups at risk of underbudgeting, suggesting users plan closer to the
-safety cushion.”
+for most groups, with typical-range undercoverage in a few subgroups. The main
+limitation was underprediction of very high actual costs. These findings
+motivated planning notes for subgroups at risk of underbudgeting.”
 
 For questions:
 
@@ -523,10 +521,10 @@ The app’s full scope disclaimer is omitted from the slide.
 Her estimates are relatively high, with a plan-around estimate of about $900
 and a safety cushion over $3,800.
 
-Brief explanations below help her understand the estimates. She also receives
-a planning note because high cost estimates come with greater uncertainty.
-To reduce the risk of underbudgeting, it suggests she plan closer to the safety
-cushion.
+Brief explanations below help her understand the estimates. Her high cost
+estimates come with greater uncertainty, so she receives a planning note
+suggesting she plan closer to the safety cushion to reduce the risk of
+underbudgeting.
 
 Since the model uses data from 2023, I adjust the estimates for medical inflation
 using data from the Bureau of Labor Statistics API. The numbers shown here are
