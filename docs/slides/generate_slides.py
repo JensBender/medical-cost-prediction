@@ -432,9 +432,9 @@ def build_presentation():
     selection_bullets = text(selection, "Model selection rationale", "",
                              72, 456, 1136, 180, 26)
     for index, (label, value) in enumerate([
-        ("Elastic Net:", " Lowest MdAE, but never predicts over ~$217 and increasingly "
-         "underpredicts."),
-        ("Choose XGBoost:", " Predicts up to ~$2,100 with less systematic underprediction."),
+        ("Elastic Net:", " Lowest MdAE, but increasingly underpredicts and never "
+         "predicts over ~$217."),
+        ("Choose XGBoost:", " Less systematic underprediction and predicts up to ~$2,100."),
         ("Switch to quantile regression:", " Errors generally widen at higher predicted "
          "costs, so add budgeting ranges to communicate that uncertainty."),
     ]):

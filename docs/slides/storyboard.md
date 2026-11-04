@@ -305,8 +305,8 @@ between lower- and higher-cost profiles.
 | Random Forest | $228 | **+3.8%** | $964 |
 | XGBoost | $242 | +6.2% | **$954** |
 
-- **Elastic Net:** Lowest MdAE, but never predicts over ~$217 and increasingly underpredicts.
-- **Choose XGBoost:** Predicts up to ~$2,100 with less systematic underprediction.
+- **Elastic Net:** Lowest MdAE, but increasingly underpredicts and never predicts over ~$217.
+- **Choose XGBoost:** Less systematic underprediction and predicts up to ~$2,100.
 - **Switch to quantile regression:** Errors generally widen at higher predicted costs,
   so add budgeting ranges to communicate that uncertainty.
 
@@ -324,12 +324,12 @@ change in MdAE from training to validation.”
 
 I compared six model architectures and selected Elastic Net, Random Forest,
 and XGBoost for hyperparameter tuning. This table shows their results after
-tuning. Elastic Net achieved the lowest median absolute error. However, its
-validation predictions never exceeded about $217, and the higher its predicted
-costs, the more it tended to underestimate actual costs.
+tuning. Elastic Net achieved the lowest median absolute error. However, the higher
+its predicted costs, the more it tended to underestimate actual costs, and its
+validation predictions never exceeded about $217.
 
-XGBoost's predictions, on the other hand, reached about $2,100, and its median
-residuals generally stayed closer to zero. It also had the lowest mean absolute
+XGBoost's median residuals, on the other hand, generally stayed closer to zero,
+and its predictions reached about $2,100. It also had the lowest mean absolute
 error. So I chose XGBoost as the more promising model for planning for higher-cost
 years.
 
