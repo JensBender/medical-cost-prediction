@@ -67,7 +67,7 @@ All main-slide timings are rehearsed.
 | 9 | Example prediction output (high cost profile) | 0:50 | Show the main estimates and planning guidance |
 | 10 | Example prediction output (high cost profile) | 0:45 | Show expanded explanations and comparisons |
 | 11 | Next step: an API and web interface | 0:25 | Summarize completed components, planned deployment, and potential future work |
-| 12 | Medical cost planning needs more than a single cost estimate | 0:40 | Close with the main lesson and invite questions |
+| 12 | Medical cost planning needs more than one estimate | 0:40 | Close with the main lesson and invite questions |
 | | **Total** | **10:40** | |
 
 ## Main slides
@@ -653,13 +653,13 @@ product’s usability and how well users understand the cost estimates.”
 [explanation module](../../src/explainability.py);
 [unit tests](../../tests/unit/); [technical specifications](../specs/technical_specifications.md).
 
-### 12 — Medical cost planning needs more than a single cost estimate
+### 12 — Medical cost planning needs more than one estimate
 
 **Takeaway:** Evaluate models for the decisions their predictions support.
 
 **On the slide**
 
-- **Headline:** Medical cost planning needs more than a single cost estimate.
+- **Headline:** Medical cost planning needs more than one estimate
 - Thank you. Let’s discuss.
 - Jens Bender
 - [github.com/JensBender](https://github.com/JensBender)
@@ -670,9 +670,13 @@ product’s usability and how well users understand the cost estimates.”
   [Medical Care series](https://data.bls.gov/timeseries/CUUR0000SAM)
   by [Bureau of Labor Statistics](https://www.bls.gov/cpi/).
 
-**Visual:** The takeaway spans two lines at the top left, breaking after “needs”,
-with the thank-you line below. A transparent [image of the example user](assets/example-user-planning.png)
-occupies the right third. Her appearance matches slide 2, with a warm smile;
+**Visual:** The takeaway uses the standard title position and font size on one
+line across the slide width. The thank-you line is centered vertically between
+the title and the QR code. A transparent
+[image of the example user](assets/example-user-planning.png)
+sits below the title on the right, with its right edge aligned to the end of the
+title text and room for the contact block to its left.
+Her appearance matches slide 2, with a warm smile;
 the computer screen matches slide 11's planned app interface.
 The project QR code sits at the lower left with its label underneath. The
 left-aligned contact block sits closer to the QR code than to the image, with

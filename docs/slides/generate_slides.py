@@ -743,14 +743,14 @@ def build_presentation():
             "a cloud-hosting symbol centered above the laptop.", 816, 116, 376, 528)
 
     closing = new_slide(presentation, storyboard, "12")
-    text(closing, "Closing takeaway", "Medical cost planning needs\n"
-         "more than a single cost estimate.", 72, 88, 770, 144, 48, bold=True)
+    text(closing, "Closing takeaway", "Medical cost planning needs more than one estimate",
+         72, 48, 1136, 66, 44, bold=True)
     picture(closing, SLIDES_DIR / "assets/example-user-planning.png",
             "The example user smiles beside a computer showing Medical Cost "
             "Planner in a Hugging Face Spaces page with Gradio-style controls "
             "and three abstract estimate graphics.",
-            900, 72, 320, 540)
-    text(closing, "Questions", "Thank you. Let’s discuss.", 72, 278, 800, 48, 34)
+            894, 178, 280, 468)
+    text(closing, "Questions", "Thank you. Let’s discuss.", 72, 216, 800, 54, 38)
     text(closing, "Presenter", "Jens Bender", 380, 380.901, 480, 42, 30, bold=True)
     repository_url = "https://github.com/JensBender/medical-cost-prediction"
     repository_link = text(
