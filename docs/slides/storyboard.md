@@ -11,7 +11,7 @@ Status: twelve main slides and twenty-seven appendix slides are generated.
 - **Emphasis:** data science, with optional emphasis on ML engineering.
 - **Language:** English.
 - **Length:** 10–12 minutes of speaking, excluding questions. Recorded slide
-  timings total 10:40.
+  timings total 10:45.
 - **Structure:** a cover, eleven content slides, and twenty-seven appendix slides.
   Appendix slides follow their first reference in the main presentation;
   unreferenced slides sit with their related topic.
@@ -63,12 +63,12 @@ All main-slide timings are rehearsed.
 | 5 | Preprocessing pipeline | 0:30 | Prepare model-ready inputs and preserve consistent transformations |
 | 6 | Model selection: median error was not enough | 1:15 | Explain the key model-selection tradeoff |
 | 7 | Quantile regression: budgeting for uncertainty | 1:00 | Explain the final model and its estimates |
-| 8 | XGBoost quantile audit: all release gates passed | 1:25 | Present held-out evidence and baseline comparisons |
+| 8 | XGBoost quantile audit: all release gates passed | 1:30 | Present held-out evidence and baseline comparisons |
 | 9 | Example prediction output (high cost profile) | 0:50 | Show the main estimates and planning guidance |
 | 10 | Example prediction output (high cost profile) | 0:45 | Show expanded explanations and comparisons |
 | 11 | Next step: an API and web interface | 0:25 | Summarize completed components, planned deployment, and potential future work |
 | 12 | Medical cost planning needs more than one estimate | 0:40 | Close with the main lesson and invite questions |
-| | **Total** | **10:40** | |
+| | **Total** | **10:45** | |
 
 ## Main slides
 
@@ -438,7 +438,7 @@ intervals from 1,000 resamples of test-set rows.”
 
 **Appendix links:** Value over simple baselines (A18) | Subgroup reliability (A19) | Subgroup fairness (A20).
 
-**Speaker notes — 1:25 (rehearsed)**
+**Speaker notes — 1:30 (rehearsed)**
 
 “To make those goals measurable, I defined release gates, which are pass-fail
 criteria for the minimum test-set performance required to launch.
@@ -451,10 +451,11 @@ their intended targets.
 On average, the typical range spanned about $900, and the safety cushion added
 about $2,000 above the plan-around estimate. Both stayed below the release limits.
 
-To assess added value, I compared XGBoost's quantile estimates with two simple
-baselines. The population baseline gives everyone the same estimates, while the
-age-group baseline gives everyone within the same age group the same estimates.
-XGBoost's clearest added value was in the typical range and safety cushion.
+To assess added value, I compared XGBoost estimates with two simple baselines.
+The population baseline gives everyone the same estimates. The age-group baseline
+gives everyone within the same age group the same estimates. Compared with the
+age-group baseline, XGBoost reduced loss by 9% for the typical range and about
+14% for the safety cushion.
 
 Subgroup reliability and fairness checks showed coverage close to its targets
 for most groups, with typical-range undercoverage in a few subgroups. The main
