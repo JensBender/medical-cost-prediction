@@ -106,9 +106,7 @@ This README highlights the main findings. For details, see the [EDA/preprocessin
 
 The **Medical Expenditure Panel Survey (MEPS)**, administered by **AHRQ**, is the gold standard for U.S. healthcare cost and usage data. It provides nationally representative estimates for the **U.S. civilian noninstitutionalized population**, combining household reports with validated medical provider and insurance data.
 
-Utilized the **2023 Full-Year Consolidated Data File (HC-251)**:
-- **Sample Size:** 18,919 individuals
-- **Variables:** 1,374 variables
+Used the **2023 Full-Year Consolidated Data File (HC-251)**, which contains 1,374 variables for 18,919 people. Because the Medical Cost Planner is designed for adults, the filtered dataset includes 14,768 respondents aged 18 or older with positive survey weights (zero weights contribute nothing to population estimates).
 
 **Target Variable**  
 The target variable is **total out-of-pocket healthcare costs in 2023** (`TOTSLF23`), including copays, deductibles, and uncovered services. The goal is to facilitate financial planning and healthcare budgeting. By estimating next year's out-of-pocket costs, users can make data-driven decisions about FSA/HSA contributions and better prepare for their financial exposure. For uninsured users, out-of-pocket costs approximate total costs.
@@ -121,7 +119,7 @@ The target variable is **total out-of-pocket healthcare costs in 2023** (`TOTSLF
 <br>
 
 <a id="main-features"></a>**Features**<br>
-Selected 26 features out of 1,374 MEPS variables based on consumer accessibility (no record-checking required), timing (beginning-of-year data to prevent leakage) and expected predictive power. 
+Selected 26 features out of 1,374 MEPS variables based on consumer accessibility (no record-checking required), timing (beginning-of-year data to prevent leakage) and expected predictive power.
 - **Demographics:** Age, Sex, Region, Marital Status, Family Size.
 - **Socioeconomics:** Education, Family Income, Employment Status.
 - **Health Profile:** Insurance, Self-Rated Physical/Mental Health, Smoking Status, Usual Source of Care.
@@ -317,7 +315,7 @@ Release gates are pass/fail criteria that define the minimum test-set performanc
 - **Launch Conditions:** Include prediction explanations, medical inflation adjustment, a scope disclaimer, planning notes for higher-uncertainty cases (such as high predicted costs, as in the example below), and privacy-preserving aggregate monitoring. Show the median cost for U.S. adults and for the user's age group alongside their plan-around estimate, so users can see how it compares with typical spending.
 
 **Prediction Explanations (SHAP)**  
-SHAP explains how a user's answers contribute to their plan-around estimate (`q50`). The planned app will highlight the five largest contributions and show their dollar amounts, so users can see which answers moved the estimate up or down. 🔗 [**See SHAP Explanation Details**](#shap-explanation-details)
+SHAP explains how a user's answers contribute to their plan-around estimate (`q50`). It runs the full prediction pipeline using inputs before preprocessing, so the contributions correspond to the user's original answers. The planned app will highlight the five largest contributions and show their dollar amounts, so users can see which answers moved the estimate up or down. 🔗 [**See SHAP Explanation Details**](#shap-explanation-details)
 
 **Example Prediction Output**  
 High cost profile: 69 years, arthritis
