@@ -873,7 +873,7 @@ improve the experience.
 | --- | --- |
 | Chronic conditions | High blood pressure, high cholesterol, diabetes, coronary heart disease, stroke, cancer, arthritis, asthma |
 | Limitations | ADL help: personal care, such as bathing or dressing<br>IADL help: daily tasks, such as managing bills or medication<br>Walking limitation, cognitive limitation, joint pain |
-| Other | Smoker<br>Usual source of care: regular doctor or clinic<br>Recent life transition (derived): marital or employment changes |
+| Other | Smoker<br>Usual source of care: regular doctor or clinic<br>Recent life transition: marital or employment changes |
 
 **Visual:** Feature table grouped into chronic conditions, limitations, and other inputs.
 
@@ -890,10 +890,12 @@ Smoking: The feature records whether the person currently smokes cigarettes.
 It comes from the self-administered questionnaire, rather than the
 household interview. It does not describe smoking frequency or amount.
 
-Recent life transition: This flag is derived from marital and employment
-status. For example, “divorced” and “divorced during the survey round” are
-grouped as “divorced” in the marital-status feature. The latter also
-sets the recent life transition flag to yes.
+Recent life transition: In the MEPS training data, I derive this flag from
+marital and employment status. For example, “divorced” and “divorced during
+the survey round” are both grouped as “divorced” in the marital status feature.
+The latter also sets the recent life transition flag to yes.
+In the planned app, users would answer a separate question about recent changes
+so the marital and employment categories can stay simple.
 
 **Transition:** Return to the MEPS data slide.
 

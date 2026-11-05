@@ -852,7 +852,7 @@ def build_presentation():
          "Walking limitation, cognitive limitation, joint pain"],
         ["Other", "Smoker\n"
          "Usual source of care: regular doctor or clinic\n"
-         "Recent life transition (derived): marital or employment changes"],
+         "Recent life transition: marital or employment changes"],
     ], 142, [280, 856], row_height=120)
     for row, height in zip(feature_answers_table.rows, [48, 120, 156, 156]):
         row.height = pixels(height)
