@@ -26,8 +26,7 @@ describe how the software is organized.
   values, and wrong types; for example, `"42"` is not an integer.
 - Missing optional answers become `NaN` in the model inputs. The preprocessor
   fills these gaps with values learned during training. `false` means No,
-  not missing. The combined transition flag follows the rule below.
-  Optional form controls must start unanswered.
+  not missing. Optional form controls must start unanswered.
 - Use the best available answers for the start of the forecast year, except
   age, which uses the end of that year. Conditions cover diagnoses ever
   received; joint pain covers the prior 12 months.
@@ -56,11 +55,11 @@ has any private coverage, even alongside public coverage.
 | Profile field | Allowed values | Model input |
 | --- | --- | --- |
 | `marital_status` | `married`, `widowed`, `divorced`, `separated`, `never_married` | `MARRY31X_GRP`: `1`, `2`, `3`, `4`, `5` |
-| `recent_marital_change` | Boolean: recently married, widowed, divorced, or separated | Contributes to `RECENT_LIFE_TRANSITION`; see [employment](#employment-and-life-transitions) |
+| `recent_life_transition` | Proposed boolean for a [recent marital or employment change](#recent-life-transition) | `RECENT_LIFE_TRANSITION`: `false` → `0`, `true` → `1` |
 | `family_size` | Integer 1–14: related people living together, including the person answering | `FAMSZE23`: same integer; the form's “8+” sends `8` |
 | `income_bracket` | `poor`, `near_poor`, `low_income`, `middle_income`, `high_income` | `POVCAT23`: `1`, `2`, `3`, `4`, `5` |
 | `education` | [Education choice](#education) | `HIDEG`: code below |
-| `employment_status` | [Employment choice](#employment-and-life-transitions) | `EMPST31_GRP` and `RECENT_LIFE_TRANSITION` |
+| `employment_status` | `employed`, `not_employed` | `EMPST31_GRP`: `1`, `0` |
 | `mental_health` | [Health rating](#health-ratings) | `MNHLTH31`: `1`–`5` |
 | `usual_source_of_care` | Boolean | `HAVEUS42`: `false` → `0`, `true` → `1` |
 | `smoker` | Boolean: currently smokes cigarettes | `ADSMOK42`: `false` → `0`, `true` → `1` |
@@ -93,28 +92,19 @@ For both health fields: `excellent` → `1`, `very_good` → `2`, `good` → `3`
 | `doctorate_or_professional` | `6` |
 | `other` | `7` |
 
-### Employment and life transitions
+### Recent life transition
 
-| Profile `employment_status` | Model `EMPST31_GRP` | Indicates a transition? |
-| --- | --- | --- |
-| `employed` | `1` | No |
-| `job_to_return_to` (on leave or has a job to return to) | `0` | Yes |
-| `worked_recently` (currently out of work) | `0` | Yes |
-| `not_employed` | `0` | No |
-
-Combine employment status and `recent_marital_change` into
-`RECENT_LIFE_TRANSITION`: use `1` if either indicates a transition, `0` if at
-least one is answered and neither indicates a transition, and `NaN` if both
-are missing. Current marital status alone does not establish a recent change.
-This follows the [training rule](../../scripts/preprocess.py).
+The form plans to ask one optional question about changes in marital status
+or employment. Only that answer sets `RECENT_LIFE_TRANSITION`. A skipped
+answer maps to `NaN`, even when both current statuses are known.
 
 ### Checklists
 
 Accept each listed value at most once. Set selected flags to `1` and unselected
 flags to `0`. An empty list (`[]`) means “None of these”: all flags are `0`.
-An omitted or `null` list means unanswered: all flags are `NaN`. The form must
-keep “None of these” separate from skipping the question. The preprocessor
-calculates condition and limitation counts after filling missing values.
+An omitted or `null` list means unanswered: all flags are `NaN`. The
+preprocessor calculates condition and limitation counts after filling missing
+values.
 
 | List | Profile value | Model column |
 | --- | --- | --- |
@@ -178,6 +168,8 @@ adjustment and warning flags; see the [API contract](technical_specifications.md
 
 ## Still to confirm before implementation
 
-Decide how the forecast year is chosen, define the time period meant by
-“recent” marital and employment changes, and verify the source and reference
-year for the form's dollar ranges before adding them here.
+- Decide how to choose the forecast year.
+- Define which marital and employment changes count, how far back to ask, and
+  how to word the question. Check how someone with a job to return to would
+  answer the separate employment question.
+- Verify the source and reference year for the form's dollar ranges.

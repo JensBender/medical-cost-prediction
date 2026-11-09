@@ -3,7 +3,7 @@
 | :--- | :--- |
 | **Status** | Model Development |
 | **Created** | 2025-12-05 |
-| **Last Updated** | 2026-09-29 |
+| **Last Updated** | 2026-11-09 |
 | **Data Source** | Medical Expenditure Panel Survey (MEPS) |
 
 
@@ -100,31 +100,41 @@ The following are explicitly **not** part of this project:
 
 **UX Budget:**
 * Completion Time Goal: < 90 seconds (soft goal)
-* UI Interactions Target: ~12–14 (soft guideline)
-* UI Interactions Current: 15 
+* Planned UI interactions: 16
 
 The UI must be a simple form on a single page. A multi-select checklist (e.g., chronic conditions) counts as one UI interaction. User inputs are mapped to MEPS variables with correct temporal alignment (beginning-of-year status for prospective prediction).
 
-**Full Details:** See [Technical Specifications: Candidate Features](./technical_specifications.md#candidate-features) and [Candidate Features Research](../research/candidate_features.md).
+Plan one optional question that covers both marital and employment changes.
 
-**Single-Selection Interactions** (13 UI interactions, 13 inputs)
+See the [prediction inputs contract](prediction_inputs.md) for allowed values
+and their mappings to the API and fitted preprocessor. The
+[candidate features document](technical_specifications.md#candidate-features)
+and [feature research](../research/candidate_features.md) explain why each
+feature is included.
+
+**Single-Selection Interactions** (14 UI interactions)
 | ID | UI Label | UI Question | UI Element | Value Range | MEPS Variable |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **IN-01** | Birth Year | In what year were you born? | `gr.Number` | [1940, 2007] | `AGE23X` |
+| **IN-01** | Birth Year | In what year were you born? | `gr.Number` | Whole year that gives an age of at least 18 in the forecast year | `AGE23X` |
 | **IN-02** | Sex | Are you male or female? | `gr.Radio` | ["Male", "Female"] | `SEX` |
 | **IN-03** | State | In which state do you live? | `gr.Dropdown` | ["Alabama", "Alaska", "Arizona", ...] (50 States + DC) | `REGION23` (Mapped from State) |
-| **IN-04** | Marital Status | Are you now married, widowed, divorced, separated, or never married? | `gr.Dropdown` | ["Married", "Widowed", "Divorced", "Separated", "Never Married"] | `MARRY31X` |
+| **IN-04** | Marital Status | Are you now married, widowed, divorced, separated, or never married? | `gr.Dropdown` | ["Married", "Widowed", "Divorced", "Separated", "Never Married"] | `MARRY31X_GRP` |
+| **IN-04b** | Recent Life Transition | Ask about recent changes in marital status or employment. Exact wording and time period to decide. | To decide | Optional. Yes if either kind of change applies. | `RECENT_LIFE_TRANSITION` |
 | **IN-05a** | Family Size | How many people (including yourself) live in your home who are related to you by blood, marriage, or adoption? | `gr.Dropdown` | [1, 2, 3, 4, 5, 6, 7, 8+] | `FAMSZE23` |
 | **IN-05b** | Family Income | What is your family's total annual income from all sources? | `gr.Dropdown` | Dynamic ranges based on family size (IN-05a). Map to 2023 family-income categories relative to the poverty line. | `POVCAT23` |
 | **IN-06** | Education | What is the highest degree you have obtained? | `gr.Dropdown` | ["No Degree", "GED", "High School Diploma", "Associate's Degree", "Bachelor's Degree", "Master's Degree", "Doctorate or Professional (MD, JD, etc.)", "Other"] | `HIDEG` |
-| **IN-07** | Employment Status | Do you currently have a job for pay or own a business? | `gr.Dropdown` | ["Employed", "On leave / Job to return to", "Worked earlier this year, but not now", "Not employed this year"] | `EMPST31` |
-| **IN-08** | Insurance Status | Are you covered by any type of health insurance? | `gr.Dropdown` | ["Private", "Public Only", "Uninsured"] | `INSCOV23` |
+| **IN-07** | Employment Status | What is your current employment status? | `gr.Dropdown` | ["Employed", "Not employed"] | `EMPST31_GRP` |
+| **IN-08** | Insurance Status | Are you covered by any type of health insurance? | `gr.Dropdown` | ["Any Private", "Public Only", "Uninsured"] | `INSCOV23` |
 | **IN-09** | Physical Health | In general, would you say your health is...? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `RTHLTH31` |
 | **IN-10** | Mental Health | In general, would you say your mental health is...? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `MNHLTH31` |
 | **IN-11** | Usual Source of Care | Is there a particular doctor's office, clinic, health center, or other place you usually go if you are sick or need medical advice? | `gr.Radio` | ["Yes", "No"] | `HAVEUS42` |
 | **IN-12** | Smoker | Do you currently smoke cigarettes? | `gr.Radio` | ["Yes", "No"] | `ADSMOK42` |
 
 **Multi-Selection Interactions** (2 UI interactions, 13 inputs)
+
+Users can skip either checklist. Whether to offer a **None of these** choice
+is still open.
+
 | ID | UI Label | UI Question | UI Element | Options | MEPS Variables |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **IN-13** | Chronic Conditions Checklist (8 inputs) | Have you ever been told by a doctor or other health professional that you: | `gr.CheckboxGroup` | (1) have hypertension, also called high blood pressure, (2) have high cholesterol, (3) have diabetes or sugar diabetes, (4) have coronary heart disease, (5) had a stroke, (6) had cancer or a malignancy of any kind, (7) have arthritis, (8) have asthma | `HIBPDX`, `CHOLDX`, `DIABDX_M18`, `CHDDX`, `STRKDX`, `CANCERDX`, `ARTHDX`, `ASTHDX` |

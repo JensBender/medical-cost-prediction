@@ -184,10 +184,12 @@ The following MEPS variables were selected for the model. All candidates satisfy
 | **Recent Life Transition** | `RECENT_LIFE_TRANSITION` | Binary (Int) | Indicator for recent change in marital or employment status. | ⚠️ Preserves signal of major "life shocks" while ensuring model robustness by collapsing sparse categories. |
 | **Polynomial Features** | N/A (Pipeline Only) | Numerical (Float) | Interaction and squared terms for Age, Health, and Income. | ✅ Second-degree "sweet spot": captures the Age U-curve and primary interactions (e.g., Health × Insurance) without the overfitting risk or feature explosion of 3rd+ degrees. Robust against "super-spender" outlier distortion. |
 
-**Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). The count features allow the model to capture complex health profiles efficiently. In the UI, individual chronic conditions and limitations/symptoms are presented as multi-select checklists to minimize cognitive load (~12–14 total UI interactions).
+**Note:** The final feature set targets form completion in **under 90 seconds** (soft goal). The count features allow the model to capture complex health profiles efficiently. The UI groups chronic conditions and limitations/symptoms into checklists to keep the form easy to complete.
 
-#### Family Income Mapping Table (POVCAT23)
-To ensure stigma-free and accurate income reporting, the UI displays dynamic income ranges based on the user's reported family size. These ranges map directly to the `POVCAT23` categories used in training, based on 2023 Federal Poverty Level (FPL) thresholds.
+#### Draft family income ranges
+**Draft.** These are proposed dollar ranges for the form. The draft cites the
+2023 HHS Federal Poverty Guidelines and rounds the amounts for display. Verify
+the source, reference year, and range boundaries before implementation.
 
 | Family Size | Poor (<100% FPL) | Near Poor (100–124%) | Low Income (125–199%) | Middle Income (200–399%) | High Income (≥400%) |
 | :---: | :--- | :--- | :--- | :--- | :--- |
@@ -199,8 +201,6 @@ To ensure stigma-free and accurate income reporting, the UI displays dynamic inc
 | 6 | Under $40,300 | $40,300 – $49,900 | $50,000 – $80,100 | $80,200 – $161,000 | Over $161,000 |
 | 7 | Under $45,400 | $45,400 – $56,200 | $56,300 – $90,300 | $90,400 – $181,600 | Over $181,600 |
 | 8+ | Under $50,600 | $50,600 – $62,600 | $62,700 – $100,600 | $100,700 – $202,100 | Over $202,100 |
-
-*Note: Thresholds derived from 2023 HHS Federal Poverty Guidelines. Values rounded for clean UI display.*
 
 ## Machine Learning Specifications
 
@@ -424,7 +424,15 @@ Every API response must identify the currency, the model price year, the output 
 
 ### API Contract
 The FastAPI layer exposes the prediction service through REST endpoints. It owns the public request schemas, validates external requests, delegates prediction work to the service, and serializes the returned Pydantic result models to JSON. The prediction service remains independent of HTTP behavior. It may also be called directly by the Gradio UI inside the same process.
-*   **Input Schema (Pydantic Style):**
+
+The [prediction inputs contract](prediction_inputs.md) defines the shared
+profile, allowed values, missing answers, and mappings for Gradio, the API,
+and direct use of the fitted artifacts.
+
+The draft schema below predates the input contract. Review its fields and
+decide where the request schema should live before implementation.
+
+*   **Draft input schema (Pydantic style)**
     ```python
     class PredictionRequest(BaseModel):
         # REQUIRED (100% completeness in training)
@@ -443,6 +451,7 @@ The FastAPI layer exposes the prediction service through REST endpoints. It owns
         chronic_conditions: List[str] = [] # e.g., ["Diabetes", "Cancer"]
         limitations: List[str] = []        # e.g., ["Walking", "ADL"]
     ```
+
 *   **Example Output:**
     ```json
     {
