@@ -1,8 +1,8 @@
 # Prediction Inputs
 
-This document defines what to send for a prediction and how each answer maps
-to the model's inputs. The web form and API rules are planned requirements;
-direct prediction through `CostPredictor` already exists.
+This document describes the inputs for the web form, API, prediction service,
+and direct Python use. The planned app builds on the 27-column input format
+already used for direct prediction in Python.
 
 ## How the inputs fit together
 
@@ -10,9 +10,12 @@ direct prediction through `CostPredictor` already exists.
   prediction profile: a set of named fields such as `age` and `region`.
 - **API:** accepts that same profile as JSON. Both interfaces must use the
   same field definitions and validation rules.
-- **Prediction service:** maps a validated profile to the model's 27 input
-  columns. Both interfaces must use this same mapping.
+- **Prediction service:** maps a validated profile to the 27 preprocessor
+  input columns. Both interfaces must use this same mapping.
 - **Direct Python use:** supplies those 27 columns in a pandas DataFrame.
+
+The service and direct Python callers both use `CostPredictor`. It runs the
+fitted preprocessor and passes the model-ready features to the fitted model.
 
 The [product requirements](product_requirements.md#user-inputs) describe the
 form questions. The [technical specifications](technical_specifications.md#prediction-architecture)
@@ -24,23 +27,25 @@ describe how the software is organized.
 - Use the exact category values below, integers for age and family size, and
   `true` or `false` for yes/no answers. Reject unknown fields, unsupported
   values, and wrong types; for example, `"42"` is not an integer.
-- Missing optional answers become `NaN` in the model inputs. The preprocessor
-  fills these gaps with values learned during training. `false` means No,
-  not missing. Optional form controls must start unanswered.
+- Missing optional answers become `NaN` in the preprocessor inputs. The
+  preprocessor fills these gaps with values learned during training.
+  `false` means No. Optional form controls must start unanswered.
 - Use the best available answers for the start of the forecast year, except
   age, which uses the end of that year. Conditions cover diagnoses ever
   received; joint pain covers the prior 12 months.
 
 ## Required inputs
 
-The model codes below follow the same order as the listed profile values.
+The service sends the numeric codes below. Direct Python callers can also
+use the listed labels, ignoring case. Codes and labels follow the same order
+as the profile values.
 
-| Profile field | Allowed values | Model input |
+| Profile field | Allowed values | Preprocessor input |
 | --- | --- | --- |
 | `age` | Integer 18–85; `85` means 85 or older | `AGE23X`: same integer |
-| `sex` | `female`, `male` | `SEX`: `0`, `1` |
-| `region` | `northeast`, `midwest`, `south`, `west` | `REGION23`: `1`, `2`, `3`, `4` |
-| `insurance_status` | `any_private`, `public_only`, `uninsured` | `INSCOV23`: `1`, `2`, `3` |
+| `sex` | `female`, `male` | `SEX`: `0` or `Female`, `1` or `Male` |
+| `region` | `northeast`, `midwest`, `south`, `west` | `REGION23`: `1` or `Northeast`, `2` or `Midwest`, `3` or `South`, `4` or `West` |
+| `insurance_status` | `any_private`, `public_only`, `uninsured` | `INSCOV23`: `1` or `Any Private`, `2` or `Public Only`, `3` or `Uninsured` |
 | `physical_health` | [Health rating](#health-ratings) | `RTHLTH31`: `1`–`5` |
 
 The forecast year is the year the estimate covers. The form calculates age as
@@ -52,17 +57,17 @@ has any private coverage, even alongside public coverage.
 
 ## Optional inputs
 
-| Profile field | Allowed values | Model input |
+| Profile field | Allowed values | Preprocessor input |
 | --- | --- | --- |
-| `marital_status` | `married`, `widowed`, `divorced`, `separated`, `never_married` | `MARRY31X_GRP`: `1`, `2`, `3`, `4`, `5` |
-| `recent_life_transition` | Proposed boolean for a [recent marital or employment change](#recent-life-transition) | `RECENT_LIFE_TRANSITION`: `false` → `0`, `true` → `1` |
+| `marital_status` | `married`, `widowed`, `divorced`, `separated`, `never_married` | `MARRY31X_GRP`: `1` or `Married`, `2` or `Widowed`, `3` or `Divorced`, `4` or `Separated`, `5` or `Never Married` |
+| `recent_life_transition` | Proposed boolean for a [recent marital or employment change](#recent-life-transition) | `RECENT_LIFE_TRANSITION`: `false` → `0` or `No`, `true` → `1` or `Yes` |
 | `family_size` | Integer 1–14: related people living together, including the person answering | `FAMSZE23`: same integer; the form's “8+” sends `8` |
 | `income_bracket` | `poor`, `near_poor`, `low_income`, `middle_income`, `high_income` | `POVCAT23`: `1`, `2`, `3`, `4`, `5` |
-| `education` | [Education choice](#education) | `HIDEG`: code below |
-| `employment_status` | `employed`, `not_employed` | `EMPST31_GRP`: `1`, `0` |
+| `education` | [Education choice](#education) | `HIDEG`: code or label below |
+| `employment_status` | `employed`, `not_employed` | `EMPST31_GRP`: `1` or `Employed`, `0` or `Not Employed` |
 | `mental_health` | [Health rating](#health-ratings) | `MNHLTH31`: `1`–`5` |
-| `usual_source_of_care` | Boolean | `HAVEUS42`: `false` → `0`, `true` → `1` |
-| `smoker` | Boolean: currently smokes cigarettes | `ADSMOK42`: `false` → `0`, `true` → `1` |
+| `usual_source_of_care` | Boolean | `HAVEUS42`: `false` → `0` or `No`, `true` → `1` or `Yes` |
+| `smoker` | Boolean: currently smokes cigarettes | `ADSMOK42`: `false` → `0` or `No`, `true` → `1` or `Yes` |
 | `chronic_conditions` | List of [condition values](#checklists) | Eight flags below |
 | `limitations` | List of [limitation values](#checklists) | Five flags below |
 
@@ -81,16 +86,16 @@ For both health fields: `excellent` → `1`, `very_good` → `2`, `good` → `3`
 
 ### Education
 
-| Profile value | Model `HIDEG` code |
+| Profile value | Preprocessor `HIDEG` |
 | --- | --- |
-| `no_degree` | `1` |
-| `ged` | `2` |
-| `high_school_diploma` | `3` |
-| `associate_degree` | `7` (Other) |
-| `bachelors_degree` | `4` |
-| `masters_degree` | `5` |
-| `doctorate_or_professional` | `6` |
-| `other` | `7` |
+| `no_degree` | `1` or `No Degree` |
+| `ged` | `2` or `GED` |
+| `high_school_diploma` | `3` or `HS Diploma` |
+| `associate_degree` | `7` or `Other` |
+| `bachelors_degree` | `4` or `Bachelor's` |
+| `masters_degree` | `5` or `Master's` |
+| `doctorate_or_professional` | `6` or `Doctorate` |
+| `other` | `7` or `Other` |
 
 ### Recent life transition
 
@@ -104,9 +109,10 @@ Accept each listed value at most once. Set selected flags to `1` and unselected
 flags to `0`. An empty list (`[]`) means “None of these”: all flags are `0`.
 An omitted or `null` list means unanswered: all flags are `NaN`. The
 preprocessor calculates condition and limitation counts after filling missing
-values.
+values. For each flag below, direct Python callers can also use `No` for `0`
+and `Yes` for `1`.
 
-| List | Profile value | Model column |
+| List | Profile value | Preprocessor column |
 | --- | --- | --- |
 | `chronic_conditions` | `hypertension` | `HIBPDX` |
 | | `high_cholesterol` | `CHOLDX` |
@@ -127,13 +133,7 @@ values.
 Pass one DataFrame row per person with all 27 columns listed in the fitted
 preprocessor's `feature_names_in_`. Fill the five required inputs and use
 `numpy.nan` for missing optional values. `CostPredictor` orders the columns
-for you. Use the cleaned numeric codes above, not raw survey codes: for
-example, a nonsmoker is `ADSMOK42=0`, not `2`.
-
-Direct callers must check their values against this contract; the fitted
-preprocessor does not enforce every allowed value. It also accepts fitted
-labels for nominal and binary fields, ignoring case; see the
-[categorical label standardizer](../../src/transformers.py).
+for you. Check your values against the tables before predicting.
 
 ## Minimal example
 
