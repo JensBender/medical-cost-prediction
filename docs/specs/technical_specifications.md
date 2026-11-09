@@ -429,6 +429,12 @@ The [prediction inputs contract](prediction_inputs.md) defines the shared
 profile, allowed values, missing answers, and mappings for Gradio, the API,
 and direct use of the fitted artifacts.
 
+API requests must use the exact lowercase strings listed in the input
+contract, with underscores between words. The API accepts `"very_good"` and
+rejects `"Very Good"`. It expects integers for age and family size and JSON
+`true` or `false` for yes/no answers. It rejects unknown fields and wrong
+types.
+
 The draft schema below predates the input contract. Review its fields and
 decide where the request schema should live before implementation.
 

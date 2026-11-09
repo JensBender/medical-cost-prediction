@@ -21,12 +21,10 @@ The [product requirements](product_requirements.md#user-inputs) describe the
 form questions. The [technical specifications](technical_specifications.md#prediction-architecture)
 describe how the software is organized.
 
-## Shared rules
+## Input rules
 
-- Required fields must have a value. Optional fields may be omitted or `null`.
-- Use the exact category values below, integers for age and family size, and
-  `true` or `false` for yes/no answers. Reject unknown fields, unsupported
-  values, and wrong types; for example, `"42"` is not an integer.
+- In the shared profile, required fields must have a value. Optional fields
+  may be omitted or `null`.
 - Missing optional answers become `NaN` in the preprocessor inputs. The
   preprocessor fills these gaps with values learned during training.
   `false` means No. Optional form controls must start unanswered.
@@ -37,8 +35,8 @@ describe how the software is organized.
 ## Required inputs
 
 The service sends the numeric codes below. Direct Python callers can also
-use the listed labels, ignoring case. Codes and labels follow the same order
-as the profile values.
+use the listed labels. The preprocessor matches those labels regardless of
+case. Codes and labels follow the same order as the profile values.
 
 | Profile field | Allowed values | Preprocessor input |
 | --- | --- | --- |
