@@ -202,21 +202,6 @@ To ensure stigma-free and accurate income reporting, the UI displays dynamic inc
 
 *Note: Thresholds derived from 2023 HHS Federal Poverty Guidelines. Values rounded for clean UI display.*
 
-#### Education Mapping Table (HIDEG)
-To ensure high-quality data while maintaining a clean UI, the "Education" dropdown options are mapped to the consolidated `HIDEG` categories used during model training.
-
-| UI Label | HIDEG Code | Mapping Rationale |
-| :--- | :---: | :--- |
-| No Degree | 1 | Standard MEPS mapping. |
-| GED | 2 | Standard MEPS mapping. |
-| High School Diploma | 3 | Standard MEPS mapping. |
-| Associate's Degree | 7 | Maps to "Other Degree" to avoid "No Degree" or "Bachelor's" misclassification. |
-| Bachelor's Degree | 4 | Standard MEPS mapping. |
-| Master's Degree | 5 | Standard MEPS mapping. |
-| Doctorate or Professional (MD, JD, etc.) | 6 | Ensures high-income professional degrees are correctly attributed to the top tier. |
-| Other | 7 | Standard MEPS mapping for vocational/trade degrees. |
-
-
 ## Machine Learning Specifications
 
 ### Data Preprocessing
