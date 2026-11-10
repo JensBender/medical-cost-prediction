@@ -426,36 +426,46 @@ Every API response must identify the currency, the model price year, the output 
 The FastAPI layer exposes the prediction service through REST endpoints. It owns the public request schemas, validates external requests, delegates prediction work to the service, and serializes the returned Pydantic result models to JSON. The prediction service remains independent of HTTP behavior. It may also be called directly by the Gradio UI inside the same process.
 
 The [prediction inputs contract](prediction_inputs.md) defines the shared
-profile, allowed values, missing answers, and mappings for Gradio, the API,
-and direct use of the fitted artifacts.
+input profile for the Gradio form and API, including allowed values and how
+to handle missing answers. It also shows how the service maps the profile to
+the preprocessor inputs for direct Python use.
 
-API requests must use the exact lowercase strings listed in the input
-contract, with underscores between words. The API accepts `"very_good"` and
-rejects `"Very Good"`. It expects integers for age and family size and JSON
-`true` or `false` for yes/no answers. It rejects unknown fields and wrong
-types.
+For categorical string inputs, API requests must use the exact `snake_case`
+values listed in the prediction inputs contract. The API accepts
+`"very_good"` and rejects `"Very Good"`. It expects integers for age and family
+size and JSON `true` or `false` for yes/no answers. It rejects unknown fields
+and wrong types.
 
-The draft schema below predates the input contract. Review its fields and
-decide where the request schema should live before implementation.
+The request schema below is a draft. Its final fields, defaults, and location
+are still to be decided.
 
 *   **Draft input schema (Pydantic style)**
     ```python
-    class PredictionRequest(BaseModel):
-        # REQUIRED (100% completeness in training)
-        age: int = Field(..., ge=18, le=85)
-        sex: int = Field(...)
-        insurance_status: int = Field(...)
-        region: int = Field(...)
-        physical_health: int = Field(..., ge=1, le=5)
+    from typing import Literal
 
-        # OPTIONAL (Null/None allowed; defaults to training mode/median)
-        income_bracket: Optional[int] = None
-        mental_health: Optional[int] = None
-        marital_status: Optional[int] = None
-        employment_status: Optional[int] = None
+    from pydantic import BaseModel, Field
+
+    HealthRating = Literal["excellent", "very_good", "good", "fair", "poor"]
+
+
+    class PredictionRequest(BaseModel):
+        age: int = Field(..., ge=18, le=85)
+        sex: Literal["female", "male"]
+        insurance_status: Literal["any_private", "public_only", "uninsured"]
+        region: Literal["northeast", "midwest", "south", "west"]
+        physical_health: HealthRating
+
+        income_bracket: Literal[
+            "poor", "near_poor", "low_income", "middle_income", "high_income"
+        ] | None = None
+        mental_health: HealthRating | None = None
+        marital_status: Literal[
+            "married", "widowed", "divorced", "separated", "never_married"
+        ] | None = None
+        employment_status: Literal["employed", "not_employed"] | None = None
         recent_life_transition: bool = False
-        chronic_conditions: List[str] = [] # e.g., ["Diabetes", "Cancer"]
-        limitations: List[str] = []        # e.g., ["Walking", "ADL"]
+        chronic_conditions: list[str] = []  # e.g., ["diabetes", "cancer"]
+        limitations: list[str] = []  # e.g., ["walking_difficulty"]
     ```
 
 *   **Example Output:**
