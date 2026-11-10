@@ -13,6 +13,7 @@
    - [Dataset](#dataset)
    - [Target Variable](#target-variable)
    - [Feature Selection](#feature-selection)
+   - [Required and Optional Inputs](#required-and-optional-inputs)
    - [Candidate Features](#candidate-features)
 2. [Machine Learning Specifications](#machine-learning-specifications)
    - [Data Preprocessing](#data-preprocessing)
@@ -75,7 +76,8 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 1.  **UX-First Constraint**: Target form completion in **under 90 seconds** as a soft goal. User effort and completion time matter more than a strict input feature count. Group related inputs into multi-select checklists (e.g., chronic conditions) to keep the form easy to complete.
 2.  **Consumer Accessibility**: Inputs must be information users know offhand (e.g., age, self-rated health). The user doesn't need to leave their chair to find an insurance card, past bill, or medical record. No asking for specifics like "deductible amount" or "ICD-10 codes" that require mental effort or looking up technical terms.
 3.  **Temporal Validity**: Variables must reflect **beginning-of-year status** to enable prospective prediction without data leakage (see box below).
-4.  **MVP Feature Set**: Consider feature reduction only if user testing shows that completing the form takes substantially longer than 90 seconds and harms the user experience.
+4.  **Training Data Completeness**. Consider how often each candidate was missing in training.
+5.  **MVP Feature Set**. Use all selected features for the first release. Consider removing features in a future model review.
 
 <details>
 <summary>ℹ️ <strong>Temporal Alignment: Why Variable Suffixes Matter</strong> (click to expand)</summary>
@@ -98,28 +100,18 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 
 </details>
 
-### Feature Selection
-The primary goal is a fast, frictionless user experience. We prioritize usability over predictive performance if it requires complex inputs.
+### Required and Optional Inputs
 
-**Decision Matrix**
-
-Use feature importance and user friction to guide which inputs to require. 
+Use the decision matrix below to decide which inputs to require or make optional
+based on feature importance and user friction.
 
 | | **Low User Friction**<br>*(Non-sensitive, easy to answer)* | **High User Friction**<br>*(Sensitive, hard to know or answer)* |
 | :--- | :--- | :--- |
 | **High Feature Importance** | **Required**<br>*Insurance status, age, sex* | **Optional**<br>*Family income* |
 | **Low Feature Importance** | **Optional**<br>*Region* | **Consider dropping in a future review**<br>*Help with personal care* |
 
-**Selection Process**:
-1.  **Candidate Screening**: Identify MEPS variables that a layperson can answer from memory. Ensure temporal validity (no end-of-year or mid-year variables).
-2.  **Training Data Completeness**: Consider how often each input was missing in training.
-3.  **Feature Importance Ranking**: Use the [test-set rankings](../../models/shap_feature_importance_test.csv) for the median estimate.
-4.  **Input Decisions**: Use the matrix to decide which inputs to require or make optional.
-    *   **Imputation Strategy**: Use Mode/Median imputation. Implement a "Safety First" imputation layer for **all** features:
-        *   **Production Robustness**: The fitted preprocessor can fill in missing values, including for required inputs.
-        *   **Implicit "No" Logic**: Given the high feature completeness in training (>96%), "absence of a checked box" in UI checklists can be statistically justified as an explicit "No" response rather than a missing value.
-    *   **Outlier Retention**: While univariate (3SD) and multivariate (Isolation Forest) outliers are identified for profiling, they are **retained** in the training data. Profiling confirms that these outliers represent legitimate high-risk clinical profiles (e.g., multiple comorbidities) rather than noise or measurement errors. Retaining them ensures the model captures the drivers of high-impact tail risk.
-
+**How to handle skipped answers in checklists.** The plan is to treat a skipped
+checklist answer as “No”. Revisit this before finalizing the web form.
 
 ### Candidate Features
 The following MEPS variables were selected for the model. All candidates satisfy three constraints: (1) users can answer from memory, (2) variables reflect beginning-of-year status (temporal validity), and (3) established predictive power in literature. The MVP uses all 26 selected MEPS features, which become 27 preprocessor input features after feature engineering.
@@ -215,8 +207,15 @@ Perform once before pipeline:
 | Drop rows where `PERWT23F = 0` | Respondents with a person weight of zero are "out-of-scope" for the full-year population (e.g., they joined the military, were institutionalized, or moved abroad during the year). | Removes ~456 rows (N=18,919 total, 18,463 with positive weight). |
 | Handle MEPS Negative Codes | Standardize missing/inapplicable values for modeling. | Convert `-1` (Inapplicable), `-7` (Refused), `-8` (Don't know), `-15` (Cannot be computed) to `NaN`.<br>Treating survey non-response and missing inputs from web app users identically (as `NaN` → Imputed Mode/Median) to align data handling between training and inference. |
 
+We kept flagged outliers in the training data because their profiles were
+plausible. See the [outlier analysis](../../README.md#outlier-analysis-details).
+
 **Feature Preprocessing**
-Missing numerical inputs use median imputation; nominal and binary inputs use mode imputation. Scaling and encoding use a `ColumnTransformer`.
+
+The preprocessor fills missing numerical values with the training median and
+missing nominal or binary values with the most common value from training. This
+fallback also covers required inputs, including those that were complete in
+training. Scaling and encoding use a `ColumnTransformer`.
 
 Family income (`POVCAT23`) and physical and mental health ratings (`RTHLTH31`, `MNHLTH31`) are conceptually ordinal but processed as numerical features. Their existing ordered 1–5 codes are retained, median-imputed, and standardized. An ordinal encoder preserving that order would only shift the codes to 0–4 and produce the same standardized values.
 
