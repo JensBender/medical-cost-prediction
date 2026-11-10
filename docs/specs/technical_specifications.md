@@ -525,6 +525,14 @@ are still to be decided.
 
 `UNDERBUDGETING_RISK` is a rule for offering additional planning guidance, not a measured probability of underbudgeting. High predicted Q90 is a proxy for potential higher costs; the three subgroup conditions reflect observed typical-range undercoverage with larger dollar misses above the range than below it.
 
+Use the following description for `MISSING_OPTIONAL_INPUTS` under
+`warning_flags` in the generated API documentation.
+
+> One or more optional inputs were missing from the request. To generate the
+> prediction, the service filled them in with typical values from the training
+> data. Providing those inputs may help the estimate better reflect the
+> person's situation.
+
 #### Planning Note Rendering Rules
 The UI should avoid stacking several full planning note paragraphs below the prediction. Render planning notes as follows:
 
