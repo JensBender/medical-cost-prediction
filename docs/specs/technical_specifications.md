@@ -448,13 +448,14 @@ are still to be decided.
         age: int = Field(..., ge=18, le=85)
         sex: Literal["female", "male"]
         insurance_status: Literal["any_private", "public_only", "uninsured"]
-        region: Literal["northeast", "midwest", "south", "west"]
-        physical_health: HealthRating
+        family_size: int = Field(..., ge=1, le=14)
 
+        region: Literal["northeast", "midwest", "south", "west"] | None = None
+        physical_health: HealthRating | None = None
+        mental_health: HealthRating | None = None
         income_bracket: Literal[
             "poor", "near_poor", "low_income", "middle_income", "high_income"
         ] | None = None
-        mental_health: HealthRating | None = None
         marital_status: Literal[
             "married", "widowed", "divorced", "separated", "never_married"
         ] | None = None
