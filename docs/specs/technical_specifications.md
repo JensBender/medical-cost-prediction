@@ -101,22 +101,22 @@ The primary goal is a fast, frictionless user experience. We prioritize usabilit
 ### Feature Selection
 The primary goal is a fast, frictionless user experience. We prioritize usability over predictive performance if it requires complex inputs.
 
-**Feature Selection Dimensioning**:
-The framework below applies only if user testing justifies revisiting the MVP feature set, as described above. Assess features using three dimensions: **Feature Importance**, **User Friction**, and **Data Completeness** (from EDA).
+**Decision Matrix**
 
-**Decision Matrix**:
-| | **Low User Friction**<br>*(Non-sensitive/Easy to answer)* | **High User Friction**<br>*(Sensitive/Hard to know)* |
+Use feature importance and user friction to guide which inputs to require. 
+
+| | **Low User Friction**<br>*(Non-sensitive, easy to answer)* | **High User Friction**<br>*(Sensitive, hard to know or answer)* |
 | :--- | :--- | :--- |
-| **High Feature Importance** | **REQUIRED**<br>High predictive power + 100% data completeness in training.<br>*Examples: Age, Sex, Insurance* | **OPTIONAL**<br>High predictive power but sensitive. High-quality defaults available from clean training data.<br>*Examples: Family Income, Mental Health* |
-| **Low Feature Importance** | **OPTIONAL**<br>Nice-to-have. Low impact of missingness on model stability.<br>*Examples: Region, Usual Care* | **DROP**<br>Hard to answer and low value. Remove entirely.<br>*Examples: Complex medical history* |
+| **High Feature Importance** | **Required**<br>*Insurance status, age, sex* | **Optional**<br>*Family income* |
+| **Low Feature Importance** | **Optional**<br>*Region* | **Consider dropping in a future review**<br>*Help with personal care* |
 
 **Selection Process**:
 1.  **Candidate Screening**: Identify MEPS variables that a layperson can answer from memory. Ensure temporal validity (no end-of-year or mid-year variables).
-2.  **Data Integrity Validation**: Verify missingness in training data. Features with 100% completeness (Age, Sex, Insurance, Region, Physical Health) are prioritized as **Required** anchors.
-3.  **Feature Importance Ranking**: Train preliminary models to obtain importance scores.
-4.  **Final Feature Selection**: Map features to the matrix above.
+2.  **Training Data Completeness**: Consider how often each input was missing in training.
+3.  **Feature Importance Ranking**: Use the [test-set rankings](../../models/shap_feature_importance_test.csv) for the median estimate.
+4.  **Input Decisions**: Use the matrix to decide which inputs to require or make optional.
     *   **Imputation Strategy**: Use Mode/Median imputation. Implement a "Safety First" imputation layer for **all** features:
-        *   **Production Robustness**: Even for required features with 0% missingness in training (e.g., Age, Sex, Region, Physical Health), the fitted preprocessing pipeline will include fallback imputation to handle malformed production inputs and avoid system crashes.
+        *   **Production Robustness**: The fitted preprocessor can fill in missing values, including for required inputs.
         *   **Implicit "No" Logic**: Given the high feature completeness in training (>96%), "absence of a checked box" in UI checklists can be statistically justified as an explicit "No" response rather than a missing value.
     *   **Outlier Retention**: While univariate (3SD) and multivariate (Isolation Forest) outliers are identified for profiling, they are **retained** in the training data. Profiling confirms that these outliers represent legitimate high-risk clinical profiles (e.g., multiple comorbidities) rather than noise or measurement errors. Retaining them ensures the model captures the drivers of high-impact tail risk.
 
