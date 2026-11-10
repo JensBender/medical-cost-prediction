@@ -110,9 +110,6 @@ based on feature importance and user friction.
 | **High Feature Importance** | **Required**<br>*Insurance status, age, sex, family size* | **Optional**<br>*Family income* |
 | **Low Feature Importance** | **Optional**<br>*Region, physical health* | **Consider dropping in a future review**<br>*Help with personal care* |
 
-**How to handle skipped answers in checklists:** The plan is to treat a skipped
-checklist answer as “No”. Revisit this before finalizing the web form.
-
 ### Candidate Features
 The following MEPS variables were selected for the model. All candidates satisfy three constraints: (1) users can answer from memory, (2) variables reflect beginning-of-year status (temporal validity), and (3) established predictive power in literature. The MVP uses all 26 selected MEPS features, which become 27 preprocessor input features after feature engineering.
 

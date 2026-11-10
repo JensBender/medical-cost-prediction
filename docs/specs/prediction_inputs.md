@@ -126,6 +126,11 @@ and `Yes` for `1`.
 | | `cognitive_difficulty` | `COGLIM31` |
 | | `joint_pain` | `JTPAIN31_M18` |
 
+**How to handle an entirely skipped checklist:** If the user checks at least one
+item, treat the unchecked items in that checklist as “No.” Decide whether to
+offer an explicit “None of these” option to distinguish that answer from a
+skipped checklist.
+
 ## Direct Python use
 
 Pass one DataFrame row per person with all 27 columns listed in the fitted
