@@ -107,10 +107,10 @@ based on feature importance and user friction.
 
 | | **Low User Friction**<br>*(Non-sensitive, easy to answer)* | **High User Friction**<br>*(Sensitive, hard to know or answer)* |
 | :--- | :--- | :--- |
-| **High Feature Importance** | **Required**<br>*Insurance status, age, sex* | **Optional**<br>*Family income* |
-| **Low Feature Importance** | **Optional**<br>*Region* | **Consider dropping in a future review**<br>*Help with personal care* |
+| **High Feature Importance** | **Required**<br>*Insurance status, age, sex, family size* | **Optional**<br>*Family income* |
+| **Low Feature Importance** | **Optional**<br>*Region, physical health* | **Consider dropping in a future review**<br>*Help with personal care* |
 
-**How to handle skipped answers in checklists.** The plan is to treat a skipped
+**How to handle skipped answers in checklists:** The plan is to treat a skipped
 checklist answer as “No”. Revisit this before finalizing the web form.
 
 ### Candidate Features
