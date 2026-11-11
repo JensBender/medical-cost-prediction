@@ -18,14 +18,14 @@ class PredictionRequest(BaseModel):
     age: int = Field(..., ge=18, le=85)
     sex: Literal["female", "male"]
     insurance_status: Literal["any_private", "public_only", "uninsured"] = Field(
-        description="Use any_private for private insurance, even alongside public coverage."
+        description="If the person has both private and public insurance, choose any_private."
     )
     # TODO: Decide whether to allow family sizes above the training maximum.
     family_size: int = Field(
         ...,
         ge=1,
         le=14,
-        description="Number of people in the family unit, including the person whose costs are being predicted.",
+        description="Number of people living together as a family, including the person.",
     )
     education: Literal[
         "no_degree",
@@ -43,7 +43,9 @@ class PredictionRequest(BaseModel):
     region: Literal["northeast", "midwest", "south", "west"] | None = None
     physical_health: HealthRating | None = None
     mental_health: HealthRating | None = None
-    income_bracket: Literal[
+    # TODO: Finalize the UI income ranges and how API callers should provide
+    # family income, including how to map their input to these categories.
+    family_income: Literal[
         "poor", "near_poor", "low_income", "middle_income", "high_income"
     ] | None = None
     marital_status: Literal[
