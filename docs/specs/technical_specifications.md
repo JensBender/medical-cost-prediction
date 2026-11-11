@@ -461,9 +461,25 @@ are still to be decided.
         ] | None = None
         employment_status: Literal["employed", "not_employed"] | None = None
         recent_life_transition: bool = False
-        chronic_conditions: list[str] = []  # e.g., ["diabetes", "cancer"]
-        limitations: list[str] = []  # e.g., ["walking_difficulty"]
+
+        hypertension: bool | None = None
+        high_cholesterol: bool | None = None
+        diabetes: bool | None = None
+        coronary_heart_disease: bool | None = None
+        stroke: bool | None = None
+        cancer: bool | None = None
+        arthritis: bool | None = None
+        asthma: bool | None = None
+
+        personal_care_help: bool | None = None
+        daily_tasks_help: bool | None = None
+        walking_difficulty: bool | None = None
+        cognitive_difficulty: bool | None = None
+        joint_pain: bool | None = None
     ```
+
+    The condition and limitation fields use `None` as a draft default. Decide
+    whether omitted fields mean “No” or “unanswered” before finalizing the schema.
 
 *   **Example Output:**
     ```json
