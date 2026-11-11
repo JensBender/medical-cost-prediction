@@ -474,12 +474,15 @@ are still to be decided.
         receives_personal_care_help: bool | None = None
         receives_daily_tasks_help: bool | None = None
         walking_limitation: bool | None = None
-        cognitive_difficulty: bool | None = None
+        cognitive_limitation: bool | None = None
         joint_pain: bool | None = None
     ```
 
     The condition and limitation fields use `None` as a draft default. Decide
     whether omitted fields mean “No” or “unanswered” before finalizing the schema.
+
+    Also decide whether to allow `family_size` above 14, the largest value observed
+    in training.
 
 *   **Example Output:**
     ```json
