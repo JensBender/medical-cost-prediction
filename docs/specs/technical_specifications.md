@@ -460,7 +460,7 @@ are still to be decided.
             "married", "widowed", "divorced", "separated", "never_married"
         ] | None = None
         employment_status: Literal["employed", "not_employed"] | None = None
-        recent_life_transition: bool = False
+        recent_life_transition: bool | None = None
 
         hypertension: bool | None = None
         high_cholesterol: bool | None = None
