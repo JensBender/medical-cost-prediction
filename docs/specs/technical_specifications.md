@@ -107,7 +107,7 @@ based on feature importance and user friction.
 
 | | **Low User Friction**<br>*(Non-sensitive, easy to answer)* | **High User Friction**<br>*(Sensitive, hard to know or answer)* |
 | :--- | :--- | :--- |
-| **High Feature Importance** | **Required**<br>*Insurance status, age, sex, family size* | **Optional**<br>*Family income* |
+| **High Feature Importance** | **Required**<br>*Insurance status, age, sex, family size, education* | **Optional**<br>*Family income* |
 | **Low Feature Importance** | **Optional**<br>*Region, physical health* | **Consider dropping in a future review**<br>*Help with personal care* |
 
 ### Candidate Features
@@ -449,6 +449,16 @@ are still to be decided.
         sex: Literal["female", "male"]
         insurance_status: Literal["any_private", "public_only", "uninsured"]
         family_size: int = Field(..., ge=1, le=14)
+        education: Literal[
+            "no_degree",
+            "ged",
+            "high_school_diploma",
+            "associate_degree",
+            "bachelors_degree",
+            "masters_degree",
+            "doctorate",
+            "other",
+        ]
 
         region: Literal["northeast", "midwest", "south", "west"] | None = None
         physical_health: HealthRating | None = None
@@ -461,6 +471,8 @@ are still to be decided.
         ] | None = None
         employment_status: Literal["employed", "not_employed"] | None = None
         recent_life_transition: bool | None = None
+        usual_source_of_care: bool | None = None
+        smoker: bool | None = None
 
         hypertension: bool | None = None
         high_cholesterol: bool | None = None
