@@ -432,69 +432,8 @@ values listed in the prediction inputs contract. The API accepts
 size and JSON `true` or `false` for yes/no answers. It rejects unknown fields
 and wrong types.
 
-The request schema below is a draft. Its final fields, defaults, and location
-are still to be decided.
-
-*   **Draft input schema (Pydantic style)**
-    ```python
-    from typing import Literal
-
-    from pydantic import BaseModel, Field
-
-    HealthRating = Literal["excellent", "very_good", "good", "fair", "poor"]
-
-
-    class PredictionRequest(BaseModel):
-        age: int = Field(..., ge=18, le=85)
-        sex: Literal["female", "male"]
-        insurance_status: Literal["any_private", "public_only", "uninsured"]
-        family_size: int = Field(..., ge=1, le=14)
-        education: Literal[
-            "no_degree",
-            "ged",
-            "high_school_diploma",
-            "associate_degree",
-            "bachelors_degree",
-            "masters_degree",
-            "doctorate",
-            "other",
-        ]
-
-        region: Literal["northeast", "midwest", "south", "west"] | None = None
-        physical_health: HealthRating | None = None
-        mental_health: HealthRating | None = None
-        income_bracket: Literal[
-            "poor", "near_poor", "low_income", "middle_income", "high_income"
-        ] | None = None
-        marital_status: Literal[
-            "married", "widowed", "divorced", "separated", "never_married"
-        ] | None = None
-        employment_status: Literal["employed", "not_employed"] | None = None
-        recent_life_transition: bool | None = None
-        usual_source_of_care: bool | None = None
-        smoker: bool | None = None
-
-        hypertension: bool | None = None
-        high_cholesterol: bool | None = None
-        diabetes: bool | None = None
-        coronary_heart_disease: bool | None = None
-        stroke: bool | None = None
-        cancer: bool | None = None
-        arthritis: bool | None = None
-        asthma: bool | None = None
-
-        receives_personal_care_help: bool | None = None
-        receives_daily_tasks_help: bool | None = None
-        walking_limitation: bool | None = None
-        cognitive_limitation: bool | None = None
-        joint_pain: bool | None = None
-    ```
-
-    The condition and limitation fields use `None` as a draft default. Decide
-    whether omitted fields mean “No” or “unanswered” before finalizing the schema.
-
-    Also decide whether to allow `family_size` above 14, the largest value observed
-    in training.
+`PredictionRequest` in [app/schemas.py](../../app/schemas.py) defines the API
+input fields, required inputs, allowed values, and validation rules.
 
 *   **Example Output:**
     ```json
