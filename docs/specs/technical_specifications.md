@@ -471,9 +471,9 @@ are still to be decided.
         arthritis: bool | None = None
         asthma: bool | None = None
 
-        personal_care_help: bool | None = None
-        daily_tasks_help: bool | None = None
-        walking_difficulty: bool | None = None
+        receives_personal_care_help: bool | None = None
+        receives_daily_tasks_help: bool | None = None
+        walking_limitation: bool | None = None
         cognitive_difficulty: bool | None = None
         joint_pain: bool | None = None
     ```
