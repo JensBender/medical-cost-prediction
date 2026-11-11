@@ -106,8 +106,8 @@ The UI must be a simple form on a single page. A multi-select checklist (e.g., c
 
 Plan one optional question that covers both marital and employment changes.
 
-See the [prediction inputs contract](prediction_inputs.md) for allowed values
-and their mappings to the API and fitted preprocessor. The
+See the [prediction input mapping](prediction_input_mapping.md) for how form
+answers map to API fields and the fitted preprocessor. The
 [candidate features document](technical_specifications.md#candidate-features)
 and [feature research](../research/candidate_features.md) explain why each
 feature is included.
