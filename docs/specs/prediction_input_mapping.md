@@ -1,7 +1,8 @@
 # Prediction Input Mapping
 
-This document maps web form answers and API fields to the 27 preprocessor
-inputs.
+This document maps web form answers and API fields to the 27 inputs expected by
+the fitted preprocessing pipeline (a scikit-learn `Pipeline`), referred to below
+as the preprocessor.
 
 ## How the inputs fit together
 
@@ -13,9 +14,9 @@ inputs.
   `CostPredictor`, which runs the fitted preprocessor and model.
 - **Direct Python use**: supplies preprocessor inputs directly to `CostPredictor`.
 
-The web form and API both call the prediction service. Direct Python callers bypass it.
+The web form and API both call the prediction service. Direct Python use bypasses it.
 
-The web form and API use Pydantic for data validation with the
+**Data validation:** The web form and API use Pydantic for data validation with the
 `PredictionRequest` schema in [app/schemas.py](../../app/schemas.py), which
 defines the fields, allowed values, and validation rules.
 
