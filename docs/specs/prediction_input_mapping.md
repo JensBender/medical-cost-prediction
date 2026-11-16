@@ -1,23 +1,28 @@
 # Prediction Input Mapping
 
 This document maps web form answers and API fields to the 27 preprocessor
-inputs. API field definitions and validation rules live in
-[app/schemas.py](../../app/schemas.py).
+inputs.
 
 ## How the inputs fit together
 
-- **Web form** (planned): converts answers
-  into a validated input profile.
-- **API**: validates a JSON profile using `PredictionRequest`.
-- **Prediction service** (planned): converts the profile to preprocessor inputs
-  and calls `CostPredictor`, which runs the fitted preprocessor and model.
+- **Web form** (planned): converts answers into API-compatible inputs and
+  validates them.
+- **API**: parses JSON inputs into Python values and validates them.
+- **Prediction service** (planned): converts validated web form or API inputs
+  into the column names and values expected by the preprocessor, then calls
+  `CostPredictor`, which runs the fitted preprocessor and model.
 - **Direct Python use**: supplies preprocessor inputs directly to `CostPredictor`.
 
 The web form and API both call the prediction service. Direct Python callers bypass it.
 
+The web form and API use Pydantic for data validation with the
+`PredictionRequest` schema in [app/schemas.py](../../app/schemas.py), which
+defines the fields, allowed values, and validation rules.
+
 ## Input mapping
 
-The service receives the same fields and values as the validated API profile.
+The service receives validated inputs from the web form or API, using the same
+field names and value formats.
 The third column shows its planned conversions; the last names the resulting
 columns, which direct Python callers supply themselves.
 
