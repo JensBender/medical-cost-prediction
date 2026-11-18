@@ -1,6 +1,7 @@
 import gradio as gr
 
 
+# Opt out of sending Gradio usage telemetry.
 with gr.Blocks(title="Medical Cost Planner", analytics_enabled=False) as app:
     gr.Markdown("# Medical Cost Planner")
 
@@ -48,4 +49,5 @@ with gr.Blocks(title="Medical Cost Planner", analytics_enabled=False) as app:
 
 
 if __name__ == "__main__":
+    # Keep Gradio's traffic dashboard off under our aggregate-only monitoring policy.
     app.launch(server_name="127.0.0.1", share=False, enable_monitoring=False)
