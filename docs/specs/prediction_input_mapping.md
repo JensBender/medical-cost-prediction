@@ -20,8 +20,8 @@ those inputs themselves.
 The API fields and validation rules are in place. The form conversions and
 prediction service mappings are planned.
 
-- An asterisk (\*) marks a required request field. The five are age, sex,
-  insurance status, family size, and education.
+- An asterisk (\*) marks a required input field (age, sex,
+  insurance status, family size, education).
 - “Label → API value” means the form sends the exact value for the selected
   label. For example, “Very Good” becomes `very_good`.
 - Yes/no answers and checklist items follow the [Boolean and missing-value rules](#boolean-and-missing-value-rules).
