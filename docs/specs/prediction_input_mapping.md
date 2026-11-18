@@ -20,8 +20,8 @@ those inputs themselves.
 The API fields and validation rules are in place. The form conversions and
 prediction service mappings are planned.
 
-- An asterisk (\*) marks a required request field. All other fields accept
-  `null` or can be omitted. The pipeline has its own [required inputs](#10-required-inputs).
+- An asterisk (\*) marks a required request field. The five are age, sex,
+  insurance status, family size, and education.
 - “Label → API value” means the form sends the exact value for the selected
   label. For example, “Very Good” becomes `very_good`.
 - Yes/no answers and checklist items follow the [Boolean and missing-value rules](#boolean-and-missing-value-rules).
@@ -206,14 +206,6 @@ Which examples would help users choose between private coverage, public-only
 coverage, and no coverage? Anyone with both private and public insurance
 selects `any_private`. Decide which coverage to report if it changes during the
 year. See [time reference](#7-time-reference).
-
-### 10. Required inputs
-
-The request schema requires age, sex, insurance status, family size, and
-education. The [pipeline constants](../../src/constants.py) list age, sex,
-insurance status, region, and physical health as required. The training
-notebook uses `strict=False`, so the preprocessor can fill in missing values.
-Is the difference between the two lists intentional?
 
 ## Direct Python inputs
 
