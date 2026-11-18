@@ -17,11 +17,11 @@ model evaluation, and a planned FastAPI/Gradio app.
 
 ## Working Style
 
-- Make the smallest change needed for the current request.
-- Stay close to the existing code. Do not add cleanup, refactors, abstractions,
-  or related improvements unless asked.
-- For multi-step work, complete one meaningful step and wait for confirmation.
-- Mention additional opportunities instead of implementing them.
+- Keep changes focused on the requested outcome and preserve existing behavior
+  outside its scope.
+- Implement and verify the requested change, but pause when a decision needs
+  my input, the scope would materially expand, or the next action is
+  destructive or irreversible.
 
 ## Architecture Rules
 
@@ -29,7 +29,7 @@ model evaluation, and a planned FastAPI/Gradio app.
 - Handle UI/API formatting and user-input cleanup at the interface layer.
 - Use `PERWT23F` as `sample_weight` during model training. Use survey-weighted
   metrics and benchmarks when estimating population-level performance.
-  
+
 ## Important Files
 
 - `src/constants.py`: dependency of all DVC stages; changes can invalidate
@@ -42,9 +42,8 @@ model evaluation, and a planned FastAPI/Gradio app.
 
 ## Writing
 
-- Apply `$plain-writing` when writing or revising project documentation, README,
-  product requirements, technical specifications, code comments, docstrings, 
-  notebook analysis, or commit messages.
+- Apply `$plain-writing` to project documentation, specs, code comments,
+  docstrings, notebook analysis, and commit messages.
 
 ## Unit Tests
 
@@ -57,7 +56,5 @@ model evaluation, and a planned FastAPI/Gradio app.
 ## Commits
 
 - Do not commit directly unless explicitly asked.
-- After changing project files, suggest one atomic commit message. Immediately
-  before suggesting it, inspect the current Git state and relevant diff. 
-- Follow `docs/git_conventions.md` and apply `$plain-writing`. Write the
-  message for someone reading the Git history without this conversation.
+- After changing project files, check the current Git status and suggest one
+  atomic commit message that follows `docs/git_conventions.md`.
