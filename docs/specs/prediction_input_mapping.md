@@ -1,13 +1,13 @@
 # Prediction Input Mapping
 
 The fitted scikit-learn preprocessing pipeline (the preprocessor) takes 27
-inputs. The table shows how each web form answer maps to an API field and then
-to a preprocessor column.
+inputs. This document shows how each web form answer maps to an API field and
+then to a preprocessor column.
 
 ## How the inputs fit together
 
 The planned web form converts answers to API values. API callers send those
-values as JSON. Both use the same Pydantic schema to validate requests,
+values as JSON. Both validate requests against the same Pydantic schema,
 [`PredictionRequest`](../../app/schemas.py).
 
 The planned prediction service takes a validated request from either source,
@@ -18,7 +18,7 @@ those inputs themselves.
 ## Input mapping
 
 The API fields and validation rules are in place. The form conversions and
-service mappings are planned.
+prediction service mappings are planned.
 
 - An asterisk (\*) marks a required request field. All other fields accept
   `null` or can be omitted. The pipeline has its own [required inputs](#10-required-inputs).
@@ -219,8 +219,11 @@ Is the difference between the two lists intentional?
 
 Pass `CostPredictor` a DataFrame with all 27 preprocessor columns. Use
 `numpy.nan` for missing values. This path skips request validation and the
-service mappings.
+prediction service mappings.
 
-Nominal and binary columns also accept the labels in
-[src/constants.py](../../src/constants.py), regardless of case.
-Use numeric codes for health ratings and family income.
+For categorical columns (nominal and binary), the preprocessor accepts
+numerical labels and case-insensitive string labels. For example, `REGION23`
+accepts `2`, `"Midwest"`, or `"midwest"`.
+See [`CATEGORY_LABELS_PIPELINE`](../../src/constants.py) for the label mappings.
+
+Physical health, mental health, and family income take numerical labels only.
