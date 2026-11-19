@@ -125,10 +125,10 @@ feature is included.
 | **IN-06** | Education | What is the highest degree you have obtained? | `gr.Dropdown` | ["No Degree", "GED", "High School Diploma", "Associate's Degree", "Bachelor's Degree", "Master's Degree", "Doctorate or Professional (MD, JD, etc.)", "Other"] | `HIDEG` |
 | **IN-07** | Employment Status | What is your current employment status? | `gr.Dropdown` | ["Employed", "Not employed"] | `EMPST31_GRP` |
 | **IN-08** | Insurance Status | Are you covered by any type of health insurance? | `gr.Dropdown` | ["Any Private", "Public Only", "Uninsured"] | `INSCOV23` |
-| **IN-09** | Physical Health | In general, would you say your health is...? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `RTHLTH31` |
-| **IN-10** | Mental Health | In general, would you say your mental health is...? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `MNHLTH31` |
+| **IN-09** | Physical Health | Compared with others your age, how would you rate your overall health? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `RTHLTH31` |
+| **IN-10** | Mental Health | In general, how would you rate your mental health? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `MNHLTH31` |
 | **IN-11** | Usual Source of Care | Is there a particular doctor's office, clinic, health center, or other place you usually go if you are sick or need medical advice? | `gr.Radio` | ["Yes", "No"] | `HAVEUS42` |
-| **IN-12** | Smoker | Do you currently smoke cigarettes? | `gr.Radio` | ["Yes", "No"] | `ADSMOK42` |
+| **IN-12** | Smoker | Do you currently smoke? | `gr.Radio` | ["Yes", "No"] | `ADSMOK42` |
 
 **Multi-Selection Interactions** (2 UI interactions, 13 inputs)
 
