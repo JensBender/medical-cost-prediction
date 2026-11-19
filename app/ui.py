@@ -10,9 +10,9 @@ with gr.Blocks(title="Medical Cost Planner", analytics_enabled=False) as app:
 
     with gr.Row():
         gr.Number(
+            value="",  # Gradio 6.0.1 displays zero when value is None.
             label="Year of birth",
             placeholder="e.g. 1985",
-            precision=0,
             min_width=280,
             interactive=True,
         )
