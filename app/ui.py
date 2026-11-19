@@ -1,3 +1,5 @@
+# Run from the project root: .\.venv-app\Scripts\python.exe -m app.ui
+
 import gradio as gr
 
 
