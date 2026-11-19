@@ -122,7 +122,7 @@ feature is included.
 | **IN-04b** | Recent Life Transition | Ask about recent changes in marital status or employment. Exact wording and time period to decide. | To decide | Optional. Yes if either kind of change applies. | `RECENT_LIFE_TRANSITION` |
 | **IN-05a** | Family Size | How many people (including yourself) live in your home who are related to you by blood, marriage, or adoption? | `gr.Dropdown` | [1, 2, 3, 4, 5, 6, 7, 8+] | `FAMSZE23` |
 | **IN-05b** | Family Income | What is your family's total annual income from all sources? | `gr.Dropdown` | Dynamic ranges based on family size (IN-05a). Map to 2023 family-income categories relative to the poverty line. | `POVCAT23` |
-| **IN-06** | Education | What is the highest degree you have obtained? | `gr.Dropdown` | ["No Degree", "GED", "High School Diploma", "Associate's Degree", "Bachelor's Degree", "Master's Degree", "Doctorate or Professional (MD, JD, etc.)", "Other"] | `HIDEG` |
+| **IN-06** | Education | Education | `gr.Dropdown` | ["No Degree", "GED", "High School Diploma", "Associate's Degree", "Bachelor's Degree", "Master's Degree", "Doctorate or Professional (MD, JD, etc.)", "Other"] | `HIDEG` |
 | **IN-07** | Employment Status | What is your current employment status? | `gr.Dropdown` | ["Employed", "Not employed"] | `EMPST31_GRP` |
 | **IN-08** | Health insurance | Health insurance | `gr.Dropdown` | ["Private insurance (with or without public coverage)", "Public insurance only", "No health insurance"] | `INSCOV23` |
 | **IN-09** | Physical Health | Compared with others your age, how would you rate your overall health? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `RTHLTH31` |

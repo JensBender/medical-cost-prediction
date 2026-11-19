@@ -49,7 +49,7 @@ with gr.Blocks(title="Medical Cost Planner", analytics_enabled=False) as app:
             "No Degree", "GED", "High School Diploma", "Associate's Degree",
             "Bachelor's Degree", "Master's Degree", "Doctorate or Professional (MD, JD, etc.)", "Other",
         ],
-        label="What is the highest degree you have obtained?",
+        label="Education",
         value=None,
         interactive=True,
     )

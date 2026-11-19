@@ -128,7 +128,7 @@ The following MEPS variables were selected for the model. All candidates satisfy
 | :--- | :--- | :--- | :--- | :--- |
 | **Family Income** | `POVCAT23` | Numerical (Int) | Family income mapped to ordered categories relative to the poverty line. | ✅ Correlated with insurance type and ability to pay OOP. |
 | **Family Size** | `FAMSZE23` | Numerical (Int) | Number of related persons residing together (CPS definition). | ✅ Used to determine the applicable poverty threshold; captures household resource sharing. |
-| **Education** | `HIDEG` | Nominal (Int) | Highest degree attained. Maps UI labels to MEPS `HIDEG` categories. | ⚠️ Correlates with health literacy; treated as nominal due to 'Other' category. |
+| **Education** | `HIDEG` | Nominal (Int) | Highest degree obtained. Maps UI labels to MEPS `HIDEG` categories. | ⚠️ Correlates with health literacy; treated as nominal due to 'Other' category. |
 | **Employment** | `EMPST31` | Nominal (Int) | Employment status at beginning of year. | ⚠️ Strong proxy for insurance type. |
 
 **Insurance & Access**
