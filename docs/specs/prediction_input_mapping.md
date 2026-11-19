@@ -1,10 +1,18 @@
 # Prediction Input Mapping
 
-The fitted scikit-learn preprocessing pipeline (the preprocessor) takes 27
-inputs. This document shows how each web form answer maps to an API field and
-then to a preprocessor column.
+This document traces each of the 27 inputs the model needs, from the question
+on the web form, to the API field, to the column the model’s preprocessing
+step (the preprocessor) reads. Use it to check that the form, the API, and the
+model all mean the same thing by each answer.
+
+> **Status:** The API fields and validation rules are in place. The form
+> conversions and prediction service mappings are planned.
 
 ## How the inputs fit together
+
+```text
+Web form → API (JSON) → Prediction service → Preprocessor + model
+```
 
 The planned web form converts answers to API values. API callers send those
 values as JSON. Both validate requests against the same Pydantic schema,
@@ -17,65 +25,67 @@ those inputs themselves.
 
 ## Input mapping
 
-The API fields and validation rules are in place. The form conversions and
-prediction service mappings are planned.
+How to read the table:
 
-- An asterisk (\*) marks a required input field (age, sex,
-  insurance status, family size, education).
-- “Label → API value” means the form sends the exact value for the selected
-  label. For example, “Very Good” becomes `very_good`.
-- Yes/no answers and checklist items follow the [Boolean and missing-value rules](#boolean-and-missing-value-rules).
-- “Open” links point to questions still to decide. The [time reference](#7-time-reference)
-  also needs review across the form.
+- An asterisk (\*) marks a required input field (age, sex, insurance status,
+  family size, education).
+- **As selected** means the form sends the exact value for the selected label.
+  For example, “Very Good” becomes `very_good`.
+- **`true` → `1`, `false` → `0`** is the yes/no rule. It also covers checklist
+  items. See the [Boolean and missing-value rules](#boolean-and-missing-value-rules).
+- **⚠ Q1, Q2, …** link to open questions that are still to decide. The
+  [time reference](#7-time-reference) (Q7) also needs review across the form.
 
-| Web form input | Form conversion | API field | Service mapping | Preprocessor column |
+| Web form input | How the form asks | API field | Service mapping | Preprocessor column |
 | --- | --- | --- | --- | --- |
-| Birth year* | Subtract birth year from forecast year. Cap at 85. [Open 1](#1-age-and-forecast-year) | `age` | Same integer (18–85) | `AGE23X` |
-| Sex* | Label → API value | `sex` | `female` → `0`, `male` → `1` | `SEX` |
-| Insurance status* | For both private and public coverage, use `any_private`. [Open 9](#9-insurance-wording) | `insurance_status` | `any_private` → `1`, `public_only` → `2`, `uninsured` → `3` | `INSCOV23` |
-| Family size* | Use the selected count, or `8` for “8+”. [Open 2](#2-family-size) | `family_size` | Same integer (1–14) | `FAMSZE23` |
-| Education* | Use the API value for the highest completed qualification. [Open 8](#8-education-choices) | `education` | [education](#education) | `HIDEG` |
+| Birth year* | Age = forecast year − birth year, capped at 85. [⚠ Q1](#1-age-and-forecast-year) | `age` | Used as entered (18–85) | `AGE23X` |
+| Sex* | As selected | `sex` | `female` → `0`, `male` → `1` | `SEX` |
+| Insurance status* | People with both private and public coverage choose `any_private`. [⚠ Q9](#9-insurance-wording) | `insurance_status` | `any_private` → `1`, `public_only` → `2`, `uninsured` → `3` | `INSCOV23` |
+| Family size* | The selected count, or `8` for “8+”. [⚠ Q2](#2-family-size) | `family_size` | Used as entered (1–14) | `FAMSZE23` |
+| Education* | The API value for the highest completed qualification. [⚠ Q8](#8-education-choices) | `education` | [Education codes](#education) | `HIDEG` |
 | State | Look up the state’s Census region | `region` | `northeast` → `1`, `midwest` → `2`, `south` → `3`, `west` → `4` | `REGION23` |
-| Physical health | Label → API value | `physical_health` | [health ratings](#health-ratings) | `RTHLTH31` |
-| Mental health | Label → API value | `mental_health` | [health ratings](#health-ratings) | `MNHLTH31` |
-| Family income range | Dollar range → category. [Open 3](#3-family-income) | `family_income` | [Income codes](#family-income) | `POVCAT23` |
-| Marital status | Label → API value | `marital_status` | `married` → `1`, `widowed` → `2`, `divorced` → `3`, `separated` → `4`, `never_married` → `5` | `MARRY31X_GRP` |
-| Employment status | Label → API value. [Open 4](#4-employment-and-recent-life-transition) | `employment_status` | `employed` → `1`, `not_employed` → `0` | `EMPST31_GRP` |
-| Recent life transition | Ask a separate yes/no question. [Open 4](#4-employment-and-recent-life-transition) | `recent_life_transition` | Boolean rule | `RECENT_LIFE_TRANSITION` |
-| Usual source of care | Yes/no | `usual_source_of_care` | Boolean rule | `HAVEUS42` |
-| Current cigarette smoking | Yes/no | `smoker` | Boolean rule | `ADSMOK42` |
-| High blood pressure | Conditions checklist | `hypertension` | Boolean rule | `HIBPDX` |
-| High cholesterol | Conditions checklist | `high_cholesterol` | Boolean rule | `CHOLDX` |
-| Diabetes | Conditions checklist | `diabetes` | Boolean rule | `DIABDX_M18` |
-| Coronary heart disease | Conditions checklist | `coronary_heart_disease` | Boolean rule | `CHDDX` |
-| Stroke | Conditions checklist | `stroke` | Boolean rule | `STRKDX` |
-| Cancer | Conditions checklist | `cancer` | Boolean rule | `CANCERDX` |
-| Arthritis | Conditions checklist | `arthritis` | Boolean rule | `ARTHDX` |
-| Asthma | Conditions checklist | `asthma` | Boolean rule | `ASTHDX` |
-| Help with personal care | Limitations and symptoms checklist | `receives_personal_care_help` | Boolean rule | `ADLHLP31` |
-| Help with daily tasks | Limitations and symptoms checklist | `receives_daily_tasks_help` | Boolean rule | `IADLHP31` |
-| Walking limitation | Limitations and symptoms checklist. [Open 6](#6-limitations-and-symptoms-wording) | `walking_limitation` | Boolean rule | `WLKLIM31` |
-| Cognitive limitation | Limitations and symptoms checklist. [Open 6](#6-limitations-and-symptoms-wording) | `cognitive_limitation` | Boolean rule | `COGLIM31` |
-| Joint symptoms in the past 12 months | Limitations and symptoms checklist | `joint_pain` | Boolean rule | `JTPAIN31_M18` |
+| Physical health | As selected | `physical_health` | [Health rating codes](#health-ratings) | `RTHLTH31` |
+| Mental health | As selected | `mental_health` | [Health rating codes](#health-ratings) | `MNHLTH31` |
+| Family income range | Dollar range → poverty-line category. [⚠ Q3](#3-family-income) | `family_income` | [Income codes](#family-income) | `POVCAT23` |
+| Marital status | As selected | `marital_status` | [Marital status codes](#marital-status) | `MARRY31X_GRP` |
+| Employment status | As selected. [⚠ Q4](#4-employment-and-recent-life-transition) | `employment_status` | `employed` → `1`, `not_employed` → `0` | `EMPST31_GRP` |
+| Recent life transition | Separate yes/no question. [⚠ Q4](#4-employment-and-recent-life-transition) | `recent_life_transition` | `true` → `1`, `false` → `0` | `RECENT_LIFE_TRANSITION` |
+| Usual source of care | Yes/no | `usual_source_of_care` | `true` → `1`, `false` → `0` | `HAVEUS42` |
+| Current cigarette smoking | Yes/no | `smoker` | `true` → `1`, `false` → `0` | `ADSMOK42` |
+| High blood pressure | Conditions checklist | `hypertension` | `true` → `1`, `false` → `0` | `HIBPDX` |
+| High cholesterol | Conditions checklist | `high_cholesterol` | `true` → `1`, `false` → `0` | `CHOLDX` |
+| Diabetes | Conditions checklist | `diabetes` | `true` → `1`, `false` → `0` | `DIABDX_M18` |
+| Coronary heart disease | Conditions checklist | `coronary_heart_disease` | `true` → `1`, `false` → `0` | `CHDDX` |
+| Stroke | Conditions checklist | `stroke` | `true` → `1`, `false` → `0` | `STRKDX` |
+| Cancer | Conditions checklist | `cancer` | `true` → `1`, `false` → `0` | `CANCERDX` |
+| Arthritis | Conditions checklist | `arthritis` | `true` → `1`, `false` → `0` | `ARTHDX` |
+| Asthma | Conditions checklist | `asthma` | `true` → `1`, `false` → `0` | `ASTHDX` |
+| Help with personal care | Limitations and symptoms checklist | `receives_personal_care_help` | `true` → `1`, `false` → `0` | `ADLHLP31` |
+| Help with daily tasks | Limitations and symptoms checklist | `receives_daily_tasks_help` | `true` → `1`, `false` → `0` | `IADLHP31` |
+| Walking limitation | Limitations and symptoms checklist. [⚠ Q6](#6-limitations-and-symptoms-wording) | `walking_limitation` | `true` → `1`, `false` → `0` | `WLKLIM31` |
+| Cognitive limitation | Limitations and symptoms checklist. [⚠ Q6](#6-limitations-and-symptoms-wording) | `cognitive_limitation` | `true` → `1`, `false` → `0` | `COGLIM31` |
+| Joint symptoms in the past 12 months | Limitations and symptoms checklist | `joint_pain` | `true` → `1`, `false` → `0` | `JTPAIN31_M18` |
 
 ### Form details
 
 - **State.** Offer all 50 states and DC. Map each to its [Census region](https://www2.census.gov/geo/pdfs/maps-data/maps/reference/us_regdiv.pdf).
 - **Family size.** Count yourself and anyone in your home related to you by
-  blood, marriage, or adoption.
+  blood, marriage, or adoption. (Open question: [Q2](#2-family-size).)
 - **Family income.** Clear the selected income range when family size changes.
 - **Conditions checklist.** Ask whether a doctor or other health professional
   has ever diagnosed each condition.
 - **Limitations and symptoms checklist.** Help with personal care or daily
   tasks includes supervision. Joint symptoms include pain, aching, stiffness,
-  or swelling in or around a joint in the past 12 months.
+  or swelling in or around a joint in the past 12 months. (Open question:
+  [Q6](#6-limitations-and-symptoms-wording).)
 
 See the [product requirements](product_requirements.md#user-inputs) for the full questions.
 
 ### Family income
 
-The API currently accepts these categories. The [dollar ranges and API input
-format](#3-family-income) are still under review.
+The form shows dollar ranges, which the system converts to a share of the
+poverty line. The API currently accepts the categories below. The [dollar
+ranges and API input format](#3-family-income) are still under review.
 
 | Family income as a share of the poverty line | API value | Preprocessor code |
 | --- | --- | --- |
@@ -87,18 +97,39 @@ format](#3-family-income) are still under review.
 
 ### Health ratings
 
-Physical and mental health use the same codes. `excellent` → `1`,
-`very_good` → `2`, `good` → `3`, `fair` → `4`, `poor` → `5`.
+Physical and mental health use the same codes.
+
+| Rating | API value | Preprocessor code |
+| --- | --- | --- |
+| Excellent | `excellent` | `1` |
+| Very good | `very_good` | `2` |
+| Good | `good` | `3` |
+| Fair | `fair` | `4` |
+| Poor | `poor` | `5` |
+
+### Marital status
+
+| Status | API value | Preprocessor code |
+| --- | --- | --- |
+| Married | `married` | `1` |
+| Widowed | `widowed` | `2` |
+| Divorced | `divorced` | `3` |
+| Separated | `separated` | `4` |
+| Never married | `never_married` | `5` |
 
 ### Education
 
-`no_degree` → `1`, `ged` → `2`, `high_school_diploma` → `3`,
-`associate_degree` → `7`, `bachelors_degree` → `4`, `masters_degree` → `5`,
-`doctorate` → `6`, `other` → `7`.
+| Education choice | API value | Preprocessor code |
+| --- | --- | --- |
+| No degree | `no_degree` | `1` |
+| GED | `ged` | `2` |
+| High school diploma | `high_school_diploma` | `3` |
+| Bachelor’s degree | `bachelors_degree` | `4` |
+| Master’s degree | `masters_degree` | `5` |
+| Doctorate (includes PhD, MD, and JD) | `doctorate` | `6` |
+| Associate degree or other | `associate_degree`, `other` | `7` (the model treats both as one “Other” category) |
 
-The model treats `associate_degree` and `other` as one category (“Other”).
-The `doctorate` choice includes PhD, MD, and JD. Some [education choices](#8-education-choices)
-still need clarification.
+Some [education choices](#8-education-choices) still need clarification.
 
 ## Boolean and missing-value rules
 
@@ -110,104 +141,153 @@ item, the form sends `true` for each checked item and `false` for the rest of
 that checklist. How to handle an empty checklist or a “None of these” choice
 is [still open](#5-checklists-and-missing-answers).
 
-For optional fields, both a missing field and JSON `null` give Python
-`None`. The planned service converts `None` to `numpy.nan` so the
-preprocessor can fill in the value. The schema rejects a request if a
-required field is missing or `null`.
+Required fields must always be answered. The schema rejects a request if a
+required field is missing or `null`. Optional fields can be left blank, and the
+preprocessor fills in the gap.
 
-Use exact category values, integers for age and family size, and JSON Booleans
+Send exact category values, integers for age and family size, and JSON Booleans
 for yes/no answers. For example, `"very_good"`, `42`, and `false` are valid.
 The schema rejects `"Very Good"`, `"42"`, and `"false"`, as well as unknown fields.
 
 ## Open decisions and definitions to review
 
+Each item below states where things stand, what needs deciding, and, where the
+specs make it clear, why it matters.
+
 ### 1. Age and forecast year
 
-How should the form choose the forecast year? It calculates age at year-end.
-Can someone under 18 use the form if they turn 18 during the forecast year?
+**Where things stand:** The form calculates age as of the end of the forecast
+year and caps it at 85. The API accepts ages 18 to 85 and rejects anything
+above 85.
 
-The form caps age at 85. The API rejects ages above 85. Should API callers
-cap age themselves, or should the API accept older ages and cap them?
+**To decide:**
+
+- How the form chooses the forecast year.
+- Whether someone under 18 can use the form if they turn 18 during the
+  forecast year.
+- Whether API callers should cap age themselves, or the API should accept older
+  ages and cap them.
 
 ### 2. Family size
 
-The form sends `8` for any family of eight or more. The API accepts exact
-counts up to 14, the largest family in the training data. Should the form
-keep “8+”? Which income ranges should those families see? Should the API
-accept counts above 14?
+**Where things stand:** The form sends `8` for any family of eight or more. The
+API accepts exact counts up to 14, the largest family in the training data.
+
+**To decide:**
+
+- Whether the form should keep “8+”.
+- Which income ranges families of eight or more should see.
+- Whether the API should accept counts above 14.
+
+**Why it matters:** The form clears the selected income range when family size
+changes, so family size and income ranges must be decided together (see
+[Q3](#3-family-income)).
 
 ### 3. Family income
 
-Choose the income period, the poverty-line source and year, and any rules
-that vary by location. Set exact dollar cutoffs and decide how to round them
-for display, including for families of eight or more.
+**Where things stand:** The API accepts five poverty-line categories. The
+dollar ranges shown on the form are still in draft.
 
-Check that every income falls into exactly one range. For example, one
-[draft range](technical_specifications.md#draft-family-income-ranges) ends at
-$18,100 and the next starts at $18,200.
+**To decide:**
 
-The API takes an income category. Should callers keep sending a category or
-send a dollar amount? If they send an amount, what else does the service
-need to find the category?
+- The income period (for example, annual or monthly).
+- The poverty-line source and year, and any rules that vary by location.
+- The exact dollar cutoffs, and how to round them for display, including for
+  families of eight or more.
+- Whether API callers should keep sending a category or send a dollar amount.
+  If they send an amount, what else the service needs to find the category.
+
+**Known problem:** One [draft range](technical_specifications.md#draft-family-income-ranges)
+ends at $18,100 and the next starts at $18,200, which leaves a gap. Every
+income must fall into exactly one range.
 
 ### 4. Employment and recent life transition
 
-The [training notebook](../../notebooks/1_eda_and_preprocessing.py) counts
-“Job to Return To” and “Job in Ref Period” as `not_employed` and flags both as
-recent transitions. Someone temporarily away from work might choose “Employed”
-on the form. How should the employment question guide them?
+**Where things stand:** The [training notebook](../../notebooks/1_eda_and_preprocessing.py)
+counts “Job to Return To” and “Job in Ref Period” as `not_employed` and flags
+both as recent transitions. Someone temporarily away from work might choose
+“Employed” on the form.
 
-Ask about transitions separately from current marital and employment status.
-Which marital or job changes count, and how far back should the question go?
-The notebook suggests 12 months. The product requirements leave the period
-open. Check that the final wording captures the events used in training.
+**To decide:**
+
+- How the employment question should guide people who are temporarily away
+  from work.
+- Which marital or job changes count as a recent transition, and how far back
+  the question should go. The notebook suggests 12 months. The product
+  requirements leave the period open.
+- Whether the final wording captures the events used in training.
+
+The transition question is asked separately from current marital and
+employment status.
 
 ### 5. Checklists and missing answers
 
-How should the form distinguish a skipped checklist from “None of these”?
-If the form offers that choice, can someone select it alongside another item?
-When someone checks one item, should every unchecked item count as No, or
-should users be able to leave individual items unanswered?
+**Where things stand:** The API currently treats an omitted condition or
+limitation as unanswered, not as No.
 
-The API currently treats an omitted condition or limitation as unanswered.
-Should it default to No? Should an explicit `null` have a different meaning?
+**To decide:**
+
+- How the form distinguishes a skipped checklist from “None of these”, and
+  whether “None of these” can be selected alongside another item.
+- When someone checks one item, whether every unchecked item counts as No, or
+  whether users can leave individual items unanswered.
+- Whether the API should default an omitted item to No, and whether an
+  explicit `null` should mean something different.
+
 Apply the same decision to the form, schema defaults, and service mapping.
 
 ### 6. Limitations and symptoms wording
 
-The form draft asks about **serious difficulty** walking or climbing stairs.
-The schema also mentions lifting and bending and leaves severity unspecified.
+**Where things stand:** The form draft and the schema describe the same two
+limitations differently.
 
-The draft asks about serious difficulty concentrating, remembering, or making
-decisions. The schema also mentions confusion and supervision for safety.
-Check both questions against the training definitions before finalizing the
-form wording, schema descriptions, and table labels.
+- **Walking.** The form draft asks about **serious difficulty** walking or
+  climbing stairs. The schema also mentions lifting and bending and leaves
+  severity unspecified.
+- **Cognitive.** The draft asks about serious difficulty concentrating,
+  remembering, or making decisions. The schema also mentions confusion and
+  supervision for safety.
+
+**To decide:** Check both questions against the training definitions before
+finalizing the form wording, schema descriptions, and table labels.
 
 ### 7. Time reference
 
-The specs call for status at the start of the forecast year. Several draft
-questions ask about today. For insurance, employment, marital status, and
-health, should users report their status today, at the start of the forecast
-year, or as they expect it to be during that year?
+**Where things stand:** The specs call for status at the start of the forecast
+year, but several draft questions ask about today.
 
-Keep “ever diagnosed” and “past 12 months” in the relevant questions. Specify
-the date from which to count back.
+**To decide:**
+
+- For insurance, employment, marital status, and health, whether users report
+  their status today, at the start of the forecast year, or as they expect it
+  to be during that year.
+- What date “ever diagnosed” and “past 12 months” should count back from.
+  Keep those phrases in the relevant questions.
 
 ### 8. Education choices
 
-Which choice fits someone who attended college without earning a degree?
-What should someone with a vocational qualification choose? Check the training
-categories and confirm that an associate degree belongs under “Other” before
-writing the help text.
+**To decide:**
+
+- Which choice fits someone who attended college without earning a degree.
+- What someone with a vocational qualification should choose.
+- Whether an associate degree belongs under “Other”. Check the training
+  categories to confirm before writing the help text.
 
 ### 9. Insurance wording
 
-Which examples would help users choose between private coverage, public-only
-coverage, and no coverage? Anyone with both private and public insurance
-selects `any_private`. Decide which coverage to report if it changes during the
-year. See [time reference](#7-time-reference).
+**Where things stand:** Anyone with both private and public insurance selects
+`any_private`.
+
+**To decide:**
+
+- Which examples would help users choose between private coverage, public-only
+  coverage, and no coverage.
+- Which coverage to report if it changes during the year. See [time
+  reference](#7-time-reference).
 
 ## Direct Python inputs
+
+This section is for developers calling the model directly.
 
 Pass `CostPredictor` a DataFrame with all 27 preprocessor columns. Use
 `numpy.nan` for missing values. This path skips request validation and the
@@ -219,3 +299,7 @@ accepts `2`, `"Midwest"`, or `"midwest"`.
 See [`CATEGORY_LABELS_PIPELINE`](../../src/constants.py) for the label mappings.
 
 Physical health, mental health, and family income take numerical labels only.
+
+When requests come through the API, a missing optional field and JSON `null`
+both become Python `None`. The planned service converts `None` to `numpy.nan`
+so the preprocessor can fill in the value.
