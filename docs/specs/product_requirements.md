@@ -116,15 +116,15 @@ feature is included.
 | ID | UI Label | UI Question | UI Element | Value Range | MEPS Variable |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **IN-01** | Birth Year | In what year were you born? | `gr.Number` | Whole year that gives an age of at least 18 in the forecast year | `AGE23X` |
-| **IN-02** | Sex | Are you male or female? | `gr.Radio` | ["Male", "Female"] | `SEX` |
-| **IN-03** | State | In which state do you live? | `gr.Dropdown` | ["Alabama", "Alaska", "Arizona", ...] (50 States + DC) | `REGION23` (Mapped from State) |
-| **IN-04** | Marital Status | Are you now married, widowed, divorced, separated, or never married? | `gr.Dropdown` | ["Married", "Widowed", "Divorced", "Separated", "Never Married"] | `MARRY31X_GRP` |
+| **IN-02** | Sex | Sex | `gr.Radio` | ["Male", "Female"] | `SEX` |
+| **IN-03** | State | State of residence | `gr.Dropdown` | ["Alabama", "Alaska", "Arizona", ...] (50 States + DC) | `REGION23` (Mapped from State) |
+| **IN-04** | Marital status | Marital status | `gr.Dropdown` | ["Married", "Widowed", "Divorced", "Separated", "Never married"] | `MARRY31X_GRP` |
 | **IN-04b** | Recent Life Transition | Ask about recent changes in marital status or employment. Exact wording and time period to decide. | To decide | Optional. Yes if either kind of change applies. | `RECENT_LIFE_TRANSITION` |
 | **IN-05a** | Family Size | How many people (including yourself) live in your home who are related to you by blood, marriage, or adoption? | `gr.Dropdown` | [1, 2, 3, 4, 5, 6, 7, 8+] | `FAMSZE23` |
 | **IN-05b** | Family Income | What is your family's total annual income from all sources? | `gr.Dropdown` | Dynamic ranges based on family size (IN-05a). Map to 2023 family-income categories relative to the poverty line. | `POVCAT23` |
 | **IN-06** | Education | What is the highest degree you have obtained? | `gr.Dropdown` | ["No Degree", "GED", "High School Diploma", "Associate's Degree", "Bachelor's Degree", "Master's Degree", "Doctorate or Professional (MD, JD, etc.)", "Other"] | `HIDEG` |
 | **IN-07** | Employment Status | What is your current employment status? | `gr.Dropdown` | ["Employed", "Not employed"] | `EMPST31_GRP` |
-| **IN-08** | Insurance Status | Are you covered by any type of health insurance? | `gr.Dropdown` | ["Any Private", "Public Only", "Uninsured"] | `INSCOV23` |
+| **IN-08** | Health insurance | Health insurance | `gr.Dropdown` | ["Private insurance (with or without public coverage)", "Public insurance only", "No health insurance"] | `INSCOV23` |
 | **IN-09** | Physical Health | Compared with others your age, how would you rate your overall health? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `RTHLTH31` |
 | **IN-10** | Mental Health | In general, how would you rate your mental health? | `gr.Radio` | ["Excellent", "Very Good", "Good", "Fair", "Poor"] | `MNHLTH31` |
 | **IN-11** | Usual Source of Care | Is there a particular doctor's office, clinic, health center, or other place you usually go if you are sick or need medical advice? | `gr.Radio` | ["Yes", "No"] | `HAVEUS42` |

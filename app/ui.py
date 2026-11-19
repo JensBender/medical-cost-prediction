@@ -1,4 +1,5 @@
 # Run from the project root: .\.venv-app\Scripts\python.exe -m app.ui
+# For reload mode, run .\.venv-app\Scripts\gradio.exe app/ui.py --demo-name app
 
 import gradio as gr
 
@@ -17,7 +18,7 @@ with gr.Blocks(title="Medical Cost Planner", analytics_enabled=False) as app:
         )
         gr.Radio(
             ["Male", "Female"],
-            label="Are you male or female?",
+            label="Sex",
             value=None,
             min_width=280,
             interactive=True,
@@ -25,8 +26,12 @@ with gr.Blocks(title="Medical Cost Planner", analytics_enabled=False) as app:
 
     with gr.Row():
         gr.Dropdown(
-            ["Any Private", "Public Only", "Uninsured"],
-            label="Are you covered by any type of health insurance?",
+            [
+                "Private insurance (with or without public coverage)",
+                "Public insurance only",
+                "No health insurance",
+            ],
+            label="Health insurance",
             value=None,
             min_width=280,
             interactive=True,
