@@ -118,7 +118,7 @@ The following MEPS variables were selected for the model. All candidates satisfy
 **Demographics**
 | UI Label | MEPS Variable | Data Type | Description | Rationale |
 | :--- | :--- | :--- | :--- | :--- |
-| **Birth Year** | `AGE23X` | Numerical (Int) | In what year were you born? Used to calculate age at end of year (18–85). Top-coded at 85 per MEPS privacy protocol. | ✅ Primary driver of utilization; costs follow a U-curve with age. |
+| **Birth year** | `AGE23X` | Numerical (Int) | Age at the end of the current year, capped at 85 to match MEPS. | ✅ Primary driver of utilization; costs follow a U-curve with age. |
 | **Sex** | `SEX` | Binary (Int) | Male or Female. | ✅ Biologically relevant; easy to answer. |
 | **Region** | `REGION23` | Nominal (Int) | Census region (Northeast, Midwest, South, West). | ⚠️ May have low predictive power; consider dropping if low feature importance. |
 | **Marital Status** | `MARRY31X` | Nominal (Int) | Marital status at beginning of year. | ⚠️ Proxy for social support and income stability. |
@@ -641,7 +641,7 @@ Select production background data size (`background_n`) and SHAP evaluation budg
 Interpretation constraints belong in UI copy and tests: SHAP values explain the fitted model prediction, not causal effects or actual future costs. Correlated features can split or shift attribution, so related health and limitation factors may need grouped display labels.
 
 ### Prediction Requests
-1.  **API request validation:** For API calls, validate the public request schema, input ranges (e.g., Age 18-85), and batch limits. The in-process Gradio handler supplies the same validated values to the prediction service.
+1.  **API request validation:** Validate API inputs against the public request schema and enforce batch limits. The in-process Gradio handler uses the same schema.
 2.  **Prediction service input mapping:** Convert the validated human-readable inputs (e.g., condition lists) into the 27 preprocessor input features, including binary indicators and collapsed categories such as `RECENT_LIFE_TRANSITION` and `MARRY31X_GRP`.
 3.  **Preprocessing:** Use the fitted preprocessing pipeline to impute missing values, derive medical features such as `CHRONIC_COUNT` and `LIMITATION_COUNT`, and apply scaling and one-hot encoding.
 4.  **Prediction and postprocessing:** Run the fitted transformed-target quantile model, which predicts q25/q50/q75/q90 and converts them back to 2023 dollars. Then call `postprocess_quantile_predictions` to clip negative values and enforce monotonic quantiles (`q25 <= q50 <= q75 <= q90`).

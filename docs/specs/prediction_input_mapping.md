@@ -33,12 +33,12 @@ How to read the table:
   For example, “Very Good” becomes `very_good`.
 - **`true` → `1`, `false` → `0`** is the yes/no rule. It also covers checklist
   items. See the [Boolean and missing-value rules](#boolean-and-missing-value-rules).
-- **⚠ Q1, Q2, …** link to open questions that are still to decide. The
+- **⚠ Q2, Q3, …** link to open questions. The
   [time reference](#7-time-reference) (Q7) also needs review across the form.
 
-| Web form input | How the form asks | API field | Service mapping | Preprocessor column |
+| Web form input | How the form asks | API field | Prediction service mapping | Preprocessor column |
 | --- | --- | --- | --- | --- |
-| Birth year* | Age = forecast year − birth year, capped at 85. [⚠ Q1](#1-age-and-forecast-year) | `age` | Used as entered (18–85) | `AGE23X` |
+| Year of birth* | Subtract the birth year from the current year. | `age` | [Cap at 85](#age-validation). | `AGE23X` |
 | Sex* | As selected | `sex` | `female` → `0`, `male` → `1` | `SEX` |
 | Insurance status* | People with both private and public coverage choose `any_private`. [⚠ Q9](#9-insurance-wording) | `insurance_status` | `any_private` → `1`, `public_only` → `2`, `uninsured` → `3` | `INSCOV23` |
 | Family size* | The selected count, or `8` for “8+”. [⚠ Q2](#2-family-size) | `family_size` | Used as entered (1–14) | `FAMSZE23` |
@@ -65,6 +65,11 @@ How to read the table:
 | Walking limitation | Limitations and symptoms checklist. [⚠ Q6](#6-limitations-and-symptoms-wording) | `walking_limitation` | `true` → `1`, `false` → `0` | `WLKLIM31` |
 | Cognitive limitation | Limitations and symptoms checklist. [⚠ Q6](#6-limitations-and-symptoms-wording) | `cognitive_limitation` | `true` → `1`, `false` → `0` | `COGLIM31` |
 | Joint symptoms in the past 12 months | Limitations and symptoms checklist | `joint_pain` | `true` → `1`, `false` → `0` | `JTPAIN31_M18` |
+
+### Age validation
+
+The web form and API accept ages 18 and older, including ages above 85. The
+prediction service will cap age at 85 before passing it to the preprocessor.
 
 ### Form details
 
@@ -153,20 +158,6 @@ The schema rejects `"Very Good"`, `"42"`, and `"false"`, as well as unknown fiel
 
 Each item below states where things stand, what needs deciding, and, where the
 specs make it clear, why it matters.
-
-### 1. Age and forecast year
-
-**Where things stand:** The form calculates age as of the end of the forecast
-year and caps it at 85. The API accepts ages 18 to 85 and rejects anything
-above 85.
-
-**To decide:**
-
-- How the form chooses the forecast year.
-- Whether someone under 18 can use the form if they turn 18 during the
-  forecast year.
-- Whether API callers should cap age themselves, or the API should accept older
-  ages and cap them.
 
 ### 2. Family size
 
@@ -292,6 +283,8 @@ This section is for developers calling the model directly.
 Pass `CostPredictor` a DataFrame with all 27 preprocessor columns. Use
 `numpy.nan` for missing values. This path skips request validation and the
 prediction service mappings.
+
+Use `85` for `AGE23X` when the person is 85 or older.
 
 For categorical columns (nominal and binary), the preprocessor accepts
 numerical labels and case-insensitive string labels. For example, `REGION23`

@@ -10,7 +10,7 @@ with gr.Blocks(title="Medical Cost Planner", analytics_enabled=False) as app:
 
     with gr.Row():
         gr.Number(
-            label="In what year were you born?",
+            label="Year of birth",
             placeholder="e.g. 1985",
             precision=0,
             min_width=280,
