@@ -56,3 +56,28 @@ def test_prediction_request_rejects_ages_outside_supported_range(
     assert age_error["loc"] == ("age",)
     assert age_error["type"] == expected_error_type
     assert age_error["ctx"] == expected_error_context
+
+
+@pytest.mark.parametrize("field", ["age", "family_size"])
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param(42.5, id="fractional_number"),
+        pytest.param(42.0, id="integer_as_float"),
+        pytest.param("42", id="numeric_string"),
+        pytest.param(True, id="boolean"),
+    ],
+)
+def test_prediction_request_requires_integer_types_for_integer_fields(
+    valid_prediction_input, field, value,
+):
+    prediction_input = valid_prediction_input.copy()
+    prediction_input[field] = value
+
+    with pytest.raises(ValidationError) as exc_info:
+        PredictionRequest.model_validate(prediction_input)
+
+    errors = exc_info.value.errors()
+    assert len(errors) == 1
+    assert errors[0]["loc"] == (field,)
+    assert errors[0]["type"] == "int_type"
