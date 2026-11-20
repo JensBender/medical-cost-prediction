@@ -119,3 +119,17 @@ def test_prediction_request_requires_integer_types_for_integer_fields(
     assert len(errors) == 1
     assert errors[0]["loc"] == (field,)
     assert errors[0]["type"] == "int_type"
+
+
+def test_prediction_request_rejects_age_as_input(valid_prediction_input):
+    prediction_input = valid_prediction_input.copy()
+    prediction_input["age"] = 42
+
+    with pytest.raises(ValidationError) as validation_error_info:
+        PredictionRequest.model_validate(prediction_input)
+
+    errors = validation_error_info.value.errors()
+    assert len(errors) == 1
+    assert errors[0]["loc"] == ("age",)
+    # extra="forbid" in the model config rejects fields not declared as inputs.
+    assert errors[0]["type"] == "extra_forbidden"
