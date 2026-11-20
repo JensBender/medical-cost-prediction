@@ -421,8 +421,9 @@ Every API response must identify the currency, the model price year, the output 
 ### API Contract
 The FastAPI layer exposes the prediction service through REST endpoints. It owns the public request schemas, validates external requests, delegates prediction work to the service, and serializes the returned Pydantic result models to JSON. The prediction service remains independent of HTTP behavior. It may also be called directly by the Gradio UI inside the same process.
 
-The [prediction input mapping](prediction_input_mapping.md) explains how web
-form answers and API fields map to the fitted preprocessor's inputs.
+The [prediction inputs specification](prediction_inputs.md) defines accepted
+fields, supported values, and conversions for the web UI, API, and fitted
+preprocessor.
 
 For categorical string inputs, API requests must use the exact `snake_case`
 values defined by the request schema. The API accepts

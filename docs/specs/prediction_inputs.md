@@ -1,13 +1,12 @@
-# Prediction Input Mapping
+# Prediction Inputs
 
-The web UI and API are separate entry points for the 27 inputs the model
-needs. This document describes how each entry point supplies and validates
-those inputs, and how the prediction service maps them to the columns the
-model's preprocessor reads. Use it to check that the form, the API, and the
-model all mean the same thing by each answer.
+This document specifies the prediction inputs for the web UI, API, and
+preprocessor. It records input meanings, supported values, key conversions,
+and decisions that guide implementation and tests.
 
-> **Status:** The shared schema and validation rules are in place. The form
-> conversions and prediction service mappings are planned.
+> **Status:** In progress. The Pydantic input-validation schema exists and is
+> being refined. Web form controls, input conversions, and prediction service
+> mappings are at different stages of design and implementation.
 
 ## How the inputs fit together
 
@@ -50,7 +49,8 @@ Age is required and represents age on December 31 of the current year.
 
 For example, a validated age of 90 becomes `AGE23X = 85`.
 
-### Other inputs
+<details>
+<summary>Other inputs — draft notes</summary>
 
 How to read the table:
 
@@ -277,6 +277,8 @@ year, but several draft questions ask about today.
   coverage, and no coverage.
 - Which coverage to report if it changes during the year. See [time
   reference](#6-time-reference).
+
+</details>
 
 ## Direct Python inputs
 
