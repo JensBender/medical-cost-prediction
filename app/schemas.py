@@ -27,7 +27,7 @@ class PredictionRequest(BaseModel):
         frozen=True,  # Keep the stored age consistent with its birth year.
         description="Birth year corresponding to an age of 18–125 at the end of the current year.",
     )
-    _age: int = PrivateAttr()
+    _age: int = PrivateAttr()  # Excluded from input validation.
     sex: Literal["female", "male"]
     insurance_status: Literal["any_private", "public_only", "uninsured"] = Field(
         description="If the person has both private and public insurance, choose any_private."
@@ -140,11 +140,12 @@ class PredictionRequest(BaseModel):
         return birth_year
 
     @model_validator(mode="after")
-    def retain_age(self) -> Self:
+    def store_age(self) -> Self:
+        """Store the derived age (at end of current year) after all input fields pass validation."""
         self._age = date.today().year - self.birth_year
         return self
 
     @property
     def age(self) -> int:
-        """Return the year-end age calculated during input validation."""
+        """Expose _age as read-only request.age without storing a second copy."""
         return self._age
