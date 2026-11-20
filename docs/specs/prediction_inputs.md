@@ -36,16 +36,17 @@ directly and must provide the inputs in the preprocessor format.
 
 ## Input mapping
 
-### Birth year and age
+### Birth year
 
-Age is required and represents age on December 31 of the current year.
-
-- **Web form:** Collects birth year. The UI handler calculates
-  `age = current_year - birth_year`.
-- **API:** Accepts `age` directly as a whole number.
-- **Supported range:** 18–125 inclusive, for both entry points.
-- **Preprocessor mapping:** The prediction service maps accepted ages to
-  `AGE23X`, capped at 85 to match MEPS.
+- **Web form and API:** Require `birth_year` as a whole number.
+- **Input validation:** Calculates and stores
+  `age = current_year - birth_year`, the age on December 31 of the current
+  year.
+- **Supported range:** The derived age must be 18–125 inclusive. Values
+  outside this range are rejected. The validation error identifies
+  `birth_year` as the field to correct.
+- **Preprocessor mapping:** The prediction service uses the validated age
+  for `AGE23X`, capped at 85 to match MEPS.
 
 For example, a validated age of 90 becomes `AGE23X = 85`.
 
@@ -158,10 +159,10 @@ Required fields must always be answered. The schema rejects a request if a
 required field is missing or `None` (JSON `null`). Optional fields can be left
 blank, and the preprocessor fills in the gap.
 
-Use exact category values, integers for age and family size, and Booleans for
-yes/no answers. For example, `"very_good"`, `42`, and Python `False` (JSON
-`false`) are valid. The schema rejects `"Very Good"`, `"42"`, and `"false"`, as
-well as unknown fields.
+Use exact category values, integer birth years and family sizes, and
+Booleans for yes/no answers. For example, `"very_good"`, family size `2`, and
+Python `False` (JSON `false`) are valid. The schema rejects `"Very Good"`,
+`"2"`, and `"false"`, as well as unknown fields.
 
 ## Open decisions and definitions to review
 

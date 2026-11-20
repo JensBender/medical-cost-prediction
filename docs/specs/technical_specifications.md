@@ -427,12 +427,12 @@ preprocessor.
 
 For categorical string inputs, API requests must use the exact `snake_case`
 values defined by the request schema. The API accepts
-`"very_good"` and rejects `"Very Good"`. It expects integers for age and family
-size and JSON `true` or `false` for yes/no answers. It rejects unknown fields
-and wrong types.
+`"very_good"` and rejects `"Very Good"`. It expects integers for birth year
+and family size and JSON `true` or `false` for yes/no answers. It rejects
+unknown fields and wrong types.
 
-`PredictionRequest` in [app/schemas.py](../../app/schemas.py) defines the API
-input fields, required inputs, allowed values, and validation rules.
+`PredictionRequest` in [app/schemas.py](../../app/schemas.py) defines the
+prediction input fields and validation rules used by both the API and UI.
 
 *   **Example Output:**
     ```json

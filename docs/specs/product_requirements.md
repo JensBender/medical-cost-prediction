@@ -115,7 +115,7 @@ feature is included.
 **Single-Selection Interactions** (14 UI interactions)
 | ID | UI Label | UI Question | UI Element | Value Range | MEPS Variable |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **IN-01** | Birth year | Year of birth | `gr.Number` | Year of birth. The person must be 18 or older by December 31 of the current year. | `AGE23X` |
+| **IN-01** | Birth year | Year of birth | `gr.Number` | Year of birth. The person must be aged 18–125 on December 31 of the current year. | `AGE23X` |
 | **IN-02** | Sex | Sex | `gr.Radio` | ["Male", "Female"] | `SEX` |
 | **IN-03** | State | State of residence | `gr.Dropdown` | ["Alabama", "Alaska", "Arizona", ...] (50 States + DC) | `REGION23` (Mapped from State) |
 | **IN-04** | Marital status | Marital status | `gr.Dropdown` | ["Married", "Widowed", "Divorced", "Separated", "Never married"] | `MARRY31X_GRP` |
