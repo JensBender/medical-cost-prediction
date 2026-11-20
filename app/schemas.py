@@ -15,7 +15,7 @@ class PredictionRequest(BaseModel):
     # extra="forbid" raises an error for any unknown field, such as "diabtes".
     model_config = ConfigDict(strict=True, extra="forbid")
 
-    age: int = Field(..., ge=18)
+    age: int = Field(..., ge=18, le=125)
     sex: Literal["female", "male"]
     insurance_status: Literal["any_private", "public_only", "uninsured"] = Field(
         description="If the person has both private and public insurance, choose any_private."

@@ -68,8 +68,10 @@ How to read the table:
 
 ### Age validation
 
-The web form and API accept ages 18 and older, including ages above 85. The
-prediction service will cap age at 85 before passing it to the preprocessor.
+The shared request schema accepts integer ages from 18 to 125, inclusive.
+This range also applies to ages calculated from birth years in the planned
+web form. The prediction service will cap accepted ages at 85 before passing
+them to the preprocessor.
 
 ### Form details
 
