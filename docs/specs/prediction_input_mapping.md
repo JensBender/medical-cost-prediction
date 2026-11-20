@@ -37,9 +37,24 @@ directly and must provide the inputs in the preprocessor format.
 
 ## Input mapping
 
+### Birth year and age
+
+Age is required and represents age on December 31 of the current year.
+
+- **Web form:** Collects birth year. The UI handler calculates
+  `age = current_year - birth_year`.
+- **API:** Accepts `age` directly as a whole number.
+- **Supported range:** 18–125 inclusive, for both entry points.
+- **Preprocessor mapping:** The prediction service maps accepted ages to
+  `AGE23X`, capped at 85 to match MEPS.
+
+For example, a validated age of 90 becomes `AGE23X = 85`.
+
+### Other inputs
+
 How to read the table:
 
-- An asterisk (\*) marks a required input field (age, sex, insurance status,
+- An asterisk (\*) marks a required input field (sex, insurance status,
   family size, education).
 - **As selected** means the UI handler uses the schema value for the selected
   label. For example, “Very Good” becomes `very_good`.
@@ -50,7 +65,6 @@ How to read the table:
 
 | Web form input | How the form asks | Schema field | Prediction service mapping | Preprocessor column |
 | --- | --- | --- | --- | --- |
-| Year of birth* | Subtract the birth year from the current year. | `age` | [Cap at 85](#age-validation). | `AGE23X` |
 | Sex* | As selected | `sex` | `female` → `0`, `male` → `1` | `SEX` |
 | Insurance status* | People with both private and public coverage choose `any_private`. [⚠ Q7](#7-insurance-wording) | `insurance_status` | `any_private` → `1`, `public_only` → `2`, `uninsured` → `3` | `INSCOV23` |
 | Family size* | The selected count, or `8` for “8+”. [⚠ Q1](#1-family-size) | `family_size` | Used as entered (1–14) | `FAMSZE23` |
@@ -77,13 +91,6 @@ How to read the table:
 | Walking limitation | Limitations and symptoms checklist. [⚠ Q5](#5-limitations-and-symptoms-wording) | `walking_limitation` | `true` → `1`, `false` → `0` | `WLKLIM31` |
 | Cognitive limitation | Limitations and symptoms checklist. [⚠ Q5](#5-limitations-and-symptoms-wording) | `cognitive_limitation` | `true` → `1`, `false` → `0` | `COGLIM31` |
 | Joint symptoms in the past 12 months | Limitations and symptoms checklist | `joint_pain` | `true` → `1`, `false` → `0` | `JTPAIN31_M18` |
-
-### Age validation
-
-The shared request schema accepts integer ages from 18 to 125, inclusive.
-This range also applies to ages calculated from birth years in the planned
-web form. The prediction service will cap accepted ages at 85 before passing
-them to the preprocessor.
 
 ### Form details
 
