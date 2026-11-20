@@ -42,7 +42,8 @@ footer:
     analysis.
   - `notebook`: Jupyter Notebook.
   - `ui`: Web app interface (Gradio).
-  - `api`: FastAPI backend, prediction endpoint.
+  - `api`: FastAPI routes, HTTP request handling, status codes, and JSON
+    serialization.
   - `deploy`: Deployment scripts, Dockerfiles, or serving code.
   - `readme`: README.md file.
   - `prd`: Product Requirements Document.
