@@ -76,6 +76,26 @@ def test_prediction_request_raises_birth_year_errors_with_range_details(
     assert birth_year_error["ctx"] == expected_error_context
 
 
+def test_prediction_request_raises_birth_year_and_family_size_range_errors(
+    valid_prediction_input,
+):
+    # Check that our custom birth-year validation error is collected alongside
+    # a built-in range error from another field, using family size as an example.
+    prediction_input = valid_prediction_input.copy()
+    prediction_input["birth_year"] = 2009
+    prediction_input["family_size"] = 0
+
+    with pytest.raises(ValidationError) as validation_error_info:
+        PredictionRequest.model_validate(prediction_input)
+
+    errors = validation_error_info.value.errors()
+    assert len(errors) == 2
+    assert {(error["loc"], error["type"]) for error in errors} == {
+        (("birth_year",), "less_than_equal"),
+        (("family_size",), "greater_than_equal"),
+    }
+
+
 @pytest.mark.parametrize("field", ["birth_year", "family_size"])
 @pytest.mark.parametrize(
     "value",
