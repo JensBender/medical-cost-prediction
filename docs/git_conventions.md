@@ -30,8 +30,9 @@ footer:
   - `chore`: Build tasks, package manager configs, etc.
 - **Scope** (optional): Describes **where** it changed, i.e. the specific
   section of the codebase. Use a scope when it adds useful context. Omit it
-  when it does not, and do not invent one solely to fill the format. For this
-  project, use:
+  when it does not, and do not invent one solely to fill the format. Choose
+  the most specific scope for the change's main responsibility, rather than
+  its file location. For this project, use:
   - `data`: Data loading, data cleaning, handling duplicates, filtering rows,
     filtering columns, or handling data types.
   - `transformer`: Custom scikit-learn transformers in `src/transformers.py`.
@@ -41,7 +42,10 @@ footer:
   - `eval`: Model evaluation, metric calculations, feature importance or error
     analysis.
   - `notebook`: Jupyter Notebook.
-  - `ui`: Web app interface (Gradio).
+  - `app`: Shared application logic, including input schemas and validation,
+    the prediction service, core model inference, and prediction result models.
+  - `ui`: Gradio controls, event handlers, form-specific input cleanup, and
+    human-readable presentation of results and errors.
   - `api`: FastAPI routes, HTTP request handling, status codes, and JSON
     serialization.
   - `deploy`: Deployment scripts, Dockerfiles, or serving code.
