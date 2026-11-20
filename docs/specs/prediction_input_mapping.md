@@ -1,27 +1,39 @@
 # Prediction Input Mapping
 
-This document traces each of the 27 inputs the model needs, from the question
-on the web form, to the API field, to the column the model’s preprocessing
-step (the preprocessor) reads. Use it to check that the form, the API, and the
+The web UI and API are separate entry points for the 27 inputs the model
+needs. This document describes how each entry point supplies and validates
+those inputs, and how the prediction service maps them to the columns the
+model's preprocessor reads. Use it to check that the form, the API, and the
 model all mean the same thing by each answer.
 
-> **Status:** The API fields and validation rules are in place. The form
+> **Status:** The shared schema and validation rules are in place. The form
 > conversions and prediction service mappings are planned.
 
 ## How the inputs fit together
 
-```text
-Web form → API (JSON) → Prediction service → Preprocessor + model
+```mermaid
+flowchart LR
+    Form[Web form] --> Handler[UI handler]
+    Client[API client] --> API[API]
+    Handler --> Validation[Input validation]
+    API --> Validation
+    Validation --> Service[Prediction service]
+    Service --> Preprocessor
+    subgraph Inference[Core model inference]
+        Preprocessor[Preprocessor] --> Model[Model]
+        Model --> Postprocessing[Postprocessing]
+    end
 ```
 
-The planned web form converts answers to API values. API callers send those
-values as JSON. Both validate requests against the same Pydantic schema,
-[`PredictionRequest`](../../app/schemas.py).
-
-The planned prediction service takes a validated request from either source,
-converts it to preprocessor inputs, and calls `CostPredictor` to run the
-preprocessor and model. [Direct Python callers](#direct-python-inputs) supply
-those inputs themselves.
+The planned UI handler converts form answers to Python values. API clients
+supply JSON. Both entry points validate inputs against the Pydantic schema
+[`PredictionRequest`](../../app/schemas.py) and call the prediction service.
+The prediction service maps validated inputs to preprocessor columns and
+calls [`CostPredictor`](../../src/prediction.py), the Python class that runs
+core model inference: preprocessing, model prediction, and quantile
+postprocessing.
+[Direct Python callers](#direct-python-inputs) call the core model inference
+directly and must provide the inputs in the preprocessor format.
 
 ## Input mapping
 
@@ -29,14 +41,14 @@ How to read the table:
 
 - An asterisk (\*) marks a required input field (age, sex, insurance status,
   family size, education).
-- **As selected** means the form sends the exact value for the selected label.
-  For example, “Very Good” becomes `very_good`.
+- **As selected** means the UI handler uses the schema value for the selected
+  label. For example, “Very Good” becomes `very_good`.
 - **`true` → `1`, `false` → `0`** is the yes/no rule. It also covers checklist
   items. See the [Boolean and missing-value rules](#boolean-and-missing-value-rules).
 - **⚠ Q1, Q2, …** link to open questions. The
   [time reference](#6-time-reference) (Q6) also needs review across the form.
 
-| Web form input | How the form asks | API field | Prediction service mapping | Preprocessor column |
+| Web form input | How the form asks | Schema field | Prediction service mapping | Preprocessor column |
 | --- | --- | --- | --- | --- |
 | Year of birth* | Subtract the birth year from the current year. | `age` | [Cap at 85](#age-validation). | `AGE23X` |
 | Sex* | As selected | `sex` | `female` → `0`, `male` → `1` | `SEX` |
@@ -91,10 +103,10 @@ See the [product requirements](product_requirements.md#user-inputs) for the full
 ### Family income
 
 The form shows dollar ranges, which the system converts to a share of the
-poverty line. The API currently accepts the categories below. The [dollar
-ranges and API input format](#2-family-income) are still under review.
+poverty line. The shared schema currently accepts the categories below. The
+[dollar ranges and API input format](#2-family-income) are still under review.
 
-| Family income as a share of the poverty line | API value | Preprocessor code |
+| Family income as a share of the poverty line | Schema value | Preprocessor code |
 | --- | --- | --- |
 | Under 100% | `poor` | `1` |
 | 100% to under 125% | `near_poor` | `2` |
@@ -106,7 +118,7 @@ ranges and API input format](#2-family-income) are still under review.
 
 Physical and mental health use the same codes.
 
-| Rating | API value | Preprocessor code |
+| Rating | Schema value | Preprocessor code |
 | --- | --- | --- |
 | Excellent | `excellent` | `1` |
 | Very good | `very_good` | `2` |
@@ -116,7 +128,7 @@ Physical and mental health use the same codes.
 
 ### Marital status
 
-| Status | API value | Preprocessor code |
+| Status | Schema value | Preprocessor code |
 | --- | --- | --- |
 | Married | `married` | `1` |
 | Widowed | `widowed` | `2` |
@@ -126,21 +138,23 @@ Physical and mental health use the same codes.
 
 ## Boolean and missing-value rules
 
-For yes/no questions, the form sends `true` for Yes and `false` for No.
-The service maps `true` to `1` and `false` to `0` for all Boolean fields.
+For yes/no questions, the UI handler supplies Python `True` for Yes and
+`False` for No. API callers send JSON `true` and `false`. The prediction
+service maps `True` to `1` and `False` to `0` for all Boolean fields.
 
 Each checklist item has its own Boolean field. If someone checks at least one
-item, the form sends `true` for each checked item and `false` for the rest of
-that checklist. How to handle an empty checklist or a “None of these” choice
-is [still open](#4-checklists-and-missing-answers).
+item, the UI handler supplies `True` for each checked item and `False` for the
+rest of that checklist. How to handle an empty checklist or a “None of these”
+choice is [still open](#4-checklists-and-missing-answers).
 
 Required fields must always be answered. The schema rejects a request if a
-required field is missing or `null`. Optional fields can be left blank, and the
-preprocessor fills in the gap.
+required field is missing or `None` (JSON `null`). Optional fields can be left
+blank, and the preprocessor fills in the gap.
 
-Send exact category values, integers for age and family size, and JSON Booleans
-for yes/no answers. For example, `"very_good"`, `42`, and `false` are valid.
-The schema rejects `"Very Good"`, `"42"`, and `"false"`, as well as unknown fields.
+Use exact category values, integers for age and family size, and Booleans for
+yes/no answers. For example, `"very_good"`, `42`, and Python `False` (JSON
+`false`) are valid. The schema rejects `"Very Good"`, `"42"`, and `"false"`, as
+well as unknown fields.
 
 ## Open decisions and definitions to review
 
@@ -174,7 +188,8 @@ dollar ranges shown on the form are still in draft.
 - The exact dollar cutoffs, and how to round them for display, including for
   families of eight or more.
 - Whether API callers should keep sending a category or send a dollar amount.
-  If they send an amount, what else the service needs to find the category.
+  If they send an amount, what else the prediction service needs to find the
+  category.
 
 **Known problem:** One [draft range](technical_specifications.md#draft-family-income-ranges)
 ends at $18,100 and the next starts at $18,200, which leaves a gap. Every
@@ -213,7 +228,8 @@ limitation as unanswered, not as No.
 - Whether the API should default an omitted item to No, and whether an
   explicit `null` should mean something different.
 
-Apply the same decision to the form, schema defaults, and service mapping.
+Apply the same decision to the form, schema defaults, and prediction service
+mapping.
 
 ### 5. Limitations and symptoms wording
 
@@ -257,7 +273,8 @@ year, but several draft questions ask about today.
 
 ## Direct Python inputs
 
-This section is for developers calling the model directly.
+This section is for developers calling `CostPredictor` directly for core
+model inference. It runs the preprocessor, model, and quantile postprocessing.
 
 Pass `CostPredictor` a DataFrame with all 27 preprocessor columns. Use
 `numpy.nan` for missing values. This path skips request validation and the
@@ -272,6 +289,7 @@ See [`CATEGORY_LABELS_PIPELINE`](../../src/constants.py) for the label mappings.
 
 Physical health, mental health, and family income take numerical labels only.
 
-When requests come through the API, a missing optional field and JSON `null`
-both become Python `None`. The planned service converts `None` to `numpy.nan`
-so the preprocessor can fill in the value.
+For both UI and API requests, missing optional fields default to Python
+`None`. An explicit Python `None` or JSON `null` also becomes `None` in the
+validated request. The planned prediction service converts `None` to
+`numpy.nan` so the preprocessor can fill in the value.
