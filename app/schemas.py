@@ -1,21 +1,33 @@
-"""Request validation for the prediction API."""
+"""Prediction input validation for the UI and API."""
 
-from typing import Literal
+from datetime import date
+from typing import Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    PrivateAttr,
+    field_validator,
+    model_validator,
+)
+from pydantic_core import PydanticKnownError
 
 
 HealthRating = Literal["excellent", "very_good", "good", "fair", "poor"]
 
 
 class PredictionRequest(BaseModel):
-    """Validate inputs for a single person's out-of-pockets cost prediction."""
-
     # strict=True rejects strings such as "42" or "false" for integer or boolean fields.
     # extra="forbid" raises an error for any unknown field, such as "diabtes".
     model_config = ConfigDict(strict=True, extra="forbid")
 
-    age: int = Field(..., ge=18, le=125)
+    birth_year: int = Field(
+        ...,
+        frozen=True,  # Keep the stored age consistent with its birth year.
+        description="Birth year corresponding to an age of 18–125 at the end of the current year.",
+    )
+    _age: int = PrivateAttr()
     sex: Literal["female", "male"]
     insurance_status: Literal["any_private", "public_only", "uninsured"] = Field(
         description="If the person has both private and public insurance, choose any_private."
@@ -113,3 +125,26 @@ class PredictionRequest(BaseModel):
         default=None,
         description="Pain, aching, stiffness, or swelling in or around a joint during the past 12 months.",
     )
+
+    @field_validator("birth_year")
+    @classmethod
+    def validate_birth_year(cls, birth_year: int) -> int:
+        current_year = date.today().year
+        age = current_year - birth_year
+        # Pydantic catches these known errors and includes them in ValidationError,
+        # adding the birth_year field location and rejected input automatically.
+        if age < 18:
+            raise PydanticKnownError("less_than_equal", {"le": current_year - 18})
+        if age > 125:
+            raise PydanticKnownError("greater_than_equal", {"ge": current_year - 125})
+        return birth_year
+
+    @model_validator(mode="after")
+    def retain_age(self) -> Self:
+        self._age = date.today().year - self.birth_year
+        return self
+
+    @property
+    def age(self) -> int:
+        """Return the year-end age calculated during input validation."""
+        return self._age
