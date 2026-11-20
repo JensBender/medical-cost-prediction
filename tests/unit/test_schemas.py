@@ -133,3 +133,23 @@ def test_prediction_request_rejects_age_as_input(valid_prediction_input):
     assert errors[0]["loc"] == ("age",)
     # extra="forbid" in the model config rejects fields not declared as inputs.
     assert errors[0]["type"] == "extra_forbidden"
+
+
+def test_prediction_request_rejects_misspelled_required_field(current_year):
+    prediction_input = {
+        "birth_yaer": 1984,
+        "sex": "female",
+        "insurance_status": "any_private",
+        "family_size": 2,
+        "education": "bachelors_degree",
+    }
+
+    with pytest.raises(ValidationError) as validation_error_info:
+        PredictionRequest.model_validate(prediction_input)
+
+    errors = validation_error_info.value.errors()
+    assert len(errors) == 2
+    assert {(error["loc"], error["type"]) for error in errors} == {
+        (("birth_yaer",), "extra_forbidden"),
+        (("birth_year",), "missing"),
+    }
